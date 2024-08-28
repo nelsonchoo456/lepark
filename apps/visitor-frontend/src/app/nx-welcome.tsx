@@ -431,7 +431,7 @@ export function NxWelcome({ title }: { title: string }) {
         <div className="container">
           <div id="welcome">
             <h1>
-              <span className="text-green-100"> Hello there, </span>
+              <span className="text-green-400"> Hello there, </span>
               Welcome {title} 👋
             </h1>
           </div>
@@ -720,11 +720,7 @@ export function NxWelcome({ title }: { title: string }) {
                 </div>
                 <p>Your Nx Cloud remote cache setup is almost complete.</p>
 
-                <a
-                  href="https://cloud.nx.app/connect/T6kqZQmS08"
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href="" target="_blank" rel="noreferrer">
                   Click here to finish
                 </a>
               </div>

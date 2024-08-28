@@ -4,7 +4,7 @@ const { join } = require('path');
 /** @type {import('tailwindcss').Config} */
 
 const dirname = __dirname + '/apps/staff-frontend';
-// const visitorDirname = __dirname + '/apps/visitor-frontend-react';
+const visitorDirname = __dirname + '/apps/visitor-frontend';
 
 module.exports = {
   content: [
@@ -12,12 +12,12 @@ module.exports = {
       dirname,
       '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'
     ),
-    // join(
-    //   visitorDirname,
-    //   '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'
-    // ),
+    join(
+      visitorDirname,
+      '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'
+    ),
     ...createGlobPatternsForDependencies(dirname),
-    // ...createGlobPatternsForDependencies(visitorDirname),
+    ...createGlobPatternsForDependencies(visitorDirname),
   ],
   theme: {
     extend: {
