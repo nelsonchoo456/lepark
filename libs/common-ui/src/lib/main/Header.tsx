@@ -4,6 +4,7 @@ import { fadeIn, fadeOut } from '../assets/animations';
 // import { Logo } from './Logo';
 import { ListItemType } from '../listMenu/ListMenu';
 import { AiOutlineMenuFold, AiOutlineMenuUnfold } from 'react-icons/ai';
+import { Menu } from 'antd';
 
 interface SiderProps {
   children?: string | JSX.Element | JSX.Element[];
@@ -92,15 +93,14 @@ export const Header = ({
               <AiOutlineMenuUnfold />
             )}
           </HeaderButton>}
-          {/* <Logo/> */} 
+          {children}
         </StyledHeader>
 
         <TopCollapsible
-          // show={showHeaderSidebar}
           $show={showHeaderSidebar}
           className="bg-white shadow-lg rounded-b-xl pb-2"
         >
-         
+          <Menu items={items} style={{ backgroundColor: "transparent", border: "transparent" }}/>
         </TopCollapsible>
       </>
     )

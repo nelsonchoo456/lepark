@@ -7,7 +7,7 @@ interface SidebarProps {
   className?: string;
 }
 
-export const SIDEBAR_WIDTH = '250px';
+export const MOBILE_SIDEBAR_WIDTH = '80px';
 
 // Keyframes for sliding in and out
 const slideIn = keyframes`
@@ -27,27 +27,6 @@ const slideOut = keyframes`
     transform: translateX(-100%);
   }
 `;
-// const slideIn = keyframes`
-//   from {
-//     opacity: 0;
-//     width: 0;
-//   }
-//   to {
-//     opacity: 1;
-//     width: ${SIDEBAR_WIDTH};
-//   }
-// `;
-
-// const slideOut = keyframes`
-//   from {
-//     opacity: 0;
-//     width: ${SIDEBAR_WIDTH};
-//   }
-//   to {
-//     opacity: 1;
-//     width: 0;
-//   }
-// `;
 
 const SidebarContainer = styled.div<{
   open: boolean;
@@ -55,7 +34,7 @@ const SidebarContainer = styled.div<{
 }>`
 
   width: ${({ open, customWidth }) =>
-    customWidth ? customWidth : SIDEBAR_WIDTH};
+    customWidth ? customWidth : MOBILE_SIDEBAR_WIDTH};
 
   height: 100vh;
   position: absolute;
@@ -74,11 +53,8 @@ const SidebarContainer = styled.div<{
           animation: ${slideOut} 0.3s forwards;
         `}
 `;
-// width: ${({ open, customWidth }) =>
-//   open ? (customWidth ? customWidth : SIDEBAR_WIDTH) : '0'};
-// transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
 
-export const Sidebar = ({ children, className  }: SidebarProps) => {
+export const MobileSidebar = ({ children, className  }: SidebarProps) => {
   const [open, setOpen] = useState<boolean>(window.innerWidth >= SCREEN_LG);
 
   useEffect(() => {
@@ -97,7 +73,7 @@ export const Sidebar = ({ children, className  }: SidebarProps) => {
   }, []);
 
   return (
-    <SidebarContainer open={open} className={`${className} py-4 bg-indigoGrey-100 h-100vh`}>
+    <SidebarContainer open={open} className={`${className} p-4 bg-indigoGrey-100 h-100vh`}>
       <div>{children}</div>
     </SidebarContainer>
   );

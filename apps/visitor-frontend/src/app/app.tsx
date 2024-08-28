@@ -1,8 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import styles from './app.module.css';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 
 import NxWelcome from './nx-welcome';
+import MainLanding from './pages/MainLanding';
 
 export function App() {
   return (
@@ -17,9 +19,11 @@ export function App() {
         },
       }}
     >
-      <div>
-        <NxWelcome title="visitor-frontend" />
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MainLanding/>} />
+        </Routes>
+      </BrowserRouter>
     </ConfigProvider>
   );
 }
