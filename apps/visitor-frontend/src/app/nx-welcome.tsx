@@ -5,7 +5,7 @@
  Delete this file and get started with your project!
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-import { Divider } from '@lepark/common-ui';
+import { CustButton, Divider } from '@lepark/common-ui';
 export function NxWelcome({ title }: { title: string }) {
   return (
     <>
@@ -438,6 +438,7 @@ export function NxWelcome({ title }: { title: string }) {
             
           </div>
           <Divider>keke</Divider>
+          <CustButton>keke</CustButton>
           <div id="hero" className="rounded">
             <div className="text-container">
               <h2>
