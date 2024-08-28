@@ -73,7 +73,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                 {item.icon}
               </div>
               {item.label?.length < 6 &&
-                <div className="">
+                <div className="text-mf">
                   {item.label}
                 </div>
               }

@@ -95,6 +95,14 @@ module.exports = {
         // => @media (min-width: 1536px) { ... }
       },
 
+      // -- [ Sizes ] --
+      height: {
+        '18': '4.5rem',
+      },
+      width: {
+        '18': '4.5rem',
+      },
+
       // -- [ Animations ] --
       animation: {
         slideIn: 'slideIn 200ms ease-out forwards',

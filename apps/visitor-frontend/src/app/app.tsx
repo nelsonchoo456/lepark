@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 
 import NxWelcome from './nx-welcome';
-import MainLanding from './pages/MainLanding';
+import MainLanding from './pages/MainLanding/MainLanding';
 
 export function App() {
   return (

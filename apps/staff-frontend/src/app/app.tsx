@@ -1,8 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import styles from './app.module.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import MainLanding from './pages/MainLanding';
+import MainLanding from './pages/MainLanding/MainLanding';
 import { ConfigProvider } from 'antd';
+import MapPage from './pages/Map/MapPage';
 
 export function App() {
   return (
@@ -30,6 +31,7 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainLanding />} />
+          <Route path="/map" element={<MapPage />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
