@@ -5,6 +5,7 @@
  Delete this file and get started with your project!
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+import { Divider } from '@lepark/common-ui';
 export function NxWelcome({ title }: { title: string }) {
   return (
     <>
@@ -434,8 +435,9 @@ export function NxWelcome({ title }: { title: string }) {
               <span className="text-green-400"> Hello there, </span>
               Welcome {title} 👋
             </h1>
+            
           </div>
-
+          <Divider>keke</Divider>
           <div id="hero" className="rounded">
             <div className="text-container">
               <h2>
