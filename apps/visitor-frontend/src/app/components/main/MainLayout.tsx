@@ -45,10 +45,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       onClick: () => navigate('/map'),
     },
     {
-      key: 'components',
+      key: 'others',
       icon: <FiMoreHorizontal style={{ fontSize: "1.5rem" }}/>,
-      label: 'Components',
-      onClick: () => navigate('/components'),
+      label: 'Others',
+      onClick: () => navigate('/'),
     },
   ]
 
