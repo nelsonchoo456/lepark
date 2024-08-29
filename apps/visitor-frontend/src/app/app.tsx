@@ -7,6 +7,7 @@ import NxWelcome from './nx-welcome';
 import MainLanding from './pages/MainLanding/MainLanding';
 import MapPage from './pages/MapPage/MapPage';
 import MainLayout from './components/main/MainLayout';
+import Login from './pages/Login/Login';
 
 export function App() {
   return (
@@ -28,12 +29,13 @@ export function App() {
       }}
     >
       <BrowserRouter>
-      <MainLayout>
         <Routes>
-          <Route path="/" element={<MainLanding/>} />
-          <Route path="/map" element={<MapPage/>} />
+          <Route path="/login" element={<Login />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<MainLanding />} />
+            <Route path="/map" element={<MapPage />} />
+          </Route>
         </Routes>
-        </MainLayout>
       </BrowserRouter>
     </ConfigProvider>
   );

@@ -9,7 +9,7 @@ import EventCard from "./components/EventCard";
 const MainLanding = () => {
   return (
     // <MainLayout>
-      <ContentWrapper>
+      <div>
         {/* <div className="md:flex"> */}
           <Card
             size="small"
@@ -30,82 +30,87 @@ const MainLanding = () => {
             </div>
             
           </Card>
-          <div className="flex items-start justify-between gap-2 py-4 bg-white rounded-2xl mt-[-2rem] md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1">
+          <div className="flex items-start justify-between gap-2 py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none">
             <NavButton
-              className="text-green-500 font-semibold bg-green-100 hover:bg-green-200"
+              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="discover"
               icon={<PiPlantFill />}
             >
               Discover
             </NavButton>
             <NavButton
-              className="text-green-500 font-semibold bg-green-100 hover:bg-green-200"
+              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="attractions"
               icon={<PiStarFill />}
             >
               Attractions
             </NavButton>
             <NavButton
-              className="text-green-500 font-semibold bg-green-100 hover:bg-green-200"
+              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="venues"
               icon={<FaTent />}
             >
               Venues
             </NavButton>
             <NavButton
-              className="text-green-500 font-semibold bg-green-100 hover:bg-green-200"
+              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="tickets"
               icon={<PiTicketFill />}
             >
               Tickets
             </NavButton>
           </div>
+
         {/* </div> */}
-        <div className="font-bold text-lg">Our Events</div>
-        <div className="w-full overflow-scroll flex gap-2 my-2">
-          <EventCard 
-            title="Event 1" 
-            url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg" 
-            extra={<a href="#">More</a>}
-          >
-            keewewk
-          </EventCard>
-          <EventCard 
-            title="Event 4" 
-            url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650" 
-            extra={<a href="#">More</a>}
-          >
-            rwrewrkeek
-          </EventCard>
-          <EventCard 
-            title="Event 2" 
-            url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens" 
-            extra={<a href="#">More</a>}
-          >
-            keewerewk
-          </EventCard>
-          <EventCard 
-            title="Event 3" 
-            url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" 
-            extra={<a href="#">More</a>}
-          >
-            keewerewrk
-          </EventCard>
-        </div>
-        <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
-        <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
-          <Card
-            size="small"
-            title="Small size card"
-            extra={<a href="#">More</a>}
-            className="my-2 w-full"
-          >
-            <p>Card content</p>
-            <p>Card content</p>
-            <p>Card content</p>
-          </Card>
-        </Badge.Ribbon>
-      </ContentWrapper>
+        <ContentWrapper>
+          <div className="font-bold text-lg">Our Events</div>
+          <div className="w-full overflow-scroll flex gap-2 py-2">
+            <EventCard 
+              title="Event 1" 
+              url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg" 
+              extra={<a href="#">More</a>}
+            >
+              keewewk
+            </EventCard>
+            <EventCard 
+              title="Event 4" 
+              url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650" 
+              extra={<a href="#">More</a>}
+            >
+              rwrewrkeek
+            </EventCard>
+            <EventCard 
+              title="Event 2" 
+              url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens" 
+              extra={<a href="#">More</a>}
+            >
+              keewerewk
+            </EventCard>
+            <EventCard 
+              title="Event 3" 
+              url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" 
+              extra={<a href="#">More</a>}
+            >
+              keewerewrk
+            </EventCard>
+          </div>
+        </ContentWrapper>
+        <ContentWrapper>
+          <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
+          <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
+            <Card
+              size="small"
+              title="Small size card"
+              extra={<a href="#">More</a>}
+              className="my-2 w-full"
+            >
+              <p>Card content</p>
+              <p>Card content</p>
+              <p>Card content</p>
+            </Card>
+          </Badge.Ribbon>
+        </ContentWrapper>
+      </div>
     // </MainLayout>
   );
 };

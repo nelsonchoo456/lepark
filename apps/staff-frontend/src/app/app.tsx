@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import MainLanding from './pages/MainLanding/MainLanding';
 import { ConfigProvider } from 'antd';
 import MapPage from './pages/Map/MapPage';
+import MainLayout from './components/main/MainLayout';
+import Login from './pages/Login/Login';
 
 export function App() {
   return (
@@ -30,8 +32,11 @@ export function App() {
     >
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<MainLanding />} />
-          <Route path="/map" element={<MapPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<MainLanding />} />
+            <Route path="/map" element={<MapPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
