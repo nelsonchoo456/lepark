@@ -48,7 +48,7 @@ export const BottomNavBar = ({ items, activeKeys, showSidebar, onTabClick }: Bot
           {items.map((item) => (
             <button
               key={item.key}
-              onClick={() => onTabClick && onTabClick(item.key)}
+              onClick={() => item.onClick && item.onClick()}
               className="flex-1 py-1 text-center flex flex-col items-center hover:text-green-200 transition-all duration-300"
             >
               <div className="p-1 rounded-full hover:bg-green-200 hover:text-white transition-all duration-300 ease-out hover:scale-110" >

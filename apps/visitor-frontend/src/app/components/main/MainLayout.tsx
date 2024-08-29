@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from "../../config/breakpoints";
 import { Content, Header, ListItemType, Logo, LogoText, MobileContent, MobileSidebar, Sidebar } from "@lepark/common-ui";
 import { BottomNavBar } from "./BottomNavBar";
@@ -7,11 +7,7 @@ import { FiHome, FiMoreHorizontal } from "react-icons/fi";
 import { GrMapLocation } from "react-icons/gr";
 import { Menu } from "antd";
 
-interface MainLayoutProps {
-  children?: string | JSX.Element | JSX.Element[];
-}
-
-const MainLayout = ({ children }: MainLayoutProps) => {
+const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(
     window.innerWidth >= SCREEN_LG
   );
@@ -45,10 +41,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       onClick: () => navigate('/map'),
     },
     {
-      key: 'components',
+      key: 'others',
       icon: <FiMoreHorizontal style={{ fontSize: "1.5rem" }}/>,
-      label: 'Components',
-      onClick: () => navigate('/components'),
+      label: 'Others',
+      onClick: () => navigate('/'),
     },
   ]
 
@@ -81,7 +77,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           ))}
         </div>
       </MobileSidebar>
-      <MobileContent $showSidebar={showSidebar}>{children}</MobileContent>
+      <MobileContent $showSidebar={showSidebar}><Outlet /></MobileContent>
       <BottomNavBar items={navItems} showSidebar={showSidebar} />
     </div>
   );

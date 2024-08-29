@@ -80,6 +80,18 @@ module.exports = {
           800: '#704200',
           900: '#4b2b00',  // deep, muted brownish yellow
         },
+        highlightGreen: {
+          50:  '#edf7f2',  // very light, vibrant green
+          100: '#d3eadb',
+          200: '#a8d9bd',
+          300: '#7bc89f',
+          400: '#59b586',  // slightly darker, more saturated
+          500: '#39a26d',  // key highlight green shade
+          600: '#2f8758',
+          700: '#266b46',
+          800: '#1e5236',
+          900: '#153923',  // deep, vibrant green
+        }
       },
       // -- [ Responsive Config ] --
       screens: {

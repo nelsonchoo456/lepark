@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import MainLayout from '../../components/main/MainLayout';
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { SIDEBAR_WIDTH } from '@lepark/common-ui';
+import { MOBILE_SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 
 const MapPage = () => {
@@ -26,7 +26,7 @@ const MapPage = () => {
     <div
       style={{
         height: '100vh',
-        width: `calc(100vw - ${SIDEBAR_WIDTH})`,
+        width: `calc(100vw - ${MOBILE_SIDEBAR_WIDTH})`,
 
         zIndex: 1,
       }}

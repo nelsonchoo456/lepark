@@ -2,3 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
+
+a {
+  @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
+}
+
+@layer base {
+  li {
+  }
+
+  /* Text */
+  .text-error {
+    @apply text-red-600
+  }
+  .text-warning {
+    @apply text-orange-500
+  }
+  .text-secondary {
+    @apply opacity-50
+  }
+}
+.ant-btn-link {
+  @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
+}

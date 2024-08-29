@@ -16,3 +16,6 @@ export * from './lib/listMenu/ListMenu';
 
 // Utilities
 export * from './lib/assets/animations';
+
+// Pages
+export * from './lib/login/Login';
