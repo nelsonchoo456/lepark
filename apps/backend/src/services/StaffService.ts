@@ -29,6 +29,15 @@ class StaffService {
     return StaffDao.getAllStaffs();
   }
 
+  public async getStaffById(id: string): Promise<Staff> {
+    try {
+      const staff = await StaffDao.getStaffById(id);
+      return staff;
+    } catch (error) {
+      throw new Error(`Unable to fetch staff details: ${error.message}`);
+    }
+  }
+
   // async login(data: AdminGetData) {
   //   const admin = await AdminDao.getAdminByEmail(data.email);
 

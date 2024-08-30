@@ -22,4 +22,14 @@ router.get('/getAllStaffs', async (_, res) => {
   }
 });
 
+router.get('/viewStaffDetails/:id', async (req, res) => {
+  try {
+    const staffId = req.params.id;
+    const staff = await StaffService.getStaffById(staffId);
+    res.status(200).json(staff);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
