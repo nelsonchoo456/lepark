@@ -19,6 +19,12 @@ class StaffDao {
     return prisma.staff.findUnique({ where: { id } });
   }
 
+  async updateStaffDetails(
+    id: string,
+    data: Prisma.StaffUpdateInput,
+  ): Promise<Staff> {
+    return prisma.staff.update({ where: { id }, data });
+  }
   //   async getAdminById(id: string): Promise<Admin> {
   //     return prisma.admin.findUnique({ where: { id } });
   //   }
