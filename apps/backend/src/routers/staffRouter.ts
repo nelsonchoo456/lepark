@@ -1,6 +1,6 @@
 import express from 'express';
 import StaffService from '../services/StaffService';
-import { Prisma } from '@prisma/client';
+import { Prisma, StaffRoleEnum } from '@prisma/client';
 
 const router = express.Router();
 
@@ -43,7 +43,49 @@ router.put('/updateStaffDetails/:id', async (req, res) => {
     if (email) updateData.email = email;
     if (contactNumber) updateData.contactNumber = contactNumber;
 
-    const updatedStaff = await StaffService.updateStaffDetails(staffId, updateData);
+    const updatedStaff = await StaffService.updateStaffDetails(
+      staffId,
+      updateData,
+    );
+    res.status(200).json(updatedStaff);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/updateStaffRole/:id', async (req, res) => {
+  try {
+    const staffId = req.params.id;
+    const { role, requesterId } = req.body; // Assuming requesterId is passed in the request body
+
+    // Convert role to enum type
+    const roleEnum = StaffRoleEnum[role as keyof typeof StaffRoleEnum];
+
+    if (!roleEnum) {
+      return res.status(400).json({ error: 'Invalid role.' });
+    }
+
+    const updatedStaff = await StaffService.updateStaffRole(
+      staffId,
+      roleEnum,
+      requesterId,
+    );
+    res.status(200).json(updatedStaff);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/updateStaffIsActive/:id', async (req, res) => {
+  try {
+    const staffId = req.params.id;
+    const { isActive, requesterId } = req.body; // Assuming requesterId is passed in the request body
+
+    const updatedStaff = await StaffService.updateStaffIsActive(
+      staffId,
+      isActive,
+      requesterId,
+    );
     res.status(200).json(updatedStaff);
   } catch (error) {
     res.status(400).json({ error: error.message });

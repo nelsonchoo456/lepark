@@ -1,4 +1,4 @@
-import { Prisma, Staff } from '@prisma/client';
+import { Prisma, Staff, StaffRoleEnum } from '@prisma/client';
 import StaffDao from '../dao/StaffDao';
 import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
@@ -43,6 +43,36 @@ class StaffService {
       return await StaffDao.updateStaffDetails(id, data);
     } catch (error) {
       throw new Error(`Unable to update staff details: ${error.message}`);
+    }
+  }
+
+  public async updateStaffRole(staffId: string, role: StaffRoleEnum, requesterId: string): Promise<Staff> {
+    try {
+      // Check if the requester is a manager
+      const isRequesterManager = await StaffDao.isManager(requesterId);
+      if (!isRequesterManager) {
+        throw new Error('Only managers can update the role of other staff.');
+      }
+
+      const updateData: Prisma.StaffUpdateInput = { role };
+      return await StaffDao.updateStaffDetails(staffId, updateData); // uses same update method since prisma knows which field to update
+    } catch (error) {
+      throw new Error(`Unable to update staff role: ${error.message}`);
+    }
+  }
+
+  public async updateStaffIsActive(staffId: string, isActive: boolean, requesterId: string): Promise<Staff> {
+    try {
+      // Check if the requester is a manager
+      const isRequesterManager = await StaffDao.isManager(requesterId);
+      if (!isRequesterManager) {
+        throw new Error("Only managers can update another staff's active status.");
+      }
+
+      const updateData: Prisma.StaffUpdateInput = { isActive };
+      return await StaffDao.updateStaffDetails(staffId, updateData); // uses same update method since prisma knows which field to update
+    } catch (error) {
+      throw new Error(`Unable to update staff isActive status: ${error.message}`);
     }
   }
 
