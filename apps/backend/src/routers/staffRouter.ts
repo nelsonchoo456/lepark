@@ -32,4 +32,22 @@ router.get('/viewStaffDetails/:id', async (req, res) => {
   }
 });
 
+router.put('/updateStaffDetails/:id', async (req, res) => {
+  try {
+    const staffId = req.params.id;
+    const { firstName, lastName, email, contactNumber } = req.body;
+
+    const updateData: Prisma.StaffUpdateInput = {};
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+    if (email) updateData.email = email;
+    if (contactNumber) updateData.contactNumber = contactNumber;
+
+    const updatedStaff = await StaffService.updateStaffDetails(staffId, updateData);
+    res.status(200).json(updatedStaff);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

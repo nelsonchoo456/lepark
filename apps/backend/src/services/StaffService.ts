@@ -38,6 +38,14 @@ class StaffService {
     }
   }
 
+  public async updateStaffDetails(id: string, data: Prisma.StaffUpdateInput): Promise<Staff> {
+    try {
+      return await StaffDao.updateStaffDetails(id, data);
+    } catch (error) {
+      throw new Error(`Unable to update staff details: ${error.message}`);
+    }
+  }
+
   // async login(data: AdminGetData) {
   //   const admin = await AdminDao.getAdminByEmail(data.email);
 
