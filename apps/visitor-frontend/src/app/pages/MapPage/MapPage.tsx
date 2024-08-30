@@ -5,6 +5,9 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { MOBILE_SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { Button, Input, Select } from 'antd';
+import { FiFilter, FiSearch } from 'react-icons/fi';
+import { FaFilter } from 'react-icons/fa6';
 
 const MapPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
@@ -48,8 +51,40 @@ const MapPage = () => {
       style={{
         height: 'calc(100vh - 2rem)',
         width: `100vw`,
+        position: 'relative'
       }}
     >
+      {/* <Input className='absolute z-50'/> */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          width: '100%',
+          padding: '0 1rem',
+          maxWidth: '600px',
+        }}
+      >
+        <Select
+          showSearch
+          defaultActiveFirstOption={false}
+          suffixIcon={<FiSearch/>}
+          filterOption={false}
+          className='w-full'
+          // onSearch={handleSearch}
+          // onChange={handleChange}
+          // notFoundContent={null}
+          // options={(data || []).map((d) => ({
+          //   value: d.value,
+          //   label: d.text,
+          // }))}
+        />
+        <div className='flex justify-end mt-2'>
+          <Button type='primary' icon={<FiFilter/>} size="large"/>
+        </div>
+      </div>
       <MapContainer
         center={[1.287953, 103.851784]}
         zoom={11}

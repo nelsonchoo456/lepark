@@ -20,40 +20,38 @@ const MainLanding = () => {
               color: 'white',
               overflow: 'hidden'
             }}
-            className="mb-2 w-full h-28 bg-green-400 rounded-2xl -z-10 md:w-full md:rounded"
+            className="mb-2 w-full h-28 bg-green-400 rounded-2xl -z-10 md:w-full md:rounded md:h-64"
           >
             <div className="absolute top-0 left-0 w-full h-full p-4 bg-green-700/70 text-white flex">
-              <div>
+              <div className="md:text-center md:mx-auto">
                 <p className="font-medium">Currently at</p>
-                <p className="font-medium text-2xl">Bishan-AMK Park</p>
+                <p className="font-medium text-2xl md:text-3xl">Bishan-AMK Park</p>
               </div>
             </div>
             
           </Card>
-          <div className="flex items-start justify-between gap-2 py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none">
+          {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
+          <div className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden
+            md:p-0">
             <NavButton
-              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="discover"
               icon={<PiPlantFill />}
             >
               Discover
             </NavButton>
             <NavButton
-              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="attractions"
               icon={<PiStarFill />}
             >
               Attractions
             </NavButton>
             <NavButton
-              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="venues"
               icon={<FaTent />}
             >
               Venues
             </NavButton>
             <NavButton
-              className="text-highlightGreen-400 font-semibold bg-highlightGreen-100 hover:text-green-500 hover:bg-green-100"
               key="tickets"
               icon={<PiTicketFill />}
             >
