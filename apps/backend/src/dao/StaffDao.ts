@@ -15,6 +15,10 @@ class StaffDao {
     return prisma.staff.findMany();
   }
 
+  async getStaffById(id: string): Promise<Staff> {
+    return prisma.staff.findUnique({ where: { id } });
+  }
+
   //   async getAdminById(id: string): Promise<Admin> {
   //     return prisma.admin.findUnique({ where: { id } });
   //   }
