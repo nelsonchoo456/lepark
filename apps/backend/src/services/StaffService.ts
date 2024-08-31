@@ -39,11 +39,14 @@ class StaffService {
   }
 
   public async updateStaffDetails(id: string, data: Prisma.StaffUpdateInput): Promise<Staff> {
-    try {
-      return await StaffDao.updateStaffDetails(id, data);
-    } catch (error) {
-      throw new Error(`Unable to update staff details: ${error.message}`);
-    }
+    // Create an updateData object and only include fields that are provided
+    const updateData: Prisma.StaffUpdateInput = {};
+    if (data.firstName) updateData.firstName = data.firstName;
+    if (data.lastName) updateData.lastName = data.lastName;
+    if (data.email) updateData.email = data.email;
+    if (data.contactNumber) updateData.contactNumber = data.contactNumber;
+
+    return StaffDao.updateStaffDetails(id, updateData);
   }
 
   public async updateStaffRole(staffId: string, role: StaffRoleEnum, requesterId: string): Promise<Staff> {
