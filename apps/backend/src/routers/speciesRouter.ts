@@ -44,4 +44,16 @@ router.put('/updateSpeciesDetails/:id', async (req, res) => {
   }
 });
 
+router.delete('/deleteSpecies/:id', async (req, res) => {
+  try {
+    const speciesId = req.params.id;
+    const requesterId = req.body.requesterId; // Assuming requesterId is passed in the request body
+
+    await SpeciesService.deleteSpecies(speciesId, requesterId);
+    res.status(204).send(); // 204 No Content
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
