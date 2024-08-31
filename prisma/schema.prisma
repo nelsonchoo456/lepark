@@ -29,8 +29,7 @@ model Staff {
   firstName     String
   lastName      String
   email         String        @unique
-  passwordHash  String
-  salt          String
+  password      String
   contactNumber String
   role          StaffRoleEnum
   isActive      Boolean
