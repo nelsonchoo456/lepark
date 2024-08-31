@@ -35,3 +35,60 @@ model Staff {
   role          StaffRoleEnum
   isActive      Boolean
 }
+
+enum CONSERVATION_STATUS {
+  LEAST_CONCERN
+  NEAR_THREATENED
+  VULNERABLE
+  ENDANGERED
+  CRITICALLY_ENDANGERED
+  EXTINCT_IN__THE_WILD
+  EXTINCT
+}
+
+enum LIGHT_TYPE {
+  FULL_SUN
+  PARTIAL_SHADE
+  FULL_SHADE
+}
+
+enum SOIL_TYPE {
+  SANDY
+  CLAY
+  LOAM
+  PEATY
+  SILTY
+  CHALKY
+  SHALLOW
+}
+
+model Species {
+  speciesId             String              @id @default(uuid()) @db.Uuid
+  phylum                String
+  class                 String
+  order                 String
+  family                String
+  genus                 String
+  speciesName           String
+  commonName            String
+  speciesDescription    String
+  conservationStatus    CONSERVATION_STATUS
+  originCountry         String
+  lightType             LIGHT_TYPE
+  soilType              SOIL_TYPE
+  fertiliserType        String
+  waterRequirement      Int
+  fertiliserRequirement Int
+  idealHumidity         Float
+  minTemp               Float
+  maxTemp               Float
+  idealTemp             Float
+  isDroughtTolerant     Boolean
+  isFastGrowing         Boolean
+  isSlowGrowing         Boolean
+  isEdible              Boolean
+  isDeciduous           Boolean
+  isEvergreen           Boolean
+  isToxic               Boolean
+  isFragrant            Boolean
+}
