@@ -1,4 +1,4 @@
-import { Button, Divider, Form, Input, Row, Col } from 'antd';
+import { Button, Divider, Form, Input, Row, Col, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginStepProps {
@@ -32,7 +32,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
 
   return (
     <div className="w-full">
-      <Divider></Divider>
+      <Divider>Staff</Divider>
       <Form layout="vertical" onFinish={handleSubmit}>
         <Row gutter={16}>
           <Col span={12}>
@@ -44,7 +44,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                 { required: true, message: 'Please enter your First Name' },
               ]}
             >
-              <Input placeholder="First Name" variant="filled"/>
+              <Input placeholder="First Name" />
             </Form.Item>
           </Col>
 
@@ -57,10 +57,34 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                 { required: true, message: 'Please enter your Last Name' },
               ]}
             >
-              <Input placeholder="Last Name" variant="filled"/>
+              <Input placeholder="Last Name" />
             </Form.Item>
           </Col>
         </Row>
+
+        <Form.Item
+          name="role"
+          label="Role"
+          validateTrigger="onSubmit"
+          rules={[{ required: true, message: 'Please select a Role' }]}
+        >
+          <Select
+            showSearch
+            placeholder="Select a Role"
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={[
+              { value: 'MANAGE', label: 'Manager' },
+              { value: 'BOTANIST', label: 'Botanist' },
+              { value: 'ARBORIST', label: 'Arborist' },
+              { value: 'GARDENER', label: 'Gardener' },
+              { value: 'MAINTENANCE_WORKER', label: 'Maintenance Worker' },
+              { value: 'LANDSCAPE_ARTIST', label: 'Landscape Artist' },
+              { value: 'PARK_RANGER', label: 'Park Ranger' },
+            ]}
+          />
+        </Form.Item>
 
         <Form.Item
           name="email"
@@ -71,7 +95,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
             { type: 'email', message: 'Please enter a valid Email' },
           ]}
         >
-          <Input placeholder="Email" variant="filled"/>
+          <Input placeholder="Email" />
         </Form.Item>
 
         <Form.Item
@@ -79,7 +103,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           label="Password"
           rules={[{ required: true, message: 'Please enter your Password'}]}
         >
-          <Input.Password placeholder="Password" variant="filled"/>
+          <Input.Password placeholder="Password" />
         </Form.Item>
 
         <Form.Item
@@ -88,7 +112,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           validateTrigger="onSubmit"
           rules={[{ required: true, message: 'Please re-enter your Password' }, confirmPasswordValidator]}
         >
-          <Input.Password placeholder="Confirm Password" variant="filled"/>
+          <Input.Password placeholder="Confirm Password" />
         </Form.Item>
 
         <Form.Item>

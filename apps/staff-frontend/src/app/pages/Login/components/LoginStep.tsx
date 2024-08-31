@@ -57,9 +57,6 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
       <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
         Register
       </Button>
-      <Button type="link" className="w-full justify-center" onClick={handleReturnToPrev}>
-        Continue using without Account
-      </Button>
     </div>
   );
 };

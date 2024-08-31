@@ -33,7 +33,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           label="Email"
           rules={[{ required: true, message: 'Please enter your Email' }]}
         >
-          <Input placeholder="Email" />
+          <Input placeholder="Email" variant="filled"/>
         </Form.Item>
 
         <Form.Item
@@ -41,7 +41,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           label="Password"
           rules={[{ required: true, message: 'Please enter your Password' }]}
         >
-          <Input.Password placeholder="Password" />
+          <Input.Password placeholder="Password" variant="filled"/>
         </Form.Item>
 
         <Form.Item>
@@ -57,9 +57,9 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
       <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
         Register
       </Button>
-      <Button type="link" className="w-full justify-center" onClick={handleReturnToPrev}>
+      {/* <Button type="link" className="w-full justify-center" onClick={handleReturnToPrev}>
         Continue using without Account
-      </Button>
+      </Button> */}
     </div>
   );
 };
