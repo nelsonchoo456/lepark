@@ -1,18 +1,20 @@
 import { Card, Badge } from "antd";
-import { Avatar, Button } from "antd";
+import { Input, Avatar, Button } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, MobileContent, MobileSidebar, Sidebar } from "@lepark/common-ui";
+import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, CustButton } from "@lepark/common-ui";
 import { useState, useEffect } from "react";
 import { SCREEN_LG } from "../../config/breakpoints";
 import { Color } from "antd/es/color-picker";
 import EventCard from "../MainLanding/components/EventCard";
+import EditPasswordModal from "./EditPasswordModal";
 
 const ProfilePage = () => {
   const [username, setUsername] = useState<string>("John Tan");
-  const [email, setEmail] = useState<string>("john@gmail.com");
+  const [contactNumber, setContactNumber] = useState<string>("12345678");
   const [editing, setEditing] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleEdit = () => {
+  const handleEditProfile = () => {
     setEditing(true);
   };
 
@@ -20,6 +22,27 @@ const ProfilePage = () => {
     setEditing(false);
     // Save functionality goes here
   };
+
+  const handleCancel = () => {
+    setEditing(false);
+  };
+
+  const handleEditPassword = () => {
+    // Edit password functionality goes here
+  }
+
+  const handleEditEmail = () => {
+    // Edit email functionality goes here
+  }
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
+
 
   return (
     <div>
@@ -44,7 +67,7 @@ const ProfilePage = () => {
 
       <div className="relative flex items-center justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow md:p-0">
         {/* Avatar container */}
-        <div className="mt-[-11rem] absolute left-1/2 transform -translate-x-1/2 z-10">
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 mt-[-3rem]">
           <Avatar
             size={80}
             icon={<UserOutlined />}
@@ -54,12 +77,43 @@ const ProfilePage = () => {
 
         {/* Profile Info */}
         <div className="flex flex-col items-center w-full p-4 pt-10">
-          
+          {editing ? (
+            <div className="w-full flex flex-col items-center">
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="mb-2"
+              />
+              <Input
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
+                className="mb-4"
+              />
+              <CustButton type="primary" onClick={handleSave} className="mb-2">
+                Save
+              </CustButton>
+              <CustButton onClick={handleCancel} className="mb-2">
+                Cancel
+              </CustButton>
+            </div>
+          ) : (
+            <div className="w-full flex flex-col items-center">
               <h2 className="text-xl font-bold">{username}</h2>
-              <p className="text-gray-600">{email}</p>
-              <Button type="primary" onClick={handleEdit} className="mt-4">
+              <p className="text-gray-600">{contactNumber}</p>
+              <div className="items-center">
+              <CustButton type="primary" onClick={handleEditProfile} className="mt-4 mx-2">
                 Edit Profile
-              </Button>
+              </CustButton>
+              <CustButton type="primary" onClick={showModal} className="mt-4 mx-2">
+                Change Password
+              </CustButton>
+              <EditPasswordModal open={isModalVisible} onClose={handleModalCancel} />
+              <CustButton type="primary" onClick={handleEditEmail} className="mt-4 mx-2">
+                Change Email
+              </CustButton>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
