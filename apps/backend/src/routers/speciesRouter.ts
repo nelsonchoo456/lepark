@@ -32,4 +32,16 @@ router.get('/viewSpeciesDetails/:id', async (req, res) => {
   }
 });
 
+router.put('/updateSpeciesDetails/:id', async (req, res) => {
+  try {
+    const speciesId = req.params.id;
+    const updateData: Prisma.SpeciesUpdateInput = req.body;
+
+    const updatedSpecies = await SpeciesService.updateSpeciesDetails(speciesId, updateData);
+    res.status(200).json(updatedSpecies);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
