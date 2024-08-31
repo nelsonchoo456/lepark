@@ -1,8 +1,7 @@
 import React, { FC } from 'react';
-import { Modal, Form, Input, Button } from 'antd';
+import { Modal, Form, Input, Button, notification } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 
-// Define the props type for the modal
 interface EditPasswordModalProps {
   open: boolean;
   onClose: () => void;
@@ -15,7 +14,14 @@ const EditPasswordModal: FC<EditPasswordModalProps> = ({ open, onClose }) => {
     form.validateFields().then(values => {
       // Handle form submission
       console.log('Received values:', values);
-      onClose(); // Close the modal after submission
+
+      // Simulate a successful password change
+      notification.success({
+        message: 'Success',
+        description: 'Your password has been changed successfully.',
+      });
+
+      onClose();
     }).catch(info => {
       console.log('Validate Failed:', info);
     });
@@ -29,6 +35,7 @@ const EditPasswordModal: FC<EditPasswordModalProps> = ({ open, onClose }) => {
       onCancel={onClose}
       okText="Save"
       cancelText="Cancel"
+      centered 
     >
       <Form
         form={form}

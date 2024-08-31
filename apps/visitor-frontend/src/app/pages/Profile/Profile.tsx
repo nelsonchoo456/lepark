@@ -7,13 +7,16 @@ import { SCREEN_LG } from "../../config/breakpoints";
 import { Color } from "antd/es/color-picker";
 import EventCard from "../MainLanding/components/EventCard";
 import EditPasswordModal from "./EditPasswordModal";
+import EditEmailModal from "./EditEmailModal";
+
 
 const ProfilePage = () => {
-  const [username, setUsername] = useState<string>("John Tan");
-  const [contactNumber, setContactNumber] = useState<string>("12345678");
-  const [editing, setEditing] = useState<boolean>(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
+    const [username, setUsername] = useState<string>("John Tan");
+    const [contactNumber, setContactNumber] = useState<string>("12345678");
+    const [editing, setEditing] = useState<boolean>(false);
+    const [isPasswordModalVisible, setIsPasswordModalVisible] = useState<boolean>(false);
+    const [isEmailModalVisible, setIsEmailModalVisible] = useState<boolean>(false);
+  
   const handleEditProfile = () => {
     setEditing(true);
   };
@@ -28,19 +31,19 @@ const ProfilePage = () => {
   };
 
   const handleEditPassword = () => {
-    // Edit password functionality goes here
+    setIsPasswordModalVisible(true);
   }
 
   const handleEditEmail = () => {
-    // Edit email functionality goes here
+    setIsEmailModalVisible(true);
   }
 
-  const showModal = () => {
-    setIsModalVisible(true);
+  const handlePasswordModalCancel = () => {
+    setIsPasswordModalVisible(false);
   };
 
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
+  const handleEmailModalCancel = () => {
+    setIsEmailModalVisible(false);
   };
 
 
@@ -98,24 +101,25 @@ const ProfilePage = () => {
             </div>
           ) : (
             <div className="w-full flex flex-col items-center">
-              <h2 className="text-xl font-bold">{username}</h2>
-              <p className="text-gray-600">{contactNumber}</p>
-              <div className="items-center">
+            <h2 className="text-xl font-bold">{username}</h2>
+            <p className="text-gray-600">{contactNumber}</p>
+            <div className="items-center">
               <CustButton type="primary" onClick={handleEditProfile} className="mt-4 mx-2">
                 Edit Profile
               </CustButton>
-              <CustButton type="primary" onClick={showModal} className="mt-4 mx-2">
+              <CustButton type="primary" onClick={handleEditPassword} className="mt-4 mx-2">
                 Change Password
               </CustButton>
-              <EditPasswordModal open={isModalVisible} onClose={handleModalCancel} />
+              <EditPasswordModal open={isPasswordModalVisible} onClose={handlePasswordModalCancel} />
               <CustButton type="primary" onClick={handleEditEmail} className="mt-4 mx-2">
                 Change Email
               </CustButton>
-              </div>
+              <EditEmailModal open={isEmailModalVisible} onClose={handleEmailModalCancel} />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+    </div>
 
       <ContentWrapper>
       <div className="relative py-2 mx-4 bg-white rounded-2xl shadow ">
