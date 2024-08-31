@@ -122,7 +122,7 @@ const ProfilePage = () => {
     </div>
 
       <ContentWrapper>
-      <div className="relative py-2 mx-4 bg-white rounded-2xl shadow ">
+      <div className="relative py-2 bg-white rounded-2xl shadow ">
         <LogoText className="font-bold text-lg pl-3 pt-1">My Upcoming Events</LogoText>
           <div className="w-full overflow-scroll flex gap-2 py-2">
             <EventCard 
@@ -158,8 +158,8 @@ const ProfilePage = () => {
         </ContentWrapper>
 
       <ContentWrapper>
-      <div className="relative py-2 mx-4 bg-white rounded-2xl shadow md:p-0">
-        <LogoText className="font-bold text-lg pl-3 pt-1">Reports</LogoText>
+        <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
+          <LogoText className="font-bold text-lg pl-3 pt-1">Reports</LogoText>
         </div>
       </ContentWrapper>
     </div>
