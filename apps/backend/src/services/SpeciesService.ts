@@ -44,6 +44,10 @@ class SpeciesService {
   public async getAllSpecies(): Promise<Species[]> {
     return SpeciesDao.getAllSpecies();
   }
+
+  public async getSpeciesById(id: string): Promise<Species> {
+    return SpeciesDao.getSpeciesById(id);
+  }
 }
 
 export default new SpeciesService();
