@@ -7,6 +7,7 @@ import express from 'express';
 import * as path from 'path';
 import staffRouter from './routers/staffRouter';
 import cors from 'cors';
+import speciesRouter from './routers/speciesRouter';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get('/api', (req, res) => {
 
 // Routes
 app.use('/api/staffs', staffRouter);
+app.use('/api/species', speciesRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
