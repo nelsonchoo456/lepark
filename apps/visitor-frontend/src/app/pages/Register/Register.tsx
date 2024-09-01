@@ -7,7 +7,7 @@ import {
   Logo,
   LogoText,
 } from '@lepark/common-ui';
-import LoginAnnouncements from './components/RegisterSidePanel';
+import LoginAnnouncements from '../Login/components/LoginAnnouncements';
 import LoginStep from './components/RegisterForm';
 
 const Register = () => {
