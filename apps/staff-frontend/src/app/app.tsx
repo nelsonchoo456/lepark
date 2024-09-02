@@ -7,6 +7,8 @@ import MapPage from './pages/Map/MapPage';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
+import ForgotPassword from './pages/ResetPassword/ResetPassword';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
 
 export function App() {
   return (
@@ -35,6 +37,7 @@ export function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
