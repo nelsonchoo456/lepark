@@ -17,7 +17,7 @@ export function App() {
           colorPrimary: '#6da696', // green.500
           borderRadius: 5,
           colorTextBase: "#000000",
-          fontSize: 16,
+          fontSize: 14,
 
           // Alias Token
         },
