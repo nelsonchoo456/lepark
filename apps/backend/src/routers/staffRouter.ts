@@ -15,8 +15,8 @@ router.post('/register', async (req, res) => {
 
 router.get('/getAllStaffs', async (_, res) => {
   try {
-    const admins = await StaffService.getAllStaffs();
-    res.status(200).json(admins);
+    const staffs = await StaffService.getAllStaffs();
+    res.status(200).json(staffs);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

@@ -34,3 +34,12 @@ model Staff {
   role          StaffRoleEnum
   isActive      Boolean
 }
+
+model Visitor {
+  id            String        @id @default(uuid()) @db.Uuid
+  firstName     String
+  lastName      String
+  email         String        @unique
+  password      String
+  contactNumber String
+}
