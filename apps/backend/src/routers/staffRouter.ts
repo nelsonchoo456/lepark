@@ -1,12 +1,14 @@
 import express from 'express';
 import StaffService from '../services/StaffService';
-import { Prisma, StaffRoleEnum } from '@prisma/client';
+import { StaffRoleEnum } from '@prisma/client';
+import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/staffSchema';
 
 const router = express.Router();
 
 router.post('/register', async (req, res) => {
   try {
-    const staff = await StaffService.register(req.body);
+    const staffData = StaffSchema.parse(req.body)
+    const staff = await StaffService.register(staffData);
     res.status(201).json(staff);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,12 +37,13 @@ router.get('/viewStaffDetails/:id', async (req, res) => {
 router.put('/updateStaffDetails/:id', async (req, res) => {
   try {
     const staffId = req.params.id;
-    const updateData: Prisma.StaffUpdateInput = req.body;
+    const updateData = StaffSchema.partial().pick({
+      firstName: true,
+      lastName: true,
+      contactNumber: true
+    }).parse(req.body);
 
-    const updatedStaff = await StaffService.updateStaffDetails(
-      staffId,
-      updateData,
-    );
+    const updatedStaff = await StaffService.updateStaffDetails(staffId, updateData);
     res.status(200).json(updatedStaff);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -88,7 +91,8 @@ router.put('/updateStaffIsActive/:id', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { token, user } = await StaffService.login(req.body);
+    const loginData = LoginSchema.parse(req.body);
+    const { token, user } = await StaffService.login(loginData);
 
     res.cookie('jwtToken_Staff', token, {
       httpOnly: true,
@@ -116,8 +120,8 @@ router.post('/logout', (_, res) => {
 
 router.post('/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    await StaffService.requestPasswordReset(email);
+    const data = PasswordResetRequestSchema.parse(req.body);
+    await StaffService.requestPasswordReset(data);
     res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -126,8 +130,8 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
-    await StaffService.resetPassword(token, newPassword);
+    const data = PasswordResetSchema.parse(req.body);
+    await StaffService.resetPassword(data);
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
