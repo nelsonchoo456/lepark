@@ -8,6 +8,7 @@ import * as path from 'path';
 import staffRouter from './routers/staffRouter';
 import visitorRouter from './routers/visitorRouter';
 import cors from 'cors';
+import speciesRouter from './routers/speciesRouter';
 import cookieParser from 'cookie-parser';
 
 const app = express();
@@ -24,6 +25,7 @@ app.get('/api', (req, res) => {
 
 // Routes
 app.use('/api/staffs', staffRouter);
+app.use('/api/species', speciesRouter);
 app.use('/api/visitors', visitorRouter);
 
 const port = process.env.PORT || 3333;
