@@ -92,7 +92,7 @@ model Species {
   isToxic               Boolean
   isFragrant            Boolean
 }
-=======
+
 model Visitor {
   id            String        @id @default(uuid()) @db.Uuid
   firstName     String
