@@ -29,8 +29,7 @@ model Staff {
   firstName     String
   lastName      String
   email         String        @unique
-  passwordHash  String
-  salt          String
+  password      String
   contactNumber String
   role          StaffRoleEnum
   isActive      Boolean
@@ -92,4 +91,13 @@ model Species {
   isEvergreen           Boolean
   isToxic               Boolean
   isFragrant            Boolean
+}
+=======
+model Visitor {
+  id            String        @id @default(uuid()) @db.Uuid
+  firstName     String
+  lastName      String
+  email         String        @unique
+  password      String
+  contactNumber String
 }
