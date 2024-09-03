@@ -6,6 +6,8 @@ import { ConfigProvider } from 'antd';
 import MapPage from './pages/Map/MapPage';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
+import ProfilePage from './pages/Profile/Profile';
+import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 
 export function App() {
   return (
@@ -36,6 +38,8 @@ export function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/staffManagement" element={<StaffManagementPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
