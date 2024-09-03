@@ -6,6 +6,7 @@ import { FiHome, FiInbox, FiSettings, FiUser } from "react-icons/fi";
 import { GrMapLocation } from "react-icons/gr";
 import { Menu } from "antd";
 import Logo from "../logo/Logo";
+import { PiPottedPlant } from "react-icons/pi";
 
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(
@@ -41,6 +42,13 @@ const MainLayout = () => {
       onClick: () => navigate('/map'),
     },
     {
+      key: 'species',
+      icon: <PiPottedPlant />,
+      // icon: <UserOutlined />,
+      label: 'Species',
+      onClick: () => navigate('/species'),
+    },
+    {
       key: 'account',
       icon: <FiUser />,
       // icon: <UserOutlined />,
@@ -59,7 +67,7 @@ const MainLayout = () => {
       label: 'Settings',
     },
   ];
-  
+
   return (
     <div>
       <Header items={navItems} showSidebar={showSidebar} >
