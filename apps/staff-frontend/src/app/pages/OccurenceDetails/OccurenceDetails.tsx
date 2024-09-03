@@ -4,6 +4,8 @@ import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag } from 'antd';
 import InformationTab from './components/InformationTab';
 import { FiSun } from 'react-icons/fi';
+import moment from 'moment';
+import AboutTab from './components/AboutTab';
 
 const plant = {
   id: 1,
@@ -53,10 +55,20 @@ const OccurenceDetails = () => {
         </Tag>
       ),
     },
+    {
+      key: 'dateObserved',
+      label: 'Last Observed',
+      children: moment(plant.dateObserved).fromNow(),
+    },
   ];
 
   // Tabs Utility
   const tabsItems = [
+    {
+      key: 'about',
+      label: 'About',
+      children: <AboutTab occurence={plant}/>,
+    },
     {
       key: 'information',
       label: 'Information',
@@ -79,7 +91,7 @@ const OccurenceDetails = () => {
       <PageHeader>Occurence Management</PageHeader>
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
-        <div className="flex w-full gap-4">
+        <div className="md:flex w-full gap-4">
           <div
             style={{
               backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
@@ -88,35 +100,35 @@ const OccurenceDetails = () => {
               color: 'white',
               overflow: 'hidden',
             }}
-            className="h-64 flex-1 rounded-lg shadow-lg"
+            className="h-64 flex-1 rounded-lg shadow-lg p-4"
           />
-          <div className="flex-[2] flex-col flex">
+          <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">
               {plant.speciesName}
             </LogoText>
             <Descriptions
               items={descriptionsItems}
-              column={2}
+              column={1}
               size="small"
             />
-            <Card>
-              <div className='flex h-24 w-full gap-2'>
-                <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
-                  <FiSun className='text-3xl mt-2'/>
-                  <p className='text-xs mt-2'>Partial Shade</p>
-                </div>
-                <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
-                  <FiSun className='text-3xl mt-2'/>
-                  <p className='text-xs mt-2'>Every 2 Days</p>
-                </div>
-                <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
-                  <FiSun className='text-3xl mt-2'/>
-                  <p className='text-xs mt-2'>Fast-growing</p>
-                </div>
+            
+            <div className='flex h-24 w-full gap-2 mt-auto'>
+              <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
+                <FiSun className='text-3xl mt-2'/>
+                <p className='text-xs mt-2'>Partial Shade</p>
               </div>
-            </Card>
-            {/* </Card> */}
-          </div>
+              <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
+                <FiSun className='text-3xl mt-2'/>
+                <p className='text-xs mt-2'>Every 2 Days</p>
+              </div>
+              <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
+                <FiSun className='text-3xl mt-2'/>
+                <p className='text-xs mt-2'>Fast-growing</p>
+              </div>
+            </div>
+            
+
+          </div> 
         </div>
 
         <Tabs

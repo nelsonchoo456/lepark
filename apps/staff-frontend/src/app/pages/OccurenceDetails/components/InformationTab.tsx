@@ -4,11 +4,11 @@ const InformationTab = ({ occurence }: any) => {
   const descriptionsItems = Object.entries(occurence).map(([key, val]) => ({
     key,
     label: key,
-    children: 'keke',
+    children: <div className='w-96'>'keke'</div>,
   }));
   return (
     <div>
-      <Descriptions items={descriptionsItems} bordered column={1} />
+      <Descriptions items={descriptionsItems} bordered column={1} size="middle" />
     </div>
   );
 };
