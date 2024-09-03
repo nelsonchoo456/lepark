@@ -1,10 +1,21 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
-import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Menu } from 'antd';
+import {
+  Button,
+  Input,
+  Space,
+  Table,
+  Layout,
+  Row,
+  Col,
+  Dropdown,
+  Modal,
+} from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { LogoText } from '@lepark/common-ui';
+import EditStaffDetailsModal from './EditStaffDetailsModal';
 
 const { Header, Content } = Layout;
 
@@ -14,7 +25,7 @@ interface DataType {
   role: string;
   email: string;
   contactNumber: string;
-  active: boolean;
+  status: boolean;
 }
 
 type DataIndex = keyof DataType;
@@ -38,7 +49,7 @@ const mockData: DataType[] = [
     role: 'Manager',
     email: 'john.doe@example.com',
     contactNumber: '123-456-7890',
-    active: true,
+    status: true,
   },
   {
     key: '2',
@@ -46,7 +57,7 @@ const mockData: DataType[] = [
     role: 'Botanist',
     email: 'jane.smith@example.com',
     contactNumber: '234-567-8901',
-    active: false,
+    status: false,
   },
   {
     key: '3',
@@ -54,7 +65,7 @@ const mockData: DataType[] = [
     role: 'Arborist',
     email: 'alice.johnson@example.com',
     contactNumber: '345-678-9012',
-    active: true,
+    status: true,
   },
   {
     key: '4',
@@ -62,7 +73,7 @@ const mockData: DataType[] = [
     role: 'Landscaper',
     email: 'bob.brown@example.com',
     contactNumber: '456-789-0123',
-    active: false,
+    status: false,
   },
   {
     key: '5',
@@ -70,7 +81,7 @@ const mockData: DataType[] = [
     role: 'Maintenance Worker',
     email: 'charlie.davis@example.com',
     contactNumber: '567-890-1234',
-    active: true,
+    status: true,
   },
   {
     key: '6',
@@ -78,7 +89,7 @@ const mockData: DataType[] = [
     role: 'Cleaner',
     email: 'diana.evans@example.com',
     contactNumber: '678-901-2345',
-    active: true,
+    status: true,
   },
   {
     key: '7',
@@ -86,7 +97,7 @@ const mockData: DataType[] = [
     role: 'Landscape Architect',
     email: 'evan.foster@example.com',
     contactNumber: '789-012-3456',
-    active: false,
+    status: false,
   },
   {
     key: '8',
@@ -94,7 +105,7 @@ const mockData: DataType[] = [
     role: 'Park Ranger',
     email: 'fiona.green@example.com',
     contactNumber: '890-123-4567',
-    active: true,
+    status: true,
   },
 ];
 
@@ -103,6 +114,8 @@ const StaffManagementPage: React.FC = () => {
   // const [staff, setStaff] = useState<DataType[]>([]);
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState<DataIndex | ''>('');
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<DataType | null>(null);
   const searchInput = useRef<InputRef>(null);
 
   useEffect(() => {
@@ -129,6 +142,11 @@ const StaffManagementPage: React.FC = () => {
   const handleReset = (clearFilters: () => void) => {
     clearFilters();
     setSearchText('');
+  };
+
+  const handleEdit = (record: DataType) => {
+    setEditingStaff(record);
+    setIsEditModalVisible(true);
   };
 
   const getColumnSearchProps = (
@@ -245,48 +263,50 @@ const StaffManagementPage: React.FC = () => {
       onFilter: (value, record) => record.role.includes(value as string),
     },
     {
-        title: 'Contact',
-        dataIndex: 'contact',
-        key: 'contact',
-        width: '30%',
-        render: (_, record) => (
-          <div>
-            <div>{record.contactNumber}</div>
-            <div style={{ color: 'grey' }}>{record.email}</div>
-          </div>
-        ),
-      },
+      title: 'Contact',
+      dataIndex: 'contact',
+      key: 'contact',
+      width: '30%',
+      render: (_, record) => (
+        <div>
+          <div>{record.contactNumber}</div>
+          <div style={{ color: 'grey' }}>{record.email}</div>
+        </div>
+      ),
+    },
     {
-      title: 'Active',
-      dataIndex: 'active',
-      key: 'active',
-      width: '10%',
-      filters: [
-        { text: 'Active', value: true },
-        { text: 'Inactive', value: false },
-      ],
-      onFilter: (value, record) => record.active === value,
-      render: (active) => (active ? 'Active' : 'Inactive'),
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        filters: [
+            { text: 'Active', value: 'active' },
+            { text: 'Inactive', value: 'inactive' },
+        ],
+        onFilter: (value, record) => record.status === value,
+        render: (active) => (active ? 'Active' : 'Inactive'),
     },
     {
         title: 'Actions',
         key: 'actions',
         width: '5%',
-        render: () => (
+        render: (_, record) => (
             <Dropdown
-            menu={{
-              items: [
-                { key: '1', label: 'Edit' },
-                { key: '2', label: 'Delete' },
-              ],
-            }}
-            trigger={['click']}
-          >
-            <Button type="text" icon={<MoreOutlined style={{ color: 'grey' }} />} />
-          </Dropdown>
+                menu={{
+                    items: [
+                        { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
+                        { key: '2', label: 'Change Status'},
+                    ],
+                }}
+                trigger={['click']}
+            >
+                <Button
+                    type="text"
+                    icon={<MoreOutlined style={{ color: 'grey' }} />}
+                />
+            </Dropdown>
         ),
-      },
-  ];
+    },
+];
 
   return (
     <Layout>
@@ -320,6 +340,15 @@ const StaffManagementPage: React.FC = () => {
             </div>
           </Col>
         </Row>
+        
+        <Modal
+          title="Edit Staff Details"
+          open={isEditModalVisible}
+          onCancel={() => setIsEditModalVisible(false)}
+          footer={null}
+        >
+          {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
+        </Modal>
       </Content>
     </Layout>
   );
