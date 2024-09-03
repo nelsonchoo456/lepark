@@ -9,7 +9,8 @@ import { CustButton } from '@lepark/common-ui';
 import React from 'react';
 import { Button, Form, Input, Select, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
-
+import { phylums, regions } from '@lepark/data-utility';
+const { Option } = Select;
 
 const CreateSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(
@@ -27,12 +28,8 @@ const CreateSpecies = () => {
     };
   }, []);
 
-  //navigation
-  const navigate = useNavigate();
-
   // Species form
   const [form] = Form.useForm();
-  const { Option } = Select;
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
@@ -46,6 +43,8 @@ const CreateSpecies = () => {
   const onReset = () => {
     form.resetFields();
   };
+  const {TextArea} = Input;
+  const [value, setValue] = useState('');
 
   return webMode ? (
     <div
@@ -63,20 +62,68 @@ const CreateSpecies = () => {
       onFinish={onFinish}
       style={{ maxWidth: 600 }}
     >
-      <Form.Item name="note" label="Note" rules={[{ required: true }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
-        <Select
-          placeholder="Select a option and change input text above"
-
-          allowClear
-        >
-          <Option value="male">male</Option>
-          <Option value="female">female</Option>
-          <Option value="other">other</Option>
+      <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
+        <Select placeholder="Select a phylum" allowClear>
+          {phylums.map(phylum => (
+            <Option key={phylum} value={phylum}>{phylum}</Option>
+          ))}
         </Select>
       </Form.Item>
+
+      <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item name="familyInput" label="Family" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item name="genusInput" label="Genus" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item name="speciesInput" label="Species" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item name="commonNameInput" label="Common Name" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item name="speciesDescriptionInput" label="Species Description" rules={[{ required: true }]}>
+        <TextArea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Share more details!"
+        autoSize={{ minRows: 3, maxRows: 5 }}
+      />
+      </Form.Item>
+
+      <Form.Item name="regionOfOriginInput" label="Region of Origin" rules={[{ required: true }]}>
+        <Select
+        showSearch
+        style={{ width: 400 }}
+        placeholder="Select a region"
+        optionFilterProp="children"
+        filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+        }
+        >
+        {regions.map((region) => (
+            <Option key={region} value={region}>
+            {region}
+            </Option>
+        ))}
+        </Select>
+    </Form.Item>
+
+
+
+
       <Form.Item
         noStyle
         shouldUpdate={(prevValues, currentValues) => prevValues.gender !== currentValues.gender}
