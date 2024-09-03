@@ -1,9 +1,9 @@
-import { ContentWrapper } from "@lepark/common-ui";
-import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse } from "antd";
+import { ContentWrapperDark } from "@lepark/common-ui";
+import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip } from "antd";
 import { occurences } from "./occurences";
 import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
-import { FiArchive, FiEye, FiSearch } from "react-icons/fi";
+import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
 
 const OccurenceList = () => {
   const columns: TableProps['columns'] = [
@@ -11,7 +11,14 @@ const OccurenceList = () => {
       title: 'Species Name',
       dataIndex: 'speciesName',
       key: 'speciesName',
-      render: (text) => text,
+      render: (text) => (
+        <Flex justify="space-between" align="center">
+          {text}
+          <Tooltip title="Go to Species">
+            <Button type="link" icon={<FiExternalLink />} />
+          </Tooltip>
+        </Flex>
+      ),
     },
     {
       title: 'ID',
@@ -70,7 +77,7 @@ const OccurenceList = () => {
   ];
   
   return (
-    <ContentWrapper className="bg-gray-100">
+    <ContentWrapperDark>
       <PageHeader>Occurence Management</PageHeader>
       <Flex justify="end" gap={10}>
         <Input
@@ -85,7 +92,7 @@ const OccurenceList = () => {
       <Card>
         <Table dataSource={occurences} columns={columns} />
       </Card>
-    </ContentWrapper>
+    </ContentWrapperDark>
   );
 }
 

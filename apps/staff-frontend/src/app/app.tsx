@@ -6,10 +6,10 @@ import { ConfigProvider } from 'antd';
 import MapPage from './pages/Map/MapPage';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
-import OccurenceDetail from './pages/Occurence/OccurenceDetail';
 import OccurenceList from './pages/Occurence/OccurenceList';
 import OccurenceCreate from './pages/Occurence/OccurenceCreate';
 import StaffProfile from './pages/StaffProfile';
+import OccurenceDetails from './pages/OccurenceDetails/OccurenceDetails';
 
 export function App() {
   return (
@@ -43,19 +43,12 @@ export function App() {
 
             <Route path="/staff-profile" element={<StaffProfile />} />
 
-            {/* Occurences */}
-            <Route
-              path="/occurence"
-              element={<OccurenceList/>}
-            />
-            {/* <Route
-              path="/occurence"
-              element={<OccurenceDetail/>}
-            /> */}
-            {/* <Route
-              path="/occurence/create"
-              element={<OccurenceCreate/>}
-            /> */}
+            <Route path="/occurence">
+              <Route index element={<OccurenceList />} />
+              <Route
+                path=":occurenceId"
+                element={<OccurenceDetails/>}/>
+            </Route>
             
           </Route>
         </Routes>
