@@ -9,7 +9,7 @@ import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
-import ProfilePage from './pages/Profile/Profile';
+import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 
 export function App() {
@@ -43,7 +43,7 @@ export function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<StaffProfile />} />
             <Route path="/staffManagement" element={<StaffManagementPage />} />
           </Route>
         </Routes>
