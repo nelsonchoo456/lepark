@@ -20,3 +20,5 @@ export const lightType = ['Full Shade', 'Partial Shade', 'Full Sun'];
 export const soilType = ['Sandy','Clay','Loam','Peaty','Silty','Chalky','Shallow'];
 
 export const conservationStatus = ["Least Concern", "Near Threatened", "Vulnerable", "Endangered", "Critically Endangered", "Extinct in the Wild", "Extinct"];
+
+export const plantCharacteristics = ["Fast Growing", "Edible", "Toxic", "Evergreen", "Fragrant", "Drought Tolerant", "Flowering"];
