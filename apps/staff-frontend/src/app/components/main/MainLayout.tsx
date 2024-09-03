@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from "../../config/breakpoints";
 import { Content, Header, ListItemType, LogoText, Sidebar } from "@lepark/common-ui";
-import { FiHome, FiInbox, FiSettings, FiUser } from "react-icons/fi";
+import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from "react-icons/fi";
 import { GrMapLocation } from "react-icons/gr";
 import { Menu } from "antd";
 import Logo from "../logo/Logo";
@@ -52,6 +52,13 @@ const MainLayout = () => {
       icon: <FiInbox />,
       // icon: <UploadOutlined />,
       label: 'Tasks',
+    },
+    {
+      key: 'staffManagement',
+      icon: <FiUsers />,
+      // icon: <UploadOutlined />,
+      label: 'Staff Management',
+      onClick: () => navigate('/staffManagement'),
     },
     {
       key: 'settings',
