@@ -9,7 +9,7 @@ import { CustButton } from '@lepark/common-ui';
 import React from 'react';
 import { Button, Form, Input, Select, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { phylums, regions } from '@lepark/data-utility';
+import { phylums, regions, lightType, soilType, conservationStatus } from '@lepark/data-utility';
 const { Option } = Select;
 
 const CreateSpecies = () => {
@@ -121,8 +121,59 @@ const CreateSpecies = () => {
         </Select>
     </Form.Item>
 
+      <Form.Item name="lightTypeInput" label="Light Type" rules={[{ required: true }]}>
+        <Select
+          showSearch
+          style={{ width: 400 }}
+          placeholder="Select a light type"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+        >
+          {lightType.map((type) => (
+            <Option key={type} value={type}>
+              {type}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
 
+      <Form.Item name="soilTypeInput" label="Soil Type" rules={[{ required: true }]}>
+        <Select
+          showSearch
+          style={{ width: 400 }}
+          placeholder="Select a soil type"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+        >
+          {soilType.map((type) => (
+            <Option key={type} value={type}>
+              {type}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
 
+      <Form.Item name="conservationStatusInput" label="Conservation Status" rules={[{ required: true }]}>
+        <Select
+          showSearch
+          style={{ width: 400 }}
+          placeholder="Select a conservation status"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+        >
+          {conservationStatus.map((status) => (
+            <Option key={status} value={status}>
+              {status}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
 
       <Form.Item
         noStyle
