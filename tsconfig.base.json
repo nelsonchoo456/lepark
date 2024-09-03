@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@lepark/common-ui": ["libs/common-ui/src/index.ts"]
+      "@lepark/common-ui": ["libs/common-ui/src/index.ts"],
+      "@lepark/data-utility": ["libs/data-utility/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
