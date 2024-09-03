@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import MainLayout from '../../components/main/MainLayout';
 import "leaflet/dist/leaflet.css";
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { SIDEBAR_WIDTH, PageWrapper } from '@lepark/common-ui';
+import { SIDEBAR_WIDTH} from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { CustButton } from '@lepark/common-ui';
 //species form
@@ -67,8 +67,7 @@ const [sliderValue, setSliderValue] = React.useState([0, 10, 20]);
   const end = value[value.length - 1] / 100;
 
   return webMode ? (
-    <PageWrapper>
-
+    <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <div className="p-10">
       <h1 className="header-1 mb-4">Create Species</h1>
 
@@ -180,7 +179,7 @@ const [sliderValue, setSliderValue] = React.useState([0, 10, 20]);
 <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}><InputNumber min={1} /></Form.Item>
 
 <Form.Item name="fertiliserRequirement" label="Fertiliser Requirement" rules={[{ required: true }]}><InputNumber onChange={(value) => console.log('Fertiliser Requirement:', value)} /></Form.Item>
-
+<Form.Item name="fertiliserType" label="Fertiliser Type" rules={[{ required: true }]}><Input /></Form.Item>
 <Form.Item name="idealHumidity" label="Ideal Humidity (%)" rules={[{ required: true }]}>
   <InputNumber
     min={0}
@@ -221,7 +220,7 @@ const [sliderValue, setSliderValue] = React.useState([0, 10, 20]);
     </Form>
     }
     </div>
-    </PageWrapper>
+    </div>
   ) : (
     <div
       className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
