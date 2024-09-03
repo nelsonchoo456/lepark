@@ -5,6 +5,7 @@ import MainLanding from './pages/MainLanding/MainLanding';
 import { ConfigProvider } from 'antd';
 import MapPage from './pages/Map/MapPage';
 import SpeciesPage from './pages/Species/SpeciesPage';
+import CreateSpecies from './pages/Species/CreateSpecies';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 
@@ -38,6 +39,7 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/species" element={<SpeciesPage />} />
+            <Route path="/species/create" element={<CreateSpecies />} />
           </Route>
         </Routes>
       </BrowserRouter>

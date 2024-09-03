@@ -5,6 +5,11 @@ import "leaflet/dist/leaflet.css";
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { CustButton } from '@lepark/common-ui';
+//species form
+import React from 'react';
+
+import { useNavigate } from 'react-router-dom';
 
 const SpeciesPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
@@ -22,25 +27,31 @@ const SpeciesPage = () => {
     };
   }, []);
 
+  //navigation
+  const navigate = useNavigate();
+
+  // Species form
+
+
   return webMode ? (
     <div
+      className="h-screen w-[calc(100vw-var(--sidebar-width))] p-10" // page wrapper - padding
       style={{
-        height: '100vh',
-        width: `calc(100vw - ${SIDEBAR_WIDTH})`,
-
         zIndex: 1,
       }}
     >
-      <h1>Species</h1>
+      <h1 className="header-1 mb-4">Species</h1>
+      <CustButton type="primary" onClick={()=>navigate('/species/create')}>
+        Create Species
+      </CustButton>  {/*TODO: fix aesthetics*/}
+      {}
     </div>
   ) : (
     <div
-      style={{
-        height: 'calc(100vh - 2rem)',
-        width: `100vw`,
-      }}
+      className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
     >
-       <h1>Species Mobile Mode</h1>
+       <h1 className="header-1 mb-4">Species Mobile Mode</h1>
+       {/* Add your mobile content here */}
     </div>
   );
 };
