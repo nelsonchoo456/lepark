@@ -45,6 +45,7 @@ const MainLayout = () => {
       icon: <FiUser />,
       // icon: <UserOutlined />,
       label: 'Account',
+      onClick: () => navigate('/profile'),
     },
     {
       key: 'tasks',
