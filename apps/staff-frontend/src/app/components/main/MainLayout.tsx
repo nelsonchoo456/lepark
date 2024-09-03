@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from "../../config/breakpoints";
 import { Content, Header, ListItemType, LogoText, Sidebar } from "@lepark/common-ui";
 import { FiHome, FiInbox, FiSettings, FiUser } from "react-icons/fi";
+import { IoLeafOutline } from "react-icons/io5";
 import { GrMapLocation } from "react-icons/gr";
 import { Menu } from "antd";
 import Logo from "../logo/Logo";
@@ -32,6 +33,13 @@ const MainLayout = () => {
       // icon: <UserOutlined />,
       label: 'Home kekek',
       onClick: () => navigate('/'),
+    },
+    {
+      key: 'occurence',
+      icon: <IoLeafOutline />,
+      // icon: <UserOutlined />,
+      onClick: () => navigate('/occurence'),
+      label: 'Occurences',
     },
     {
       key: 'map',

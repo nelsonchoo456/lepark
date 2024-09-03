@@ -6,6 +6,10 @@ import { ConfigProvider } from 'antd';
 import MapPage from './pages/Map/MapPage';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
+import OccurenceDetail from './pages/Occurence/OccurenceDetail';
+import OccurenceList from './pages/Occurence/OccurenceList';
+import OccurenceCreate from './pages/Occurence/OccurenceCreate';
+import StaffProfile from './pages/StaffProfile';
 
 export function App() {
   return (
@@ -16,7 +20,7 @@ export function App() {
           colorPrimary: '#6da696', // green.500
           borderRadius: 5,
           colorTextBase: "#000000",
-          fontSize: 16,
+          fontSize: 14,
 
           // Alias Token
         },
@@ -36,6 +40,23 @@ export function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
+
+            <Route path="/staff-profile" element={<StaffProfile />} />
+
+            {/* Occurences */}
+            <Route
+              path="/occurence"
+              element={<OccurenceList/>}
+            />
+            {/* <Route
+              path="/occurence"
+              element={<OccurenceDetail/>}
+            /> */}
+            {/* <Route
+              path="/occurence/create"
+              element={<OccurenceCreate/>}
+            /> */}
+            
           </Route>
         </Routes>
       </BrowserRouter>
