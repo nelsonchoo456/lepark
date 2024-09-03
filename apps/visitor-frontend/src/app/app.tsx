@@ -8,6 +8,7 @@ import MainLanding from './pages/MainLanding/MainLanding';
 import MapPage from './pages/MapPage/MapPage';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
+import Profile from './pages/Profile/Profile';
 
 export function App() {
   return (
@@ -34,6 +35,7 @@ export function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </BrowserRouter>
