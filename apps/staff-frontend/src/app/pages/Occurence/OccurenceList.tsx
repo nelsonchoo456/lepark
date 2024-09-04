@@ -1,4 +1,5 @@
 import { ContentWrapperDark } from "@lepark/common-ui";
+import { useNavigate } from "react-router-dom";
 import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip } from "antd";
 import { occurences } from "./occurences";
 import moment from "moment";
@@ -6,6 +7,8 @@ import PageHeader from "../../components/main/PageHeader";
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
 
 const OccurenceList = () => {
+  const navigate = useNavigate();
+
   const columns: TableProps['columns'] = [
     {
       title: 'Species Name',
@@ -69,12 +72,16 @@ const OccurenceList = () => {
       render: () => (
         <Flex justify="center">
           <Button type="link" icon={<FiArchive />} />
-          <Button type="link" icon={<FiEye />} />
+          <Button type="link" icon={<FiEye />} onClick={() => navigateTo("orchidID1")}/>
         </Flex>
       ),
       width: '1%',
     },
   ];
+
+  const navigateTo = (occurenceId: string) =>{
+    navigate(`/occurence/${occurenceId}`)
+  }
   
   return (
     <ContentWrapperDark>

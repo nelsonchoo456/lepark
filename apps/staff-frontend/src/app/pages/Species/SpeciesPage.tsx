@@ -1,20 +1,27 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '../../components/main/MainLayout';
-import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { SIDEBAR_WIDTH, CustButton, PageWrapper } from '@lepark/common-ui';
+import {
+  SIDEBAR_WIDTH,
+  CustButton,
+  ContentWrapperDark,
+} from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species view
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DescriptionsProps } from 'antd';
-import {speciesExamples} from '@lepark/data-utility'
-import { Descriptions, Card, Row, Col, Input, Tag } from 'antd';
+import { speciesExamples } from '@lepark/data-utility';
+import { Descriptions, Card, Row, Col, Input, Tag, Flex, Button } from 'antd';
+import PageHeader from '../../components/main/PageHeader';
+import { FiSearch } from 'react-icons/fi';
+import { PlusOutlined } from '@ant-design/icons';
 
 const SpeciesPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
-    window.innerWidth >= SCREEN_LG
+    window.innerWidth >= SCREEN_LG,
   );
 
   useEffect(() => {
@@ -35,10 +42,10 @@ const SpeciesPage = () => {
   const { Search } = Input;
   const [searchQuery, setSearchQuery] = useState('');
   const filteredSpecies = useMemo(() => {
-    return speciesExamples.filter(species =>
-      Object.values(species).some(value =>
-        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    return speciesExamples.filter((species) =>
+      Object.values(species).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
     );
   }, [searchQuery]);
 
@@ -46,33 +53,69 @@ const SpeciesPage = () => {
     setSearchQuery(value);
   };
 
-
   return webMode ? (
-        <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1] p-10`} >
-      <h1 className="header-1 mb-4">Species</h1>
-
-      <CustButton type="primary" className={`m-5`} onClick={()=>navigate('/species/create')}>
+    // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1] p-10`} >
+    <ContentWrapperDark>
+      <PageHeader>Species Management</PageHeader>
+      {/* <CustButton
+        type="primary"
+        className={`m-5`}
+        onClick={() => navigate('/species/create')}
+      >
         Create Species
-      </CustButton>  {/*TODO: fix aesthetics*/}
+      </CustButton>{' '} */}
+      {/*TODO: fix aesthetics*/}
+      {/* <Search
+        placeholder="Search species"
+        allowClear
+        enterButton="Search"
+        size="large"
+        onSearch={handleSearch}
+        style={{ marginBottom: 20 }}
+      /> */}
 
-    <Search placeholder="Search species" allowClear enterButton="Search" size="large" onSearch={handleSearch} style={{ marginBottom: 20 }} />
-
-      {filteredSpecies.map((species) => (
-        <Card key={species.id} title={species.commonName} style={{ marginBottom: 20 }}>
+      <Flex justify="end" gap={10}>
+        <Search
+          placeholder="Search species"
+          allowClear
+          enterButton="Search"
+          onSearch={handleSearch}
+          style={{ marginBottom: 20 }}
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate('/species/create')}
+        >
+          Add Staff
+        </Button>
+      </Flex>
+      {filteredSpecies.map((species: any) => (
+        <Card
+          key={species.id}
+          title={species.commonName}
+          style={{ marginBottom: 20 }}
+        >
           <Row gutter={[16, 16]}>
             {Object.entries(species).map(([key, value]) => (
               <Col span={6} key={key}>
-                <div style={{
-                  border: '1px solid #e8e8e8',
-                  padding: '8px',
-                  background: '#f5f5f5', // Light grey background
-                  height: '100%', // Ensure all boxes have the same height
-                }}>
+                <div
+                  style={{
+                    border: '1px solid #e8e8e8',
+                    padding: '8px',
+                    background: '#f5f5f5', // Light grey background
+                    height: '100%', // Ensure all boxes have the same height
+                  }}
+                >
                   <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
                     {key.charAt(0).toUpperCase() + key.slice(1)}
                   </div>
                   <div>
-                    {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value.toString()}
+                    {typeof value === 'boolean'
+                      ? value
+                        ? 'Yes'
+                        : 'No'
+                      : value?.toString()}
                   </div>
                 </div>
               </Col>
@@ -80,14 +123,14 @@ const SpeciesPage = () => {
           </Row>
         </Card>
       ))}
-
-    </div>
+    </ContentWrapperDark>
   ) : (
+    // </div>
     <div
       className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
     >
-       <h1 className="header-1 mb-4">Species Mobile Mode</h1>
-       {/* Add your mobile content here */}
+      <h1 className="header-1 mb-4">Species Mobile Mode</h1>
+      {/* Add your mobile content here */}
     </div>
   );
 };

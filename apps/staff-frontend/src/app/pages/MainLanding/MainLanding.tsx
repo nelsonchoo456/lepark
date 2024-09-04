@@ -2,7 +2,7 @@ import { ContentWrapper } from "@lepark/common-ui";
 import MainLayout from "../../components/main/MainLayout";
 
 const MainLanding = () => {
-  return <ContentWrapper>keke</ContentWrapper>
+  return <ContentWrapper>Main Landing</ContentWrapper>
 }
 
 export default MainLanding;

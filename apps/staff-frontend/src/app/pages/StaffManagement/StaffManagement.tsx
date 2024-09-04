@@ -11,11 +11,14 @@ import {
   Col,
   Dropdown,
   Modal,
+  Flex,
 } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
-import { LogoText } from '@lepark/common-ui';
+import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import EditStaffDetailsModal from './EditStaffDetailsModal';
+import PageHeader from '../../components/main/PageHeader';
+import { FiSearch } from 'react-icons/fi';
 
 const { Header, Content } = Layout;
 
@@ -309,25 +312,36 @@ const StaffManagementPage: React.FC = () => {
 ];
 
   return (
-    <Layout>
-      <Header className="bg-green-300"></Header>
-      <Content className="p-10">
-        <Row className="flex justify-between items-center mb-4">
-          <Col>
+    <ContentWrapperDark>
+      {/* <Header className="bg-green-300"></Header> */}
+      {/* <Content className="p-10"> */}
+        {/* <Row className="flex justify-between items-center mb-4"> */}
+          {/* <Col>
             <LogoText className="text-xl font-bold">Staff Management</LogoText>
-          </Col>
-          <Col>
+          </Col> */}
+          <PageHeader>Staff Management</PageHeader>
+          <Flex justify="end" gap={10}>
+            <Input
+              suffix={<FiSearch />}
+              placeholder="Search for Staff..."
+              className="mb-4 bg-white"
+              variant="filled"
+            />
+            <Button type="primary" icon={<PlusOutlined />}>Add Staff</Button>
+          </Flex>
+      
+          {/* <Col>
             <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => {
-                /* Add staff logic */
+        
               }}
             >
               Add Staff
             </Button>
-          </Col>
-        </Row>
+          </Col> */}
+        {/* </Row> */}
         <Row>
           <Col span={24}>
             <div className="p-5 bg-white shadow-lg rounded-lg">
@@ -349,8 +363,8 @@ const StaffManagementPage: React.FC = () => {
         >
           {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
         </Modal>
-      </Content>
-    </Layout>
+      {/* </Content> */}
+    </ContentWrapperDark>
   );
 };
 
