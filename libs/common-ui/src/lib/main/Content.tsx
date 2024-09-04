@@ -18,6 +18,7 @@ export const ContentWrapper = styled.div`
   padding: 1rem;
   height: 100%;
   height: 100vh;
+  overflow: scroll;
 `;
 
 
@@ -25,4 +26,5 @@ export const ContentWrapperDark = styled.div`
   padding: 1rem;
   background-color: ${COLORS.gray[100]};
   height: 100vh;
+  overflow: scroll;
 `;
