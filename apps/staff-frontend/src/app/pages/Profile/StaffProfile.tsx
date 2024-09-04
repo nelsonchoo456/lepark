@@ -9,7 +9,7 @@ import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { Layout } from 'antd';
-import backgroundPicture from 'libs/common-ui/src/lib/assets/Seeding-rafiki.png';
+import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const { Header, Content } = Layout;
 

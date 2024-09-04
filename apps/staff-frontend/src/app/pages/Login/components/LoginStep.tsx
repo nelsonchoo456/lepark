@@ -58,9 +58,9 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
       <Button type="link" className="w-full justify-center" onClick={handleGoToForgotPassword}>
         Forgot Password?
       </Button>
-      <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
+      {/* <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
         Register
-      </Button>
+      </Button> */}
     </div>
   );
 };

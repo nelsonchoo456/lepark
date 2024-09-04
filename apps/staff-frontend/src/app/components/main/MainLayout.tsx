@@ -90,6 +90,12 @@ const MainLayout = () => {
       label: 'Tasks',
     },
     {
+      key: 'profile',
+      icon: <FiUser/>,
+      label: 'Account',
+      onClick: () => navigate('/profile'),
+    },
+    {
       key: 'settings',
       icon: <FiSettings />,
       // icon: <UserOutlined />,

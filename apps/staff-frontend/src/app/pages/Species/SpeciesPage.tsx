@@ -14,7 +14,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DescriptionsProps } from 'antd';
 import { speciesExamples } from '@lepark/data-utility';
-import { Descriptions, Card, Row, Col, Input, Tag, Flex, Button } from 'antd';
+import {
+  Descriptions,
+  Card,
+  Row,
+  Col,
+  Input,
+  Tag,
+  Flex,
+  Button,
+  Table,
+} from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
 import { PlusOutlined } from '@ant-design/icons';
@@ -53,6 +63,48 @@ const SpeciesPage = () => {
     setSearchQuery(value);
   };
 
+  const columns = [
+    {
+      key: 'commonName',
+      title: 'Common Name',
+      dataIndex: 'commonName',
+      render: (text: string) => text,
+    },
+    {
+      key: 'class',
+      title: 'Class',
+      dataIndex: 'class',
+      render: (text: string) => text,
+    },
+    {
+      key: 'family',
+      title: 'Family',
+      dataIndex: 'family',
+      render: (text: string) => text,
+    },
+    {
+      key: 'genus',
+      title: 'Genus',
+      dataIndex: 'genus',
+      render: (text: string) => text,
+    },
+    {
+      key: 'conservationStatus',
+      title: 'Conservation Status',
+      dataIndex: 'conservationStatus',
+      render: (text: string) => (
+        <Tag
+          bordered={false}
+          color={text === 'LEAST_CONCERN' ? 'green' : 'red'}
+        >
+          {text}
+        </Tag>
+      ),
+    },
+  ];
+  // const columns = Object.keys(filteredSpecies[1]).map((label) => ({ key: label, dataIndex: label, label, render: (text: string)=> text}))
+  console.log('filteredSpecies', filteredSpecies);
+
   return webMode ? (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1] p-10`} >
     <ContentWrapperDark>
@@ -90,7 +142,24 @@ const SpeciesPage = () => {
           Add Staff
         </Button>
       </Flex>
-      {filteredSpecies.map((species: any) => (
+      <Card bordered={false}>
+        <Table
+          columns={columns}
+          dataSource={filteredSpecies.map((species: any) => ({
+            key: species.id,
+            ...species,
+          }))}
+          expandable={{
+            expandedRowRender: (species) => {
+              
+              const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{val}</p>}))
+              console.log("keke", descriptionsItems)
+              return <Descriptions items={descriptionsItems} column={2} size="small"/>
+            },
+          }}
+        />
+      </Card>
+      {/* filteredSpecies.map((species: any) => (
         <Card
           key={species.id}
           title={species.commonName}
@@ -122,14 +191,15 @@ const SpeciesPage = () => {
             ))}
           </Row>
         </Card>
-      ))}
+      )) */}
     </ContentWrapperDark>
   ) : (
     // </div>
     <div
       className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
     >
-      <h1 className="header-1 mb-4">Species Mobile Mode</h1>
+      {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
+      <PageHeader>Species Management (Mobile)</PageHeader>
       {/* Add your mobile content here */}
     </div>
   );
