@@ -8,8 +8,9 @@ import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import OccurenceList from './pages/Occurence/OccurenceList';
 import OccurenceCreate from './pages/Occurence/OccurenceCreate';
-import StaffProfile from './pages/StaffProfile';
 import OccurenceDetails from './pages/OccurenceDetails/OccurenceDetails';
+import ProfilePage from './pages/Profile/Profile';
+import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 
 export function App() {
   return (
@@ -41,7 +42,6 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
 
-            <Route path="/staff-profile" element={<StaffProfile />} />
 
             <Route path="/occurence">
               <Route index element={<OccurenceList />} />
@@ -50,6 +50,8 @@ export function App() {
                 element={<OccurenceDetails/>}/>
             </Route>
             
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/staffManagement" element={<StaffManagementPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
