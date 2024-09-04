@@ -22,7 +22,7 @@ class VisitorDao {
   async updateVisitorDetails(
     id: string,
     data: Prisma.VisitorUpdateInput,
-  ): Promise<Visitor | null> {
+  ): Promise<Visitor> {
     return prisma.visitor.update({ where: { id }, data });
   }
   

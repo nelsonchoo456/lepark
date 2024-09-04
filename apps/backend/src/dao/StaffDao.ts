@@ -31,16 +31,6 @@ class StaffDao {
     return staff.role === 'MANAGER';
   }
 
-  async updateStaff(
-    id: string,
-    updatedData: Prisma.StaffUpdateInput,
-  ): Promise<Staff | null> {
-    return prisma.staff.update({
-      where: { id },
-      data: updatedData,
-    });
-  }
-
   //   async deleteAdmin(id: string) {
   //     return prisma.admin.delete({ where: { id } });
   //   }

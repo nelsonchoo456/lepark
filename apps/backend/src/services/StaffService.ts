@@ -39,9 +39,7 @@ class StaffService {
       return StaffDao.createStaff(staffData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -66,12 +64,7 @@ class StaffService {
 
   public async updateStaffDetails(
     id: string,
-    data: Partial<
-      Pick<
-        StaffSchemaType,
-        'firstName' | 'lastName' | 'contactNumber'
-      >
-    >,
+    data: Partial<Pick<StaffSchemaType, 'firstName' | 'lastName' | 'contactNumber'>>,
   ): Promise<Staff> {
     try {
       const existingStaff = await StaffDao.getStaffById(id);
@@ -88,23 +81,25 @@ class StaffService {
       // Validate merged data using Zod
       StaffSchema.parse(mergedData);
 
-      return StaffDao.updateStaffDetails(id, data);
+      // Convert the validated data to Prisma input type
+      const prismaUpdateData: Prisma.StaffUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      return StaffDao.updateStaffDetails(id, prismaUpdateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
     }
   }
 
-  public async updateStaffRole(
-    staffId: string,
-    role: StaffRoleEnum,
-    requesterId: string,
-  ): Promise<Staff> {
+  public async updateStaffRole(staffId: string, role: StaffRoleEnum, requesterId: string): Promise<Staff> {
     try {
       const staffToUpdate = await StaffDao.getStaffById(staffId);
       if (!staffToUpdate) {
@@ -123,11 +118,7 @@ class StaffService {
     }
   }
 
-  public async updateStaffIsActive(
-    staffId: string,
-    isActive: boolean,
-    requesterId: string,
-  ): Promise<Staff> {
+  public async updateStaffIsActive(staffId: string, isActive: boolean, requesterId: string): Promise<Staff> {
     try {
       const staffToUpdate = await StaffDao.getStaffById(staffId);
       if (!staffToUpdate) {
@@ -136,17 +127,13 @@ class StaffService {
       // Check if the requester is a manager
       const isRequesterManager = await StaffDao.isManager(requesterId);
       if (!isRequesterManager) {
-        throw new Error(
-          "Only managers can update another staff's active status.",
-        );
+        throw new Error("Only managers can update another staff's active status.");
       }
 
       const updateData: Prisma.StaffUpdateInput = { isActive };
       return await StaffDao.updateStaffDetails(staffId, updateData);
     } catch (error) {
-      throw new Error(
-        `Unable to update staff isActive status: ${error.message}`,
-      );
+      throw new Error(`Unable to update staff isActive status: ${error.message}`);
     }
   }
 
@@ -176,9 +163,7 @@ class StaffService {
       return { token, user };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -207,9 +192,7 @@ class StaffService {
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -242,14 +225,12 @@ class StaffService {
 
       // Hash and update the new password
       const hashedPassword = await bcrypt.hash(data.newPassword, 10);
-      await StaffDao.updateStaff(staff.id, { password: hashedPassword });
+      await StaffDao.updateStaffDetails(staff.id, { password: hashedPassword });
 
       return { message: 'Password reset successful' };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -283,9 +264,7 @@ class StaffService {
 }
 
 // Utility function to ensure all required fields are present
-function ensureAllFieldsPresent(
-  data: StaffSchemaType & { password: string },
-): Prisma.StaffCreateInput {
+function ensureAllFieldsPresent(data: StaffSchemaType & { password: string }): Prisma.StaffCreateInput {
   if (
     !data.firstName ||
     !data.lastName ||

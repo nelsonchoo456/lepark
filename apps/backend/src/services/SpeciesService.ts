@@ -29,9 +29,7 @@ class SpeciesService {
       return SpeciesDao.createSpecies(speciesData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -110,9 +108,7 @@ class SpeciesService {
       return SpeciesDao.updateSpeciesDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;

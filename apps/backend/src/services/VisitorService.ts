@@ -39,9 +39,7 @@ class VisitorService {
       return VisitorDao.createVisitor(visitorData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -60,6 +58,7 @@ class VisitorService {
       }
       return visitor;
     } catch (error) {
+
       throw new Error(`Unable to fetch visitor details: ${error.message}`);
     }
   }
@@ -88,12 +87,18 @@ class VisitorService {
       // Validate merged data
       VisitorSchema.parse(mergedData);
 
-      return VisitorDao.updateVisitorDetails(id, data);
+      // Convert the validated data to Prisma input type
+      const prismaUpdateData: Prisma.VisitorUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      return VisitorDao.updateVisitorDetails(id, prismaUpdateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -127,9 +132,7 @@ class VisitorService {
       return { token, user };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -158,9 +161,7 @@ class VisitorService {
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
@@ -200,9 +201,7 @@ class VisitorService {
       return { message: 'Password reset successful' };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(
-          (e) => `${e.path.join('.')}: ${e.message}`,
-        );
+        const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;

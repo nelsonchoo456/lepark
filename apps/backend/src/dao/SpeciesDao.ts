@@ -21,7 +21,7 @@ class SpeciesDao {
     id: string,
     // Use Prisma.SpeciesUpdateInput for direct compatibility with Prisma's update operation
     data: Prisma.SpeciesUpdateInput
-  ): Promise<Species | null> {
+  ): Promise<Species> {
     return prisma.species.update({ where: { id }, data });
   }
 
