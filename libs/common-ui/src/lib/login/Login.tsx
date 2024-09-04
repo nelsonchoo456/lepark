@@ -41,6 +41,7 @@ export const AnnouncementsPanel = styled.div`
 
   @media (max-width: ${SCREEN_LG}px) {
     background-color: #f0f0f0;
+    padding: 0;
   }
 `;
 

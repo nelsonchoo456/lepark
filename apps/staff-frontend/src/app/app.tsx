@@ -12,6 +12,10 @@ import OccurenceList from './pages/Occurence/OccurenceList';
 import OccurenceCreate from './pages/Occurence/OccurenceCreate';
 import OccurenceDetails from './pages/OccurenceDetails/OccurenceDetails';
 import ProfilePage from './pages/Profile/Profile';
+import Register from './pages/Register/Register';
+import ForgotPassword from './pages/ResetPassword/ResetPassword';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
+import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 
 export function App() {
@@ -40,6 +44,8 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
@@ -52,7 +58,7 @@ export function App() {
                 element={<OccurenceDetails/>}/>
             </Route>
             
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<StaffProfile />} />
             <Route path="/staffManagement" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />

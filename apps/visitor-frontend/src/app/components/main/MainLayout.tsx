@@ -62,7 +62,7 @@ const MainLayout = () => {
         </div>
       </Header>
       <MobileSidebar >
-        <div className="flex justify-center pb-2"><Logo size={2.5}/></div>
+        <div className="flex justify-center pb-4"><Logo size={2.5}/></div>
         <div className="flex flex-col">
           {navItems.map((item) => (
             <button
@@ -74,7 +74,7 @@ const MainLayout = () => {
                 {item.icon}
               </div>
               {item.label !== "Others" &&
-                <div className="text-mf">
+                <div className="text-sm">
                   {item.label}
                 </div>
               }
