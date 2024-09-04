@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/createSpecies', async (req, res) => {
   try {
-    const speciesData = SpeciesSchema.parse = req.body;
+    const speciesData = SpeciesSchema.parse(req.body);
     const species = await SpeciesService.createSpecies(speciesData);
     res.status(201).json(species);
   } catch (error) {
