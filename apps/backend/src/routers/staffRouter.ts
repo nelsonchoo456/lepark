@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.post('/register', async (req, res) => {
   try {
-    const staff = await StaffService.register(req.body);
+    const staffData = StaffSchema.parse(req.body);
+    const staff = await StaffService.register(staffData);
     res.status(201).json(staff);
   } catch (error) {
     res.status(400).json({ error: error.message });
