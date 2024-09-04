@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import MainLanding from './pages/MainLanding/MainLanding';
 import { ConfigProvider } from 'antd';
 import MapPage from './pages/Map/MapPage';
+import SpeciesPage from './pages/Species/SpeciesPage';
+import CreateSpecies from './pages/Species/CreateSpecies';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import OccurenceList from './pages/Occurence/OccurenceList';
@@ -52,6 +54,8 @@ export function App() {
             
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/staffManagement" element={<StaffManagementPage />} />
+            <Route path="/species" element={<SpeciesPage />} />
+            <Route path="/species/create" element={<CreateSpecies />} />
           </Route>
         </Routes>
       </BrowserRouter>
