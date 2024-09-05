@@ -3,7 +3,7 @@ import { PrismaClient, Prisma, Occurrence } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class OccurrenceDao {
-  async createOccurrence(data: Prisma.OccurrenceUncheckedCreateInput): Promise<Occurrence> {
+  async createOccurrence(data: Prisma.OccurrenceCreateInput): Promise<Occurrence> {
     return prisma.occurrence.create({ data });
   }
 

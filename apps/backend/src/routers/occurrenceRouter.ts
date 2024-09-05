@@ -1,12 +1,13 @@
 import express from 'express';
 import OccurenceService from '../services/OccurenceService';
 import { Prisma } from '@prisma/client';
+import { OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 
 const router = express.Router();
 
 router.post('/createOccurrence', async (req, res) => {
   try {
-    const occurrence = await OccurenceService.createOccurence(req.body);
+    const occurrence = await OccurenceService.createOccurrence(req.body);
     res.status(201).json(occurrence);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,7 +36,7 @@ router.get('/viewOccurrenceDetails/:id', async (req, res) => {
 router.put('/updateOccurrenceDetails/:id', async (req, res) => {
   try {
     const occurrenceId = req.params.id;
-    const updateData: Prisma.OccurrenceUpdateInput = req.body;
+    const updateData: Partial<OccurrenceSchemaType> = req.body;
 
     const updatedOccurrence = await OccurenceService.updateOccurrenceDetails(occurrenceId, updateData);
     res.status(200).json(updatedOccurrence);

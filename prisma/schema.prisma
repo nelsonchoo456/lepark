@@ -102,21 +102,21 @@ enum DECARBONIZATION_TYPE {
 
 model Occurrence {
   id                    String               @id @default(uuid()) @db.Uuid
-  lat                   Float
-  lng                   Float
+  lat                   Float?
+  lng                   Float?
   dateObserved          DateTime
-  dateOfBirth           DateTime
+  dateOfBirth           DateTime?
   numberOfPlants        Float
   biomass               Float
   description           String
   decarbonizationType   DECARBONIZATION_TYPE
   speciesId             String @db.Uuid
-  decarbonizationAreaId String @db.Uuid
+  // decarbonizationAreaId String @db.Uuid
   activityLogs          ActivityLog[]
   statusLogs            StatusLog[]
 
   species             Species             @relation(fields: [speciesId], references: [id], onDelete: Cascade)
-  decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+  // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
 }
 
 enum ACTIVITY_LOG_TYPE {
@@ -168,18 +168,18 @@ model StatusLog {
   occurence Occurrence @relation(fields: [occurenceId], references: [id], onDelete: Cascade)
 }
 
-model DecarbonizationArea {
-  id                  String   @id @default(uuid()) @db.Uuid
-  carbonSeqValue      Float
-  startDate           DateTime
-  endDate             DateTime
-  carbonSeqFactor     Float
-  dailyCarbonSeqValye Float
-  totalBiomass        Float
-  occurenceId         String
+// model DecarbonizationArea {
+//   id                  String   @id @default(uuid()) @db.Uuid
+//   carbonSeqValue      Float
+//   startDate           DateTime
+//   endDate             DateTime
+//   carbonSeqFactor     Float
+//   dailyCarbonSeqValye Float
+//   totalBiomass        Float
+//   occurenceId         String
 
-  occurences Occurrence[]
-}
+//   occurences Occurrence[]
+// }
 
 model Visitor {
   id            String @id @default(uuid()) @db.Uuid

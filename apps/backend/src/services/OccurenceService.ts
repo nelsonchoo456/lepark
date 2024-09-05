@@ -1,64 +1,121 @@
 import { Prisma, Occurrence } from '@prisma/client';
-import OccurenceDao from '../dao/OccurrenceDao';
+import { z } from 'zod';
+import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
+import OccurrenceDao from '../dao/OccurrenceDao';
 import StaffDao from '../dao/StaffDao';
 
-class OccurenceService {
-  public async createOccurence(
-    data: Prisma.OccurrenceUncheckedCreateInput,
-  ): Promise<Occurrence> {
-    // Validate input data
-    if (
-      !data.dateObserved ||
-      !data.dateOfBirth ||
-      !data.numberOfPlants ||
-      !data.biomass ||
-      !data.description ||
-      !data.decarbonizationType
-      // || !data.speciesId || // [ DEPENDENCY ] Uncomment when species is made
-      // !data.decarbonizationAreaId // [ DEPENDENCY ] Uncomment when decarbonizationAreaId is made
-    ) {
-      throw new Error('All fields are required.');
-    }
+class OccurrenceService {
+  public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
+    try {
+      const formattedData = dateFormatter(data)
 
-    return OccurenceDao.createOccurrence(data);
+      // Convert validated data to Prisma input type
+      const occurrenceData = ensureAllFieldsPresent(formattedData);
+
+      // Create the occurrence, remember to pass in Prisma.occurrenceCreateInput type
+      return OccurrenceDao.createOccurrence(occurrenceData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
   }
 
   public async getAllOccurrence(): Promise<Occurrence[]> {
-    return OccurenceDao.getAllOccurrences();
+    return OccurrenceDao.getAllOccurrences();
   }
 
   public async getOccurrenceById(id: string): Promise<Occurrence> {
-    return OccurenceDao.getOccurrenceById(id);
+    try {
+      const occurrence = await OccurrenceDao.getOccurrenceById(id);
+      if (!occurrence) {
+        throw new Error('Occurrence not found');
+      }
+      return occurrence;
+    } catch (error) {
+      throw new Error(`Unable to fetch occurrence details: ${error.message}`);
+    }
   }
 
   public async updateOccurrenceDetails(
     id: string,
-    data: Prisma.OccurrenceUpdateInput,
+    // Use Partial<OccurrenceSchemaType> to allow partial updates and ensure input validation
+    data: Partial<OccurrenceSchemaType>,
   ): Promise<Occurrence> {
-    // Create an updateData object and only include fields that are provided
-    const updateData: Prisma.OccurrenceUpdateInput = {};
-    if (data.dateObserved) updateData.dateObserved = data.dateObserved;
-    if (data.dateOfBirth) updateData.dateOfBirth = data.dateOfBirth;
-    if (data.numberOfPlants)
-      updateData.numberOfPlants = data.numberOfPlants;
-    if (data.biomass)
-      updateData.biomass = data.biomass;
-    if (data.description) updateData.description = data.description;
-    if (data.decarbonizationType) updateData.decarbonizationType = data.decarbonizationType;
+    try {
+      const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
+      const formattedData = dateFormatter(data)
 
-    return OccurenceDao.updateOccurrenceDetails(id, updateData);
+      // Merge existing data with update data
+      let mergedData = { ...existingOccurrence, ...formattedData };
+      mergedData = Object.fromEntries(
+        Object.entries(mergedData).filter(([key, value]) => value !== null)
+      );
+
+      // Validate merged data using Zod
+      OccurrenceSchema.parse(mergedData);
+
+      // Convert validated OccurrenceSchemaType data to Prisma-compatible update input
+      // This ensures only defined fields are included in the update operation
+      const updateData: Prisma.OccurrenceUpdateInput = Object.entries(formattedData).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {},
+      );
+
+      console.log(updateData)
+
+      return OccurrenceDao.updateOccurrenceDetails(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
   }
 
   public async deleteOccurrence(
     occurrenceId: string,
     requesterId: string,
   ): Promise<void> {
-    const isManager = await StaffDao.isManager(requesterId); // Change role
+    const isManager = await StaffDao.isManager(requesterId);
     if (!isManager) {
-      throw new Error('Only managers can delete species.');
+      throw new Error('Only managers can delete occurrence.');
     }
-    await OccurenceDao.deleteOccurrence(occurrenceId);
+    await OccurrenceDao.deleteOccurrence(occurrenceId);
   }
 }
 
-export default new OccurenceService();
+// Utility function to ensure all required fields are present
+function ensureAllFieldsPresent(data: OccurrenceSchemaType): Prisma.OccurrenceCreateInput {
+  // Add checks for all required fields
+  if (!data.dateObserved || !data.dateOfBirth || !data.numberOfPlants || !data.biomass || !data.description || !data.speciesId) {
+    throw new Error('Missing required fields for occurrence creation');
+  }
+  return data as Prisma.OccurrenceCreateInput;
+}
+
+const dateFormatter = (data: any) => {
+  const { dateObserved, dateOfBirth, ...rest } = data;
+  const formattedData = { ...rest };
+
+  // Format dateObserved and dateOfBirth into JavaScript Date objects
+  const dateObservedFormat = dateOfBirth ? new Date(dateObserved) : undefined;
+  const dateOfBirthFormat = dateOfBirth ? new Date(dateOfBirth) : undefined;
+  if (dateObserved) {
+    formattedData.dateObserved = dateObservedFormat;
+  }
+  if (dateOfBirth) {
+    formattedData.dateOfBirth = dateOfBirthFormat;
+  }
+  return formattedData;
+}
+
+export default new OccurrenceService();

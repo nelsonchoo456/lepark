@@ -10,16 +10,15 @@ CREATE TYPE "OCCURRENCE_STATUS_ENUM" AS ENUM ('HEALTHY', 'NEEDS_ATTENTION', 'URG
 -- CreateTable
 CREATE TABLE "Occurrence" (
     "id" UUID NOT NULL,
-    "lat" DOUBLE PRECISION NOT NULL,
-    "lng" DOUBLE PRECISION NOT NULL,
+    "lat" DOUBLE PRECISION,
+    "lng" DOUBLE PRECISION,
     "dateObserved" TIMESTAMP(3) NOT NULL,
-    "dateOfBirth" TIMESTAMP(3) NOT NULL,
+    "dateOfBirth" TIMESTAMP(3),
     "numberOfPlants" DOUBLE PRECISION NOT NULL,
     "biomass" DOUBLE PRECISION NOT NULL,
     "description" TEXT NOT NULL,
     "decarbonizationType" "DECARBONIZATION_TYPE" NOT NULL,
     "speciesId" UUID NOT NULL,
-    "decarbonizationAreaId" UUID NOT NULL,
 
     CONSTRAINT "Occurrence_pkey" PRIMARY KEY ("id")
 );
@@ -50,25 +49,8 @@ CREATE TABLE "StatusLog" (
     CONSTRAINT "StatusLog_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "DecarbonizationArea" (
-    "id" UUID NOT NULL,
-    "carbonSeqValue" DOUBLE PRECISION NOT NULL,
-    "startDate" TIMESTAMP(3) NOT NULL,
-    "endDate" TIMESTAMP(3) NOT NULL,
-    "carbonSeqFactor" DOUBLE PRECISION NOT NULL,
-    "dailyCarbonSeqValye" DOUBLE PRECISION NOT NULL,
-    "totalBiomass" DOUBLE PRECISION NOT NULL,
-    "occurenceId" TEXT NOT NULL,
-
-    CONSTRAINT "DecarbonizationArea_pkey" PRIMARY KEY ("id")
-);
-
 -- AddForeignKey
 ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_speciesId_fkey" FOREIGN KEY ("speciesId") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_decarbonizationAreaId_fkey" FOREIGN KEY ("decarbonizationAreaId") REFERENCES "DecarbonizationArea"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurenceId_fkey" FOREIGN KEY ("occurenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
