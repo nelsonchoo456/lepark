@@ -20,6 +20,7 @@ import EditStaffDetailsModal from './EditStaffDetailsModal';
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import EditStaffActiveStatusModal from './EditStaffActiveStatusModal';
 
 const { Header, Content } = Layout;
 
@@ -116,11 +117,10 @@ const mockData: DataType[] = [
 const StaffManagementPage: React.FC = () => {
   const [staff, setStaff] = useState<DataType[]>(mockData);
   // const [staff, setStaff] = useState<DataType[]>([]);
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState<DataIndex | ''>('');
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
   const [editingStaff, setEditingStaff] = useState<DataType | null>(null);
-  const searchInput = useRef<InputRef>(null);
+  const [statusStaff, setStatusStaff] = useState<DataType | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -134,24 +134,23 @@ const StaffManagementPage: React.FC = () => {
     setStaff(data);
   };
 
-  const handleSearch = (
-    selectedKeys: string[],
-    confirm: FilterDropdownProps['confirm'],
-    dataIndex: DataIndex,
-  ) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters: () => void) => {
-    clearFilters();
-    setSearchText('');
-  };
-
   const handleEdit = (record: DataType) => {
     setEditingStaff(record);
     setIsEditModalVisible(true);
+  };
+
+  const handleChangeActiveStatus = (record: DataType) => {
+    setStatusStaff(record);
+    setIsStatusModalVisible(true);
+  };
+
+  const handleStatusModalOk = (updatedStaff: DataType[]) => {
+    setStaff(updatedStaff);
+    setIsStatusModalVisible(false);
+  };
+
+  const handleStatusModalCancel = () => {
+    setIsStatusModalVisible(false);
   };
 
   const { Search } = Input;
@@ -223,7 +222,7 @@ const StaffManagementPage: React.FC = () => {
           menu={{
             items: [
               { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
-              { key: '2', label: 'Change Status' },
+              { key: '2', label: 'Change Status', onClick: () => handleChangeActiveStatus(record) },
             ],
           }}
           trigger={['click']}
@@ -283,6 +282,13 @@ const StaffManagementPage: React.FC = () => {
       >
         {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
       </Modal>
+      <EditStaffActiveStatusModal
+        visible={isStatusModalVisible}
+        onOk={handleStatusModalOk}
+        onCancel={handleStatusModalCancel}
+        record={statusStaff}
+        staff={staff}
+      />
       {/* </Content> */}
     </ContentWrapperDark>
   );
