@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
 import EmailUtil from '../utils/EmailUtil';
+import SpeciesDao from '../dao/SpeciesDao';
 
 class VisitorService {
   public async register(
@@ -126,6 +127,18 @@ class VisitorService {
     });
 
     return updatedVisitor;
+  }
+
+  async getFavoriteSpecies(visitorId: string) {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const favoriteSpecies = await SpeciesDao.getSpeciesByIds(visitor.favoriteSpeciesIds);
+
+    return favoriteSpecies;
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {

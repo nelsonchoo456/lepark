@@ -3,7 +3,9 @@ import { PrismaClient, Prisma, Species } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class SpeciesDao {
-  async createSpecies(data: Prisma.SpeciesUncheckedCreateInput): Promise<Species> {
+  async createSpecies(
+    data: Prisma.SpeciesUncheckedCreateInput,
+  ): Promise<Species> {
     return prisma.species.create({ data });
   }
 
@@ -24,6 +26,16 @@ class SpeciesDao {
 
   async deleteSpecies(id: string): Promise<void> {
     await prisma.species.delete({ where: { id } });
+  }
+
+  async getSpeciesByIds(ids: string[]): Promise<Species[]> {
+    return prisma.species.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
   }
 }
 
