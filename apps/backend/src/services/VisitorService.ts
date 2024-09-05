@@ -109,6 +109,25 @@ class VisitorService {
     await VisitorDao.updateVisitor(visitor.id, { password: hashedPassword });
   }
 
+  async addFavoriteSpecies(visitorId: string, speciesId: string) {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const updatedFavoriteSpeciesIds = [
+      ...visitor.favoriteSpeciesIds,
+      speciesId,
+    ];
+
+    const updatedVisitor = await VisitorDao.updateVisitor(visitorId, {
+      favoriteSpeciesIds: updatedFavoriteSpeciesIds,
+    });
+
+    return updatedVisitor;
+  }
+
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {
   //   const admin = await AdminDao.getAdminById(id);
   //   if (!admin) {

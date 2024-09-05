@@ -94,10 +94,11 @@ model Species {
 }
 
 model Visitor {
-  id            String        @id @default(uuid()) @db.Uuid
-  firstName     String
-  lastName      String
-  email         String        @unique
-  password      String
-  contactNumber String
+  id                 String   @id @default(uuid()) @db.Uuid
+  firstName          String
+  lastName           String
+  email              String   @unique
+  password           String
+  contactNumber      String
+  favoriteSpeciesIds String[] // Array of species IDs
 }
