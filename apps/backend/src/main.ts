@@ -5,10 +5,11 @@
 
 import express from 'express';
 import * as path from 'path';
+import cors from 'cors';
 import staffRouter from './routers/staffRouter';
 import visitorRouter from './routers/visitorRouter';
-import cors from 'cors';
 import speciesRouter from './routers/speciesRouter';
+import occurrenceRouter from './routers/occurrenceRouter';
 import cookieParser from 'cookie-parser';
 
 const app = express();
@@ -27,6 +28,7 @@ app.get('/api', (req, res) => {
 app.use('/api/staffs', staffRouter);
 app.use('/api/species', speciesRouter);
 app.use('/api/visitors', visitorRouter);
+app.use('/api/occurrences', occurrenceRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
