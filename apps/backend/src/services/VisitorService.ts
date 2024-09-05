@@ -141,6 +141,10 @@ class VisitorService {
     return favoriteSpecies;
   }
 
+  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {
+    return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
+  }
+
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {
   //   const admin = await AdminDao.getAdminById(id);
   //   if (!admin) {
