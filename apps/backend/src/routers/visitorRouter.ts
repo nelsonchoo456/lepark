@@ -95,4 +95,15 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+router.post('/addFavoriteSpecies', async (req, res) => {
+  try {
+    const { visitorId, speciesId } = req.body;
+
+    const updatedVisitor = await VisitorService.addFavoriteSpecies(visitorId, speciesId);
+    res.status(200).json(updatedVisitor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
