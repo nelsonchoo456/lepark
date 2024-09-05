@@ -16,7 +16,7 @@ import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
-import CreateNewStaff from './pages/StaffManagement/CreateStaff'; 
+import CreateStaff from './pages/StaffManagement/CreateStaff'; 
 
 export function App() {
   return (
@@ -59,11 +59,12 @@ export function App() {
             </Route>
             
             <Route path="/profile" element={<StaffProfile />} />
-            <Route path="/staffManagement" element={<StaffManagementPage />} />
+            <Route path="/staff-management" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
+            <Route path="/staff-management/create-staff" element={<CreateStaff />} />
           </Route>
-          <Route path="/create-staff" element={<CreateNewStaff />} />
+        
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

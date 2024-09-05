@@ -168,7 +168,6 @@ const StaffManagementPage: React.FC = () => {
     setSearchQuery(value);
   };
 
-
   const columns: TableColumnsType<DataType> = [
     {
       title: 'ID',
@@ -205,79 +204,85 @@ const StaffManagementPage: React.FC = () => {
       ),
     },
     {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        filters: [
-            { text: 'Active', value: 'active' },
-            { text: 'Inactive', value: 'inactive' },
-        ],
-        onFilter: (value, record) => record.status === value,
-        render: (active) => (active ? 'Active' : 'Inactive'),
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      filters: [
+        { text: 'Active', value: 'active' },
+        { text: 'Inactive', value: 'inactive' },
+      ],
+      onFilter: (value, record) => record.status === value,
+      render: (active) => (active ? 'Active' : 'Inactive'),
     },
     {
-        title: 'Actions',
-        key: 'actions',
-        width: '5%',
-        render: (_, record) => (
-            <Dropdown
-                menu={{
-                    items: [
-                        { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
-                        { key: '2', label: 'Change Status'},
-                    ],
-                }}
-                trigger={['click']}
-            >
-                <Button
-                    type="text"
-                    icon={<MoreOutlined style={{ color: 'grey' }} />}
-                />
-            </Dropdown>
-        ),
+      title: 'Actions',
+      key: 'actions',
+      width: '5%',
+      render: (_, record) => (
+        <Dropdown
+          menu={{
+            items: [
+              { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
+              { key: '2', label: 'Change Status' },
+            ],
+          }}
+          trigger={['click']}
+        >
+          <Button
+            type="text"
+            icon={<MoreOutlined style={{ color: 'grey' }} />}
+          />
+        </Dropdown>
+      ),
     },
-];
+  ];
 
   return (
     <ContentWrapperDark>
       {/* <Header className="bg-green-300"></Header> */}
       {/* <Content className="p-10"> */}
-        {/* <Row className="flex justify-between items-center mb-4"> */}
-          {/* <Col>
+      {/* <Row className="flex justify-between items-center mb-4"> */}
+      {/* <Col>
             <LogoText className="text-xl font-bold">Staff Management</LogoText>
           </Col> */}
-          <PageHeader>Staff Management</PageHeader>
-          <Flex justify="end" gap={10}>
-             <Search
+      <PageHeader>Staff Management</PageHeader>
+      <Flex justify="end" gap={10}>
+        <Search
           placeholder="Search for Staff..."
           allowClear
           enterButton="Search"
           onSearch={handleSearchBar}
           style={{ marginBottom: 20 }}
         />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/create-staff')}>Add Staff</Button>
-          </Flex>
-        <Row>
-          <Col span={24}>
-            <div className="p-5 bg-white shadow-lg rounded-lg">
-              <Table
-                columns={columns}
-                dataSource={filteredStaff}
-                rowKey="key"
-                pagination={{ pageSize: 10 }}
-              />
-            </div>
-          </Col>
-        </Row>
-        
-        <Modal
-          title="Edit Staff Details"
-          open={isEditModalVisible}
-          onCancel={() => setIsEditModalVisible(false)}
-          footer={null}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate('create-staff')}
         >
-          {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
-        </Modal>
+          Add Staff
+        </Button>
+      </Flex>
+      <Row>
+        <Col span={24}>
+          <div className="p-5 bg-white shadow-lg rounded-lg">
+            <Table
+              columns={columns}
+              dataSource={filteredStaff}
+              rowKey="key"
+              pagination={{ pageSize: 10 }}
+            />
+          </div>
+        </Col>
+      </Row>
+
+      <Modal
+        title="Edit Staff Details"
+        open={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        footer={null}
+      >
+        {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
+      </Modal>
       {/* </Content> */}
     </ContentWrapperDark>
   );
