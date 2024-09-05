@@ -56,6 +56,9 @@ export function App() {
               <Route
                 path=":occurrenceId"
                 element={<OccurrenceDetails/>}/>
+              <Route
+                path="create"
+                element={<OccurrenceCreate/>}/>
             </Route>
             
             <Route path="/profile" element={<StaffProfile />} />

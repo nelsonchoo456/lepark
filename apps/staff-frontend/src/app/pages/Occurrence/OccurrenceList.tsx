@@ -80,7 +80,7 @@ const OccurrenceList = () => {
   ];
 
   const navigateTo = (occurenceId: string) =>{
-    navigate(`/occurence/${occurenceId}`)
+    navigate(`/occurrence/${occurenceId}`)
   }
   
   return (
@@ -93,7 +93,7 @@ const OccurrenceList = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
-        <Button type="primary">Create Occurrence</Button>
+        <Button type="primary" onClick={() => { navigate('/occurrence/create')}}>Create Occurrence</Button>
       </Flex>
       
       <Card>
