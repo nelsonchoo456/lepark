@@ -11,12 +11,12 @@ import Login from './pages/Login/Login';
 import OccurenceList from './pages/Occurence/OccurenceList';
 import OccurenceCreate from './pages/Occurence/OccurenceCreate';
 import OccurenceDetails from './pages/OccurenceDetails/OccurenceDetails';
-import ProfilePage from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
+import CreateNewStaff from './pages/StaffManagement/CreateStaff'; 
 
 export function App() {
   return (
@@ -63,6 +63,7 @@ export function App() {
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
           </Route>
+          <Route path="/create-staff" element={<CreateNewStaff />} />
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

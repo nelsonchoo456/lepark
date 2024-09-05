@@ -169,10 +169,10 @@ const StaffProfile = () => {
             }
           />
         </Card>
-        <div
+        {/* <div
           className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
           style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}
-        />
+        /> */}
       </ContentWrapper>
     </Layout>
   );

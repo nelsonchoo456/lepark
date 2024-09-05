@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
 import {
@@ -19,6 +19,7 @@ import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import EditStaffDetailsModal from './EditStaffDetailsModal';
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 const { Header, Content } = Layout;
 
@@ -120,6 +121,7 @@ const StaffManagementPage: React.FC = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingStaff, setEditingStaff] = useState<DataType | null>(null);
   const searchInput = useRef<InputRef>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch staff data from an API or service
@@ -152,96 +154,20 @@ const StaffManagementPage: React.FC = () => {
     setIsEditModalVisible(true);
   };
 
-  const getColumnSearchProps = (
-    dataIndex: DataIndex,
-  ): TableColumnType<DataType> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div className="p-2" onKeyDown={(e) => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() =>
-            handleSearch(selectedKeys as string[], confirm, dataIndex)
-          }
-          className="mb-2 block"
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() =>
-              handleSearch(selectedKeys as string[], confirm, dataIndex)
-            }
-            icon={<SearchOutlined />}
-            size="small"
-            className="w-24"
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            className="w-24"
-          >
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              setSearchText((selectedKeys as string[])[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes((value as string).toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        <span className="text-green-500">{text}</span>
+  const { Search } = Input;
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredStaff = useMemo(() => {
+    return staff.filter((staffMember) =>
+      Object.values(staffMember).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-  });
+    );
+  }, [searchQuery]);
+
+  const handleSearchBar = (value: string) => {
+    setSearchQuery(value);
+  };
+
 
   const columns: TableColumnsType<DataType> = [
     {
@@ -255,7 +181,8 @@ const StaffManagementPage: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       width: '20%',
-      ...getColumnSearchProps('name'),
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Role',
@@ -321,33 +248,21 @@ const StaffManagementPage: React.FC = () => {
           </Col> */}
           <PageHeader>Staff Management</PageHeader>
           <Flex justify="end" gap={10}>
-            <Input
-              suffix={<FiSearch />}
-              placeholder="Search for Staff..."
-              className="mb-4 bg-white"
-              variant="filled"
-            />
-            <Button type="primary" icon={<PlusOutlined />}>Add Staff</Button>
+             <Search
+          placeholder="Search for Staff..."
+          allowClear
+          enterButton="Search"
+          onSearch={handleSearchBar}
+          style={{ marginBottom: 20 }}
+        />
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/create-staff')}>Add Staff</Button>
           </Flex>
-      
-          {/* <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-        
-              }}
-            >
-              Add Staff
-            </Button>
-          </Col> */}
-        {/* </Row> */}
         <Row>
           <Col span={24}>
             <div className="p-5 bg-white shadow-lg rounded-lg">
               <Table
                 columns={columns}
-                dataSource={staff}
+                dataSource={filteredStaff}
                 rowKey="key"
                 pagination={{ pageSize: 10 }}
               />
