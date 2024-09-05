@@ -1,6 +1,6 @@
-import { Card, Badge } from "antd";
+import { Card, Badge, Menu, Dropdown } from "antd";
 import { Input, Avatar, Button } from "antd";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, CustButton } from "@lepark/common-ui";
 import { useState, useEffect } from "react";
 import { SCREEN_LG } from "../../config/breakpoints";
@@ -50,6 +50,20 @@ const ProfilePage = () => {
     // Logout functionality goes here
   };
 
+  const menu = (
+    <Menu>
+        <Menu.Item key="1" onClick={handleEditProfile}>
+            Edit Profile
+        </Menu.Item>
+        <Menu.Item key="2" onClick={handleEditPassword}>
+            Change Password
+        </Menu.Item>
+        <Menu.Item key="3" onClick={handleEditEmail}>
+            Change Email
+        </Menu.Item>
+    </Menu>
+  );
+
   return (
     <div className="pb-20">
       <Card
@@ -68,13 +82,6 @@ const ProfilePage = () => {
           <div className="md:text-center md:mx-auto">
             <p className="font-medium text-2xl md:text-3xl">My Profile</p>
           </div>
-          <Button 
-            onClick={handleLogout} 
-            icon={<LogoutOutlined />} 
-            className="bg-green-200 text-white top-5 right-4 absolute"
-          >
-            Logout
-          </Button>
         </div>
       </Card>
 
@@ -113,17 +120,14 @@ const ProfilePage = () => {
             <div className="w-full flex flex-col items-center">
             <h2 className="text-xl font-bold">{username}</h2>
             <p className="text-gray-600">{contactNumber}</p>
-            <div className="w-full flex flex-col sm:flex-row sm:justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-4">
-              <CustButton type="primary" onClick={handleEditProfile} className="w-auto sm:w-auto">
-                Edit Profile
-              </CustButton>
-              <CustButton type="primary" onClick={handleEditPassword} className="w-auto sm:w-auto">
-                Change Password
-              </CustButton>
+            <div className="flex space-x-2 mt-4">
+            <Dropdown overlay={menu} placement="bottomRight">
+                                <CustButton type="primary" className="w-auto sm:w-auto" icon={<SettingOutlined />}>
+                                    Settings
+                                </CustButton>
+                            </Dropdown>
+              <CustButton type="primary" onClick={handleLogout} icon={<LogoutOutlined />}>Logout</CustButton>
               <EditPasswordModal open={isPasswordModalVisible} onClose={handlePasswordModalCancel} />
-              <CustButton type="primary" onClick={handleEditEmail} className="w-auto sm:w-auto">
-                Change Email
-              </CustButton>
               <EditEmailModal open={isEmailModalVisible} onClose={handleEmailModalCancel} />
             </div>
           </div>
