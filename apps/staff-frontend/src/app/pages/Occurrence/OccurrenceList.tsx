@@ -6,7 +6,7 @@ import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
 
-const OccurenceList = () => {
+const OccurrenceList = () => {
   const navigate = useNavigate();
 
   const columns: TableProps['columns'] = [
@@ -85,15 +85,15 @@ const OccurenceList = () => {
   
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurence Management</PageHeader>
+      <PageHeader>Occurrence Management</PageHeader>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
-          placeholder="Search in Occurences..."
+          placeholder="Search in Occurrences..."
           className="mb-4 bg-white"
           variant="filled"
         />
-        <Button type="primary">Create Occurence</Button>
+        <Button type="primary">Create Occurrence</Button>
       </Flex>
       
       <Card>
@@ -103,4 +103,4 @@ const OccurenceList = () => {
   );
 }
 
-export default OccurenceList;
+export default OccurrenceList;
