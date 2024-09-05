@@ -1,0 +1,45 @@
+name: Notifier
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  notifyTelegram:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Get commit message and event details
+      id: get_details
+      run: |
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          echo "event_type=Pull Request" >> $GITHUB_OUTPUT
+          echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "branch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+          echo "base_branch=${{ github.base_ref }}" >> $GITHUB_OUTPUT
+        else
+          echo "event_type=Push" >> $GITHUB_OUTPUT
+          echo "commit_message<<EOF" >> $GITHUB_OUTPUT
+          git log --format=%B -n 1 ${{ github.sha }} >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+          echo "base_branch=" >> $GITHUB_OUTPUT
+        fi
+    - name: Send Telegram Message
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          New ${{ steps.get_details.outputs.event_type }} in the repository.
+          Actor: ${{ github.actor }}
+          Branch: ${{ steps.get_details.outputs.branch }}
+          ${{ steps.get_details.outputs.base_branch && format('Base branch: {0}', steps.get_details.outputs.base_branch) || '' }}
+          Message: ${{ steps.get_details.outputs.commit_message }}

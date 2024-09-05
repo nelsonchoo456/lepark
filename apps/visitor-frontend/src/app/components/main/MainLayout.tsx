@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from "../../config/breakpoints";
 import { Content, Header, ListItemType, Logo, LogoText, MobileContent, MobileSidebar, Sidebar } from "@lepark/common-ui";
 import { BottomNavBar } from "./BottomNavBar";
-import { FiHome, FiMoreHorizontal } from "react-icons/fi";
+import { FiHome, FiMoreHorizontal, FiUser } from "react-icons/fi";
 import { GrMapLocation } from "react-icons/gr";
 import { Menu } from "antd";
 
@@ -33,7 +33,6 @@ const MainLayout = () => {
       label: 'Home',
       onClick: () => navigate('/'),
     },
-
     {
       key: 'map',
       icon: <GrMapLocation style={{ fontSize: "1.5rem" }}/>,
@@ -41,9 +40,15 @@ const MainLayout = () => {
       onClick: () => navigate('/map'),
     },
     {
+      key: 'account',
+      icon: <FiUser style={{ fontSize: "1.5rem" }}/>,
+      label: 'Account',
+      onClick: () => navigate('/profile'),
+    },
+    {
       key: 'others',
       icon: <FiMoreHorizontal style={{ fontSize: "1.5rem" }}/>,
-      label: 'Others',
+      label: '',
       onClick: () => navigate('/'),
     },
   ]
@@ -57,7 +62,7 @@ const MainLayout = () => {
         </div>
       </Header>
       <MobileSidebar >
-        <div className="flex justify-center pb-2"><Logo size={2.5}/></div>
+        <div className="flex justify-center pb-4"><Logo size={2.5}/></div>
         <div className="flex flex-col">
           {navItems.map((item) => (
             <button
@@ -68,8 +73,8 @@ const MainLayout = () => {
               <div className="p-1 rounded-full hover:bg-green-200 hover:text-white transition-all duration-300 ease-out hover:scale-110" >
                 {item.icon}
               </div>
-              {item.label?.length < 6 &&
-                <div className="text-mf">
+              {item.label !== "Others" &&
+                <div className="text-sm">
                   {item.label}
                 </div>
               }

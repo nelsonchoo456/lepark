@@ -31,7 +31,7 @@ const EventCard: React.FC<EventCardProps> = ({
           color: 'white',
           overflow: 'hidden'
         }}
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 }}}
       >
         <div className="absolute bottom-0 w-full h-full p-4 bg-gradient-to-t from-green-500/90 via-green-600/70 to-transparent text-white flex justify-end items-end ">
         <div className="text-right">

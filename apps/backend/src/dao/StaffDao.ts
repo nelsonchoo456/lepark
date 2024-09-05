@@ -30,17 +30,13 @@ class StaffDao {
     const staff = await prisma.staff.findUnique({ where: { id } });
     return staff.role === 'MANAGER';
   }
-  //   async getAdminById(id: string): Promise<Admin> {
-  //     return prisma.admin.findUnique({ where: { id } });
-  //   }
 
-  //   //updateAdminbyId
-  //   async updateAdmin(id: string, updatedData: Prisma.AdminUpdateInput) {
-  //     return prisma.admin.update({
-  //       where: { id },
-  //       data: updatedData,
-  //     });
-  //   }
+  async updateStaff(id: string, updatedData: Prisma.StaffUpdateInput) {
+    return prisma.staff.update({
+      where: { id },
+      data: updatedData,
+    });
+  }
 
   //   async deleteAdmin(id: string) {
   //     return prisma.admin.delete({ where: { id } });
