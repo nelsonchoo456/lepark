@@ -12,6 +12,7 @@ import {
   Dropdown,
   Modal,
   Flex,
+  Tag,
 } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
@@ -211,7 +212,11 @@ const StaffManagementPage: React.FC = () => {
         { text: 'Inactive', value: 'inactive' },
       ],
       onFilter: (value, record) => record.status === value,
-      render: (active) => (active ? 'Active' : 'Inactive'),
+      render: (active) => (
+        <Tag color={active ? 'green' : ''} bordered={false}>
+          {active ? 'Active' : 'Inactive'}
+        </Tag>
+      ),
     },
     {
       title: 'Actions',
