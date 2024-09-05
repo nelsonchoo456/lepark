@@ -2,10 +2,10 @@ import { Button, Divider, Form, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginStepProps {
-  handleReturnToMain: () => void;
+  goToForgotPassword: () => void;
 }
 
-const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
+const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
   const navigate = useNavigate();
 
   const handleSubmit = (values: any) => {
@@ -13,12 +13,16 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
     navigate('/');
   };
 
-  const handleReturnToPrev = () => {
-    handleReturnToMain();
+  const handleGoToForgotPassword = () => {
+    goToForgotPassword();
   };
 
   const handleGoToRegister = () => {
     navigate('/register');
+  };
+
+  const handleContinueWithoutAcc = () => {
+    navigate('/');
   };
 
   return (
@@ -33,7 +37,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           label="Email"
           rules={[{ required: true, message: 'Please enter your Email' }]}
         >
-          <Input placeholder="Email" />
+          <Input placeholder="Email" variant="filled"/>
         </Form.Item>
 
         <Form.Item
@@ -41,7 +45,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           label="Password"
           rules={[{ required: true, message: 'Please enter your Password' }]}
         >
-          <Input.Password placeholder="Password" />
+          <Input.Password placeholder="Password" variant="filled"/>
         </Form.Item>
 
         <Form.Item>
@@ -51,15 +55,15 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
         </Form.Item>
       </Form>
       <Divider><span className="text-secondary">or</span></Divider>
-      <Button type="link" className="w-full justify-center" onClick={() => {console.log("keke")}}>
+      <Button type="link" className="w-full justify-center" onClick={handleGoToForgotPassword}>
         Forgot Password?
       </Button>
       <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
         Register
       </Button>
-      <Button type="link" className="w-full justify-center" onClick={handleReturnToPrev}>
+      {/* <Button type="link" className="w-full justify-center" onClick={handleReturnToPrev}>
         Continue using without Account
-      </Button>
+      </Button> */}
     </div>
   );
 };

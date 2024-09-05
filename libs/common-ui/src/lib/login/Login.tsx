@@ -24,9 +24,13 @@ export const LoginPanel = styled.div`
   padding: 1rem;
   box-sizing: border-box;
 
+  height: 100%;
+  overflow: scroll;
+
 
   @media (max-width: ${SCREEN_LG}px) {
     height: 90vh;
+    overflow: visible;
   }
 `;
 
@@ -41,6 +45,7 @@ export const AnnouncementsPanel = styled.div`
 
   @media (max-width: ${SCREEN_LG}px) {
     background-color: #f0f0f0;
+    padding: 0;
   }
 `;
 

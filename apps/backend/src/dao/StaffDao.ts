@@ -3,11 +3,11 @@ import { PrismaClient, Prisma, Staff } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class StaffDao {
-  async createStaff(data: Prisma.StaffUncheckedCreateInput): Promise<Staff> {
+  async createStaff(data: Prisma.StaffCreateInput): Promise<Staff> {
     return prisma.staff.create({ data });
   }
 
-  async getStaffByEmail(email: string): Promise<Staff> {
+  async getStaffByEmail(email: string): Promise<Staff | null> {
     return prisma.staff.findUnique({ where: { email } });
   }
 
@@ -15,7 +15,7 @@ class StaffDao {
     return prisma.staff.findMany();
   }
 
-  async getStaffById(id: string): Promise<Staff> {
+  async getStaffById(id: string): Promise<Staff | null> {
     return prisma.staff.findUnique({ where: { id } });
   }
 
@@ -30,17 +30,6 @@ class StaffDao {
     const staff = await prisma.staff.findUnique({ where: { id } });
     return staff.role === 'MANAGER';
   }
-  //   async getAdminById(id: string): Promise<Admin> {
-  //     return prisma.admin.findUnique({ where: { id } });
-  //   }
-
-  //   //updateAdminbyId
-  //   async updateAdmin(id: string, updatedData: Prisma.AdminUpdateInput) {
-  //     return prisma.admin.update({
-  //       where: { id },
-  //       data: updatedData,
-  //     });
-  //   }
 
   //   async deleteAdmin(id: string) {
   //     return prisma.admin.delete({ where: { id } });
