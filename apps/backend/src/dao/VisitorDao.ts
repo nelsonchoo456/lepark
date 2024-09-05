@@ -35,6 +35,22 @@ class VisitorDao {
     });
   }
 
+  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<Visitor> {
+    const visitor = await this.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const updatedFavoriteSpeciesIds = visitor.favoriteSpeciesIds.filter(
+      (id) => id !== speciesId,
+    );
+
+    return this.updateVisitor(visitorId, {
+      favoriteSpeciesIds: updatedFavoriteSpeciesIds,
+    });
+  }
+
   //   async deleteAdmin(id: string) {
   //     return prisma.admin.delete({ where: { id } });
   //   }
