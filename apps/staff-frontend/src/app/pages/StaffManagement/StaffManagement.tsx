@@ -208,13 +208,13 @@ const StaffManagementPage: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       filters: [
-        { text: 'Active', value: 'active' },
-        { text: 'Inactive', value: 'inactive' },
+        { text: 'Active', value: true },
+        { text: 'Inactive', value: false },
       ],
       onFilter: (value, record) => record.status === value,
-      render: (active) => (
-        <Tag color={active ? 'green' : ''} bordered={false}>
-          {active ? 'Active' : 'Inactive'}
+      render: (status) => (
+        <Tag color={status ? 'green' : ''} bordered={false}>
+          {status ? 'Active' : 'Inactive'}
         </Tag>
       ),
     },
