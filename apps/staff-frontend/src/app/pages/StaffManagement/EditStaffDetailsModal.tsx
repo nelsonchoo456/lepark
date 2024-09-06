@@ -1,59 +1,73 @@
-import React from 'react';
-import { Form, Input, Button, Select, Switch } from 'antd';
+import React, { useEffect } from 'react';
+import { Form, Input, Button, Select, Switch, message } from 'antd';
+import { viewStaffDetails, updateStaffDetails, updateStaffRole, StaffResponse, StaffUpdateData, StaffType } from '@lepark/data-access';
 
 const { Option } = Select;
 
 interface EditStaffProps {
-  staff: {
-    key: string;
-    name: string;
-    role: string;
-    email: string;
-    contactNumber: string;
-    status: boolean;
-  };
+  staff: StaffResponse;
 }
-
-const roles = [
-  'Manager',
-  'Botanist',
-  'Arborist',
-  'Landscaper',
-  'Maintenance Worker',
-  'Cleaner',
-  'Landscape Architect',
-  'Park Ranger',
-];
 
 const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff }) => {
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
-    console.log('Success:', values);
-    // logic for update staff is here
+  // Populate initial form values
+  useEffect(() => {
+    if (staff) {
+      form.setFieldsValue({
+        firstName: staff.firstName,
+        lastName: staff.lastName,
+        role: staff.role,
+        email: staff.email,
+        contactNumber: staff.contactNumber,
+      });
+    }
+  }, [staff, form]);
+
+  const onFinish = async (values: any) => {
+    try {
+      const updatedStaffDetails: StaffUpdateData = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        contactNumber: values.contactNumber,
+      };
+      // rmb to change requesterId to actual requesterId
+      const responseStaffRole = await updateStaffRole(staff.id, values.role, '9ffdeeac-ecdb-4882-99a2-cf8094b92c92'); // requesterId to be passed in the request body; hardcoded for now
+      console.log('Staff role updated successfully:', responseStaffRole.data);
+
+      const responseStaffDetails = await updateStaffDetails(staff.id, updatedStaffDetails);
+      console.log('Staff details updated successfully:', responseStaffDetails.data);
+
+      message.success('Staff details updated successfully!');
+    } catch (error: any) {
+      console.error(error);
+      // TODO: filter out specific error messages from the response
+      message.error('Failed to update staff details.');
+    }
   };
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      initialValues={staff}
-      onFinish={onFinish}
-    >
-      <Form.Item name="name" label="Name">
+    <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form.Item name="firstName" label="First Name">
         <Input />
       </Form.Item>
+
+      <Form.Item name="lastName" label="Last Name">
+        <Input />
+      </Form.Item>
+
       <Form.Item name="role" label="Role">
         <Select>
-          {roles.map((role) => (
+          {Object.values(StaffType).map((role) => (
             <Option key={role} value={role}>
               {role}
             </Option>
           ))}
         </Select>
       </Form.Item>
+
       <Form.Item name="email" label="Email">
-        <Input />
+        <Input disabled />
       </Form.Item>
       <Form.Item name="contactNumber" label="Contact Number">
         <Input />
