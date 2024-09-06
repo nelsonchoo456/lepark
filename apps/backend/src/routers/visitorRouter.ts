@@ -98,4 +98,41 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+router.post('/addFavoriteSpecies', async (req, res) => {
+  try {
+    const { visitorId, speciesId } = req.body;
+
+    const updatedVisitor = await VisitorService.addFavoriteSpecies(
+      visitorId,
+      speciesId,
+    );
+    res.status(200).json(updatedVisitor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/viewFavoriteSpecies', async (req, res) => {
+  try {
+    const { visitorId } = req.query; // Extract from query string
+    const favoriteSpecies = await VisitorService.getFavoriteSpecies(visitorId as string);
+    res.status(200).json(favoriteSpecies);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/deleteSpeciesFromFavorites', async (req, res) => {
+  try {
+    const { visitorId, speciesId } = req.query; // Extract from query string
+    const updatedVisitor = await VisitorService.deleteSpeciesFromFavorites(
+      visitorId as string,
+      speciesId as string
+    );
+    res.status(200).json(updatedVisitor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

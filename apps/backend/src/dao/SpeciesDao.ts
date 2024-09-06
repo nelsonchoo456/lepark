@@ -28,6 +28,16 @@ class SpeciesDao {
   async deleteSpecies(id: string): Promise<void> {
     await prisma.species.delete({ where: { id } });
   }
+
+  async getSpeciesByIds(ids: string[]): Promise<Species[]> {
+    return prisma.species.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }
 
 export default new SpeciesDao();
