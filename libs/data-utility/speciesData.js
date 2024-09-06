@@ -17,7 +17,7 @@ export const regions = [
 
 export const lightType = ['Full Shade', 'Partial Shade', 'Full Sun'];
 
-export const soilType = ['Sandy','Clay','Loam','Peaty','Silty','Chalky','Shallow'];
+export const soilType = ['Sandy','Clayey','Loamy'];
 
 export const conservationStatus = ["Least Concern", "Near Threatened", "Vulnerable", "Endangered", "Critically Endangered", "Extinct in the Wild", "Extinct"];
 
@@ -28,3 +28,35 @@ export const speciesExamples = [{ id: 1234567890, phylum: "Tracheophyta", class:
 
 //view 1 species
 export const species = { id: 1234567890, phylum: "Tracheophyta", class: "Magnoliopsida", order: "Fabales", family: "Fabaceae", genus: "Acacia", speciesName: "Acacia koa", commonName: "Koa", speciesDescription: "Acacia koa is a species of flowering tree endemic to the Hawaiian Islands.", conservationStatus: "VULNERABLE", originCountry: "Hawaii, USA", fertiliserType: "Balanced NPK", lightType: "FULL_SUN", soilType: "WELL_DRAINED", waterRequirement: 3, fertiliserRequirement: 2.5, idealHumidity: 60.0, minTemp: 10.0, maxTemp: 30.0, idealTemp: 22.0, isFastGrowing: true, isEdible: false, isToxic: false, isEvergreen: true, isFragrant: false, isDroughtTolerant: true, isFlowering: true };
+
+//create species form blank
+export const blankSpecies = {
+  phylum: "",
+  class: "",
+  order: "",
+  family: "",
+  genus: "",
+  speciesName: "",
+  commonName: "",
+  speciesDescription: "",
+  conservationStatus: "",
+  originCountry: "",
+  lightType: "",
+  soilType: "",
+  fertiliserType: "",
+  images: [],
+  waterRequirement: 0,
+  fertiliserRequirement: 0,
+  idealHumidity: 0,
+  minTemp: 0,
+  maxTemp: 0,
+  idealTemp: 0,
+  isDroughtTolerant: false,
+  isFastGrowing: false,
+  isSlowGrowing: false,
+  isEdible: false,
+  isDeciduous: false,
+  isEvergreen: false,
+  isToxic: false,
+  isFragrant: false
+};

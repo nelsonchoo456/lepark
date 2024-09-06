@@ -53,12 +53,8 @@ enum LightTypeEnum {
 
 enum SoilTypeEnum {
   SANDY
-  CLAY
-  LOAM
-  PEATY
-  SILTY
-  CHALKY
-  SHALLOW
+  CLAYEY
+  LOAMY
 }
 
 model Species {
