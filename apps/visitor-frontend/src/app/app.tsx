@@ -10,6 +10,7 @@ import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
+import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
 import Discover from './pages/Taxonomy/Discover';
 import ViewSpecies from './pages/Taxonomy/ViewSpecies';
 
@@ -40,6 +41,12 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/occurrence">
+              {/* <Route index element={<OccurrenceList />} /> */}
+              <Route
+                path=":occurrenceId"
+                element={<OccurrenceDetails/>}/>
+            </Route>
             <Route path="/discover" element={<Discover />} />
             <Route path="/taxonomy/view-species" element={<ViewSpecies />} />
           </Route>

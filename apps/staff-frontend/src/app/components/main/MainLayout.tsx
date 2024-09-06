@@ -59,8 +59,8 @@ const MainLayout = () => {
       key: 'occurence',
       icon: <IoLeafOutline />,
       // icon: <UserOutlined />,
-      onClick: () => navigate('/occurence'),
-      label: 'Occurences',
+      onClick: () => navigate('/occurrence'),
+      label: 'Occurrences',
     },
     {
       key: 'staffManagement',

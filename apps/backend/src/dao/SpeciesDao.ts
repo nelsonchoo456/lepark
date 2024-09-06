@@ -3,7 +3,9 @@ import { PrismaClient, Prisma, Species } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class SpeciesDao {
-  async createSpecies(data: Prisma.SpeciesUncheckedCreateInput): Promise<Species> {
+  async createSpecies(
+    // Use Prisma.SpeciesCreateInput for direct compatibility with Prisma's create operation
+    data: Prisma.SpeciesCreateInput): Promise<Species> {
     return prisma.species.create({ data });
   }
 
@@ -11,13 +13,14 @@ class SpeciesDao {
     return prisma.species.findMany();
   }
 
-  async getSpeciesById(id: string): Promise<Species> {
+  async getSpeciesById(id: string): Promise<Species | null> {
     return prisma.species.findUnique({ where: { id } });
   }
 
   async updateSpeciesDetails(
     id: string,
-    data: Prisma.SpeciesUpdateInput,
+    // Use Prisma.SpeciesUpdateInput for direct compatibility with Prisma's update operation
+    data: Prisma.SpeciesUpdateInput
   ): Promise<Species> {
     return prisma.species.update({ where: { id }, data });
   }

@@ -1,12 +1,13 @@
 import express from 'express';
 import SpeciesService from '../services/SpeciesService';
-import { Prisma } from '@prisma/client';
+import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
 
 const router = express.Router();
 
 router.post('/createSpecies', async (req, res) => {
   try {
-    const species = await SpeciesService.createSpecies(req.body);
+    const speciesData = SpeciesSchema.parse(req.body);
+    const species = await SpeciesService.createSpecies(speciesData);
     res.status(201).json(species);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,9 +36,12 @@ router.get('/viewSpeciesDetails/:id', async (req, res) => {
 router.put('/updateSpeciesDetails/:id', async (req, res) => {
   try {
     const speciesId = req.params.id;
-    const updateData: Prisma.SpeciesUpdateInput = req.body;
+    const updateData: Partial<SpeciesSchemaType> = req.body;
 
-    const updatedSpecies = await SpeciesService.updateSpeciesDetails(speciesId, updateData);
+    const updatedSpecies = await SpeciesService.updateSpeciesDetails(
+      speciesId,
+      updateData,
+    );
     res.status(200).json(updatedSpecies);
   } catch (error) {
     res.status(400).json({ error: error.message });
