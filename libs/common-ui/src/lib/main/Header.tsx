@@ -5,10 +5,12 @@ import { fadeIn, fadeOut } from '../assets/animations';
 import { ListItemType } from '../listMenu/ListMenu';
 import { AiOutlineMenuFold, AiOutlineMenuUnfold } from 'react-icons/ai';
 import { Menu } from 'antd';
+import type { MenuProps } from 'antd';
+type MenuItem = Required<MenuProps>['items'][number];
 
 interface SiderProps {
   children?: string | JSX.Element | JSX.Element[];
-  items?: ListItemType[];
+  items?: ListItemType[] | MenuItem[];
   showSidebar: boolean;
   activeKeys?: string[];
   className?: string;
@@ -100,7 +102,7 @@ export const Header = ({
           $show={showHeaderSidebar}
           className="bg-white shadow-lg rounded-b-xl pb-2"
         >
-          <Menu items={items} style={{ backgroundColor: "transparent", border: "transparent" }}/>
+          <Menu items={items} mode="vertical" defaultOpenKeys={['home']} style={{ backgroundColor: "transparent", border: "transparent" }}/>
         </TopCollapsible>
       </>
     )
