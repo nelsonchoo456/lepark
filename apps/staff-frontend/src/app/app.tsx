@@ -17,6 +17,7 @@ import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
+import CreateStaff from './pages/StaffManagement/CreateStaff'; 
 import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
 
@@ -74,10 +75,12 @@ export function App() {
             </Route>
             
             <Route path="/profile" element={<StaffProfile />} />
-            <Route path="/staffManagement" element={<StaffManagementPage />} />
+            <Route path="/staff-management" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
+            <Route path="/staff-management/create-staff" element={<CreateStaff />} />
           </Route>
+        
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
