@@ -16,6 +16,7 @@ import {
   Checkbox,
   InputNumber,
   Slider,
+  Alert
 
 } from 'antd';
 import type { GetProp } from 'antd';
@@ -41,6 +42,9 @@ const CreateSpecies = () => {
 
   // Species form
   const [form] = Form.useForm();
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [createdSpeciesName, setCreatedSpeciesName] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
     labelCol: { span: 8 },
@@ -108,7 +112,11 @@ const CreateSpecies = () => {
 
       const result = await response.json();
       console.log('Species created:', result);
-      // Handle success (e.g., show a success message, redirect to species list)
+      setCreatedSpeciesName(values.speciesInput);
+      setShowSuccessAlert(true);
+      form.resetFields();
+      setTimeout(() => setShowSuccessAlert(false), 5000);
+
     } catch (error) {
       console.error('Error creating species:', error);
       if (error instanceof Error) {
@@ -132,16 +140,7 @@ const CreateSpecies = () => {
   };
 
   //slider
-  function getGradientColor(percentage: number) {
-    const startColor = [135, 208, 104];
-    const endColor = [255, 204, 199];
-    const midColor = startColor.map((start, i) => {
-      const end = endColor[i];
-      const delta = end - start;
-      return (start + delta * percentage).toFixed(0);
-    });
-    return `rgb(${midColor.join(',')})`;
-  }
+
 
   return webMode ? (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
@@ -415,6 +414,14 @@ const CreateSpecies = () => {
           </Form.Item>
         </Form>
       }
+      {showSuccessAlert && (
+        <Alert
+          message={`Species "${createdSpeciesName}" created successfully`}
+          type="success"
+          closable
+          onClose={() => setShowSuccessAlert(false)}
+        />
+      )}
     </ContentWrapper>
   ) : (
     <div
