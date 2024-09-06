@@ -1,18 +1,19 @@
 import axios, { AxiosResponse } from 'axios';
-import { Visitor } from '../types/visitor'; // Adjust the import path as necessary
-import exp from 'constants';
+import {
+  FavoriteSpeciesRequestData,
+  ForgotPasswordRequestData,
+  GetFavoriteSpeciesRequestData,
+  GetFavoriteSpeciesResponseData,
+  LoginRequestData,
+  LoginResponseData,
+  ResetPasswordRequestData,
+  VisitorResponse,
+} from '../types/visitor'; // Adjust the import path as necessary
+import client from './client';
 
-const axiosClient = axios.create({
-  baseURL: 'http://localhost:3333/api/Visitor', // Replace with your backend URL
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 5000, // optional: specify request timeout in milliseconds
-});
-
-export async function register(data: Visitor): Promise<AxiosResponse<Visitor>> {
+export async function register(data: VisitorResponse): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<Visitor> = await axiosClient.post('/register', data);
+    const response: AxiosResponse<VisitorResponse> = await client.post('/register', data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -23,9 +24,9 @@ export async function register(data: Visitor): Promise<AxiosResponse<Visitor>> {
   }
 }
 
-export async function getAllVisitors(): Promise<AxiosResponse<Visitor[]>> {
+export async function getAllVisitors(): Promise<AxiosResponse<VisitorResponse[]>> {
   try {
-    const response: AxiosResponse<Visitor[]> = await axiosClient.get('/getAllVisitors');
+    const response: AxiosResponse<VisitorResponse[]> = await client.get('/getAllVisitors');
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -36,9 +37,9 @@ export async function getAllVisitors(): Promise<AxiosResponse<Visitor[]>> {
   }
 }
 
-export async function getVisitorById(id: string): Promise<AxiosResponse<Visitor>> {
+export async function getVisitorById(id: string): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<Visitor> = await axiosClient.get(`/viewVisitorDetails/${id}`);
+    const response: AxiosResponse<VisitorResponse> = await client.get(`/viewVisitorDetails/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -49,9 +50,9 @@ export async function getVisitorById(id: string): Promise<AxiosResponse<Visitor>
   }
 }
 
-export async function updateVisitor(id: string, data: Partial<Visitor>): Promise<AxiosResponse<Visitor>> {
+export async function updateVisitor(id: string, data: Partial<VisitorResponse>): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<Visitor> = await axiosClient.put(`/updateVisitorDetails/${id}`, data);
+    const response: AxiosResponse<VisitorResponse> = await client.put(`/updateVisitorDetails/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -62,9 +63,9 @@ export async function updateVisitor(id: string, data: Partial<Visitor>): Promise
   }
 }
 
-export async function login(data: { email: string; password: string }): Promise<AxiosResponse<{ token: string; user: Visitor }>> {
+export async function login(data: LoginRequestData): Promise<AxiosResponse<LoginResponseData>> {
   try {
-    const response: AxiosResponse<{ token: string; user: Visitor }> = await axiosClient.post('/login', data);
+    const response: AxiosResponse<LoginResponseData> = await client.post('/login', data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -77,7 +78,7 @@ export async function login(data: { email: string; password: string }): Promise<
 
 export async function logout(): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await axiosClient.post('/logout');
+    const response: AxiosResponse<void> = await client.post('/logout');
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -88,9 +89,9 @@ export async function logout(): Promise<AxiosResponse<void>> {
   }
 }
 
-export async function forgotPassword(data: { email: string }): Promise<AxiosResponse<void>> {
+export async function forgotPassword(data: ForgotPasswordRequestData): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await axiosClient.post('/forgot-password', data);
+    const response: AxiosResponse<void> = await client.post('/forgot-password', data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -101,9 +102,9 @@ export async function forgotPassword(data: { email: string }): Promise<AxiosResp
   }
 }
 
-export async function resetPassword(data: { email: string; token: string; newPassword: string }): Promise<AxiosResponse<void>> {
+export async function resetPassword(data: ResetPasswordRequestData): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await axiosClient.post('/reset-password', data);
+    const response: AxiosResponse<void> = await client.post('/reset-password', data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -114,9 +115,9 @@ export async function resetPassword(data: { email: string; token: string; newPas
   }
 }
 
-export async function addFavoriteSpecies(visitorId: string, speciesId: string): Promise<AxiosResponse<Visitor>> {
+export async function addFavoriteSpecies(data: FavoriteSpeciesRequestData): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<Visitor> = await axiosClient.post('/addFavoriteSpecies', { visitorId, speciesId });
+    const response: AxiosResponse<VisitorResponse> = await client.post('/addFavoriteSpecies', data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -127,10 +128,10 @@ export async function addFavoriteSpecies(visitorId: string, speciesId: string): 
   }
 }
 
-export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<Visitor>> {
+export async function getFavoriteSpecies(data: GetFavoriteSpeciesRequestData): Promise<AxiosResponse<GetFavoriteSpeciesResponseData>> {
   try {
-    const response: AxiosResponse<Visitor> = await axiosClient.get('/viewFavoriteSpecies', {
-      params: { visitorId },
+    const response: AxiosResponse<GetFavoriteSpeciesResponseData> = await client.get('/viewFavoriteSpecies', {
+      params: data,
     });
     return response;
   } catch (error) {
@@ -142,10 +143,10 @@ export async function getFavoriteSpecies(visitorId: string): Promise<AxiosRespon
   }
 }
 
-export async function deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<AxiosResponse<Visitor>> {
+export async function deleteSpeciesFromFavorites(data: FavoriteSpeciesRequestData): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<Visitor> = await axiosClient.delete('/deleteSpeciesFromFavorites', {
-      params: { visitorId, speciesId },
+    const response: AxiosResponse<VisitorResponse> = await client.delete('/deleteSpeciesFromFavorites', {
+      data,
     });
     return response;
   } catch (error) {

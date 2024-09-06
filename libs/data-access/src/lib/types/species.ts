@@ -27,7 +27,7 @@ export enum SoilTypeEnum {
 }
 
 // Define the Species interface
-export interface Species {
+export interface SpeciesResponse {
   id: string;
   phylum: string;
   class: string;
@@ -59,10 +59,50 @@ export interface Species {
   isFragrant: boolean;
 }
 
-// Define the response type for fetching species
-export interface SpeciesResponse {
+export interface CreateSpeciesData {
+  phylum: string;
+  class: string;
+  order: string;
+  family: string;
+  genus: string;
+  speciesName: string;
+  commonName: string;
+  speciesDescription: string;
+  conservationStatus: ConservationStatusEnum;
+  originCountry: string;
+  lightType: LightTypeEnum;
+  soilType: SoilTypeEnum;
+  fertiliserType: string;
+  images: string[];
+  waterRequirement: number;
+  fertiliserRequirement: number;
+  idealHumidity: number;
+  minTemp: number;
+  maxTemp: number;
+  idealTemp: number;
+  isDroughtTolerant: boolean;
+  isFastGrowing: boolean;
+  isSlowGrowing: boolean;
+  isEdible: boolean;
+  isDeciduous: boolean;
+  isEvergreen: boolean;
+  isToxic: boolean;
+  isFragrant: boolean;
+}
+
+
+/* redundant
+export interface GetAllSpeciesResponse {
   data: Species[];
-  total: number;
-  page: number;
-  pageSize: number;
+}
+
+export interface GetSpeciesByIdResponse {
+  data: Species;
+}
+*/
+
+export interface UpdateSpeciesData extends Partial<CreateSpeciesData> {}
+
+export interface DeleteSpeciesResponse {
+  message: string;
 }
