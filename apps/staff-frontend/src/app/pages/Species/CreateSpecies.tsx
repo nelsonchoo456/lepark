@@ -21,6 +21,7 @@ import {
 import type { GetProp } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { phylums, regions, lightType, soilType, conservationStatus, plantCharacteristics, convertLightType, convertSoilType, convertConservationStatus } from '@lepark/data-utility';
+import { createSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 
 const CreateSpecies = () => {
@@ -64,7 +65,6 @@ const CreateSpecies = () => {
 
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
-    console.log("onFinish called", values);
     try {
       const speciesData = {
         phylum: values.phylum,
@@ -96,21 +96,9 @@ const CreateSpecies = () => {
         isToxic: values.plantCharacteristics.includes('Toxic'),
         isFragrant: values.plantCharacteristics.includes('Fragrant'),
       };
-      console.log("speciesData", speciesData);
-      const response = await fetch('http://localhost:3333/api/species/createSpecies', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(speciesData),
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Species created:', result);
+      const response = await createSpecies(speciesData); //doesnt work idk why
+      console.log('Species created:', response.data);
       setCreatedSpeciesName(values.speciesInput);
       setShowSuccessAlert(true);
       form.resetFields();
@@ -118,10 +106,6 @@ const CreateSpecies = () => {
 
     } catch (error) {
       console.error('Error creating species:', error);
-      if (error instanceof Error) {
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
       // Handle error (e.g., show an error message)
     } finally {
       setIsSubmitting(false);
