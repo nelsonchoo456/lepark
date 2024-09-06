@@ -1,45 +1,39 @@
 import { Prisma, Species } from '@prisma/client';
+import { z } from 'zod';
+import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
 import SpeciesDao from '../dao/SpeciesDao';
 import StaffDao from '../dao/StaffDao';
 
 class SpeciesService {
-  public async createSpecies(
-    data: Prisma.SpeciesCreateInput,
-  ): Promise<Species> {
-    // Validate input data
-    if (
-      !data.phylum ||
-      !data.class ||
-      !data.order ||
-      !data.family ||
-      !data.genus ||
-      !data.speciesName ||
-      !data.commonName ||
-      !data.speciesDescription ||
-      !data.conservationStatus ||
-      !data.originCountry ||
-      !data.lightType ||
-      !data.soilType ||
-      !data.fertiliserType ||
-      data.waterRequirement === undefined ||
-      data.fertiliserRequirement === undefined ||
-      data.idealHumidity === undefined ||
-      data.minTemp === undefined ||
-      data.maxTemp === undefined ||
-      data.idealTemp === undefined ||
-      data.isDroughtTolerant === undefined ||
-      data.isFastGrowing === undefined ||
-      data.isSlowGrowing === undefined ||
-      data.isEdible === undefined ||
-      data.isDeciduous === undefined ||
-      data.isEvergreen === undefined ||
-      data.isToxic === undefined ||
-      data.isFragrant === undefined
-    ) {
-      throw new Error('All fields are required.');
-    }
+  public async createSpecies(data: SpeciesSchemaType): Promise<Species> {
+    try {
+      // Validate input data using Zod
+      SpeciesSchema.parse(data);
 
-    return SpeciesDao.createSpecies(data);
+      // Additional temperature checks
+      if (data.minTemp >= data.maxTemp) {
+        throw new Error(
+          'Minimum temperature must be less than maximum temperature',
+        );
+      }
+      if (data.idealTemp < data.minTemp || data.idealTemp > data.maxTemp) {
+        throw new Error(
+          'Ideal temperature must be between minimum and maximum temperature',
+        );
+      }
+
+      // Convert validated data to Prisma input type
+      const speciesData = ensureAllFieldsPresent(data);
+
+      // Create the species, remember to pass in Prisma.SpeciesCreateInput type
+      return SpeciesDao.createSpecies(speciesData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
   }
 
   public async getAllSpecies(): Promise<Species[]> {
@@ -47,49 +41,78 @@ class SpeciesService {
   }
 
   public async getSpeciesById(id: string): Promise<Species> {
-    return SpeciesDao.getSpeciesById(id);
+    try {
+      const species = await SpeciesDao.getSpeciesById(id);
+      if (!species) {
+        throw new Error('Species not found');
+      }
+      return species;
+    } catch (error) {
+      throw new Error(`Unable to fetch species details: ${error.message}`);
+    }
   }
 
   public async updateSpeciesDetails(
     id: string,
-    data: Prisma.SpeciesUpdateInput,
+    // Use Partial<SpeciesSchemaType> to allow partial updates and ensure input validation
+    data: Partial<SpeciesSchemaType>,
   ): Promise<Species> {
-    // Create an updateData object and only include fields that are provided
-    const updateData: Prisma.SpeciesUpdateInput = {};
-    if (data.speciesName) updateData.speciesName = data.speciesName;
-    if (data.commonName) updateData.commonName = data.commonName;
-    if (data.speciesDescription)
-      updateData.speciesDescription = data.speciesDescription;
-    if (data.conservationStatus)
-      updateData.conservationStatus = data.conservationStatus;
-    if (data.originCountry) updateData.originCountry = data.originCountry;
-    if (data.lightType) updateData.lightType = data.lightType;
-    if (data.soilType) updateData.soilType = data.soilType;
-    if (data.fertiliserType) updateData.fertiliserType = data.fertiliserType;
-    if (data.waterRequirement !== undefined)
-      updateData.waterRequirement = data.waterRequirement;
-    if (data.fertiliserRequirement !== undefined)
-      updateData.fertiliserRequirement = data.fertiliserRequirement;
-    if (data.idealHumidity !== undefined)
-      updateData.idealHumidity = data.idealHumidity;
-    if (data.minTemp !== undefined) updateData.minTemp = data.minTemp;
-    if (data.maxTemp !== undefined) updateData.maxTemp = data.maxTemp;
-    if (data.idealTemp !== undefined) updateData.idealTemp = data.idealTemp;
-    if (data.isDroughtTolerant !== undefined)
-      updateData.isDroughtTolerant = data.isDroughtTolerant;
-    if (data.isFastGrowing !== undefined)
-      updateData.isFastGrowing = data.isFastGrowing;
-    if (data.isSlowGrowing !== undefined)
-      updateData.isSlowGrowing = data.isSlowGrowing;
-    if (data.isEdible !== undefined) updateData.isEdible = data.isEdible;
-    if (data.isDeciduous !== undefined)
-      updateData.isDeciduous = data.isDeciduous;
-    if (data.isEvergreen !== undefined)
-      updateData.isEvergreen = data.isEvergreen;
-    if (data.isToxic !== undefined) updateData.isToxic = data.isToxic;
-    if (data.isFragrant !== undefined) updateData.isFragrant = data.isFragrant;
+    try {
+      const existingSpecies = await SpeciesDao.getSpeciesById(id);
 
-    return SpeciesDao.updateSpeciesDetails(id, updateData);
+      // Merge existing data with update data
+      const mergedData = { ...existingSpecies, ...data };
+
+      // Validate merged data using Zod
+      SpeciesSchema.parse(mergedData);
+
+      // Convert validated SpeciesSchemaType data to Prisma-compatible update input
+      // This ensures only defined fields are included in the update operation
+      const updateData: Prisma.SpeciesUpdateInput = Object.entries(data).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {},
+      );
+
+      // Additional temperature checks
+      const minTemp = data.minTemp ?? existingSpecies.minTemp;
+      const maxTemp = data.maxTemp ?? existingSpecies.maxTemp;
+      const idealTemp = data.idealTemp ?? existingSpecies.idealTemp;
+
+      if (
+        minTemp !== undefined &&
+        maxTemp !== undefined &&
+        minTemp >= maxTemp
+      ) {
+        throw new Error(
+          'Minimum temperature must be less than maximum temperature',
+        );
+      }
+      if (idealTemp !== undefined) {
+        if (minTemp !== undefined && idealTemp < minTemp) {
+          throw new Error(
+            'Ideal temperature must be greater than or equal to minimum temperature',
+          );
+        }
+        if (maxTemp !== undefined && idealTemp > maxTemp) {
+          throw new Error(
+            'Ideal temperature must be less than or equal to maximum temperature',
+          );
+        }
+      }
+
+      return SpeciesDao.updateSpeciesDetails(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
   }
 
   public async deleteSpecies(
@@ -102,6 +125,24 @@ class SpeciesService {
     }
     await SpeciesDao.deleteSpecies(speciesId);
   }
+}
+
+// Utility function to ensure all required fields are present
+function ensureAllFieldsPresent(data: SpeciesSchemaType): Prisma.SpeciesCreateInput {
+  // Add checks for all required fields
+  if (!data.phylum || !data.class || !data.order || !data.family || !data.genus || 
+      !data.speciesName || !data.commonName || !data.speciesDescription || 
+      !data.conservationStatus || !data.originCountry || !data.lightType || 
+      !data.soilType || !data.fertiliserType || !data.waterRequirement || 
+      !data.fertiliserRequirement || !data.idealHumidity || !data.minTemp || 
+      !data.maxTemp || !data.idealTemp || data.isDroughtTolerant === undefined || 
+      data.isFastGrowing === undefined || data.isSlowGrowing === undefined || 
+      data.isEdible === undefined || data.isDeciduous === undefined || 
+      data.isEvergreen === undefined || data.isToxic === undefined || 
+      data.isFragrant === undefined) {
+    throw new Error('Missing required fields for species creation');
+  }
+  return data as Prisma.SpeciesCreateInput;
 }
 
 export default new SpeciesService();

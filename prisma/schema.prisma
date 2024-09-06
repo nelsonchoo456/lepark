@@ -35,7 +35,7 @@ model Staff {
   isActive      Boolean
 }
 
-enum CONSERVATION_STATUS {
+enum ConservationStatusEnum {
   LEAST_CONCERN
   NEAR_THREATENED
   VULNERABLE
@@ -45,13 +45,13 @@ enum CONSERVATION_STATUS {
   EXTINCT
 }
 
-enum LIGHT_TYPE {
+enum LightTypeEnum {
   FULL_SUN
   PARTIAL_SHADE
   FULL_SHADE
 }
 
-enum SOIL_TYPE {
+enum SoilTypeEnum {
   SANDY
   CLAY
   LOAM
@@ -71,10 +71,10 @@ model Species {
   speciesName           String
   commonName            String
   speciesDescription    String
-  conservationStatus    CONSERVATION_STATUS
+  conservationStatus    ConservationStatusEnum
   originCountry         String
-  lightType             LIGHT_TYPE
-  soilType              SOIL_TYPE
+  lightType             LightTypeEnum
+  soilType              SoilTypeEnum
   fertiliserType        String
   images                String[]
   waterRequirement      Int
