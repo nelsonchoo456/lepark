@@ -1,0 +1,68 @@
+export enum ConservationStatusEnum {
+  DATA_DEFICIENT = 'DATA_DEFICIENT',
+  NOT_EVALUATED = 'NOT_EVALUATED',
+  LEAST_CONCERN = 'LEAST_CONCERN',
+  NEAR_THREATENED = 'NEAR_THREATENED',
+  VULNERABLE = 'VULNERABLE',
+  ENDANGERED = 'ENDANGERED',
+  CRITICALLY_ENDANGERED = 'CRITICALLY_ENDANGERED',
+  EXTINCT_IN_THE_WILD = 'EXTINCT_IN_THE_WILD',
+  EXTINCT = 'EXTINCT',
+}
+
+export enum LightTypeEnum {
+  FULL_SUN = 'FULL_SUN',
+  PARTIAL_SHADE = 'PARTIAL_SHADE',
+  FULL_SHADE = 'FULL_SHADE',
+}
+
+export enum SoilTypeEnum {
+  SANDY = 'SANDY',
+  CLAY = 'CLAY',
+  LOAM = 'LOAM',
+  PEATY = 'PEATY',
+  SILTY = 'SILTY',
+  CHALKY = 'CHALKY',
+  SHALLOW = 'SHALLOW',
+}
+
+// Define the Species interface
+export interface Species {
+  id: string;
+  phylum: string;
+  class: string;
+  order: string;
+  family: string;
+  genus: string;
+  speciesName: string;
+  commonName: string;
+  speciesDescription: string;
+  conservationStatus: ConservationStatusEnum;
+  originCountry: string;
+  lightType: LightTypeEnum;
+  soilType: SoilTypeEnum;
+  fertiliserType: string;
+  images: string[];
+  waterRequirement: number;
+  fertiliserRequirement: number;
+  idealHumidity: number;
+  minTemp: number;
+  maxTemp: number;
+  idealTemp: number;
+  isDroughtTolerant: boolean;
+  isFastGrowing: boolean;
+  isSlowGrowing: boolean;
+  isEdible: boolean;
+  isDeciduous: boolean;
+  isEvergreen: boolean;
+  isToxic: boolean;
+  isFragrant: boolean;
+}
+
+// Define the response type for fetching species
+export interface SpeciesResponse {
+  data: Species[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
