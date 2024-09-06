@@ -5,6 +5,7 @@ export const OccurrenceSchema = z.object({
   id: z.string().uuid().optional(),  // ID is optional because it's usually auto-generated
   lat: z.number().min(-90).max(90).optional(),  
   lng: z.number().min(-180).max(180).optional(), 
+  title: z.string().optional(), 
   dateObserved: z.date(),
   // dateObserved: z.preprocess((arg) => new Date(arg as string), z.date()),
   dateOfBirth: z.date().optional(),

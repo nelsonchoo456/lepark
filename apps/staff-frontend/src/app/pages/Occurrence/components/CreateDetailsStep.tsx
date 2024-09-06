@@ -42,9 +42,9 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
       labelCol={{ span: 8 }}
       className="max-w-[600px] mx-auto mt-8"
     >
-      <Form.Item name="species" label="Species" rules={[{ required: true }]}>
+      {/* <Form.Item name="species" label="Species" rules={[{ required: true }]}>
         <TreeSelect placeholder="Select a Species" treeData={speciesOptions}/>
-      </Form.Item>
+      </Form.Item> */}
       <Form.Item name="title" label="Title" rules={[{ required: true }]}>
         <Input placeholder="Give this Plant Occurrence a title!" />
       </Form.Item>
@@ -68,7 +68,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
           autoSize={{ minRows: 3, maxRows: 5 }}
         />
       </Form.Item>
-      <Form.Item name="decaronizationType" label="Decarbonization Type" rules={[{ required: true }]}>
+      <Form.Item name="decarbonizationType" label="Decarbonization Type" rules={[{ required: true }]}>
         <Select placeholder="Select a Decarbonization Type" options={decarbonizationTypeOptions}/>
       </Form.Item>
       <Form.Item wrapperCol={{ offset: 8 }}>

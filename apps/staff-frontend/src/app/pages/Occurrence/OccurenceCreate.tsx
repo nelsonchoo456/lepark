@@ -1,10 +1,13 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { Button, Card, DatePicker, Flex, Form, Input, InputNumber, Select, Steps, Tabs } from 'antd';
+import { createOccurrence } from '@lepark/data-access';
+import { Button, Card, Flex, Form, Input, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
-import { useState } from 'react';
 import CreateMapStep from './components/CreateMapStep';
-const { TextArea } = Input;
+import moment from 'moment';
+import { OccurrenceResponse } from '@lepark/data-access';
 
 const center = {
   lat: 1.3503881629328163,
@@ -18,6 +21,9 @@ export interface AdjustLatLngInterface {
 
 const OccurrenceCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
+  const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
+  const navigate = useNavigate();
+
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
@@ -52,9 +58,23 @@ const OccurrenceCreate = () => {
 
   const handleSubmit = async () => {
     try {
-      const finalData = { ...formValues, lat, lng };
-      console.log("finalData", finalData)
+      const finalData = {
+        ...formValues,
+        lat,
+        lng,
+        speciesId: '80856786-0ed5-4d4d-a01c-8c4266f89f75',
+        dateObserved: formValues.dateObserved ? moment(formValues.dateObserved).toISOString() : null,
+        dateOfBirth: formValues.dateOfBirth ? moment(formValues.dateOfBirth).toISOString() : null,
+      };
+
+      const response = await createOccurrence(finalData);
+      if (response?.status && response.status === 201) {
+        setCurrStep(2);
+        setCreatedData(response.data)
+      }
+      console.log('response', response);
     } catch (error) {
+      console.log('error', error);
       //
     }
   };
@@ -67,6 +87,10 @@ const OccurrenceCreate = () => {
     {
       key: 'location',
       children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} />,
+    },
+    {
+      key: 'complete',
+      children: <>Created</>,
     },
   ];
 
@@ -113,6 +137,23 @@ const OccurrenceCreate = () => {
               </Button>
             </Flex>
           </>
+        )}
+        {currStep === 2 && (
+          <Flex justify="center" className="py-4">
+            <Result
+              status="success"
+              title="Created new Occurrence"
+              subTitle={
+                createdData && <>Occurrence title: {createdData.title}</>
+              }
+              extra={[
+                <Button key="back" onClick={() => navigate('/occurrence')}>Back to Occurrence Management</Button>,
+                <Button type="primary" key="view" onClick={() => navigate(`/occurrence/${createdData?.id}`)}>
+                  View new Occurrence
+                </Button>,
+              ]}
+            />
+          </Flex>
         )}
       </Card>
     </ContentWrapperDark>

@@ -108,6 +108,7 @@ model Occurrence {
   dateOfBirth           DateTime?
   numberOfPlants        Float
   biomass               Float
+  title                 String
   description           String
   decarbonizationType   DECARBONIZATION_TYPE
   speciesId             String @db.Uuid

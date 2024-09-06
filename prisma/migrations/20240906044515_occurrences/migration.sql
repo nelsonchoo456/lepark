@@ -16,6 +16,7 @@ CREATE TABLE "Occurrence" (
     "dateOfBirth" TIMESTAMP(3),
     "numberOfPlants" DOUBLE PRECISION NOT NULL,
     "biomass" DOUBLE PRECISION NOT NULL,
+    "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "decarbonizationType" "DECARBONIZATION_TYPE" NOT NULL,
     "speciesId" UUID NOT NULL,
