@@ -11,7 +11,7 @@ import Login from './pages/Login/Login';
 import OccurrenceList from './pages/Occurrence/OccurrenceList';
 import OccurrenceCreate from './pages/Occurrence/OccurenceCreate';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
-import ProfilePage from './pages/Profile/Profile';
+import ProfilePage from './pages/Profile/StaffProfile';
 import Register from './pages/Register/Register';
 import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
@@ -19,6 +19,7 @@ import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
+import CreateStaff from './pages/StaffManagement/CreateStaff';
 
 export function App() {
   return (
@@ -72,12 +73,14 @@ export function App() {
                 path="create"
                 element={<ParkCreate/>}/>
             </Route>
-            
+
             <Route path="/profile" element={<StaffProfile />} />
-            <Route path="/staffManagement" element={<StaffManagementPage />} />
+            <Route path="/staff-management" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
+            <Route path="/staff-management/create-staff" element={<CreateStaff />} />
           </Route>
+
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

@@ -1,22 +1,41 @@
-import { Card, Badge } from "antd";
-import { Input, Avatar, Button } from "antd";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
-import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, CustButton } from "@lepark/common-ui";
-import { useState, useEffect } from "react";
-import { SCREEN_LG } from "../../config/breakpoints";
-import { Color } from "antd/es/color-picker";
-import EventCard from "../MainLanding/components/EventCard";
-import EditPasswordModal from "./EditPasswordModal";
-import EditEmailModal from "./EditEmailModal";
-
+import { Card, Badge, Menu, Dropdown } from 'antd';
+import { Input, Avatar, Button } from 'antd';
+import {
+  UserOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+import {
+  ContentWrapper,
+  Divider,
+  Content,
+  Header,
+  ListItemType,
+  Logo,
+  LogoText,
+  CustButton,
+} from '@lepark/common-ui';
+import { useState, useEffect } from 'react';
+import { SCREEN_LG } from '../../config/breakpoints';
+import { Color } from 'antd/es/color-picker';
+import EventCard from '../MainLanding/components/EventCard';
+import EditPasswordModal from './EditPasswordModal';
+import EditEmailModal from './EditEmailModal';
+import { useNavigate } from 'react-router-dom';
+import DeleteAccountModal from './DeleteAccountModal';
 
 const ProfilePage = () => {
-    const [username, setUsername] = useState<string>("John Tan");
-    const [contactNumber, setContactNumber] = useState<string>("12345678");
-    const [editing, setEditing] = useState<boolean>(false);
-    const [isPasswordModalVisible, setIsPasswordModalVisible] = useState<boolean>(false);
-    const [isEmailModalVisible, setIsEmailModalVisible] = useState<boolean>(false);
-  
+  const [username, setUsername] = useState<string>('John Tan');
+  const [contactNumber, setContactNumber] = useState<string>('12345678');
+  const [editing, setEditing] = useState<boolean>(false);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] =
+    useState<boolean>(false);
+  const [isEmailModalVisible, setIsEmailModalVisible] =
+    useState<boolean>(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] =
+    useState<boolean>(false);
+  const navigate = useNavigate();
+
   const handleEditProfile = () => {
     setEditing(true);
   };
@@ -32,11 +51,11 @@ const ProfilePage = () => {
 
   const handleEditPassword = () => {
     setIsPasswordModalVisible(true);
-  }
+  };
 
   const handleEditEmail = () => {
     setIsEmailModalVisible(true);
-  }
+  };
 
   const handlePasswordModalCancel = () => {
     setIsPasswordModalVisible(false);
@@ -49,6 +68,34 @@ const ProfilePage = () => {
   const handleLogout = () => {
     // Logout functionality goes here
   };
+
+  const handleDeleteAccount = () => {
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    // Account deletion logic goes here
+    // For example, make an API call to delete the account
+    // On success:
+    navigate('/'); // Redirect to home page
+  };
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="1" onClick={handleEditProfile}>
+        Edit Profile
+      </Menu.Item>
+      <Menu.Item key="2" onClick={handleEditPassword}>
+        Change Password
+      </Menu.Item>
+      <Menu.Item key="3" onClick={handleEditEmail}>
+        Change Email
+      </Menu.Item>
+      <Menu.Item key="4" onClick={handleDeleteAccount}>
+        Delete Account
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <div className="pb-20">
@@ -68,13 +115,6 @@ const ProfilePage = () => {
           <div className="md:text-center md:mx-auto">
             <p className="font-medium text-2xl md:text-3xl">My Profile</p>
           </div>
-          <Button 
-            onClick={handleLogout} 
-            icon={<LogoutOutlined />} 
-            className="bg-green-200 text-white top-5 right-4 absolute"
-          >
-            Logout
-          </Button>
         </div>
       </Card>
 
@@ -111,68 +151,89 @@ const ProfilePage = () => {
             </div>
           ) : (
             <div className="w-full flex flex-col items-center">
-            <h2 className="text-xl font-bold">{username}</h2>
-            <p className="text-gray-600">{contactNumber}</p>
-            <div className="w-full flex flex-col sm:flex-row sm:justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-4">
-              <CustButton type="primary" onClick={handleEditProfile} className="w-auto sm:w-auto">
-                Edit Profile
-              </CustButton>
-              <CustButton type="primary" onClick={handleEditPassword} className="w-auto sm:w-auto">
-                Change Password
-              </CustButton>
-              <EditPasswordModal open={isPasswordModalVisible} onClose={handlePasswordModalCancel} />
-              <CustButton type="primary" onClick={handleEditEmail} className="w-auto sm:w-auto">
-                Change Email
-              </CustButton>
-              <EditEmailModal open={isEmailModalVisible} onClose={handleEmailModalCancel} />
+              <h2 className="text-xl font-bold">{username}</h2>
+              <p className="text-gray-600">{contactNumber}</p>
+              <div className="flex space-x-2 mt-4">
+                <Dropdown overlay={menu} placement="bottomRight">
+                  <CustButton
+                    type="primary"
+                    className="w-auto sm:w-auto"
+                    icon={<SettingOutlined />}
+                  >
+                    Settings
+                  </CustButton>
+                </Dropdown>
+                <CustButton
+                  type="primary"
+                  onClick={handleLogout}
+                  icon={<LogoutOutlined />}
+                >
+                  Logout
+                </CustButton>
+                <EditPasswordModal
+                  open={isPasswordModalVisible}
+                  onClose={handlePasswordModalCancel}
+                />
+                <EditEmailModal
+                  open={isEmailModalVisible}
+                  onClose={handleEmailModalCancel}
+                />
+                <DeleteAccountModal
+                  visible={isDeleteModalVisible}
+                  onConfirm={handleDeleteConfirm}
+                  onCancel={() => setIsDeleteModalVisible(false)}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
 
       <ContentWrapper>
-      <div className="relative py-2 bg-white rounded-2xl shadow ">
-        <LogoText className="font-bold text-lg pl-3 pt-1">My Upcoming Events</LogoText>
+        <div className="relative py-2 bg-white rounded-2xl shadow ">
+          <LogoText className="font-bold text-lg pl-3 pt-1">
+            My Upcoming Events
+          </LogoText>
           <div className="w-full overflow-scroll flex gap-2 py-2">
-            <EventCard 
-              title="Event 1" 
-              url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg" 
+            <EventCard
+              title="Event 1"
+              url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
               extra={<a href="#">More</a>}
             >
               keewewk
             </EventCard>
-            <EventCard 
-              title="Event 4" 
-              url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650" 
+            <EventCard
+              title="Event 4"
+              url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
               extra={<a href="#">More</a>}
             >
               rwrewrkeek
             </EventCard>
-            <EventCard 
-              title="Event 2" 
-              url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens" 
+            <EventCard
+              title="Event 2"
+              url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
               extra={<a href="#">More</a>}
             >
               keewerewk
             </EventCard>
-            <EventCard 
-              title="Event 3" 
-              url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" 
+            <EventCard
+              title="Event 3"
+              url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg"
               extra={<a href="#">More</a>}
             >
               keewerewrk
             </EventCard>
           </div>
-          </div>
-        </ContentWrapper>
+        </div>
+      </ContentWrapper>
 
       <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
-          <LogoText className="font-bold text-lg pl-3 pt-1">Favourite Species</LogoText>
+          <LogoText className="font-bold text-lg pl-3 pt-1">
+            Favourite Species
+          </LogoText>
         </div>
-      </ContentWrapper> 
-
+      </ContentWrapper>
     </div>
   );
 };
