@@ -3,16 +3,21 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from "../../config/breakpoints";
 import { Content, Header, ListItemType, LogoText, Sidebar } from "@lepark/common-ui";
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from "react-icons/fi";
+import { IoLeafOutline } from "react-icons/io5";
 import { GrMapLocation } from "react-icons/gr";
 import { Menu } from "antd";
 import Logo from "../logo/Logo";
+import { PiPottedPlant } from "react-icons/pi";
 
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(
     window.innerWidth >= SCREEN_LG
   );
+  const [activeItems, setActiveItems] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Resizing
   useEffect(() => {
     const handleResize = () => {
       setShowSidebar(window.innerWidth >= SCREEN_LG);
@@ -24,14 +29,45 @@ const MainLayout = () => {
     };
   }, []);
 
+  // Setting Active Nav Item
+  const getLastItemFromPath = (path: string): string => {
+		const pathItems = path.split("/").filter(Boolean);
+		return pathItems[pathItems.length - 1];
+	};
+
+  useEffect(() => {
+    setActiveItems(getLastItemFromPath(location.pathname))
+  }, [location.pathname])
+
   // Navigation
   const navItems: ListItemType[] = [
     {
       key: 'home',
       icon: <FiHome />,
       // icon: <UserOutlined />,
-      label: 'Home kekek',
+      label: 'Home',
       onClick: () => navigate('/'),
+    },
+    {
+      key: 'species',
+      icon: <PiPottedPlant />,
+      // icon: <UserOutlined />,
+      label: 'Species',
+      onClick: () => navigate('/species'),
+    },
+    {
+      key: 'occurence',
+      icon: <IoLeafOutline />,
+      // icon: <UserOutlined />,
+      onClick: () => navigate('/occurence'),
+      label: 'Occurences',
+    },
+    {
+      key: 'staffManagement',
+      icon: <FiUsers />,
+      // icon: <UploadOutlined />,
+      label: 'Staff Management',
+      onClick: () => navigate('/staff-management'),
     },
     {
       key: 'map',
@@ -40,13 +76,13 @@ const MainLayout = () => {
       label: 'Map',
       onClick: () => navigate('/map'),
     },
-    {
-      key: 'account',
-      icon: <FiUser />,
-      // icon: <UserOutlined />,
-      label: 'Account',
-      onClick: () => navigate('/profile'),
-    },
+    // {
+    //   key: 'account',
+    //   icon: <FiUser />,
+    //   // icon: <UserOutlined />,
+    //   label: 'Account',
+    //   onClick: () => navigate('/profile'),
+    // },
     {
       key: 'tasks',
       icon: <FiInbox />,
@@ -54,11 +90,10 @@ const MainLayout = () => {
       label: 'Tasks',
     },
     {
-      key: 'staffManagement',
-      icon: <FiUsers />,
-      // icon: <UploadOutlined />,
-      label: 'Staff Management',
-      onClick: () => navigate('/staffManagement'),
+      key: 'profile',
+      icon: <FiUser/>,
+      label: 'Account',
+      onClick: () => navigate('/profile'),
     },
     {
       key: 'settings',
@@ -67,7 +102,7 @@ const MainLayout = () => {
       label: 'Settings',
     },
   ];
-  
+
   return (
     <div>
       <Header items={navItems} showSidebar={showSidebar} >
@@ -81,7 +116,7 @@ const MainLayout = () => {
           <Logo/>
           <LogoText>Leparks Admin</LogoText>
         </div>
-        <Menu items={navItems} style={{ backgroundColor: "transparent", border: "transparent" }}/>
+        <Menu items={navItems} selectedKeys={[activeItems]} style={{ backgroundColor: "transparent", border: "transparent" }}/>
       </Sidebar>
       <Content $showSidebar={showSidebar}><Outlet /></Content>
     </div>

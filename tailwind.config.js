@@ -150,6 +150,9 @@ module.exports = {
           to: { opacity: 1, transform: "translateY(0)" },
         },
       },
+      fontFamily: {
+        'roboto': ['Roboto', 'sans-serif'],
+      },
     },
   },
   plugins: [],

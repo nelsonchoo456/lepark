@@ -9,6 +9,7 @@ import MapPage from './pages/MapPage/MapPage';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
+import Register from './pages/Register/Register';
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
