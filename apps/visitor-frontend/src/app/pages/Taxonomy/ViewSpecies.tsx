@@ -8,7 +8,8 @@ import { Badge, Card, Space } from "antd";
 import { useNavigate } from 'react-router-dom'
 import { FiArrowLeft } from "react-icons/fi";
 import { MdSunny } from "react-icons/md";
-import { species } from "@lepark/data-utility";
+import { species, speciesExamples } from "@lepark/data-utility";
+
 
 
 const ViewSpecies = () => {
@@ -55,7 +56,7 @@ const ViewSpecies = () => {
           <p className={attributeStyle}>filler text </p>
         </Card>
       </div>
-      <p className="text-[#767676]">
+      <h5 className="text-[#767676]">
         <p className="leading-snug">
           {isExpanded ? description : truncatedDescription}
           {description.length > 150 && !isExpanded && '...'}
@@ -68,7 +69,7 @@ const ViewSpecies = () => {
             {isExpanded ? 'View less' : 'View more'}
           </button>
         )}
-      </p>
+      </h5>
     </div>
     // </MainLayout>
   );

@@ -5,9 +5,12 @@ import { PiPlantFill, PiStarFill, PiTicketFill } from "react-icons/pi";
 import { FaTent } from "react-icons/fa6";
 import { Badge, Card, Space } from "antd";
 import { useNavigate } from 'react-router-dom'
+import { speciesExamples } from "@lepark/data-utility";
 
 const Discover = () => {
   const navigate = useNavigate();
+  const cardStyle = "w-[95%] justify-center items-center text-left md:w-1/2 m-1 !p-0.01 flex flex-row";
+  const speciesTitleStyle = "text-xl font-medium text-green-500";
 
   return (
     // <MainLayout>
@@ -32,21 +35,35 @@ const Discover = () => {
             </div>
             </Card>
 
-<div className=" justify-center">
+<div className="justify-center bg-green-50">
 
 
           {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
-          <div className="justify-center md:flex">
-          <Card className="w-full justify-center items-center text-center md:w-1/2" onClick={() => {
+          <div className="flex flex-col items-center max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar">
+          <Card className={cardStyle} onClick={() => {
             navigate('/taxonomy/view-species');
           }}>
             <p>View 1 Species</p>
           </Card>
-          <Card className="w-full justify-center items-center text-center md:w-1/2" onClick={() => {
-            //navigate to species list
-          }}>
-            <p>View all Species (WIP)</p>
-          </Card>
+          {speciesExamples.map((species, index) => (
+            <Card
+              key={index}
+              className={cardStyle}
+              bodyStyle={{ padding: 10 }}
+              onClick={() => {
+                navigate(`/taxonomy/view-species/${species.id}`);
+              }}
+            >
+                <div className="w-[15%] bg-green-800">
+
+                </div>
+                <div>
+                    <h1 className={speciesTitleStyle}>{species.commonName}</h1>
+                <p>{species.speciesName}</p>
+                </div>
+
+            </Card>
+          ))}
           </div>
         {/* </div> */}
 

@@ -28,6 +28,7 @@ import {
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
 import { PlusOutlined } from '@ant-design/icons';
+import { getAllSpecies } from '@lepark/data-access';
 
 const SpeciesPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
@@ -104,6 +105,20 @@ const SpeciesPage = () => {
   ];
   // const columns = Object.keys(filteredSpecies[1]).map((label) => ({ key: label, dataIndex: label, label, render: (text: string)=> text}))
   console.log('filteredSpecies', filteredSpecies);
+
+  //species fetch
+  useEffect(() => {
+    const fetchSpecies = async () => {
+      try {
+        const response = await getAllSpecies(); //DOESNT WORK ...... WHY
+        console.log('Species fetched:', response.data);
+      } catch (error) {
+        console.error('Error fetching species:', error);
+      }
+    };
+
+    fetchSpecies();
+  }, []);
 
   return webMode ? (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1] p-10`} >
