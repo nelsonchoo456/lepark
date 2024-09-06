@@ -1,12 +1,13 @@
 import express from 'express';
 import VisitorService from '../services/VisitorService';
-import { Prisma, StaffRoleEnum } from '@prisma/client';
+import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/visitorSchema';
 
 const router = express.Router();
 
 router.post('/register', async (req, res) => {
   try {
-    const visitor = await VisitorService.register(req.body);
+    const visitorData = VisitorSchema.parse(req.body);
+    const visitor = await VisitorService.register(visitorData);
     res.status(201).json(visitor);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,12 +36,14 @@ router.get('/viewVisitorDetails/:id', async (req, res) => {
 router.put('/updateVisitorDetails/:id', async (req, res) => {
   try {
     const visitorId = req.params.id;
-    const updateData: Prisma.VisitorUpdateInput = req.body;
+    const updateData = VisitorSchema.partial().pick({
+      firstName: true,
+      lastName: true,
+      email: true,
+      contactNumber: true
+    }).parse(req.body);
 
-    const updatedVisitor = await VisitorService.updateVisitorDetails(
-      visitorId,
-      updateData,
-    );
+    const updatedVisitor = await VisitorService.updateVisitorDetails(visitorId, updateData);
     res.status(200).json(updatedVisitor);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -49,36 +52,36 @@ router.put('/updateVisitorDetails/:id', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { token, user } = await VisitorService.login(req.body);
+    const loginData = LoginSchema.parse(req.body);
+    const { token, user } = await VisitorService.login(loginData);
 
     res.cookie('jwtToken_Visitor', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // secure in production
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 4 * 60 * 60 * 1000, // 4 hours (needs to be same expiry as the JWT token)
     });
 
-    res.status(200).json(user); // send user data in the response body
+    res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
 router.post('/logout', (_, res) => {
-  res
-    .clearCookie('jwtToken_Visitor', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // secure in production
-      sameSite: 'strict',
-    })
-    .status(200)
-    .send({ message: 'Logout successful' });
+  res.clearCookie('jwtToken_Visitor', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  })
+  .status(200)
+  .send({ message: 'Logout successful' });
 });
 
 router.post('/forgot-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    await VisitorService.requestPasswordReset(email);
+    const data = PasswordResetRequestSchema.parse(req.body);
+    await VisitorService.requestPasswordReset(data);
     res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -87,8 +90,8 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
-    await VisitorService.resetPassword(token, newPassword);
+    const data = PasswordResetSchema.parse(req.body);
+    await VisitorService.resetPassword(data);
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
