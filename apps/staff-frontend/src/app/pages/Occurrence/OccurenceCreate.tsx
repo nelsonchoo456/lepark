@@ -1,56 +1,105 @@
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { Card, Form, Input, Select, Tabs } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Steps, Tabs } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
-import TextArea from 'antd/es/input/TextArea';
+import CreateDetailsStep from './components/CreateDetailsStep';
+import { useState } from 'react';
+import CreateMapStep from './components/CreateMapStep';
+const { TextArea } = Input;
+
+const center = {
+	lat: 1.3503881629328163,
+	lng: 103.85132690751749,
+};
+
+export interface AdjustLatLngInterface {
+  lat?: number | null,
+  lng?: number | null
+}
 
 const OccurrenceCreate = () => {
-  // Tabs Utility
-  const tabsItems = [
+  const [currStep, setCurrStep] = useState<number>(0);
+  // Form Values
+  const [formValues, setFormValues] = useState<any>({});
+  const [form] = Form.useForm();
+  // Map Values
+  const [lat, setLat] = useState(center.lat)
+  const [lng, setLng] = useState(center.lng)
+
+  const handleCurrStep = async (step: number) => {
+    if (step === 0) {
+      setCurrStep(0);
+    } else if (step === 1) {
+      try {
+        const values = await form.validateFields(); // Get form data
+        setFormValues(values); // Save form data
+        setCurrStep(1); // Move to step 2
+      } catch (error) {
+        // console.error('Validation failed:', error);
+      }
+    } else {
+      return;
+    }
+  }
+
+  const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
+    if (lat) {
+      setLat(lat)
+    }
+    if (lng) {
+      setLng(lng)
+    }
+  }
+
+  const handleSubmit = async () => {
+    try {
+      const finalData = { ...formValues }
+    } catch (error) {
+      //
+    }
+   }
+  
+  const content = [
     {
-      key: 'About',
-      label: 'About',
-      children: (
-        <Form
-          // style={{ maxWidth: 50 }}
-          labelCol={{ span: 8 }}
-          className="max-w-[600px] mx-auto"
-        >
-          <Form.Item name="species" label="Species" rules={[{ required: true }]}>
-            <Select />
-          </Form.Item>
-          <Form.Item name="numberOfPlants" label="Number of Plants" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="biomass" label="Biomass" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-            <TextArea
-              // value={value}
-              // onChange={(e) => setValue(e.target.value)}
-              // placeholder="Share more details!"
-              autoSize={{ minRows: 3, maxRows: 5 }}
-            />
-          </Form.Item>
-          <Form.Item name="decaronizationType" label="Decarbonization Type" rules={[{ required: true }]}>
-            <Select />
-          </Form.Item>
-        </Form>
-      ),
+      key: 'details',
+      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form}/>,
     },
     {
       key: 'location',
-      label: 'Location',
-      children: <></>,
+      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng}/>,
     },
+    
   ];
 
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurrence Management</PageHeader>
+      <PageHeader>Create an Occurrence</PageHeader>
       <Card>
-        <Tabs items={tabsItems} tabPosition={'left'} />
+        {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}
+        <Steps
+          // direction="vertical"
+          current={currStep}
+          items={[
+            {
+              title: 'Details',
+              description: 'Input Occurrence details',
+            },
+            {
+              title: 'Location',
+              description: 'Indicate Occurrence location',
+            },
+            {
+              title: 'Complete',
+            },
+          ]}
+        />
+        {
+          currStep === 0 && content[0].children
+        }
+        {
+          currStep === 1 && content[1].children
+        }
       </Card>
+      
     </ContentWrapperDark>
   );
 };
