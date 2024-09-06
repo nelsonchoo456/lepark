@@ -139,7 +139,7 @@ const SpeciesPage = () => {
           icon={<PlusOutlined />}
           onClick={() => navigate('/species/create')}
         >
-          Add Staff
+          Create Species
         </Button>
       </Flex>
       <Card bordered={false}>
@@ -151,10 +151,14 @@ const SpeciesPage = () => {
           }))}
           expandable={{
             expandedRowRender: (species) => {
-              
               const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{val}</p>}))
               console.log("keke", descriptionsItems)
-              return <Descriptions items={descriptionsItems} column={2} size="small"/>
+              return (
+                <div>
+              <Descriptions items={descriptionsItems} column={2} size="small"/>
+                <p>test</p>
+                </div>
+              )
             },
           }}
         />

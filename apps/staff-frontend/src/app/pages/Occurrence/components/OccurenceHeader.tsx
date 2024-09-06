@@ -1,13 +1,13 @@
 import { ContentWrapper } from "@lepark/common-ui";
 import { Divider } from "antd";
 
-const OccurenceHeader = () => {
+const OccurrenceHeader = () => {
   return <ContentWrapper>
     <div className="bg-red w-full">
-      <OccurenceHeader/>
+      <OccurrenceHeader/>
       <Divider/>
     </div>
   </ContentWrapper>
 }
 
-export default OccurenceHeader;
+export default OccurrenceHeader;

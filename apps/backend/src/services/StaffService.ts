@@ -271,6 +271,7 @@ class StaffService {
 // Utility function to ensure all required fields are present
 function ensureAllFieldsPresent(data: StaffSchemaType & { password: string }): Prisma.StaffCreateInput {
   if (!data.firstName || !data.lastName || !data.email || !data.role || !data.contactNumber || !data.password) {
+
     throw new Error('Missing required fields for staff creation');
   }
   return data as Prisma.StaffCreateInput;

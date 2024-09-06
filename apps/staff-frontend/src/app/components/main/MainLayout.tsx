@@ -5,9 +5,12 @@ import { Content, Header, ListItemType, LogoText, Sidebar } from "@lepark/common
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from "react-icons/fi";
 import { IoLeafOutline } from "react-icons/io5";
 import { GrMapLocation } from "react-icons/gr";
+import { TbTrees, TbTree } from "react-icons/tb";
 import { Menu } from "antd";
 import Logo from "../logo/Logo";
 import { PiPottedPlant } from "react-icons/pi";
+import type { MenuProps } from 'antd';
+type MenuItem = Required<MenuProps>['items'][number];
 
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(
@@ -40,13 +43,32 @@ const MainLayout = () => {
   }, [location.pathname])
 
   // Navigation
-  const navItems: ListItemType[] = [
+  const navItems: MenuItem[] = [
     {
       key: 'home',
       icon: <FiHome />,
       // icon: <UserOutlined />,
       label: 'Home',
       onClick: () => navigate('/'),
+    },
+    {
+      key: 'park',
+      icon: <TbTrees />,
+      label: 'Parks',
+      onClick: () => navigate('/park/create'),
+      // children: [
+      //   {
+      //     key: 'park/create',
+      //     label: 'Create',
+      //     onClick: () => navigate('/park/create'),
+      //   }
+      // ]
+    },
+    {
+      key: 'zone',
+      icon: <TbTree />,
+      label: 'Zone',
+      onClick: () => navigate('/park/create'),
     },
     {
       key: 'species',
@@ -59,8 +81,15 @@ const MainLayout = () => {
       key: 'occurence',
       icon: <IoLeafOutline />,
       // icon: <UserOutlined />,
-      onClick: () => navigate('/occurence'),
-      label: 'Occurences',
+      onClick: () => navigate('/occurrence'),
+      label: 'Occurrences',
+      // children: [
+      //   {
+      //     key: 'occurence/create',
+      //     label: 'Create',
+      //     onClick: () => navigate('/occurrence/create'),
+      //   }
+      // ]
     },
     {
       key: 'staffManagement',
@@ -116,7 +145,7 @@ const MainLayout = () => {
           <Logo/>
           <LogoText>Leparks Admin</LogoText>
         </div>
-        <Menu items={navItems} selectedKeys={[activeItems]} style={{ backgroundColor: "transparent", border: "transparent" }}/>
+        <Menu items={navItems} mode="inline" defaultOpenKeys={['home']} selectedKeys={[activeItems]} style={{ backgroundColor: "transparent", border: "transparent" }}/>
       </Sidebar>
       <Content $showSidebar={showSidebar}><Outlet /></Content>
     </div>

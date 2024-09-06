@@ -4,7 +4,6 @@ import 'leaflet/dist/leaflet.css';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { ContentWrapper, SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-import { CustButton } from '@lepark/common-ui';
 //species form
 import React from 'react';
 import {
@@ -16,19 +15,13 @@ import {
   Checkbox,
   InputNumber,
   Slider,
+  Alert
+
 } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import {
-  phylums,
-  regions,
-  lightType,
-  soilType,
-  conservationStatus,
-  plantCharacteristics,
-} from '@lepark/data-utility';
+import { phylums, regions, lightType, soilType, conservationStatus, plantCharacteristics, convertLightType, convertSoilType, convertConservationStatus } from '@lepark/data-utility';
 import PageHeader from '../../components/main/PageHeader';
-const { Option } = Select;
 
 const CreateSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(
@@ -48,6 +41,10 @@ const CreateSpecies = () => {
 
   // Species form
   const [form] = Form.useForm();
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [createdSpeciesName, setCreatedSpeciesName] = useState('');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
@@ -55,8 +52,80 @@ const CreateSpecies = () => {
   const tailLayout = {
     wrapperCol: { offset: 8, span: 16 },
   };
-  const onFinish = (values: any) => {
-    console.log(values);
+    const [tempRange, setTempRange] = useState([0, 35]);
+
+    const validateIdealTemp = (rule: any, value: number) => {
+    const [minTemp, maxTemp] = form.getFieldValue('tempRange');
+    if (value < minTemp || value > maxTemp) {
+      return Promise.reject('Ideal temperature must be between min and max temperatures');
+    }
+    return Promise.resolve();
+  };
+
+  const onFinish = async (values: any) => {
+    setIsSubmitting(true);
+    console.log("onFinish called", values);
+    try {
+      const speciesData = {
+        phylum: values.phylum,
+        class: values.classInput,
+        order: values.orderInput,
+        family: values.familyInput,
+        genus: values.genusInput,
+        speciesName: values.speciesInput,
+        commonName: values.commonNameInput,
+        speciesDescription: values.speciesDescriptionInput,
+        conservationStatus: convertConservationStatus(values.conservationStatusInput),
+        originCountry: values.regionOfOriginInput,
+        lightType: convertLightType(values.lightTypeInput),
+        soilType: convertSoilType(values.soilTypeInput),
+        fertiliserType: values.fertiliserType,
+        images: [], // Assuming this should be empty initially
+        waterRequirement: values.waterRequirement,
+        fertiliserRequirement: values.fertiliserRequirement,
+        idealHumidity: values.idealHumidity,
+        minTemp: values.tempRange[0],
+        maxTemp: values.tempRange[1],
+        idealTemp: values.idealTemp,
+        isDroughtTolerant: values.plantCharacteristics.includes('Drought Tolerant'),
+        isFastGrowing: values.plantCharacteristics.includes('Fast Growing'),
+        isSlowGrowing: values.plantCharacteristics.includes('Slow Growing'),
+        isEdible: values.plantCharacteristics.includes('Edible'),
+        isDeciduous: values.plantCharacteristics.includes('Deciduous'),
+        isEvergreen: values.plantCharacteristics.includes('Evergreen'),
+        isToxic: values.plantCharacteristics.includes('Toxic'),
+        isFragrant: values.plantCharacteristics.includes('Fragrant'),
+      };
+      console.log("speciesData", speciesData);
+      const response = await fetch('http://localhost:3333/api/species/createSpecies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(speciesData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Species created:', result);
+      setCreatedSpeciesName(values.speciesInput);
+      setShowSuccessAlert(true);
+      form.resetFields();
+      setTimeout(() => setShowSuccessAlert(false), 5000);
+
+    } catch (error) {
+      console.error('Error creating species:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      // Handle error (e.g., show an error message)
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const onReset = () => {
     form.resetFields();
@@ -70,19 +139,7 @@ const CreateSpecies = () => {
   };
 
   //slider
-  function getGradientColor(percentage: number) {
-    const startColor = [135, 208, 104];
-    const endColor = [255, 204, 199];
-    const midColor = startColor.map((start, i) => {
-      const end = endColor[i];
-      const delta = end - start;
-      return (start + delta * percentage).toFixed(0);
-    });
-    return `rgb(${midColor.join(',')})`;
-  }
-  const [sliderValue, setSliderValue] = React.useState([0, 10, 20]);
-  const start = sliderValue[0] / 100;
-  const end = value[value.length - 1] / 100;
+
 
   return webMode ? (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
@@ -96,15 +153,15 @@ const CreateSpecies = () => {
           form={form}
           name="control-hooks"
           onFinish={onFinish}
-          // style={{ maxWidth: 50 }}
+          disabled={isSubmitting}
           className="max-w-[600px] mx-auto"
         >
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
             <Select placeholder="Select a phylum" allowClear>
               {phylums.map((phylum) => (
-                <Option key={phylum} value={phylum}>
+                <Select.Option key={phylum} value={phylum}>
                   {phylum}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -176,13 +233,13 @@ const CreateSpecies = () => {
               placeholder="Select a region"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {regions.map((region) => (
-                <Option key={region} value={region}>
+                <Select.Option key={region} value={region}>
                   {region}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -198,13 +255,13 @@ const CreateSpecies = () => {
               placeholder="Select a light type"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {lightType.map((type) => (
-                <Option key={type} value={type}>
+                <Select.Option key={type} value={type}>
                   {type}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -220,13 +277,13 @@ const CreateSpecies = () => {
               placeholder="Select a soil type"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {soilType.map((type) => (
-                <Option key={type} value={type}>
+                <Select.Option key={type} value={type}>
                   {type}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -242,13 +299,13 @@ const CreateSpecies = () => {
               placeholder="Select a conservation status"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {conservationStatus.map((status) => (
-                <Option key={status} value={status}>
+                <Select.Option key={status} value={status}>
                   {status}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -298,38 +355,55 @@ const CreateSpecies = () => {
             <InputNumber
               min={0}
               max={100}
-              formatter={(value) => `${value}%`}
-              parser={(value) => value.replace('%', '')}
+
             />
           </Form.Item>
           <Form.Item
             name="tempRange"
-            label="Min, Ideal, Max Temp (C)"
+            label="Min and Max Temp (C)"
             rules={[{ required: true }]}
           >
             <Slider
               range
               min={0}
-              max={35}
+              max={50}
               step={0.1}
-              defaultValue={sliderValue}
-              onChange={setSliderValue}
-              styles={{
-                track: {
-                  background: 'transparent',
-                },
-                tracks: {
-                  background: `linear-gradient(to right, ${getGradientColor(
-                    start,
-                  )} 0%, ${getGradientColor(end)} 100%)`,
-                },
+              value={tempRange}
+              onChange={(newValue) => {
+                if (Array.isArray(newValue) && newValue.length === 2) {
+                  setTempRange(newValue);
+                  form.setFieldsValue({ tempRange: newValue });
+                }
               }}
             />
           </Form.Item>
 
+          <Form.Item
+            name="idealTemp"
+            label="Ideal Temp (C)"
+            rules={[{ required: true }]}
+          >
+            <InputNumber
+              min={0}
+              max={50}
+              step={0.1}
+
+              onChange={() => {
+              form.validateFields(['idealTemp']);
+            }}
+            />
+          </Form.Item>
+
+          <Form.Item label="Temperature Values">
+            <Space>
+              <span>Min: {tempRange[0]}°C</span>
+              <span>Max: {tempRange[1]}°C</span>
+            </Space>
+          </Form.Item>
+
           <Form.Item {...tailLayout}>
             <Space>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 Submit
               </Button>
               <Button htmlType="button" onClick={onReset}>
@@ -339,6 +413,14 @@ const CreateSpecies = () => {
           </Form.Item>
         </Form>
       }
+      {showSuccessAlert && (
+        <Alert
+          message={`Species "${createdSpeciesName}" created successfully`}
+          type="success"
+          closable
+          onClose={() => setShowSuccessAlert(false)}
+        />
+      )}
     </ContentWrapper>
   ) : (
     <div

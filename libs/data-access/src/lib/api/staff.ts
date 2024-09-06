@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+
 import {
   LoginData,
   LogoutResponse,
@@ -16,6 +17,7 @@ const URL = '/staffs';
 export async function registerStaff(data: RegisterStaffData): Promise<AxiosResponse<StaffResponse>> {
   try {
     const response: AxiosResponse<StaffResponse> = await client.post(`${URL}/register`, data);
+
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -25,6 +27,7 @@ export async function registerStaff(data: RegisterStaffData): Promise<AxiosRespo
     }
   }
 }
+
 
 export async function getAllStaffs(): Promise<AxiosResponse<StaffResponse[]>> {
   try {
@@ -134,3 +137,4 @@ export async function resetPassword(data: PasswordResetData): Promise<AxiosRespo
     }
   }
 }
+
