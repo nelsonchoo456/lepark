@@ -15,7 +15,7 @@ interface CreateMapStepProps {
 const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng }: CreateMapStepProps) => {
 
   return (
-    <>
+    // <>
       <div
         style={{
           height: '40vh',
@@ -36,20 +36,7 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng }: CreateMapStep
           <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng}/>
         </MapContainer>
       </div>
-
-      <Flex className="w-full max-w-[600px] mx-auto pb-4" gap={10}>
-        <div className="flex-1">Latitude: <Input value={lat}/></div>
-        <div className="flex-1">Latitude: <Input value={lng}/></div>
-      </Flex>
-      <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
-        <Button type="default" className="w-full" onClick={() => handleCurrStep(0)}>
-          Previous
-        </Button>
-        <Button type="primary" className="w-full" htmlType="submit">
-          Submit
-        </Button>
-      </Flex>
-    </>
+    // </>
   );
 };
 

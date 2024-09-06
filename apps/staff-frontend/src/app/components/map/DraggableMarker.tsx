@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import L, { Layer } from "leaflet";
+import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { AdjustLatLngInterface } from '../../pages/Occurrence/OccurenceCreate';
 
@@ -15,8 +15,7 @@ interface DraggableMarkerProps {
 }
 
 function DraggableMarker({ lat, lng, adjustLatLng }: DraggableMarkerProps) {
-  const [draggable, setDraggable] = useState(false)
-  const [position, setPosition] = useState([lat, lng])
+  // const [position, setPosition] = useState([lat, lng])
   const markerRef = useRef(null)
   const eventHandlers = useMemo(
     () => ({
@@ -30,23 +29,13 @@ function DraggableMarker({ lat, lng, adjustLatLng }: DraggableMarkerProps) {
     }),
     [],
   )
-  const toggleDraggable = useCallback(() => {
-    setDraggable((d) => !d)
-  }, [])
 
   return (
     <Marker
       draggable={true}
       eventHandlers={eventHandlers}
-      position={position}
+      position={[lat, lng]}
       ref={markerRef}>
-      <Popup minWidth={90}>
-        <span onClick={toggleDraggable}>
-          {draggable
-            ? 'Marker is draggable'
-            : 'Click here to make marker draggable'}
-        </span>
-      </Popup>
     </Marker>
   )
 }

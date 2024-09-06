@@ -58,7 +58,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
         <InputNumber min={0} className="w-full" placeholder="Number of Plants" />
       </Form.Item>
       <Form.Item name="biomass" label="Biomass" rules={[{ required: true }]}>
-        <Input placeholder="Biomass" />
+        <InputNumber min={0} placeholder="Biomass" />
       </Form.Item>
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
         <TextArea
