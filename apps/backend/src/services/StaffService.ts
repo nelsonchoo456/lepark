@@ -36,12 +36,7 @@ class StaffService {
         password: hashedPassword,
       });
 
-      const updatedData = {
-        ...staffData,
-        isActive: true,
-      };
-
-      return StaffDao.createStaff(updatedData);
+      return StaffDao.createStaff(staffData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors.map((e) => `${e.message}`);
@@ -270,8 +265,15 @@ class StaffService {
 
 // Utility function to ensure all required fields are present
 function ensureAllFieldsPresent(data: StaffSchemaType & { password: string }): Prisma.StaffCreateInput {
-  if (!data.firstName || !data.lastName || !data.email || !data.role || !data.contactNumber || !data.password) {
-
+  if (
+    !data.firstName ||
+    !data.lastName ||
+    !data.email ||
+    !data.role ||
+    !data.contactNumber ||
+    data.isActive === undefined ||
+    !data.password
+  ) {
     throw new Error('Missing required fields for staff creation');
   }
   return data as Prisma.StaffCreateInput;
