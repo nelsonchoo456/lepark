@@ -46,7 +46,7 @@ class VisitorDao {
       (id) => id !== speciesId,
     );
 
-    return this.updateVisitor(visitorId, {
+    return this.updateVisitorDetails(visitorId, {
       favoriteSpeciesIds: updatedFavoriteSpeciesIds,
     });
   }
