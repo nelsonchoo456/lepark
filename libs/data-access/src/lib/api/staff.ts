@@ -11,7 +11,7 @@ import {
 } from '../types/staff';
 import client from './client';
 
-const URL = '/staff';
+const URL = '/staffs';
 
 export async function registerStaff(data: RegisterStaffData): Promise<AxiosResponse<StaffResponse>> {
   try {
