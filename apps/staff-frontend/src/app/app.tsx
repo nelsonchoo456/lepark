@@ -17,6 +17,8 @@ import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
+import ParkList from './pages/Park/ParkList';
+import ParkCreate from './pages/Park/ParkCreate';
 
 export function App() {
   return (
@@ -59,6 +61,16 @@ export function App() {
               <Route
                 path="create"
                 element={<OccurrenceCreate/>}/>
+            </Route>
+
+            <Route path="/park">
+              <Route index element={<ParkList />} />
+              <Route
+                path=":parkId"
+                element={<OccurrenceDetails/>}/>
+              <Route
+                path="create"
+                element={<ParkCreate/>}/>
             </Route>
             
             <Route path="/profile" element={<StaffProfile />} />
