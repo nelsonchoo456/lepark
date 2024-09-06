@@ -4,7 +4,6 @@ import 'leaflet/dist/leaflet.css';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { ContentWrapper, SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-import { CustButton } from '@lepark/common-ui';
 //species form
 import React from 'react';
 import {
