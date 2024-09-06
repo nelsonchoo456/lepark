@@ -48,15 +48,15 @@ const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff }) => {
 
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
-      <Form.Item name="firstName" label="First Name">
+      <Form.Item name="firstName" label="First Name" rules={[{ required: true, message: 'Please enter a first name.'}]}>
         <Input />
       </Form.Item>
 
-      <Form.Item name="lastName" label="Last Name">
+      <Form.Item name="lastName" label="Last Name" rules={[{ required: true, message: 'Please enter a last name.'}]}>
         <Input />
       </Form.Item>
 
-      <Form.Item name="role" label="Role">
+      <Form.Item name="role" label="Role" rules={[{ required: true, message: 'Please select a role.'}]}>
         <Select>
           {Object.values(StaffType).map((role) => (
             <Option key={role} value={role}>
@@ -69,7 +69,7 @@ const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff }) => {
       <Form.Item name="email" label="Email">
         <Input disabled />
       </Form.Item>
-      <Form.Item name="contactNumber" label="Contact Number">
+      <Form.Item name="contactNumber" label="Contact Number" rules={[{ required: true, message: 'Please enter a contact number.'}]}>
         <Input />
       </Form.Item>
       <Form.Item>
