@@ -151,9 +151,7 @@ const SpeciesPage = () => {
           }))}
           expandable={{
             expandedRowRender: (species) => {
-              
-              const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{val}</p>}))
-              console.log("keke", descriptionsItems)
+              const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{"" + val}</p>}))
               return <Descriptions items={descriptionsItems} column={2} size="small"/>
             },
           }}
