@@ -235,7 +235,7 @@ const CreateSpecies = () => {
               placeholder="Select a region"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {regions.map((region) => (
@@ -257,7 +257,7 @@ const CreateSpecies = () => {
               placeholder="Select a light type"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {lightType.map((type) => (
@@ -279,7 +279,7 @@ const CreateSpecies = () => {
               placeholder="Select a soil type"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {soilType.map((type) => (
@@ -301,7 +301,7 @@ const CreateSpecies = () => {
               placeholder="Select a conservation status"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
             >
               {conservationStatus.map((status) => (
@@ -357,8 +357,7 @@ const CreateSpecies = () => {
             <InputNumber
               min={0}
               max={100}
-              formatter={(value) => `${value}%`}
-              parser={(value) => value.replace('%', '')}
+
             />
           </Form.Item>
           <Form.Item
@@ -390,8 +389,7 @@ const CreateSpecies = () => {
               min={0}
               max={50}
               step={0.1}
-              formatter={value => `${value}°C`}
-              parser={value => value!.replace('°C', '')}
+
               onChange={() => {
               form.validateFields(['idealTemp']);
             }}

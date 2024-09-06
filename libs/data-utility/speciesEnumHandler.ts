@@ -20,9 +20,9 @@ export enum ConservationStatusEnum {
   EXTINCT = 'EXTINCT'
 }
 
-export function convertToEnum<T>(value: string, enumObject: T): T[keyof T] | undefined {
-  const enumValues = Object.values(enumObject) as string[];
-  const enumKeys = Object.keys(enumObject);
+export function convertToEnum<T extends Record<string, string>>(value: string, enumObject: T): T[keyof T] | undefined {
+  const enumValues = Object.values(enumObject);
+  const enumKeys = Object.keys(enumObject) as Array<keyof T>;
 
   const index = enumValues.findIndex(enumValue =>
     enumValue.toLowerCase().replace(/_/g, ' ') === value.toLowerCase()
