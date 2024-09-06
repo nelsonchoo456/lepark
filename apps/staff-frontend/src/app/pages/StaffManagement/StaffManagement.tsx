@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
 import {
@@ -12,6 +12,7 @@ import {
   Dropdown,
   Modal,
   Flex,
+  Tag,
 } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
@@ -19,6 +20,8 @@ import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import EditStaffDetailsModal from './EditStaffDetailsModal';
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import EditStaffActiveStatusModal from './EditStaffActiveStatusModal';
 
 const { Header, Content } = Layout;
 
@@ -115,11 +118,11 @@ const mockData: DataType[] = [
 const StaffManagementPage: React.FC = () => {
   const [staff, setStaff] = useState<DataType[]>(mockData);
   // const [staff, setStaff] = useState<DataType[]>([]);
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState<DataIndex | ''>('');
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
   const [editingStaff, setEditingStaff] = useState<DataType | null>(null);
-  const searchInput = useRef<InputRef>(null);
+  const [statusStaff, setStatusStaff] = useState<DataType | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch staff data from an API or service
@@ -132,116 +135,38 @@ const StaffManagementPage: React.FC = () => {
     setStaff(data);
   };
 
-  const handleSearch = (
-    selectedKeys: string[],
-    confirm: FilterDropdownProps['confirm'],
-    dataIndex: DataIndex,
-  ) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters: () => void) => {
-    clearFilters();
-    setSearchText('');
-  };
-
   const handleEdit = (record: DataType) => {
     setEditingStaff(record);
     setIsEditModalVisible(true);
   };
 
-  const getColumnSearchProps = (
-    dataIndex: DataIndex,
-  ): TableColumnType<DataType> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div className="p-2" onKeyDown={(e) => e.stopPropagation()}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() =>
-            handleSearch(selectedKeys as string[], confirm, dataIndex)
-          }
-          className="mb-2 block"
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() =>
-              handleSearch(selectedKeys as string[], confirm, dataIndex)
-            }
-            icon={<SearchOutlined />}
-            size="small"
-            className="w-24"
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            className="w-24"
-          >
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              setSearchText((selectedKeys as string[])[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes((value as string).toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        <span className="text-green-500">{text}</span>
+  const handleChangeActiveStatus = (record: DataType) => {
+    setStatusStaff(record);
+    setIsStatusModalVisible(true);
+  };
+
+  const handleStatusModalOk = (updatedStaff: DataType[]) => {
+    setStaff(updatedStaff);
+    setIsStatusModalVisible(false);
+  };
+
+  const handleStatusModalCancel = () => {
+    setIsStatusModalVisible(false);
+  };
+
+  const { Search } = Input;
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredStaff = useMemo(() => {
+    return staff.filter((staffMember) =>
+      Object.values(staffMember).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-  });
+    );
+  }, [searchQuery]);
+
+  const handleSearchBar = (value: string) => {
+    setSearchQuery(value);
+  };
 
   const columns: TableColumnsType<DataType> = [
     {
@@ -255,7 +180,8 @@ const StaffManagementPage: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       width: '20%',
-      ...getColumnSearchProps('name'),
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Role',
@@ -278,91 +204,96 @@ const StaffManagementPage: React.FC = () => {
       ),
     },
     {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        filters: [
-            { text: 'Active', value: 'active' },
-            { text: 'Inactive', value: 'inactive' },
-        ],
-        onFilter: (value, record) => record.status === value,
-        render: (active) => (active ? 'Active' : 'Inactive'),
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      filters: [
+        { text: 'Active', value: true },
+        { text: 'Inactive', value: false },
+      ],
+      onFilter: (value, record) => record.status === value,
+      render: (status) => (
+        <Tag color={status ? 'green' : ''} bordered={false}>
+          {status ? 'Active' : 'Inactive'}
+        </Tag>
+      ),
     },
     {
-        title: 'Actions',
-        key: 'actions',
-        width: '5%',
-        render: (_, record) => (
-            <Dropdown
-                menu={{
-                    items: [
-                        { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
-                        { key: '2', label: 'Change Status'},
-                    ],
-                }}
-                trigger={['click']}
-            >
-                <Button
-                    type="text"
-                    icon={<MoreOutlined style={{ color: 'grey' }} />}
-                />
-            </Dropdown>
-        ),
+      title: 'Actions',
+      key: 'actions',
+      width: '5%',
+      render: (_, record) => (
+        <Dropdown
+          menu={{
+            items: [
+              { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
+              { key: '2', label: 'Change Status', onClick: () => handleChangeActiveStatus(record) },
+            ],
+          }}
+          trigger={['click']}
+        >
+          <Button
+            type="text"
+            icon={<MoreOutlined style={{ color: 'grey' }} />}
+          />
+        </Dropdown>
+      ),
     },
-];
+  ];
 
   return (
     <ContentWrapperDark>
       {/* <Header className="bg-green-300"></Header> */}
       {/* <Content className="p-10"> */}
-        {/* <Row className="flex justify-between items-center mb-4"> */}
-          {/* <Col>
+      {/* <Row className="flex justify-between items-center mb-4"> */}
+      {/* <Col>
             <LogoText className="text-xl font-bold">Staff Management</LogoText>
           </Col> */}
-          <PageHeader>Staff Management</PageHeader>
-          <Flex justify="end" gap={10}>
-            <Input
-              suffix={<FiSearch />}
-              placeholder="Search for Staff..."
-              className="mb-4 bg-white"
-              variant="filled"
-            />
-            <Button type="primary" icon={<PlusOutlined />}>Add Staff</Button>
-          </Flex>
-      
-          {/* <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-        
-              }}
-            >
-              Add Staff
-            </Button>
-          </Col> */}
-        {/* </Row> */}
-        <Row>
-          <Col span={24}>
-            <div className="p-5 bg-white shadow-lg rounded-lg">
-              <Table
-                columns={columns}
-                dataSource={staff}
-                rowKey="key"
-                pagination={{ pageSize: 10 }}
-              />
-            </div>
-          </Col>
-        </Row>
-        
-        <Modal
-          title="Edit Staff Details"
-          open={isEditModalVisible}
-          onCancel={() => setIsEditModalVisible(false)}
-          footer={null}
+      <PageHeader>Staff Management</PageHeader>
+      <Flex justify="end" gap={10}>
+        <Search
+          placeholder="Search for Staff..."
+          allowClear
+          enterButton="Search"
+          onSearch={handleSearchBar}
+          style={{ marginBottom: 20 }}
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate('create-staff')}
         >
-          {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
-        </Modal>
+          Add Staff
+        </Button>
+      </Flex>
+      <Row>
+        <Col span={24}>
+          <div className="p-5 bg-white shadow-lg rounded-lg">
+            <Table
+              columns={columns}
+              dataSource={filteredStaff}
+              rowKey="key"
+              pagination={{ pageSize: 10 }}
+            />
+          </div>
+        </Col>
+      </Row>
+
+      <Modal
+        title="Edit Staff Details"
+        open={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        footer={null}
+      >
+        {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
+      </Modal>
+      <EditStaffActiveStatusModal
+        visible={isStatusModalVisible}
+        onOk={handleStatusModalOk}
+        onCancel={handleStatusModalCancel}
+        record={statusStaff}
+        staff={staff}
+      />
       {/* </Content> */}
     </ContentWrapperDark>
   );

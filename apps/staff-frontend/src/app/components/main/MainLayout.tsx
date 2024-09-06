@@ -67,7 +67,7 @@ const MainLayout = () => {
       icon: <FiUsers />,
       // icon: <UploadOutlined />,
       label: 'Staff Management',
-      onClick: () => navigate('/staffManagement'),
+      onClick: () => navigate('/staff-management'),
     },
     {
       key: 'map',
