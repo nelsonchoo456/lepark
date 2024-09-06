@@ -69,6 +69,11 @@ const StaffManagementPage: React.FC = () => {
     setIsStatusModalVisible(false);
   };
 
+  const handleStaffUpdated = () => {
+    fetchStaffData(); // Refresh the staff list
+    setIsEditModalVisible(false);
+  };
+
   const { Search } = Input;
   const [searchQuery, setSearchQuery] = useState('');
   const filteredStaff = useMemo(() => {
@@ -197,7 +202,7 @@ const StaffManagementPage: React.FC = () => {
         onCancel={() => setIsEditModalVisible(false)}
         footer={null}
       >
-        {editingStaff && <EditStaffDetailsModal staff={editingStaff} />}
+        {editingStaff && <EditStaffDetailsModal staff={editingStaff} onStaffUpdated={handleStaffUpdated}/>}
       </Modal>
       {/* <EditStaffActiveStatusModal
         visible={isStatusModalVisible}

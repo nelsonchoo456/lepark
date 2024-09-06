@@ -6,9 +6,10 @@ const { Option } = Select;
 
 interface EditStaffProps {
   staff: StaffResponse;
+  onStaffUpdated: () => void;
 }
 
-const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff }) => {
+const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff, onStaffUpdated }) => {
   const [form] = Form.useForm();
 
   // Populate initial form values
@@ -39,6 +40,7 @@ const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff }) => {
       console.log('Staff details updated successfully:', responseStaffDetails.data);
 
       message.success('Staff details updated successfully!');
+      onStaffUpdated();
     } catch (error: any) {
       console.error(error);
       // TODO: filter out specific error messages from the response
