@@ -13,7 +13,25 @@ import cookieParser from 'cookie-parser';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // You could add a list of allowed origins and check against that too
+      if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+        return callback(null, true);
+      }
+
+      // To allow specific domains, add them above this line as additional checks
+
+      // If the origin doesn't match any criteria, reject it
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 

@@ -134,3 +134,7 @@ export async function resetPassword(data: PasswordResetData): Promise<AxiosRespo
     }
   }
 }
+
+export async function fetchStaff(): Promise<AxiosResponse<StaffResponse>> {
+  return client.get(`${URL}/check-auth`);
+}

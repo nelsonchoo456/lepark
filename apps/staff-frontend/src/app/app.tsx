@@ -16,58 +16,67 @@ import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
-import CreateStaff from './pages/StaffManagement/CreateStaff'; 
+import CreateStaff from './pages/StaffManagement/CreateStaff';
+import { StaffAuthWrapper } from '@lepark/common-ui';
+import { ProtectedRoute } from '@lepark/common-ui';
 
 export function App() {
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          // Seed Token
-          colorPrimary: '#6da696', // green.500
-          borderRadius: 5,
-          colorTextBase: "#000000",
-          fontSize: 14,
+    <StaffAuthWrapper>
+      <ConfigProvider
+        theme={{
+          token: {
+            // Seed Token
+            colorPrimary: '#6da696', // green.500
+            borderRadius: 5,
+            colorTextBase: '#000000',
+            fontSize: 14,
 
-          // Alias Token
-        },
-        components: {
-          Menu: {
-            itemBg: "#ffffff",
-            itemHoverBg:'#e6f0ed', // green.50
-            itemSelectedBg: "#fff", // green.100
-            itemSelectedColor: '#558f7f', // green.500
+            // Alias Token
           },
-        }
-      }}
-    >
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<MainLanding />} />
-            <Route path="/map" element={<MapPage />} />
+          components: {
+            Menu: {
+              itemBg: '#ffffff',
+              itemHoverBg: '#e6f0ed', // green.50
+              itemSelectedBg: '#fff', // green.100
+              itemSelectedColor: '#558f7f', // green.500
+            },
+          },
+        }}
+      >
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
+            <Route
+              element={
+                <ProtectedRoute redirectTo="/login">
+                  <MainLayout />
+                </ProtectedRoute>
+              }
+            >
+              {/* Nest all protected routes here */}
+              <Route path="/" element={<MainLanding />} />
+              <Route path="/map" element={<MapPage />} />
 
-            <Route path="/occurence">
-              <Route index element={<OccurenceList />} />
-              <Route
-                path=":occurenceId"
-                element={<OccurenceDetails/>}/>
+              <Route path="/occurence">
+                <Route index element={<OccurenceList />} />
+                <Route path=":occurenceId" element={<OccurenceDetails />} />
+              </Route>
+
+              <Route path="/profile" element={<StaffProfile />} />
+              <Route path="/staff-management" element={<StaffManagementPage />} />
+              <Route path="/species" element={<SpeciesPage />} />
+              <Route path="/species/create" element={<CreateSpecies />} />
+              <Route path="/staff-management/create-staff" element={<CreateStaff />} />
             </Route>
-            
-            <Route path="/profile" element={<StaffProfile />} />
-            <Route path="/staff-management" element={<StaffManagementPage />} />
-            <Route path="/species" element={<SpeciesPage />} />
-            <Route path="/species/create" element={<CreateSpecies />} />
-            <Route path="/staff-management/create-staff" element={<CreateStaff />} />
-          </Route>
-        
-        </Routes>
-      </BrowserRouter>
-    </ConfigProvider>
+          </Routes>
+        </BrowserRouter>
+      </ConfigProvider>
+    </StaffAuthWrapper>
   );
 }
 

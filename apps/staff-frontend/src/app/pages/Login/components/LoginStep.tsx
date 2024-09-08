@@ -1,6 +1,6 @@
 import { Button, Divider, Form, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { loginStaff } from '@lepark/data-access';
+import { useAuth } from '@lepark/common-ui';
 
 interface LoginStepProps {
   goToForgotPassword: () => void;
@@ -8,12 +8,13 @@ interface LoginStepProps {
 
 const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (values: any) => {
     const { email, password } = values;
     try {
-      const response = await loginStaff({ email, password });
-      console.log('Login successful:', response.data);
+      await login(email, password);
+      console.log('Login successful:');
       navigate('/');
     } catch (error) {
       console.error('Login failed:', error);
