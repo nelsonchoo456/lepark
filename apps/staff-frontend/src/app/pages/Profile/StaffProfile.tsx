@@ -2,7 +2,7 @@ import { ContentWrapper, ContentWrapperDark, LogoText } from '@lepark/common-ui'
 import { Descriptions, Card, Button, Input, Tooltip, Tag, message } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined, LockOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
@@ -106,6 +106,10 @@ const StaffProfile = () => {
     }
   };
 
+  const handleChangePassword = () => {
+    // change password functionality goes here
+  };
+
   const handleLogout = () => {
     // Logout functionality goes here
   };
@@ -172,7 +176,10 @@ const StaffProfile = () => {
     <ContentWrapperDark>
       <PageHeader>My Profile</PageHeader>
         <div className="flex justify-end items-center mb-4">
-          <Button onClick={handleLogout} icon={<LogoutOutlined />} className="bg-green-300 text-white">
+          <Button type='primary' onClick={handleChangePassword} icon={<LockOutlined />} className='mr-5' >
+            Change Password
+          </Button>
+          <Button onClick={handleLogout} icon={<LogoutOutlined />}>
             Logout
           </Button>
         </div>
