@@ -1,16 +1,38 @@
 import { LoginLayout, LoginPanel, Logo, LogoText } from '@lepark/common-ui';
-import { Button, Divider, Form, Input } from 'antd';
+import { Button, Divider, Form, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import LoginAnnouncements from '../Login/components/LoginAnnouncements';
+import { resetStaffPassword } from '@lepark/data-access';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const token = new URLSearchParams(location.search).get('token');
 
-  const handleSubmit = (values: any) => {
-    const { email, password } = values;
-    navigate('/');
+  const handleSubmit = async (values: any) => {
+    const { password, confirmPassword } = values;
+
+    if (password !== confirmPassword) {
+      message.error('Passwords do not match');
+      return;
+    }
+
+    if (token) {
+      try {
+        const response = await resetStaffPassword({ token, newPassword: password });
+
+        if (response.status === 200) {
+          message.success('Password reset successful');
+
+          setTimeout(() => {
+            navigate('/login');
+          }, 1000);
+        }
+      } catch (error) {
+        message.error(String(error));
+      }
+    }
   };
-  
+
   const handleGoToRegister = () => {
     navigate('/register');
   };
@@ -24,16 +46,9 @@ const ResetPassword = () => {
             <LogoText className="text-3xl">Leparks</LogoText>
           </div>
           <div className="w-full">
-            <Divider>Forgot Password</Divider>
-            <Form
-              layout="vertical"
-              onFinish={handleSubmit}
-            >
-              <Form.Item
-                name="password"
-                label="New Password"
-                rules={[{ required: true, message: 'Please enter a new Password' }]}
-              >
+            <Divider>Reset Password</Divider>
+            <Form layout="vertical" onFinish={handleSubmit}>
+              <Form.Item name="password" label="New Password" rules={[{ required: true, message: 'Please enter a new Password' }]}>
                 <Input.Password placeholder="Password" />
               </Form.Item>
 
@@ -47,20 +62,15 @@ const ResetPassword = () => {
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" className="w-full">
-                  Log In
+                  Submit
                 </Button>
               </Form.Item>
             </Form>
-            <Divider><span className="text-secondary">or</span></Divider>
-            <Button type="link" className="w-full justify-center" onClick={() => {console.log("keke")}}>
-              Reset Password
-            </Button>
           </div>
         </div>
       </LoginPanel>
       <LoginAnnouncements />
     </LoginLayout>
-    
   );
 };
 

@@ -2,6 +2,8 @@ import express from 'express';
 import StaffService from '../services/StaffService';
 import { StaffRoleEnum } from '@prisma/client';
 import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/staffSchema';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET_KEY } from '../config/config';
 
 const router = express.Router();
 
@@ -37,11 +39,13 @@ router.get('/viewStaffDetails/:id', async (req, res) => {
 router.put('/updateStaffDetails/:id', async (req, res) => {
   try {
     const staffId = req.params.id;
-    const updateData = StaffSchema.partial().pick({
-      firstName: true,
-      lastName: true,
-      contactNumber: true
-    }).parse(req.body);
+    const updateData = StaffSchema.partial()
+      .pick({
+        firstName: true,
+        lastName: true,
+        contactNumber: true,
+      })
+      .parse(req.body);
 
     const updatedStaff = await StaffService.updateStaffDetails(staffId, updateData);
     res.status(200).json(updatedStaff);
@@ -62,11 +66,7 @@ router.put('/updateStaffRole/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid role.' });
     }
 
-    const updatedStaff = await StaffService.updateStaffRole(
-      staffId,
-      roleEnum,
-      requesterId,
-    );
+    const updatedStaff = await StaffService.updateStaffRole(staffId, roleEnum, requesterId);
     res.status(200).json(updatedStaff);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -78,11 +78,7 @@ router.put('/updateStaffIsActive/:id', async (req, res) => {
     const staffId = req.params.id;
     const { isActive, requesterId } = req.body; // Assuming requesterId is passed in the request body
 
-    const updatedStaff = await StaffService.updateStaffIsActive(
-      staffId,
-      isActive,
-      requesterId,
-    );
+    const updatedStaff = await StaffService.updateStaffIsActive(staffId, isActive, requesterId);
     res.status(200).json(updatedStaff);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -135,6 +131,35 @@ router.post('/reset-password', async (req, res) => {
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/check-auth', (req, res) => {
+  const token = req.cookies.jwtToken_Staff;
+
+  if (token) {
+    jwt.verify(token, JWT_SECRET_KEY, async (err, decoded) => {
+      if (err) {
+        res.status(403).send({ message: 'Invalid token' });
+      } else {
+        const { id } = decoded;
+
+        try {
+          const staff = await StaffService.getStaffById(id);
+
+          if (!staff) {
+            res.status(404).send({ message: 'Staff not found' });
+          } else {
+            const { password, ...user } = staff;
+            res.status(200).send(user);
+          }
+        } catch (error) {
+          res.status(500).send({ message: 'Internal Server Error' });
+        }
+      }
+    });
+  } else {
+    res.status(401).send({ message: 'No token provided' });
   }
 });
 
