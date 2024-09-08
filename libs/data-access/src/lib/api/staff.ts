@@ -108,7 +108,7 @@ export async function logoutStaff(): Promise<AxiosResponse<LogoutResponse>> {
   return client.post(`${URL}/logout`);
 }
 
-export async function forgotPassword(data: PasswordResetRequestData): Promise<AxiosResponse<{ message: string }>> {
+export async function forgotStaffPassword(data: PasswordResetRequestData): Promise<AxiosResponse<{ message: string }>> {
   try {
     const response: AxiosResponse<{ message: string }> = await client.post(`${URL}/forgot-password`, data);
     return response;
@@ -122,7 +122,7 @@ export async function forgotPassword(data: PasswordResetRequestData): Promise<Ax
 }
 
 // Reset Password
-export async function resetPassword(data: PasswordResetData): Promise<AxiosResponse<{ message: string }>> {
+export async function resetStaffPassword(data: PasswordResetData): Promise<AxiosResponse<{ message: string }>> {
   try {
     const response: AxiosResponse<{ message: string }> = await client.post(`${URL}/reset-password`, data);
     return response;

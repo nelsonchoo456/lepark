@@ -1,4 +1,4 @@
-import { Button, Divider, Form, Input } from 'antd';
+import { Button, Divider, Form, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
 
@@ -14,10 +14,10 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
     const { email, password } = values;
     try {
       await login(email, password);
-      console.log('Login successful:');
+      message.success('Login successful');
       navigate('/');
     } catch (error) {
-      console.error('Login failed:', error);
+      message.error(String(error));
     }
   };
 

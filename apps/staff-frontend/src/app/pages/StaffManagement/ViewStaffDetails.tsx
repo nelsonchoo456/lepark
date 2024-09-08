@@ -6,7 +6,15 @@ import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
-import { StaffResponse, StaffType, StaffUpdateData, updateStaffDetails, updateStaffIsActive, updateStaffRole, viewStaffDetails } from '@lepark/data-access';
+import {
+  StaffResponse,
+  StaffType,
+  StaffUpdateData,
+  updateStaffDetails,
+  updateStaffIsActive,
+  updateStaffRole,
+  viewStaffDetails,
+} from '@lepark/data-access';
 import { useParams } from 'react-router-dom';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
