@@ -1,11 +1,9 @@
-import { SIDEBAR_WIDTH } from '@lepark/common-ui';
-import { Button, DatePicker, Flex, Form, Input, InputNumber, Select, Space } from 'antd';
+import { Input } from 'antd';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import DraggableMarker from '../../../components/map/DraggableMarker';
 import { AdjustLatLngInterface } from '../ParkCreate';
 import MapFeatureManager from '../../../components/map/MapFeatureManager';
 import MapFeatureManager2 from '../../../components/map/MapFeatureManager2';
-const { TextArea } = Input;
+import { useEffect, useState } from 'react';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;

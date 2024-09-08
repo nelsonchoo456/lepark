@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { FeatureGroup, Polygon, Polyline } from 'react-leaflet';
+import { FeatureGroup, Polygon, Polyline, GeoJSON as PolygonGeoJson } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import L from 'leaflet';
+import L, { GeoJSON } from 'leaflet';
+import { getAllParks, ParkResponse } from '@lepark/data-access';
 
 const tempPolygon = [
   [
@@ -26,16 +27,80 @@ const tempPolygon = [
       ]
   ]
 ]
+
+const tempPolygon2 = [
+  [
+      [
+          {
+              "lat": 1.292,
+              "lng": 103.854
+          },
+          {
+              "lat": 1.293,
+              "lng": 103.855
+          },
+          {
+              "lat": 1.292,
+              "lng": 103.856
+          },
+          {
+              "lat": 1.291,
+              "lng": 103.855
+          },
+          {
+              "lat": 1.292,
+              "lng": 103.854
+          }
+      ]
+  ]
+]
 //
 const MapFeatureManager = () => {
   const [polygon, setPolygon] = useState<any[]>([]);  // Holds the single polygon
   const [lines, setLines] = useState<any[]>([]);      // Holds the multiple lines
+  const [parks, setParks] = useState<any>([]);
 
   // console.log("2")
   useEffect(() => {
     console.log(polygon)
     console.log(lines)
   },[polygon, lines])
+
+  useEffect(() => {
+    const fetchParks = async () => {
+      try {
+        const parksRes = await getAllParks();
+        if (parksRes.status === 200) {
+          const data = parksRes.data;
+          
+          const parkTemp = data.map((d) => d.geom.coordinates)
+          const coords = parkTemp[0].map(
+            (coordinate: any) => {
+              return [coordinate[1], coordinate[0]]; // Reversing the coordinates
+            }
+          )
+
+          const formattedCoordinates = parkTemp[0].map((polygon : any) =>
+            polygon.map(([lng, lat]: number[]) => ({
+                lat: lat,
+                lng: lng
+            }))
+        );
+        console.log("tempPolygon", tempPolygon);
+          console.log("parksRes", [formattedCoordinates]);
+        
+          setParks([formattedCoordinates]);
+          
+        }
+        
+        
+      } catch (error) {
+        //
+      }
+    }
+    fetchParks();
+  }, [])
+
   const handleCreated = (e: any) => {
     const { layer } = e;
 
@@ -99,6 +164,8 @@ const MapFeatureManager = () => {
       />
       {/* Render polygon if it exists */}
       {polygon.length > 0 && <Polygon positions={polygon[0]} />}
+      {parks.length > 0 && <Polygon positions={parks}/>}
+      {parks.length > 0 && <Polygon positions={tempPolygon2[0]}/>}
       {/* Render multiple lines */}
       {lines.map((line, index) => (
         <Polyline key={index} positions={line} />

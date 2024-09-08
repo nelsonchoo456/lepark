@@ -1,4 +1,4 @@
-import { Prisma, Park } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import ParkDao from '../dao/ParkDao';
 import { ParkCreateData } from '../schemas/parkSchema';
@@ -35,7 +35,7 @@ class ParkService {
     }
   }
 
-  public async getAllParks(): Promise<Park[]> {
+  public async getAllParks(): Promise<any[]> {
     return ParkDao.getAllParks();
   }
 };

@@ -11,7 +11,7 @@ import Login from './pages/Login/Login';
 import OccurrenceList from './pages/Occurrence/OccurrenceList';
 import OccurrenceCreate from './pages/Occurrence/OccurrenceCreate';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
-import ProfilePage from './pages/Profile/Profile';
+// import ProfilePage from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
@@ -70,6 +70,11 @@ export function App() {
               <Route path="/occurence">
                 <Route index element={<OccurrenceList />} />
                 <Route path=":occurenceId" element={<OccurrenceDetails />} />
+              </Route>
+
+              <Route path="/park">
+                <Route index element={<ParkList />} />
+                <Route path="create" element={<ParkCreate />} />
               </Route>
 
               <Route path="/profile" element={<StaffProfile />} />
