@@ -1,30 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ContentWrapper, Divider, LogoText, CustButton } from "@lepark/common-ui";
 import MainLayout from "../../components/main/MainLayout";
 import { NavButton } from "../../components/buttons/NavButton";
 import { PiPlantFill, PiStarFill, PiTicketFill } from "react-icons/pi";
 import { FaTent } from "react-icons/fa6";
 import { Badge, Card, Space } from "antd";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { FiArrowLeft } from "react-icons/fi";
 import { MdSunny } from "react-icons/md";
-import { species, speciesExamples } from "@lepark/data-utility";
+import { formatEnumString } from "@lepark/data-utility";
+import { PiPottedPlantFill } from "react-icons/pi";
+import { getSpeciesById } from '@lepark/data-access';
+import { BiWorld } from "react-icons/bi";
+import { FaShieldHeart } from "react-icons/fa6";
 
 
 
 const ViewSpecies = () => {
   const navigate = useNavigate();
-  const cardStyle = "max-w-[30%] min-h-32 m-1.5 items-center";
+  const cardStyle = "max-w-[30%] min-h-32 m-1.5 items-center p-0.2" ;
   const iconStyle = "w-[100%] h-[100%] max-h-16 text-green-500 pb-2";
-  const attributeStyle = "leading-none mt-1";
+  const attributeStyle = "leading-none mt-1 text-center";
+  //const id = "0f45c928-a0eb-40d1-b7a7-5eb32ae2e014";
 
-  const [isExpanded, setIsExpanded] = useState(false);
+const [speciesIdFromLocation, setSpeciesIdFromLocation] = useState<string | null>(null);
+const [speciesObj, setSpeciesObj] = useState<Species | null>(null);
+const location = useLocation();
+const speciesId = location.state?.speciesId;
+    useEffect(() => {
+    if (speciesId) {
+      const fetchSingleSpeciesById = async () => {
+        try {
+          const species = await getSpeciesById(speciesId);
+          setSpeciesObj(species.data);
 
-  const description = species.speciesDescription + "filler filler filler text filler text filler filler filler filler filler text filler text filler filler text filler filler filler text filler filler filler text filler text filler filler filler filler filler text filler text filler filler text filler filler filler text filler filler filler text filler text filler filler filler filler filler text filler text filler filler text filler filler filler text ";
-  const truncatedDescription = description.slice(0, 150);
+          console.log(`fetched species`, species.data);
+        } catch (error) {
+          console.error('Error fetching species:', error);
+        }
+      };
+      fetchSingleSpeciesById();
+    } else {
+      console.error('No species ID provided');
+    }
+  }, [speciesId]);
 
   return (
     // <MainLayout>
+    <>
     <div className="p-4 bg-green-50">
       <CustButton
         className="mb-2"
@@ -38,39 +61,34 @@ const ViewSpecies = () => {
           navigate('/discover');
         }}
       />
-      <h1 className="text-2xl font-medium text-green-500">{species.speciesName}</h1>
+      <h1 className="text-2xl font-medium text-green-500">{speciesObj?.speciesName}</h1>
 
       <div className="flex justify-center">
         <Card className={cardStyle} >
-          {<MdSunny className={iconStyle}/>}
-          <p className={attributeStyle}>{/*species.lightType*/}Partial sun</p>
+          {<PiPottedPlantFill className={iconStyle}/>}
+          <p className={attributeStyle}>{formatEnumString(speciesObj?.soilType)}</p>
         </Card>
 
         <Card className={cardStyle}>
-          {<MdSunny className={iconStyle}/>}
-          <p className={attributeStyle}>filler text </p>
+          {<BiWorld className={iconStyle}/>}
+          <p className={attributeStyle}>{speciesObj?.originCountry} </p>
         </Card>
 
         <Card className={cardStyle}>
-          {<MdSunny className={iconStyle}/>}
-          <p className={attributeStyle}>filler text </p>
+          {<FaShieldHeart className={iconStyle}/>}
+          <p className={attributeStyle}>{formatEnumString(speciesObj?.conservationStatus)} </p>
         </Card>
       </div>
       <h5 className="text-[#767676]">
-        <p className="leading-snug">
-          {isExpanded ? description : truncatedDescription}
-          {description.length > 150 && !isExpanded && '...'}
-        </p>
-        {description.length > 150 && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-blue-500 hover:text-blue-700 mt-1 text-sm focus:outline-none"
-          >
-            {isExpanded ? 'View less' : 'View more'}
-          </button>
-        )}
+        <p >No. of Occurrences: </p>
+        <p >Min. Temp: </p>
+        <p >Max. Temp: </p>
       </h5>
     </div>
+    <div className="p-4">
+    <h1 className="text-xl font-medium text-black">Occurrences</h1>
+    </div>
+    </>
     // </MainLayout>
   );
 };

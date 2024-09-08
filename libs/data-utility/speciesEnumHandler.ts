@@ -20,6 +20,13 @@ export enum ConservationStatusEnum {
   EXTINCT = 'EXTINCT'
 }
 
+export function formatEnumString(input: string): string {
+  return input
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 export function convertToEnum<T extends Record<string, string>>(value: string, enumObject: T): T[keyof T] | undefined {
   const enumValues = Object.values(enumObject);
   const enumKeys = Object.keys(enumObject) as Array<keyof T>;

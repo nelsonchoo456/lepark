@@ -48,7 +48,7 @@ export function App() {
                 element={<OccurrenceDetails/>}/>
             </Route>
             <Route path="/discover" element={<Discover />} />
-            <Route path="/taxonomy/view-species" element={<ViewSpecies />} />
+            <Route path="/discover/view-species" element={<ViewSpecies />} />
           </Route>
         </Routes>
       </BrowserRouter>
