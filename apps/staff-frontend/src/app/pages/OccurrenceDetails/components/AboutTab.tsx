@@ -1,8 +1,8 @@
 import { LogoText } from '@lepark/common-ui';
 import { Card, Descriptions, Divider } from 'antd';
 
-const AboutTab = ({ occurence }: any) => {
-  const descriptionsItems = Object.entries(occurence).map(([key, val]) => ({
+const AboutTab = ({ occurrence }: any) => {
+  const descriptionsItems = Object.entries(occurrence).map(([key, val]) => ({
     key,
     label: key,
     children: 'keke',

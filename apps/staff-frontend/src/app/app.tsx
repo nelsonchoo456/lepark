@@ -9,7 +9,7 @@ import CreateSpecies from './pages/Species/CreateSpecies';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import OccurrenceList from './pages/Occurrence/OccurrenceList';
-import OccurrenceCreate from './pages/Occurrence/OccurenceCreate';
+import OccurrenceCreate from './pages/Occurrence/OccurrenceCreate';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
 import ProfilePage from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
@@ -19,6 +19,7 @@ import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
+import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 
 export function App() {
   return (
@@ -28,19 +29,19 @@ export function App() {
           // Seed Token
           colorPrimary: '#6da696', // green.500
           borderRadius: 5,
-          colorTextBase: "#000000",
+          colorTextBase: '#000000',
           fontSize: 14,
 
           // Alias Token
         },
         components: {
           Menu: {
-            itemBg: "#ffffff",
-            itemHoverBg:'#e6f0ed', // green.50
-            itemSelectedBg: "#fff", // green.100
+            itemBg: '#ffffff',
+            itemHoverBg: '#e6f0ed', // green.50
+            itemSelectedBg: '#fff', // green.100
             itemSelectedColor: '#558f7f', // green.500
           },
-        }
+        },
       }}
     >
       <BrowserRouter>
@@ -52,15 +53,10 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
 
-
-            <Route path="/occurrence">
+            <Route path="/occurrences">
               <Route index element={<OccurrenceList />} />
-              <Route
-                path=":occurrenceId"
-                element={<OccurrenceDetails/>}/>
-              <Route
-                path="create"
-                element={<OccurrenceCreate/>}/>
+              <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+              <Route path="create" element={<OccurrenceCreate />} />
             </Route>
 
             <Route path="/park">
@@ -77,6 +73,7 @@ export function App() {
             <Route path="/staffManagement" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
+            <Route path="occurrences/:occurrenceId/activitylog/:id" element={<ActivityLogDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>

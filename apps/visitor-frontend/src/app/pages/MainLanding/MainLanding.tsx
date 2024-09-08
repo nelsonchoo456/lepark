@@ -5,8 +5,11 @@ import { PiPlantFill, PiStarFill, PiTicketFill } from "react-icons/pi";
 import { FaTent } from "react-icons/fa6";
 import { Badge, Card, Space } from "antd";
 import EventCard from "./components/EventCard";
+import { useNavigate } from 'react-router-dom'
 
 const MainLanding = () => {
+  const navigate = useNavigate();
+
   return (
     // <MainLayout>
       <div>
@@ -28,7 +31,7 @@ const MainLanding = () => {
                 <p className="font-medium text-2xl md:text-3xl">Bishan-AMK Park</p>
               </div>
             </div>
-            
+
           </Card>
           {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
           <div className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden
@@ -36,6 +39,9 @@ const MainLanding = () => {
             <NavButton
               key="discover"
               icon={<PiPlantFill />}
+              onClick={() => {
+                navigate('/discover');
+              }}
             >
               Discover
             </NavButton>
@@ -63,30 +69,30 @@ const MainLanding = () => {
         <ContentWrapper>
           <div className="font-bold text-lg">Our Events</div>
           <div className="w-full overflow-scroll flex gap-2 py-2">
-            <EventCard 
-              title="Event 1" 
-              url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg" 
+            <EventCard
+              title="Event 1"
+              url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
               extra={<a href="#">More</a>}
             >
               keewewk
             </EventCard>
-            <EventCard 
-              title="Event 4" 
-              url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650" 
+            <EventCard
+              title="Event 4"
+              url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
               extra={<a href="#">More</a>}
             >
               rwrewrkeek
             </EventCard>
-            <EventCard 
-              title="Event 2" 
-              url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens" 
+            <EventCard
+              title="Event 2"
+              url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
               extra={<a href="#">More</a>}
             >
               keewerewk
             </EventCard>
-            <EventCard 
-              title="Event 3" 
-              url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" 
+            <EventCard
+              title="Event 3"
+              url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg"
               extra={<a href="#">More</a>}
             >
               keewerewrk

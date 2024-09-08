@@ -147,8 +147,8 @@ const OccurrenceCreate = () => {
                 createdData && <>Occurrence title: {createdData.title}</>
               }
               extra={[
-                <Button key="back" onClick={() => navigate('/occurrence')}>Back to Occurrence Management</Button>,
-                <Button type="primary" key="view" onClick={() => navigate(`/occurrence/${createdData?.id}`)}>
+                <Button key="back" onClick={() => navigate('/occurrences')}>Back to Occurrence Management</Button>,
+                <Button type="primary" key="view" onClick={() => navigate(`/occurrences/${createdData?.id}`)}>
                   View new Occurrence
                 </Button>,
               ]}

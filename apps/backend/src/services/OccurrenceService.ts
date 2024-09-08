@@ -1,4 +1,4 @@
-import { Prisma, Occurrence } from '@prisma/client';
+import { Prisma, Occurrence, ActivityLog } from '@prisma/client';
 import { z } from 'zod';
 import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import OccurrenceDao from '../dao/OccurrenceDao';
@@ -7,7 +7,7 @@ import StaffDao from '../dao/StaffDao';
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
     try {
-      const formattedData = dateFormatter(data)
+      const formattedData = dateFormatter(data);
 
       // Convert validated data to Prisma input type
       const occurrenceData = ensureAllFieldsPresent(formattedData);
@@ -46,30 +46,25 @@ class OccurrenceService {
   ): Promise<Occurrence> {
     try {
       const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
-      const formattedData = dateFormatter(data)
+      const formattedData = dateFormatter(data);
 
       // Merge existing data with update data
       let mergedData = { ...existingOccurrence, ...formattedData };
-      mergedData = Object.fromEntries(
-        Object.entries(mergedData).filter(([key, value]) => value !== null)
-      );
+      mergedData = Object.fromEntries(Object.entries(mergedData).filter(([key, value]) => value !== null));
 
       // Validate merged data using Zod
       OccurrenceSchema.parse(mergedData);
 
       // Convert validated OccurrenceSchemaType data to Prisma-compatible update input
       // This ensures only defined fields are included in the update operation
-      const updateData: Prisma.OccurrenceUpdateInput = Object.entries(formattedData).reduce(
-        (acc, [key, value]) => {
-          if (value !== undefined) {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {},
-      );
+      const updateData: Prisma.OccurrenceUpdateInput = Object.entries(formattedData).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
 
-      console.log(updateData)
+      console.log(updateData);
 
       return OccurrenceDao.updateOccurrenceDetails(id, updateData);
     } catch (error) {
@@ -81,15 +76,38 @@ class OccurrenceService {
     }
   }
 
-  public async deleteOccurrence(
-    occurrenceId: string,
-    requesterId: string,
-  ): Promise<void> {
+  public async deleteOccurrence(occurrenceId: string, requesterId: string): Promise<void> {
     const isManager = await StaffDao.isManager(requesterId);
     if (!isManager) {
       throw new Error('Only managers can delete occurrence.');
     }
     await OccurrenceDao.deleteOccurrence(occurrenceId);
+  }
+
+  /* ACTIVITY LOG SERVICES */
+
+  public async getActivityLogsByOccurrenceId(occurrenceId: string): Promise<ActivityLog[]> {
+    try {
+      const activityLogs = await OccurrenceDao.getActivityLogsByOccurrenceId(occurrenceId);
+      if (!activityLogs) {
+        throw new Error('Activity logs not found');
+      }
+      return activityLogs;
+    } catch (error) {
+      throw new Error(`Unable to fetch activity logs: ${error.message}`);
+    }
+  }
+
+  public async getActivityLogById(id: string): Promise<ActivityLog> {
+    try {
+      const activityLog = await OccurrenceDao.getActivityLogById(id);
+      if (!activityLog) {
+        throw new Error('Activity log not found');
+      }
+      return activityLog;
+    } catch (error) {
+      throw new Error(`Unable to fetch activity log details: ${error.message}`);
+    }
   }
 }
 
@@ -116,6 +134,6 @@ const dateFormatter = (data: any) => {
     formattedData.dateOfBirth = dateOfBirthFormat;
   }
   return formattedData;
-}
+};
 
 export default new OccurrenceService();
