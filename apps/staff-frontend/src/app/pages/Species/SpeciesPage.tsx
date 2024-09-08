@@ -40,6 +40,7 @@ const SpeciesPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const {Search} = Input;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {

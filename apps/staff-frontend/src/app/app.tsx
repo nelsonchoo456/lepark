@@ -20,6 +20,7 @@ import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
 import CreateStaff from './pages/StaffManagement/CreateStaff';
+import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 
 export function App() {
   return (
@@ -79,6 +80,7 @@ export function App() {
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
             <Route path="/staff-management/create-staff" element={<CreateStaff />} />
+            <Route path="/species/view-edit" element={<ViewEditSpecies />} />
           </Route>
 
         </Routes>
