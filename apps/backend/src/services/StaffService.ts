@@ -69,7 +69,7 @@ class StaffService {
 
   public async updateStaffDetails(
     id: string,
-    data: Partial<Pick<StaffSchemaType, 'firstName' | 'lastName' | 'contactNumber'>>,
+    data: Partial<Pick<StaffSchemaType, 'firstName' | 'lastName' | 'contactNumber' | 'email'>>,
   ): Promise<Staff> {
     try {
       const existingStaff = await StaffDao.getStaffById(id);

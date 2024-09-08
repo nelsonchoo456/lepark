@@ -16,7 +16,8 @@ import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
-import CreateStaff from './pages/StaffManagement/CreateStaff'; 
+import CreateStaff from './pages/StaffManagement/CreateStaff';
+import ViewStaffDetails from './pages/StaffManagement/ViewStaffDetails';
 
 export function App() {
   return (
@@ -26,19 +27,19 @@ export function App() {
           // Seed Token
           colorPrimary: '#6da696', // green.500
           borderRadius: 5,
-          colorTextBase: "#000000",
+          colorTextBase: '#000000',
           fontSize: 14,
 
           // Alias Token
         },
         components: {
           Menu: {
-            itemBg: "#ffffff",
-            itemHoverBg:'#e6f0ed', // green.50
-            itemSelectedBg: "#fff", // green.100
+            itemBg: '#ffffff',
+            itemHoverBg: '#e6f0ed', // green.50
+            itemSelectedBg: '#fff', // green.100
             itemSelectedColor: '#558f7f', // green.500
           },
-        }
+        },
       }}
     >
       <BrowserRouter>
@@ -50,21 +51,21 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
 
-
             <Route path="/occurence">
               <Route index element={<OccurenceList />} />
-              <Route
-                path=":occurenceId"
-                element={<OccurenceDetails/>}/>
+              <Route path=":occurenceId" element={<OccurenceDetails />} />
             </Route>
-            
+
             <Route path="/profile" element={<StaffProfile />} />
-            <Route path="/staff-management" element={<StaffManagementPage />} />
+            <Route path="/staff-management">
+              <Route index element={<StaffManagementPage />} />
+              <Route path=":staffId" element={<ViewStaffDetails />} />
+              <Route path="create-staff" element={<CreateStaff />} />
+            </Route>
+
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
-            <Route path="/staff-management/create-staff" element={<CreateStaff />} />
           </Route>
-        
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

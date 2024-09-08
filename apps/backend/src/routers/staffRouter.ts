@@ -40,7 +40,8 @@ router.put('/updateStaffDetails/:id', async (req, res) => {
     const updateData = StaffSchema.partial().pick({
       firstName: true,
       lastName: true,
-      contactNumber: true
+      contactNumber: true,
+      email: true,
     }).parse(req.body);
 
     const updatedStaff = await StaffService.updateStaffDetails(staffId, updateData);

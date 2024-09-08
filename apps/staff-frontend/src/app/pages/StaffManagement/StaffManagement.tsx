@@ -17,11 +17,11 @@ import {
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import EditStaffDetailsModal from './EditStaffDetailsModal';
+import EditStaffDetailsModal from './components/EditStaffDetailsModal';
 import PageHeader from '../../components/main/PageHeader';
-import { FiSearch } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
-import EditStaffActiveStatusModal from './EditStaffActiveStatusModal';
+import { FiEye, FiSearch } from 'react-icons/fi';
+import { useNavigate, } from 'react-router-dom';
+import EditStaffActiveStatusModal from './components/EditStaffActiveStatusModal';
 import { getAllStaffs, StaffResponse, StaffType } from '@lepark/data-access';
 
 const { Header, Content } = Layout;
@@ -72,6 +72,10 @@ const StaffManagementPage: React.FC = () => {
   const handleStaffUpdated = () => {
     fetchStaffData(); // Refresh the staff list
     setIsEditModalVisible(false);
+  };
+
+  const handleViewDetailsClick = (staffRecord: StaffResponse) => {
+    navigate(`${staffRecord.id}`);
   };
 
   const { Search } = Input;
@@ -129,31 +133,23 @@ const StaffManagementPage: React.FC = () => {
         { text: 'Inactive', value: false },
       ],
       onFilter: (value, record) => record.isActive === value,
-      render: (isActive) => (
-        <Tag color={isActive ? 'green' : ''} bordered={false}>
-          {isActive ? 'Active' : 'Inactive'}
-        </Tag>
-      ),
+      render: (_, record) => {
+        console.log('Rendering status:', record.isActive); // Debugging line
+        return (
+          <Tag color={record.isActive ? 'green' : 'red'} bordered={false}>
+            {record.isActive ? 'Active' : 'Inactive'}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Actions',
       key: 'actions',
       width: '10%',
       render: (_, record) => (
-        <Dropdown
-          menu={{
-            items: [
-              { key: '1', label: 'Edit', onClick: () => handleEdit(record) },
-              { key: '2', label: 'Change Status', onClick: () => handleChangeActiveStatus(record) },
-            ],
-          }}
-          trigger={['click']}
-        >
-          <Button
-            type="text"
-            icon={<MoreOutlined style={{ color: 'grey' }} />}
-          />
-        </Dropdown>
+        <Flex justify="center">
+          <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)}/>
+        </Flex>
       ),
     },
   ];

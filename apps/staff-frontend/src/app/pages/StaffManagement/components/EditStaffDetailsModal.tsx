@@ -49,7 +49,7 @@ const EditStaffDetailsModal: React.FC<EditStaffProps> = ({ staff, onStaffUpdated
   };
 
   return (
-    <Form form={form} layout="vertical" onFinish={onFinish}>
+    <Form form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
       <Form.Item name="firstName" label="First Name" rules={[{ required: true, message: 'Please enter a first name.'}]}>
         <Input />
       </Form.Item>
