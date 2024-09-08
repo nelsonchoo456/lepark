@@ -3,6 +3,8 @@ import { Button, DatePicker, Flex, Form, Input, InputNumber, Select, Space } fro
 import { MapContainer, TileLayer } from 'react-leaflet';
 import DraggableMarker from '../../../components/map/DraggableMarker';
 import { AdjustLatLngInterface } from '../ParkCreate';
+import MapFeatureManager from '../../../components/map/MapFeatureManager';
+import MapFeatureManager2 from '../../../components/map/MapFeatureManager2';
 const { TextArea } = Input;
 
 interface CreateMapStepProps {
@@ -33,6 +35,7 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng }: CreateMapStep
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+          <MapFeatureManager2/>
         </MapContainer>
       </div>
     // </>

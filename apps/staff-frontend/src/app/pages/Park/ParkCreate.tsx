@@ -20,7 +20,7 @@ export interface AdjustLatLngInterface {
 }
 
 const ParkCreate = () => {
-  const [currStep, setCurrStep] = useState<number>(0);
+  const [currStep, setCurrStep] = useState<number>(1);
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const navigate = useNavigate();
 

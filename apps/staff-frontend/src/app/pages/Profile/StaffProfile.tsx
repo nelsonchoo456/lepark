@@ -9,7 +9,7 @@ import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { Layout } from 'antd';
-// import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
+// import backgroundPicture from 'libs/common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const { Header, Content } = Layout;
 
@@ -171,7 +171,7 @@ const StaffProfile = () => {
         </Card>
         <div
           className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
-          style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}
+          // style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}
         />
       </ContentWrapper>
     </Layout>
