@@ -4,14 +4,43 @@ import { EditControl } from 'react-leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
 
+const tempPolygon = [
+  [
+      [
+          {
+              "lat": 1.2401524020202566,
+              "lng": 103.78715515136719
+          },
+          {
+              "lat": 1.3300173076720356,
+              "lng": 103.78715515136719
+          },
+          {
+              "lat": 1.3300173076720356,
+              "lng": 103.87435913085938
+          },
+          {
+              "lat": 1.2586744333774667,
+              "lng": 103.8805389404297
+          }
+      ]
+  ]
+]
+//
 const MapFeatureManager = () => {
   const [polygon, setPolygon] = useState<any[]>([]);  // Holds the single polygon
   const [lines, setLines] = useState<any[]>([]);      // Holds the multiple lines
 
+  // console.log("2")
+  useEffect(() => {
+    console.log(polygon)
+    console.log(lines)
+  },[polygon, lines])
   const handleCreated = (e: any) => {
     const { layer } = e;
 
     if (layer instanceof L.Polygon) {
+      
       setPolygon([layer.getLatLngs()]);
     } else if (layer instanceof L.Polyline) {
       setLines([...lines, layer.getLatLngs()]);
