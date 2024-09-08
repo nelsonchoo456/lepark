@@ -18,8 +18,8 @@ import { FaShieldHeart } from "react-icons/fa6";
 
 const ViewSpecies = () => {
   const navigate = useNavigate();
-  const cardStyle = "max-w-[30%] min-h-32 m-1.5 items-center p-0.2" ;
-  const iconStyle = "w-[100%] h-[100%] max-h-16 text-green-500 pb-2";
+  const cardStyle = "max-w-[30%] min-h-32 m-1 items-center !p-0" ;
+  const iconStyle = "w-[100%] h-[100%] max-h-13 max-w-13 text-green-500 pb-2";
   const attributeStyle = "leading-none mt-1 text-center";
   //const id = "0f45c928-a0eb-40d1-b7a7-5eb32ae2e014";
 
@@ -64,25 +64,25 @@ const speciesId = location.state?.speciesId;
       <h1 className="text-2xl font-medium text-green-500">{speciesObj?.speciesName}</h1>
 
       <div className="flex justify-center">
-        <Card className={cardStyle} >
+        <Card className={cardStyle} bodyStyle={{ padding: '10px' }}>
           {<PiPottedPlantFill className={iconStyle}/>}
           <p className={attributeStyle}>{formatEnumString(speciesObj?.soilType)}</p>
         </Card>
 
-        <Card className={cardStyle}>
+        <Card className={cardStyle} bodyStyle={{ padding: '10px' }}>
           {<BiWorld className={iconStyle}/>}
           <p className={attributeStyle}>{speciesObj?.originCountry} </p>
         </Card>
 
-        <Card className={cardStyle}>
+        <Card className={cardStyle} bodyStyle={{ padding: '10px' }}>
           {<FaShieldHeart className={iconStyle}/>}
           <p className={attributeStyle}>{formatEnumString(speciesObj?.conservationStatus)} </p>
         </Card>
       </div>
       <h5 className="text-[#767676]">
         <p >No. of Occurrences: </p>
-        <p >Min. Temp: </p>
-        <p >Max. Temp: </p>
+        <p >Min. Temp: {speciesObj?.minTemp}°C</p>
+        <p >Max. Temp: {speciesObj?.maxTemp}°C</p>
       </h5>
     </div>
     <div className="p-4">
