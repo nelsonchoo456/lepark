@@ -25,7 +25,7 @@ const initialVisitor = {
 const ProfilePage = () => {
 
   const getUserId = () => {
-    return '-1';
+    // return '-1';
     return 'c083b279-fb77-4029-9431-d4cdbe4555f2';
   }
   

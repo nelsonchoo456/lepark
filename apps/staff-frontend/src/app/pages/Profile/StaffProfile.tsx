@@ -1,29 +1,52 @@
-import { ContentWrapper, LogoText } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag } from 'antd';
+import { ContentWrapper, ContentWrapperDark, LogoText } from '@lepark/common-ui';
+import { Descriptions, Card, Button, Input, Tooltip, Tag, message } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
+import PageHeader from '../../components/main/PageHeader';
+import { StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
-const { Header, Content } = Layout;
-
-// Temp User JSON
-
 const initialUser = {
-  id: 'dj2hhnjkwbn1k122',
-  firstName: 'John',
-  lastName: 'Doe',
-  role: 'MANAGER',
-  email: 'john.doe@example.com',
-  contactNumber: '992292929',
+  id: '',
+  firstName: '',
+  lastName: '',
+  contactNumber: '',
+  role: '',
+  email: '',
+  password: '',
+  isActive: false,
 };
 
 const StaffProfile = () => {
+
+  const getUserId = () => {
+    return '9ffdeeac-ecdb-4882-99a2-cf8094b92c92';
+  }
+
+  const staffId = getUserId(); // Replace 'user-id' with the actual user ID
   const [inEditMode, setInEditMode] = useState(false);
   const [user, setUser] = useState(initialUser);
   const [editedUser, setEditedUser] = useState(initialUser);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await viewStaffDetails(staffId);
+        setUser(response.data);
+        setEditedUser(response.data);
+      } catch (error) {
+        console.error(error);
+        message.error('Failed to fetch user details');
+      }
+    };
+
+    if (staffId) {
+      fetchUserDetails();
+    }
+  }, [staffId]);
 
   const toggleEditMode = () => {
     if (inEditMode) {
@@ -39,9 +62,48 @@ const StaffProfile = () => {
     }));
   };
 
+  const validateInputs = () => {
+    const { firstName, lastName, email, contactNumber, role } = editedUser;
+    return firstName && lastName && email && contactNumber && role;
+  };
+
+  const refreshUserData = async () => {
+    try {
+      const updatedUser = await viewStaffDetails(staffId);
+      setUser(updatedUser.data);
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
+  };
+
+  const onFinish = async (values: any) => {
+    try {
+      const updatedStaffDetails: StaffUpdateData = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        contactNumber: values.contactNumber,
+        email: values.email,
+      };
+
+      const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
+      console.log('Staff details updated successfully:', responseStaffDetails.data);
+      message.success('Staff details updated successfully!');
+      await refreshUserData(); // Refresh user data to load the latest values
+      setInEditMode(false); // Exit edit mode
+    } catch (error: any) {
+      console.error(error);
+      // TODO: filter out specific error messages from the response
+      message.error('Failed to update staff details.');
+    }
+  };
+
   const handleSave = () => {
-    setUser(editedUser); // Save changes to the user state
-    setInEditMode(false);
+    if (validateInputs()) {
+      onFinish(editedUser);
+      setInEditMode(false);
+    } else {
+      message.warning('All fields are required.');
+    }
   };
 
   const handleLogout = () => {
@@ -55,7 +117,7 @@ const StaffProfile = () => {
       children: !inEditMode ? (
         user.firstName
       ) : (
-        <Input defaultValue={editedUser.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
+        <Input required defaultValue={editedUser.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
       ),
       span: 2,
     },
@@ -65,7 +127,7 @@ const StaffProfile = () => {
       children: !inEditMode ? (
         user.lastName
       ) : (
-        <Input defaultValue={editedUser.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
+        <Input required defaultValue={editedUser.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
       ),
       span: 2,
     },
@@ -101,17 +163,15 @@ const StaffProfile = () => {
       children: !inEditMode ? (
         user.contactNumber
       ) : (
-        <Input defaultValue={editedUser.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
+        <Input required defaultValue={editedUser.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
       ),
     },
   ];
 
   return (
-    <Layout>
-      <Header className="bg-green-300"></Header>
-      <ContentWrapper>
-        <div className="flex justify-between items-center mb-4">
-          <LogoText className="text-xl font-bold">My Profile</LogoText>
+    <ContentWrapperDark>
+      <PageHeader>My Profile</PageHeader>
+        <div className="flex justify-end items-center mb-4">
           <Button onClick={handleLogout} icon={<LogoutOutlined />} className="bg-green-300 text-white">
             Logout
           </Button>
@@ -148,8 +208,7 @@ const StaffProfile = () => {
           className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
           style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}
         /> */}
-      </ContentWrapper>
-    </Layout>
+        </ContentWrapperDark>
   );
 };
 
