@@ -53,12 +53,8 @@ enum LightTypeEnum {
 
 enum SoilTypeEnum {
   SANDY
-  CLAY
-  LOAM
-  PEATY
-  SILTY
-  CHALKY
-  SHALLOW
+  CLAYEY
+  LOAMY
 }
 
 model Species {
@@ -91,7 +87,96 @@ model Species {
   isEvergreen           Boolean
   isToxic               Boolean
   isFragrant            Boolean
+  occurrences Occurrence[]
 }
+
+enum DECARBONIZATION_TYPE {
+  TREE_TROPICAL
+  TREE_MANGROVE
+  SHRUB
+}
+
+model Occurrence {
+  id                    String               @id @default(uuid()) @db.Uuid
+  lat                   Float?
+  lng                   Float?
+  dateObserved          DateTime
+  dateOfBirth           DateTime?
+  numberOfPlants        Float
+  biomass               Float
+  title                 String
+  description           String
+  decarbonizationType   DECARBONIZATION_TYPE
+  speciesId             String @db.Uuid
+  // decarbonizationAreaId String @db.Uuid
+  activityLogs          ActivityLog[]
+  statusLogs            StatusLog[]
+
+  species             Species             @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+}
+
+enum ACTIVITY_LOG_TYPE {
+  WATERED
+  TRIMMED
+  FERTILIZED
+  PRUNED
+  REPLANTED
+  CHECKED_HEALTH
+  TREATED_PESTS
+  SOIL_REPLACED
+  HARVESTED
+  STAKED
+  MULCHED
+  MOVED
+  CHECKED
+  ADDED_COMPOST
+  OTHERS
+}
+
+model ActivityLog {
+  id              String            @id @default(uuid()) @db.Uuid
+  name            String
+  description     String
+  dateCreated     DateTime
+  images          String[]
+  activityLogType ACTIVITY_LOG_TYPE
+  occurenceId     String            @db.Uuid
+
+  occurence Occurrence @relation(fields: [occurenceId], references: [id], onDelete: Cascade)
+}
+
+enum OCCURRENCE_STATUS_ENUM {
+  HEALTHY
+  NEEDS_ATTENTION
+  URGENT_ACTION_REQUIRED
+  REMOVED
+}
+
+model StatusLog {
+  id            String                 @id @default(uuid()) @db.Uuid
+  name          String
+  description   String
+  dateCreated   DateTime
+  images        String[]
+  statusLogType OCCURRENCE_STATUS_ENUM
+  occurenceId   String                 @db.Uuid
+
+  occurence Occurrence @relation(fields: [occurenceId], references: [id], onDelete: Cascade)
+}
+
+// model DecarbonizationArea {
+//   id                  String   @id @default(uuid()) @db.Uuid
+//   carbonSeqValue      Float
+//   startDate           DateTime
+//   endDate             DateTime
+//   carbonSeqFactor     Float
+//   dailyCarbonSeqValye Float
+//   totalBiomass        Float
+//   occurenceId         String
+
+//   occurences Occurrence[]
+// }
 
 model Visitor {
   id                 String   @id @default(uuid()) @db.Uuid

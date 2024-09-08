@@ -24,15 +24,22 @@ import {
   Flex,
   Button,
   Table,
+  Modal,
+  message
 } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
 import { PlusOutlined } from '@ant-design/icons';
+import { getAllSpecies, deleteSpecies } from '@lepark/data-access';
 
 const SpeciesPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
     window.innerWidth >= SCREEN_LG,
   );
+  const [fetchedSpecies, setFetchedSpecies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const {Search} = Input;
 
   useEffect(() => {
     const handleResize = () => {
@@ -45,23 +52,63 @@ const SpeciesPage = () => {
     };
   }, []);
 
-  //navigation
-  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchSpecies = async () => {
+      setLoading(true);
+      try {
+        const species = await getAllSpecies();
+        setFetchedSpecies(species.data);
+        console.log('fetched species', species.data);
+      } catch (error) {
+        console.error('Error fetching species:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSpecies();
+  }, []);
 
-  // Species search
-  const { Search } = Input;
-  const [searchQuery, setSearchQuery] = useState('');
   const filteredSpecies = useMemo(() => {
-    return speciesExamples.filter((species) =>
+    if (loading) return [];
+    return fetchedSpecies.filter((species) =>
       Object.values(species).some((value) =>
-        value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
       ),
     );
-  }, [searchQuery]);
+  }, [searchQuery, fetchedSpecies, loading]);
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      // Show a confirmation dialog
+      const confirmed = await new Promise((resolve) => {
+        Modal.confirm({
+          title: 'Are you sure you want to delete this species?',
+          content: 'This action cannot be undone.',
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false),
+        });
+      });
+
+      if (!confirmed) return;
+
+      // Call the delete API
+      await deleteSpecies(id);
+
+      // If successful, update the local state
+      setFetchedSpecies(prevSpecies => prevSpecies.filter(species => species.id !== id));
+
+      // Show success message
+      message.success('Species deleted successfully');
+    } catch (error) {
+      console.error('Error deleting species:', error);
+      message.error('Failed to delete species. Please try again.');
+    }
+  };
+
 
   const columns = [
     {
@@ -103,7 +150,7 @@ const SpeciesPage = () => {
     },
   ];
   // const columns = Object.keys(filteredSpecies[1]).map((label) => ({ key: label, dataIndex: label, label, render: (text: string)=> text}))
-  console.log('filteredSpecies', filteredSpecies);
+  //console.log('filteredSpecies', filteredSpecies);
 
   return webMode ? (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1] p-10`} >
@@ -139,7 +186,7 @@ const SpeciesPage = () => {
           icon={<PlusOutlined />}
           onClick={() => navigate('/species/create')}
         >
-          Add Staff
+          Create Species
         </Button>
       </Flex>
       <Card bordered={false}>
@@ -151,10 +198,13 @@ const SpeciesPage = () => {
           }))}
           expandable={{
             expandedRowRender: (species) => {
-              
-              const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{val}</p>}))
-              console.log("keke", descriptionsItems)
-              return <Descriptions items={descriptionsItems} column={2} size="small"/>
+              const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{"" + val}</p>}))
+              return (
+              <div>
+              <Descriptions items={descriptionsItems} column={2} size="small"/>
+              <Button className='m-1' type="primary" onClick={() => handleEdit(species.id)}>Edit</Button>
+              <Button className='m-1' type="primary" danger onClick={() => handleDelete(species.id)}>Delete</Button>
+              </div>)
             },
           }}
         />

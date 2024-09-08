@@ -8,15 +8,18 @@ import SpeciesPage from './pages/Species/SpeciesPage';
 import CreateSpecies from './pages/Species/CreateSpecies';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
-import OccurenceList from './pages/Occurence/OccurenceList';
-import OccurenceCreate from './pages/Occurence/OccurenceCreate';
-import OccurenceDetails from './pages/OccurenceDetails/OccurenceDetails';
+import OccurrenceList from './pages/Occurrence/OccurrenceList';
+import OccurrenceCreate from './pages/Occurrence/OccurenceCreate';
+import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
+import ProfilePage from './pages/Profile/StaffProfile';
 import Register from './pages/Register/Register';
 import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
-import CreateStaff from './pages/StaffManagement/CreateStaff'; 
+import ParkList from './pages/Park/ParkList';
+import ParkCreate from './pages/Park/ParkCreate';
+import CreateStaff from './pages/StaffManagement/CreateStaff';
 
 export function App() {
   return (
@@ -51,20 +54,33 @@ export function App() {
             <Route path="/map" element={<MapPage />} />
 
 
-            <Route path="/occurence">
-              <Route index element={<OccurenceList />} />
+            <Route path="/occurrence">
+              <Route index element={<OccurrenceList />} />
               <Route
-                path=":occurenceId"
-                element={<OccurenceDetails/>}/>
+                path=":occurrenceId"
+                element={<OccurrenceDetails/>}/>
+              <Route
+                path="create"
+                element={<OccurrenceCreate/>}/>
             </Route>
-            
+
+            <Route path="/park">
+              <Route index element={<ParkList />} />
+              <Route
+                path=":parkId"
+                element={<OccurrenceDetails/>}/>
+              <Route
+                path="create"
+                element={<ParkCreate/>}/>
+            </Route>
+
             <Route path="/profile" element={<StaffProfile />} />
             <Route path="/staff-management" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
             <Route path="/staff-management/create-staff" element={<CreateStaff />} />
           </Route>
-        
+
         </Routes>
       </BrowserRouter>
     </ConfigProvider>

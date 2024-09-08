@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import { SpeciesResponse } from '../types/species';
 import client from './client';
+const URL = '/species';
 
 export async function createSpecies(data: SpeciesResponse): Promise<AxiosResponse<SpeciesResponse>> {
   try {
-    const response: AxiosResponse<SpeciesResponse> = await client.post('/createSpecies', data);
+    const response: AxiosResponse<SpeciesResponse> = await client.post(`${URL}/createSpecies`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -17,7 +18,7 @@ export async function createSpecies(data: SpeciesResponse): Promise<AxiosRespons
 
 export async function getAllSpecies(): Promise<AxiosResponse<SpeciesResponse[]>> {
   try {
-    const response: AxiosResponse<SpeciesResponse[]> = await client.get('/getAllSpecies');
+    const response: AxiosResponse<SpeciesResponse[]> = await client.get(`${URL}/getAllSpecies`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -30,7 +31,7 @@ export async function getAllSpecies(): Promise<AxiosResponse<SpeciesResponse[]>>
 
 export async function getSpeciesById(id: string): Promise<AxiosResponse<SpeciesResponse>> {
   try {
-    const response: AxiosResponse<SpeciesResponse> = await client.get(`/viewSpeciesDetails/${id}`);
+    const response: AxiosResponse<SpeciesResponse> = await client.get(`${URL}/viewSpeciesDetails/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -43,7 +44,7 @@ export async function getSpeciesById(id: string): Promise<AxiosResponse<SpeciesR
 
 export async function updateSpecies(id: string, data: Partial<SpeciesResponse>): Promise<AxiosResponse<SpeciesResponse>> {
   try {
-    const response: AxiosResponse<SpeciesResponse> = await client.put(`/updateSpeciesDetails/${id}`, data);
+    const response: AxiosResponse<SpeciesResponse> = await client.put(`${URL}/updateSpeciesDetails/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -56,7 +57,7 @@ export async function updateSpecies(id: string, data: Partial<SpeciesResponse>):
 
 export async function deleteSpecies(id: string): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await client.delete(`/deleteSpecies/${id}`);
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteSpecies/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

@@ -26,7 +26,7 @@ a {
 
   .header-1 {
     @apply font-bold font-roboto text-[40px] bg-gradient-to-r from-green-500 via-green-700 to-green-400 inline-block text-transparent bg-clip-text;
-  }
+  } 
 }
 .ant-btn-link {
   @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
