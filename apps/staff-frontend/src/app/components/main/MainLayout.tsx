@@ -55,7 +55,7 @@ const MainLayout = () => {
       key: 'park',
       icon: <TbTrees />,
       label: 'Parks',
-      onClick: () => navigate('/park/create'),
+      onClick: () => navigate('/park'),
       // children: [
       //   {
       //     key: 'park/create',
@@ -67,7 +67,7 @@ const MainLayout = () => {
     {
       key: 'zone',
       icon: <TbTree />,
-      label: 'Zone',
+      label: 'Zones',
       onClick: () => navigate('/park/create'),
     },
     {

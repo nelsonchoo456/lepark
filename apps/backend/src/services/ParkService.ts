@@ -42,6 +42,10 @@ class ParkService {
   public async getAllParks(): Promise<any[]> {
     return ParkDao.getAllParks();
   }
+
+  public async getParkById(id: number): Promise<any> {
+    return ParkDao.getParkById(id);
+  }
 };
 
 const dateFormatter = (data: any) => {

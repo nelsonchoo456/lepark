@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { ParkCreateData } from "../schemas/parkSchema";
+import { ParkCreateData, ParkResponseData } from "../schemas/parkSchema";
 const prisma = new PrismaClient();
 
 class ParkDao {
@@ -96,9 +96,36 @@ class ParkDao {
     }
   }
 
-  // async getParkById(id: number): Promise<Park> {
-  //   return prisma.park.findUnique({ where: { id } });
-  // }
+  async getParkById(id: number): Promise<ParkResponseData> {
+    await this.initParksDB();
+
+    const park = await prisma.$queryRaw`
+      SELECT 
+        id,
+        name,
+        description,
+        "address", 
+        "contactNumber",
+        "openingHours",
+        "closingHours",
+        ST_AsGeoJSON("geom") as geom,
+        ST_AsGeoJSON("paths") as paths,
+        "parkStatus"
+      FROM "Park"
+      WHERE id = ${id};
+    `;
+
+    if (Array.isArray(park) && park.length > 0) {
+      const result = park[0];
+      return {
+        ...result,
+        geom: JSON.parse(result.geom),  // Convert GeoJSON string to object
+        paths: JSON.parse(result.paths)  // Convert GeoJSON string to object
+      };
+    } else {
+      throw new Error(`Park with ID ${id} not found`);
+    }
+  }
 }
 
 const formatDatesArray = (datesArray: Date[]) => {

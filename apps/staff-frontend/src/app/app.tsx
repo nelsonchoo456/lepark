@@ -19,6 +19,7 @@ import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
+import ParkDetails from './pages/ParkDetails/ParkDetails';
 import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import CreateStaff from './pages/StaffManagement/CreateStaff';
 import { StaffAuthWrapper } from '@lepark/common-ui';
@@ -75,6 +76,7 @@ export function App() {
               <Route path="/park">
                 <Route index element={<ParkList />} />
                 <Route path="create" element={<ParkCreate />} />
+                <Route path=":id" element={<ParkDetails />} />
               </Route>
 
               <Route path="/profile" element={<StaffProfile />} />

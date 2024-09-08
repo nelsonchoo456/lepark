@@ -35,3 +35,16 @@ export async function getAllParks(): Promise<AxiosResponse<ParkResponse[]>> {
     }
   }
 }
+
+export async function getParkById(id: number): Promise<AxiosResponse<ParkResponse>> {
+  try {
+    const response: AxiosResponse<ParkResponse> = await axiosClient.get(`/getParkById/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

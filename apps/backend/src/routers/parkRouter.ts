@@ -14,8 +14,18 @@ router.post('/createPark', async (req, res) => {
 
 router.get('/getAllParks', async (_, res) => {
   try {
-    const occurrenceList = await ParkService.getAllParks();
-    res.status(200).json(occurrenceList);
+    const parksList = await ParkService.getAllParks();
+    res.status(200).json(parksList);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkById/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const park = await ParkService.getParkById(id);
+    res.status(200).json(park);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
