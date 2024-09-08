@@ -19,6 +19,7 @@ import StaffManagementPage from './pages/StaffManagement/StaffManagement';
 import CreateStaff from './pages/StaffManagement/CreateStaff';
 import { StaffAuthWrapper } from '@lepark/common-ui';
 import { ProtectedRoute } from '@lepark/common-ui';
+import ViewStaffDetails from './pages/StaffManagement/ViewStaffDetails';
 
 export function App() {
   return (
@@ -68,10 +69,14 @@ export function App() {
               </Route>
 
               <Route path="/profile" element={<StaffProfile />} />
-              <Route path="/staff-management" element={<StaffManagementPage />} />
+              <Route path="/staff-management">
+                <Route index element={<StaffManagementPage />} />
+                <Route path=":staffId" element={<ViewStaffDetails />} />
+                <Route path="create-staff" element={<CreateStaff />} />
+              </Route>
+
               <Route path="/species" element={<SpeciesPage />} />
               <Route path="/species/create" element={<CreateSpecies />} />
-              <Route path="/staff-management/create-staff" element={<CreateStaff />} />
             </Route>
           </Routes>
         </BrowserRouter>
