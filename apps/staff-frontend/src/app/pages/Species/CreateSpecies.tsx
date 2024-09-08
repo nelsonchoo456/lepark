@@ -15,8 +15,8 @@ import {
   Checkbox,
   InputNumber,
   Slider,
-  Alert
-
+  Alert,
+Modal
 } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -55,17 +55,10 @@ const CreateSpecies = () => {
   };
     const [tempRange, setTempRange] = useState([0, 35]);
 
-    const validateIdealTemp = (rule: any, value: number) => {
-    const [minTemp, maxTemp] = form.getFieldValue('tempRange');
-    if (value < minTemp || value > maxTemp) {
-      return Promise.reject('Ideal temperature must be between min and max temperatures');
-    }
-    return Promise.resolve();
-  };
-
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
+      const plantCharacteristics = values.plantCharacteristics || [];
       const speciesData = {
         phylum: values.phylum,
         class: values.classInput,
@@ -87,17 +80,28 @@ const CreateSpecies = () => {
         minTemp: values.tempRange[0],
         maxTemp: values.tempRange[1],
         idealTemp: values.idealTemp,
-        isDroughtTolerant: values.plantCharacteristics.includes('Drought Tolerant'),
-        isFastGrowing: values.plantCharacteristics.includes('Fast Growing'),
-        isSlowGrowing: values.plantCharacteristics.includes('Slow Growing'),
-        isEdible: values.plantCharacteristics.includes('Edible'),
-        isDeciduous: values.plantCharacteristics.includes('Deciduous'),
-        isEvergreen: values.plantCharacteristics.includes('Evergreen'),
-        isToxic: values.plantCharacteristics.includes('Toxic'),
-        isFragrant: values.plantCharacteristics.includes('Fragrant'),
+        isSlowGrowing: plantCharacteristics.includes('slowGrowing'),
+        isEdible: plantCharacteristics.includes('edible'),
+        isToxic: plantCharacteristics.includes('toxic'),
+        isEvergreen: plantCharacteristics.includes('evergreen'),
+        isFragrant: plantCharacteristics.includes('fragrant'),
+        isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'),
+        isFlowering: plantCharacteristics.includes('flowering'),
+        isDeciduous: plantCharacteristics.includes('deciduous'),
+        isFastGrowing: plantCharacteristics.includes('fastGrowing'),
       };
 
-      const response = await createSpecies(speciesData); //doesnt work idk why
+      if (values.tempRange[0] > values.idealTemp || values.tempRange[1] < values.idealTemp) {
+        console.error('Ideal temperature must be between min and max temperatures');
+        Modal.error({
+          title: 'Error',
+          content: 'Ideal temperature must be between min and max temperatures',
+        });
+        return;
+      }
+      console.log('Species data to be submitted:', speciesData);  // For debugging
+
+      const response = await createSpecies(speciesData);
       console.log('Species created:', response.data);
       setCreatedSpeciesName(values.speciesInput);
       setShowSuccessAlert(true);
@@ -297,13 +301,22 @@ const CreateSpecies = () => {
           <Form.Item
             name="plantCharacteristics"
             label="Plant Characteristics"
-            rules={[{ required: true }]}
+            rules={[{ required: false }]}
+            initialValue={[]} // Ensure it starts as an empty array
           >
-            <Checkbox.Group
-              options={plantCharacteristics}
-              onChange={onChange}
-            />
+            <Checkbox.Group>
+              <Checkbox value="slowGrowing">Slow Growing</Checkbox>
+              <Checkbox value="edible">Edible</Checkbox>
+              <Checkbox value="toxic">Toxic</Checkbox>
+              <Checkbox value="evergreen">Evergreen</Checkbox>
+              <Checkbox value="fragrant">Fragrant</Checkbox>
+              <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
+              <Checkbox value="flowering">Flowering</Checkbox>
+              <Checkbox value="deciduous">Deciduous</Checkbox>
+              <Checkbox value="fastGrowing">Fast Growing</Checkbox>
+            </Checkbox.Group>
           </Form.Item>
+
 
           <Form.Item
             name="waterRequirement"
