@@ -44,7 +44,6 @@ const CreateSpecies = () => {
   const [form] = Form.useForm();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [createdSpeciesName, setCreatedSpeciesName] = useState('');
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
     labelCol: { span: 8 },
@@ -60,35 +59,11 @@ const CreateSpecies = () => {
     try {
       const plantCharacteristics = values.plantCharacteristics || [];
       const speciesData = {
-        phylum: values.phylum,
-        class: values.classInput,
-        order: values.orderInput,
-        family: values.familyInput,
-        genus: values.genusInput,
-        speciesName: values.speciesInput,
-        commonName: values.commonNameInput,
-        speciesDescription: values.speciesDescriptionInput,
-        conservationStatus: convertConservationStatus(values.conservationStatusInput),
-        originCountry: values.regionOfOriginInput,
-        lightType: convertLightType(values.lightTypeInput),
-        soilType: convertSoilType(values.soilTypeInput),
-        fertiliserType: values.fertiliserType,
-        images: [], // Assuming this should be empty initially
-        waterRequirement: values.waterRequirement,
-        fertiliserRequirement: values.fertiliserRequirement,
-        idealHumidity: values.idealHumidity,
-        minTemp: values.tempRange[0],
-        maxTemp: values.tempRange[1],
-        idealTemp: values.idealTemp,
-        isSlowGrowing: plantCharacteristics.includes('slowGrowing'),
-        isEdible: plantCharacteristics.includes('edible'),
-        isToxic: plantCharacteristics.includes('toxic'),
-        isEvergreen: plantCharacteristics.includes('evergreen'),
-        isFragrant: plantCharacteristics.includes('fragrant'),
-        isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'),
-        isFlowering: plantCharacteristics.includes('flowering'),
-        isDeciduous: plantCharacteristics.includes('deciduous'),
-        isFastGrowing: plantCharacteristics.includes('fastGrowing'),
+        phylum: values.phylum, class: values.classInput, order: values.orderInput, family: values.familyInput, genus: values.genusInput, speciesName: values.speciesInput,
+        commonName: values.commonNameInput, speciesDescription: values.speciesDescriptionInput, conservationStatus: convertConservationStatus(values.conservationStatusInput), originCountry: values.regionOfOriginInput, lightType: convertLightType(values.lightTypeInput), soilType: convertSoilType(values.soilTypeInput),
+        fertiliserType: values.fertiliserType, images: [], waterRequirement: values.waterRequirement, fertiliserRequirement: values.fertiliserRequirement, idealHumidity: values.idealHumidity, minTemp: values.tempRange[0], maxTemp: values.tempRange[1],
+        idealTemp: values.idealTemp, isSlowGrowing: plantCharacteristics.includes('slowGrowing'), isEdible: plantCharacteristics.includes('edible'), isToxic: plantCharacteristics.includes('toxic'), isEvergreen: plantCharacteristics.includes('evergreen'), isFragrant: plantCharacteristics.includes('fragrant'),
+        isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'), isDeciduous: plantCharacteristics.includes('deciduous'), isFastGrowing: plantCharacteristics.includes('fastGrowing'),
       };
 
       if (values.tempRange[0] > values.idealTemp || values.tempRange[1] < values.idealTemp) {
@@ -311,7 +286,6 @@ const CreateSpecies = () => {
               <Checkbox value="evergreen">Evergreen</Checkbox>
               <Checkbox value="fragrant">Fragrant</Checkbox>
               <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
-              <Checkbox value="flowering">Flowering</Checkbox>
               <Checkbox value="deciduous">Deciduous</Checkbox>
               <Checkbox value="fastGrowing">Fast Growing</Checkbox>
             </Checkbox.Group>

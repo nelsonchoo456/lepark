@@ -110,6 +110,9 @@ const SpeciesPage = () => {
     }
   };
 
+  const handleEdit = (id: string) => {
+    navigate('/species/edit', { state: { speciesId: id } });
+  };
 
   const columns = [
     {

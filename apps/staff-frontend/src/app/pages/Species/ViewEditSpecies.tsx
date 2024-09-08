@@ -15,13 +15,14 @@ import {
   Checkbox,
   InputNumber,
   Slider,
-  Alert
+  Alert,
+  Result
 
 } from 'antd';
 import type { GetProp } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { phylums, regions, lightType, soilType, conservationStatus, plantCharacteristics, convertLightType, convertSoilType, convertConservationStatus } from '@lepark/data-utility';
-import { getSpeciesById } from '@lepark/data-access';
+import { getSpeciesById, updateSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 
 const ViewEditSpecies = () => {
@@ -30,9 +31,11 @@ const ViewEditSpecies = () => {
   );
   const [form] = Form.useForm();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [createdSpeciesName, setCreatedSpeciesName] = useState('');
+  const [savedSpeciesName, setSavedSpeciesName] = useState('');
   const [speciesObj, setSpeciesObj] = useState<Species>(null);
   const [speciesId, setSpeciesId] = useState<string>('');
+  const location = useLocation();
+  const speciesIdFromLocation = location.state?.speciesId;
 
   const setId = (id: string) => {
     setSpeciesId(id);
@@ -49,33 +52,48 @@ const ViewEditSpecies = () => {
     };
   }, []);
 
-  const[editing,setEditing] = useState<boolean>(false);
-  const [initCharac, setInitCharac] = useState([]);
 
   // Species form
 //fetch species by id
   useEffect(() => {
-    setId("0f45c928-a0eb-40d1-b7a7-5eb32ae2e014");
-    const fetchSingleSpeciesById = async () => {
-      try {
-        const species = await getSpeciesById(speciesId);
-        setSpeciesObj(species.data);
-        form.setFieldsValue(species.data);
-        console.log(`fetched species id ${speciesId}`, speciesObj.data);
-      } catch (error) {
-        console.error('Error fetching species:', error);
-      }
-    };
-    if (speciesId && speciesId.trim() !== '') {
-        fetchSingleSpeciesById();
+    if (speciesIdFromLocation) {
+      setId(speciesIdFromLocation);
+      const fetchSingleSpeciesById = async () => {
+        try {
+          const species = await getSpeciesById(speciesIdFromLocation);
+          setSpeciesObj(species.data);
+          form.setFieldsValue(species.data);
 
+          console.log(`fetched species id ${speciesIdFromLocation}`, species.data);
+        } catch (error) {
+          console.error('Error fetching species:', error);
+        }
+      };
+      fetchSingleSpeciesById();
+    } else {
+      console.error('No species ID provided');
     }
+  }, [speciesIdFromLocation, form]);
 
-  }, [speciesId]);
+  useEffect(() => {
+    if (speciesObj) {
+      const characteristics = [
+        speciesObj.isSlowGrowing && 'slowGrowing',
+        speciesObj.isEdible && 'edible',
+        speciesObj.isToxic && 'toxic',
+        speciesObj.isEvergreen && 'evergreen',
+        speciesObj.isFragrant && 'fragrant',
+        speciesObj.isDroughtTolerant && 'droughtTolerant',
+        speciesObj.isFlowering && 'flowering',
+        speciesObj.isDeciduous && 'deciduous',
+        speciesObj.isFastGrowing && 'fastGrowing',
+      ].filter(Boolean);
 
-
-
-
+      form.setFieldsValue({
+        plantCharacteristics: characteristics
+      });
+    }
+  }, [speciesObj, form]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
@@ -85,14 +103,9 @@ const ViewEditSpecies = () => {
   const tailLayout = {
     wrapperCol: { offset: 8, span: 16 },
   };
-    const [tempRange, setTempRange] = useState([0, 35]);
 
 
 
-  const onFinish = async (values: any) => {
-    setIsSubmitting(true);
-    //try catch
-  };
 
   const { TextArea } = Input;
   const [value, setValue] = useState('');
@@ -102,7 +115,45 @@ const ViewEditSpecies = () => {
     console.log('checked = ', checkedValues);
   };
 
-  //slider
+   const onFinish = async (values: any) => {
+
+    try {
+        const speciesData = {
+      phylum: values.phylum,                class: values.class,               order: values.order,             family: values.family,           genus: values.genus,
+      speciesName: values.speciesName,          commonName: values.commonName,     speciesDescription: values.speciesDescription,                    conservationStatus: convertConservationStatus(values.conservationStatus),
+      originCountry: values.originCountry,  lightType: convertLightType(values.lightType),                      soilType: convertSoilType(values.soilType),
+      fertiliserType: values.fertiliserType,images: [],                        waterRequirement: values.waterRequirement,
+      fertiliserRequirement: values.fertiliserRequirement,                     idealHumidity: values.idealHumidity,
+      minTemp: values.minTemp,              maxTemp: values.maxTemp,           idealTemp: values.idealTemp,
+      isSlowGrowing: values.plantCharacteristics?.includes('slowGrowing') || false,
+      isEdible: values.plantCharacteristics?.includes('edible') || false,
+      isToxic: values.plantCharacteristics?.includes('toxic') || false,
+      isEvergreen: values.plantCharacteristics?.includes('evergreen') || false,
+      isFragrant: values.plantCharacteristics?.includes('fragrant') || false,
+      isDroughtTolerant: values.plantCharacteristics?.includes('droughtTolerant') || false,
+      isDeciduous: values.plantCharacteristics?.includes('deciduous') || false,
+      isFastGrowing: values.plantCharacteristics?.includes('fastGrowing') || false,
+    };
+    console.log('Species data to be submitted:', speciesData);  // For debugging
+
+      if (values.minTemp > values.ideaTemp || values.maxTemp < values.idealTemp) {
+        console.error('Ideal temperature must be between min and max temperatures');
+        Modal.error({
+          title: 'Error',
+          content: 'Ideal temperature must be between min and max temperatures',
+        });
+        return;
+      }
+      console.log('Species data to be submitted:', speciesData);  // For debugging
+      setSavedSpeciesName(values.speciesName);
+      setIsSubmitting(true);
+      const response = await updateSpecies(speciesId,speciesData);
+      console.log('Species saved', response.data);
+      setTimeout(() => setShowSuccessAlert(false), 5000);
+    } catch (error) {
+      console.error('Error saving species:', error);
+    }
+  };
 
 if (!webMode) {
     return (
@@ -117,44 +168,24 @@ if (!webMode) {
   return (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapper>
-      {/* <h1 className="header-1 mb-4">Create Species</h1> */}
-      <PageHeader>View Species</PageHeader>
 
-      {
-        <>
-            <style jsx={"true"}>{`
-        .species-form .ant-form-item .ant-input[disabled],
-        .species-form .ant-form-item .ant-select-disabled .ant-select-selection-item,
-        .species-form .ant-form-item .ant-input-number-disabled .ant-input-number-input,
-        .species-form .ant-form-item .ant-checkbox-wrapper-disabled span,
-        .species-form .ant-form-item .ant-slider-disabled .ant-slider-track,
-        .species-form .ant-form-item .ant-slider-disabled .ant-slider-handle,
-        .species-form .ant-form-item .ant-select-disabled.ant-select:not(.ant-select-customize-input) .ant-select-selector {
-          color: rgba(0, 0, 0, 0.85) !important;
-          -webkit-text-fill-color: rgba(0, 0, 0, 0.85) !important;
-          opacity: 1 !important;
-        }
-      `}</style>
-      <Button onClick={() => {
-        setEditing(!editing);
+      <PageHeader>Edit Species</PageHeader>
 
-      }}>
-
-      </Button>
-        <Form
+        {!isSubmitting && <Form
           {...layout}
           form={form}
           name="control-hooks"
           onFinish={onFinish}
-          disabled={!editing}
-          variant={editing ? 'outlined' : 'borderless'}
-          className="max-w-[600px] mx-auto species-form"
-          requiredMark={false}
+          className="max-w-[600px] mx-auto"
+          disabled={isSubmitting}
         >
-          <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]} >
-            <Select  allowClear placeholder={speciesObj?.phylum}>
+          <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
+            <Select
+              placeholder="Select a phylum"
+              allowClear
+            >
               {phylums.map((phylum) => (
-                <Select.Option key={phylum} value={phylum} >
+                <Select.Option key={phylum} value={phylum}>
                   {phylum}
                 </Select.Option>
               ))}
@@ -165,44 +196,43 @@ if (!webMode) {
             name="class"
             label="Class"
             rules={[{ required: true }]}
-            initialvalue={speciesObj?.class}
           >
-            <Input placeholder={speciesObj?.class}  />
+            <Input/>
           </Form.Item>
           <Form.Item
             name="order"
             label="Order"
             rules={[{ required: true }]}
           >
-            <Input placeholder={speciesObj?.order} />
+            <Input/>
           </Form.Item>
           <Form.Item
             name="family"
             label="Family"
             rules={[{ required: true }]}
           >
-            <Input placeholder={speciesObj?.family} />
+            <Input />
           </Form.Item>
           <Form.Item
             name="genus"
             label="Genus"
             rules={[{ required: true }]}
           >
-            <Input placeholder={speciesObj?.genus} />
+            <Input />
           </Form.Item>
           <Form.Item
-            name="species"
+            name="speciesName"
             label="Species"
             rules={[{ required: true }]}
           >
-            <Input placeholder={speciesObj?.species} />
+            <Input/>
           </Form.Item>
           <Form.Item
             name="commonName"
             label="Common Name"
             rules={[{ required: true }]}
           >
-            <Input placeholder={speciesObj?.commonName} />
+            <Input />
           </Form.Item>
 
           <Form.Item
@@ -213,8 +243,10 @@ if (!webMode) {
             <TextArea
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={speciesObj?.description}
+              placeholder="Share more details!"
               autoSize={{ minRows: 3, maxRows: 5 }}
+
+
             />
           </Form.Item>
 
@@ -226,7 +258,7 @@ if (!webMode) {
             <Select
               showSearch
               style={{ width: 400 }}
-            placeholder={speciesObj?.originCountry}
+              placeholder="Select a region"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
@@ -292,7 +324,7 @@ if (!webMode) {
             <Select
               showSearch
               style={{ width: 400 }}
-              placeholder={speciesObj?.conservationStatus}
+              placeholder="Select a conservation status"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
@@ -307,15 +339,23 @@ if (!webMode) {
           </Form.Item>
 
           <Form.Item
-            name="initCharac"
+            name="plantCharacteristics"
             label="Plant Characteristics"
-            rules={[{ required: true }]}
+            rules={[{ required: false }]}
+            initialValue={[]} // Ensure it starts as an empty array
           >
-            <Checkbox.Group
-              options={initCharac}
-              onChange={onChange}
-            />
+            <Checkbox.Group>
+              <Checkbox value="slowGrowing">Slow Growing</Checkbox>
+              <Checkbox value="edible">Edible</Checkbox>
+              <Checkbox value="toxic">Toxic</Checkbox>
+              <Checkbox value="evergreen">Evergreen</Checkbox>
+              <Checkbox value="fragrant">Fragrant</Checkbox>
+              <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
+              <Checkbox value="deciduous">Deciduous</Checkbox>
+              <Checkbox value="fastGrowing">Fast Growing</Checkbox>
+            </Checkbox.Group>
           </Form.Item>
+
 
           <Form.Item
             name="waterRequirement"
@@ -354,23 +394,36 @@ if (!webMode) {
 
             />
           </Form.Item>
-          <Form.Item
-            name="tempRange"
-            label="Min and Max Temp (C)"
+
+     <Form.Item
+            name="minTemp"
+            label="Min Temp (C)"
             rules={[{ required: true }]}
           >
-            <Slider
-              range
+            <InputNumber
               min={0}
               max={50}
               step={0.1}
-              value={tempRange}
-              onChange={(newValue) => {
-                if (Array.isArray(newValue) && newValue.length === 2) {
-                  setTempRange(newValue);
-                  form.setFieldsValue({ tempRange: newValue });
-                }
-              }}
+
+              onChange={() => {
+              form.validateFields(['minTemp']);
+            }}
+            />
+          </Form.Item>
+
+           <Form.Item
+            name="maxTemp"
+            label="Max Temp (C)"
+            rules={[{ required: true }]}
+          >
+            <InputNumber
+              min={0}
+              max={50}
+              step={0.1}
+
+              onChange={() => {
+              form.validateFields(['maxTemp']);
+            }}
             />
           </Form.Item>
 
@@ -390,32 +443,24 @@ if (!webMode) {
             />
           </Form.Item>
 
-          <Form.Item label="Temperature Values">
-            <Space>
-              <span>Min: {tempRange[0]}°C</span>
-              <span>Max: {tempRange[1]}°C</span>
-            </Space>
-          </Form.Item>
+
 
           <Form.Item {...tailLayout}>
             <Space>
               <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                Submit
+                Save
               </Button>
 
             </Space>
           </Form.Item>
-        </Form>
-        </>
-      }
-      {showSuccessAlert && (
-        <Alert
-          message={`Species "${createdSpeciesName}" created successfully`}
-          type="success"
-          closable
-          onClose={() => setShowSuccessAlert(false)}
-        />
+        </Form> }
+      {isSubmitting && (
+         <Result
+    status="success"
+    title={`Successfully edited ${savedSpeciesName}!`}
+  />
       )}
+
     </ContentWrapper>
 
   );
