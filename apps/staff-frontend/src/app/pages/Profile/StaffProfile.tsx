@@ -1,10 +1,6 @@
 import { ContentWrapper, LogoText } from '@lepark/common-ui';
 import { Descriptions, Card, Button, Input, Tooltip, Tag } from 'antd';
-import {
-  RiEdit2Line,
-  RiArrowLeftLine,
-  RiInformationLine,
-} from 'react-icons/ri';
+import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState } from 'react';
@@ -59,10 +55,7 @@ const StaffProfile = () => {
       children: !inEditMode ? (
         user.firstName
       ) : (
-        <Input
-          defaultValue={editedUser.firstName}
-          onChange={(e) => handleInputChange('firstName', e.target.value)}
-        />
+        <Input defaultValue={editedUser.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
       ),
       span: 2,
     },
@@ -72,10 +65,7 @@ const StaffProfile = () => {
       children: !inEditMode ? (
         user.lastName
       ) : (
-        <Input
-          defaultValue={editedUser.lastName}
-          onChange={(e) => handleInputChange('lastName', e.target.value)}
-        />
+        <Input defaultValue={editedUser.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
       ),
       span: 2,
     },
@@ -111,10 +101,7 @@ const StaffProfile = () => {
       children: !inEditMode ? (
         user.contactNumber
       ) : (
-        <Input
-          defaultValue={editedUser.contactNumber}
-          onChange={(e) => handleInputChange('contactNumber', e.target.value)}
-        />
+        <Input defaultValue={editedUser.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
       ),
     },
   ];
@@ -125,11 +112,7 @@ const StaffProfile = () => {
       <ContentWrapper>
         <div className="flex justify-between items-center mb-4">
           <LogoText className="text-xl font-bold">My Profile</LogoText>
-          <Button
-            onClick={handleLogout}
-            icon={<LogoutOutlined />}
-            className="bg-green-300 text-white"
-          >
+          <Button onClick={handleLogout} icon={<LogoutOutlined />} className="bg-green-300 text-white">
             Logout
           </Button>
         </div>
@@ -144,19 +127,11 @@ const StaffProfile = () => {
                 {!inEditMode ? (
                   <>
                     <div>{`${user?.firstName} ${user?.lastName}`}</div>
-                    <Button
-                      icon={<RiEdit2Line className="text-lg" />}
-                      type="text"
-                      onClick={toggleEditMode}
-                    />
+                    <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
                   </>
                 ) : (
                   <>
-                    <Button
-                      icon={<RiArrowLeftLine className="text-lg" />}
-                      type="text"
-                      onClick={toggleEditMode}
-                    >
+                    <Button icon={<RiArrowLeftLine className="text-lg" />} type="text" onClick={toggleEditMode}>
                       Return
                     </Button>
                     <div className="text-secondary">Edit My Profile </div>

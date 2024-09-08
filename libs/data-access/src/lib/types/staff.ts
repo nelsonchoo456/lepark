@@ -42,6 +42,7 @@ export interface StaffUpdateData {
   firstName?: string;
   lastName?: string;
   contactNumber?: string;
+  email?: string;
 }
 
 export interface PasswordResetRequestData {
