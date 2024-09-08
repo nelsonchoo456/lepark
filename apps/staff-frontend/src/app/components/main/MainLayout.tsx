@@ -56,7 +56,7 @@ const MainLayout = () => {
       onClick: () => navigate('/species'),
     },
     {
-      key: 'occurence',
+      key: 'occurrence',
       icon: <IoLeafOutline />,
       // icon: <UserOutlined />,
       onClick: () => navigate('/occurrence'),

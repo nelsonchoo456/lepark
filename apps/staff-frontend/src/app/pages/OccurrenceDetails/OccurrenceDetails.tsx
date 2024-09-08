@@ -12,11 +12,11 @@ const plant = {
   latitude: 1.3521,
   longitude: 103.8198,
   dateObserved: '2024-09-03',
-  occurenceStatus: 'ACTIVE',
+  occurrenceStatus: 'ACTIVE',
   numberOfPlants: 150,
   dateOfBirth: '2024-01-10',
   biomass: 1200.5,
-  occurenceDescription: 'Mangrove restoration area',
+  occurrenceDescription: 'Mangrove restoration area',
   decarbonizationType: 'CARBON_SEQUESTRATION',
   speciesId: 1001,
   speciesName: 'Orchid',
@@ -47,7 +47,7 @@ const OccurrenceDetails = () => {
       children: plant.id,
     },
     {
-      key: 'occurenceStatus',
+      key: 'occurrenceStatus',
       label: 'Status',
       children: (
         <Tag color="green" bordered={false}>
@@ -67,12 +67,12 @@ const OccurrenceDetails = () => {
     {
       key: 'about',
       label: 'About',
-      children: <AboutTab occurence={plant}/>,
+      children: <AboutTab occurrence={plant} />,
     },
     {
       key: 'information',
       label: 'Information',
-      children: <InformationTab occurence={plant}/>,
+      children: <InformationTab occurrence={plant} />,
     },
     {
       key: 'activityLogs',
@@ -103,44 +103,31 @@ const OccurrenceDetails = () => {
             className="h-64 flex-1 rounded-lg shadow-lg p-4"
           />
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">
-              {plant.speciesName}
-            </LogoText>
-            <Descriptions
-              items={descriptionsItems}
-              column={1}
-              size="small"
-            />
-            
-            <div className='flex h-24 w-full gap-2 mt-auto'>
-              <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
-                <FiSun className='text-3xl mt-2'/>
-                <p className='text-xs mt-2'>Partial Shade</p>
+            <LogoText className="text-2xl py-2 m-0">{plant.speciesName}</LogoText>
+            <Descriptions items={descriptionsItems} column={1} size="small" />
+
+            <div className="flex h-24 w-full gap-2 mt-auto">
+              <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                <FiSun className="text-3xl mt-2" />
+                <p className="text-xs mt-2">Partial Shade</p>
               </div>
-              <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
-                <FiSun className='text-3xl mt-2'/>
-                <p className='text-xs mt-2'>Every 2 Days</p>
+              <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                <FiSun className="text-3xl mt-2" />
+                <p className="text-xs mt-2">Every 2 Days</p>
               </div>
-              <div className='bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1'>
-                <FiSun className='text-3xl mt-2'/>
-                <p className='text-xs mt-2'>Fast-growing</p>
+              <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                <FiSun className="text-3xl mt-2" />
+                <p className="text-xs mt-2">Fast-growing</p>
               </div>
             </div>
-            
-
-          </div> 
+          </div>
         </div>
 
         <Tabs
           centered
           defaultActiveKey="information"
           items={tabsItems}
-          renderTabBar={(props, DefaultTabBar) => (
-            <DefaultTabBar
-              {...props}
-              className="border-b-[1px] border-gray-400"
-            />
-          )}
+          renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />
       </Card>

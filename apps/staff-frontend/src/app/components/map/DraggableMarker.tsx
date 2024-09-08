@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import { AdjustLatLngInterface } from '../../pages/Occurrence/OccurenceCreate';
+import { AdjustLatLngInterface } from '../../pages/Occurrence/OccurrenceCreate';
 
 const center = {
   lat: 1.3503881629328163,

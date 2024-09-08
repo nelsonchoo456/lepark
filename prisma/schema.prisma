@@ -145,9 +145,9 @@ model ActivityLog {
   dateCreated     DateTime
   images          String[]
   activityLogType ACTIVITY_LOG_TYPE
-  occurenceId     String            @db.Uuid
+  occurrenceId     String            @db.Uuid @map("occurrenceId")
 
-  occurence Occurrence @relation(fields: [occurenceId], references: [id], onDelete: Cascade)
+  occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
 }
 
 enum OCCURRENCE_STATUS_ENUM {
@@ -164,9 +164,9 @@ model StatusLog {
   dateCreated   DateTime
   images        String[]
   statusLogType OCCURRENCE_STATUS_ENUM
-  occurenceId   String                 @db.Uuid
+  occurrenceId   String                 @db.Uuid @map("occurrenceId")
 
-  occurence Occurrence @relation(fields: [occurenceId], references: [id], onDelete: Cascade)
+  occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
 }
 
 // model DecarbonizationArea {
@@ -177,9 +177,9 @@ model StatusLog {
 //   carbonSeqFactor     Float
 //   dailyCarbonSeqValye Float
 //   totalBiomass        Float
-//   occurenceId         String
+//   occurrenceId         String
 
-//   occurences Occurrence[]
+//   occurrences Occurrence[]
 // }
 
 model Visitor {

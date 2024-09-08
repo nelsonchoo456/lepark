@@ -9,7 +9,7 @@ import CreateSpecies from './pages/Species/CreateSpecies';
 import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import OccurrenceList from './pages/Occurrence/OccurrenceList';
-import OccurrenceCreate from './pages/Occurrence/OccurenceCreate';
+import OccurrenceCreate from './pages/Occurrence/OccurrenceCreate';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
 import ProfilePage from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
@@ -26,19 +26,19 @@ export function App() {
           // Seed Token
           colorPrimary: '#6da696', // green.500
           borderRadius: 5,
-          colorTextBase: "#000000",
+          colorTextBase: '#000000',
           fontSize: 14,
 
           // Alias Token
         },
         components: {
           Menu: {
-            itemBg: "#ffffff",
-            itemHoverBg:'#e6f0ed', // green.50
-            itemSelectedBg: "#fff", // green.100
+            itemBg: '#ffffff',
+            itemHoverBg: '#e6f0ed', // green.50
+            itemSelectedBg: '#fff', // green.100
             itemSelectedColor: '#558f7f', // green.500
           },
-        }
+        },
       }}
     >
       <BrowserRouter>
@@ -50,17 +50,12 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
 
-
             <Route path="/occurrence">
               <Route index element={<OccurrenceList />} />
-              <Route
-                path=":occurrenceId"
-                element={<OccurrenceDetails/>}/>
-              <Route
-                path="create"
-                element={<OccurrenceCreate/>}/>
+              <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+              <Route path="create" element={<OccurrenceCreate />} />
             </Route>
-            
+
             <Route path="/profile" element={<StaffProfile />} />
             <Route path="/staffManagement" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
