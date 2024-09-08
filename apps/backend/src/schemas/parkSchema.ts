@@ -14,6 +14,8 @@ import { z } from 'zod';
 export interface ParkCreateData {
   name: string;
   description?: string;
+  address?: string;
+  contactNumber?: string;
   openingHours: Date[];
   closingHours: Date[];
   geom: string;
@@ -24,6 +26,8 @@ export interface ParkCreateData {
 export interface ParkResponseData {
   name: string;
   description?: string;
+  address?: string;
+  contactNumber?: string;
   openingHours: Date[];
   closingHours: Date[];
   geom: any;

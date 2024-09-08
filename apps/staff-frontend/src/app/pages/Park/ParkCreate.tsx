@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createOccurrence } from '@lepark/data-access';
+import { createOccurrence, ParkResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, Input, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
 import { OccurrenceResponse } from '@lepark/data-access';
+import { LatLng } from 'leaflet';
+import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import { createPark } from '@lepark/data-access';
 
 const center = {
   lat: 1.3503881629328163,
@@ -19,19 +22,24 @@ export interface AdjustLatLngInterface {
   lng?: number | null;
 }
 
+const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
 const ParkCreate = () => {
-  const [currStep, setCurrStep] = useState<number>(1);
-  const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
+  const [currStep, setCurrStep] = useState<number>(0);
+  const [createdData, setCreatedData] = useState<ParkResponse | null>();
   const navigate = useNavigate();
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
   // Map Values
+  const [polygon, setPolygon] = useState<LatLng[][]>([]);
+  const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
+  
   const handleCurrStep = async (step: number) => {
+    console.log(formValues)
     if (step === 0) {
       setCurrStep(0);
     } else if (step === 1) {
@@ -47,18 +55,32 @@ const ParkCreate = () => {
     }
   };
 
-  const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
-    if (lat) {
-      setLat(lat);
-    }
-    if (lng) {
-      setLng(lng);
-    }
-  };
-
   const handleSubmit = async () => {
     try {
-      //
+      // console.log(formValues);
+      const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
+
+      const openingHours: any[] = [];
+      const closingHours: any[] = [];
+      daysOfTheWeek.forEach((day, index) => {
+        openingHours.push(formValues[day][0] ? moment(formValues[day][0]).toISOString() : null)
+        closingHours.push(formValues[day][1] ? moment(formValues[day][1]).toISOString() : null)
+      })
+
+      const finalData = { ...rest, openingHours, closingHours}
+
+      if (polygon[0][0]) {
+        const polygonData = latLngArrayToPolygon(polygon[0][0]);
+        finalData.geom = polygonData;
+      }
+      
+
+      const response = await createPark(finalData);
+      if (response.status === 201) {
+        setCreatedData(response.data)
+        setCurrStep(2);
+      }
+      
     } catch (error) {
       console.log('error', error);
       //
@@ -72,7 +94,7 @@ const ParkCreate = () => {
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} />,
+      children: <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines}/>,
     },
     {
       key: 'complete',
@@ -120,14 +142,14 @@ const ParkCreate = () => {
           <Flex justify="center" className="py-4">
             <Result
               status="success"
-              title="Created new Occurrence"
+              title="Created new Park"
               subTitle={
-                createdData && <>Occurrence title: {createdData.title}</>
+                createdData && <>Park title: {createdData.name}</>
               }
               extra={[
-                <Button key="back" onClick={() => navigate('/occurrence')}>Back to Occurrence Management</Button>,
-                <Button type="primary" key="view" onClick={() => navigate(`/occurrence/${createdData?.id}`)}>
-                  View new Occurrence
+                <Button key="back" onClick={() => navigate('/park/create')}>Back to Park Management</Button>,
+                <Button type="primary" key="view" onClick={() => navigate(`/park/${createdData?.id}`)}>
+                  View new Park
                 </Button>,
               ]}
             />

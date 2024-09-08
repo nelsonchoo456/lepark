@@ -24,16 +24,16 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
   const decarbonizationTypeOptions = [
     {
-      value: 'TREE_TROPICAL',
-      label: 'Tree Tropical',
+      value: 'OPEN',
+      label: 'Open',
     },
     {
-      value: 'TREE_MANGROVE',
-      label: 'Tree Mangronve',
+      value: 'UNDER_CONSTRUCTION',
+      label: 'Under Construction',
     },
     {
-      value: 'SHRUB',
-      label: 'Shrub',
+      value: 'LIMITED_ACCESS',
+      label: 'Limites Access',
     },
   ]
   return (
@@ -62,29 +62,29 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
         <Input placeholder="Park Address" />
       </Form.Item>
       <Form.Item name="contactNumber" label="Contact Number" rules={[{ required: true }]}>
-        <Input placeholder="Park Address" />
+        <Input placeholder="Contact Number" />
       </Form.Item>
       
       <Divider orientation='left'>Park Hours</Divider>
-      <Form.Item name="1" label="Monday">
+      <Form.Item name="monday" label="Monday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
-      <Form.Item name="2" label="Tuesday">
+      <Form.Item name="tuesday" label="Tuesday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
-      <Form.Item name="3" label="Wednesday">
+      <Form.Item name="wednesday" label="Wednesday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
-      <Form.Item name="4" label="Thursday">
+      <Form.Item name="thursday" label="Thursday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
-      <Form.Item name="5" label="Friday">
+      <Form.Item name="friday" label="Friday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
-      <Form.Item name="6" label="Saturday">
+      <Form.Item name="saturday" label="Saturday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
-      <Form.Item name="7" label="Sunday">
+      <Form.Item name="sunday" label="Sunday" rules={[{ required: true }]}>
         <RangePicker className="w-full" use12Hours format="h:mm a"/>
       </Form.Item>
       <Form.Item wrapperCol={{ offset: 8 }}>

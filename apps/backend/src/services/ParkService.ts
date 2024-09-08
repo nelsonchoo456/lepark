@@ -10,6 +10,12 @@ class ParkService {
       if (!data.name || data.name.length < 3) {
         errors.push('Valid name is required');
       }
+      if (!data.address || data.address.length < 3) {
+        errors.push('Address is required');
+      }
+      if (!data.contactNumber || data.contactNumber.length < 3) {
+        errors.push('Address is required');
+      }
       if (!data.openingHours || data.openingHours.length != 7) {
         errors.push('Opening Hours are required');
       }
@@ -23,8 +29,6 @@ class ParkService {
       if (errors.length !== 0) {
         throw new Error(`Validation errors: ${errors.join('; ')}`)
       }
-
-      console.log("data", data);
       return ParkDao.createPark(data);
     } catch (error) {
       if (error instanceof z.ZodError) {
