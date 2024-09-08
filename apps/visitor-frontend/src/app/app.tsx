@@ -11,6 +11,7 @@ import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
+import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import Discover from './pages/Taxonomy/Discover';
 import ViewSpecies from './pages/Taxonomy/ViewSpecies';
 
@@ -46,6 +47,7 @@ export function App() {
               <Route
                 path=":occurrenceId"
                 element={<OccurrenceDetails/>}/>
+                <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/>
             </Route>
             <Route path="/discover" element={<Discover />} />
             <Route path="/taxonomy/view-species" element={<ViewSpecies />} />

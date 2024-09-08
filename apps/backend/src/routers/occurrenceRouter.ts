@@ -57,4 +57,16 @@ router.delete('/deleteOccurrence/:id', async (req, res) => {
   }
 });
 
+/* ACTIVITY LOG ROUTES */
+
+router.get('/viewActivityLogDetails/:id', async (req, res) => {
+  try {
+    const activityLogId = req.params.id;
+    const activityLog = await OccurrenceService.getActivityLogById(activityLogId);
+    res.status(200).json(activityLog);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

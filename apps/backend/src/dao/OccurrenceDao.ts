@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Occurrence } from '@prisma/client';
+import { PrismaClient, Prisma, Occurrence, ActivityLog } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -15,15 +15,22 @@ class OccurrenceDao {
     return prisma.occurrence.findUnique({ where: { id } });
   }
 
-  async updateOccurrenceDetails(
-    id: string,
-    data: Prisma.OccurrenceUpdateInput,
-  ): Promise<Occurrence> {
+  async updateOccurrenceDetails(id: string, data: Prisma.OccurrenceUpdateInput): Promise<Occurrence> {
     return prisma.occurrence.update({ where: { id }, data });
   }
 
   async deleteOccurrence(id: string): Promise<void> {
     await prisma.occurrence.delete({ where: { id } });
+  }
+
+  /* ACTIVITY LOG DAO */
+
+  async getActivityLogsByOccurrenceId(occurrenceId: string): Promise<ActivityLog[]> {
+    return prisma.activityLog.findMany({ where: { occurrenceId } });
+  }
+
+  async getActivityLogById(id: string): Promise<ActivityLog> {
+    return prisma.activityLog.findUnique({ where: { id } });
   }
 }
 

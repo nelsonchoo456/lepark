@@ -80,7 +80,7 @@ const OccurrenceList = () => {
   ];
 
   const navigateTo = (occurrenceId: string) => {
-    navigate(`/occurrence/${occurrenceId}`);
+    navigate(`/occurrences/${occurrenceId}`);
   };
 
   return (
@@ -91,7 +91,7 @@ const OccurrenceList = () => {
         <Button
           type="primary"
           onClick={() => {
-            navigate('/occurrence/create');
+            navigate('/occurrences/create');
           }}
         >
           Create Occurrence

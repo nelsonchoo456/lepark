@@ -6,6 +6,7 @@ import InformationTab from './components/InformationTab';
 import { FiSun } from 'react-icons/fi';
 import moment from 'moment';
 import AboutTab from './components/AboutTab';
+import ActivityLogs from './components/ActivityLogs';
 
 const plant = {
   id: 1,
@@ -20,6 +21,20 @@ const plant = {
   decarbonizationType: 'CARBON_SEQUESTRATION',
   speciesId: 1001,
   speciesName: 'Orchid',
+  activityLogs: [
+    {
+      logId: 1,
+      status: 'HEALTHY',
+      dateLogged: '2024-02-15',
+      remarks: 'Plants are growing well',
+    },
+    {
+      logId: 2,
+      status: 'MONITORED',
+      dateLogged: '2024-03-10',
+      remarks: 'Area requires periodic monitoring',
+    },
+  ],
   statusLogs: [
     {
       logId: 1,
@@ -36,6 +51,84 @@ const plant = {
   ],
   decarbonizationAreaId: 501,
 };
+
+const occurrences = [
+  {
+    "id": "occurrence-1-uuid",
+    "lat": 1.3521,
+    "lng": 103.8198,
+    "dateObserved": "2024-09-08T10:00:00Z",
+    "dateOfBirth": "2022-06-15T10:00:00Z",
+    "numberOfPlants": 50.0,
+    "biomass": 200.0,
+    "title": "Mangrove Restoration",
+    "description": "Observing the growth of newly planted mangroves.",
+    "decarbonizationType": "CARBON_SEQUESTRATION",
+    "speciesId": "species-1-uuid",
+    "activityLogs": [
+      {
+        "id": "activity-log-1-uuid",
+        "name": "Watering Mangroves",
+        "description": "Watered the newly planted mangroves",
+        "dateCreated": "2024-09-07T10:00:00Z",
+        "images": ["water-mangroves-1.jpg"],
+        "activityLogType": "WATERED"
+      },
+      {
+        "id": "activity-log-2-uuid",
+        "name": "Pruned Mangroves",
+        "description": "Pruned the mangroves to promote growth",
+        "dateCreated": "2024-09-07T11:00:00Z",
+        "images": ["prune-mangroves-1.jpg"],
+        "activityLogType": "PRUNED"
+      }
+    ],
+    "statusLogs": [
+      {
+        "id": "status-log-1-uuid",
+        "name": "Healthy Growth",
+        "description": "Plants are healthy with no issues observed",
+        "dateCreated": "2024-09-08T10:30:00Z",
+        "images": ["healthy-mangroves.jpg"],
+        "statusLogType": "HEALTHY"
+      }
+    ]
+  },
+  {
+    "id": "occurrence-2-uuid",
+    "lat": 1.2803,
+    "lng": 103.8519,
+    "dateObserved": "2024-09-07T14:00:00Z",
+    "dateOfBirth": "2021-05-01T10:00:00Z",
+    "numberOfPlants": 100.0,
+    "biomass": 450.0,
+    "title": "Urban Tree Canopy Monitoring",
+    "description": "Monitoring tree growth in urban areas",
+    "decarbonizationType": "CARBON_REDUCTION",
+    "speciesId": "species-2-uuid",
+    "activityLogs": [
+      {
+        "id": "activity-log-2-uuid",
+        "name": "Pruned Trees",
+        "description": "Pruned trees to promote growth",
+        "dateCreated": "2024-09-07T15:00:00Z",
+        "images": ["prune-trees-1.jpg"],
+        "activityLogType": "PRUNED"
+      }
+    ],
+    "statusLogs": [
+      {
+        "id": "status-log-2-uuid",
+        "name": "Needs Attention",
+        "description": "Some trees showed signs of pest infestation",
+        "dateCreated": "2024-09-07T15:30:00Z",
+        "images": ["infested-trees.jpg"],
+        "statusLogType": "NEEDS_ATTENTION"
+      }
+    ]
+  }
+]
+
 
 const OccurrenceDetails = () => {
   const { id } = useParams();
@@ -72,15 +165,15 @@ const OccurrenceDetails = () => {
     {
       key: 'information',
       label: 'Information',
-      children: <InformationTab occurrence={plant} />,
+      children: <InformationTab occurrence={occurrences[0]} />,
     },
     {
       key: 'activityLogs',
       label: 'Activity Logs',
-      children: 'adksm',
+      children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
     },
     {
-      key: 'statuseLogs',
+      key: 'statusLogs',
       label: 'Status Logs',
       children: 'adkeewsm',
     },

@@ -17,6 +17,7 @@ import ForgotPassword from './pages/ResetPassword/ResetPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import StaffProfile from './pages/Profile/StaffProfile';
 import StaffManagementPage from './pages/StaffManagement/StaffManagement';
+import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 
 export function App() {
   return (
@@ -50,7 +51,7 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
 
-            <Route path="/occurrence">
+            <Route path="/occurrences">
               <Route index element={<OccurrenceList />} />
               <Route path=":occurrenceId" element={<OccurrenceDetails />} />
               <Route path="create" element={<OccurrenceCreate />} />
@@ -60,6 +61,7 @@ export function App() {
             <Route path="/staffManagement" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
+            <Route path="occurrences/:occurrenceId/activitylog/:id" element={<ActivityLogDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>
