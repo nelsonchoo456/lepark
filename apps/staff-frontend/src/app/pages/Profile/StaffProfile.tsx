@@ -8,6 +8,7 @@ import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
+import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const initialUser = {
@@ -17,66 +18,66 @@ const initialUser = {
   contactNumber: '',
   role: '',
   email: '',
-  password: '',
   isActive: false,
 };
 
 const StaffProfile = () => {
-  const getUserId = () => {
-    return '9ffdeeac-ecdb-4882-99a2-cf8094b92c92';
-  };
+  const { user, updateUser } = useAuth<StaffResponse>();
 
-  const staffId = getUserId(); // Replace 'user-id' with the actual user ID
   const [inEditMode, setInEditMode] = useState(false);
-  const [user, setUser] = useState(initialUser);
-  const [editedUser, setEditedUser] = useState(initialUser);
+  const [userState, setUser] = useState<StaffResponse | null>(null);
+  const [editedUser, setEditedUser] = useState<StaffResponse | null>(null);
 
   const { logout } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await viewStaffDetails(staffId);
-        setUser(response.data);
-        setEditedUser(response.data);
+        setUser(user);
+        setEditedUser(user);
       } catch (error) {
         console.error(error);
         message.error('Failed to fetch user details');
       }
     };
 
-    if (staffId) {
+    if (user && user.id) {
       fetchUserDetails();
     }
-  }, [staffId]);
+  }, []);
 
   const toggleEditMode = () => {
-    if (inEditMode) {
-      setEditedUser(user); // Reset changes if canceling edit
+    if (inEditMode && userState) {
+      setEditedUser(userState); // Reset changes if canceling edit
     }
     setInEditMode(!inEditMode);
   };
 
-  const handleInputChange = (key: string, value: string) => {
-    setEditedUser((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const handleInputChange = (key: keyof StaffResponse, value: string) => {
+    setEditedUser((prev) => {
+      if (!prev) return null; // Handle case where prev might be null
+
+      return {
+        ...prev,
+        [key]: value, // Only update the specific key
+      };
+    });
   };
 
   const validateInputs = () => {
+    if (!editedUser) return false;
     const { firstName, lastName, email, contactNumber, role } = editedUser;
     return firstName && lastName && email && contactNumber && role;
   };
 
-  const refreshUserData = async () => {
-    try {
-      const updatedUser = await viewStaffDetails(staffId);
-      setUser(updatedUser.data);
-    } catch (error) {
-      console.error('Failed to fetch user data:', error);
-    }
-  };
+  // const refreshUserData = async () => {
+  //   try {
+  //     const updatedUser = await viewStaffDetails(staffId);
+  //     setUser(updatedUser.data);
+  //   } catch (error) {
+  //     console.error('Failed to fetch user data:', error);
+  //   }
+  // };
 
   const onFinish = async (values: any) => {
     try {
@@ -87,11 +88,15 @@ const StaffProfile = () => {
         email: values.email,
       };
 
-      const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
-      console.log('Staff details updated successfully:', responseStaffDetails.data);
-      message.success('Staff details updated successfully!');
-      await refreshUserData(); // Refresh user data to load the latest values
-      setInEditMode(false); // Exit edit mode
+      if (user) {
+        const responseStaffDetails = await updateStaffDetails(user.id, updatedStaffDetails);
+        // console.log('Staff details updated successfully:', responseStaffDetails.data);
+        message.success('Staff details updated successfully!');
+        updateUser(responseStaffDetails.data); // Update user details in the context
+        setUser(responseStaffDetails.data); // Update user details in the state
+        // await refreshUserData(); // Refresh user data to load the latest values
+        setInEditMode(false); // Exit edit mode
+      }
     } catch (error: any) {
       console.error(error);
       // TODO: filter out specific error messages from the response
@@ -126,9 +131,9 @@ const StaffProfile = () => {
       key: 'firstName',
       label: 'First Name',
       children: !inEditMode ? (
-        user.firstName
+        userState?.firstName
       ) : (
-        <Input required defaultValue={editedUser.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
+        <Input required defaultValue={editedUser?.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
       ),
       span: 2,
     },
@@ -136,22 +141,22 @@ const StaffProfile = () => {
       key: 'lastName',
       label: 'Last Name',
       children: !inEditMode ? (
-        user.lastName
+        userState?.lastName
       ) : (
-        <Input required defaultValue={editedUser.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
+        <Input required defaultValue={editedUser?.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
       ),
       span: 2,
     },
     {
       key: 'id',
       label: 'ID',
-      children: user.id, // not allowed to change id
+      children: userState?.id, // not allowed to change id
       span: 2,
     },
     {
       key: 'role',
       label: 'Role',
-      children: <Tag>{user.role}</Tag>, // not allowed to change role
+      children: <Tag>{userState?.role}</Tag>, // not allowed to change role
       span: 2,
     },
     {
@@ -159,7 +164,7 @@ const StaffProfile = () => {
       label: 'Email',
       children: (
         <div className="flex items-center">
-          {user.email}
+          {userState?.email}
           {inEditMode && (
             <Tooltip title="To change your email, please contact your manager.">
               <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
@@ -172,9 +177,9 @@ const StaffProfile = () => {
       key: 'contactNumber',
       label: 'Contact Number',
       children: !inEditMode ? (
-        user.contactNumber
+        userState?.contactNumber
       ) : (
-        <Input required defaultValue={editedUser.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
+        <Input required defaultValue={editedUser?.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
       ),
     },
   ];
@@ -200,7 +205,7 @@ const StaffProfile = () => {
             <div className="w-full flex justify-between">
               {!inEditMode ? (
                 <>
-                  <div>{`${user?.firstName} ${user?.lastName}`}</div>
+                  <div>{`${userState?.firstName} ${userState?.lastName}`}</div>
                   <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
                 </>
               ) : (
