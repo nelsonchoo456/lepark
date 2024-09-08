@@ -9,6 +9,7 @@ import cors from 'cors';
 import staffRouter from './routers/staffRouter';
 import visitorRouter from './routers/visitorRouter';
 import speciesRouter from './routers/speciesRouter';
+import parkRouter from './routers/parkRouter';
 import occurrenceRouter from './routers/occurrenceRouter';
 import cookieParser from 'cookie-parser';
 
@@ -46,6 +47,7 @@ app.get('/api', (req, res) => {
 app.use('/api/staffs', staffRouter);
 app.use('/api/species', speciesRouter);
 app.use('/api/visitors', visitorRouter);
+app.use('/api/parks', parkRouter);
 app.use('/api/occurrences', occurrenceRouter);
 
 const port = process.env.PORT || 3333;

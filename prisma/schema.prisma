@@ -188,10 +188,10 @@ enum PARK_STATUS_ENUM {
 }
 
 model Park {
-  id           String     @id @default(uuid()) @db.Uuid
+  id           Int     @id @default(autoincrement())
   name         String
   description  String
-  parkStatus   String     @unique
+  parkStatus   PARK_STATUS_ENUM
   openingHours DateTime[]
   closingHours DateTime[]
   geom         String
