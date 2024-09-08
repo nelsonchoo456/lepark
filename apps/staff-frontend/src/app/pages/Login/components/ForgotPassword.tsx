@@ -1,4 +1,5 @@
 import { Button, Divider, Form, Input } from 'antd';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface ForgotPasswordProps {
@@ -6,10 +7,13 @@ interface ForgotPasswordProps {
 }
 const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
   const navigate = useNavigate();
+  const [isEmailSent, setIsEmailSent] = useState(false);
 
   const handleSubmit = (values: any) => {
     const { email, password } = values;
-    navigate('/');
+    // Simulate email sending
+    setIsEmailSent(true);
+    // navigate('/');
   };
   
   const handleReturnToLogin = () => {
@@ -23,6 +27,9 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
   return (
     <div className="w-full">
       <Divider>Reset Password</Divider>
+      {isEmailSent ? (
+        <div className='text-secondary'>An email has been sent to your address. Please check your inbox to reset your password.</div>
+      ) : (
       <Form
         layout="vertical"
         onFinish={handleSubmit}
@@ -43,6 +50,7 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
           </Button>
         </Form.Item>
       </Form>
+      )}
       <Divider><span className="text-secondary">or</span></Divider>
       <Button type="link" className="w-full justify-center" onClick={handleReturnToLogin}>
         Return to Log In
