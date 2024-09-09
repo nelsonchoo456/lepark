@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DecarbonizationTypeEnum, OccurrenceStatusEnum, ActivityLogTypeEnum } from '@prisma/client';
+import { DecarbonizationTypeEnum, OccurrenceStatusEnum } from '@prisma/client';
 
 export const OccurrenceSchema = z.object({
   id: z.string().uuid().optional(), // ID is optional because it's usually auto-generated
@@ -17,18 +17,8 @@ export const OccurrenceSchema = z.object({
   occurrenceStatus: z.nativeEnum(OccurrenceStatusEnum),
   decarbonizationType: z.nativeEnum(DecarbonizationTypeEnum),
   speciesId: z.string().uuid(),
+  images: z.array(z.string()).optional(),
   // decarbonizationAreaId: z.string().uuid(),
 });
 
-export const ActivityLogSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string(),
-  dateCreated: z.date(),
-  images: z.array(z.string()).optional(),
-  activityLogType: z.nativeEnum(ActivityLogTypeEnum),
-  occurrenceId: z.string().uuid(),
-});
-
 export type OccurrenceSchemaType = z.infer<typeof OccurrenceSchema>;
-export type ActivityLogSchemaType = z.infer<typeof ActivityLogSchema>;

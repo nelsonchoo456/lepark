@@ -11,6 +11,7 @@ import visitorRouter from './routers/visitorRouter';
 import speciesRouter from './routers/speciesRouter';
 import parkRouter from './routers/parkRouter';
 import occurrenceRouter from './routers/occurrenceRouter';
+import activityLogRouter from './routers/activityLogRouter';
 import cookieParser from 'cookie-parser';
 
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/species', speciesRouter);
 app.use('/api/visitors', visitorRouter);
 app.use('/api/parks', parkRouter);
 app.use('/api/occurrences', occurrenceRouter);
+app.use('/api/activitylogs', activityLogRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

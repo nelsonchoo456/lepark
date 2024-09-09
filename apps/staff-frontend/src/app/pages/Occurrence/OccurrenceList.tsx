@@ -27,8 +27,8 @@ const OccurrenceList: React.FC = () => {
     }
   };
 
-  const navigateToDetails = (id: string) => {
-    navigate(`/occurrences/${id}`);
+  const navigateToDetails = (occurrenceId: string) => {
+    navigate(`/occurrences/${occurrenceId}`);
   };
 
   const navigateToSpecies = (speciesId: string) => {

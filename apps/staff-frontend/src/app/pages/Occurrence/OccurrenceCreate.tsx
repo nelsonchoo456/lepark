@@ -70,7 +70,7 @@ const OccurrenceCreate = () => {
       const response = await createOccurrence(finalData);
       if (response?.status && response.status === 201) {
         setCurrStep(2);
-        setCreatedData(response.data)
+        setCreatedData(response.data);
       }
       console.log('response', response);
     } catch (error) {
@@ -143,11 +143,11 @@ const OccurrenceCreate = () => {
             <Result
               status="success"
               title="Created new Occurrence"
-              subTitle={
-                createdData && <>Occurrence title: {createdData.title}</>
-              }
+              subTitle={createdData && <>Occurrence title: {createdData.title}</>}
               extra={[
-                <Button key="back" onClick={() => navigate('/occurrences')}>Back to Occurrence Management</Button>,
+                <Button key="back" onClick={() => navigate('/occurrences')}>
+                  Back to Occurrence Management
+                </Button>,
                 <Button type="primary" key="view" onClick={() => navigate(`/occurrences/${createdData?.id}`)}>
                   View new Occurrence
                 </Button>,

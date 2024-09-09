@@ -72,6 +72,9 @@ export function App() {
               <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path="create" element={<OccurrenceCreate />} />
+                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
               </Route>
 
               <Route path="/park">
@@ -81,10 +84,12 @@ export function App() {
                 <Route path=":id/edit" element={<ParkEdit />} />
               </Route>
               
-              <Route path="/occurence">
+              {/* <Route path="/occurence">
                 <Route index element={<OccurrenceList />} />
-                <Route path=":occurenceId" element={<OccurrenceDetails />} />
-              </Route>
+                <Route path="create" element={<OccurrenceCreate />} />
+                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
+              </Route> */}
 
               <Route path="/profile" element={<StaffProfile />} />
               <Route path="/staff-management">

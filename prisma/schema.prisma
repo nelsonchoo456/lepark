@@ -109,19 +109,20 @@ enum OccurrenceStatusEnum {
 }
 
 model Occurrence {
-  id                    String               @id @default(uuid()) @db.Uuid
-  lat                   Float?
-  lng                   Float?
-  dateObserved          DateTime
-  dateOfBirth           DateTime?
-  numberOfPlants        Float
-  biomass               Float
-  title                 String
-  description           String
-  occurrenceStatus      OccurrenceStatusEnum
-  decarbonizationType   DecarbonizationTypeEnum
-  speciesId             String @db.Uuid
+  id                  String                  @id @default(uuid()) @db.Uuid
+  lat                 Float?
+  lng                 Float?
+  title               String
+  dateObserved        DateTime
+  dateOfBirth         DateTime?
+  numberOfPlants      Float
+  biomass             Float
+  description         String
+  occurrenceStatus    OccurrenceStatusEnum
+  decarbonizationType DecarbonizationTypeEnum
+  speciesId           String                  @db.Uuid
   // decarbonizationAreaId String @db.Uuid
+  images              String[]
   activityLogs        ActivityLog[]
   statusLogs          StatusLog[]
 
@@ -129,7 +130,7 @@ model Occurrence {
   // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
 }
 
-enum ActivityLogTypeEnum  {
+enum ActivityLogTypeEnum {
   WATERED
   TRIMMED
   FERTILIZED
@@ -148,25 +149,25 @@ enum ActivityLogTypeEnum  {
 }
 
 model ActivityLog {
-  id              String            @id @default(uuid()) @db.Uuid
+  id              String              @id @default(uuid()) @db.Uuid
   name            String
   description     String
   dateCreated     DateTime
   images          String[]
   activityLogType ActivityLogTypeEnum
-  occurrenceId     String            @db.Uuid @map("occurrenceId")
+  occurrenceId    String              @map("occurrenceId") @db.Uuid
 
   occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
 }
 
 model StatusLog {
-  id            String                 @id @default(uuid()) @db.Uuid
+  id            String               @id @default(uuid()) @db.Uuid
   name          String
   description   String
   dateCreated   DateTime
   images        String[]
   statusLogType OccurrenceStatusEnum
-  occurrenceId   String                 @db.Uuid @map("occurrenceId")
+  occurrenceId  String               @map("occurrenceId") @db.Uuid
 
   occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
 }

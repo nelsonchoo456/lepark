@@ -12,22 +12,19 @@ import { ActivityLogResponse, OccurrenceResponse } from '@lepark/data-access';
 import { getOccurrenceById, getActivityLogsByOccurrenceId } from '@lepark/data-access';
 
 const OccurrenceDetails = () => {
-  const { id } = useParams<{ id: string }>();
-  console.log(id);
+  const { occurrenceId } = useParams<{ occurrenceId: string }>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLogResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (id) {
+      if (occurrenceId) {
         try {
-          const occurrenceResponse = await getOccurrenceById(id);
-          console.log(occurrenceResponse.data);
-          console.log('empty');
+          const occurrenceResponse = await getOccurrenceById(occurrenceId);
           setOccurrence(occurrenceResponse.data);
 
-          const activityLogsResponse = await getActivityLogsByOccurrenceId(id);
+          const activityLogsResponse = await getActivityLogsByOccurrenceId(occurrenceId);
           setActivityLogs(activityLogsResponse.data);
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -38,7 +35,7 @@ const OccurrenceDetails = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [occurrenceId]);
 
   const descriptionsItems = [
     {
@@ -69,15 +66,15 @@ const OccurrenceDetails = () => {
       label: 'About',
       children: occurrence ? <AboutTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
     },
-    // {
-    //   key: 'information',
-    //   label: 'Information',
-    //   children: <InformationTab occurrence={occurrence} />,
-    // },
+    {
+      key: 'information',
+      label: 'Information',
+      children: occurrence ? <InformationTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
+    },
     {
       key: 'activityLogs',
       label: 'Activity Logs',
-      children: loading ? <p>Loading activity logs...</p> : <ActivityLogs activityLogs={activityLogs} occurrenceId={occurrence?.id} />,
+      children: loading ? <p>Loading activity logs...</p> : <ActivityLogs activityLogs={activityLogs} occurrence={occurrence} />,
     },
     {
       key: 'statusLogs',
