@@ -34,7 +34,7 @@ export function App() {
             colorPrimary: '#6da696', // Green
             algorithm: true, // Enable algorithm
           },
-        }
+        },
       }}
     >
       <BrowserRouter>
