@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Card, Empty, Tabs } from 'antd';
+import { Button, Card, Descriptions, Empty, Flex, Space, Tabs, Tag, Typography } from 'antd';
 import { getParkById, ParkResponse } from '@lepark/data-access';
 import { FiSun } from 'react-icons/fi';
+import AboutTab from './components/AboutTab';
+import ParkStatusTag from './components/ParkStatusTag';
+import { RiEdit2Line } from 'react-icons/ri';
+const { Text } = Typography;
 
 const ParkDetails = () => {
   const [park, setPark] = useState<ParkResponse>()
@@ -25,26 +29,45 @@ const ParkDetails = () => {
     fetchData();
   }, [id])
 
-    // Tabs Utility
-    const tabsItems = [
-      {
-        key: 'zones',
-        label: 'Zones',
-        // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-      },
-      {
-        key: 'attractions',
-        label: 'Attractions',
-        // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-        children: <Empty description={"Attractions Coming Soon"}></Empty>
-      },
-      {
-        key: 'events',
-        label: 'Events',
-        // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-        children: <Empty description={"Events Coming Soon"}></Empty>
-      },
-    ];
+  const descriptionsItems = [
+    {
+      key: 'address',
+      label: 'Address',
+      children: <div className='font-semibold'>{park?.address}</div>,
+    },
+    {
+      key: 'contactNumber',
+      label: 'Contact Number',
+      children: <div className='font-semibold'>{park?.contactNumber}</div>
+    },
+  ];
+
+  // Tabs Utility
+  const tabsItems = [
+    {
+      key: 'about',
+      label: 'Information',
+      children: park ? <AboutTab park={park} /> : <></>, 
+    },
+    {
+      key: 'zones',
+      label: 'Zones',
+      // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
+      children: <Empty description={"Zones Coming Soon"}></Empty>
+    },
+    {
+      key: 'attractions',
+      label: 'Attractions',
+      // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
+      children: <Empty description={"Attractions Coming Soon"}></Empty>
+    },
+    {
+      key: 'events',
+      label: 'Events',
+      // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
+      children: <Empty description={"Events Coming Soon"}></Empty>
+    },
+  ];
 
   return (
     <ContentWrapperDark>
@@ -63,16 +86,29 @@ const ParkDetails = () => {
             className="h-64 flex-1 rounded-lg shadow-lg p-4"
           />
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{park?.name}</LogoText>
-            {/* <Descriptions items={descriptionsItems} column={1} size="small" /> */}
-
-            
+            <div className='w-full flex justify-between items-center'>
+              <Space>
+                <LogoText className="text-2xl py-2 m-0">{park?.name}</LogoText>
+                <ParkStatusTag>
+                  {park?.parkStatus}
+                </ParkStatusTag>
+              </Space>
+              <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" />
+            </div>
+            <Typography.Paragraph
+              ellipsis={{
+                rows: 3,
+              }}
+            >
+              {park?.description}
+            </Typography.Paragraph>
+            <Descriptions items={descriptionsItems} column={1} size="small" />
           </div>
         </div>
 
         <Tabs
           centered
-          defaultActiveKey="information"
+          defaultActiveKey="about"
           items={tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"

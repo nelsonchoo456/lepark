@@ -1,6 +1,8 @@
 export interface ParkData {
   name: string;
   description?: string;
+  address?: string;
+  contactNumber?: string;
   openingHours: any;
   closingHours: any;
   geom: any;
@@ -12,6 +14,8 @@ export interface ParkResponse {
   id: string;
   name: string;
   description?: string;
+  address?: string;
+  contactNumber?: string;
   openingHours: any;
   closingHours: any;
   geom: any;

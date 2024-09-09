@@ -1,33 +1,88 @@
 import { LogoText } from '@lepark/common-ui';
-import { Card, Descriptions, Divider } from 'antd';
+import { ParkResponse } from '@lepark/data-access';
+import { Card, Descriptions, Divider, List, Tag, Typography } from 'antd';
+import ParkStatusTag from './ParkStatusTag';
+import { useEffect, useState } from 'react';
+import moment from 'moment';
+const { Text } = Typography;
 
-const AboutTab = ({ occurrence }: any) => {
-  const descriptionsItems = Object.entries(occurrence).map(([key, val]) => ({
-    key,
-    label: key,
-    children: 'keke',
-  }));
+interface AboutTabProps {
+  park: ParkResponse;
+}
+
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const AboutTab = ({ park }: AboutTabProps) => {
+  const [openingHours, setOpeningHours] = useState<string[]>();
+  const [closingHours, setClosingHours] = useState<string[]>();
+
+  useEffect(() => {
+    const openingHours = park?.openingHours.map((hour: string) => (hour ? moment(hour).format('HH:mm') : null));
+    const closingHours = park?.openingHours.map((hour: string) => (hour ? moment(hour).format('HH:mm') : null));
+    setOpeningHours(openingHours);
+    setClosingHours(closingHours);
+  }, [park]);
+
+  const detailsItems = [
+    {
+      key: 'name',
+      label: 'Name',
+      children: park?.name,
+    },
+    {
+      key: 'parkStatus',
+      label: 'Status',
+      children: <ParkStatusTag>{park?.parkStatus}</ParkStatusTag>,
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      children: <Typography.Paragraph>{park?.description}</Typography.Paragraph>,
+    },
+  ];
+
+  const contactsItems = [
+    {
+      key: 'address',
+      label: 'Address',
+      children: park?.address,
+    },
+    {
+      key: 'contactNumber',
+      label: 'Contact Number',
+      children: park?.contactNumber,
+    },
+  ];
+
+  const hoursItems = [
+    {
+      key: 'address',
+      label: 'Address',
+      children: park?.address,
+    },
+    {
+      key: 'contactNumber',
+      label: 'Contact Number',
+      children: park?.contactNumber,
+    },
+  ];
+
   return (
-    <div className="flex gap-4">
-      <Card className="flex-1 p-4 cursor-pointer hover:bg-green-50 transition-3s" styles={{ body: { padding: 0 } }}>
-        <div className="flex gap-4">
-          <div
-            style={{
-              backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              color: 'white',
-              overflow: 'hidden',
-            }}
-            className="h-20 w-20 rounded-full shadow-lg p-4"
-          />
-          <div className="w-64">
-            <div className='text-lg font-bold'>Species</div>
-            <LogoText>Orchid</LogoText>
-          </div>
-        </div>
-      </Card>
-      <Card className="flex-1" styles={{ body: { padding: 0 } }}></Card>
+    <div>
+      <Divider orientation="left">Park Details</Divider>
+      <Descriptions key="details" items={detailsItems} column={1} bordered />
+      <Divider orientation="left">Contact</Divider>
+      <Descriptions key="contact" items={contactsItems} column={1} bordered />
+      <Divider orientation="left">Park Hours</Divider>
+      <Descriptions bordered column={1}>
+        {openingHours &&
+          closingHours &&
+          daysOfWeek.map((day, index) => (
+            <Descriptions.Item label={day} key={day}>
+              <Tag>{openingHours[index]}</Tag> - <Tag>{closingHours[index]}</Tag>
+            </Descriptions.Item>
+          ))}
+      </Descriptions>
     </div>
   );
 };

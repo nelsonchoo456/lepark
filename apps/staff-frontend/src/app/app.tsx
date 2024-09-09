@@ -25,6 +25,7 @@ import CreateStaff from './pages/StaffManagement/CreateStaff';
 import { StaffAuthWrapper } from '@lepark/common-ui';
 import { ProtectedRoute } from '@lepark/common-ui';
 import ViewStaffDetails from './pages/StaffManagement/ViewStaffDetails';
+import ParkEdit from './pages/ParkEdit/ParkEdit';
 
 export function App() {
   return (
@@ -77,6 +78,7 @@ export function App() {
                 <Route index element={<ParkList />} />
                 <Route path="create" element={<ParkCreate />} />
                 <Route path=":id" element={<ParkDetails />} />
+                <Route path=":id/edit" element={<ParkEdit />} />
               </Route>
 
               <Route path="/profile" element={<StaffProfile />} />

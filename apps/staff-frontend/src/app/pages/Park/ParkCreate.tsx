@@ -1,17 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createOccurrence, ParkResponse } from '@lepark/data-access';
-import { Button, Card, Flex, Form, Input, Result, Steps } from 'antd';
+import { createPark, ParkResponse } from '@lepark/data-access';
+import { Button, Card, Flex, Form, message, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
-import { OccurrenceResponse } from '@lepark/data-access';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
-import { createPark } from '@lepark/data-access';
-
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -27,6 +24,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const ParkCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
   const [createdData, setCreatedData] = useState<ParkResponse | null>();
+  const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
 
   // Form Values
@@ -82,8 +80,11 @@ const ParkCreate = () => {
       }
       
     } catch (error) {
-      console.log('error', error);
-      //
+      console.error("Error creating Park", error);
+      messageApi.open({
+        type: 'error',
+        content: 'Unable to create a Park. Please try again later.',
+      });
     }
   };
 
@@ -104,11 +105,10 @@ const ParkCreate = () => {
 
   return (
     <ContentWrapperDark>
+      {contextHolder}
       <PageHeader>Create a Park</PageHeader>
       <Card>
-        {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}
         <Steps
-          // direction="vertical"
           current={currStep}
           items={[
             {
