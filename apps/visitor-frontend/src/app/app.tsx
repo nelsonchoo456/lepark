@@ -10,6 +10,7 @@ import MainLayout from './components/main/MainLayout';
 import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
+import Payment from './pages/Payment/Payment';
 
 export function App() {
   return (
@@ -38,7 +39,9 @@ export function App() {
             <Route path="/" element={<MainLanding />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/payment" element={<Payment />} />
           </Route>
+        
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
