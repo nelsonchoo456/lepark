@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
-import { forgotStaffPassword, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
+import { StaffType, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
@@ -113,17 +113,13 @@ const StaffProfile = () => {
     }
   };
 
-  const handleChangePassword = async () => {
-    if (user) {
-      await forgotStaffPassword({ email: user.email });
-      message.success('Password reset email sent successfully');
-    }
+  const handleChangePassword = () => {
+    // change password functionality goes here
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      message.success('Logged out successfully');
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -168,14 +164,29 @@ const StaffProfile = () => {
       label: 'Email',
       children: (
         <div className="flex items-center">
-          {userState?.email}
-          {inEditMode && (
-            <Tooltip title="To change your email, please contact your manager.">
-              <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
-            </Tooltip>
+          {user?.role == StaffType.MANAGER ? (
+            inEditMode ? (
+              <Input
+                type="email"
+                value={editedUser?.email || ''}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                required
+              />
+            ) : (
+              <span>{userState?.email}</span>
+            )
+          ) : (
+            <>
+              {userState?.email}
+              {inEditMode && (
+                <Tooltip title="To change your email, please contact your manager.">
+                  <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
+                </Tooltip>
+              )}
+            </>
           )}
         </div>
-      ), // not allowed to change email
+      ), // not allowed to change email unless user is manager
     },
     {
       key: 'contactNumber',

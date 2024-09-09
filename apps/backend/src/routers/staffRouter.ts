@@ -44,6 +44,7 @@ router.put('/updateStaffDetails/:id', async (req, res) => {
         firstName: true,
         lastName: true,
         contactNumber: true,
+        email: true,
       })
       .parse(req.body);
 
