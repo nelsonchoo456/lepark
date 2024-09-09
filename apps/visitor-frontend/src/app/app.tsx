@@ -31,7 +31,7 @@ export function App() {
             colorPrimary: '#6da696', // Green
             algorithm: true, // Enable algorithm
           },
-        }
+        },
       }}
     >
       <BrowserRouter>
@@ -44,10 +44,7 @@ export function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/occurrence">
               {/* <Route index element={<OccurrenceList />} /> */}
-              <Route
-                path=":occurrenceId"
-                element={<OccurrenceDetails/>}/>
-                <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/>
+              <Route path=":occurrenceId" element={<OccurrenceDetails />} />
             </Route>
             <Route path="/discover" element={<Discover />} />
             <Route path="/taxonomy/view-species" element={<ViewSpecies />} />

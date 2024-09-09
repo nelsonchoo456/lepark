@@ -9,12 +9,11 @@ import moment from 'moment';
 import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import { ActivityLogResponse, OccurrenceResponse } from '@lepark/data-access';
-import { getOccurrenceById, getActivityLogsByOccurrenceId } from '@lepark/data-access';
+import { getOccurrenceById } from '@lepark/data-access';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
-  const [activityLogs, setActivityLogs] = useState<ActivityLogResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,11 +22,8 @@ const OccurrenceDetails = () => {
         try {
           const occurrenceResponse = await getOccurrenceById(occurrenceId);
           setOccurrence(occurrenceResponse.data);
-
-          const activityLogsResponse = await getActivityLogsByOccurrenceId(occurrenceId);
-          setActivityLogs(activityLogsResponse.data);
         } catch (error) {
-          console.error('Error fetching data:', error);
+          console.error('Error fetching occurrence data:', error);
         } finally {
           setLoading(false);
         }
@@ -74,7 +70,7 @@ const OccurrenceDetails = () => {
     {
       key: 'activityLogs',
       label: 'Activity Logs',
-      children: loading ? <p>Loading activity logs...</p> : <ActivityLogs activityLogs={activityLogs} occurrence={occurrence} />,
+      children: <ActivityLogs occurrence={occurrence} />,
     },
     {
       key: 'statusLogs',
