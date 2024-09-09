@@ -1,4 +1,4 @@
-import { ContentWrapper, ContentWrapperDark, LogoText } from '@lepark/common-ui';
+import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
@@ -31,15 +31,16 @@ const initialUser = {
 
 const ViewStaffDetails = () => {
   const { staffId = '' } = useParams();
+  const { user, updateUser } = useAuth<StaffResponse>();
   const [inEditMode, setInEditMode] = useState(false);
-  const [user, setUser] = useState<StaffResponse>(initialUser);
+  const [staff, setStaff] = useState<StaffResponse>(initialUser);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
         const response = await viewStaffDetails(staffId);
-        setUser(response.data);
+        setStaff(response.data);
         setEditedUser(response.data);
       } catch (error) {
         console.error(error);
@@ -54,7 +55,7 @@ const ViewStaffDetails = () => {
 
   const toggleEditMode = () => {
     if (inEditMode) {
-      setEditedUser(user); // Reset changes if canceling edit
+      setEditedUser(staff); // Reset changes if canceling edit
     }
     setInEditMode(!inEditMode);
   };
@@ -74,7 +75,7 @@ const ViewStaffDetails = () => {
   const refreshUserData = async () => {
     try {
       const updatedUser = await viewStaffDetails(staffId);
-      setUser(updatedUser.data);
+      setStaff(updatedUser.data);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     }
@@ -82,17 +83,21 @@ const ViewStaffDetails = () => {
 
   const onFinish = async (values: any) => {
     try {
+      if (!user || user.role !== StaffType.MANAGER) {
+        throw new Error('Only managers can update staff details.');
+      }
+
       const updatedStaffDetails: StaffUpdateData = {
         firstName: values.firstName,
         lastName: values.lastName,
         contactNumber: values.contactNumber,
         email: values.email,
       };
-      // rmb to change requesterId to actual requesterId
-      const responseStaffRole = await updateStaffRole(staffId, values.role, '9ffdeeac-ecdb-4882-99a2-cf8094b92c92'); // requesterId to be passed in the request body; hardcoded for now
+
+      const responseStaffRole = await updateStaffRole(staffId, values.role, user.id); 
       console.log('Staff role updated successfully:', responseStaffRole.data);
 
-      const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, '9ffdeeac-ecdb-4882-99a2-cf8094b92c92'); // requesterId to be passed in the request body; hardcoded for now
+      const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id); 
       console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
 
       const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
@@ -104,7 +109,7 @@ const ViewStaffDetails = () => {
     } catch (error: any) {
       console.error(error);
       // TODO: filter out specific error messages from the response
-      message.error('Failed to update staff details.');
+      message.error(error.message || 'Failed to update staff details.');
     }
   };
 
@@ -122,7 +127,7 @@ const ViewStaffDetails = () => {
       key: 'firstName',
       label: 'First Name',
       children: !inEditMode ? (
-        user?.firstName ?? null
+        staff?.firstName ?? null
       ) : (
         <Input defaultValue={editedUser?.firstName ?? ''} onChange={(e) => handleInputChange('firstName', e.target.value)} required />
       ),
@@ -132,7 +137,7 @@ const ViewStaffDetails = () => {
       key: 'lastName',
       label: 'Last Name',
       children: !inEditMode ? (
-        user?.lastName ?? null
+        staff?.lastName ?? null
       ) : (
         <Input defaultValue={editedUser?.lastName ?? ''} onChange={(e) => handleInputChange('lastName', e.target.value)} required />
       ),
@@ -141,7 +146,7 @@ const ViewStaffDetails = () => {
     {
       key: 'id',
       label: 'ID',
-      children: user?.id ?? null, // not allowed to change id
+      children: staff?.id ?? null, // not allowed to change id
       span: 2,
     },
     {
@@ -160,7 +165,7 @@ const ViewStaffDetails = () => {
           ))}
         </Select>
       ) : (
-        <Tag>{user?.role}</Tag>
+        <Tag>{staff?.role}</Tag>
       ),
       span: 2,
     },
@@ -170,7 +175,7 @@ const ViewStaffDetails = () => {
       children: inEditMode ? (
         <Input placeholder="Email" value={editedUser?.email ?? ''} onChange={(e) => handleInputChange('email', e.target.value)} required />
       ) : (
-        <div className="flex items-center">{user?.email ?? null}</div>
+        <div className="flex items-center">{staff?.email ?? null}</div>
       ),
     },
     {
@@ -184,7 +189,7 @@ const ViewStaffDetails = () => {
           required
         />
       ) : (
-        user?.contactNumber ?? null
+        staff?.contactNumber ?? null
       ),
       span: 2,
     },
@@ -197,7 +202,7 @@ const ViewStaffDetails = () => {
           <span style={{ marginLeft: 8 }}>{editedUser?.isActive ? 'Active' : 'Inactive'}</span>
         </div>
       ) : (
-        <Tag color={user?.isActive ? 'green' : 'red'}>{user?.isActive ? 'Active' : 'Inactive'}</Tag>
+        <Tag color={staff?.isActive ? 'green' : 'red'}>{staff?.isActive ? 'Active' : 'Inactive'}</Tag>
       ),
       span: 2,
     },
@@ -216,7 +221,7 @@ const ViewStaffDetails = () => {
             <div className="w-full flex justify-between">
               {!inEditMode ? (
                 <>
-                  <div>{`${user?.firstName} ${user?.lastName}`}</div>
+                  <div>{`${staff?.firstName} ${staff?.lastName}`}</div>
                   <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
                 </>
               ) : (
