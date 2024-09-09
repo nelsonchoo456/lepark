@@ -103,7 +103,7 @@ const ParkDetails = () => {
             >
               {park?.description}
             </Typography.Paragraph>
-            <Descriptions items={descriptionsItems} column={1} size="small" />
+            <Descriptions items={descriptionsItems} column={1} size="small"/>
           </div>
         </div>
 

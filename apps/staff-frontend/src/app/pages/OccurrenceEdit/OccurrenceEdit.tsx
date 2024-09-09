@@ -120,7 +120,7 @@ const OccurrenceEdit = () => {
         changedData.dateOfBirth = dayjs(changedData.dateOfBirth).toISOString();
       }
 
-      console.log(changedData);
+      // console.log(changedData);
       const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData);
       if (occurenceRes.status === 200) {
         setCreatedData(occurenceRes.data);

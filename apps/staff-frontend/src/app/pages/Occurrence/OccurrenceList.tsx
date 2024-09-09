@@ -51,9 +51,9 @@ const OccurrenceList: React.FC = () => {
       ),
     },
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: 'Label',
+      dataIndex: 'title',
+      key: 'title',
       render: (text) => text,
     },
     {

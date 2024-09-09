@@ -49,6 +49,9 @@ export function App() {
               itemSelectedBg: '#fff', // green.100
               itemSelectedColor: '#558f7f', // green.500
             },
+            Table: {
+              headerBg: '#e6f0ed', // green.50
+            }
           },
         }}
       >

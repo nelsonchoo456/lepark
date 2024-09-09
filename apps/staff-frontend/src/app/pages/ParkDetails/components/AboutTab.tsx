@@ -4,6 +4,7 @@ import { Card, Descriptions, Divider, List, Tag, Typography } from 'antd';
 import ParkStatusTag from './ParkStatusTag';
 import { useEffect, useState } from 'react';
 import moment from 'moment';
+import dayjs from 'dayjs';
 const { Text } = Typography;
 
 interface AboutTabProps {
@@ -18,10 +19,10 @@ const AboutTab = ({ park }: AboutTabProps) => {
 
   useEffect(() => {
     // console.log(park)
-    // const openingHours = park?.openingHours.map((hour: string) => (hour ? moment(hour).utc().format('hh:mm a') : null));
-    // const closingHours = park?.closingHours.map((hour: string) => (hour ? moment(hour).utc().format('hh:mm a') : null));
-    const openingHours = park?.openingHours.map((hour: string) => (hour ? new Date(hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : null));
-    const closingHours = park?.closingHours.map((hour: string) => (hour ? new Date(hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : null));
+    const openingHours = park?.openingHours.map((hour: string) => (hour ? dayjs(hour).format('hh:mm A') : null));
+    const closingHours = park?.closingHours.map((hour: string) => (hour ? dayjs(hour).format('hh:mm A') : null));
+    // const openingHours = park?.openingHours.map((hour: string) => (hour ? new Date(hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : null));
+    // const closingHours = park?.closingHours.map((hour: string) => (hour ? new Date(hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : null));
 
     setOpeningHours(openingHours);
     setClosingHours(closingHours);
@@ -74,15 +75,15 @@ const AboutTab = ({ park }: AboutTabProps) => {
   return (
     <div>
       <Divider orientation="left">Park Details</Divider>
-      <Descriptions key="details" items={detailsItems} column={1} bordered />
+      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
       <Divider orientation="left">Contact</Divider>
-      <Descriptions key="contact" items={contactsItems} column={1} bordered />
+      <Descriptions key="contact" items={contactsItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
       <Divider orientation="left">Park Hours</Divider>
-      <Descriptions bordered column={1}>
+      <Descriptions bordered column={1} labelStyle={{ width: "15vw" }} contentStyle={{ fontWeight: "500" }}>
         {openingHours &&
           closingHours &&
           daysOfWeek.map((day, index) => (
-            <Descriptions.Item label={day} key={index}>
+            <Descriptions.Item label={day} key={index} labelStyle={{ width: "15vw"}}>
               <Tag bordered={false}>{openingHours[index]}</Tag> - <Tag bordered={false}>{closingHours[index]}</Tag>
             </Descriptions.Item>
           ))}
