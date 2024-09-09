@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
-import { StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
+import { forgotStaffPassword, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
@@ -113,13 +113,17 @@ const StaffProfile = () => {
     }
   };
 
-  const handleChangePassword = () => {
-    // change password functionality goes here
+  const handleChangePassword = async () => {
+    if (user) {
+      await forgotStaffPassword({ email: user.email });
+      message.success('Password reset email sent successfully');
+    }
   };
 
   const handleLogout = async () => {
     try {
       await logout();
+      message.success('Logged out successfully');
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
