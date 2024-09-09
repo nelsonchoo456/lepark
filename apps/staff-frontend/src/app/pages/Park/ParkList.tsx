@@ -7,6 +7,7 @@ import PageHeader from "../../components/main/PageHeader";
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
 import { getAllParks, ParkResponse } from "@lepark/data-access";
 import { useEffect, useState } from "react";
+import { RiEdit2Line } from "react-icons/ri";
 
 const ParkList = () => {
   const navigate = useNavigate();
@@ -34,9 +35,6 @@ const ParkList = () => {
       render: (text) => (
         <Flex justify="space-between" align="center">
           {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} />
-          </Tooltip>
         </Flex>
       ),
     },
@@ -65,9 +63,9 @@ const ParkList = () => {
               </Tag>
             );
           case 'UNDER_CONSTRUCTION':
-            return <Tag color="red">Under Construction</Tag>;
+            return <Tag color="red" bordered={false}>Under Construction</Tag>;
           default:
-            return <Tag color="red">Limited Access</Tag>;
+            return <Tag color="red" bordered={false}>Limited Access</Tag>;
         }
       },
     },
@@ -77,8 +75,12 @@ const ParkList = () => {
       dataIndex: 'id',
       render: (id) => (
         <Flex justify="center">
-          <Button type="link" icon={<FiArchive />} />
-          <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
+          <Tooltip title="View details">
+            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
+          </Tooltip>
+          <Tooltip title="Edit details">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
