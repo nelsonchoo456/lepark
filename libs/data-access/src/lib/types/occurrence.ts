@@ -24,6 +24,7 @@ export interface OccurrenceData {
   occurrenceStatus: OccurrenceStatusEnum;
   decarbonizationType: DecarbonizationTypeEnum;
   speciesId: string;
+  images: string[];
 }
 
 export interface OccurrenceResponse {
@@ -38,6 +39,7 @@ export interface OccurrenceResponse {
   description: string;
   speciesId: string;
   speciesName: string;
+  images: string[];
 }
 
 export interface OccurrenceUpdateData {
@@ -52,31 +54,4 @@ export interface OccurrenceUpdateData {
   occurrenceStatus?: OccurrenceStatusEnum;
   decarbonizationType?: DecarbonizationTypeEnum;
   speciesId?: string;
-}
-
-export interface ActivityLogData {
-  name: string;
-  description: string;
-  dateCreated: string;
-  images?: string[];
-  activityLogType: string;
-  occurrenceId: string;
-}
-
-export interface ActivityLogResponse {
-  id: string;
-  name: string;
-  description: string;
-  dateCreated: string;
-  images: string[];
-  activityLogType: string;
-  occurrenceId: string;
-}
-
-export interface ActivityLogUpdateData {
-  name?: string;
-  description?: string;
-  dateCreated?: string;
-  images?: string[];
-  activityLogType?: string;
 }

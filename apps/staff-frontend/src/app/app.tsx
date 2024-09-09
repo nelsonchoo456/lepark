@@ -64,9 +64,11 @@ export function App() {
               <Route path="/" element={<MainLanding />} />
               <Route path="/map" element={<MapPage />} />
 
-              <Route path="/occurence">
+              <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
-                <Route path=":occurenceId" element={<OccurrenceDetails />} />
+                <Route path="create" element={<OccurrenceCreate />} />
+                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
               </Route>
 
               <Route path="/profile" element={<StaffProfile />} />
