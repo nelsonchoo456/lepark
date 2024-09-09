@@ -16,13 +16,14 @@ import {
   InputNumber,
   Slider,
   Alert,
-  Result
+  Result,
+  Modal
 
 } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { phylums, regions, lightType, soilType, conservationStatus, plantCharacteristics, convertLightType, convertSoilType, convertConservationStatus } from '@lepark/data-utility';
-import { getSpeciesById, updateSpecies } from '@lepark/data-access';
+import { getSpeciesById, SpeciesResponse, updateSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 
 const ViewEditSpecies = () => {
@@ -32,7 +33,7 @@ const ViewEditSpecies = () => {
   const [form] = Form.useForm();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [savedSpeciesName, setSavedSpeciesName] = useState('');
-  const [speciesObj, setSpeciesObj] = useState<Species>(null);
+  const [speciesObj, setSpeciesObj] = useState<SpeciesResponse>();
   const [speciesId, setSpeciesId] = useState<string>('');
   const location = useLocation();
   const speciesIdFromLocation = location.state?.speciesId;
@@ -84,7 +85,6 @@ const ViewEditSpecies = () => {
         speciesObj.isEvergreen && 'evergreen',
         speciesObj.isFragrant && 'fragrant',
         speciesObj.isDroughtTolerant && 'droughtTolerant',
-        speciesObj.isFlowering && 'flowering',
         speciesObj.isDeciduous && 'deciduous',
         speciesObj.isFastGrowing && 'fastGrowing',
       ].filter(Boolean);

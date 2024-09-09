@@ -7,7 +7,7 @@ import { Badge, Card, Space } from "antd";
 import { useNavigate, useLocation } from 'react-router-dom'
 import { speciesExamples } from "@lepark/data-utility";
 import { useState, useEffect } from 'react';
-import { getAllSpecies } from '@lepark/data-access';
+import { getAllSpecies, SpeciesResponse } from '@lepark/data-access';
 
 const Discover = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Discover = () => {
   const cardStyle = "w-[95%] text-left md:w-1/2 m-1 !p-0.01 inline-flex items-center";
   const speciesTitleStyle = "text-xl font-medium text-green-500";
   const [loading, setLoading] = useState(false);
-  const [fetchedSpecies, setFetchedSpecies] = useState([]);
+  const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
 
   useEffect(() => {
     const fetchSpecies = async () => {

@@ -30,13 +30,13 @@ import {
 import PageHeader from '../../components/main/PageHeader';
 import { FiSearch } from 'react-icons/fi';
 import { PlusOutlined } from '@ant-design/icons';
-import { getAllSpecies, deleteSpecies } from '@lepark/data-access';
+import { getAllSpecies, deleteSpecies, SpeciesResponse } from '@lepark/data-access';
 
 const SpeciesPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
     window.innerWidth >= SCREEN_LG,
   );
-  const [fetchedSpecies, setFetchedSpecies] = useState([]);
+  const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const {Search} = Input;

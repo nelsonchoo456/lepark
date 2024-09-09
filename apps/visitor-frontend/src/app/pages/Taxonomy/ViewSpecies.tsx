@@ -10,7 +10,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { MdSunny } from "react-icons/md";
 import { formatEnumString } from "@lepark/data-utility";
 import { PiPottedPlantFill } from "react-icons/pi";
-import { getSpeciesById } from '@lepark/data-access';
+import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
 import { BiWorld } from "react-icons/bi";
 import { FaShieldHeart } from "react-icons/fa6";
 
@@ -24,7 +24,7 @@ const ViewSpecies = () => {
   //const id = "0f45c928-a0eb-40d1-b7a7-5eb32ae2e014";
 
 const [speciesIdFromLocation, setSpeciesIdFromLocation] = useState<string | null>(null);
-const [speciesObj, setSpeciesObj] = useState<Species | null>(null);
+const [speciesObj, setSpeciesObj] = useState<SpeciesResponse | null>(null);
 const location = useLocation();
 const speciesId = location.state?.speciesId;
     useEffect(() => {

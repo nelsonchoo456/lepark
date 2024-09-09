@@ -1,6 +1,4 @@
 export enum ConservationStatusEnum {
-  DATA_DEFICIENT = 'DATA_DEFICIENT',
-  NOT_EVALUATED = 'NOT_EVALUATED',
   LEAST_CONCERN = 'LEAST_CONCERN',
   NEAR_THREATENED = 'NEAR_THREATENED',
   VULNERABLE = 'VULNERABLE',
@@ -18,12 +16,8 @@ export enum LightTypeEnum {
 
 export enum SoilTypeEnum {
   SANDY = 'SANDY',
-  CLAY = 'CLAY',
-  LOAM = 'LOAM',
-  PEATY = 'PEATY',
-  SILTY = 'SILTY',
-  CHALKY = 'CHALKY',
-  SHALLOW = 'SHALLOW',
+  CLAYEY = 'CLAYEY',
+  LOAMY = 'LOAMY',
 }
 
 // Define the Species interface

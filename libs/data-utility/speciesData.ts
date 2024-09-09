@@ -15,11 +15,11 @@ export const regions: string[] = [
   'Savanna', 'Desert', 'Tundra', 'Boreal Forest'
 ];
 
-export const lightType: string[] = ['Full Shade', 'Partial Shade', 'Full Sun'];
+export const lightType: string[] = ['FULL_SHADE', 'PARTIAL_SHADE', 'FULL_SUN'];
 
-export const soilType: string[] = ['Sandy','Clayey','Loamy'];
+export const soilType: string[] = ['SANDY', 'CLAYEY', 'LOAMY'];
 
-export const conservationStatus: string[] = ["Least Concern", "Near Threatened", "Vulnerable", "Endangered", "Critically Endangered", "Extinct in the Wild", "Extinct"];
+export const conservationStatus: string[] = ["LEAST_CONCERN", "NEAR_THREATENED", "VULNERABLE", "ENDANGERED", "CRITICALLY_ENDANGERED", "EXTINCT_IN_THE_WILD", "EXTINCT", "DATA_DEFICIENT"];
 
 export const plantCharacteristics: string[] = ["Fast Growing", "Edible", "Toxic", "Evergreen", "Fragrant", "Drought Tolerant", "Flowering"];
 
