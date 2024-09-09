@@ -80,6 +80,11 @@ export function App() {
                 <Route path=":id" element={<ParkDetails />} />
                 <Route path=":id/edit" element={<ParkEdit />} />
               </Route>
+              
+              <Route path="/occurence">
+                <Route index element={<OccurrenceList />} />
+                <Route path=":occurenceId" element={<OccurrenceDetails />} />
+              </Route>
 
               <Route path="/profile" element={<StaffProfile />} />
               <Route path="/staff-management">

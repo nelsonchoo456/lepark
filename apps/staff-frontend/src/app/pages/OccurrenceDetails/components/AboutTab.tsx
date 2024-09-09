@@ -1,5 +1,7 @@
 import { LogoText } from '@lepark/common-ui';
 import { Card, Descriptions, Divider } from 'antd';
+import React from 'react';
+import { OccurrenceResponse } from '@lepark/data-access';
 
 const AboutTab = ({ occurrence }: any) => {
   const descriptionsItems = Object.entries(occurrence).map(([key, val]) => ({
