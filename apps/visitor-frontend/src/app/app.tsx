@@ -12,6 +12,7 @@ import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import { ProtectedRoute, VisitorAuthWrapper } from '@lepark/common-ui';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
+import Payment from './pages/Payment/Payment';
 
 export function App() {
   return (
@@ -48,6 +49,7 @@ export function App() {
               <Route path="/" element={<MainLanding />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/payment" element={<Payment />} />
             </Route>
           </Routes>
         </BrowserRouter>

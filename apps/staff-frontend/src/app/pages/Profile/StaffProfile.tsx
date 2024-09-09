@@ -1,5 +1,5 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag, message } from 'antd';
+import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Modal } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined, LockOutlined } from '@ant-design/icons';
@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
-import { forgotStaffPassword, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
+import { forgotStaffPassword, StaffType, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
@@ -27,6 +27,11 @@ const StaffProfile = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [userState, setUser] = useState<StaffResponse | null>(null);
   const [editedUser, setEditedUser] = useState<StaffResponse | null>(null);
+
+  // for change password
+
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -114,15 +119,20 @@ const StaffProfile = () => {
 
   const handleChangePassword = async () => {
     if (user) {
+      setIsPopupVisible(true);
+      setIsButtonDisabled(true);
       await forgotStaffPassword({ email: user.email });
       message.success('Password reset email sent successfully');
     }
   };
 
+  const handlePopupOk = () => {
+    setIsPopupVisible(false);
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
-      message.success('Logged out successfully');
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -167,14 +177,24 @@ const StaffProfile = () => {
       label: 'Email',
       children: (
         <div className="flex items-center">
-          {userState?.email}
-          {inEditMode && (
-            <Tooltip title="To change your email, please contact your manager.">
-              <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
-            </Tooltip>
+          {user?.role == StaffType.MANAGER ? (
+            inEditMode ? (
+              <Input type="email" value={editedUser?.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} required />
+            ) : (
+              <span>{userState?.email}</span>
+            )
+          ) : (
+            <>
+              {userState?.email}
+              {inEditMode && (
+                <Tooltip title="To change your email, please contact your manager.">
+                  <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
+                </Tooltip>
+              )}
+            </>
           )}
         </div>
-      ), // not allowed to change email
+      ), // not allowed to change email unless user is manager
     },
     {
       key: 'contactNumber',
@@ -191,7 +211,7 @@ const StaffProfile = () => {
     <ContentWrapperDark>
       <PageHeader>My Profile</PageHeader>
       <div className="flex justify-end items-center mb-4">
-        <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5">
+        <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5" disabled={isButtonDisabled}>
           Change Password
         </Button>
         <Button onClick={handleLogout} icon={<LogoutOutlined />}>
@@ -226,6 +246,9 @@ const StaffProfile = () => {
           }
         />
       </Card>
+      <Modal title="Password Reset" open={isPopupVisible} onOk={handlePopupOk} onCancel={handlePopupOk} centered>
+        <p>An email has been sent to your address. Please check your inbox to reset your password.</p>
+      </Modal>
       {/* <div
           className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
           style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}

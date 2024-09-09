@@ -4,22 +4,15 @@ import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
 import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import EditStaffDetailsModal from './components/EditStaffDetailsModal';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import EditStaffActiveStatusModal from './components/EditStaffActiveStatusModal';
 import { getAllStaffs, StaffResponse, StaffType } from '@lepark/data-access';
 
-const { Header, Content } = Layout;
-
 const StaffManagementPage: React.FC = () => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<StaffResponse | null>(null);
-  const [statusStaff, setStatusStaff] = useState<StaffResponse | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,30 +29,6 @@ const StaffManagementPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching staff data:', error);
     }
-  };
-
-  const handleEdit = (staffRecord: StaffResponse) => {
-    setEditingStaff(staffRecord);
-    setIsEditModalVisible(true);
-  };
-
-  const handleChangeActiveStatus = (staffRecord: StaffResponse) => {
-    setStatusStaff(staffRecord);
-    setIsStatusModalVisible(true);
-  };
-
-  const handleStatusModalOk = (updatedStaff: StaffResponse[]) => {
-    setStaff(updatedStaff);
-    setIsStatusModalVisible(false);
-  };
-
-  const handleStatusModalCancel = () => {
-    setIsStatusModalVisible(false);
-  };
-
-  const handleStaffUpdated = () => {
-    fetchStaffData(); // Refresh the staff list
-    setIsEditModalVisible(false);
   };
 
   const handleViewDetailsClick = (staffRecord: StaffResponse) => {
@@ -121,7 +90,7 @@ const StaffManagementPage: React.FC = () => {
       onFilter: (value, record) => record.isActive === value,
       render: (_, record) => {
         return (
-          <Tag  key={record.id} color={record.isActive ? 'green' : 'red'} bordered={false}>
+          <Tag key={record.id} color={record.isActive ? 'green' : 'red'} bordered={false}>
             {record.isActive ? 'Active' : 'Inactive'}
           </Tag>
         );
@@ -133,7 +102,7 @@ const StaffManagementPage: React.FC = () => {
       width: '10%',
       render: (_, record) => (
         <Flex key={record.id} justify="center">
-          <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)} />
+          {record.id !== user?.id && <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)} />}
         </Flex>
       ),
     },
@@ -162,16 +131,6 @@ const StaffManagementPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Modal title="Edit Staff Details" open={isEditModalVisible} onCancel={() => setIsEditModalVisible(false)} footer={null}>
-        {editingStaff && <EditStaffDetailsModal staff={editingStaff} onStaffUpdated={handleStaffUpdated} />}
-      </Modal>
-      {/* <EditStaffActiveStatusModal
-        visible={isStatusModalVisible}
-        onOk={handleStatusModalOk}
-        onCancel={handleStatusModalCancel}
-        record={statusStaff}
-        staff={staff}
-      /> */}
       {/* </Content> */}
     </ContentWrapperDark>
   );
