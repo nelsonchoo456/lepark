@@ -6,7 +6,7 @@ const BASE_URL = 'http://localhost:3333';
 const client = axios.create({
   baseURL: `${BASE_URL}/api`,
   timeout: 30000,
-  //   withCredentials: true,
+  withCredentials: true,
   headers: {
     Accept: 'application/json',
   },
