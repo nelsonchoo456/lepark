@@ -4,19 +4,9 @@ import 'leaflet/dist/leaflet.css';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { ContentWrapper, SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-import { CustButton } from '@lepark/common-ui';
 //species form
 import React from 'react';
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  Space,
-  Checkbox,
-  InputNumber,
-  Slider,
-} from 'antd';
+import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Slider, Alert, Modal } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -26,14 +16,16 @@ import {
   soilType,
   conservationStatus,
   plantCharacteristics,
+  convertLightType,
+  convertSoilType,
+  convertConservationStatus,
 } from '@lepark/data-utility';
+import { createSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
-const { Option } = Select;
+import { CreateSpeciesData } from 'libs/data-access/src/lib/types/species';
 
 const CreateSpecies = () => {
-  const [webMode, setWebMode] = useState<boolean>(
-    window.innerWidth >= SCREEN_LG,
-  );
+  const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
 
   useEffect(() => {
     const handleResize = () => {
@@ -48,6 +40,9 @@ const CreateSpecies = () => {
 
   // Species form
   const [form] = Form.useForm();
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [createdSpeciesName, setCreatedSpeciesName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
@@ -55,34 +50,76 @@ const CreateSpecies = () => {
   const tailLayout = {
     wrapperCol: { offset: 8, span: 16 },
   };
-  const onFinish = (values: any) => {
-    console.log(values);
+  const [tempRange, setTempRange] = useState([0, 35]);
+
+  const onFinish = async (values: any) => {
+    setIsSubmitting(true);
+    try {
+      const plantCharacteristics = values.plantCharacteristics || [];
+      const speciesData: CreateSpeciesData = {
+        phylum: values.phylum,
+        class: values.classInput,
+        order: values.orderInput,
+        family: values.familyInput,
+        genus: values.genusInput,
+        speciesName: values.speciesInput,
+        commonName: values.commonNameInput,
+        speciesDescription: values.speciesDescriptionInput,
+        conservationStatus: values.conservationStatusInput,
+        originCountry: values.regionOfOriginInput,
+        lightType: values.lightTypeInput,
+        soilType: values.soilTypeInput,
+        fertiliserType: values.fertiliserType,
+        images: [],
+        waterRequirement: values.waterRequirement,
+        fertiliserRequirement: values.fertiliserRequirement,
+        idealHumidity: values.idealHumidity,
+        minTemp: values.tempRange[0],
+        maxTemp: values.tempRange[1],
+        idealTemp: values.idealTemp,
+        isSlowGrowing: plantCharacteristics.includes('slowGrowing'),
+        isEdible: plantCharacteristics.includes('edible'),
+        isToxic: plantCharacteristics.includes('toxic'),
+        isEvergreen: plantCharacteristics.includes('evergreen'),
+        isFragrant: plantCharacteristics.includes('fragrant'),
+        isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'),
+        isDeciduous: plantCharacteristics.includes('deciduous'),
+        isFastGrowing: plantCharacteristics.includes('fastGrowing'),
+      };
+
+      if (values.tempRange[0] > values.idealTemp || values.tempRange[1] < values.idealTemp) {
+        console.error('Ideal temperature must be between min and max temperatures');
+        Modal.error({
+          title: 'Error',
+          content: 'Ideal temperature must be between min and max temperatures',
+        });
+        return;
+      }
+      console.log('Species data to be submitted:', speciesData); // For debugging
+
+      const response = await createSpecies(speciesData);
+      console.log('Species created:', response.data);
+      setCreatedSpeciesName(values.speciesInput);
+      setShowSuccessAlert(true);
+      form.resetFields();
+      setTimeout(() => setShowSuccessAlert(false), 5000);
+    } catch (error) {
+      console.error('Error creating species:', error);
+      // Handle error (e.g., show an error message)
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const onReset = () => {
     form.resetFields();
   };
   const { TextArea } = Input;
   const [value, setValue] = useState('');
-  const onChange: GetProp<typeof Checkbox.Group, 'onChange'> = (
-    checkedValues,
-  ) => {
+  const onChange: GetProp<typeof Checkbox.Group, 'onChange'> = (checkedValues) => {
     console.log('checked = ', checkedValues);
   };
 
   //slider
-  function getGradientColor(percentage: number) {
-    const startColor = [135, 208, 104];
-    const endColor = [255, 204, 199];
-    const midColor = startColor.map((start, i) => {
-      const end = endColor[i];
-      const delta = end - start;
-      return (start + delta * percentage).toFixed(0);
-    });
-    return `rgb(${midColor.join(',')})`;
-  }
-  const [sliderValue, setSliderValue] = React.useState([0, 10, 20]);
-  const start = sliderValue[0] / 100;
-  const end = value[value.length - 1] / 100;
 
   return webMode ? (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
@@ -91,72 +128,37 @@ const CreateSpecies = () => {
       <PageHeader>Create Species</PageHeader>
 
       {
-        <Form
-          {...layout}
-          form={form}
-          name="control-hooks"
-          onFinish={onFinish}
-          // style={{ maxWidth: 50 }}
-          className="max-w-[600px] mx-auto"
-        >
+        <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
             <Select placeholder="Select a phylum" allowClear>
               {phylums.map((phylum) => (
-                <Option key={phylum} value={phylum}>
+                <Select.Option key={phylum} value={phylum}>
                   {phylum}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="classInput"
-            label="Class"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="orderInput"
-            label="Order"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="familyInput"
-            label="Family"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="familyInput" label="Family" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="genusInput"
-            label="Genus"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="genusInput" label="Genus" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="speciesInput"
-            label="Species"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="speciesInput" label="Species" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="commonNameInput"
-            label="Common Name"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="commonNameInput" label="Common Name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item
-            name="speciesDescriptionInput"
-            label="Species Description"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="speciesDescriptionInput" label="Species Description" rules={[{ required: true }]}>
             <TextArea
               value={value}
               onChange={(e) => setValue(e.target.value)}
@@ -165,90 +167,66 @@ const CreateSpecies = () => {
             />
           </Form.Item>
 
-          <Form.Item
-            name="regionOfOriginInput"
-            label="Region of Origin"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="regionOfOriginInput" label="Region of Origin" rules={[{ required: true }]}>
             <Select
               showSearch
               style={{ width: 400 }}
               placeholder="Select a region"
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
             >
               {regions.map((region) => (
-                <Option key={region} value={region}>
+                <Select.Option key={region} value={region}>
                   {region}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="lightTypeInput"
-            label="Light Type"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="lightTypeInput" label="Light Type" rules={[{ required: true }]}>
             <Select
               showSearch
               style={{ width: 400 }}
               placeholder="Select a light type"
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
             >
               {lightType.map((type) => (
-                <Option key={type} value={type}>
+                <Select.Option key={type} value={type}>
                   {type}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="soilTypeInput"
-            label="Soil Type"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="soilTypeInput" label="Soil Type" rules={[{ required: true }]}>
             <Select
               showSearch
               style={{ width: 400 }}
               placeholder="Select a soil type"
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
             >
               {soilType.map((type) => (
-                <Option key={type} value={type}>
+                <Select.Option key={type} value={type}>
                   {type}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="conservationStatusInput"
-            label="Conservation Status"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="conservationStatusInput" label="Conservation Status" rules={[{ required: true }]}>
             <Select
               showSearch
               style={{ width: 400 }}
               placeholder="Select a conservation status"
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
             >
               {conservationStatus.map((status) => (
-                <Option key={status} value={status}>
+                <Select.Option key={status} value={status}>
                   {status}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -256,80 +234,71 @@ const CreateSpecies = () => {
           <Form.Item
             name="plantCharacteristics"
             label="Plant Characteristics"
-            rules={[{ required: true }]}
+            rules={[{ required: false }]}
+            initialValue={[]} // Ensure it starts as an empty array
           >
-            <Checkbox.Group
-              options={plantCharacteristics}
-              onChange={onChange}
-            />
+            <Checkbox.Group>
+              <Checkbox value="slowGrowing">Slow Growing</Checkbox>
+              <Checkbox value="edible">Edible</Checkbox>
+              <Checkbox value="toxic">Toxic</Checkbox>
+              <Checkbox value="evergreen">Evergreen</Checkbox>
+              <Checkbox value="fragrant">Fragrant</Checkbox>
+              <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
+              <Checkbox value="deciduous">Deciduous</Checkbox>
+              <Checkbox value="fastGrowing">Fast Growing</Checkbox>
+            </Checkbox.Group>
           </Form.Item>
 
-          <Form.Item
-            name="waterRequirement"
-            label="Water Requirement"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}>
             <InputNumber min={1} />
           </Form.Item>
 
-          <Form.Item
-            name="fertiliserRequirement"
-            label="Fertiliser Requirement"
-            rules={[{ required: true }]}
-          >
-            <InputNumber
-              onChange={(value) =>
-                console.log('Fertiliser Requirement:', value)
-              }
-            />
+          <Form.Item name="fertiliserRequirement" label="Fertiliser Requirement" rules={[{ required: true }]}>
+            <InputNumber onChange={(value) => console.log('Fertiliser Requirement:', value)} />
           </Form.Item>
-          <Form.Item
-            name="fertiliserType"
-            label="Fertiliser Type"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="fertiliserType" label="Fertiliser Type" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="idealHumidity"
-            label="Ideal Humidity (%)"
-            rules={[{ required: true }]}
-          >
-            <InputNumber
-              min={0}
-              max={100}
-              formatter={(value) => `${value}%`}
-              parser={(value) => value.replace('%', '')}
-            />
+          <Form.Item name="idealHumidity" label="Ideal Humidity (%)" rules={[{ required: true }]}>
+            <InputNumber min={0} max={100} />
           </Form.Item>
-          <Form.Item
-            name="tempRange"
-            label="Min, Ideal, Max Temp (C)"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="tempRange" label="Min and Max Temp (C)" rules={[{ required: true }]}>
             <Slider
               range
               min={0}
-              max={35}
+              max={50}
               step={0.1}
-              defaultValue={sliderValue}
-              onChange={setSliderValue}
-              styles={{
-                track: {
-                  background: 'transparent',
-                },
-                tracks: {
-                  background: `linear-gradient(to right, ${getGradientColor(
-                    start,
-                  )} 0%, ${getGradientColor(end)} 100%)`,
-                },
+              value={tempRange}
+              onChange={(newValue) => {
+                if (Array.isArray(newValue) && newValue.length === 2) {
+                  setTempRange(newValue);
+                  form.setFieldsValue({ tempRange: newValue });
+                }
               }}
             />
           </Form.Item>
 
+          <Form.Item name="idealTemp" label="Ideal Temp (C)" rules={[{ required: true }]}>
+            <InputNumber
+              min={0}
+              max={50}
+              step={0.1}
+              onChange={() => {
+                form.validateFields(['idealTemp']);
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item label="Temperature Values">
+            <Space>
+              <span>Min: {tempRange[0]}°C</span>
+              <span>Max: {tempRange[1]}°C</span>
+            </Space>
+          </Form.Item>
+
           <Form.Item {...tailLayout}>
             <Space>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 Submit
               </Button>
               <Button htmlType="button" onClick={onReset}>
@@ -339,6 +308,14 @@ const CreateSpecies = () => {
           </Form.Item>
         </Form>
       }
+      {showSuccessAlert && (
+        <Alert
+          message={`Species "${createdSpeciesName}" created successfully`}
+          type="success"
+          closable
+          onClose={() => setShowSuccessAlert(false)}
+        />
+      )}
     </ContentWrapper>
   ) : (
     <div

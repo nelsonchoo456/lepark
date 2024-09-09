@@ -7,6 +7,9 @@ import {
   VisitorUpdateData,
   VisitorPasswordResetRequestData,
   VisitorPasswordResetData,
+  FavoriteSpeciesRequestData,
+  GetFavoriteSpeciesRequestData,
+  GetFavoriteSpeciesResponseData,
 } from '../types/visitor';
 import client from './client';
 
@@ -110,4 +113,47 @@ export async function resetVisitorPassword(data: VisitorPasswordResetData): Prom
 
 export async function fetchVisitor(): Promise<AxiosResponse<VisitorResponse>> {
   return client.get(`${URL}/check-auth`);
+}
+
+export async function addFavoriteSpecies(data: FavoriteSpeciesRequestData): Promise<AxiosResponse<VisitorResponse>> {
+  try {
+    const response: AxiosResponse<VisitorResponse> = await client.post('/addFavoriteSpecies', data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getFavoriteSpecies(data: GetFavoriteSpeciesRequestData): Promise<AxiosResponse<GetFavoriteSpeciesResponseData>> {
+  try {
+    const response: AxiosResponse<GetFavoriteSpeciesResponseData> = await client.get('/viewFavoriteSpecies', {
+      params: data,
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function deleteSpeciesFromFavorites(data: FavoriteSpeciesRequestData): Promise<AxiosResponse<VisitorResponse>> {
+  try {
+    const response: AxiosResponse<VisitorResponse> = await client.delete('/deleteSpeciesFromFavorites', {
+      data,
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
 }

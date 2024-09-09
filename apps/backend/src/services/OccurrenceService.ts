@@ -1,0 +1,121 @@
+import { Prisma, Occurrence } from '@prisma/client';
+import { z } from 'zod';
+import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
+import OccurrenceDao from '../dao/OccurrenceDao';
+import StaffDao from '../dao/StaffDao';
+
+class OccurrenceService {
+  public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
+    try {
+      const formattedData = dateFormatter(data)
+
+      // Convert validated data to Prisma input type
+      const occurrenceData = ensureAllFieldsPresent(formattedData);
+
+      // Create the occurrence, remember to pass in Prisma.occurrenceCreateInput type
+      return OccurrenceDao.createOccurrence(occurrenceData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
+  }
+
+  public async getAllOccurrence(): Promise<Occurrence[]> {
+    return OccurrenceDao.getAllOccurrences();
+  }
+
+  public async getOccurrenceById(id: string): Promise<Occurrence> {
+    try {
+      const occurrence = await OccurrenceDao.getOccurrenceById(id);
+      if (!occurrence) {
+        throw new Error('Occurrence not found');
+      }
+      return occurrence;
+    } catch (error) {
+      throw new Error(`Unable to fetch occurrence details: ${error.message}`);
+    }
+  }
+
+  public async updateOccurrenceDetails(
+    id: string,
+    // Use Partial<OccurrenceSchemaType> to allow partial updates and ensure input validation
+    data: Partial<OccurrenceSchemaType>,
+  ): Promise<Occurrence> {
+    try {
+      const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
+      const formattedData = dateFormatter(data)
+
+      // Merge existing data with update data
+      let mergedData = { ...existingOccurrence, ...formattedData };
+      mergedData = Object.fromEntries(
+        Object.entries(mergedData).filter(([key, value]) => value !== null)
+      );
+
+      // Validate merged data using Zod
+      OccurrenceSchema.parse(mergedData);
+
+      // Convert validated OccurrenceSchemaType data to Prisma-compatible update input
+      // This ensures only defined fields are included in the update operation
+      const updateData: Prisma.OccurrenceUpdateInput = Object.entries(formattedData).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {},
+      );
+
+      console.log(updateData)
+
+      return OccurrenceDao.updateOccurrenceDetails(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
+  }
+
+  public async deleteOccurrence(
+    occurrenceId: string,
+    requesterId: string,
+  ): Promise<void> {
+    const isManager = await StaffDao.isManager(requesterId);
+    if (!isManager) {
+      throw new Error('Only managers can delete occurrence.');
+    }
+    await OccurrenceDao.deleteOccurrence(occurrenceId);
+  }
+}
+
+// Utility function to ensure all required fields are present
+function ensureAllFieldsPresent(data: OccurrenceSchemaType): Prisma.OccurrenceCreateInput {
+  // Add checks for all required fields
+  if (!data.dateObserved || !data.dateOfBirth || !data.numberOfPlants || !data.biomass || !data.description || !data.speciesId) {
+    throw new Error('Missing required fields for occurrence creation');
+  }
+  return data as Prisma.OccurrenceCreateInput;
+}
+
+const dateFormatter = (data: any) => {
+  const { dateObserved, dateOfBirth, ...rest } = data;
+  const formattedData = { ...rest };
+
+  // Format dateObserved and dateOfBirth into JavaScript Date objects
+  const dateObservedFormat = dateOfBirth ? new Date(dateObserved) : undefined;
+  const dateOfBirthFormat = dateOfBirth ? new Date(dateOfBirth) : undefined;
+  if (dateObserved) {
+    formattedData.dateObserved = dateObservedFormat;
+  }
+  if (dateOfBirth) {
+    formattedData.dateOfBirth = dateOfBirthFormat;
+  }
+  return formattedData;
+}
+
+export default new OccurrenceService();

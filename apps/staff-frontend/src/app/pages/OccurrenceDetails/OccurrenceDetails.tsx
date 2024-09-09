@@ -37,13 +37,13 @@ const plant = {
   decarbonizationAreaId: 501,
 };
 
-const OccurenceDetails = () => {
+const OccurrenceDetails = () => {
   const { id } = useParams();
 
   const descriptionsItems = [
     {
       key: 'id',
-      label: 'Occurence ID',
+      label: 'Occurrence ID',
       children: plant.id,
     },
     {
@@ -88,7 +88,7 @@ const OccurenceDetails = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurence Management</PageHeader>
+      <PageHeader>Occurrence Management</PageHeader>
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
@@ -148,4 +148,4 @@ const OccurenceDetails = () => {
   );
 };
 
-export default OccurenceDetails;
+export default OccurrenceDetails;

@@ -13,6 +13,9 @@ import Register from './pages/Register/Register';
 import { ProtectedRoute, VisitorAuthWrapper } from '@lepark/common-ui';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import Payment from './pages/Payment/Payment';
+import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
+import Discover from './pages/Taxonomy/Discover';
+import ViewSpecies from './pages/Taxonomy/ViewSpecies';
 
 export function App() {
   return (
@@ -50,6 +53,12 @@ export function App() {
               <Route path="/map" element={<MapPage />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/payment" element={<Payment />} />
+              <Route path="/occurrence">
+                {/* <Route index element={<OccurrenceList />} /> */}
+                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+              </Route>
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/discover/view-species" element={<ViewSpecies />} />
             </Route>
           </Routes>
         </BrowserRouter>
