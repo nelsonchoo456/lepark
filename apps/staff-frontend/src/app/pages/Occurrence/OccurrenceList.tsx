@@ -6,6 +6,7 @@ import PageHeader from '../../components/main/PageHeader';
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { getAllOccurrences, OccurrenceResponse } from '@lepark/data-access';
+import { RiEdit2Line } from 'react-icons/ri';
 
 const OccurrenceList: React.FC = () => {
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]);
@@ -102,6 +103,13 @@ const OccurrenceList: React.FC = () => {
               type="link" 
               icon={<FiEye />} 
               onClick={() => navigateToDetails(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title="Edit Details">
+            <Button 
+              type="link" 
+              icon={<RiEdit2Line />} 
+              onClick={() => navigate(`/occurrences/${record.id}/edit`)}
             />
           </Tooltip>
           <Tooltip title="Archive Occurrence">

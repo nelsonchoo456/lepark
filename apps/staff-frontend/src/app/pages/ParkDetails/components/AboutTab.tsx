@@ -17,8 +17,12 @@ const AboutTab = ({ park }: AboutTabProps) => {
   const [closingHours, setClosingHours] = useState<string[]>();
 
   useEffect(() => {
-    const openingHours = park?.openingHours.map((hour: string) => (hour ? moment(hour).format('HH:mm a') : null));
-    const closingHours = park?.openingHours.map((hour: string) => (hour ? moment(hour).format('HH:mm a') : null));
+    // console.log(park)
+    // const openingHours = park?.openingHours.map((hour: string) => (hour ? moment(hour).utc().format('hh:mm a') : null));
+    // const closingHours = park?.closingHours.map((hour: string) => (hour ? moment(hour).utc().format('hh:mm a') : null));
+    const openingHours = park?.openingHours.map((hour: string) => (hour ? new Date(hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : null));
+    const closingHours = park?.closingHours.map((hour: string) => (hour ? new Date(hour).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : null));
+
     setOpeningHours(openingHours);
     setClosingHours(closingHours);
   }, [park]);
@@ -78,7 +82,7 @@ const AboutTab = ({ park }: AboutTabProps) => {
         {openingHours &&
           closingHours &&
           daysOfWeek.map((day, index) => (
-            <Descriptions.Item label={day} key={day}>
+            <Descriptions.Item label={day} key={index}>
               <Tag bordered={false}>{openingHours[index]}</Tag> - <Tag bordered={false}>{closingHours[index]}</Tag>
             </Descriptions.Item>
           ))}

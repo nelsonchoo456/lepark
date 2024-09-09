@@ -23,6 +23,18 @@ export interface ParkCreateData {
   parkStatus: string;
 }
 
+export interface ParkUpdateData {
+  name?: string;
+  description?: string;
+  address?: string;
+  contactNumber?: string;
+  openingHours?: Date[];
+  closingHours?: Date[];
+  geom?: string;
+  paths?: string;
+  parkStatus?: string;
+}
+
 export interface ParkResponseData {
   name: string;
   description?: string;

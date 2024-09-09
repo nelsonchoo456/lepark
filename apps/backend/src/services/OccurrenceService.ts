@@ -7,7 +7,7 @@ import StaffDao from '../dao/StaffDao';
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
     try {
-
+      console.log(data)
       const formattedData = dateFormatter(data);
 
       // Validate input data using Zod
@@ -49,6 +49,7 @@ class OccurrenceService {
     data: Partial<OccurrenceSchemaType>,
   ): Promise<Occurrence> {
     try {
+      console.log("data", data);
       const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
       const formattedData = dateFormatter(data);
 
@@ -68,7 +69,7 @@ class OccurrenceService {
         return acc;
       }, {});
 
-      console.log(updateData);
+      console.log("updateData", updateData);
 
       return OccurrenceDao.updateOccurrenceDetails(id, updateData);
     } catch (error) {

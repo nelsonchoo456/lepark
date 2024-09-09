@@ -11,13 +11,13 @@ CREATE TYPE "LightTypeEnum" AS ENUM ('FULL_SUN', 'PARTIAL_SHADE', 'FULL_SHADE');
 CREATE TYPE "SoilTypeEnum" AS ENUM ('SANDY', 'CLAY', 'LOAM', 'PEATY', 'SILTY', 'CHALKY', 'SHALLOW');
 
 -- CreateEnum
-CREATE TYPE "DECARBONIZATION_TYPE" AS ENUM ('TREE_TROPICAL', 'TREE_MANGROVE', 'SHRUB');
+CREATE TYPE "DecarbonizationTypeEnum" AS ENUM ('TREE_TROPICAL', 'TREE_MANGROVE', 'SHRUB');
 
 -- CreateEnum
-CREATE TYPE "ACTIVITY_LOG_TYPE" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'TREATED_PESTS', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'OTHERS');
+CREATE TYPE "OccurrenceStatusEnum" AS ENUM ('HEALTHY', 'MONITOR_AFTER_TREATMENT', 'NEEDS_ATTENTION', 'URGENT_ACTION_REQUIRED', 'REMOVED');
 
 -- CreateEnum
-CREATE TYPE "OCCURRENCE_STATUS_ENUM" AS ENUM ('HEALTHY', 'NEEDS_ATTENTION', 'URGENT_ACTION_REQUIRED', 'REMOVED');
+CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'TREATED_PESTS', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'OTHERS');
 
 -- CreateTable
 CREATE TABLE "Staff" (
@@ -73,14 +73,16 @@ CREATE TABLE "Occurrence" (
     "id" UUID NOT NULL,
     "lat" DOUBLE PRECISION,
     "lng" DOUBLE PRECISION,
+    "title" TEXT NOT NULL,
     "dateObserved" TIMESTAMP(3) NOT NULL,
     "dateOfBirth" TIMESTAMP(3),
     "numberOfPlants" DOUBLE PRECISION NOT NULL,
     "biomass" DOUBLE PRECISION NOT NULL,
-    "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "decarbonizationType" "DECARBONIZATION_TYPE" NOT NULL,
+    "occurrenceStatus" "OccurrenceStatusEnum" NOT NULL,
+    "decarbonizationType" "DecarbonizationTypeEnum" NOT NULL,
     "speciesId" UUID NOT NULL,
+    "images" TEXT[],
 
     CONSTRAINT "Occurrence_pkey" PRIMARY KEY ("id")
 );
@@ -92,7 +94,7 @@ CREATE TABLE "ActivityLog" (
     "description" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "images" TEXT[],
-    "activityLogType" "ACTIVITY_LOG_TYPE" NOT NULL,
+    "activityLogType" "ActivityLogTypeEnum" NOT NULL,
     "occurrenceId" UUID NOT NULL,
 
     CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
@@ -105,7 +107,7 @@ CREATE TABLE "StatusLog" (
     "description" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "images" TEXT[],
-    "statusLogType" "OCCURRENCE_STATUS_ENUM" NOT NULL,
+    "statusLogType" "OccurrenceStatusEnum" NOT NULL,
     "occurrenceId" UUID NOT NULL,
 
     CONSTRAINT "StatusLog_pkey" PRIMARY KEY ("id")

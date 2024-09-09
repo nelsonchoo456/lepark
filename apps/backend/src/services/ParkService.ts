@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import ParkDao from '../dao/ParkDao';
-import { ParkCreateData } from '../schemas/parkSchema';
+import { ParkCreateData, ParkUpdateData } from '../schemas/parkSchema';
 
 class ParkService {
   public async createPark(data: ParkCreateData): Promise<any> {
@@ -45,6 +45,18 @@ class ParkService {
 
   public async getParkById(id: number): Promise<any> {
     return ParkDao.getParkById(id);
+  }
+
+  public async updatePark(id: number, data: ParkUpdateData): Promise<any> {
+    try {
+      return ParkDao.updatePark(id, data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
   }
 };
 

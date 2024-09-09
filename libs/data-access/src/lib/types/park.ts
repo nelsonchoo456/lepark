@@ -9,7 +9,9 @@ export interface ParkData {
   paths: any;
   parkStatus: string;
 }
-
+export interface StringIdxSig {
+  [key: string]: string | undefined
+}
 export interface ParkResponse {
   id: string;
   name: string;

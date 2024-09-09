@@ -36,7 +36,6 @@ export async function getAllOccurrences(): Promise<AxiosResponse<OccurrenceRespo
 export async function getOccurrenceById(id: string): Promise<AxiosResponse<OccurrenceResponse>> {
   try {
     const response: AxiosResponse<OccurrenceResponse> = await client.get(`${URL}/viewOccurrenceDetails/${id}`);
-    console.log(response.data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

@@ -8,6 +8,7 @@ import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
 import { OccurrenceResponse } from '@lepark/data-access';
+import dayjs from 'dayjs';
 
 const center = {
   lat: 1.3503881629328163,
@@ -62,9 +63,9 @@ const OccurrenceCreate = () => {
         ...formValues,
         lat,
         lng,
-        speciesId: '80856786-0ed5-4d4d-a01c-8c4266f89f75',
-        dateObserved: formValues.dateObserved ? moment(formValues.dateObserved).toISOString() : null,
-        dateOfBirth: formValues.dateOfBirth ? moment(formValues.dateOfBirth).toISOString() : null,
+        speciesId: 'd6170fac-a5f1-4bf2-9f80-0fb6a9d55757',
+        dateObserved: formValues.dateObserved ? dayjs(formValues.dateObserved).toISOString() : null,
+        dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
 
       const response = await createOccurrence(finalData);
@@ -72,7 +73,6 @@ const OccurrenceCreate = () => {
         setCurrStep(2);
         setCreatedData(response.data);
       }
-      console.log('response', response);
     } catch (error) {
       console.log('error', error);
       //

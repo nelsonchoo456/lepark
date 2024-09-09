@@ -48,3 +48,16 @@ export async function getParkById(id: number): Promise<AxiosResponse<ParkRespons
     }
   }
 }
+
+export async function updatePark(id: number, data: Partial<ParkResponse>): Promise<AxiosResponse<ParkResponse>> {
+  try {
+    const response: AxiosResponse<ParkResponse> = await axiosClient.put(`/updatePark/${id}`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

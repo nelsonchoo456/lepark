@@ -26,6 +26,7 @@ import { StaffAuthWrapper } from '@lepark/common-ui';
 import { ProtectedRoute } from '@lepark/common-ui';
 import ViewStaffDetails from './pages/StaffManagement/ViewStaffDetails';
 import ParkEdit from './pages/ParkEdit/ParkEdit';
+import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 
 export function App() {
   return (
@@ -74,6 +75,7 @@ export function App() {
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
                 <Route path="create" element={<OccurrenceCreate />} />
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
               </Route>
 

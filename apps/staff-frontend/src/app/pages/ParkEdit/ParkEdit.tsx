@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createPark, getParkById, ParkResponse } from '@lepark/data-access';
-import { Button, Card, Divider, Flex, Form, Input, message, Popconfirm, Typography, TimePicker, Select } from 'antd';
+import { createPark, getParkById, ParkResponse, StringIdxSig, updatePark } from '@lepark/data-access';
+import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
@@ -22,6 +22,7 @@ export interface AdjustLatLngInterface {
 }
 
 const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const attributes = ['name', 'description', 'address', 'contactNumber', 'openingHours', 'closingHours'];
 
 const ParkEdit = () => {
   const { id } = useParams();
@@ -51,7 +52,6 @@ const ParkEdit = () => {
   
           form.setFieldsValue(initialValues);
         }
-        console.log(parkRes.data)
       } catch (error) {
         //
       }
@@ -60,7 +60,6 @@ const ParkEdit = () => {
   }, [id]);
 
   // Form Values
-  const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
   // Map Values
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
@@ -84,8 +83,9 @@ const ParkEdit = () => {
   ];
 
   const handleSubmit = async () => {
+    if (!park) return;
     try {
-      // console.log(formValues);
+      const formValues = await form.validateFields()
       const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
 
       const openingHours: any[] = [];
@@ -97,23 +97,31 @@ const ParkEdit = () => {
 
       const finalData = { ...rest, openingHours, closingHours };
 
-      if (polygon[0][0]) {
-        const polygonData = latLngArrayToPolygon(polygon[0][0]);
-        finalData.geom = polygonData;
-      }
+      const changedData: Partial<ParkResponse> = Object.keys(finalData).reduce((acc, key) => {
+        const typedKey = key as keyof ParkResponse; // Cast key to the correct type
+        if (JSON.stringify(finalData[typedKey]) !== JSON.stringify(park?.[typedKey])) {
+          acc[typedKey] = finalData[typedKey];
+        }
+        return acc;
+      }, {} as Partial<ParkResponse>);
 
-      const response = await createPark(finalData);
+      const response = await updatePark(parseInt(park.id), changedData);
       if (response.status === 201) {
         setCreatedData(response.data);
+        messageApi.open({
+          type: 'success',
+          content: 'Saved changes to Park.',
+        });
       }
     } catch (error) {
       console.error('Error creating Park', error);
       messageApi.open({
         type: 'error',
-        content: 'Unable to create a Park. Please try again later.',
+        content: 'Unable to save changes to Park. Please try again later.',
       });
     }
   };
+
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -147,7 +155,7 @@ const ParkEdit = () => {
       {contextHolder}
       <PageHeader>Edit Park</PageHeader>
       <Card>
-        <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+        <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" >
           {contextHolder}
           <Divider orientation="left">Park Details</Divider>
           <Form.Item name="name" label="Name" rules={[{ required: true }]}>
@@ -182,7 +190,7 @@ const ParkEdit = () => {
             Park Hours <Text type="danger">{' *'}</Text>
           </Divider>
 
-          <Form.Item label={'Monday'}>
+          <Form.Item label={'Monday'} key="monday">
             <Flex>
               <Form.Item name="monday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
@@ -193,7 +201,7 @@ const ParkEdit = () => {
             </Flex>
           </Form.Item>
 
-          <Form.Item label={'Tuesday'}>
+          <Form.Item label={'Tuesday'} key="tuesday">
             <Flex>
               <Form.Item name="tuesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
@@ -204,7 +212,7 @@ const ParkEdit = () => {
             </Flex>
           </Form.Item>
 
-          <Form.Item label={'Wednesday'}>
+          <Form.Item label={'Wednesday'} key="wednesday">
             <Flex>
               <Form.Item name="wednesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
@@ -215,7 +223,7 @@ const ParkEdit = () => {
             </Flex>
           </Form.Item>
 
-          <Form.Item label={'Thursday'}>
+          <Form.Item label={'Thursday'} key="thursday">
             <Flex>
               <Form.Item name="thursday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
@@ -226,7 +234,7 @@ const ParkEdit = () => {
             </Flex>
           </Form.Item>
 
-          <Form.Item label={'Friday'}>
+          <Form.Item label={'Friday'} key="friday">
             <Flex>
               <Form.Item name="friday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
@@ -237,7 +245,7 @@ const ParkEdit = () => {
             </Flex>
           </Form.Item>
 
-          <Form.Item label={'Saturday'}>
+          <Form.Item label={'Saturday'} key="saturday">
             <Flex>
               <Form.Item name="saturday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
@@ -248,7 +256,7 @@ const ParkEdit = () => {
             </Flex>
           </Form.Item>
 
-          <Form.Item label={'Sunday'}>
+          <Form.Item label={'Sunday'} key="sunday">
             <Flex>
               <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
                 <RangePicker className="w-full" use12Hours format="h:mm a" />
