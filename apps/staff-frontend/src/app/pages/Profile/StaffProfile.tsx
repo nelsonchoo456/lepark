@@ -11,24 +11,23 @@ import { forgotStaffPassword, StaffUpdateData, updateStaffDetails, viewStaffDeta
 import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
-const initialUser = {
-  id: '',
-  firstName: '',
-  lastName: '',
-  contactNumber: '',
-  role: '',
-  email: '',
-  isActive: false,
-};
+// const initialUser = {
+//   id: '',
+//   firstName: '',
+//   lastName: '',
+//   contactNumber: '',
+//   role: '',
+//   email: '',
+//   isActive: false,
+// };
 
 const StaffProfile = () => {
-  const { user, updateUser } = useAuth<StaffResponse>();
+  const { user, updateUser, logout } = useAuth<StaffResponse>();
 
   const [inEditMode, setInEditMode] = useState(false);
   const [userState, setUser] = useState<StaffResponse | null>(null);
   const [editedUser, setEditedUser] = useState<StaffResponse | null>(null);
 
-  const { logout } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     const fetchUserDetails = async () => {

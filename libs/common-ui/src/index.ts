@@ -24,5 +24,6 @@ export * from './lib/login/Login';
 // Auth
 export { useAuth } from './lib/auth/AuthContext';
 export { StaffAuthWrapper } from './lib/auth/StaffAuthWrapper';
+export { VisitorAuthWrapper } from './lib/auth/VisitorAuthWrapper';
 export * from './lib/auth/ProtectedRoute';
 export * from './lib/auth/Spinner';

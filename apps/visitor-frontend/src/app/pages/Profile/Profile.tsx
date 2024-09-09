@@ -1,7 +1,16 @@
 import { Card, Badge, Menu, Dropdown, message } from 'antd';
 import { Input, Avatar, Button } from 'antd';
-import { UserOutlined, LogoutOutlined, SettingOutlined, EditOutlined, KeyOutlined, MailOutlined,DeleteOutlined, FrownOutlined } from '@ant-design/icons';
-import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, CustButton } from '@lepark/common-ui';
+import {
+  UserOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  EditOutlined,
+  KeyOutlined,
+  MailOutlined,
+  DeleteOutlined,
+  FrownOutlined,
+} from '@ant-design/icons';
+import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, CustButton, useAuth } from '@lepark/common-ui';
 import { useState, useEffect } from 'react';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Color } from 'antd/es/color-picker';
@@ -10,7 +19,7 @@ import EditPasswordModal from './EditPasswordModal';
 import EditEmailModal from './EditEmailModal';
 import { useNavigate } from 'react-router-dom';
 import DeleteAccountModal from './DeleteAccountModal';
-import { updateVisitorDetails, viewVisitorDetails, VisitorResponse } from '@lepark/data-access';
+import { updateVisitorDetails, viewVisitorDetails, VisitorResponse, VisitorUpdateData } from '@lepark/data-access';
 import { PiSmiley } from 'react-icons/pi';
 
 const initialVisitor = {
@@ -23,16 +32,11 @@ const initialVisitor = {
 };
 
 const ProfilePage = () => {
+  const { user, updateUser, logout } = useAuth<VisitorResponse>();
 
-  const getUserId = () => {
-    // return '-1';
-    return 'c083b279-fb77-4029-9431-d4cdbe4555f2';
-  }
-  
-  const userId = getUserId(); // Replace 'user-id' with the actual user ID
-  const [visitor, setVisitor] = useState<VisitorResponse>(initialVisitor);
+  const [visitor, setVisitor] = useState<VisitorResponse | null>(null);
   const [editing, setEditing] = useState<boolean>(false);
-  const [editedVisitor, setEditedVisitor] = useState<VisitorResponse>(initialVisitor);
+  const [editedVisitor, setEditedVisitor] = useState<VisitorResponse | null>(null);
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState<boolean>(false);
   const [isEmailModalVisible, setIsEmailModalVisible] = useState<boolean>(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
@@ -41,9 +45,8 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await viewVisitorDetails(userId); 
-        setVisitor(response.data);
-        setEditedVisitor(response.data);
+        setVisitor(user);
+        setEditedVisitor(user);
       } catch (error) {
         console.error(error);
       }
@@ -60,20 +63,41 @@ const ProfilePage = () => {
     setEditing(true);
   };
 
-  const handleSave = async () => {
-    if (!editedVisitor.firstName || !editedVisitor.lastName || !editedVisitor.contactNumber) {
-      message.warning('Please fill in all the fields before saving.');
-      return;
-    }
+  const validateInputs = () => {
+    if (!editedVisitor) return false;
+    const { firstName, lastName, email, contactNumber } = editedVisitor;
+    return firstName && lastName && email && contactNumber;
+  };
 
+  const onFinish = async (values: any) => {
     try {
-      const response = await updateVisitorDetails(editedVisitor.id, editedVisitor);
-      setVisitor(response.data);
-      setEditing(false);
-      message.success('Profile updated successfully.');
+      const updatedVisitorDetails: VisitorUpdateData = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        contactNumber: values.contactNumber,
+        email: values.email,
+      };
+
+      if (user) {
+        const response = await updateVisitorDetails(user.id, updatedVisitorDetails);
+        updateUser(response.data);
+        setVisitor(response.data);
+        setEditing(false);
+        message.success('Profile updated successfully');
+      }
     } catch (error) {
-      message.error(`Failed to update profile: ${error}`);
-      console.log(error);
+      console.error(error);
+      // TODO: filter out specific error messages from the response
+      message.error('Failed to update Visitor details.');
+    }
+  };
+
+  const handleSave = async () => {
+    if (validateInputs()) {
+      onFinish(editedVisitor);
+      setEditing(false);
+    } else {
+      message.warning('All fields are required.');
     }
   };
 
@@ -98,8 +122,14 @@ const ProfilePage = () => {
     setIsEmailModalVisible(false);
   };
 
-  const handleLogout = () => {
-    // Logout functionality goes here
+  const handleLogout = async () => {
+    try {
+      await logout();
+      message.success('Logged out successfully');
+      navigate('/login');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -113,11 +143,15 @@ const ProfilePage = () => {
     navigate('/'); // Redirect to home page
   };
 
-  const handleInputChange = (key: string, value: any) => {
-    setEditedVisitor((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const handleInputChange = (key: keyof VisitorResponse, value: any) => {
+    setEditedVisitor((prev) => {
+      if (!prev) return null; // Handle case where prev might be null
+
+      return {
+        ...prev,
+        [key]: value, // Only update the specific key
+      };
+    });
   };
 
   const menu = (
@@ -136,18 +170,14 @@ const ProfilePage = () => {
       </Menu.Item>
     </Menu>
   );
-  
-  if (userId === '-1') {
+
+  if (!user) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center pb-20">
         <PiSmiley className="text-6xl mb-4" />
         <h1 className="text-2xl">Hello!</h1>
         <p className="mb-4">Please log in to view your profile details.</p>
-        <Button 
-          type="primary"
-          onClick={handleLoginRedirect} 
-          className="px-4 py-2"
-        >
+        <Button type="primary" onClick={handleLoginRedirect} className="px-4 py-2">
           Log In
         </Button>
       </div>
@@ -183,48 +213,48 @@ const ProfilePage = () => {
 
         {/* Profile Info */}
         <div className="flex flex-col items-center w-full p-4 pt-10">
-        {editing ? (
-          <div className="w-full flex flex-col items-center">
-            <div className="w-full flex flex-col items-start mb-2">
-              <label className="mb-1">First Name:</label>
-              <Input
-                value={editedVisitor.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className="w-full"
-                required
-              />
+          {editing ? (
+            <div className="w-full flex flex-col items-center">
+              <div className="w-full flex flex-col items-start mb-2">
+                <label className="mb-1">First Name:</label>
+                <Input
+                  value={editedVisitor?.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  className="w-full"
+                  required
+                />
+              </div>
+              <div className="w-full flex flex-col items-start mb-2">
+                <label className="mb-1">Last Name:</label>
+                <Input
+                  value={editedVisitor?.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  className="w-full"
+                  required
+                />
+              </div>
+              <div className="w-full flex flex-col items-start mb-2">
+                <label className="mb-1">Contact Number:</label>
+                <Input
+                  value={editedVisitor?.contactNumber}
+                  onChange={(e) => handleInputChange('contactNumber', e.target.value)}
+                  className="w-full"
+                  required
+                />
+              </div>
+              <CustButton type="primary" onClick={handleSave} className="mb-2">
+                Save
+              </CustButton>
+              <CustButton onClick={handleCancel} className="mb-2">
+                Cancel
+              </CustButton>
             </div>
-            <div className="w-full flex flex-col items-start mb-2">
-              <label className="mb-1">Last Name:</label>
-              <Input
-                value={editedVisitor.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className="w-full"
-                required
-              />
-            </div>
-            <div className="w-full flex flex-col items-start mb-2">
-              <label className="mb-1">Contact Number:</label>
-              <Input
-                value={editedVisitor.contactNumber}
-                onChange={(e) => handleInputChange('contactNumber', e.target.value)}
-                className="w-full"
-                required
-              />
-            </div>
-            <CustButton type="primary" onClick={handleSave} className="mb-2">
-              Save
-            </CustButton>
-            <CustButton onClick={handleCancel} className="mb-2">
-              Cancel
-            </CustButton>
-          </div>
-        ) : (
+          ) : (
             <div className="w-full flex flex-col items-center">
               <h2 className="text-xl font-bold">
-                {visitor.firstName} {visitor.lastName}
+                {user.firstName} {user.lastName}
               </h2>
-              <p className="text-gray-600">{visitor.email}</p>
+              <p className="text-gray-600">{user.email}</p>
               <div className="flex space-x-2 mt-4">
                 <Dropdown overlay={menu} placement="bottomRight">
                   <CustButton type="primary" className="w-auto sm:w-auto" icon={<SettingOutlined />}>
