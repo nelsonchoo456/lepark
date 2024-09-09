@@ -12,6 +12,9 @@ class EmailUtility {
         user: 'no.reply.lepark@gmail.com', // replace with your Gmail email
         pass: 'ezcr eqfz dxtn vbtr', // replace with your App Password
       },
+      tls: {
+        rejectUnauthorized: false, // Disable certificate validation
+      },
     });
 
     // Email message options
