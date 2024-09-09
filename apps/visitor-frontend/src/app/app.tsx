@@ -11,12 +11,15 @@ import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
-import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
+// import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import Discover from './pages/Taxonomy/Discover';
 import ViewSpecies from './pages/Taxonomy/ViewSpecies';
+import SelectParkPage from './park-context/SelectParkPage';
+import { ParkProvider } from './park-context/ParkContext';
 
 export function App() {
   return (
+    <ParkProvider>
     <ConfigProvider
       theme={{
         token: {
@@ -38,16 +41,18 @@ export function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
           <Route element={<MainLayout />}>
             <Route path="/" element={<MainLanding />} />
+            <Route path="/select-park" element={<SelectParkPage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/occurrence">
               {/* <Route index element={<OccurrenceList />} /> */}
-              <Route
-                path=":occurrenceId"
-                element={<OccurrenceDetails/>}/>
-                <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/>
+            <Route
+              path=":occurrenceId"
+              element={<OccurrenceDetails/>}/>
+                {/* <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/> */}
             </Route>
             <Route path="/discover" element={<Discover />} />
             <Route path="/taxonomy/view-species" element={<ViewSpecies />} />
@@ -55,6 +60,7 @@ export function App() {
         </Routes>
       </BrowserRouter>
     </ConfigProvider>
+    </ParkProvider>
   );
 }
 

@@ -8,6 +8,7 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { Button, Input, Select } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { FaFilter } from 'react-icons/fa6';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const MapPage = () => {
   const [webMode, setWebMode] = useState<boolean>(
@@ -100,4 +101,4 @@ const MapPage = () => {
   );
 };
 
-export default MapPage;
+export default withParkGuard(MapPage);
