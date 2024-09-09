@@ -25,6 +25,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 
 const ParkEdit = () => {
   const { id } = useParams();
+  const [createdData, setCreatedData] = useState<ParkResponse>();
   const [park, setPark] = useState<ParkResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -82,23 +83,6 @@ const ParkEdit = () => {
     },
   ];
 
-  const handleCurrStep = async (step: number) => {
-    console.log(formValues);
-    if (step === 0) {
-      setCurrStep(0);
-    } else if (step === 1) {
-      try {
-        const values = await form.validateFields(); // Get form data
-        setFormValues(values); // Save form data
-        setCurrStep(1); // Move to step 2
-      } catch (error) {
-        // console.error('Validation failed:', error);
-      }
-    } else {
-      return;
-    }
-  };
-
   const handleSubmit = async () => {
     try {
       // console.log(formValues);
@@ -121,7 +105,6 @@ const ParkEdit = () => {
       const response = await createPark(finalData);
       if (response.status === 201) {
         setCreatedData(response.data);
-        setCurrStep(2);
       }
     } catch (error) {
       console.error('Error creating Park', error);
