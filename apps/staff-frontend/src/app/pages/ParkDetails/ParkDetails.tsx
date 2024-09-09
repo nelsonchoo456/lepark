@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { Button, Card, Descriptions, Empty, Flex, Space, Tabs, Tag, Typography } from 'antd';
@@ -11,7 +11,8 @@ import { RiEdit2Line } from 'react-icons/ri';
 const { Text } = Typography;
 
 const ParkDetails = () => {
-  const [park, setPark] = useState<ParkResponse>()
+  const [park, setPark] = useState<ParkResponse>();
+  const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const ParkDetails = () => {
                   {park?.parkStatus}
                 </ParkStatusTag>
               </Space>
-              <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" />
+              <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`/park/${park?.id}/edit`)}/>
             </div>
             <Typography.Paragraph
               ellipsis={{

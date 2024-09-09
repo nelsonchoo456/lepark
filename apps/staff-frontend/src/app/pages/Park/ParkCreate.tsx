@@ -57,22 +57,23 @@ const ParkCreate = () => {
     try {
       // console.log(formValues);
       const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
-
+      
       const openingHours: any[] = [];
       const closingHours: any[] = [];
       daysOfTheWeek.forEach((day, index) => {
-        openingHours.push(formValues[day][0] ? moment(formValues[day][0]).toISOString() : null)
-        closingHours.push(formValues[day][1] ? moment(formValues[day][1]).toISOString() : null)
+        console.log(formValues[day])
+        openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
+        closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
       })
 
       const finalData = { ...rest, openingHours, closingHours}
 
-      if (polygon[0][0]) {
+      if (polygon && polygon[0] && polygon[0][0]) {
         const polygonData = latLngArrayToPolygon(polygon[0][0]);
         finalData.geom = polygonData;
       }
       
-
+      console.log(finalData)
       const response = await createPark(finalData);
       if (response.status === 201) {
         setCreatedData(response.data)
@@ -80,7 +81,7 @@ const ParkCreate = () => {
       }
       
     } catch (error) {
-      console.error("Error creating Park", error);
+      console.error(error);
       messageApi.open({
         type: 'error',
         content: 'Unable to create a Park. Please try again later.',
