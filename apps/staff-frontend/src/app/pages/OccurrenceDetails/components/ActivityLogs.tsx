@@ -11,7 +11,7 @@ interface ActivityLog {
   activityLogType: string;
 }
 
-const ActivityLogs: React.FC<{ activityLogs: ActivityLog[]; occurrenceId: string }> = ({ activityLogs, occurrenceId }) => {
+const ActivityLogs: React.FC<{ activityLogs: ActivityLog[]; occurrenceId?: string }> = ({ activityLogs, occurrenceId }) => {
   const navigate = useNavigate();
 
   const columns: TableProps<ActivityLog>['columns'] = [

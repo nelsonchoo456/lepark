@@ -1,6 +1,6 @@
 import { Prisma, Occurrence, ActivityLog } from '@prisma/client';
 import { z } from 'zod';
-import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
+import { OccurrenceSchema, OccurrenceSchemaType, ActivityLogSchema, ActivityLogSchemaType } from '../schemas/occurrenceSchema';
 import OccurrenceDao from '../dao/OccurrenceDao';
 import StaffDao from '../dao/StaffDao';
 
@@ -86,16 +86,21 @@ class OccurrenceService {
 
   /* ACTIVITY LOG SERVICES */
 
-  public async getActivityLogsByOccurrenceId(occurrenceId: string): Promise<ActivityLog[]> {
+  public async createActivityLog(data: ActivityLogSchemaType): Promise<ActivityLog> {
     try {
-      const activityLogs = await OccurrenceDao.getActivityLogsByOccurrenceId(occurrenceId);
-      if (!activityLogs) {
-        throw new Error('Activity logs not found');
-      }
-      return activityLogs;
+      ActivityLogSchema.parse(data);
+      return OccurrenceDao.createActivityLog(data);
     } catch (error) {
-      throw new Error(`Unable to fetch activity logs: ${error.message}`);
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
     }
+  }
+
+  public async getActivityLogsByOccurrenceId(occurrenceId: string): Promise<ActivityLog[]> {
+    return OccurrenceDao.getActivityLogsByOccurrenceId(occurrenceId);
   }
 
   public async getActivityLogById(id: string): Promise<ActivityLog> {
@@ -108,6 +113,34 @@ class OccurrenceService {
     } catch (error) {
       throw new Error(`Unable to fetch activity log details: ${error.message}`);
     }
+  }
+
+  public async updateActivityLog(id: string, data: Partial<ActivityLogSchemaType>): Promise<ActivityLog> {
+    try {
+      const existingActivityLog = await this.getActivityLogById(id);
+      const mergedData = { ...existingActivityLog, ...data };
+      ActivityLogSchema.parse(mergedData);
+
+      const updateData: Prisma.ActivityLogUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      return OccurrenceDao.updateActivityLog(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
+  }
+
+  // To decide who can delete activity log
+  public async deleteActivityLog(id: string): Promise<void> {
+    await OccurrenceDao.deleteActivityLog(id);
   }
 }
 

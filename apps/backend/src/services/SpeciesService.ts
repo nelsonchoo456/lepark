@@ -52,6 +52,18 @@ class SpeciesService {
     }
   }
 
+  public async getSpeciesNameById(id: string): Promise<string> {
+    try {
+      const species = await SpeciesDao.getSpeciesById(id);
+      if (!species) {
+        throw new Error('Species not found');
+      }
+      return species.speciesName;
+    } catch (error) {
+      throw new Error(`Unable to fetch species name: ${error.message}`);
+    }
+  }
+
   public async updateSpeciesDetails(
     id: string,
     // Use Partial<SpeciesSchemaType> to allow partial updates and ensure input validation

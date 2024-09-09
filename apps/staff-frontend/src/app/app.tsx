@@ -53,15 +53,15 @@ export function App() {
 
             <Route path="/occurrences">
               <Route index element={<OccurrenceList />} />
-              <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+              <Route path=":id" element={<OccurrenceDetails />} />
               <Route path="create" element={<OccurrenceCreate />} />
+              <Route path=":occurrenceId/activitylog/:id" element={<ActivityLogDetails />} />
             </Route>
 
             <Route path="/profile" element={<StaffProfile />} />
             <Route path="/staffManagement" element={<StaffManagementPage />} />
             <Route path="/species" element={<SpeciesPage />} />
             <Route path="/species/create" element={<CreateSpecies />} />
-            <Route path="occurrences/:occurrenceId/activitylog/:id" element={<ActivityLogDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>
