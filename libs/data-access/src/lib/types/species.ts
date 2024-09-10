@@ -1,3 +1,5 @@
+import { OccurrenceResponse } from "./occurrence";
+
 export enum ConservationStatusEnum {
   LEAST_CONCERN = 'LEAST_CONCERN',
   NEAR_THREATENED = 'NEAR_THREATENED',
@@ -51,6 +53,7 @@ export interface SpeciesResponse {
   isEvergreen: boolean;
   isToxic: boolean;
   isFragrant: boolean;
+  occurrences: OccurrenceResponse[];
 }
 
 export interface CreateSpeciesData {

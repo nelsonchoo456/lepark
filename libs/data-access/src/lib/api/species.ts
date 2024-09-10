@@ -29,7 +29,7 @@ export async function getAllSpecies(): Promise<AxiosResponse<SpeciesResponse[]>>
   }
 }
 
-export async function getSpeciesById(id: string): Promise<AxiosResponse<SpeciesResponse>> {
+export async function viewSpeciesDetails(id: string): Promise<AxiosResponse<SpeciesResponse>> {
   try {
     const response: AxiosResponse<SpeciesResponse> = await client.get(`${URL}/viewSpeciesDetails/${id}`);
     return response;
