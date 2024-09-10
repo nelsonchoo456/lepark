@@ -27,6 +27,7 @@ const initialUser = {
   email: '',
   password: '',
   isActive: false,
+  parkId: '',
 };
 
 const ViewStaffDetails = () => {

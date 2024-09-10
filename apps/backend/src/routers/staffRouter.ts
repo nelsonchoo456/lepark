@@ -26,6 +26,16 @@ router.get('/getAllStaffs', async (_, res) => {
   }
 });
 
+router.get('/getAllStaffsByParkId/:parkId', async (req, res) => {
+  try {
+    const parkId = req.params.parkId;
+    const staffList = await StaffService.getAllStaffsByParkId(parkId);
+    res.status(200).json(staffList);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/viewStaffDetails/:id', async (req, res) => {
   try {
     const staffId = req.params.id;

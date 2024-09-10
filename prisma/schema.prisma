@@ -22,6 +22,7 @@ enum StaffRoleEnum {
   CLEANER
   LANDSCAPE_ARCHITECT
   PARK_RANGER
+  SUPERADMIN
 }
 
 model Staff {
@@ -33,6 +34,7 @@ model Staff {
   contactNumber String
   role          StaffRoleEnum
   isActive      Boolean
+  parkId        String       
 }
 
 enum ConservationStatusEnum {

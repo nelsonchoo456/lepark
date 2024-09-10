@@ -7,6 +7,7 @@ export enum StaffType {
   CLEANER = 'CLEANER',
   LANDSCAPE_ARCHITECT = 'LANDSCAPE_ARCHITECT',
   PARK_RANGER = 'PARK_RANGER',
+  SUPERADMIN = 'SUPERADMIN',
 }
 
 export interface RegisterStaffData {
@@ -16,6 +17,7 @@ export interface RegisterStaffData {
   password: string;
   contactNumber: string;
   role: StaffType;
+  parkId: string;
 }
 
 export interface StaffResponse {
@@ -27,6 +29,7 @@ export interface StaffResponse {
   contactNumber: string;
   role: string;
   isActive: boolean;
+  parkId: string;
 }
 
 export interface LoginData {
