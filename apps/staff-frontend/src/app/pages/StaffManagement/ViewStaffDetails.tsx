@@ -36,6 +36,8 @@ const ViewStaffDetails = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [staff, setStaff] = useState<StaffResponse>(initialUser);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
+  const [contactNumberError, setContactNumberError] = useState('');
+
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -84,8 +86,10 @@ const ViewStaffDetails = () => {
 
   const onFinish = async (values: any) => {
     try {
-      if (!user || user.role !== StaffType.MANAGER) {
-        throw new Error('Only managers can update staff details.');
+      if (!user) {
+        throw new Error('User not found.');
+      } else if (!(user.role == StaffType.MANAGER || user.role == StaffType.SUPERADMIN)) {
+        throw new Error('Not allowed to edit staff details.');
       }
 
       const updatedStaffDetails: StaffUpdateData = {
@@ -115,12 +119,30 @@ const ViewStaffDetails = () => {
   };
 
   const handleSave = () => {
-    if (validateInputs()) {
+    const isContactNumberValid = validateContactNumber(editedUser?.contactNumber ?? '');
+    if (isContactNumberValid) {
       onFinish(editedUser);
       setInEditMode(false);
     } else {
       message.warning('All fields are required.');
     }
+  };
+
+  const validateContactNumber = (value: string) => {
+    const pattern = /^[689]\d{7}$/;
+    if (!pattern.test(value)) {
+      setContactNumberError('Contact number must consist of exactly 8 digits and be a valid Singapore contact number');
+      return false;
+    } else {
+      setContactNumberError('');
+      return true;
+    }
+  };
+
+  const handleContactNumberChange = (e: { target: { value: any; }; }) => {
+    const value = e.target.value;
+    validateContactNumber(value);
+    handleInputChange('contactNumber', value);
   };
 
   const descriptionsItems = [
@@ -159,11 +181,20 @@ const ViewStaffDetails = () => {
           onChange={(value) => handleInputChange('role', value)}
           style={{ minWidth: 200 }} // Set a minimum width to ensure full text is shown
         >
-          {Object.values(StaffType).map((role) => (
-            <Select.Option key={role} value={role}>
-              {role}
-            </Select.Option>
-          ))}
+          {Object.values(StaffType)
+              .filter((role) => {
+                if (user?.role === StaffType.MANAGER) {
+                  return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
+                } else if (user?.role === StaffType.SUPERADMIN) {
+                  return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+                }
+                return true;
+              })
+              .map((role) => (
+                <Select.Option key={role} value={role}>
+                  {role}
+                </Select.Option>
+              ))}
         </Select>
       ) : (
         <Tag>{staff?.role}</Tag>
@@ -183,12 +214,20 @@ const ViewStaffDetails = () => {
       key: 'contactNumber',
       label: 'Contact Number',
       children: inEditMode ? (
-        <Input
-          placeholder="Contact Number"
-          value={editedUser?.contactNumber ?? ''}
-          onChange={(e) => handleInputChange('contactNumber', e.target.value)}
-          required
-        />
+        <Tooltip
+          title={contactNumberError}
+          visible={!!contactNumberError}
+          placement="right"
+          color="#73a397"
+        >
+          <Input
+            placeholder="Contact Number"
+            value={editedUser?.contactNumber ?? ''}
+            onChange={handleContactNumberChange}
+            required
+            pattern="^[689]\d{7}$"
+          />
+        </Tooltip>
       ) : (
         staff?.contactNumber ?? null
       ),

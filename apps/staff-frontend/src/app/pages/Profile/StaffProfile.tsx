@@ -27,6 +27,7 @@ const StaffProfile = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [userState, setUser] = useState<StaffResponse | null>(null);
   const [editedUser, setEditedUser] = useState<StaffResponse | null>(null);
+  const [contactNumberError, setContactNumberError] = useState('');
 
   // for change password
 
@@ -108,8 +109,26 @@ const StaffProfile = () => {
     }
   };
 
+  const validateContactNumber = (value: string) => {
+    const pattern = /^[689]\d{7}$/;
+    if (!pattern.test(value)) {
+      setContactNumberError('Contact number must consist of exactly 8 digits and be a valid Singapore contact number');
+      return false;
+    } else {
+      setContactNumberError('');
+      return true;
+    }
+  };
+
+  const handleContactNumberChange = (e: { target: { value: any; }; }) => {
+    const value = e.target.value;
+    validateContactNumber(value);
+    handleInputChange('contactNumber', value);
+  };
+
   const handleSave = () => {
-    if (validateInputs()) {
+    const isContactNumberValid = validateContactNumber(editedUser?.contactNumber ?? '');
+    if (isContactNumberValid) {
       onFinish(editedUser);
       setInEditMode(false);
     } else {
@@ -199,10 +218,23 @@ const StaffProfile = () => {
     {
       key: 'contactNumber',
       label: 'Contact Number',
-      children: !inEditMode ? (
-        userState?.contactNumber
+      children: inEditMode ? (
+        <Tooltip
+          title={contactNumberError}
+          visible={!!contactNumberError}
+          placement="right"
+          color="#73a397"
+        >
+          <Input
+            placeholder="Contact Number"
+            value={editedUser?.contactNumber ?? ''}
+            onChange={handleContactNumberChange}
+            required
+            pattern="^[689]\d{7}$"
+          />
+        </Tooltip>
       ) : (
-        <Input required defaultValue={editedUser?.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
+        userState?.contactNumber ?? null
       ),
     },
   ];

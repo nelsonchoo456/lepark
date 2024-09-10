@@ -78,7 +78,7 @@ class StaffService {
 
   public async updateStaffDetails(
     id: string,
-    data: Partial<Pick<StaffSchemaType, 'firstName' | 'lastName' | 'contactNumber' | 'email'>>,
+    data: Partial<StaffSchemaType>,
   ): Promise<Staff> {
     try {
       const existingStaff = await StaffDao.getStaffById(id);
@@ -96,7 +96,7 @@ class StaffService {
       StaffSchema.parse(mergedData);
 
       // Convert the validated data to Prisma input type
-      const prismaUpdateData: Prisma.StaffUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
+      const prismaUpdateData: Prisma.StaffUpdateInput = Object.entries(mergedData).reduce((acc, [key, value]) => {
         if (value !== undefined) {
           acc[key] = value;
         }
@@ -119,10 +119,10 @@ class StaffService {
       if (!staffToUpdate) {
         throw new Error('Staff not found');
       }
-      // Check if the requester is a manager
-      const isRequesterManager = await StaffDao.isManager(requesterId);
-      if (!isRequesterManager) {
-        throw new Error('Only managers can update the role of other staff.');
+      // Check if the requester is a manager or superadmin
+      const isRequesterManagerOrSuperadmin = await StaffDao.isManagerOrSuperadmin(requesterId);
+      if (!isRequesterManagerOrSuperadmin) {
+        throw new Error('Only managers or superadmins can update the role of other staff.');
       }
 
       const updateData: Prisma.StaffUpdateInput = { role };
@@ -139,9 +139,9 @@ class StaffService {
         throw new Error('Staff not found');
       }
       // Check if the requester is a manager
-      const isRequesterManager = await StaffDao.isManager(requesterId);
-      if (!isRequesterManager) {
-        throw new Error("Only managers can update another staff's active status.");
+      const isRequesterManagerOrSuperadmin = await StaffDao.isManagerOrSuperadmin(requesterId);
+      if (!isRequesterManagerOrSuperadmin) {
+        throw new Error("Only managers or superadmins can update another staff's active status.");
       }
 
       const updateData: Prisma.StaffUpdateInput = { isActive };

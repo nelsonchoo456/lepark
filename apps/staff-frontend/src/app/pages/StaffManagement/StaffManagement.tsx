@@ -27,8 +27,8 @@ const StaffManagementPage: React.FC = () => {
         const response = await getAllStaffs();
         const data = await response.data;
         setStaff(data);
-      } else if (user?.role === StaffType.MANAGER) {
-        const response = await getAllStaffsByParkId(user.parkId || '');
+      } else {
+        const response = await getAllStaffsByParkId(user?.parkId || '');
         const data = await response.data;
         setStaff(data);
       } 
