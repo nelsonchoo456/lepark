@@ -8,28 +8,51 @@ import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { getAllStaffs, StaffResponse, StaffType } from '@lepark/data-access';
+import { getAllStaffs, StaffResponse, StaffType, getParkById, ParkResponse, getAllParks, getAllStaffsByParkId } from '@lepark/data-access';
 
 const StaffManagementPage: React.FC = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
+  const [parks, setParks] = useState<ParkResponse[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchStaffData();
+    fetchParksData();
   }, []);
 
   const fetchStaffData = async () => {
     try {
-      const response = await getAllStaffs();
-      console.log('Staff table successfully populated!');
-      const data = await response.data;
-      console.log('Fetched staff data:', data);
-      setStaff(data);
+      if (user?.role === StaffType.SUPERADMIN) {
+        const response = await getAllStaffs();
+        const data = await response.data;
+        setStaff(data);
+      } else if (user?.role === StaffType.MANAGER) {
+        const response = await getAllStaffsByParkId(user.parkId);
+        const data = await response.data;
+        setStaff(data);
+      } 
     } catch (error) {
       console.error('Error fetching staff data:', error);
     }
   };
+
+  const fetchParksData = async () => {
+    try {
+      const response = await getAllParks();
+      const data = await response.data;
+      setParks(data);
+    } catch (error) {
+      console.error('Error fetching parks data:', error);
+    };
+  };
+
+  const getParkName = (parkId: string) => {
+    const park = parks.find((park) => park.id == parkId);
+    return park ? park.name : 'NParks';
+  };
+
+  
 
   const handleViewDetailsClick = (staffRecord: StaffResponse) => {
     navigate(`${staffRecord.id}`);
@@ -78,6 +101,14 @@ const StaffManagementPage: React.FC = () => {
           <div style={{ color: 'grey' }}>{record.email}</div>
         </div>
       ),
+    },
+    {
+      title: 'Park',
+      key: 'park',
+      width: '15%',
+      render: (_, record) => getParkName(record.parkId),
+      filters: user?.role === StaffType.SUPERADMIN ? parks.map((park) => ({ text: park.name, value: park.id })) : undefined,
+      onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => parseInt(record.parkId.toString()) === parseInt(value.toString()) : undefined,
     },
     {
       title: 'Status',
