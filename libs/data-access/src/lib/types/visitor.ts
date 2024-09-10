@@ -1,3 +1,5 @@
+import { SpeciesResponse } from "./species";
+
 export interface RegisterVisitorData {
   firstName: string;
   lastName: string;
@@ -13,13 +15,6 @@ export interface VisitorResponse {
   email: string;
   contactNumber: string;
   favouriteSpecies?: SpeciesResponse[];
-}
-
-export interface SpeciesResponse {
-  id: string;
-  speciesName: string;
-  commonName: string;
-  // Add other relevant species fields here
 }
 
 export interface VisitorLoginData {
