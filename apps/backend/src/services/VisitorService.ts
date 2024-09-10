@@ -16,6 +16,7 @@ import {
   PasswordResetSchemaType,
 } from '../schemas/visitorSchema';
 import SpeciesDao from '../dao/SpeciesDao';
+import { fromZodError } from 'zod-validation-error';
 
 class VisitorService {
   public async register(data: VisitorSchemaType): Promise<Visitor> {
@@ -40,8 +41,8 @@ class VisitorService {
       return VisitorDao.createVisitor(visitorData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -216,16 +217,7 @@ class VisitorService {
       throw new Error('Visitor not found');
     }
 
-    const updatedFavoriteSpeciesIds = [
-      ...visitor.favoriteSpeciesIds,
-      speciesId,
-    ];
-
-    const updatedVisitor = await VisitorDao.updateVisitorDetails(visitorId, {
-      favoriteSpeciesIds: updatedFavoriteSpeciesIds,
-    });
-
-    return updatedVisitor;
+    return VisitorDao.addFavoriteSpecies(visitorId, speciesId);
   }
 
   async getFavoriteSpecies(visitorId: string) {
@@ -235,12 +227,17 @@ class VisitorService {
       throw new Error('Visitor not found');
     }
 
-    const favoriteSpecies = await SpeciesDao.getSpeciesByIds(visitor.favoriteSpeciesIds);
-
-    return favoriteSpecies;
+    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    return favoriteSpecies?.favouriteSpecies || [];
   }
 
   async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
     return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
   }
 

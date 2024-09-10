@@ -11,8 +11,15 @@ export interface VisitorResponse {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
   contactNumber: string;
+  favouriteSpecies?: SpeciesResponse[];
+}
+
+export interface SpeciesResponse {
+  id: string;
+  speciesName: string;
+  commonName: string;
+  // Add other relevant species fields here
 }
 
 export interface VisitorLoginData {
@@ -52,5 +59,5 @@ export interface GetFavoriteSpeciesRequestData {
 
 // Define the data returned by the get favorite species response
 export interface GetFavoriteSpeciesResponseData {
-  favoriteSpeciesIds: string[];
+  favouriteSpecies: SpeciesResponse[];
 }

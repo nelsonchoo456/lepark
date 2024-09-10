@@ -1,5 +1,6 @@
 import { Prisma, Species } from '@prisma/client';
 import { z } from 'zod';
+import { fromZodError } from 'zod-validation-error';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
 import SpeciesDao from '../dao/SpeciesDao';
 import StaffDao from '../dao/StaffDao';
@@ -25,8 +26,8 @@ class SpeciesService {
       return SpeciesDao.createSpecies(speciesData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

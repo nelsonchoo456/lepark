@@ -35,19 +35,40 @@ class VisitorDao {
   //   });
   // }
 
+  async addFavoriteSpecies(visitorId: string, speciesId: string): Promise<Visitor> {
+    return prisma.visitor.update({
+      where: { id: visitorId },
+      data: {
+        favouriteSpecies: {
+          connect: { id: speciesId }
+        }
+      },
+      include: {
+        favouriteSpecies: true
+      }
+    });
+  }
+
+  async getFavoriteSpecies(visitorId: string) {
+    return prisma.visitor.findUnique({
+      where: { id: visitorId },
+      select: {
+        favouriteSpecies: true
+      }
+    });
+  }
+
   async deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<Visitor> {
-    const visitor = await this.getVisitorById(visitorId);
-
-    if (!visitor) {
-      throw new Error('Visitor not found');
-    }
-
-    const updatedFavoriteSpeciesIds = visitor.favoriteSpeciesIds.filter(
-      (id) => id !== speciesId,
-    );
-
-    return this.updateVisitorDetails(visitorId, {
-      favoriteSpeciesIds: updatedFavoriteSpeciesIds,
+    return prisma.visitor.update({
+      where: { id: visitorId },
+      data: {
+        favouriteSpecies: {
+          disconnect: { id: speciesId }
+        }
+      },
+      include: {
+        favouriteSpecies: true
+      }
     });
   }
 
