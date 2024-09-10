@@ -126,7 +126,7 @@ const OccurrenceEdit = () => {
         setCreatedData(occurenceRes.data);
         messageApi.open({
           type: 'success',
-          content: 'Saved changes to Park.',
+          content: 'Saved changes to Occurrence.',
         });
       }
     } catch (error) {
