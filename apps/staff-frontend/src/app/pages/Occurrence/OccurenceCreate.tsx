@@ -62,7 +62,7 @@ const OccurrenceCreate = () => {
         ...formValues,
         lat,
         lng,
-        speciesId: '80856786-0ed5-4d4d-a01c-8c4266f89f75',
+        speciesId: '50637af5-182b-4606-a3ae-993d86203937', // change this
         dateObserved: formValues.dateObserved ? moment(formValues.dateObserved).toISOString() : null,
         dateOfBirth: formValues.dateOfBirth ? moment(formValues.dateOfBirth).toISOString() : null,
       };
