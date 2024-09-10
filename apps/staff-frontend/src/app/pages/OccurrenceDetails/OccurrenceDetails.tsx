@@ -11,6 +11,7 @@ import { FaTint } from 'react-icons/fa';
 import moment from 'moment';
 import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
+import StatusLogs from './components/StatusLogs';
 import { ActivityLogResponse, OccurrenceResponse, SpeciesResponse, LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
 import { getOccurrenceById, getSpeciesById } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
@@ -86,7 +87,7 @@ const OccurrenceDetails = () => {
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: 'adkeewsm',
+      children: <StatusLogs occurrence={occurrence} />,
     },
   ];
 
