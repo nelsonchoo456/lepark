@@ -228,7 +228,7 @@ class VisitorService {
     }
 
     const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
-    return favoriteSpecies?.favouriteSpecies || [];
+    return favoriteSpecies?.favoriteSpecies || [];
   }
 
   async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {

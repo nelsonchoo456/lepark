@@ -39,12 +39,12 @@ class VisitorDao {
     return prisma.visitor.update({
       where: { id: visitorId },
       data: {
-        favouriteSpecies: {
+        favoriteSpecies: {
           connect: { id: speciesId }
         }
       },
       include: {
-        favouriteSpecies: true
+        favoriteSpecies: true
       }
     });
   }
@@ -53,7 +53,7 @@ class VisitorDao {
     return prisma.visitor.findUnique({
       where: { id: visitorId },
       select: {
-        favouriteSpecies: true
+        favoriteSpecies: true
       }
     });
   }
@@ -62,12 +62,12 @@ class VisitorDao {
     return prisma.visitor.update({
       where: { id: visitorId },
       data: {
-        favouriteSpecies: {
+        favoriteSpecies: {
           disconnect: { id: speciesId }
         }
       },
       include: {
-        favouriteSpecies: true
+        favoriteSpecies: true
       }
     });
   }
