@@ -88,7 +88,7 @@ model Species {
   isToxic               Boolean
   isFragrant            Boolean
   occurrences           Occurrence[]
-  favouritedBy          Visitor[]              @relation("VisitorFavouriteSpecies")
+  favoritedBy Visitor[] @relation("VisitorFavoriteSpecies")
 }
 
 enum DecarbonizationTypeEnum {
@@ -207,5 +207,5 @@ model Visitor {
   email              String   @unique
   password           String
   contactNumber      String
-  favouriteSpecies   Species[]  @relation("VisitorFavouriteSpecies")
+  favoriteSpecies Species[] @relation("VisitorFavoriteSpecies")
 }

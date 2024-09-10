@@ -1,7 +1,8 @@
 import { Prisma, ActivityLog } from '@prisma/client';
-import { z, fromZodError } from 'zod';
+import { z } from 'zod';
 import { ActivityLogSchema, ActivityLogSchemaType } from '../schemas/activityLogSchema';
 import ActivityLogDao from '../dao/ActivityLogDao';
+import { fromZodError } from 'zod-validation-error';
 
 class ActivityLogService {
   public async createActivityLog(data: ActivityLogSchemaType): Promise<ActivityLog> {
