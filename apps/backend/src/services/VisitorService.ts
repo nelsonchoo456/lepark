@@ -15,6 +15,7 @@ import {
   PasswordResetSchema,
   PasswordResetSchemaType,
 } from '../schemas/visitorSchema';
+import SpeciesDao from '../dao/SpeciesDao';
 
 class VisitorService {
   public async register(data: VisitorSchemaType): Promise<Visitor> {
@@ -206,6 +207,41 @@ class VisitorService {
       }
       throw error;
     }
+  }
+
+  async addFavoriteSpecies(visitorId: string, speciesId: string) {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const updatedFavoriteSpeciesIds = [
+      ...visitor.favoriteSpeciesIds,
+      speciesId,
+    ];
+
+    const updatedVisitor = await VisitorDao.updateVisitorDetails(visitorId, {
+      favoriteSpeciesIds: updatedFavoriteSpeciesIds,
+    });
+
+    return updatedVisitor;
+  }
+
+  async getFavoriteSpecies(visitorId: string) {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const favoriteSpecies = await SpeciesDao.getSpeciesByIds(visitor.favoriteSpeciesIds);
+
+    return favoriteSpecies;
+  }
+
+  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {
+    return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {

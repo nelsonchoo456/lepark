@@ -6,6 +6,7 @@ export * from './lib/text/LogoText';
 export * from './lib/main/Header';
 export * from './lib/main/Sidebar';
 export * from './lib/main/Content';
+export * from './lib/main/PageWrapper'; //do not use.. has issues
 export * from './lib/main-mobile/MobileContent';
 export * from './lib/main-mobile/MobileSidebar';
 
@@ -19,3 +20,10 @@ export * from './lib/assets/animations';
 
 // Pages
 export * from './lib/login/Login';
+
+// Auth
+export { useAuth } from './lib/auth/AuthContext';
+export { StaffAuthWrapper } from './lib/auth/StaffAuthWrapper';
+export { VisitorAuthWrapper } from './lib/auth/VisitorAuthWrapper';
+export * from './lib/auth/ProtectedRoute';
+export * from './lib/auth/Spinner';

@@ -38,10 +38,7 @@ router.put('/updateSpeciesDetails/:id', async (req, res) => {
     const speciesId = req.params.id;
     const updateData: Partial<SpeciesSchemaType> = req.body;
 
-    const updatedSpecies = await SpeciesService.updateSpeciesDetails(
-      speciesId,
-      updateData,
-    );
+    const updatedSpecies = await SpeciesService.updateSpeciesDetails(speciesId, updateData);
     res.status(200).json(updatedSpecies);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -51,9 +48,8 @@ router.put('/updateSpeciesDetails/:id', async (req, res) => {
 router.delete('/deleteSpecies/:id', async (req, res) => {
   try {
     const speciesId = req.params.id;
-    const requesterId = req.body.requesterId; // Assuming requesterId is passed in the request body
 
-    await SpeciesService.deleteSpecies(speciesId, requesterId);
+    await SpeciesService.deleteSpecies(speciesId);
     res.status(204).send(); // 204 No Content
   } catch (error) {
     res.status(400).json({ error: error.message });
