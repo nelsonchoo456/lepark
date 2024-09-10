@@ -28,7 +28,7 @@ const StaffManagementPage: React.FC = () => {
         const data = await response.data;
         setStaff(data);
       } else if (user?.role === StaffType.MANAGER) {
-        const response = await getAllStaffsByParkId(user.parkId);
+        const response = await getAllStaffsByParkId(user.parkId || '');
         const data = await response.data;
         setStaff(data);
       } 
@@ -59,9 +59,13 @@ const StaffManagementPage: React.FC = () => {
   const { Search } = Input;
   const [searchQuery, setSearchQuery] = useState('');
   const filteredStaff = useMemo(() => {
-    return staff.filter((staffMember) =>
-      Object.values(staffMember).some((value) => value.toString().toLowerCase().includes(searchQuery.toLowerCase())),
-    );
+    return staff.filter((staffMember) => {
+      const fullName = `${staffMember.firstName} ${staffMember.lastName}`.toLowerCase();
+      return (
+        fullName.includes(searchQuery.toLowerCase()) ||
+        Object.values(staffMember).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    });
   }, [staff, searchQuery]);
 
   const handleSearchBar = (value: string) => {
@@ -104,9 +108,9 @@ const StaffManagementPage: React.FC = () => {
       title: 'Park',
       key: 'park',
       width: '15%',
-      render: (_, record) => getParkName(record.parkId),
+      render: (_, record) => getParkName(record.parkId ?? ''),
       filters: user?.role === StaffType.SUPERADMIN ? parks.map((park) => ({ text: park.name, value: park.id })) : undefined,
-      onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => parseInt(record.parkId.toString()) === parseInt(value.toString()) : undefined,
+      onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => parseInt((record.parkId || '').toString()) === parseInt(value.toString()) : undefined,
     },
     {
       title: 'Status',

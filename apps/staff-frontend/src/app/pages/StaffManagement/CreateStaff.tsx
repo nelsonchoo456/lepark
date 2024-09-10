@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Select, Descriptions, Switch, Space, message } from 'antd';
+import { Form, Input, Button, Select, Descriptions, Switch, Space, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
@@ -12,6 +12,7 @@ const CreateStaff: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [parks, setParks] = useState<ParkResponse[]>([]);
+  const { Text } = Typography;
 
   const layout = {
     labelCol: { span: 8 },
@@ -123,8 +124,14 @@ const CreateStaff: React.FC = () => {
           <Input />
         </Form.Item>
         <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
-          {user?.role === StaffType.MANAGER ? (
-            <Input placeholder={getParkName(user.parkId)} value={user.parkId} disabled />
+        {parks.length === 0 ? (
+            <Text type="warning">There are no parks created yet!</Text>
+          ) : user?.role === StaffType.MANAGER ? (
+            <Select placeholder={getParkName(user?.parkId || '')} value={user?.parkId}>
+              <Select.Option key={user?.parkId} value={user?.parkId?.toString()}>
+                {getParkName(user?.parkId || '')}
+              </Select.Option>
+            </Select>
           ) : (
             <Select placeholder="Select a Park" allowClear>
               {parks.map((park) => (
