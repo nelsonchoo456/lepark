@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import { createOccurrence } from '@lepark/data-access';
-import { Button, Card, Flex, Form, Input, Result, Steps } from 'antd';
+import { Button, Card, Flex, Form, Input, Result, Steps, message } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
@@ -22,6 +22,7 @@ export interface AdjustLatLngInterface {
 
 const OccurrenceCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
+  const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const navigate = useNavigate();
 
@@ -63,7 +64,7 @@ const OccurrenceCreate = () => {
         ...formValues,
         lat,
         lng,
-        speciesId: 'd6170fac-a5f1-4bf2-9f80-0fb6a9d55757',
+        speciesId: 'a0c11c79-f93d-4d58-a3a4-c06f3de11568',
         dateObserved: formValues.dateObserved ? dayjs(formValues.dateObserved).toISOString() : null,
         dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
@@ -74,7 +75,10 @@ const OccurrenceCreate = () => {
         setCreatedData(response.data);
       }
     } catch (error) {
-      console.log('error', error);
+      messageApi.open({
+        type: 'error',
+        content: 'Unable to create Occurrence as Species cannot be found. Please try again later.',
+      });
       //
     }
   };
@@ -96,6 +100,7 @@ const OccurrenceCreate = () => {
 
   return (
     <ContentWrapperDark>
+      {contextHolder}
       <PageHeader>Create an Occurrence</PageHeader>
       <Card>
         {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}

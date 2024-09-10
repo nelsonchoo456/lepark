@@ -8,7 +8,7 @@ CREATE TYPE "ConservationStatusEnum" AS ENUM ('LEAST_CONCERN', 'NEAR_THREATENED'
 CREATE TYPE "LightTypeEnum" AS ENUM ('FULL_SUN', 'PARTIAL_SHADE', 'FULL_SHADE');
 
 -- CreateEnum
-CREATE TYPE "SoilTypeEnum" AS ENUM ('SANDY', 'CLAY', 'LOAM', 'PEATY', 'SILTY', 'CHALKY', 'SHALLOW');
+CREATE TYPE "SoilTypeEnum" AS ENUM ('SANDY', 'CLAYEY', 'LOAMY');
 
 -- CreateEnum
 CREATE TYPE "DecarbonizationTypeEnum" AS ENUM ('TREE_TROPICAL', 'TREE_MANGROVE', 'SHRUB');
@@ -121,6 +121,7 @@ CREATE TABLE "Visitor" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "contactNumber" TEXT NOT NULL,
+    "favoriteSpeciesIds" TEXT[],
 
     CONSTRAINT "Visitor_pkey" PRIMARY KEY ("id")
 );
