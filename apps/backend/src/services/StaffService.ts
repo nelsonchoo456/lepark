@@ -15,6 +15,7 @@ import {
   PasswordResetSchema,
   PasswordResetSchemaType,
 } from '../schemas/staffSchema';
+import { fromZodError } from 'zod-validation-error';
 
 class StaffService {
   public async register(data: StaffSchemaType): Promise<Staff> {
@@ -44,8 +45,8 @@ class StaffService {
       return StaffDao.createStaff(updatedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -97,8 +98,8 @@ class StaffService {
       return StaffDao.updateStaffDetails(id, prismaUpdateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -168,8 +169,8 @@ class StaffService {
       return { token, user };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -197,8 +198,8 @@ class StaffService {
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -235,8 +236,8 @@ class StaffService {
       return { message: 'Password reset successful' };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

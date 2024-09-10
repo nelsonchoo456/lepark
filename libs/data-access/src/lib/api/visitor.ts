@@ -117,7 +117,7 @@ export async function fetchVisitor(): Promise<AxiosResponse<VisitorResponse>> {
 
 export async function addFavoriteSpecies(data: FavoriteSpeciesRequestData): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<VisitorResponse> = await client.post('/addFavoriteSpecies', data);
+    const response: AxiosResponse<VisitorResponse> = await client.post(`${URL}/addFavoriteSpecies`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -128,11 +128,9 @@ export async function addFavoriteSpecies(data: FavoriteSpeciesRequestData): Prom
   }
 }
 
-export async function getFavoriteSpecies(data: GetFavoriteSpeciesRequestData): Promise<AxiosResponse<GetFavoriteSpeciesResponseData>> {
+export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<GetFavoriteSpeciesResponseData>> {
   try {
-    const response: AxiosResponse<GetFavoriteSpeciesResponseData> = await client.get('/viewFavoriteSpecies', {
-      params: data,
-    });
+    const response: AxiosResponse<GetFavoriteSpeciesResponseData> = await client.get(`${URL}/viewFavoriteSpecies/${visitorId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -143,11 +141,9 @@ export async function getFavoriteSpecies(data: GetFavoriteSpeciesRequestData): P
   }
 }
 
-export async function deleteSpeciesFromFavorites(data: FavoriteSpeciesRequestData): Promise<AxiosResponse<VisitorResponse>> {
+export async function deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<AxiosResponse<VisitorResponse>> {
   try {
-    const response: AxiosResponse<VisitorResponse> = await client.delete('/deleteSpeciesFromFavorites', {
-      data,
-    });
+    const response: AxiosResponse<VisitorResponse> = await client.delete(`${URL}/deleteSpeciesFromFavorites/${visitorId}/${speciesId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
