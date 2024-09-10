@@ -24,6 +24,7 @@ import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
 import CreateStaff from './pages/StaffManagement/CreateStaff';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
+import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
 
 export function App() {
   return (
@@ -86,9 +87,12 @@ export function App() {
                 <Route path="create" element={<ParkCreate />} />
               </Route>
 
-              <Route path="/species" element={<SpeciesPage />} />
-              <Route path="/species/create" element={<CreateSpecies />} />
-              <Route path="/species/edit" element={<ViewEditSpecies />} />
+              <Route path="/species">
+                <Route index element={<SpeciesPage />} />
+                <Route path="create" element={<CreateSpecies />} />
+                <Route path="edit" element={<ViewEditSpecies />} />
+                <Route path=":speciesId" element={<ViewSpeciesDetails />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>
