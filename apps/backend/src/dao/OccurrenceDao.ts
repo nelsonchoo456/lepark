@@ -15,10 +15,7 @@ class OccurrenceDao {
     return prisma.occurrence.findUnique({ where: { id } });
   }
 
-  async updateOccurrenceDetails(
-    id: string,
-    data: Prisma.OccurrenceUpdateInput,
-  ): Promise<Occurrence> {
+  async updateOccurrenceDetails(id: string, data: Prisma.OccurrenceUpdateInput): Promise<Occurrence> {
     return prisma.occurrence.update({ where: { id }, data });
   }
 

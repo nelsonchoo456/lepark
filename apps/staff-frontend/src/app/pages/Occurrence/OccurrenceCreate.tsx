@@ -8,6 +8,7 @@ import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
 import { OccurrenceResponse } from '@lepark/data-access';
+import dayjs from 'dayjs';
 
 const center = {
   lat: 1.3503881629328163,
@@ -62,17 +63,16 @@ const OccurrenceCreate = () => {
         ...formValues,
         lat,
         lng,
-        speciesId: '50637af5-182b-4606-a3ae-993d86203937', // change this
-        dateObserved: formValues.dateObserved ? moment(formValues.dateObserved).toISOString() : null,
-        dateOfBirth: formValues.dateOfBirth ? moment(formValues.dateOfBirth).toISOString() : null,
+        speciesId: 'd6170fac-a5f1-4bf2-9f80-0fb6a9d55757',
+        dateObserved: formValues.dateObserved ? dayjs(formValues.dateObserved).toISOString() : null,
+        dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
 
       const response = await createOccurrence(finalData);
       if (response?.status && response.status === 201) {
         setCurrStep(2);
-        setCreatedData(response.data)
+        setCreatedData(response.data);
       }
-      console.log('response', response);
     } catch (error) {
       console.log('error', error);
       //
@@ -143,12 +143,12 @@ const OccurrenceCreate = () => {
             <Result
               status="success"
               title="Created new Occurrence"
-              subTitle={
-                createdData && <>Occurrence title: {createdData.title}</>
-              }
+              subTitle={createdData && <>Occurrence title: {createdData.title}</>}
               extra={[
-                <Button key="back" onClick={() => navigate('/occurrence')}>Back to Occurrence Management</Button>,
-                <Button type="primary" key="view" onClick={() => navigate(`/occurrence/${createdData?.id}`)}>
+                <Button key="back" onClick={() => navigate('/occurrences')}>
+                  Back to Occurrence Management
+                </Button>,
+                <Button type="primary" key="view" onClick={() => navigate(`/occurrences/${createdData?.id}`)}>
                   View new Occurrence
                 </Button>,
               ]}

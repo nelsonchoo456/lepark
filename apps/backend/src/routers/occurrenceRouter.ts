@@ -1,6 +1,5 @@
 import express from 'express';
 import OccurrenceService from '../services/OccurrenceService';
-import { Prisma } from '@prisma/client';
 import { OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 
 const router = express.Router();

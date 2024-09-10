@@ -1,19 +1,19 @@
-import { SIDEBAR_WIDTH } from '@lepark/common-ui';
-import { Button, DatePicker, Flex, Form, Input, InputNumber, Select, Space } from 'antd';
+import { Input } from 'antd';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import DraggableMarker from '../../../components/map/DraggableMarker';
 import { AdjustLatLngInterface } from '../ParkCreate';
-const { TextArea } = Input;
+import MapFeatureManager from '../../../components/map/MapFeatureManager';
+import { useEffect, useState } from 'react';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
-  lat: number;
-  lng: number;
-  adjustLatLng: (props: AdjustLatLngInterface) => void;
+  polygon: any[]
+  setPolygon: (item: any[]) => void;
+  lines: any[]
+  setLines: (item: any[]) => void;
 }
 
-const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng }: CreateMapStepProps) => {
-
+const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines}: CreateMapStepProps) => {
+  
   return (
     // <>
       <div
@@ -33,6 +33,7 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng }: CreateMapStep
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+          <MapFeatureManager polygon={polygon} setPolygon={setPolygon}  lines={lines} setLines={setLines}/>
         </MapContainer>
       </div>
     // </>

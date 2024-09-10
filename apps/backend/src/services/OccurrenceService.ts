@@ -7,7 +7,11 @@ import StaffDao from '../dao/StaffDao';
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
     try {
-      const formattedData = dateFormatter(data)
+      console.log(data)
+      const formattedData = dateFormatter(data);
+
+      // Validate input data using Zod
+      OccurrenceSchema.parse(formattedData);
 
       // Convert validated data to Prisma input type
       const occurrenceData = ensureAllFieldsPresent(formattedData);
@@ -45,31 +49,27 @@ class OccurrenceService {
     data: Partial<OccurrenceSchemaType>,
   ): Promise<Occurrence> {
     try {
+      console.log("data", data);
       const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
-      const formattedData = dateFormatter(data)
+      const formattedData = dateFormatter(data);
 
       // Merge existing data with update data
       let mergedData = { ...existingOccurrence, ...formattedData };
-      mergedData = Object.fromEntries(
-        Object.entries(mergedData).filter(([key, value]) => value !== null)
-      );
+      mergedData = Object.fromEntries(Object.entries(mergedData).filter(([key, value]) => value !== null));
 
       // Validate merged data using Zod
       OccurrenceSchema.parse(mergedData);
 
       // Convert validated OccurrenceSchemaType data to Prisma-compatible update input
       // This ensures only defined fields are included in the update operation
-      const updateData: Prisma.OccurrenceUpdateInput = Object.entries(formattedData).reduce(
-        (acc, [key, value]) => {
-          if (value !== undefined) {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {},
-      );
+      const updateData: Prisma.OccurrenceUpdateInput = Object.entries(formattedData).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
 
-      console.log(updateData)
+      console.log("updateData", updateData);
 
       return OccurrenceDao.updateOccurrenceDetails(id, updateData);
     } catch (error) {
@@ -81,10 +81,7 @@ class OccurrenceService {
     }
   }
 
-  public async deleteOccurrence(
-    occurrenceId: string,
-    requesterId: string,
-  ): Promise<void> {
+  public async deleteOccurrence(occurrenceId: string, requesterId: string): Promise<void> {
     const isManager = await StaffDao.isManager(requesterId);
     if (!isManager) {
       throw new Error('Only managers can delete occurrence.');
@@ -107,7 +104,7 @@ const dateFormatter = (data: any) => {
   const formattedData = { ...rest };
 
   // Format dateObserved and dateOfBirth into JavaScript Date objects
-  const dateObservedFormat = dateOfBirth ? new Date(dateObserved) : undefined;
+  const dateObservedFormat = dateObserved ? new Date(dateObserved) : undefined;
   const dateOfBirthFormat = dateOfBirth ? new Date(dateOfBirth) : undefined;
   if (dateObserved) {
     formattedData.dateObserved = dateObservedFormat;
@@ -116,6 +113,6 @@ const dateFormatter = (data: any) => {
     formattedData.dateOfBirth = dateOfBirthFormat;
   }
   return formattedData;
-}
+};
 
 export default new OccurrenceService();

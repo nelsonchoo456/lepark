@@ -33,6 +33,16 @@ router.get('/viewSpeciesDetails/:id', async (req, res) => {
   }
 });
 
+router.get('/getSpeciesNameById/:id', async (req, res) => {
+  try {
+    const speciesId = req.params.id;
+    const speciesName = await SpeciesService.getSpeciesNameById(speciesId);
+    res.status(200).json({ speciesName });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/updateSpeciesDetails/:id', async (req, res) => {
   try {
     const speciesId = req.params.id;

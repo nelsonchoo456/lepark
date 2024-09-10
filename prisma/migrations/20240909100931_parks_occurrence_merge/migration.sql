@@ -10,6 +10,15 @@ CREATE TYPE "LightTypeEnum" AS ENUM ('FULL_SUN', 'PARTIAL_SHADE', 'FULL_SHADE');
 -- CreateEnum
 CREATE TYPE "SoilTypeEnum" AS ENUM ('SANDY', 'CLAY', 'LOAM', 'PEATY', 'SILTY', 'CHALKY', 'SHALLOW');
 
+-- CreateEnum
+CREATE TYPE "DecarbonizationTypeEnum" AS ENUM ('TREE_TROPICAL', 'TREE_MANGROVE', 'SHRUB');
+
+-- CreateEnum
+CREATE TYPE "OccurrenceStatusEnum" AS ENUM ('HEALTHY', 'MONITOR_AFTER_TREATMENT', 'NEEDS_ATTENTION', 'URGENT_ACTION_REQUIRED', 'REMOVED');
+
+-- CreateEnum
+CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'TREATED_PESTS', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'OTHERS');
+
 -- CreateTable
 CREATE TABLE "Staff" (
     "id" UUID NOT NULL,
@@ -60,6 +69,51 @@ CREATE TABLE "Species" (
 );
 
 -- CreateTable
+CREATE TABLE "Occurrence" (
+    "id" UUID NOT NULL,
+    "lat" DOUBLE PRECISION,
+    "lng" DOUBLE PRECISION,
+    "title" TEXT NOT NULL,
+    "dateObserved" TIMESTAMP(3) NOT NULL,
+    "dateOfBirth" TIMESTAMP(3),
+    "numberOfPlants" DOUBLE PRECISION NOT NULL,
+    "biomass" DOUBLE PRECISION NOT NULL,
+    "description" TEXT NOT NULL,
+    "occurrenceStatus" "OccurrenceStatusEnum" NOT NULL,
+    "decarbonizationType" "DecarbonizationTypeEnum" NOT NULL,
+    "speciesId" UUID NOT NULL,
+    "images" TEXT[],
+
+    CONSTRAINT "Occurrence_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ActivityLog" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "images" TEXT[],
+    "activityLogType" "ActivityLogTypeEnum" NOT NULL,
+    "occurrenceId" UUID NOT NULL,
+
+    CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "StatusLog" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "images" TEXT[],
+    "statusLogType" "OccurrenceStatusEnum" NOT NULL,
+    "occurrenceId" UUID NOT NULL,
+
+    CONSTRAINT "StatusLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Visitor" (
     "id" UUID NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -76,3 +130,12 @@ CREATE UNIQUE INDEX "Staff_email_key" ON "Staff"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
+
+-- AddForeignKey
+ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_speciesId_fkey" FOREIGN KEY ("speciesId") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;

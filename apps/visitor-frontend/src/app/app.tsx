@@ -14,55 +14,66 @@ import { ProtectedRoute, VisitorAuthWrapper } from '@lepark/common-ui';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import Payment from './pages/Payment/Payment';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
+// import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import Discover from './pages/Taxonomy/Discover';
 import ViewSpecies from './pages/Taxonomy/ViewSpecies';
+import SelectParkPage from './park-context/SelectParkPage';
+import { ParkProvider } from './park-context/ParkContext';
 
 export function App() {
   return (
     <VisitorAuthWrapper>
-      <ConfigProvider
-        theme={{
-          token: {
-            // Seed Token
-            colorPrimary: '#6da696', // Green
-            borderRadius: 5,
-
-            // Alias Token
-          },
-          components: {
-            Button: {
+      <ParkProvider>
+        <ConfigProvider
+          theme={{
+            token: {
+              // Seed Token
               colorPrimary: '#6da696', // Green
-              algorithm: true, // Enable algorithm
+              borderRadius: 5,
+
+              // Alias Token
             },
-          },
-        }}
-      >
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route
-              element={
-                <ProtectedRoute redirectTo="/login">
-                  <MainLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<MainLanding />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/occurrence">
-                {/* <Route index element={<OccurrenceList />} /> */}
-                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+            components: {
+              Button: {
+                colorPrimary: '#6da696', // Green
+                borderRadius: 5,
+
+                // Alias Token
+              },
+            },
+          }}
+        >
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route
+                element={
+                  <ProtectedRoute redirectTo="/login">
+                    <MainLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<MainLanding />} />
+                  <Route path="/select-park" element={<SelectParkPage />} />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/payment" element={<Payment />} />
+                  <Route path="/occurrence">
+                    {/* <Route index element={<OccurrenceList />} /> */}
+                    <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                    {/* <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/> */}
+                  </Route>
+                  <Route path="/discover" element={<Discover />} />
+                  <Route path="/discover/view-species" element={<ViewSpecies />} />
+                </Route>
               </Route>
-              <Route path="/discover" element={<Discover />} />
-              <Route path="/discover/view-species" element={<ViewSpecies />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ConfigProvider>
+            </Routes>
+          </BrowserRouter>
+        </ConfigProvider>
+      </ParkProvider>
     </VisitorAuthWrapper>
   );
 }

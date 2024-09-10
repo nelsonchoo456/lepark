@@ -35,6 +35,30 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
       label: 'Shrub',
     },
   ]
+
+  const occurrenceStatusOptions = [
+    {
+      value: 'HEALTHY',
+      label: 'Healthy',
+    },
+    {
+      value: 'MONITOR_AFTER_TREATMENT',
+      label: 'Monitor After Treatment',
+    },
+    {
+      value: 'NEEDS_ATTENTION',
+      label: 'Needs Attention',
+    },
+    {
+      value: 'URGENT_ACTION_NEEDED',
+      label: 'Urgent Action Needed',
+    },
+    {
+      value: 'REMOVED',
+      label: 'Removed',
+    },
+  ]
+
   return (
     <Form
       form={form}
@@ -67,6 +91,9 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
           placeholder="Share details about this Plant Occurrence!"
           autoSize={{ minRows: 3, maxRows: 5 }}
         />
+      </Form.Item>
+      <Form.Item name="occurrenceStatus" label="Occurrence Status" rules={[{ required: true }]}>
+        <Select placeholder="Select a Status for the Occurrence" options={occurrenceStatusOptions}/>
       </Form.Item>
       <Form.Item name="decarbonizationType" label="Decarbonization Type" rules={[{ required: true }]}>
         <Select placeholder="Select a Decarbonization Type" options={decarbonizationTypeOptions}/>

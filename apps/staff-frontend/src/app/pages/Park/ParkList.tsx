@@ -5,74 +5,82 @@ import { occurences } from "./occurences";
 import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
+import { getAllParks, ParkResponse } from "@lepark/data-access";
+import { useEffect, useState } from "react";
+import { RiEdit2Line } from "react-icons/ri";
 
 const ParkList = () => {
   const navigate = useNavigate();
+  const [parks, setParks] = useState<ParkResponse[]>([]);
+
+  useEffect(() => {
+    const fetchParks = async () => {
+      try {
+        const parksRes = await getAllParks();
+        if (parksRes.status === 200) {
+          setParks(parksRes.data);
+        }
+      } catch (error) {
+        //
+      }
+    };
+    fetchParks();
+  }, []);
 
   const columns: TableProps['columns'] = [
     {
-      title: 'Species Name',
-      dataIndex: 'speciesName',
-      key: 'speciesName',
+      title: 'Park Name',
+      dataIndex: 'name',
+      key: 'name',
       render: (text) => (
         <Flex justify="space-between" align="center">
           {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} />
-          </Tooltip>
         </Flex>
       ),
     },
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: 'Address',
+      dataIndex: 'address',
+      key: 'address',
+      render: (text) => text,
+    },
+    {
+      title: 'Contact Number',
+      dataIndex: 'contactNumber',
+      key: 'contactNumber',
       render: (text) => text,
     },
     {
       title: 'Status',
-      dataIndex: 'occurenceStatus',
-      key: 'occurenceStatus',
+      dataIndex: 'parkStatus',
+      key: 'parkStatus',
       render: (text) => {
         switch (text) {
-          case 'ACTIVE':
+          case 'OPEN':
             return (
               <Tag color="green" bordered={false}>
-                Active
+                Open
               </Tag>
             );
-          case 'INACTIVE':
-            return <Tag bordered={false}>Inactive</Tag>;
+          case 'UNDER_CONSTRUCTION':
+            return <Tag color="red" bordered={false}>Under Construction</Tag>;
           default:
-            return 'Status Unknown';
+            return <Tag color="red" bordered={false}>Limited Access</Tag>;
         }
       },
     },
     {
-      title: 'Number',
-      dataIndex: 'numberOfPlants',
-      key: 'numberOfPlants',
-      render: (text) => text,
-    },
-    {
-      title: 'Last Observed',
-      dataIndex: 'dateObserved',
-      key: 'dateObserved',
-      render: (text) => moment(text).format('D MMM YY'),
-    },
-    {
-      title: 'Date of Birth',
-      dataIndex: 'dateOfBirth',
-      key: 'dateOfBirth',
-      render: (text) => moment(text).format('D MMM YY'),
-    },
-    {
       title: 'Actions',
       key: 'actions',
-      render: () => (
+      dataIndex: 'id',
+      render: (id) => (
         <Flex justify="center">
-          <Button type="link" icon={<FiArchive />} />
-          <Button type="link" icon={<FiEye />} onClick={() => navigateTo("orchidID1")}/>
+          <Tooltip title="View details">
+            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
+          </Tooltip>
+          <Tooltip title="Edit details">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
@@ -80,24 +88,24 @@ const ParkList = () => {
   ];
 
   const navigateTo = (occurenceId: string) =>{
-    navigate(`/occurrence/${occurenceId}`)
+    navigate(`/park/${occurenceId}`)
   }
   
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurrence Management</PageHeader>
+      <PageHeader>Parks Management</PageHeader>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
-          placeholder="Search in Occurrences..."
+          placeholder="Search in Parks..."
           className="mb-4 bg-white"
           variant="filled"
         />
-        <Button type="primary" onClick={() => { navigate('/occurrence/create')}}>Create Occurrence</Button>
+        <Button type="primary" onClick={() => { navigate('/park/create')}}>Create Park</Button>
       </Flex>
       
       <Card>
-        <Table dataSource={occurences} columns={columns} />
+        <Table dataSource={parks} columns={columns} />
       </Card>
     </ContentWrapperDark>
   );
