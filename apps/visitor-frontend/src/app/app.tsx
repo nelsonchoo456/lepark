@@ -55,7 +55,7 @@ export function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route element={<MainLayout />}>
+                {/* <Route element={<MainLayout />}> */}
                   <Route path="/" element={<MainLanding />} />
                   <Route path="/select-park" element={<SelectParkPage />} />
                   <Route path="/map" element={<MapPage />} />
@@ -63,13 +63,13 @@ export function App() {
                   <Route path="/payment" element={<Payment />} />
                   <Route path="/occurrence">
                     {/* <Route index element={<OccurrenceList />} /> */}
-                    <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                  <Route path=":occurrenceId" element={<OccurrenceDetails />} />
                     {/* <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/> */}
                   </Route>
                   <Route path="/discover" element={<Discover />} />
                   <Route path="/discover/view-species" element={<ViewSpecies />} />
                 </Route>
-              </Route>
+              {/* </Route> */}
             </Routes>
           </BrowserRouter>
         </ConfigProvider>
