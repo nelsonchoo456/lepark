@@ -21,11 +21,6 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ occurrences, loading 
       title: 'Species Name',
       dataIndex: 'speciesId',
       key: 'speciesName',
-      render: (text: string) => (
-        <Flex justify="space-between" align="center">
-          {text}
-        </Flex>
-      ),
     },
     {
       title: 'Label',
