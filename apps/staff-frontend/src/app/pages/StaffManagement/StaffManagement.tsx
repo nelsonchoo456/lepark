@@ -149,7 +149,7 @@ const StaffManagementPage: React.FC = () => {
           </Col> */}
       <PageHeader>Staff Management</PageHeader>
       <Flex justify="end" gap={10}>
-        <Search placeholder="Search for Staff..." allowClear enterButton="Search" onSearch={handleSearchBar} style={{ marginBottom: 20 }} />
+        <Search placeholder="Search for Staff..." allowClear enterButton="Search" onChange={(e) => handleSearchBar(e.target.value)} style={{ marginBottom: 20 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('create-staff')}>
           Add Staff
         </Button>
