@@ -8,6 +8,7 @@ import { registerStaff, RegisterStaffData, StaffResponse, StaffType, ParkRespons
 const { Option } = Select;
 
 const CreateStaff: React.FC = () => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [parks, setParks] = useState<ParkResponse[]>([]);
@@ -30,7 +31,7 @@ const CreateStaff: React.FC = () => {
         email: values.emailInput,
         password: values.passwordInput,
         role: values.roleSelect,
-        parkId: values.parkSelect.toString()
+        parkId: values.parkSelect.toString(),
       };
       console.log('Received values of form:', newStaffDetails);
       const response = await registerStaff(newStaffDetails);
@@ -52,13 +53,18 @@ const CreateStaff: React.FC = () => {
   useEffect(() => {
     // Fetch parks data from the database
     getAllParks()
-      .then(response => {
+      .then((response) => {
         setParks(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('There was an error fetching the parks data!', error);
       });
   }, []);
+
+  const getParkName = (parkId: string) => {
+    const park = parks.find((park) => park.id == parkId);
+    return park ? park.name : 'NParks';
+  };
 
   return (
     <ContentWrapperDark>
@@ -81,11 +87,20 @@ const CreateStaff: React.FC = () => {
         </Form.Item>
         <Form.Item name="roleSelect" label="Role" rules={[{ required: true, message: 'Please select a role.' }]}>
           <Select placeholder="Select a Role" allowClear>
-            {Object.values(StaffType).map((role) => (
-              <Select.Option key={role} value={role}>
-                {role}
-              </Select.Option>
-            ))}
+            {Object.values(StaffType)
+              .filter((role) => {
+                if (user?.role === StaffType.MANAGER) {
+                  return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
+                } else if (user?.role === StaffType.SUPERADMIN) {
+                  return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+                }
+                return true;
+              })
+              .map((role) => (
+                <Select.Option key={role} value={role}>
+                  {role}
+                </Select.Option>
+              ))}
           </Select>
         </Form.Item>
         <Form.Item name="emailInput" label="Email" rules={[{ required: true, type: 'email', message: 'Please enter an email.' }]}>
@@ -107,18 +122,18 @@ const CreateStaff: React.FC = () => {
         >
           <Input />
         </Form.Item>
-        <Form.Item
-          name="parkSelect"
-          label="Park"
-          rules={[{ required: true, message: 'Please select a park.' }]}
-          >
-          <Select placeholder="Select a Park" allowClear>
-            {parks.map((park) => (
-              <Select.Option key={park.id} value={park.id.toString()}>
-                {park.name}
-              </Select.Option>
-            ))}
-          </Select>
+        <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
+          {user?.role === StaffType.MANAGER ? (
+            <Input placeholder={getParkName(user.parkId)} value={user.parkId} disabled />
+          ) : (
+            <Select placeholder="Select a Park" allowClear>
+              {parks.map((park) => (
+                <Select.Option key={park.id} value={park.id.toString()}>
+                  {park.name}
+                </Select.Option>
+              ))}
+            </Select>
+          )}
         </Form.Item>
         {/* <Form.Item label="Active Status" name="activeStatus" valuePropName="checked">
           <Switch checkedChildren="Active" unCheckedChildren="Inactive" />

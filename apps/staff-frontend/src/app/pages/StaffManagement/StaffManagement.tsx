@@ -52,8 +52,6 @@ const StaffManagementPage: React.FC = () => {
     return park ? park.name : 'NParks';
   };
 
-  
-
   const handleViewDetailsClick = (staffRecord: StaffResponse) => {
     navigate(`${staffRecord.id}`);
   };
