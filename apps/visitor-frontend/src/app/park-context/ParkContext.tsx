@@ -1,15 +1,39 @@
-// ParkContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { ParkResponse } from '@lepark/data-access';
 
-interface Park {
-  id: string;
-  name: string;
-  // Add other park properties as necessary
-}
+// interface ParkContextType {
+//   selectedPark: ParkResponse | null;
+//   setSelectedPark: (park: ParkResponse | null) => void;
+// }
 
+// const ParkContext = createContext<ParkContextType | undefined>(undefined);
+
+// export const usePark = (): ParkContextType => {
+//   const context = useContext(ParkContext);
+//   if (!context) {
+//     throw new Error('usePark must be used within a ParkProvider');
+//   }
+//   return context;
+// };
+
+// interface ParkProviderProps {
+//   children: ReactNode;
+// }
+
+// export const ParkProvider: React.FC<ParkProviderProps> = ({ children }) => {
+//   const [selectedPark, setSelectedPark] = useState<ParkResponse | null>(null);
+
+//   return (
+//     <ParkContext.Provider value={{ selectedPark, setSelectedPark }}>
+//       {children}
+//     </ParkContext.Provider>
+//   );
+// };
+
+// // ParkContext.tsx
 interface ParkContextType {
-  selectedPark: Park | null;
-  setSelectedPark: (park: Park | null) => void;
+  selectedPark: ParkResponse | null;
+  setSelectedPark: (park: ParkResponse | null) => void;
 }
 
 const ParkContext = createContext<ParkContextType | undefined>(undefined);
@@ -27,12 +51,9 @@ interface ParkProviderProps {
 }
 
 export const ParkProvider: React.FC<ParkProviderProps> = ({ children }) => {
-  const [selectedPark, setSelectedPark] = useState<Park | null>(() => {
-    const savedPark = localStorage.getItem('selectedPark');
-    return savedPark ? JSON.parse(savedPark) : null;
-  });
+  const [selectedPark, setSelectedPark] = useState<ParkResponse | null>(() => null);
 
-  const updateSelectedPark = (park: Park | null) => {
+  const updateSelectedPark = (park: ParkResponse | null) => {
     setSelectedPark(park);
     if (park) {
       localStorage.setItem('selectedPark', JSON.stringify(park));
