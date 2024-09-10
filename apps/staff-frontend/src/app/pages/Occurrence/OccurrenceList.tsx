@@ -5,11 +5,11 @@ import moment from 'moment';
 import PageHeader from '../../components/main/PageHeader';
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { getAllOccurrences, OccurrenceResponse } from '@lepark/data-access';
+import { getAllOccurrences, OccurrenceResponse, getSpeciesById } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 
 const OccurrenceList: React.FC = () => {
-  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]);
+  const [occurrences, setOccurrences] = useState<(OccurrenceResponse & { speciesName: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -20,7 +20,13 @@ const OccurrenceList: React.FC = () => {
   const fetchOccurrences = async () => {
     try {
       const response = await getAllOccurrences();
-      setOccurrences(response.data);
+      const occurrencesWithSpeciesNames = await Promise.all(
+        response.data.map(async (occurrence) => {
+          const speciesResponse = await getSpeciesById(occurrence.speciesId);
+          return { ...occurrence, speciesName: speciesResponse.data.speciesName };
+        })
+      );
+      setOccurrences(occurrencesWithSpeciesNames);
     } catch (error) {
       message.error('Failed to fetch occurrences');
     } finally {
@@ -33,25 +39,25 @@ const OccurrenceList: React.FC = () => {
   };
 
   const navigateToSpecies = (speciesId: string) => {
-    navigate(`/species/viewSpeciesDetails/${speciesId}`);
+    navigate(`/species/${speciesId}`);
   };
 
-  const columns: TableProps<OccurrenceResponse>['columns'] = [
+  const columns: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
       title: 'Species Name',
-      dataIndex: 'speciesId',
+      dataIndex: 'speciesName',
       key: 'speciesName',
-      render: (text) => (
+      render: (text, record) => (
         <Flex justify="space-between" align="center">
           {text}
           <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(text)} />
+            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(record.speciesId)} />
           </Tooltip>
         </Flex>
       ),
     },
     {
-      title: 'Label',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text) => text,
@@ -99,23 +105,15 @@ const OccurrenceList: React.FC = () => {
       render: (_, record) => (
         <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
-            <Button 
-              type="link" 
-              icon={<FiEye />} 
-              onClick={() => navigateToDetails(record.id)}
-            />
+            <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           <Tooltip title="Edit Details">
-            <Button 
-              type="link" 
-              icon={<RiEdit2Line />} 
-              onClick={() => navigate(`/occurrences/${record.id}/edit`)}
-            />
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
           </Tooltip>
           <Tooltip title="Archive Occurrence">
-            <Button 
-              type="link" 
-              icon={<FiArchive />} 
+            <Button
+              type="link"
+              icon={<FiArchive />}
               // onClick={() => navigateToSpecies(record.speciesId)}
             />
           </Tooltip>
@@ -141,12 +139,7 @@ const OccurrenceList: React.FC = () => {
       </Flex>
 
       <Card>
-        <Table
-          dataSource={occurrences}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-        />
+        <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
       </Card>
     </ContentWrapperDark>
   );

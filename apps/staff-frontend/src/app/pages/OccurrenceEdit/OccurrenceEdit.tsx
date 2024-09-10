@@ -131,7 +131,7 @@ const OccurrenceEdit = () => {
         // Add a 3-second delay before navigating
         setTimeout(() => {
           navigate(`/occurrences/${occurrence.id}`);
-        }, 3000);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error updating Occurrence', error);

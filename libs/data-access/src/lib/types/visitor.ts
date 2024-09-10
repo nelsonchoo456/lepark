@@ -12,7 +12,7 @@ export interface VisitorResponse {
   lastName: string;
   email: string;
   contactNumber: string;
-  favouriteSpecies?: SpeciesResponse[];
+  favoriteSpecies?: SpeciesResponse[];
 }
 
 export interface SpeciesResponse {
