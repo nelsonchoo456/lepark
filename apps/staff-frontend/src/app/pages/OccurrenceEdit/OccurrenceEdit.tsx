@@ -126,8 +126,12 @@ const OccurrenceEdit = () => {
         setCreatedData(occurenceRes.data);
         messageApi.open({
           type: 'success',
-          content: 'Saved changes to Park.',
+          content: 'Saved changes to Occurrence. Redirecting to Occurrence details page...',
         });
+        // Add a 3-second delay before navigating
+        setTimeout(() => {
+          navigate(`/occurrences/${occurrence.id}`);
+        }, 3000);
       }
     } catch (error) {
       console.error('Error updating Occurrence', error);
