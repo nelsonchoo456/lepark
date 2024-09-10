@@ -98,6 +98,40 @@ class ZoneDao {
       throw new Error("Unable to fetch from database (SQL Error)");
     }
   }
+
+  async getZoneById(id: number): Promise<ZoneResponseData> {
+    await this.initZonesDB();
+
+    const zone = await prisma.$queryRaw`
+      SELECT 
+        "Zone".id, 
+        "Zone".name, 
+        "Zone".description, 
+        "Zone"."openingHours", 
+        "Zone"."closingHours", 
+        ST_AsGeoJSON("Zone".geom) as geom, 
+        ST_AsGeoJSON("Zone".paths) as paths, 
+        "Zone"."zoneStatus",
+        "Park".id as "parkId", 
+        "Park".name as "parkName", 
+        "Park".description as "parkDescription"
+        FROM "Zone"
+        LEFT JOIN "Park" ON "Zone"."parkId" = "Park".id
+        WHERE "Zone".id = ${id};
+    `;
+
+    if (Array.isArray(zone) && zone.length > 0) {
+      const result = zone[0];
+      return {
+        ...result,
+        geom: JSON.parse(result.geom),  // Convert GeoJSON string to object
+        paths: JSON.parse(result.paths)  // Convert GeoJSON string to object
+      };
+    } else {
+      throw new Error(`Zone with ID ${id} not found`);
+    }
+  }
+
 }
 
 export default new ZoneDao();

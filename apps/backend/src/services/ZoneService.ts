@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import { fromZodError } from 'zod-validation-error';
 import { ZoneCreateData } from '../schemas/zoneSchema';
 import ParkDao from '../dao/ParkDao';
@@ -45,6 +44,10 @@ class ZoneService {
 
   public async getAllZones(): Promise<any[]> {
     return ZoneDao.getAllZones();
+  }
+
+  public async getZoneById(id: number): Promise<any> {
+    return ZoneDao.getZoneById(id);
   }
 }
 

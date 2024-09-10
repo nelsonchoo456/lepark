@@ -3,6 +3,9 @@ export * from './lib/data-access';
 export * from './lib/api/park';
 export * from './lib/types/park';
 
+export * from './lib/api/zone';
+export * from './lib/types/zone';
+
 export * from './lib/api/staff';
 export * from './lib/api/visitor';
 export * from './lib/types/staff';

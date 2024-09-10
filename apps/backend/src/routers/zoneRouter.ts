@@ -21,4 +21,14 @@ router.get('/getAllZones', async (_, res) => {
   }
 });
 
+router.get('/getZoneById/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const park = await ZoneService.getZoneById(id);
+    res.status(200).json(park);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

@@ -18,6 +18,7 @@ export const OccurrenceSchema = z.object({
   decarbonizationType: z.nativeEnum(DecarbonizationTypeEnum),
   speciesId: z.string().uuid(),
   images: z.array(z.string()).optional(),
+  zoneId: z.number()
   // decarbonizationAreaId: z.string().uuid(),
 });
 
