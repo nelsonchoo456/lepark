@@ -47,7 +47,10 @@ const StaffManagementPage: React.FC = () => {
     };
   };
 
-  const getParkName = (parkId: string) => {
+  const getParkName = (parkId?: string) => {
+    if (!parkId) {
+      return 'NParks';
+    }
     const park = parks.find((park) => park.id == parkId);
     return park ? park.name : 'NParks';
   };
@@ -61,8 +64,10 @@ const StaffManagementPage: React.FC = () => {
   const filteredStaff = useMemo(() => {
     return staff.filter((staffMember) => {
       const fullName = `${staffMember.firstName} ${staffMember.lastName}`.toLowerCase();
+      const parkName = getParkName(staffMember.parkId).toLowerCase();
       return (
         fullName.includes(searchQuery.toLowerCase()) ||
+        parkName.includes(searchQuery.toLowerCase()) ||
         Object.values(staffMember).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()))
       );
     });
