@@ -22,3 +22,5 @@ export * from './lib/types/activitylog';
 
 export * from './lib/api/statuslog';
 export * from './lib/types/statuslog';
+
+export * from './lib/types/sharedenums';
