@@ -107,7 +107,10 @@ const CreateStaff: React.FC = () => {
         <Form.Item name="emailInput" label="Email" rules={[{ required: true, type: 'email', message: 'Please enter an email.' }]}>
           <Input />
         </Form.Item>
-        <Form.Item name="passwordInput" label="Password" rules={[{ required: true, message: 'Please enter a password.' }]}>
+        <Form.Item name="passwordInput" label="Password" rules={[
+          { required: true, message: 'Please enter a password.' },
+          { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
+        ]}>
           <Input.Password />
         </Form.Item>
         <Form.Item

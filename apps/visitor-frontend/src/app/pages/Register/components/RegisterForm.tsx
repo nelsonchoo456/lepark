@@ -77,8 +77,10 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
         <Form.Item
           name="password"
           label="Password"
-          rules={[{ required: true, message: 'Please enter your Password'}]}
-        >
+          rules={[
+            { required: true, message: 'Please enter your password.' },
+            { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
+          ]}>
           <Input.Password placeholder="Password" variant="filled"/>
         </Form.Item>
 
