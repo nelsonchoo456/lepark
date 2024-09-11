@@ -11,6 +11,12 @@ class SpeciesService {
       // Validate input data using Zod
       SpeciesSchema.parse(data);
 
+      const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
+
+      if (checkForExistingSpecies) {
+        throw new Error('Species already exists.');
+      }
+
       // Additional temperature checks
       if (data.minTemp >= data.maxTemp) {
         throw new Error('Minimum temperature must be less than maximum temperature');

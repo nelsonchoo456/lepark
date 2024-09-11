@@ -64,7 +64,7 @@ model Species {
   order                 String
   family                String
   genus                 String
-  speciesName           String
+  speciesName           String                 @unique
   commonName            String
   speciesDescription    String
   conservationStatus    ConservationStatusEnum
@@ -201,11 +201,11 @@ model StatusLog {
 // }
 
 model Visitor {
-  id                 String   @id @default(uuid()) @db.Uuid
-  firstName          String
-  lastName           String
-  email              String   @unique
-  password           String
-  contactNumber      String
-  favouriteSpecies   Species[]  @relation("VisitorFavouriteSpecies")
+  id               String    @id @default(uuid()) @db.Uuid
+  firstName        String
+  lastName         String
+  email            String    @unique
+  password         String
+  contactNumber    String
+  favouriteSpecies Species[] @relation("VisitorFavouriteSpecies")
 }
