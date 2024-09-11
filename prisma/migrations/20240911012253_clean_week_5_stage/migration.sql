@@ -136,6 +136,9 @@ CREATE TABLE "_VisitorfavoriteSpecies" (
 CREATE UNIQUE INDEX "Staff_email_key" ON "Staff"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Species_speciesName_key" ON "Species"("speciesName");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
 
 -- CreateIndex

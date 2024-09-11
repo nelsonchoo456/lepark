@@ -10,7 +10,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { MdSunny } from "react-icons/md";
 import { formatEnumString } from "@lepark/data-utility";
 import { PiPottedPlantFill } from "react-icons/pi";
-import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
+import { viewSpeciesDetails, SpeciesResponse } from '@lepark/data-access';
 import { BiWorld } from "react-icons/bi";
 import { FaShieldHeart } from "react-icons/fa6";
 
@@ -31,7 +31,7 @@ const speciesId = location.state?.speciesId;
     if (speciesId) {
       const fetchSingleSpeciesById = async () => {
         try {
-          const species = await getSpeciesById(speciesId);
+          const species = await viewSpeciesDetails(speciesId);
           setSpeciesObj(species.data);
 
           console.log(`fetched species`, species.data);
