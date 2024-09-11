@@ -21,6 +21,7 @@ import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
+import StatusLogDetails from './pages/OccurrenceDetails/components/StatusLogsDetails';
 import CreateStaff from './pages/StaffManagement/CreateStaff';
 import { StaffAuthWrapper } from '@lepark/common-ui';
 import { ProtectedRoute } from '@lepark/common-ui';
@@ -29,6 +30,7 @@ import ParkEdit from './pages/ParkEdit/ParkEdit';
 import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
+import ZoneList from './pages/ZoneList/ZoneList';
 
 export function App() {
   return (
@@ -82,6 +84,7 @@ export function App() {
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
                 <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
+                <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
 
               <Route path="/park">
@@ -89,6 +92,10 @@ export function App() {
                 <Route path="create" element={<ParkCreate />} />
                 <Route path=":id" element={<ParkDetails />} />
                 <Route path=":id/edit" element={<ParkEdit />} />
+              </Route>
+
+              <Route path="/zone">
+                <Route index element={<ZoneList />} />
               </Route>
               
               {/* <Route path="/occurence">
@@ -103,12 +110,6 @@ export function App() {
                 <Route index element={<StaffManagementPage />} />
                 <Route path=":staffId" element={<ViewStaffDetails />} />
                 <Route path="create-staff" element={<CreateStaff />} />
-              </Route>
-
-              <Route path="/park">
-                <Route index element={<ParkList />} />
-                <Route path=":parkId" element={<OccurrenceDetails />} />
-                <Route path="create" element={<ParkCreate />} />
               </Route>
 
               <Route path="/species">

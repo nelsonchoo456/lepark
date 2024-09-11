@@ -315,7 +315,7 @@ const ProfilePage = () => {
 
       <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
-          <LogoText className="font-bold text-lg pl-3 pt-1">Favourite Species</LogoText>
+          <LogoText className="font-bold text-lg pl-3 pt-1">favorite Species</LogoText>
         </div>
       </ContentWrapper>
     </div>
