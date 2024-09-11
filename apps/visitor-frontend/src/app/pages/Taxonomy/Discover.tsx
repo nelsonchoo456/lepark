@@ -33,6 +33,10 @@ const Discover = () => {
     fetchSpecies();
   }, []);
 
+  const navigateToSpecies = (speciesId: string) => {
+    navigate(`/discover/${speciesId}`);
+  };
+
   return (
     // <MainLayout>
     <div>
@@ -64,11 +68,7 @@ const Discover = () => {
               key={index}
               className={cardStyle}
               bodyStyle={{ padding: 10 }}
-              onClick={() => {
-                navigate('/discover/view-species', {
-                  state: { speciesId: species.id }
-                });
-              }}
+              onClick={() => navigateToSpecies(species.id)}
             >
               <div className="flex flex-row items-center">
                 <div className="w-[60px] h-[60px] flex-shrink-0 mr-2 overflow-hidden rounded">
