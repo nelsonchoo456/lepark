@@ -125,3 +125,127 @@ export const blankSpecies: BlankSpecies = {
   isToxic: false,
   isFragrant: false
 };
+export const plantTaxonomy = {
+  Anthocerotophyta: {
+    classes: ['Anthocerotopsida', 'Leiosporocerotopsida'],
+    Anthocerotopsida: {
+      orders: ['Anthocerotales', 'Notothyladales', 'Phymatocerotales', 'Dendrocerotales']
+    },
+    Leiosporocerotopsida: {
+      orders: ['Leiosporocerotales']
+    }
+  },
+  Bryophyta: {
+    classes: ['Marchantiopsida', 'Bryopsida', 'Anthocerotopsida'],
+    Marchantiopsida: {
+      orders: ['Blasiales', 'Lunulariales', 'Marchantiales', 'Neohodgsoniales', 'Sphaerocarpales']
+    },
+    Bryopsida: {
+      orders: [
+        'Tetraphidales', 'Buxbaumiales', 'Polytrichales', 'Dawsoniales',
+        'Archidiales', 'Dicranales', 'Fissidentales', 'Syrrhopodontales',
+        'Pottiales', 'Grimmiales', 'Encalyptales', 'Funariales',
+        'Eubryales', 'Isobryales', 'Hookeriales', 'Hypnobryales'
+      ]
+    },
+    Anthocerotopsida: {
+      orders: ['Anthocerotales', 'Notothyladales', 'Phymatocerotales', 'Dendrocerotales']
+    }
+  },
+  Charophyta: {
+    classes: ['Prasinophyceae', 'Trebouxiophyceae', 'Chlorophyceae', 'Ulvophyceae', 'Pedinophyceae', 'Chlorodendrophyceae'],
+    Prasinophyceae: {
+      orders: ['Mamiellales', 'Chlorodendrales']
+    },
+    Trebouxiophyceae: {
+      orders: ['Trebouxiales']
+    },
+    Chlorophyceae: {
+      orders: ['Volvocales', 'Chlorococcales', 'Oedogoniales']
+    },
+    Ulvophyceae: {
+      orders: ['Ulvales', 'Cladophorales', 'Trentepohliales']
+    },
+    Pedinophyceae: {
+      orders: ['Pedinomonadales']
+    },
+    Chlorodendrophyceae: {
+      orders: ['Chlorodendrales']
+    }
+  },
+  Chlorophyta: {
+    classes: ['Prasinophyceae', 'Trebouxiophyceae', 'Chlorophyceae', 'Ulvophyceae'],
+    Prasinophyceae: {
+      orders: ['Mamiellales', 'Chlorodendrales']
+    },
+    Trebouxiophyceae: {
+      orders: ['Trebouxiales']
+    },
+    Chlorophyceae: {
+      orders: ['Volvocales', 'Chlorococcales', 'Oedogoniales']
+    },
+    Ulvophyceae: {
+      orders: ['Ulvales', 'Cladophorales', 'Trentepohliales']
+    }
+  },
+  Cycadophyta: {
+    classes: ['Cycadopsida'],
+    Cycadopsida: {
+      orders: ['Cycadales']
+    }
+  },
+  Ginkgophyta: {
+    classes: ['Ginkgoopsida'],
+    Ginkgoopsida: {
+      orders: ['Ginkgoales']
+    }
+  },
+  Glaucophyta: {
+    classes: ['Glaucophyceae'],
+    Glaucophyceae: {
+      orders: ['Glaucocystales']
+    }
+  },
+  Gnetophyta: {
+    classes: ['Gnetopsida'],
+    Gnetopsida: {
+      orders: ['Gnetales']
+    }
+  },
+  Lycopodiophyta: {
+    classes: ['Lycopodiopsida'],
+    Lycopodiopsida: {
+      orders: ['Lycopodiales', 'Isoetales', 'Selaginellales']
+    }
+  },
+  Magnoliophyta: {
+    classes: ['Magnoliopsida', 'Liliopsida'],
+    Magnoliopsida: {
+      orders: ['Rosales', 'Fabales', 'Asterales']
+    },
+    Liliopsida: {
+      orders: ['Poales', 'Liliales', 'Arecales']
+    }
+  },
+  Marchantiophyta: {
+    classes: ['Marchantiopsida', 'Jungermanniopsida'],
+    Marchantiopsida: {
+      orders: ['Marchantiales', 'Lunularies']
+    },
+    Jungermanniopsida: {
+      orders: ['Jungermanniales', 'Metzgeriales']
+    }
+  },
+  Pinophyta: {
+    classes: ['Pinopsida'],
+    Pinopsida: {
+      orders: ['Pinales']
+    }
+  },
+  Polypodiophyta: {
+    classes: ['Polypodiopsida'],
+    Polypodiopsida: {
+      orders: ['Polypodiales', 'Osmundales']
+    }
+  }
+};

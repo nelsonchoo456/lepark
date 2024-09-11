@@ -23,6 +23,7 @@ import {
 import { createSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 import { CreateSpeciesData, ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from '@lepark/data-access';
+import { plantTaxonomy } from '@lepark/data-utility';
 
 const CreateSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
@@ -52,6 +53,27 @@ const CreateSpecies = () => {
     wrapperCol: { offset: 8, span: 16 },
   };
   const [tempRange, setTempRange] = useState([1, 1]);
+
+  const [classes, setClasses] = useState<string[]>([]);
+  const [orders, setOrders] = useState<string[]>([]);
+
+  const onPhylumChange = (value: string) => {
+    const selectedPhylum = plantTaxonomy[value as keyof typeof plantTaxonomy];
+    setClasses(Object.keys(selectedPhylum).filter(key => key !== 'classes'));
+    setOrders([]);
+    form.setFieldsValue({ classInput: undefined, orderInput: undefined });
+  };
+
+  const onClassChange = (value: string) => {
+    const selectedPhylum = plantTaxonomy[form.getFieldValue('phylum') as keyof typeof plantTaxonomy];
+    const selectedClass = selectedPhylum[value as keyof typeof selectedPhylum] as { orders?: string[] };
+    if (selectedClass && Array.isArray(selectedClass.orders)) {
+      setOrders(selectedClass.orders);
+    } else {
+      setOrders([]);
+    }
+    form.setFieldsValue({ orderInput: undefined });
+  };
 
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
@@ -131,21 +153,41 @@ const CreateSpecies = () => {
       {
         <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
-            <Select placeholder="Select a phylum" allowClear>
-              {phylums.map((phylum) => (
-                <Select.Option key={phylum} value={phylum}>
-                  {phylum}
-                </Select.Option>
+            <Select onChange={onPhylumChange} placeholder="Select a phylum">
+              {Object.keys(plantTaxonomy).map((phylum) => (
+                <Select.Option key={phylum} value={phylum}>{phylum}</Select.Option>
               ))}
             </Select>
           </Form.Item>
 
           <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
-            <Input />
+            <Select
+              onChange={onClassChange}
+              placeholder="Select a class"
+              disabled={classes.length === 0}
+            >
+              {classes.map((classItem) => (
+                <Select.Option key={classItem} value={classItem}>{classItem}</Select.Option>
+              ))}
+            </Select>
           </Form.Item>
+
           <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
-            <Input />
+            <Select
+              placeholder="Select an order"
+              disabled={!orders || orders.length === 0}
+            >
+              {orders && orders.length > 0 ? (
+                orders.map((order) => (
+
+                  <Select.Option key={order} value={order}>{order}</Select.Option>
+                ))
+              ) : (
+                <Select.Option value="" disabled>No orders available</Select.Option>
+              )}
+            </Select>
           </Form.Item>
+
           <Form.Item name="familyInput" label="Family" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
