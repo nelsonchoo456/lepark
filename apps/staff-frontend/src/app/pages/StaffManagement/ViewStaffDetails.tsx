@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import {
+  getAllParks,
+  ParkResponse,
   StaffResponse,
   StaffType,
   StaffUpdateData,
@@ -37,9 +39,18 @@ const ViewStaffDetails = () => {
   const [staff, setStaff] = useState<StaffResponse>(initialUser);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
   const [contactNumberError, setContactNumberError] = useState('');
-
+  const [parks, setParks] = useState<ParkResponse[]>([]);
 
   useEffect(() => {
+     // Fetch parks data from the database
+     getAllParks()
+     .then((response) => {
+       setParks(response.data);
+     })
+     .catch((error) => {
+       console.error('There was an error fetching the parks data!', error);
+     });
+
     const fetchUserDetails = async () => {
       try {
         const response = await viewStaffDetails(staffId);
@@ -55,6 +66,11 @@ const ViewStaffDetails = () => {
       fetchUserDetails();
     }
   }, [staffId]);
+
+  const getParkName = (parkId: string) => {
+    const park = parks.find((park) => park.id == parkId);
+    return park ? park.name : 'NParks';
+  };
 
   const toggleEditMode = () => {
     if (inEditMode) {
@@ -99,10 +115,10 @@ const ViewStaffDetails = () => {
         email: values.email,
       };
 
-      const responseStaffRole = await updateStaffRole(staffId, values.role, user.id); 
+      const responseStaffRole = await updateStaffRole(staffId, values.role, user.id);
       console.log('Staff role updated successfully:', responseStaffRole.data);
 
-      const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id); 
+      const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id);
       console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
 
       const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
@@ -139,7 +155,7 @@ const ViewStaffDetails = () => {
     }
   };
 
-  const handleContactNumberChange = (e: { target: { value: any; }; }) => {
+  const handleContactNumberChange = (e: { target: { value: any } }) => {
     const value = e.target.value;
     validateContactNumber(value);
     handleInputChange('contactNumber', value);
@@ -173,6 +189,12 @@ const ViewStaffDetails = () => {
       span: 2,
     },
     {
+      key: 'park',
+      label: 'Park',
+      children: getParkName(editedUser?.parkId || ''), 
+      span: 2,
+    },
+    {
       key: 'role',
       label: 'Role',
       children: inEditMode ? (
@@ -182,19 +204,19 @@ const ViewStaffDetails = () => {
           style={{ minWidth: 200 }} // Set a minimum width to ensure full text is shown
         >
           {Object.values(StaffType)
-              .filter((role) => {
-                if (user?.role === StaffType.MANAGER) {
-                  return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
-                } else if (user?.role === StaffType.SUPERADMIN) {
-                  return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
-                }
-                return true;
-              })
-              .map((role) => (
-                <Select.Option key={role} value={role}>
-                  {role}
-                </Select.Option>
-              ))}
+            .filter((role) => {
+              if (user?.role === StaffType.MANAGER) {
+                return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
+              } else if (user?.role === StaffType.SUPERADMIN) {
+                return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+              }
+              return true;
+            })
+            .map((role) => (
+              <Select.Option key={role} value={role}>
+                {role}
+              </Select.Option>
+            ))}
         </Select>
       ) : (
         <Tag>{staff?.role}</Tag>
@@ -214,12 +236,7 @@ const ViewStaffDetails = () => {
       key: 'contactNumber',
       label: 'Contact Number',
       children: inEditMode ? (
-        <Tooltip
-          title={contactNumberError}
-          visible={!!contactNumberError}
-          placement="right"
-          color="#73a397"
-        >
+        <Tooltip title={contactNumberError} visible={!!contactNumberError} placement="right" color="#73a397">
           <Input
             placeholder="Contact Number"
             value={editedUser?.contactNumber ?? ''}

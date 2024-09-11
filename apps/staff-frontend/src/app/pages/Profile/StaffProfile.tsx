@@ -186,6 +186,12 @@ const StaffProfile = () => {
       span: 2,
     },
     {
+      key: 'park',
+      label: 'Park',
+      children: userState?.parkId ? userState.parkId : 'Nparks', // display 'Nparks' if no park
+      span: 2,
+    },
+    {
       key: 'role',
       label: 'Role',
       children: <Tag>{userState?.role}</Tag>, // not allowed to change role
