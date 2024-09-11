@@ -149,7 +149,7 @@ const ViewStaffDetails = () => {
 
   const handleSave = () => {
     const isContactNumberValid = validateContactNumber(editedUser?.contactNumber ?? '');
-    if (isContactNumberValid) {
+    if (isContactNumberValid && validateInputs()) {
       onFinish(editedUser);
       setInEditMode(false);
     } else {
@@ -195,12 +195,12 @@ const ViewStaffDetails = () => {
       ),
       span: 2,
     },
-    {
-      key: 'id',
-      label: 'ID',
-      children: staff?.id ?? null, // not allowed to change id
-      span: 2,
-    },
+    // {
+    //   key: 'id',
+    //   label: 'ID',
+    //   children: staff?.id ?? null, // not allowed to change id
+    //   span: 2,
+    // },
     {
       key: 'park',
       label: 'Park',

@@ -1,8 +1,8 @@
 -- CreateEnum
-CREATE TYPE "StaffRoleEnum" AS ENUM ('MANAGER', 'BOTANIST', 'ARBORIST', 'GARDENER', 'MAINTENANCE_WORKER', 'CLEANER', 'LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'SUPERADMIN');
+CREATE TYPE "StaffRoleEnum" AS ENUM ('MANAGER', 'BOTANIST', 'ARBORIST', 'LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER', 'SUPERADMIN');
 
 -- CreateEnum
-CREATE TYPE "ConservationStatusEnum" AS ENUM ('LEAST_CONCERN', 'NEAR_THREATENED', 'VULNERABLE', 'ENDANGERED', 'CRITICALLY_ENDANGERED', 'EXTINCT_IN__THE_WILD', 'EXTINCT');
+CREATE TYPE "ConservationStatusEnum" AS ENUM ('LEAST_CONCERN', 'NEAR_THREATENED', 'VULNERABLE', 'ENDANGERED', 'CRITICALLY_ENDANGERED', 'EXTINCT_IN_THE_WILD', 'EXTINCT');
 
 -- CreateEnum
 CREATE TYPE "LightTypeEnum" AS ENUM ('FULL_SUN', 'PARTIAL_SHADE', 'FULL_SHADE');
@@ -29,7 +29,7 @@ CREATE TABLE "Staff" (
     "contactNumber" TEXT NOT NULL,
     "role" "StaffRoleEnum" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
-    "parkId" TEXT NOT NULL,
+    "parkId" TEXT,
 
     CONSTRAINT "Staff_pkey" PRIMARY KEY ("id")
 );
@@ -83,6 +83,7 @@ CREATE TABLE "Occurrence" (
     "occurrenceStatus" "OccurrenceStatusEnum" NOT NULL,
     "decarbonizationType" "DecarbonizationTypeEnum" NOT NULL,
     "speciesId" UUID NOT NULL,
+    "zoneId" INTEGER NOT NULL,
     "images" TEXT[],
 
     CONSTRAINT "Occurrence_pkey" PRIMARY KEY ("id")
@@ -122,9 +123,14 @@ CREATE TABLE "Visitor" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "contactNumber" TEXT NOT NULL,
-    "favoriteSpeciesIds" TEXT[],
 
     CONSTRAINT "Visitor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_VisitorfavoriteSpecies" (
+    "A" UUID NOT NULL,
+    "B" UUID NOT NULL
 );
 
 -- CreateIndex
@@ -132,6 +138,12 @@ CREATE UNIQUE INDEX "Staff_email_key" ON "Staff"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_VisitorfavoriteSpecies_AB_unique" ON "_VisitorfavoriteSpecies"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_VisitorfavoriteSpecies_B_index" ON "_VisitorfavoriteSpecies"("B");
 
 -- AddForeignKey
 ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_speciesId_fkey" FOREIGN KEY ("speciesId") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -141,3 +153,9 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
