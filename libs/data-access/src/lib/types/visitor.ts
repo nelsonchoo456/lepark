@@ -12,10 +12,10 @@ export interface VisitorResponse {
   lastName: string;
   email: string;
   contactNumber: string;
-  favouriteSpecies?: SpeciesResponse[];
+  favoriteSpecies?: FavoriteSpeciesResponse[];
 }
 
-export interface SpeciesResponse {
+export interface FavoriteSpeciesResponse {
   id: string;
   speciesName: string;
   commonName: string;
@@ -59,5 +59,5 @@ export interface GetFavoriteSpeciesRequestData {
 
 // Define the data returned by the get favorite species response
 export interface GetFavoriteSpeciesResponseData {
-  favouriteSpecies: SpeciesResponse[];
+  favoriteSpecies: FavoriteSpeciesResponse[];
 }

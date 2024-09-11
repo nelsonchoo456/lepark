@@ -21,6 +21,7 @@ import ParkList from './pages/Park/ParkList';
 import ParkCreate from './pages/Park/ParkCreate';
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
+import StatusLogDetails from './pages/OccurrenceDetails/components/StatusLogsDetails';
 import CreateStaff from './pages/StaffManagement/CreateStaff';
 import { StaffAuthWrapper } from '@lepark/common-ui';
 import { ProtectedRoute } from '@lepark/common-ui';
@@ -83,6 +84,7 @@ export function App() {
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
                 <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
+                <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
 
               <Route path="/park">
