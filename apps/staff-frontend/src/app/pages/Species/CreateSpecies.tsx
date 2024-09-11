@@ -250,18 +250,24 @@ const CreateSpecies = () => {
             name="plantCharacteristics"
             label="Plant Characteristics"
             rules={[{ required: false }]}
-            initialValue={[]} // Ensure it starts as an empty array
+            initialValue={[]}
           >
-            <Checkbox.Group>
-              <Checkbox value="slowGrowing">Slow Growing</Checkbox>
-              <Checkbox value="edible">Edible</Checkbox>
-              <Checkbox value="toxic">Toxic</Checkbox>
-              <Checkbox value="evergreen">Evergreen</Checkbox>
-              <Checkbox value="fragrant">Fragrant</Checkbox>
-              <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
-              <Checkbox value="deciduous">Deciduous</Checkbox>
-              <Checkbox value="fastGrowing">Fast Growing</Checkbox>
-            </Checkbox.Group>
+            <Select
+              mode="multiple"
+              style={{ width: '100%' }}
+              placeholder="Select plant characteristics"
+              options={[
+                { value: 'slowGrowing', label: 'Slow Growing' },
+                { value: 'edible', label: 'Edible' },
+                { value: 'toxic', label: 'Toxic' },
+                { value: 'evergreen', label: 'Evergreen' },
+                { value: 'fragrant', label: 'Fragrant' },
+                { value: 'droughtTolerant', label: 'Drought Tolerant' },
+                { value: 'deciduous', label: 'Deciduous' },
+                { value: 'fastGrowing', label: 'Fast Growing' },
+              ]}
+              optionFilterProp="label"
+            />
           </Form.Item>
 
           <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}>
