@@ -7,12 +7,11 @@ interface OccurrencesTabProps {
 }
 
 const OccurrencesTab: React.FC<OccurrencesTabProps> = ({ species }) => {
-  const occurrences = species?.occurrences || []; // Use species.occurrences directly
   const loading = false; // Replace with your actual loading state if needed
 
   return (
     <div>
-      <OccurrenceTable occurrences={occurrences} loading={loading} />
+      <OccurrenceTable speciesId={species.id} loading={loading} />
     </div>
   );
 };

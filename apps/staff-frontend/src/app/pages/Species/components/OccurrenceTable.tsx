@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Tag, Button, Tooltip, Flex } from 'antd';
 import { FiExternalLink } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import { getOccurrencesBySpeciesId, OccurrenceResponse } from '@lepark/data-access';
 
 interface OccurrenceTableProps {
-  occurrences: any[]; // Replace 'any' with the appropriate type for your occurrences
+  speciesId: string;
   loading: boolean;
 }
 
-const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ occurrences, loading }) => {
+const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading }) => {
   const navigate = useNavigate();
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]); // Replace 'any' with the appropriate type for your occurrences
 
-  const navigateToSpecies = (speciesId: string) => {
-    navigate(`/species/viewSpeciesDetails/${speciesId}`);
-  };
+  useEffect(() => {
+    const fetchOccurrences = async () => {
+      try {
+        const fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
+        setOccurrences(fetchedOccurrences.data);
+      } catch (error) {
+        console.error('Error fetching occurrences:', error);
+      }
+    };
+
+    fetchOccurrences();
+  }, [speciesId]);
 
   const columns = [
     {
