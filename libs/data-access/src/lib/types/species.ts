@@ -98,8 +98,6 @@ export interface GetSpeciesByIdResponse {
 }
 */
 
-export interface UpdateSpeciesData extends Partial<CreateSpeciesData> {}
-
 export interface DeleteSpeciesResponse {
   message: string;
 }
