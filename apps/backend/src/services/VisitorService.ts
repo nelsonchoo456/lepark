@@ -227,8 +227,8 @@ class VisitorService {
       throw new Error('Visitor not found');
     }
 
-    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
-    return favoriteSpecies?.favoriteSpecies || [];
+    const favouriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    return favouriteSpecies?.favouriteSpecies || [];
   }
 
   async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {

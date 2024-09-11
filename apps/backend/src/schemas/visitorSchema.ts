@@ -6,7 +6,7 @@ export const VisitorSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
   contactNumber: z.string().min(1, { message: "Contact number is required" }),
-  favoriteSpecies: z.array(z.string()).optional(),
+  favouriteSpecies: z.array(z.string()).optional(),
 });
 
 export const LoginSchema = z.object({

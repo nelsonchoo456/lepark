@@ -1,4 +1,4 @@
-export enum OccurrenceStatusEnum {
+enum OccurrenceStatusEnum {
   HEALTHY = 'HEALTHY',
   MONITOR_AFTER_TREATMENT = 'MONITOR_AFTER_TREATMENT',
   NEEDS_ATTENTION = 'NEEDS_ATTENTION',
