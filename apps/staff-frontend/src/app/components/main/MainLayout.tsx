@@ -1,27 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { SCREEN_LG } from "../../config/breakpoints";
-import { Content, Header, ListItemType, LogoText, Sidebar } from "@lepark/common-ui";
-import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from "react-icons/fi";
-import { IoLeafOutline } from "react-icons/io5";
-import { GrMapLocation } from "react-icons/gr";
-import { TbTrees, TbTree } from "react-icons/tb";
-import { Menu } from "antd";
-import Logo from "../logo/Logo";
-import { PiPottedPlant } from "react-icons/pi";
+import { SCREEN_LG } from '../../config/breakpoints';
+import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
+import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { IoLeafOutline } from 'react-icons/io5';
+import { GrMapLocation } from 'react-icons/gr';
+import { TbTrees, TbTree } from 'react-icons/tb';
+import { Menu, message } from 'antd';
+import Logo from '../logo/Logo';
+import { PiPottedPlant } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
+import { StaffResponse } from '@lepark/data-access';
 type MenuItem = Required<MenuProps>['items'][number];
 
 const MainLayout = () => {
-  const [showSidebar, setShowSidebar] = useState<boolean>(
-    window.innerWidth >= SCREEN_LG
-  );
-  const [activeItems, setActiveItems] = useState("");
+  const { user, updateUser } = useAuth<StaffResponse>();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const [showSidebar, setShowSidebar] = useState<boolean>(window.innerWidth >= SCREEN_LG);
+  const [activeItems, setActiveItems] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
+  const fetchUserRole = async () => {
+    if (!user) {
+      message.error('User not found');
+      return;
+    } else {
+      const role = await user.role;
+      setUserRole(role);
+    }
+  };
+
   // Resizing
   useEffect(() => {
+    fetchUserRole();
+
     const handleResize = () => {
       setShowSidebar(window.innerWidth >= SCREEN_LG);
     };
@@ -34,13 +48,13 @@ const MainLayout = () => {
 
   // Setting Active Nav Item
   const getLastItemFromPath = (path: string): string => {
-		const pathItems = path.split("/").filter(Boolean);
-		return pathItems[pathItems.length - 1];
-	};
+    const pathItems = path.split('/').filter(Boolean);
+    return pathItems[pathItems.length - 1];
+  };
 
   useEffect(() => {
-    setActiveItems(getLastItemFromPath(location.pathname))
-  }, [location.pathname])
+    setActiveItems(getLastItemFromPath(location.pathname));
+  }, [location.pathname]);
 
   // Navigation
   const navItems: MenuItem[] = [
@@ -91,13 +105,13 @@ const MainLayout = () => {
       //   }
       // ]
     },
-    {
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' ? {
       key: 'staffManagement',
       icon: <FiUsers />,
       // icon: <UploadOutlined />,
       label: 'Staff Management',
       onClick: () => navigate('/staff-management'),
-    },
+    } : null,
     {
       key: 'map',
       icon: <GrMapLocation />,
@@ -112,15 +126,15 @@ const MainLayout = () => {
     //   label: 'Account',
     //   onClick: () => navigate('/profile'),
     // },
-    {
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'BOTANIST' || userRole === 'ARBORIST' || userRole === 'PARK_RANGER' || userRole === 'VENDOR_MANAGER' ? {
       key: 'tasks',
       icon: <FiInbox />,
       // icon: <UploadOutlined />,
       label: 'Tasks',
-    },
+    } : null,
     {
       key: 'profile',
-      icon: <FiUser/>,
+      icon: <FiUser />,
       label: 'Account',
       onClick: () => navigate('/profile'),
     },
@@ -134,22 +148,30 @@ const MainLayout = () => {
 
   return (
     <div>
-      <Header items={navItems} showSidebar={showSidebar} >
+      <Header items={navItems} showSidebar={showSidebar}>
         <div className="px-4 flex gap-2 items-center">
-          <Logo/>
+          <Logo />
           <LogoText>Leparks Admin</LogoText>
         </div>
       </Header>
       <Sidebar>
         <div className="pb-2 px-4 flex gap-2 items-center">
-          <Logo/>
+          <Logo />
           <LogoText>Leparks Admin</LogoText>
         </div>
-        <Menu items={navItems} mode="inline" defaultOpenKeys={['home']} selectedKeys={[activeItems]} style={{ backgroundColor: "transparent", border: "transparent" }}/>
+        <Menu
+          items={navItems}
+          mode="inline"
+          defaultOpenKeys={['home']}
+          selectedKeys={[activeItems]}
+          style={{ backgroundColor: 'transparent', border: 'transparent' }}
+        />
       </Sidebar>
-      <Content $showSidebar={showSidebar}><Outlet /></Content>
+      <Content $showSidebar={showSidebar}>
+        <Outlet />
+      </Content>
     </div>
   );
-}
+};
 
 export default MainLayout;

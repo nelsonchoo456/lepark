@@ -1,9 +1,9 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch } from 'antd';
+import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch, notification } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import {
@@ -17,7 +17,7 @@ import {
   updateStaffRole,
   viewStaffDetails,
 } from '@lepark/data-access';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const initialUser = {
@@ -40,8 +40,20 @@ const ViewStaffDetails = () => {
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
   const [contactNumberError, setContactNumberError] = useState('');
   const [parks, setParks] = useState<ParkResponse[]>([]);
+  const notificationShown = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Staff Management page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    } else {
      // Fetch parks data from the database
      getAllParks()
      .then((response) => {
@@ -65,7 +77,8 @@ const ViewStaffDetails = () => {
     if (staffId) {
       fetchUserDetails();
     }
-  }, [staffId]);
+  }
+  }, [staffId, user]);
 
   const getParkName = (parkId: string) => {
     const park = parks.find((park) => park.id == parkId);

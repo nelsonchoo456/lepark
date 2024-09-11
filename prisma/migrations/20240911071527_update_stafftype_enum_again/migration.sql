@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "StaffRoleEnum" ADD VALUE 'VENDOR_MANAGER';

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
-import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag } from 'antd';
+import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
@@ -15,11 +15,24 @@ const StaffManagementPage: React.FC = () => {
   const [staff, setStaff] = useState<StaffResponse[]>([]);
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
+  
   useEffect(() => {
-    fetchStaffData();
-    fetchParksData();
-  }, []);
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Staff Management page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    } else {
+      fetchStaffData();
+      fetchParksData();
+    }
+  }, [user]);
 
   const fetchStaffData = async () => {
     try {

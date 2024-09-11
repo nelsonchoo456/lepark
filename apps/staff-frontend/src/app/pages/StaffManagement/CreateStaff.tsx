@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Select, Descriptions, Switch, Space, message, Typography } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { Form, Input, Button, Select, Descriptions, Switch, Space, message, Typography, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
@@ -13,6 +13,7 @@ const CreateStaff: React.FC = () => {
   const navigate = useNavigate();
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const { Text } = Typography;
+  const notificationShown = useRef(false);
 
   const layout = {
     labelCol: { span: 8 },
@@ -52,15 +53,27 @@ const CreateStaff: React.FC = () => {
   };
 
   useEffect(() => {
-    // Fetch parks data from the database
-    getAllParks()
-      .then((response) => {
-        setParks(response.data);
-      })
-      .catch((error) => {
-        console.error('There was an error fetching the parks data!', error);
-      });
-  }, []);
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Staff Management page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    } else {
+      
+      // Fetch parks data from the database
+      getAllParks()
+        .then((response) => {
+          setParks(response.data);
+        })
+        .catch((error) => {
+          console.error('There was an error fetching the parks data!', error);
+        });
+    }
+  }, [user]);
 
   const getParkName = (parkId: string) => {
     const park = parks.find((park) => park.id == parkId);
@@ -128,7 +141,7 @@ const CreateStaff: React.FC = () => {
         </Form.Item>
         <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
         {parks.length === 0 ? (
-            <Text type="warning">There are no parks created yet!</Text>
+            <Text type="secondary">There are no parks created yet!</Text>
           ) : user?.role === StaffType.MANAGER ? (
             <Select placeholder={getParkName(user?.parkId || '')} value={user?.parkId}>
               <Select.Option key={user?.parkId} value={user?.parkId?.toString()}>
@@ -150,7 +163,7 @@ const CreateStaff: React.FC = () => {
         </Form.Item> */}
         <Form.Item {...tailLayout}>
           <Space>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" disabled={parks.length === 0}>
               Submit
             </Button>
             <Button htmlType="button" onClick={onReset}>

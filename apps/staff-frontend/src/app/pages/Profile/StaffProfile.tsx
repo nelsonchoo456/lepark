@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
-import { forgotStaffPassword, StaffType, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
+import { forgotStaffPassword, getAllParks, ParkResponse, StaffType, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
@@ -28,6 +28,7 @@ const StaffProfile = () => {
   const [userState, setUser] = useState<StaffResponse | null>(null);
   const [editedUser, setEditedUser] = useState<StaffResponse | null>(null);
   const [contactNumberError, setContactNumberError] = useState('');
+  const [parks, setParks] = useState<ParkResponse[]>([]);
 
   // for change password
 
@@ -36,6 +37,15 @@ const StaffProfile = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
+      // Fetch parks data from the database
+      getAllParks()
+      .then((response) => {
+        setParks(response.data);
+      })
+      .catch((error) => {
+        console.error('There was an error fetching the parks data!', error);
+      });
+
     const fetchUserDetails = async () => {
       try {
         setUser(user);
@@ -107,6 +117,11 @@ const StaffProfile = () => {
       // TODO: filter out specific error messages from the response
       message.error('Failed to update staff details.');
     }
+  };
+
+  const getParkName = (parkId: string) => {
+    const park = parks.find((park) => park.id == parkId);
+    return park ? park.name : 'NParks';
   };
 
   const validateContactNumber = (value: string) => {
@@ -188,7 +203,7 @@ const StaffProfile = () => {
     {
       key: 'park',
       label: 'Park',
-      children: userState?.parkId ? userState.parkId : 'Nparks', // display 'Nparks' if no park
+      children: getParkName(editedUser?.parkId || ''), 
       span: 2,
     },
     {
