@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { ContentWrapper, Divider, LogoText, CustButton } from "@lepark/common-ui";
-import MainLayout from "../../components/main/MainLayout";
-import { NavButton } from "../../components/buttons/NavButton";
-import { PiPlantFill, PiStarFill, PiTicketFill } from "react-icons/pi";
-import { FaTent } from "react-icons/fa6";
-import { Badge, Card, Space } from "antd";
-import { useNavigate, useLocation } from 'react-router-dom'
-import { FiArrowLeft } from "react-icons/fi";
-import { MdSunny } from "react-icons/md";
-import { formatEnumString } from "@lepark/data-utility";
-import { PiPottedPlantFill } from "react-icons/pi";
+import { CustButton } from "@lepark/common-ui";
 import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
+import { formatEnumString } from "@lepark/data-utility";
+import { Card } from "antd";
+import { useEffect, useState } from 'react';
 import { BiWorld } from "react-icons/bi";
 import { FaShieldHeart } from "react-icons/fa6";
+import { FiArrowLeft } from "react-icons/fi";
+import { PiPottedPlantFill } from "react-icons/pi";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
 

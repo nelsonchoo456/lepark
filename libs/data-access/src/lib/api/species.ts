@@ -20,6 +20,7 @@ export async function createSpecies(data: CreateSpeciesData): Promise<AxiosRespo
 export async function getAllSpecies(): Promise<AxiosResponse<SpeciesResponse[]>> {
   try {
     const response: AxiosResponse<SpeciesResponse[]> = await client.get(`${URL}/getAllSpecies`);
+    console.log(response);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

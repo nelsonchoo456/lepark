@@ -53,7 +53,6 @@ export interface SpeciesResponse {
   isEvergreen: boolean;
   isToxic: boolean;
   isFragrant: boolean;
-  occurrences: OccurrenceResponse[];
 }
 
 export interface CreateSpeciesData {
