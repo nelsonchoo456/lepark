@@ -5,6 +5,7 @@ import OccurrenceDao from '../dao/OccurrenceDao';
 import StaffDao from '../dao/StaffDao';
 import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
+import ZoneDao from '../dao/ZoneDao';
 
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
@@ -15,12 +16,18 @@ class OccurrenceService {
           throw new Error('Species not found');
         }
       }
+
+      if (data.zoneId) {
+        const zone = await ZoneDao.getZoneById(data.zoneId);
+        if (!zone) {
+          throw new Error('Zone not found');
+        }
+      }
+      
       const formattedData = dateFormatter(data);
 
       // Validate input data using Zod
       OccurrenceSchema.parse(formattedData);
-
-      console.log('formattedData', formattedData);
 
       // Convert validated data to Prisma input type
       const occurrenceData = ensureAllFieldsPresent(formattedData);
