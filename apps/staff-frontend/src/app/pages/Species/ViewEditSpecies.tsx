@@ -16,6 +16,9 @@ import {
 import { getSpeciesById, SpeciesResponse, updateSpecies, OccurrenceResponse } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 
+
+import { plantTaxonomy } from '@lepark/data-utility';
+
 const ViewEditSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(
     window.innerWidth >= SCREEN_LG,
@@ -27,6 +30,8 @@ const ViewEditSpecies = () => {
   const [speciesId, setSpeciesId] = useState<string>('');
   const location = useLocation();
   const speciesIdFromLocation = location.state?.speciesId;
+  const [classes, setClasses] = useState<string[]>([]);
+  const [orders, setOrders] = useState<string[]>([]);
 
   const setId = (id: string) => {
     setSpeciesId(id);
@@ -131,35 +136,35 @@ const ViewEditSpecies = () => {
     try {
       const plantCharacteristics = values.plantCharacteristics || [];
       const speciesData: Partial<SpeciesResponse> = {
-          id: '',
-          phylum: values.phylum,
-          class: values.class,
-          order: values.order,
-          family: values.family,
-          genus: values.genus,
-          speciesName: values.speciesName,
-          commonName: values.commonName,
-          speciesDescription: values.speciesDescription,
-          conservationStatus: values.conservationStatus,
-          originCountry: values.originCountry,
-          lightType: values.lightType,
-          soilType: values.soilType,
-          fertiliserType: values.fertiliserType,
-          images: [],
-          waterRequirement: values.waterRequirement,
-          fertiliserRequirement: values.fertiliserRequirement,
-          idealHumidity: values.idealHumidity,
-          minTemp: values.minTemp,
-          maxTemp: values.maxTemp,
-          idealTemp: values.idealTemp,
-          isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'),
-          isFastGrowing: plantCharacteristics.includes('fastGrowing'),
-          isSlowGrowing: plantCharacteristics.includes('slowGrowing'),
-          isEdible: plantCharacteristics.includes('edible'),
-          isDeciduous: plantCharacteristics.includes('deciduous'),
-          isEvergreen: plantCharacteristics.includes('evergreen'),
-          isToxic: plantCharacteristics.includes('toxic'),
-          isFragrant: plantCharacteristics.includes('fragrant'),
+        id: speciesId,
+        phylum: values.phylum,
+        class: values.class,
+        order: values.order,
+        family: values.family,
+        genus: values.genus,
+        speciesName: values.speciesName,
+        commonName: values.commonName,
+        speciesDescription: values.speciesDescription,
+        conservationStatus: values.conservationStatus,
+        originCountry: values.originCountry,
+        lightType: values.lightType,
+        soilType: values.soilType,
+        fertiliserType: values.fertiliserType,
+        images: [],
+        waterRequirement: values.waterRequirement,
+        fertiliserRequirement: values.fertiliserRequirement,
+        idealHumidity: values.idealHumidity,
+        minTemp: values.minTemp,
+        maxTemp: values.maxTemp,
+        idealTemp: values.idealTemp,
+        isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'),
+        isFastGrowing: plantCharacteristics.includes('fastGrowing'),
+        isSlowGrowing: plantCharacteristics.includes('slowGrowing'),
+        isEdible: plantCharacteristics.includes('edible'),
+        isDeciduous: plantCharacteristics.includes('deciduous'),
+        isEvergreen: plantCharacteristics.includes('evergreen'),
+        isToxic: plantCharacteristics.includes('toxic'),
+        isFragrant: plantCharacteristics.includes('fragrant'),
       };
       console.log('Species data to be submitted:', speciesData); // For debugging
 
@@ -181,6 +186,37 @@ const ViewEditSpecies = () => {
       console.error('Error saving species:', error);
     }
   };
+
+  const onPhylumChange = (value: string) => {
+    const selectedPhylum = plantTaxonomy[value as keyof typeof plantTaxonomy];
+    setClasses(Object.keys(selectedPhylum).filter(key => key !== 'classes'));
+    setOrders([]);
+    form.setFieldsValue({ class: undefined, order: undefined });
+  };
+
+  const onClassChange = (value: string) => {
+    const selectedPhylum = plantTaxonomy[form.getFieldValue('phylum') as keyof typeof plantTaxonomy];
+    const selectedClass = selectedPhylum[value as keyof typeof selectedPhylum] as { orders?: string[] };
+    if (selectedClass && Array.isArray(selectedClass.orders)) {
+      setOrders(selectedClass.orders);
+    } else {
+      setOrders([]);
+    }
+    form.setFieldsValue({ order: undefined });
+  };
+
+  useEffect(() => {
+    if (speciesObj) {
+      const selectedPhylum = plantTaxonomy[speciesObj.phylum as keyof typeof plantTaxonomy];
+      if (selectedPhylum) {
+        setClasses(Object.keys(selectedPhylum).filter(key => key !== 'classes'));
+        const selectedClass = selectedPhylum[speciesObj.class as keyof typeof selectedPhylum] as { orders?: string[] };
+        if (selectedClass && Array.isArray(selectedClass.orders)) {
+          setOrders(selectedClass.orders);
+        }
+      }
+    }
+  }, [speciesObj]);
 
 if (!webMode) {
     return (
@@ -207,31 +243,27 @@ if (!webMode) {
           disabled={isSubmitting}
         >
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
-            <Select
-              placeholder="Select a phylum"
-              allowClear
-            >
-              {phylums.map((phylum) => (
-                <Select.Option key={phylum} value={phylum}>
-                  {phylum}
-                </Select.Option>
+            <Select onChange={onPhylumChange} placeholder="Select a phylum">
+              {Object.keys(plantTaxonomy).map((phylum) => (
+                <Select.Option key={phylum} value={phylum}>{phylum}</Select.Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="class"
-            label="Class"
-            rules={[{ required: true }]}
-          >
-            <Input/>
+          <Form.Item name="class" label="Class" rules={[{ required: true }]}>
+            <Select onChange={onClassChange} placeholder="Select a class">
+              {classes.map((classItem) => (
+                <Select.Option key={classItem} value={classItem}>{classItem}</Select.Option>
+              ))}
+            </Select>
           </Form.Item>
-          <Form.Item
-            name="order"
-            label="Order"
-            rules={[{ required: true }]}
-          >
-            <Input/>
+
+          <Form.Item name="order" label="Order" rules={[{ required: true }]}>
+            <Select placeholder="Select an order">
+              {orders.map((order) => (
+                <Select.Option key={order} value={order}>{order}</Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
             name="family"
@@ -422,8 +454,7 @@ if (!webMode) {
 
            <Form.Item
             name="maxTemp"
-            label="Max Temp (C)"
-            rules={[{ required: true }]}
+            label            rules={[{ required: true }]}
           >
             <InputNumber
               min={0}
