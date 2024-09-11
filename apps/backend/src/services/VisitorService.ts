@@ -60,19 +60,13 @@ class VisitorService {
       }
       return visitor;
     } catch (error) {
-
       throw new Error(`Unable to fetch visitor details: ${error.message}`);
     }
   }
 
   public async updateVisitorDetails(
     id: string,
-    data: Partial<
-      Pick<
-        VisitorSchemaType,
-        'firstName' | 'lastName' | 'email' | 'contactNumber'
-      >
-    >,
+    data: Partial<Pick<VisitorSchemaType, 'firstName' | 'lastName' | 'email' | 'contactNumber'>>,
   ): Promise<Visitor> {
     try {
       const existingVisitor = await VisitorDao.getVisitorById(id);
@@ -227,8 +221,8 @@ class VisitorService {
       throw new Error('Visitor not found');
     }
 
-    const favouriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
-    return favouriteSpecies?.favouriteSpecies || [];
+    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    return favoriteSpecies?.favoriteSpecies || [];
   }
 
   async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {
@@ -268,16 +262,8 @@ class VisitorService {
 }
 
 // Utility function to ensure all required fields are present
-function ensureAllFieldsPresent(
-  data: VisitorSchemaType & { password: string },
-): Prisma.VisitorCreateInput {
-  if (
-    !data.firstName ||
-    !data.lastName ||
-    !data.email ||
-    !data.contactNumber ||
-    !data.password
-  ) {
+function ensureAllFieldsPresent(data: VisitorSchemaType & { password: string }): Prisma.VisitorCreateInput {
+  if (!data.firstName || !data.lastName || !data.email || !data.contactNumber || !data.password) {
     throw new Error('Missing required fields for visitor creation');
   }
   return data as Prisma.VisitorCreateInput;

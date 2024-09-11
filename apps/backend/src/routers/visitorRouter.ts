@@ -146,8 +146,8 @@ router.post('/addFavoriteSpecies', async (req, res) => {
 router.get('/viewFavoriteSpecies/:visitorId', async (req, res) => {
   try {
     const { visitorId } = req.params;
-    const favouriteSpecies = await VisitorService.getFavoriteSpecies(visitorId);
-    res.status(200).json(favouriteSpecies);
+    const favoriteSpecies = await VisitorService.getFavoriteSpecies(visitorId);
+    res.status(200).json(favoriteSpecies);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

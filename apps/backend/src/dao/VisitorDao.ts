@@ -19,13 +19,10 @@ class VisitorDao {
     return prisma.visitor.findUnique({ where: { id } });
   }
 
-  async updateVisitorDetails(
-    id: string,
-    data: Prisma.VisitorUpdateInput,
-  ): Promise<Visitor> {
+  async updateVisitorDetails(id: string, data: Prisma.VisitorUpdateInput): Promise<Visitor> {
     return prisma.visitor.update({ where: { id }, data });
   }
-  
+
   // Commented out as duplicate with above method
 
   // async updateVisitor(id: string, data: Prisma.VisitorUpdateInput): Promise<Visitor | null> {
@@ -39,13 +36,13 @@ class VisitorDao {
     return prisma.visitor.update({
       where: { id: visitorId },
       data: {
-        favouriteSpecies: {
-          connect: { id: speciesId }
-        }
+        favoriteSpecies: {
+          connect: { id: speciesId },
+        },
       },
       include: {
-        favouriteSpecies: true
-      }
+        favoriteSpecies: true,
+      },
     });
   }
 
@@ -53,8 +50,8 @@ class VisitorDao {
     return prisma.visitor.findUnique({
       where: { id: visitorId },
       select: {
-        favouriteSpecies: true
-      }
+        favoriteSpecies: true,
+      },
     });
   }
 
@@ -62,13 +59,13 @@ class VisitorDao {
     return prisma.visitor.update({
       where: { id: visitorId },
       data: {
-        favouriteSpecies: {
-          disconnect: { id: speciesId }
-        }
+        favoriteSpecies: {
+          disconnect: { id: speciesId },
+        },
       },
       include: {
-        favouriteSpecies: true
-      }
+        favoriteSpecies: true,
+      },
     });
   }
 
