@@ -78,7 +78,7 @@ const ViewEditSpecies = () => {
 
   useEffect(() => {
     if (speciesObj) {
-      const characteristics: SpeciesResponse = [
+      const characteristics = [
         speciesObj.isSlowGrowing && 'slowGrowing',
         speciesObj.isEdible && 'edible',
         speciesObj.isToxic && 'toxic',
