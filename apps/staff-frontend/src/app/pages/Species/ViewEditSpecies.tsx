@@ -78,7 +78,7 @@ const ViewEditSpecies = () => {
 
   useEffect(() => {
     if (speciesObj) {
-      const characteristics = [
+      const characteristics: SpeciesResponse = [
         speciesObj.isSlowGrowing && 'slowGrowing',
         speciesObj.isEdible && 'edible',
         speciesObj.isToxic && 'toxic',
@@ -118,10 +118,10 @@ const ViewEditSpecies = () => {
    const onFinish = async (values: any) => {
 
     try {
-        const speciesData = {
+        const speciesData: SpeciesResponse = {
       phylum: values.phylum,                class: values.class,               order: values.order,             family: values.family,           genus: values.genus,
-      speciesName: values.speciesName,          commonName: values.commonName,     speciesDescription: values.speciesDescription,                    conservationStatus: convertConservationStatus(values.conservationStatus),
-      originCountry: values.originCountry,  lightType: convertLightType(values.lightType),                      soilType: convertSoilType(values.soilType),
+      speciesName: values.speciesName,          commonName: values.commonName,     speciesDescription: values.speciesDescription,                    conservationStatus: values.conservationStatus,
+      originCountry: values.originCountry,  lightType: values.lightType,                      soilType: values.soilType,
       fertiliserType: values.fertiliserType,images: [],                        waterRequirement: values.waterRequirement,
       fertiliserRequirement: values.fertiliserRequirement,                     idealHumidity: values.idealHumidity,
       minTemp: values.minTemp,              maxTemp: values.maxTemp,           idealTemp: values.idealTemp,
@@ -285,6 +285,10 @@ if (!webMode) {
               filterOption={(input, option) =>
                 (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
               }
+              onChange={(value) => {
+                console.log('Light type changed to:', value);
+                form.setFieldsValue({ lightType: value });
+              }}
             >
               {lightType.map((type) => (
                 <Select.Option key={type} value={type}>

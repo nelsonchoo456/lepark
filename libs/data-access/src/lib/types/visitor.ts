@@ -21,6 +21,7 @@ export interface SpeciesResponse {
   commonName: string;
   // Add other relevant species fields here
 }
+//conflict here
 
 export interface VisitorLoginData {
   email: string;
