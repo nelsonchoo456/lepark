@@ -6,7 +6,6 @@ import moment from 'moment';
 import {
   OccurrenceResponse,
   StatusLogResponse,
-  getStatusLogsById,
   getStatusLogsByOccurrenceId,
   createStatusLog,
   deleteStatusLog,
