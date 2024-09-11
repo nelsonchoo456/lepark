@@ -3,11 +3,27 @@ import { z } from 'zod';
 import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import OccurrenceDao from '../dao/OccurrenceDao';
 import StaffDao from '../dao/StaffDao';
+import SpeciesDao from '../dao/SpeciesDao';
+import { fromZodError } from 'zod-validation-error';
+import ZoneDao from '../dao/ZoneDao';
 
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
     try {
-      console.log(data)
+      if (data.speciesId) {
+        const species = await SpeciesDao.getSpeciesById(data.speciesId);
+        if (!species) {
+          throw new Error('Species not found');
+        }
+      }
+
+      if (data.zoneId) {
+        const zone = await ZoneDao.getZoneById(data.zoneId);
+        if (!zone) {
+          throw new Error('Zone not found');
+        }
+      }
+      
       const formattedData = dateFormatter(data);
 
       // Validate input data using Zod
@@ -20,8 +36,8 @@ class OccurrenceService {
       return OccurrenceDao.createOccurrence(occurrenceData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -49,7 +65,7 @@ class OccurrenceService {
     data: Partial<OccurrenceSchemaType>,
   ): Promise<Occurrence> {
     try {
-      console.log("data", data);
+      console.log('data', data);
       const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
       const formattedData = dateFormatter(data);
 
@@ -69,13 +85,13 @@ class OccurrenceService {
         return acc;
       }, {});
 
-      console.log("updateData", updateData);
+      console.log('updateData', updateData);
 
       return OccurrenceDao.updateOccurrenceDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

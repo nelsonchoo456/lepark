@@ -88,7 +88,7 @@ const ActivityLogDetails: React.FC = () => {
   const getDescriptionItems = () => [
     {
       key: 'id',
-      label: 'ID',
+      label: 'Activity Log ID',
       children: activityLog?.id,
     },
     {

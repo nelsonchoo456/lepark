@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
+import { fromZodError } from 'zod-validation-error';
 import ParkDao from '../dao/ParkDao';
 import { ParkCreateData, ParkUpdateData } from '../schemas/parkSchema';
 
@@ -32,8 +33,8 @@ class ParkService {
       return ParkDao.createPark(data);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

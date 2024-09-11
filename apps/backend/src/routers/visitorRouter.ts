@@ -143,20 +143,20 @@ router.post('/addFavoriteSpecies', async (req, res) => {
   }
 });
 
-router.get('/viewFavoriteSpecies', async (req, res) => {
+router.get('/viewFavoriteSpecies/:visitorId', async (req, res) => {
   try {
-    const { visitorId } = req.query; // Extract from query string
-    const favoriteSpecies = await VisitorService.getFavoriteSpecies(visitorId as string);
+    const { visitorId } = req.params;
+    const favoriteSpecies = await VisitorService.getFavoriteSpecies(visitorId);
     res.status(200).json(favoriteSpecies);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.delete('/deleteSpeciesFromFavorites', async (req, res) => {
+router.delete('/deleteSpeciesFromFavorites/:visitorId/:speciesId', async (req, res) => {
   try {
-    const { visitorId, speciesId } = req.query; // Extract from query string
-    const updatedVisitor = await VisitorService.deleteSpeciesFromFavorites(visitorId as string, speciesId as string);
+    const { visitorId, speciesId } = req.params;
+    const updatedVisitor = await VisitorService.deleteSpeciesFromFavorites(visitorId, speciesId);
     res.status(200).json(updatedVisitor);
   } catch (error) {
     res.status(400).json({ error: error.message });

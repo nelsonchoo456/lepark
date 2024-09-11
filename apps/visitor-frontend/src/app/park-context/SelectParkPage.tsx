@@ -4,10 +4,12 @@ import { usePark } from './ParkContext';
 import { getAllParks, ParkResponse } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import { Card, Typography } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const SelectParkPage: React.FC = () => {
   const { setSelectedPark } = usePark();
   const [parks, setParks] = useState<ParkResponse[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchParks = async () => {
@@ -24,7 +26,8 @@ const SelectParkPage: React.FC = () => {
   const handleParkSelect = (park: ParkResponse) => {
     setSelectedPark(park);
     // Redirect to the home or another page after selection
-    window.location.href = '/';
+    // window.location.href = '/';
+    navigate('/');
   };
 
   return (

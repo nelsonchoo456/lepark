@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createOccurrence } from '@lepark/data-access';
+import { createOccurrence, getAllZones } from '@lepark/data-access';
 import { Button, Card, Flex, Form, Input, Result, Steps, message } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
-import { OccurrenceResponse } from '@lepark/data-access';
+import { OccurrenceResponse, ZoneResponse } from '@lepark/data-access';
 import dayjs from 'dayjs';
 
 const center = {
@@ -24,6 +24,7 @@ const OccurrenceCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
+  const [zones, setZones] = useState<ZoneResponse[]>([]);
   const navigate = useNavigate();
 
   // Form Values
@@ -32,6 +33,17 @@ const OccurrenceCreate = () => {
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
+
+  useEffect(() => {
+    const fetchZoneData = async () => {
+      const zonesRes = await getAllZones();
+      if (zonesRes.status === 200) {
+        const zonesData = zonesRes.data;
+        setZones(zonesData)
+      } 
+    }
+    fetchZoneData();
+  }, [])
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
@@ -64,7 +76,7 @@ const OccurrenceCreate = () => {
         ...formValues,
         lat,
         lng,
-        speciesId: 'a0c11c79-f93d-4d58-a3a4-c06f3de11568',
+        speciesId: 'ddd79aa5-3711-4312-835f-356415a8e526',
         dateObserved: formValues.dateObserved ? dayjs(formValues.dateObserved).toISOString() : null,
         dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
@@ -86,11 +98,11 @@ const OccurrenceCreate = () => {
   const content = [
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} />,
+      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} zones={zones}/>,
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} />,
+      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} zones={zones} formValues={formValues}/>,
     },
     {
       key: 'complete',

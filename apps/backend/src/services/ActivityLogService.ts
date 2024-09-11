@@ -2,6 +2,7 @@ import { Prisma, ActivityLog } from '@prisma/client';
 import { z } from 'zod';
 import { ActivityLogSchema, ActivityLogSchemaType } from '../schemas/activityLogSchema';
 import ActivityLogDao from '../dao/ActivityLogDao';
+import { fromZodError } from 'zod-validation-error';
 
 class ActivityLogService {
   public async createActivityLog(data: ActivityLogSchemaType): Promise<ActivityLog> {
@@ -17,8 +18,8 @@ class ActivityLogService {
       return ActivityLogDao.createActivityLog(activityLogData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

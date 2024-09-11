@@ -1,25 +1,14 @@
-import { Button, DatePicker, Form, FormInstance, Input, InputNumber, Select, TreeSelect } from 'antd';
+import { ZoneResponse } from '@lepark/data-access';
+import { Button, DatePicker, Form, FormInstance, Input, InputNumber, Select } from 'antd';
 const { TextArea } = Input;
 
 interface CreateDetailsStepProps {
   handleCurrStep: (step: number) => void;
   form: FormInstance;
+  zones: ZoneResponse[];
 }
 
-const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => {
-
-  const speciesOptions = [
-    {
-      value: 'genus',
-      title: 'keke',
-      children: [
-        {
-          value: 'orchid',
-          title: 'Orchid'
-        }
-      ]
-    }
-  ]
+const CreateDetailsStep = ({ handleCurrStep, form, zones }: CreateDetailsStepProps) => {
 
   const decarbonizationTypeOptions = [
     {
@@ -91,6 +80,9 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
           placeholder="Share details about this Plant Occurrence!"
           autoSize={{ minRows: 3, maxRows: 5 }}
         />
+      </Form.Item>
+      <Form.Item name="zoneId" label="Zone" rules={[{ required: true }]}>
+        <Select placeholder="Select a Zone that this Occurrence belongs to" options={zones?.map((zone) => ({ key: zone.id, value: zone.id, label: zone.name}))}/>
       </Form.Item>
       <Form.Item name="occurrenceStatus" label="Occurrence Status" rules={[{ required: true }]}>
         <Select placeholder="Select a Status for the Occurrence" options={occurrenceStatusOptions}/>

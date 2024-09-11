@@ -82,7 +82,7 @@ const MainLayout = () => {
       key: 'zone',
       icon: <TbTree />,
       label: 'Zones',
-      onClick: () => navigate('/park/create'),
+      onClick: () => navigate('/zone'),
     },
     {
       key: 'species',
