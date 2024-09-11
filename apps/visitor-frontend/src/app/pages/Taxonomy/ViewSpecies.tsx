@@ -1,5 +1,13 @@
 import { LogoText, useAuth } from '@lepark/common-ui';
-import { FavoriteSpeciesRequestData, SpeciesResponse, VisitorResponse, addFavoriteSpecies, getSpeciesById } from '@lepark/data-access';
+import {
+  FavoriteSpeciesRequestData,
+  SpeciesResponse,
+  VisitorResponse,
+  addFavoriteSpecies,
+  deleteSpeciesFromFavorites,
+  getSpeciesById,
+  isSpeciesInFavorites,
+} from '@lepark/data-access';
 import { Button, message, Tabs } from 'antd';
 import { useEffect, useState } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
@@ -22,7 +30,7 @@ const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [isFavorite, setIsFavorite] = useState(false);
   const { user, updateUser } = useAuth<VisitorResponse>();
   const [visitor, setVisitor] = useState<VisitorResponse | null>(null);
 
@@ -43,19 +51,46 @@ const ViewSpeciesDetails = () => {
     fetchData();
   }, [speciesId]);
 
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (user && speciesId) {
+        try {
+          const isAlreadyFavorite = await isSpeciesInFavorites(user.id, speciesId);
+          setIsFavorite(isAlreadyFavorite);
+        } catch (error) {
+          console.error('Error checking favorite status:', error);
+        }
+      }
+    };
+    checkFavoriteStatus();
+  }, [user, speciesId]);
+
   const handleAddToFavorites = async () => {
     if (species && user) {
       try {
-        const addFavoriteSpeciesData: FavoriteSpeciesRequestData = {
+        const addFavoriteSpeciesData = {
           visitorId: user.id,
           speciesId: species.id,
         };
         await addFavoriteSpecies(addFavoriteSpeciesData);
         message.success('Species added to favorites!');
-        // Optionally update the user or visitor state if needed
+        setIsFavorite(true);
       } catch (error) {
         console.error('Error adding species to favorites:', error);
         message.error('Failed to add species to favorites. Please try again.');
+      }
+    }
+  };
+
+  const handleRemoveFromFavorites = async () => {
+    if (species && user) {
+      try {
+        await deleteSpeciesFromFavorites(user.id, species.id);
+        message.success('Species removed from favorites!');
+        setIsFavorite(false);
+      } catch (error) {
+        console.error('Error removing species from favorites:', error);
+        message.error('Failed to remove species from favorites. Please try again.');
       }
     }
   };
@@ -196,8 +231,8 @@ const ViewSpeciesDetails = () => {
             className="shadow-lg p-4 rounded-b-3xl h-96 md:h-[45rem] md:rounded-lg"
           />
           {user && (
-            <Button type="primary" onClick={handleAddToFavorites} className="mt-4 w-full">
-              Add to Favorites
+            <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
+              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             </Button>
           )}
         </div>

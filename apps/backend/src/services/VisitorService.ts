@@ -60,19 +60,13 @@ class VisitorService {
       }
       return visitor;
     } catch (error) {
-
       throw new Error(`Unable to fetch visitor details: ${error.message}`);
     }
   }
 
   public async updateVisitorDetails(
     id: string,
-    data: Partial<
-      Pick<
-        VisitorSchemaType,
-        'firstName' | 'lastName' | 'email' | 'contactNumber'
-      >
-    >,
+    data: Partial<Pick<VisitorSchemaType, 'firstName' | 'lastName' | 'email' | 'contactNumber'>>,
   ): Promise<Visitor> {
     try {
       const existingVisitor = await VisitorDao.getVisitorById(id);
@@ -216,7 +210,12 @@ class VisitorService {
     if (!visitor) {
       throw new Error('Visitor not found');
     }
+    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    const isAlreadyFavorite = favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId);
 
+    if (isAlreadyFavorite) {
+      throw new Error('Species is already in favorites');
+    }
     return VisitorDao.addFavoriteSpecies(visitorId, speciesId);
   }
 
@@ -239,6 +238,17 @@ class VisitorService {
     }
 
     return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
+  }
+
+  async isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    return favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId) || false;
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {
@@ -268,16 +278,8 @@ class VisitorService {
 }
 
 // Utility function to ensure all required fields are present
-function ensureAllFieldsPresent(
-  data: VisitorSchemaType & { password: string },
-): Prisma.VisitorCreateInput {
-  if (
-    !data.firstName ||
-    !data.lastName ||
-    !data.email ||
-    !data.contactNumber ||
-    !data.password
-  ) {
+function ensureAllFieldsPresent(data: VisitorSchemaType & { password: string }): Prisma.VisitorCreateInput {
+  if (!data.firstName || !data.lastName || !data.email || !data.contactNumber || !data.password) {
     throw new Error('Missing required fields for visitor creation');
   }
   return data as Prisma.VisitorCreateInput;
