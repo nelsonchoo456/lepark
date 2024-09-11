@@ -1,3 +1,4 @@
+import { ParkResponse } from '@lepark/data-access';
 import {
   Button,
   Checkbox,
@@ -23,9 +24,10 @@ const { Text } = Typography;
 interface CreateDetailsStepProps {
   handleCurrStep: (step: number) => void;
   form: FormInstance;
+  parks: ParkResponse[];
 }
 
-const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => {
+const CreateDetailsStep = ({ handleCurrStep, form, parks }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const zoneStatusOptions = [
@@ -73,6 +75,9 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       {contextHolder}
+      <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+        <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name}))}/>
+      </Form.Item>
       <Divider orientation="left">Zone Details</Divider>
       <Form.Item name="name" label="Name" rules={[{ required: true }]}>
         <Input placeholder="Zone Name" />
@@ -80,7 +85,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
         <TextArea placeholder="Zone Description" />
       </Form.Item>
-      <Form.Item name="parkStatus" label="Zone Status" rules={[{ required: true }]}>
+      <Form.Item name="zoneStatus" label="Zone Status" rules={[{ required: true }]}>
         <Select placeholder="Select a Status" options={zoneStatusOptions} />
       </Form.Item>
 

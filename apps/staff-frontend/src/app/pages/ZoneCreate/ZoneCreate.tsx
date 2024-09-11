@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createZone, ZoneResponse } from '@lepark/data-access';
+import { createZone, getAllParks, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
@@ -22,6 +22,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 
 const ZoneCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
+  const [parks, setParks] = useState<ParkResponse[]>([]);
   const [createdData, setCreatedData] = useState<ZoneResponse | null>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -34,6 +35,17 @@ const ZoneCreate = () => {
   const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
+
+  useEffect(() => {
+    const fetchParksData = async () => {
+      const parksRes = await getAllParks();
+      if (parksRes.status === 200) {
+        const parksData = parksRes.data;
+        setParks(parksData)
+      } 
+    }
+    fetchParksData();
+  }, [])
   
   const handleCurrStep = async (step: number) => {
     console.log(formValues)
@@ -90,7 +102,7 @@ const ZoneCreate = () => {
   const content = [
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} />,
+      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} parks={parks}/>,
     },
     {
       key: 'location',

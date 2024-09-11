@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import {
   OccurrenceResponse,
-  OccurrenceStatusEnum,
+  // OccurrenceStatusEnum,
   StatusLogResponse,
   getStatusLogsByOccurrenceId,
   createStatusLog,
@@ -50,6 +50,29 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
     );
     setFilteredLogs(filtered);
   }, [searchTerm, statusLogs]);
+
+  const occurrenceStatusOptions = [
+    {
+      value: 'HEALTHY',
+      label: 'Healthy',
+    },
+    {
+      value: 'MONITOR_AFTER_TREATMENT',
+      label: 'Monitor After Treatment',
+    },
+    {
+      value: 'NEEDS_ATTENTION',
+      label: 'Needs Attention',
+    },
+    {
+      value: 'URGENT_ACTION_NEEDED',
+      label: 'Urgent Action Needed',
+    },
+    {
+      value: 'REMOVED',
+      label: 'Removed',
+    },
+  ]
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -179,9 +202,9 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
           </Form.Item>
           <Form.Item name="statusLogType" label="Status Type" rules={[{ required: true, message: 'Please select a status type' }]}>
             <Select>
-              {Object.values(OccurrenceStatusEnum).map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
+              {occurrenceStatusOptions.map((option) => (
+                <Select.Option key={option.value} value={option.value}>
+                  {option.label}
                 </Select.Option>
               ))}
             </Select>
