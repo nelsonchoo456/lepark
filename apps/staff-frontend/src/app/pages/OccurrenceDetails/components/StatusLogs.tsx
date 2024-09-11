@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import {
   OccurrenceResponse,
+  OccurrenceStatusEnum,
   StatusLogResponse,
   getStatusLogsByOccurrenceId,
   createStatusLog,
   deleteStatusLog,
-  OccurrenceStatusEnum,
 } from '@lepark/data-access';
 
 const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occurrence }) => {
