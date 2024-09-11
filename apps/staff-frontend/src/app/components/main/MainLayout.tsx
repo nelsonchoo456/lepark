@@ -131,6 +131,7 @@ const MainLayout = () => {
       icon: <FiInbox />,
       // icon: <UploadOutlined />,
       label: 'Tasks',
+      onClick: () => navigate('/task'),
     } : null,
     {
       key: 'profile',

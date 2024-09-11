@@ -29,6 +29,7 @@ import ParkEdit from './pages/ParkEdit/ParkEdit';
 import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
+import Task from './pages/Task/Task';
 
 export function App() {
   return (
@@ -98,7 +99,10 @@ export function App() {
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
               </Route> */}
 
+              <Route path="/task" element={<Task />} />
+
               <Route path="/profile" element={<StaffProfile />} />
+
               <Route path="/staff-management">
                 <Route index element={<StaffManagementPage />} />
                 <Route path=":staffId" element={<ViewStaffDetails />} />
