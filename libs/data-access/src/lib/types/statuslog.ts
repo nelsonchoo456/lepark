@@ -1,4 +1,10 @@
-import { OccurrenceStatusEnum } from './occurrence';
+export enum OccurrenceStatusEnum {
+  HEALTHY = 'HEALTHY',
+  MONITOR_AFTER_TREATMENT = 'MONITOR_AFTER_TREATMENT',
+  NEEDS_ATTENTION = 'NEEDS_ATTENTION',
+  URGENT_ACTION_REQUIRED = 'URGENT_ACTION_REQUIRED',
+  REMOVED = 'REMOVED',
+}
 
 export interface StatusLogData {
   name: string;
