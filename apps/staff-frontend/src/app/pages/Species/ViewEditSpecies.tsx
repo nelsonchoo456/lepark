@@ -2,28 +2,18 @@ import { useEffect, useState } from 'react';
 import MainLayout from '../../components/main/MainLayout';
 import 'leaflet/dist/leaflet.css';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper, SIDEBAR_WIDTH } from '@lepark/common-ui';
+import { ContentWrapper} from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import React from 'react';
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  Space,
-  Checkbox,
-  InputNumber,
-  Slider,
-  Alert,
-  Result,
-  Modal
-
-} from 'antd';
+import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Result, Modal, message } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { phylums, regions, lightType, soilType, conservationStatus, plantCharacteristics, convertLightType, convertSoilType, convertConservationStatus } from '@lepark/data-utility';
-import { getSpeciesById, SpeciesResponse, updateSpecies } from '@lepark/data-access';
+import {
+  phylums,
+  regions
+} from '@lepark/data-utility';
+import { getSpeciesById, SpeciesResponse, updateSpecies, OccurrenceResponse } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 
 const ViewEditSpecies = () => {
@@ -115,26 +105,63 @@ const ViewEditSpecies = () => {
     console.log('checked = ', checkedValues);
   };
 
-   const onFinish = async (values: any) => {
+  const lightTypeOptions = [
+    { value: 'FULL_SUN', label: 'Full Sun' },
+    { value: 'PARTIAL_SHADE', label: 'Partial Shade' },
+    { value: 'FULL_SHADE', label: 'Full Shade' },
+  ];
 
+  const soilTypeOptions = [
+    { value: 'SANDY', label: 'Sandy' },
+    { value: 'CLAYEY', label: 'Clayey' },
+    { value: 'LOAMY', label: 'Loamy' },
+  ];
+
+  const conservationStatusOptions = [
+    { value: 'LEAST_CONCERN', label: 'Least Concern' },
+    { value: 'NEAR_THREATENED', label: 'Near Threatened' },
+    { value: 'VULNERABLE', label: 'Vulnerable' },
+    { value: 'ENDANGERED', label: 'Endangered' },
+    { value: 'CRITICALLY_ENDANGERED', label: 'Critically Endangered' },
+    { value: 'EXTINCT_IN_THE_WILD', label: 'Extinct in the Wild' },
+    { value: 'EXTINCT', label: 'Extinct' },
+  ];
+
+  const onFinish = async (values: any) => {
     try {
-        const speciesData: SpeciesResponse = {
-      phylum: values.phylum,                class: values.class,               order: values.order,             family: values.family,           genus: values.genus,
-      speciesName: values.speciesName,          commonName: values.commonName,     speciesDescription: values.speciesDescription,                    conservationStatus: values.conservationStatus,
-      originCountry: values.originCountry,  lightType: values.lightType,                      soilType: values.soilType,
-      fertiliserType: values.fertiliserType,images: [],                        waterRequirement: values.waterRequirement,
-      fertiliserRequirement: values.fertiliserRequirement,                     idealHumidity: values.idealHumidity,
-      minTemp: values.minTemp,              maxTemp: values.maxTemp,           idealTemp: values.idealTemp,
-      isSlowGrowing: values.plantCharacteristics?.includes('slowGrowing') || false,
-      isEdible: values.plantCharacteristics?.includes('edible') || false,
-      isToxic: values.plantCharacteristics?.includes('toxic') || false,
-      isEvergreen: values.plantCharacteristics?.includes('evergreen') || false,
-      isFragrant: values.plantCharacteristics?.includes('fragrant') || false,
-      isDroughtTolerant: values.plantCharacteristics?.includes('droughtTolerant') || false,
-      isDeciduous: values.plantCharacteristics?.includes('deciduous') || false,
-      isFastGrowing: values.plantCharacteristics?.includes('fastGrowing') || false,
-    };
-    console.log('Species data to be submitted:', speciesData);  // For debugging
+      const plantCharacteristics = values.plantCharacteristics || [];
+      const speciesData: Partial<SpeciesResponse> = {
+          id: '',
+          phylum: values.phylum,
+          class: values.class,
+          order: values.order,
+          family: values.family,
+          genus: values.genus,
+          speciesName: values.speciesName,
+          commonName: values.commonName,
+          speciesDescription: values.speciesDescription,
+          conservationStatus: values.conservationStatus,
+          originCountry: values.originCountry,
+          lightType: values.lightType,
+          soilType: values.soilType,
+          fertiliserType: values.fertiliserType,
+          images: [],
+          waterRequirement: values.waterRequirement,
+          fertiliserRequirement: values.fertiliserRequirement,
+          idealHumidity: values.idealHumidity,
+          minTemp: values.minTemp,
+          maxTemp: values.maxTemp,
+          idealTemp: values.idealTemp,
+          isDroughtTolerant: plantCharacteristics.includes('droughtTolerant'),
+          isFastGrowing: plantCharacteristics.includes('fastGrowing'),
+          isSlowGrowing: plantCharacteristics.includes('slowGrowing'),
+          isEdible: plantCharacteristics.includes('edible'),
+          isDeciduous: plantCharacteristics.includes('deciduous'),
+          isEvergreen: plantCharacteristics.includes('evergreen'),
+          isToxic: plantCharacteristics.includes('toxic'),
+          isFragrant: plantCharacteristics.includes('fragrant'),
+      };
+      console.log('Species data to be submitted:', speciesData); // For debugging
 
       if (values.minTemp > values.ideaTemp || values.maxTemp < values.idealTemp) {
         console.error('Ideal temperature must be between min and max temperatures');
@@ -281,21 +308,9 @@ if (!webMode) {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a light type"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-              }
-              onChange={(value) => {
-                console.log('Light type changed to:', value);
-                form.setFieldsValue({ lightType: value });
-              }}
-            >
-              {lightType.map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
-                </Select.Option>
-              ))}
-            </Select>
+              optionFilterProp="label"
+              options={lightTypeOptions}
+            />
           </Form.Item>
 
           <Form.Item
@@ -307,17 +322,9 @@ if (!webMode) {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a soil type"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-              }
-            >
-              {soilType.map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
-                </Select.Option>
-              ))}
-            </Select>
+              optionFilterProp="label"
+              options={soilTypeOptions}
+            />
           </Form.Item>
 
           <Form.Item
@@ -329,35 +336,33 @@ if (!webMode) {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a conservation status"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-              }
-            >
-              {conservationStatus.map((status) => (
-                <Select.Option key={status} value={status}>
-                  {status}
-                </Select.Option>
-              ))}
-            </Select>
+              optionFilterProp="label"
+              options={conservationStatusOptions}
+            />
           </Form.Item>
 
           <Form.Item
             name="plantCharacteristics"
             label="Plant Characteristics"
             rules={[{ required: false }]}
-            initialValue={[]} // Ensure it starts as an empty array
+            initialValue={[]}
           >
-            <Checkbox.Group>
-              <Checkbox value="slowGrowing">Slow Growing</Checkbox>
-              <Checkbox value="edible">Edible</Checkbox>
-              <Checkbox value="toxic">Toxic</Checkbox>
-              <Checkbox value="evergreen">Evergreen</Checkbox>
-              <Checkbox value="fragrant">Fragrant</Checkbox>
-              <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
-              <Checkbox value="deciduous">Deciduous</Checkbox>
-              <Checkbox value="fastGrowing">Fast Growing</Checkbox>
-            </Checkbox.Group>
+            <Select
+              mode="multiple"
+              style={{ width: '100%' }}
+              placeholder="Select plant characteristics"
+              options={[
+                { value: 'slowGrowing', label: 'Slow Growing' },
+                { value: 'edible', label: 'Edible' },
+                { value: 'toxic', label: 'Toxic' },
+                { value: 'evergreen', label: 'Evergreen' },
+                { value: 'fragrant', label: 'Fragrant' },
+                { value: 'droughtTolerant', label: 'Drought Tolerant' },
+                { value: 'deciduous', label: 'Deciduous' },
+                { value: 'fastGrowing', label: 'Fast Growing' },
+              ]}
+              optionFilterProp="label"
+            />
           </Form.Item>
 
 
