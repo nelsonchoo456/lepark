@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createOccurrence, getAllZones } from '@lepark/data-access';
-import { Button, Card, Flex, Form, Input, Result, Steps, message } from 'antd';
+import { createZone, getAllParks, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { Button, Card, Flex, Form, message, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
-import moment from 'moment';
-import { OccurrenceResponse, ZoneResponse } from '@lepark/data-access';
-import dayjs from 'dayjs';
-
+import { LatLng } from 'leaflet';
+import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -20,32 +18,37 @@ export interface AdjustLatLngInterface {
   lng?: number | null;
 }
 
-const OccurrenceCreate = () => {
+const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+const ZoneCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
+  const [parks, setParks] = useState<ParkResponse[]>([]);
+  const [createdData, setCreatedData] = useState<ZoneResponse | null>();
   const [messageApi, contextHolder] = message.useMessage();
-  const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
-  const [zones, setZones] = useState<ZoneResponse[]>([]);
   const navigate = useNavigate();
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
   // Map Values
+  const [polygon, setPolygon] = useState<LatLng[][]>([]);
+  const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
 
   useEffect(() => {
-    const fetchZoneData = async () => {
-      const zonesRes = await getAllZones();
-      if (zonesRes.status === 200) {
-        const zonesData = zonesRes.data;
-        setZones(zonesData)
+    const fetchParksData = async () => {
+      const parksRes = await getAllParks();
+      if (parksRes.status === 200) {
+        const parksData = parksRes.data;
+        setParks(parksData)
       } 
     }
-    fetchZoneData();
+    fetchParksData();
   }, [])
-
+  
   const handleCurrStep = async (step: number) => {
+    console.log(formValues)
     if (step === 0) {
       setCurrStep(0);
     } else if (step === 1) {
@@ -61,48 +64,49 @@ const OccurrenceCreate = () => {
     }
   };
 
-  const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
-    if (lat) {
-      setLat(lat);
-    }
-    if (lng) {
-      setLng(lng);
-    }
-  };
-
   const handleSubmit = async () => {
     try {
-      const finalData = {
-        ...formValues,
-        lat,
-        lng,
-        speciesId: 'ddd79aa5-3711-4312-835f-356415a8e526',
-        dateObserved: formValues.dateObserved ? dayjs(formValues.dateObserved).toISOString() : null,
-        dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
-      };
+      // console.log(formValues);
+      const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
+      
+      const openingHours: any[] = [];
+      const closingHours: any[] = [];
+      daysOfTheWeek.forEach((day, index) => {
+        console.log(formValues[day])
+        openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
+        closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
+      })
 
-      const response = await createOccurrence(finalData);
-      if (response?.status && response.status === 201) {
-        setCurrStep(2);
-        setCreatedData(response.data);
+      const finalData = { ...rest, openingHours, closingHours}
+
+      if (polygon && polygon[0] && polygon[0][0]) {
+        const polygonData = latLngArrayToPolygon(polygon[0][0]);
+        finalData.geom = polygonData;
       }
+    
+      const response = await createZone(finalData);
+      if (response.status === 201) {
+        setCreatedData(response.data)
+        setCurrStep(2);
+      }
+      
     } catch (error) {
+      console.error(error);
       messageApi.open({
         type: 'error',
-        content: 'Unable to create Occurrence as Species cannot be found. Please try again later.',
+        content: 'Unable to create a Zone. Please try again later.',
       });
-      //
     }
   };
 
   const content = [
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} zones={zones}/>,
+      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} parks={parks}/>,
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} zones={zones} formValues={formValues}/>,
+      children: <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines}/>,
     },
     {
       key: 'complete',
@@ -113,20 +117,18 @@ const OccurrenceCreate = () => {
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Create an Occurrence</PageHeader>
+      <PageHeader>Create a Zone</PageHeader>
       <Card>
-        {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}
         <Steps
-          // direction="vertical"
           current={currStep}
           items={[
             {
               title: 'Details',
-              description: 'Input Occurrence details',
+              description: 'Input Zone details',
             },
             {
               title: 'Location',
-              description: 'Indicate Occurrence location',
+              description: 'Demarcate Zone',
             },
             {
               title: 'Complete',
@@ -137,14 +139,6 @@ const OccurrenceCreate = () => {
         {currStep === 1 && (
           <>
             {content[1].children}
-            <Flex className="w-full max-w-[600px] mx-auto pb-4" gap={10}>
-              <div className="flex-1">
-                Latitude: <Input value={lat} />
-              </div>
-              <div className="flex-1">
-                Latitude: <Input value={lng} />
-              </div>
-            </Flex>
             <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
               <Button type="default" className="w-full" onClick={() => handleCurrStep(0)}>
                 Previous
@@ -159,14 +153,14 @@ const OccurrenceCreate = () => {
           <Flex justify="center" className="py-4">
             <Result
               status="success"
-              title="Created new Occurrence"
-              subTitle={createdData && <>Occurrence title: {createdData.title}</>}
+              title="Created new Zone"
+              subTitle={
+                createdData && <>Zone title: {createdData.name}</>
+              }
               extra={[
-                <Button key="back" onClick={() => navigate('/occurrences')}>
-                  Back to Occurrence Management
-                </Button>,
-                <Button type="primary" key="view" onClick={() => navigate(`/occurrences/${createdData?.id}`)}>
-                  View new Occurrence
+                <Button key="back" onClick={() => navigate('/zone')}>Back to Zone Management</Button>,
+                <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)}>
+                  View new Zone
                 </Button>,
               ]}
             />
@@ -177,4 +171,4 @@ const OccurrenceCreate = () => {
   );
 };
 
-export default OccurrenceCreate;
+export default ZoneCreate;

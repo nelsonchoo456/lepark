@@ -5,7 +5,7 @@ import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
 import { getStatusLogById, updateStatusLog } from '@lepark/data-access';
-import { StatusLogResponse, OccurrenceStatusEnum, StatusLogUpdateData } from '@lepark/data-access';
+import { StatusLogResponse, StatusLogUpdateData } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 
 const { Title } = Typography;
@@ -37,6 +37,29 @@ const StatusLogDetails: React.FC = () => {
 
     fetchStatusLogDetails();
   }, [statusLogId]);
+
+  const occurrenceStatusOptions = [
+    {
+      value: 'HEALTHY',
+      label: 'Healthy',
+    },
+    {
+      value: 'MONITOR_AFTER_TREATMENT',
+      label: 'Monitor After Treatment',
+    },
+    {
+      value: 'NEEDS_ATTENTION',
+      label: 'Needs Attention',
+    },
+    {
+      value: 'URGENT_ACTION_NEEDED',
+      label: 'Urgent Action Needed',
+    },
+    {
+      value: 'REMOVED',
+      label: 'Removed',
+    },
+  ]
 
   const toggleEditMode = () => {
     if (inEditMode) {
@@ -131,9 +154,14 @@ const StatusLogDetails: React.FC = () => {
           onChange={(value) => handleInputChange('statusLogType', value)}
           style={{ width: '100%' }}
         >
-          {Object.values(OccurrenceStatusEnum).map((type) => (
+          {/* {Object.values(OccurrenceStatusEnum).map((type) => (
             <Select.Option key={type} value={type}>
               {type}
+            </Select.Option>
+          ))} */}
+          {occurrenceStatusOptions.map((option) => (
+            <Select.Option key={option.value} value={option.value}>
+              {option.label}
             </Select.Option>
           ))}
         </Select>

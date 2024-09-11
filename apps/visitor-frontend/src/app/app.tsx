@@ -63,7 +63,7 @@ export function App() {
                   <Route path="/payment" element={<Payment />} />
                   <Route path="/occurrence">
                     {/* <Route index element={<OccurrenceList />} /> */}
-                  <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                    <Route path=":occurrenceId" element={<OccurrenceDetails />} />
                     {/* <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/> */}
                   </Route>
                   <Route path="/discover" element={<Discover />} />

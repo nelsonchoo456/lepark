@@ -23,6 +23,7 @@ export async function createOccurrence(data: OccurrenceData): Promise<AxiosRespo
 export async function getAllOccurrences(): Promise<AxiosResponse<OccurrenceResponse[]>> {
   try {
     const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/getAllOccurrences`);
+    console.log(response)
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
