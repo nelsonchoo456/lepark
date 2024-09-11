@@ -44,6 +44,26 @@ const ViewStaffDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await viewStaffDetails(staffId);
+        setStaff(response.data);
+        setEditedUser(response.data);
+        console.log(staff);
+      } catch (error) {
+        console.error(error);
+        message.error('Failed to fetch user details');
+      }
+    };
+    
+    if (staffId) {
+      fetchUserDetails();
+      console.log(user?.parkId, staff.parkId);
+    }
+  }, [staffId]);
+
+  useEffect(() => {
+    if (user && staff.id !== '') {
     if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
       if (!notificationShown.current) {
         notification.error({
@@ -53,6 +73,16 @@ const ViewStaffDetails = () => {
         notificationShown.current = true;
       }
       navigate('/');
+    } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the details of this staff!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/staff-management');
+
     } else {
      // Fetch parks data from the database
      getAllParks()
@@ -62,23 +92,8 @@ const ViewStaffDetails = () => {
      .catch((error) => {
        console.error('There was an error fetching the parks data!', error);
      });
-
-    const fetchUserDetails = async () => {
-      try {
-        const response = await viewStaffDetails(staffId);
-        setStaff(response.data);
-        setEditedUser(response.data);
-      } catch (error) {
-        console.error(error);
-        message.error('Failed to fetch user details');
-      }
-    };
-
-    if (staffId) {
-      fetchUserDetails();
-    }
-  }
-  }, [staffId, user]);
+  }}
+  }, [staff, user, navigate]);
 
   const getParkName = (parkId: string) => {
     const park = parks.find((park) => park.id == parkId);
