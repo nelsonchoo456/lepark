@@ -1,5 +1,5 @@
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { viewSpeciesDetails, SpeciesResponse } from '@lepark/data-access';
+import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
 import { Card, Descriptions, Tabs } from 'antd';
 import { useEffect, useState } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
@@ -28,7 +28,7 @@ const ViewSpeciesDetails = () => {
     const fetchData = async () => {
       if (speciesId) {
         try {
-          const speciesResponse = await viewSpeciesDetails(speciesId);
+          const speciesResponse = await getSpeciesById(speciesId);
           setSpecies(speciesResponse.data);
           console.log(speciesResponse.data);
         } catch (error) {

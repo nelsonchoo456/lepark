@@ -23,7 +23,7 @@ import {
 import type { GetProp } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { phylums, regions, lightType, soilType, conservationStatus, plantCharacteristics, convertLightType, convertSoilType, convertConservationStatus } from '@lepark/data-utility';
-import { viewSpeciesDetails, SpeciesResponse, updateSpecies } from '@lepark/data-access';
+import { getSpeciesById, SpeciesResponse, updateSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 
 const ViewEditSpecies = () => {
@@ -61,7 +61,7 @@ const ViewEditSpecies = () => {
       setId(speciesIdFromLocation);
       const fetchSingleSpeciesById = async () => {
         try {
-          const species = await viewSpeciesDetails(speciesIdFromLocation);
+          const species = await getSpeciesById(speciesIdFromLocation);
           setSpeciesObj(species.data);
           form.setFieldsValue(species.data);
 
