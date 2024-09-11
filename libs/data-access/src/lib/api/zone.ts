@@ -36,18 +36,18 @@ export async function getAllZones(): Promise<AxiosResponse<ZoneResponse[]>> {
   }
 }
 
-// export async function getParkById(id: number): Promise<AxiosResponse<ParkResponse>> {
-//   try {
-//     const response: AxiosResponse<ParkResponse> = await axiosClient.get(`/getParkById/${id}`);
-//     return response;
-//   } catch (error) {
-//     if (axios.isAxiosError(error)) {
-//       throw error.response?.data.error || error.message;
-//     } else {
-//       throw error;
-//     }
-//   }
-// }
+export async function getZoneById(id: number): Promise<AxiosResponse<ZoneResponse>> {
+  try {
+    const response: AxiosResponse<ZoneResponse> = await axiosClient.get(`/getZoneById/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
 
 // export async function updatePark(id: number, data: Partial<ParkResponse>): Promise<AxiosResponse<ParkResponse>> {
 //   try {

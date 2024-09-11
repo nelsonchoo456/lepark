@@ -1,4 +1,12 @@
-import { OccurrenceStatusEnum } from './sharedenums';
+// enum OccurrenceStatusEnum {
+//   HEALTHY = 'HEALTHY',
+//   MONITOR_AFTER_TREATMENT = 'MONITOR_AFTER_TREATMENT',
+//   NEEDS_ATTENTION = 'NEEDS_ATTENTION',
+//   URGENT_ACTION_REQUIRED = 'URGENT_ACTION_REQUIRED',
+//   REMOVED = 'REMOVED',
+// }
+
+import { OccurrenceStatusEnum } from "./sharedenums";
 
 export enum DecarbonizationTypeEnum {
   TREE_TROPICAL = 'TREE_TROPICAL',
