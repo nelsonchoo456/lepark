@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { CreateSpeciesData, SpeciesResponse } from '../types/species';
 import client from './client';
+import { OccurrenceResponse } from '../types/occurrence';
 const URL = '/species';
 
 export async function createSpecies(data: CreateSpeciesData): Promise<AxiosResponse<SpeciesResponse>> {
@@ -58,6 +59,19 @@ export async function updateSpecies(id: string, data: Partial<SpeciesResponse>):
 export async function deleteSpecies(id: string): Promise<AxiosResponse<void>> {
   try {
     const response: AxiosResponse<void> = await client.delete(`${URL}/deleteSpecies/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getOccurrencesBySpeciesId(id: string): Promise<AxiosResponse<OccurrenceResponse[]>> {
+  try {
+    const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/getOccurrencesBySpeciesId/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

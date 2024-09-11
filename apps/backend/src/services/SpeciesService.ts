@@ -6,7 +6,7 @@ import SpeciesDao from '../dao/SpeciesDao';
 import StaffDao from '../dao/StaffDao';
 
 class SpeciesService {
-  public async createSpecies(data: SpeciesSchemaType): Promise<Species> {
+    public async createSpecies(data: SpeciesSchemaType): Promise<Species> {
     try {
       // Validate input data using Zod
       SpeciesSchema.parse(data);
@@ -119,6 +119,14 @@ class SpeciesService {
 
   public async deleteSpecies(speciesId: string): Promise<void> {
     await SpeciesDao.deleteSpecies(speciesId);
+  }
+
+  public async getOccurrencesBySpeciesId(speciesId: string) {
+    try {
+      return await SpeciesDao.findOccurrencesBySpeciesId(speciesId);
+    } catch (error) {
+      throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
+    }
   }
 }
 

@@ -66,4 +66,14 @@ router.delete('/deleteSpecies/:id', async (req, res) => {
   }
 });
 
+router.get('/getOccurrencesBySpeciesId/:id', async (req, res) => {
+  try {
+    const speciesId = req.params.id;
+    const occurrences = await SpeciesService.getOccurrencesBySpeciesId(speciesId);
+    res.status(200).json(occurrences);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

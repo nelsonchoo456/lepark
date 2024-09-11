@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Species } from '@prisma/client';
+import { PrismaClient, Prisma, Species, Occurrence } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -42,6 +42,18 @@ class SpeciesDao {
         },
       },
     });
+  }
+
+  async findOccurrencesBySpeciesId(speciesId: string): Promise<Occurrence[]> {
+    try {
+      return await prisma.occurrence.findMany({
+        where: {
+          speciesId: speciesId,
+        },
+      });
+    } catch (error) {
+      throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
+    }
   }
 }
 
