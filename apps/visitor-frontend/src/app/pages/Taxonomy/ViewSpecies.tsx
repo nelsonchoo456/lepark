@@ -1,6 +1,6 @@
-import { LogoText } from '@lepark/common-ui';
-import { SpeciesResponse, getSpeciesById } from '@lepark/data-access';
-import { Tabs } from 'antd';
+import { LogoText, useAuth } from '@lepark/common-ui';
+import { FavoriteSpeciesRequestData, SpeciesResponse, VisitorResponse, addFavoriteSpecies, getSpeciesById } from '@lepark/data-access';
+import { Button, message, Tabs } from 'antd';
 import { useEffect, useState } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
 import {
@@ -23,6 +23,9 @@ const ViewSpeciesDetails = () => {
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { user, updateUser } = useAuth<VisitorResponse>();
+  const [visitor, setVisitor] = useState<VisitorResponse | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       if (speciesId) {
@@ -39,6 +42,23 @@ const ViewSpeciesDetails = () => {
     };
     fetchData();
   }, [speciesId]);
+
+  const handleAddToFavorites = async () => {
+    if (species && user) {
+      try {
+        const addFavoriteSpeciesData: FavoriteSpeciesRequestData = {
+          visitorId: user.id,
+          speciesId: species.id,
+        };
+        await addFavoriteSpecies(addFavoriteSpeciesData);
+        message.success('Species added to favorites!');
+        // Optionally update the user or visitor state if needed
+      } catch (error) {
+        console.error('Error adding species to favorites:', error);
+        message.error('Failed to add species to favorites. Please try again.');
+      }
+    }
+  };
 
   const descriptionsItems = [
     {
@@ -164,18 +184,26 @@ const ViewSpeciesDetails = () => {
     <div className="md:p-4">
       {/* <Card className="md:p-4" styles={{ body: { padding: 0 } }} bordered={false}> */}
       <div className="md:flex w-full gap-4">
-        <div
-          style={{
-            backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            color: 'white',
-            overflow: 'hidden',
-          }}
-          className="shadow-lg p-4 rounded-b-3xl h-96 md:h-[45rem] md:flex-[2] md:rounded-lg"
-        />
+        <div className="md:flex-[2]">
+          <div
+            style={{
+              backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              color: 'white',
+              overflow: 'hidden',
+            }}
+            className="shadow-lg p-4 rounded-b-3xl h-96 md:h-[45rem] md:rounded-lg"
+          />
+          {user && (
+            <Button type="primary" onClick={handleAddToFavorites} className="mt-4 w-full">
+              Add to Favorites
+            </Button>
+          )}
+        </div>
         <div className="flex-[3] flex-col flex p-4 md:p-0">
           <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.speciesName}</LogoText>
+
           <div className="flex flex-col-reverse">
             <div className="flex h-24 w-full gap-3 my-2 md:gap-2 md:mt-auto">
               <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
@@ -192,9 +220,7 @@ const ViewSpeciesDetails = () => {
               </div>
             </div>
           </div>
-          <div className="py-4">
-            {species?.speciesDescription}
-          </div>
+          <div className="py-4">{species?.speciesDescription}</div>
           <Tabs
             // centered
             defaultActiveKey="information"
