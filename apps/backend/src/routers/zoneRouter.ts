@@ -12,10 +12,29 @@ router.post('/createZone', async (req, res) => {
   }
 });
 
-router.get('/getAllZones', async (_, res) => {
+// router.get('/getAllZones', async (_, res) => {
+//   try {
+//     const zonesList = await ZoneService.getAllZones();
+//     res.status(200).json(zonesList);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
+
+router.get('/getAllZones', async (req, res) => {
+  // http://localhost:3333/api/zones/getAllZones
+  // http://localhost:3333/api/zones/getAllZones?parkId=<enter_oarkId_here>
   try {
-    const zonesList = await ZoneService.getAllZones();
-    res.status(200).json(zonesList);
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
+
+    if (parkId) {
+      const zones = await ZoneService.getZonesByParkId(parkId);
+      res.status(200).json(zones);
+    } else {
+      const zonesList = await ZoneService.getAllZones();
+      res.status(200).json(zonesList);
+    }
+
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
