@@ -167,7 +167,7 @@ const SpeciesPage = () => {
     },
   ];
 
-  return webMode ? (
+  return (
     <ContentWrapperDark>
       <PageHeader>Species Management</PageHeader>
       <Flex justify="end" gap={10}>
@@ -194,11 +194,6 @@ const SpeciesPage = () => {
         />
       </Card>
     </ContentWrapperDark>
-  ) : (
-    <div className="h-[calc(100vh-2rem)] w-screen p-4">
-      <PageHeader>Species Management (Mobile)</PageHeader>
-      {/* Add your mobile content here */}
-    </div>
   );
 };
 
