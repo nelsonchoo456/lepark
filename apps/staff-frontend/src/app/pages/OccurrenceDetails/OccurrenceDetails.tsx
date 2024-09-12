@@ -181,7 +181,7 @@ const OccurrenceDetails = () => {
                 className="h-64 flex-1 rounded-lg shadow-lg p-4"
               />
               <div className="flex-1 flex-col flex">
-                <LogoText className="text-2xl py-2 m-0">{occurrence?.speciesName}</LogoText>
+                <LogoText className="text-2xl py-2 m-0">{occurrence?.title}</LogoText>
                 <Descriptions items={descriptionsItems} column={1} size="small" />
 
                 <div className="flex h-24 w-full gap-2 mt-auto">
