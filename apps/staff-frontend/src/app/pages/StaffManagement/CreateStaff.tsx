@@ -107,7 +107,7 @@ const CreateStaff: React.FC = () => {
                 if (user?.role === StaffType.MANAGER) {
                   return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
                 } else if (user?.role === StaffType.SUPERADMIN) {
-                  return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+                  return role === StaffType.MANAGER; //removed option to create SUPERADMIN; we assume SUPERADMINs are created in system
                 }
                 return true;
               })
@@ -152,7 +152,7 @@ const CreateStaff: React.FC = () => {
           ) : (
             <Select placeholder="Select a Park" allowClear>
               {parks.map((park) => (
-                <Select.Option key={park.id} value={park.id.toString()}>
+                <Select.Option key={park.id} value={park.id}>
                   {park.name}
                 </Select.Option>
               ))}
