@@ -28,7 +28,7 @@ router.get('/getAllStaffs', async (_, res) => {
 
 router.get('/getAllStaffsByParkId/:parkId', async (req, res) => {
   try {
-    const parkId = req.params.parkId;
+    const parkId = parseInt(req.params.parkId);
     const staffList = await StaffService.getAllStaffsByParkId(parkId);
     res.status(200).json(staffList);
   } catch (error) {

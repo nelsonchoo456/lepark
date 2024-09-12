@@ -15,7 +15,7 @@ export interface RegisterStaffData {
   password: string;
   contactNumber: string;
   role: StaffType;
-  parkId?: string;
+  parkId?: number;
 }
 
 export interface StaffResponse {
@@ -27,7 +27,7 @@ export interface StaffResponse {
   contactNumber: string;
   role: string;
   isActive: boolean;
-  parkId?: string;
+  parkId?: number;
 }
 
 export interface LoginData {

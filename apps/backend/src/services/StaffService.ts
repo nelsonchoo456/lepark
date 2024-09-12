@@ -56,7 +56,7 @@ class StaffService {
     return StaffDao.getAllStaffs();
   }
 
-  public async getAllStaffsByParkId(parkId: string): Promise<Staff[]> {
+  public async getAllStaffsByParkId(parkId: number): Promise<Staff[]> {
     try {
       const staffList = StaffDao.getAllStaffsByParkId(parkId);
       return staffList;

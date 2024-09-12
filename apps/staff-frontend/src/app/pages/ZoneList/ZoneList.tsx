@@ -20,7 +20,7 @@ const ZoneList: React.FC = () => {
     if (user?.role === StaffType.SUPERADMIN) {
       fetchAllZones();
     } else {
-      fetchZonesByParkId(parseInt(user?.parkId));
+      fetchZonesByParkId(user?.parkId);
     }
   }, [user]);
 

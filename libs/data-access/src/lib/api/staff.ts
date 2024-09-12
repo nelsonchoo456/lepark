@@ -39,7 +39,7 @@ export async function getAllStaffs(): Promise<AxiosResponse<StaffResponse[]>> {
   }
 }
 
-export async function getAllStaffsByParkId(parkId: string): Promise<AxiosResponse<StaffResponse[]>> {
+export async function getAllStaffsByParkId(parkId?: number): Promise<AxiosResponse<StaffResponse[]>> {
   try {
     const response: AxiosResponse<StaffResponse[]> = await client.get(`${URL}/getAllStaffsByParkId/${parkId}`);
     return response;

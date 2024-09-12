@@ -13,7 +13,7 @@ export interface StringIdxSig {
   [key: string]: string | undefined
 }
 export interface ParkResponse {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   address?: string;

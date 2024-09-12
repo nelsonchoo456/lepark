@@ -141,9 +141,9 @@ const StaffProfile = () => {
     }
   };
 
-  const getParkName = (parkId: string) => {
-    const park = parks.find((park) => park.id == parkId);
-    return park ? park.name : 'NParks';
+  const getParkName = (parkId?: number) => {
+    const park = parks.find((park) => park.id === parkId);
+    return parkId && park ? park.name : 'NParks';
   };
 
   const validateContactNumber = (value: string) => {
@@ -225,7 +225,7 @@ const StaffProfile = () => {
     {
       key: 'park',
       label: 'Park',
-      children: getParkName(editedUser?.parkId || ''),
+      children: getParkName(editedUser?.parkId),
       span: 2,
     },
     {

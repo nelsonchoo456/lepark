@@ -75,9 +75,9 @@ const CreateStaff: React.FC = () => {
     }
   }, [user]);
 
-  const getParkName = (parkId: string) => {
-    const park = parks.find((park) => park.id == parkId);
-    return park ? park.name : 'NParks';
+  const getParkName = (parkId?: number) => {
+    const park = parks.find((park) => park.id === parkId);
+    return parkId && park ? park.name : 'NParks';
   };
 
   return (
@@ -143,9 +143,9 @@ const CreateStaff: React.FC = () => {
         {parks.length === 0 ? (
             <Text type="secondary">There are no parks created yet!</Text>
           ) : user?.role === StaffType.MANAGER ? (
-            <Select placeholder={getParkName(user?.parkId || '')} value={user?.parkId}>
+            <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>
               <Select.Option key={user?.parkId} value={user?.parkId?.toString()}>
-                {getParkName(user?.parkId || '')}
+                {getParkName(user?.parkId)}
               </Select.Option>
             </Select>
           ) : (

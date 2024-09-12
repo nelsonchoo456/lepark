@@ -29,7 +29,7 @@ CREATE TABLE "Staff" (
     "contactNumber" TEXT NOT NULL,
     "role" "StaffRoleEnum" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
-    "parkId" TEXT,
+    "parkId" INTEGER,
 
     CONSTRAINT "Staff_pkey" PRIMARY KEY ("id")
 );
