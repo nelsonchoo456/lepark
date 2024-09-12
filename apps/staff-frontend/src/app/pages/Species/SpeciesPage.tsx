@@ -133,19 +133,42 @@ const SpeciesPage = () => {
       dataIndex: 'conservationStatus',
       key: 'conservationStatus',
       render: (status) => {
-        let color = 'green';
+        let color: string;
+        let style: React.CSSProperties = {};
         switch (status) {
+          case 'LEAST_CONCERN':
+            color = 'green';
+            break;
+          case 'NEAR_THREATENED':
+            color = 'lime';
+            break;
           case 'VULNERABLE':
             color = 'orange';
             break;
           case 'ENDANGERED':
+            color = 'volcano';
+            break;
           case 'CRITICALLY_ENDANGERED':
             color = 'red';
             break;
+          case 'EXTINCT_IN_THE_WILD':
+            color = 'purple';
+            break;
+          case 'EXTINCT':
+            color = 'white';
+            style = { color: 'rgba(0, 0, 0, 0.85)', border: '1px solid #d9d9d9' };
+            break;
           default:
-            color = 'green';
+            color = 'default';
         }
-        return <Tag color={color}>{status.replace('_', ' ')}</Tag>;
+        return (
+          <Tag
+            color={color}
+            style={style}
+          >
+            {status.replace(/_/g, ' ')}
+          </Tag>
+        );
       },
     },
     {

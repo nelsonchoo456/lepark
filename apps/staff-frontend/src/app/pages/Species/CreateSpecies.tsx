@@ -110,7 +110,14 @@ const CreateSpecies = () => {
         isToxic: plantCharacteristics.includes('toxic') as boolean,
         isFragrant: plantCharacteristics.includes('fragrant') as boolean,
       };
-
+      if (values.tempRange[0] == values.tempRange[1]) {
+        console.error('Min and max temperatures cannot be the same');
+        Modal.error({
+          title: 'Error',
+          content: 'Min and max temperatures cannot be the same',
+        });
+        return;
+      }
       if (values.tempRange[0] > values.idealTemp || values.tempRange[1] < values.idealTemp) {
         console.error('Ideal temperature must be between min and max temperatures');
         Modal.error({
@@ -144,7 +151,7 @@ const CreateSpecies = () => {
 
   //slider
 
-  return webMode ? (
+  return (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapper>
       {/* <h1 className="header-1 mb-4">Create Species</h1> */}
@@ -380,14 +387,6 @@ const CreateSpecies = () => {
         />
       )}
     </ContentWrapper>
-  ) : (
-    <div
-      className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
-    >
-      {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
-      <PageHeader>Create Species (Mobile)</PageHeader>
-      {/* Add your mobile content here */}
-    </div>
   );
 };
 
