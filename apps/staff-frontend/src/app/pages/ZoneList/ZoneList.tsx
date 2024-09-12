@@ -1,52 +1,18 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
+import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip } from 'antd';
 import moment from 'moment';
 import PageHeader from '../../components/main/PageHeader';
-import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
+import { FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { getAllZones, getZonesByParkId, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
+import { StaffResponse, } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const ZoneList: React.FC = () => {
-  const [zones, setZones] = useState<ZoneResponse[]>([]);
+  const { zones, loading } = useFetchZones();
   const { user } = useAuth<StaffResponse>();
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(user);
-    if (!user || !user.parkId) return;
-    if (user?.role === StaffType.SUPERADMIN) {
-      fetchAllZones();
-    } else {
-      fetchZonesByParkId(user?.parkId);
-    }
-  }, [user]);
-
-  const fetchAllZones = async () => {
-    try {
-      setLoading(true);
-      const response = await getAllZones();
-      setZones(response.data);
-    } catch (error) {
-      message.error('Failed to fetch Zones');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchZonesByParkId = async (parkId: number) => {
-    try {
-      setLoading(true);
-      const response = await getZonesByParkId(parkId);
-      setZones(response.data);
-    } catch (error) {
-      message.error('Failed to fetch Zones');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/zones/${occurrenceId}`);
