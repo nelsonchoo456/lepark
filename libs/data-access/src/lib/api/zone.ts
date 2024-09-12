@@ -36,6 +36,19 @@ export async function getAllZones(): Promise<AxiosResponse<ZoneResponse[]>> {
   }
 }
 
+export async function getZonesByParkId(parkId: number): Promise<AxiosResponse<ZoneResponse[]>> {
+  try {
+    const response: AxiosResponse<ZoneResponse[]> = await axiosClient.get(`/getAllZones?parkId=${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getZoneById(id: number): Promise<AxiosResponse<ZoneResponse>> {
   try {
     const response: AxiosResponse<ZoneResponse> = await axiosClient.get(`/getZoneById/${id}`);

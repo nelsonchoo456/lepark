@@ -1,35 +1,55 @@
-import { ContentWrapperDark } from '@lepark/common-ui';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
 import moment from 'moment';
 import PageHeader from '../../components/main/PageHeader';
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { getAllOccurrences, getAllZones, OccurrenceResponse, ZoneResponse } from '@lepark/data-access';
+import { getAllZones, getZonesByParkId, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 
 const ZoneList: React.FC = () => {
-  const [occurrences, setOccurrences] = useState<ZoneResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [zones, setZones] = useState<ZoneResponse[]>([]);
+  const { user } = useAuth<StaffResponse>();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchOccurrences();
-  }, []);
+    console.log(user);
+    if (!user || !user.parkId) return;
+    if (user?.role === StaffType.SUPERADMIN) {
+      fetchAllZones();
+    } else {
+      fetchZonesByParkId(parseInt(user?.parkId));
+    }
+  }, [user]);
 
-  const fetchOccurrences = async () => {
+  const fetchAllZones = async () => {
     try {
+      setLoading(true);
       const response = await getAllZones();
-      setOccurrences(response.data);
+      setZones(response.data);
     } catch (error) {
-      message.error('Failed to fetch occurrences');
+      message.error('Failed to fetch Zones');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchZonesByParkId = async (parkId: number) => {
+    try {
+      setLoading(true);
+      const response = await getZonesByParkId(parkId);
+      setZones(response.data);
+    } catch (error) {
+      message.error('Failed to fetch Zones');
     } finally {
       setLoading(false);
     }
   };
 
   const navigateToDetails = (occurrenceId: string) => {
-    navigate(`/occurrences/${occurrenceId}`);
+    navigate(`/zones/${occurrenceId}`);
   };
 
   const navigateToSpecies = (speciesId: string) => {
@@ -106,7 +126,7 @@ const ZoneList: React.FC = () => {
 
       <Card>
         <Table
-          dataSource={occurrences}
+          dataSource={zones}
           columns={columns}
           rowKey="id"
           loading={loading}
