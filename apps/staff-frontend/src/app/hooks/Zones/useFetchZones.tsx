@@ -11,11 +11,10 @@ export const useFetchZones = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user || !user.parkId) return;
-
+    if (!user) return;
     if (user?.role === StaffType.SUPERADMIN) {
       fetchAllZones();
-    } else {
+    } else if (user?.parkId) {
       fetchZonesByParkId(user?.parkId);
     }
   }, [user]);

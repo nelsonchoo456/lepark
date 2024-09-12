@@ -10,11 +10,10 @@ export const useFetchParks = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user || !user.parkId) return;
-
+    if (!user) return;
     if (user?.role === StaffType.SUPERADMIN) {
       fetchAllParks();
-    } else {
+    } else if (user?.parkId) {
       fetchParkById(user.parkId)
       setRestrictedParkId(user.parkId);
     }
