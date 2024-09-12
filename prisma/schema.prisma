@@ -114,7 +114,7 @@ model Occurrence {
   dateOfBirth         DateTime?
   numberOfPlants      Float
   biomass             Float
-  description         String
+  description         String?
   occurrenceStatus    OccurrenceStatusEnum
   decarbonizationType DecarbonizationTypeEnum
   speciesId           String                  @db.Uuid

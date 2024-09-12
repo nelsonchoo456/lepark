@@ -42,6 +42,7 @@ export interface OccurrenceResponse {
   speciesId: string;
   speciesName: string;
   images: string[];
+  occurrenceStatus?: OccurrenceStatusEnum;
 }
 
 export interface OccurrenceUpdateData {

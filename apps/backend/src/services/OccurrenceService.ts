@@ -109,7 +109,7 @@ class OccurrenceService {
 // Utility function to ensure all required fields are present
 function ensureAllFieldsPresent(data: OccurrenceSchemaType): Prisma.OccurrenceCreateInput {
   // Add checks for all required fields
-  if (!data.dateObserved || !data.dateOfBirth || !data.numberOfPlants || !data.biomass || !data.description || !data.speciesId) {
+  if (!data.dateObserved || !data.numberOfPlants || !data.biomass || !data.speciesId) {
     throw new Error('Missing required fields for occurrence creation');
   }
   return data as Prisma.OccurrenceCreateInput;
