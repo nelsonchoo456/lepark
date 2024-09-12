@@ -60,7 +60,7 @@ const CreateSpecies = () => {
 
   const onPhylumChange = (value: string) => {
     const selectedPhylum = plantTaxonomy[value as keyof typeof plantTaxonomy];
-    setClasses(Object.keys(selectedPhylum).filter(key => key !== 'classes'));
+    setClasses(Object.keys(selectedPhylum).filter((key) => key !== 'classes'));
     setOrders([]);
     form.setFieldsValue({ classInput: undefined, orderInput: undefined });
   };
@@ -130,7 +130,7 @@ const CreateSpecies = () => {
       console.log(speciesData);
       console.log('Species data to be submitted:', JSON.stringify(speciesData)); // For debugging
 
-      const response = await createSpecies(speciesData);
+      const response = await createSpecies(speciesData, selectedFiles);
       console.log('Species created:', response.data);
       setCreatedSpeciesName(values.speciesInput);
       setCreatedSpecies(response.data);
@@ -142,6 +142,8 @@ const CreateSpecies = () => {
       // Handle error (e.g., show an error message)
     } finally {
       setIsSubmitting(false);
+      setSelectedFiles([]);
+      setPreviewImages([]);
     }
   };
   const onReset = () => {
@@ -150,6 +152,19 @@ const CreateSpecies = () => {
   const { TextArea } = Input;
   const [value, setValue] = useState('');
 
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    // Store selected files
+    setSelectedFiles(files as File[]);
+
+    // Generate preview images
+    const previewUrls = files.map((file) => URL.createObjectURL(file as File));
+    setPreviewImages(previewUrls);
+  };
 
   //slider
 
@@ -159,40 +174,40 @@ const CreateSpecies = () => {
       {/* <h1 className="header-1 mb-4">Create Species</h1> */}
       <PageHeader>Create Species</PageHeader>
 
-      {!showSuccessAlert &&
+      {!showSuccessAlert && (
         <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
             <Select onChange={onPhylumChange} placeholder="Select a phylum">
               {Object.keys(plantTaxonomy).map((phylum) => (
-                <Select.Option key={phylum} value={phylum}>{phylum}</Select.Option>
+                <Select.Option key={phylum} value={phylum}>
+                  {phylum}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
           <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
-            <Select
-              onChange={onClassChange}
-              placeholder="Select a class"
-              disabled={classes.length === 0}
-            >
+            <Select onChange={onClassChange} placeholder="Select a class" disabled={classes.length === 0}>
               {classes.map((classItem) => (
-                <Select.Option key={classItem} value={classItem}>{classItem}</Select.Option>
+                <Select.Option key={classItem} value={classItem}>
+                  {classItem}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
           <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
-            <Select
-              placeholder="Select an order"
-              disabled={!orders || orders.length === 0}
-            >
+            <Select placeholder="Select an order" disabled={!orders || orders.length === 0}>
               {orders && orders.length > 0 ? (
                 orders.map((order) => (
-
-                  <Select.Option key={order} value={order}>{order}</Select.Option>
+                  <Select.Option key={order} value={order}>
+                    {order}
+                  </Select.Option>
                 ))
               ) : (
-                <Select.Option value="" disabled>No orders available</Select.Option>
+                <Select.Option value="" disabled>
+                  No orders available
+                </Select.Option>
               )}
             </Select>
           </Form.Item>
@@ -245,10 +260,13 @@ const CreateSpecies = () => {
             >
               {lightType.map((type) => (
                 <Select.Option key={type} value={type}>
-                  {type === 'FULL_SUN' ? 'Full Sun' :
-                   type === 'PARTIAL_SHADE' ? 'Partial Shade' :
-                   type === 'FULL_SHADE' ? 'Full Shade' :
-                   type}
+                  {type === 'FULL_SUN'
+                    ? 'Full Sun'
+                    : type === 'PARTIAL_SHADE'
+                    ? 'Partial Shade'
+                    : type === 'FULL_SHADE'
+                    ? 'Full Shade'
+                    : type}
                 </Select.Option>
               ))}
             </Select>
@@ -264,10 +282,7 @@ const CreateSpecies = () => {
             >
               {soilType.map((type) => (
                 <Select.Option key={type} value={type}>
-                  {type === 'SANDY' ? 'Sandy' :
-                   type === 'CLAYEY' ? 'Clayey' :
-                   type === 'LOAMY' ? 'Loamy' :
-                   type}
+                  {type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}
                 </Select.Option>
               ))}
             </Select>
@@ -283,26 +298,27 @@ const CreateSpecies = () => {
             >
               {conservationStatus.map((status) => (
                 <Select.Option key={status} value={status}>
-                  {status === 'NEAR_THREATENED' ? 'Near Threatened' :
-                   status === 'LEAST_CONCERN' ? 'Least Concern' :
-                   status === 'VULNERABLE' ? 'Vulnerable' :
-                   status === 'ENDANGERED' ? 'Endangered' :
-                   status === 'CRITICALLY_ENDANGERED' ? 'Critically Endangered' :
-                   status === 'EXTINCT_IN_THE_WILD' ? 'Extinct in the Wild' :
-                   status === 'EXTINCT' ? 'Extinct' :
-                   status}
-
+                  {status === 'NEAR_THREATENED'
+                    ? 'Near Threatened'
+                    : status === 'LEAST_CONCERN'
+                    ? 'Least Concern'
+                    : status === 'VULNERABLE'
+                    ? 'Vulnerable'
+                    : status === 'ENDANGERED'
+                    ? 'Endangered'
+                    : status === 'CRITICALLY_ENDANGERED'
+                    ? 'Critically Endangered'
+                    : status === 'EXTINCT_IN_THE_WILD'
+                    ? 'Extinct in the Wild'
+                    : status === 'EXTINCT'
+                    ? 'Extinct'
+                    : status}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="plantCharacteristics"
-            label="Plant Characteristics"
-            rules={[{ required: false }]}
-            initialValue={[]}
-          >
+          <Form.Item name="plantCharacteristics" label="Plant Characteristics" rules={[{ required: false }]} initialValue={[]}>
             <Select
               mode="multiple"
               style={{ width: '100%' }}
@@ -368,6 +384,19 @@ const CreateSpecies = () => {
             </Space>
           </Form.Item>
 
+          <div>
+            <label>Upload Images:</label>
+            <input type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" />
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {previewImages.map((imgSrc, index) => (
+                <img key={index} src={imgSrc} alt={`Preview ${index}`} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+              ))}
+            </div>
+          </div>
+
           <Form.Item {...tailLayout}>
             <Space>
               <Button type="primary" htmlType="submit" loading={isSubmitting}>
@@ -379,16 +408,16 @@ const CreateSpecies = () => {
             </Space>
           </Form.Item>
         </Form>
-      }
+      )}
       {showSuccessAlert && (
         <Result
           status="success"
           title="Created new Species"
-          subTitle={
-            createdSpeciesName && <>Species name: {createdSpeciesName}</>
-          }
+          subTitle={createdSpeciesName && <>Species name: {createdSpeciesName}</>}
           extra={[
-            <Button key="back" onClick={() => navigate('/species')}>Back to Species Management</Button>,
+            <Button key="back" onClick={() => navigate('/species')}>
+              Back to Species Management
+            </Button>,
             <Button type="primary" key="view" onClick={() => navigate(`/species/${createdSpecies?.id}`)}>
               View new Species
             </Button>,

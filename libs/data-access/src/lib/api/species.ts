@@ -4,8 +4,17 @@ import client from './client';
 import { OccurrenceResponse } from '../types/occurrence';
 const URL = '/species';
 
-export async function createSpecies(data: CreateSpeciesData): Promise<AxiosResponse<SpeciesResponse>> {
+export async function createSpecies(data: CreateSpeciesData, files: File[]): Promise<AxiosResponse<SpeciesResponse>> {
   try {
+    const formData = new FormData();
+
+    // Append files to FormData (using the key 'files' to match Multer)
+    files.forEach((file) => {
+      formData.append('files', file); // The key 'files' matches what Multer expects
+    });
+
+    const uploadedUrls = await client.post(`${URL}/upload`, formData);
+    data.images = uploadedUrls.data.uploadedUrls;
     const response: AxiosResponse<SpeciesResponse> = await client.post(`${URL}/createSpecies`, data);
     return response;
   } catch (error) {

@@ -4,9 +4,16 @@ import { fromZodError } from 'zod-validation-error';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
 import SpeciesDao from '../dao/SpeciesDao';
 import StaffDao from '../dao/StaffDao';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
 
 class SpeciesService {
-    public async createSpecies(data: SpeciesSchemaType): Promise<Species> {
+  public async createSpecies(data: SpeciesSchemaType): Promise<Species> {
     try {
       // Validate input data using Zod
       SpeciesSchema.parse(data);
@@ -126,6 +133,23 @@ class SpeciesService {
       return await SpeciesDao.findOccurrencesBySpeciesId(speciesId);
     } catch (error) {
       throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
+    }
+  }
+
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+    const params = {
+      Bucket: 'lepark',
+      Key: `species/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
     }
   }
 }
