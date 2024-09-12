@@ -144,7 +144,7 @@ const ViewEditSpecies = () => {
         lightType: values.lightType,
         soilType: values.soilType,
         fertiliserType: values.fertiliserType,
-        images: [],
+        images: speciesObj?.images,
         waterRequirement: values.waterRequirement,
         fertiliserRequirement: values.fertiliserRequirement,
         idealHumidity: values.idealHumidity,

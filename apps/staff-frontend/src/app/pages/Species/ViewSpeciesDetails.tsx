@@ -1,6 +1,6 @@
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
-import { Card, Descriptions, Tabs } from 'antd';
+import { Card, Descriptions, Tabs, Carousel } from 'antd';
 import { useEffect, useState } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
 import {
@@ -18,6 +18,7 @@ import { useParams } from 'react-router';
 import PageHeader from '../../components/main/PageHeader';
 import OccurrencesTab from './components/OccurrencesTab';
 import InformationTab from './components/InformationTab';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -161,23 +162,43 @@ const ViewSpeciesDetails = () => {
     }
   };
 
+    const carouselSettings = {
+    arrows: true,
+  };
+
   return (
     <ContentWrapperDark>
       <PageHeader>Species Management</PageHeader>
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
-          <div
-            style={{
-              backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              color: 'white',
-              overflow: 'hidden',
-              flex: 1,
-            }}
-            className="rounded-lg shadow-lg p-4"
-          />
+         <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+              {species?.images && species.images.length > 0 ? (
+                <Carousel {...carouselSettings} className="species-carousel !h-[450px]">
+                  {species.images.map((image, index) => (
+                    <div key={index}>
+                      <img
+                        src={image}
+                        alt={`Species ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          minWidth: '400px',
+                          minHeight: '450px',
+                          objectFit: 'cover',
+                          borderRadius: '8px' // Added this line to make the image rounded
+                        }}
+                      />
+                    </div>
+                  ))}
+                </Carousel>
+              ) : (
+                <div style={{ width: '100%', height: '300px', backgroundColor: '#f0f0f0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  No images available
+                </div>
+              )}
+            </div>
+
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{species?.commonName}</LogoText>
             <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
