@@ -9,6 +9,7 @@ import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
 import { OccurrenceResponse, ZoneResponse } from '@lepark/data-access';
 import dayjs from 'dayjs';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const center = {
   lat: 1.3503881629328163,
@@ -21,10 +22,11 @@ export interface AdjustLatLngInterface {
 }
 
 const OccurrenceCreate = () => {
+  const { zones, loading } = useFetchZones();
   const [currStep, setCurrStep] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
-  const [zones, setZones] = useState<ZoneResponse[]>([]);
+  // const [zones, setZones] = useState<ZoneResponse[]>([]);
   const navigate = useNavigate();
 
   // Form Values
@@ -33,17 +35,6 @@ const OccurrenceCreate = () => {
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
-  useEffect(() => {
-    const fetchZoneData = async () => {
-      const zonesRes = await getAllZones();
-      if (zonesRes.status === 200) {
-        const zonesData = zonesRes.data;
-        setZones(zonesData)
-      } 
-    }
-    fetchZoneData();
-  }, [])
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
