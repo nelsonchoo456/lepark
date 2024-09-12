@@ -11,6 +11,7 @@ import { OccurrenceResponse, ZoneResponse } from '@lepark/data-access';
 import dayjs from 'dayjs';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import { useFetchSpecies } from '../../hooks/Species/useFetchSpecies';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const center = {
   lat: 1.3503881629328163,
@@ -102,10 +103,23 @@ const OccurrenceCreate = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: "Create",
+      pathKey: `/occurrences/create`,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Create an Occurrence</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}
         <Steps

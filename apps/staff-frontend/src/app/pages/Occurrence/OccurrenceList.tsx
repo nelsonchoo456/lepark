@@ -7,6 +7,7 @@ import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { getAllOccurrences, OccurrenceResponse, getSpeciesById } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const OccurrenceList: React.FC = () => {
   const [occurrences, setOccurrences] = useState<(OccurrenceResponse & { speciesName: string })[]>([]);
@@ -123,9 +124,18 @@ const OccurrenceList: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurrence Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Occurrences..." className="mb-4 bg-white" variant="filled" />
         <Button

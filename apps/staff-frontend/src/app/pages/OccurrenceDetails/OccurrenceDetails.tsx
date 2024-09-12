@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag, Spin } from 'antd';
@@ -15,12 +15,14 @@ import StatusLogs from './components/StatusLogs';
 import { ActivityLogResponse, OccurrenceResponse, SpeciesResponse, LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
 import { getOccurrenceById, getSpeciesById } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,6 +93,19 @@ const OccurrenceDetails = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: occurrence?.title ? occurrence?.title : "Details",
+      pathKey: `/occurrences/${occurrence?.id}`,
+      isCurrent: true
+    },
+  ]
+
   const getWaterRequirementInfo = (value: number) => {
     if (value <= 30) return { text: 'Low', icon: <FaTint className="text-3xl mt-2 text-blue-300" /> };
     if (value <= 60) return { text: 'Medium', icon: <FaTint className="text-3xl mt-2 text-blue-500" /> };
@@ -146,7 +161,7 @@ const OccurrenceDetails = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurrence Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         {loading ? (
           <div className="flex justify-center items-center h-64">
