@@ -153,3 +153,16 @@ export async function deleteSpeciesFromFavorites(visitorId: string, speciesId: s
     }
   }
 }
+
+export async function isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
+  try {
+    const response: AxiosResponse<{ isFavorite: boolean }> = await client.get(`${URL}/isSpeciesInFavorites/${visitorId}/${speciesId}`);
+    return response.data.isFavorite;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}

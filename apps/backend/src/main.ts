@@ -15,7 +15,9 @@ import occurrenceRouter from './routers/occurrenceRouter';
 import activityLogRouter from './routers/activityLogRouter';
 import statusLogRouter from './routers/statusLogRouter';
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const app = express();
 
 app.use(

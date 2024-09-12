@@ -64,7 +64,7 @@ model Species {
   order                 String
   family                String
   genus                 String
-  speciesName           String
+  speciesName           String                 @unique
   commonName            String
   speciesDescription    String
   conservationStatus    ConservationStatusEnum

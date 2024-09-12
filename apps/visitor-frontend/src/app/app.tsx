@@ -16,7 +16,7 @@ import Payment from './pages/Payment/Payment';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
 // import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import Discover from './pages/Taxonomy/Discover';
-import ViewSpecies from './pages/Taxonomy/ViewSpecies';
+import ViewSpeciesDetails from './pages/Taxonomy/ViewSpecies';
 import SelectParkPage from './park-context/SelectParkPage';
 import { ParkProvider } from './park-context/ParkContext';
 
@@ -48,35 +48,29 @@ export function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route element={<MainLayout />}>
-                  <Route path="/" element={<MainLanding />} />
-                  <Route path="/select-park" element={<SelectParkPage />} />
-                  <Route path="/map" element={<MapPage />} />
-                  <Route
-                    path="/profile"
-                    element={
-                      //<ProtectedRoute redirectTo="/login">
-                        <Profile />
-                      //</ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/payment"
-                    element={
-                      <ProtectedRoute redirectTo="/login">
-                        <Payment />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/occurrence">
-                    {/* <Route index element={<OccurrenceList />} /> */}
-                    <Route path=":occurrenceId" element={<OccurrenceDetails />} />
-                    {/* <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/> */}
-                  </Route>
-                  <Route path="/discover" element={<Discover />} />
-                  <Route path="/discover/view-species" element={<ViewSpecies />} />
+              <Route
+                element={
+                  <ProtectedRoute redirectTo="/login">
+                    <MainLayout />
+                  </ProtectedRoute>
+                }
+              >
+                {/* <Route element={<MainLayout />}> */}
+                <Route path="/" element={<MainLanding />} />
+                <Route path="/select-park" element={<SelectParkPage />} />
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/payment" element={<Payment />} />
+                <Route path="/occurrence">
+                  {/* <Route index element={<OccurrenceList />} /> */}
+                  <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                  {/* <Route path="activitylog/:activityLogId" element={<ActivityLogDetails/>}/> */}
                 </Route>
-              {/* </Route> */}
+                <Route path="/discover">
+                  <Route index element={<Discover />} />
+                  <Route path=":speciesId" element={<ViewSpeciesDetails />} />
+                </Route>
+              </Route>
             </Routes>
           </BrowserRouter>
         </ConfigProvider>

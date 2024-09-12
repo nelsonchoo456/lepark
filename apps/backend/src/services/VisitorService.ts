@@ -210,7 +210,12 @@ class VisitorService {
     if (!visitor) {
       throw new Error('Visitor not found');
     }
+    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    const isAlreadyFavorite = favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId);
 
+    if (isAlreadyFavorite) {
+      throw new Error('Species is already in favorites');
+    }
     return VisitorDao.addFavoriteSpecies(visitorId, speciesId);
   }
 
@@ -233,6 +238,17 @@ class VisitorService {
     }
 
     return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
+  }
+
+  async isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
+    const visitor = await VisitorDao.getVisitorById(visitorId);
+
+    if (!visitor) {
+      throw new Error('Visitor not found');
+    }
+
+    const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
+    return favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId) || false;
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {

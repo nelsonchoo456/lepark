@@ -1,3 +1,5 @@
+import { OccurrenceResponse } from "./occurrence";
+
 export enum ConservationStatusEnum {
   LEAST_CONCERN = 'LEAST_CONCERN',
   NEAR_THREATENED = 'NEAR_THREATENED',
@@ -94,8 +96,6 @@ export interface GetSpeciesByIdResponse {
   data: Species;
 }
 */
-
-export interface UpdateSpeciesData extends Partial<CreateSpeciesData> {}
 
 export interface DeleteSpeciesResponse {
   message: string;

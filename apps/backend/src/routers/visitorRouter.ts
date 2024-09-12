@@ -163,4 +163,14 @@ router.delete('/deleteSpeciesFromFavorites/:visitorId/:speciesId', async (req, r
   }
 });
 
+router.get('/isSpeciesInFavorites/:visitorId/:speciesId', async (req, res) => {
+  try {
+    const { visitorId, speciesId } = req.params;
+    const isFavorite = await VisitorService.isSpeciesInFavorites(visitorId, speciesId);
+    res.status(200).json({ isFavorite });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
