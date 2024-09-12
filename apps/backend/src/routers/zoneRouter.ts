@@ -5,8 +5,8 @@ const router = express.Router();
 
 router.post('/createZone', async (req, res) => {
   try {
-    const park = await ZoneService.createZone(req.body);
-    res.status(201).json(park);
+    const zone = await ZoneService.createZone(req.body);
+    res.status(201).json(zone);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -24,8 +24,18 @@ router.get('/getAllZones', async (_, res) => {
 router.get('/getZoneById/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const park = await ZoneService.getZoneById(id);
-    res.status(200).json(park);
+    const zone = await ZoneService.getZoneById(id);
+    res.status(200).json(zone);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getZonesByParkId/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const zones = await ZoneService.getZonesByParkId(id);
+    res.status(200).json(zones);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
