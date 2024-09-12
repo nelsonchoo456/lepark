@@ -98,7 +98,7 @@ class OccurrenceService {
   }
 
   public async deleteOccurrence(occurrenceId: string, requesterId: string): Promise<void> {
-    const isManager = await StaffDao.isManager(requesterId);
+    const isManager = await StaffDao.isManagerOrSuperadmin(requesterId);
     if (!isManager) {
       throw new Error('Only managers can delete occurrence.');
     }

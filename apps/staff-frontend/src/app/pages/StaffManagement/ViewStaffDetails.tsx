@@ -1,12 +1,14 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch } from 'antd';
+import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch, notification } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import {
+  getAllParks,
+  ParkResponse,
   StaffResponse,
   StaffType,
   StaffUpdateData,
@@ -15,7 +17,7 @@ import {
   updateStaffRole,
   viewStaffDetails,
 } from '@lepark/data-access';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const initialUser = {
@@ -27,6 +29,7 @@ const initialUser = {
   email: '',
   password: '',
   isActive: false,
+  parkId: '',
 };
 
 const ViewStaffDetails = () => {
@@ -35,6 +38,10 @@ const ViewStaffDetails = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [staff, setStaff] = useState<StaffResponse>(initialUser);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
+  const [contactNumberError, setContactNumberError] = useState('');
+  const [parks, setParks] = useState<ParkResponse[]>([]);
+  const notificationShown = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -42,16 +49,56 @@ const ViewStaffDetails = () => {
         const response = await viewStaffDetails(staffId);
         setStaff(response.data);
         setEditedUser(response.data);
+        console.log(staff);
       } catch (error) {
         console.error(error);
         message.error('Failed to fetch user details');
       }
     };
-
+    
     if (staffId) {
       fetchUserDetails();
+      console.log(user?.parkId, staff.parkId);
     }
   }, [staffId]);
+
+  useEffect(() => {
+    if (user && staff.id !== '') {
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Staff Management page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the details of this staff!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/staff-management');
+
+    } else {
+     // Fetch parks data from the database
+     getAllParks()
+     .then((response) => {
+       setParks(response.data);
+     })
+     .catch((error) => {
+       console.error('There was an error fetching the parks data!', error);
+     });
+  }}
+  }, [staff, user, navigate]);
+
+  const getParkName = (parkId: string) => {
+    const park = parks.find((park) => park.id == parkId);
+    return park ? park.name : 'NParks';
+  };
 
   const toggleEditMode = () => {
     if (inEditMode) {
@@ -83,8 +130,10 @@ const ViewStaffDetails = () => {
 
   const onFinish = async (values: any) => {
     try {
-      if (!user || user.role !== StaffType.MANAGER) {
-        throw new Error('Only managers can update staff details.');
+      if (!user) {
+        throw new Error('User not found.');
+      } else if (!(user.role == StaffType.MANAGER || user.role == StaffType.SUPERADMIN)) {
+        throw new Error('Not allowed to edit staff details.');
       }
 
       const updatedStaffDetails: StaffUpdateData = {
@@ -94,10 +143,10 @@ const ViewStaffDetails = () => {
         email: values.email,
       };
 
-      const responseStaffRole = await updateStaffRole(staffId, values.role, user.id); 
+      const responseStaffRole = await updateStaffRole(staffId, values.role, user.id);
       console.log('Staff role updated successfully:', responseStaffRole.data);
 
-      const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id); 
+      const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id);
       console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
 
       const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
@@ -114,12 +163,30 @@ const ViewStaffDetails = () => {
   };
 
   const handleSave = () => {
-    if (validateInputs()) {
+    const isContactNumberValid = validateContactNumber(editedUser?.contactNumber ?? '');
+    if (isContactNumberValid && validateInputs()) {
       onFinish(editedUser);
       setInEditMode(false);
     } else {
       message.warning('All fields are required.');
     }
+  };
+
+  const validateContactNumber = (value: string) => {
+    const pattern = /^[689]\d{7}$/;
+    if (!pattern.test(value)) {
+      setContactNumberError('Contact number must consist of exactly 8 digits and be a valid Singapore contact number');
+      return false;
+    } else {
+      setContactNumberError('');
+      return true;
+    }
+  };
+
+  const handleContactNumberChange = (e: { target: { value: any } }) => {
+    const value = e.target.value;
+    validateContactNumber(value);
+    handleInputChange('contactNumber', value);
   };
 
   const descriptionsItems = [
@@ -143,10 +210,16 @@ const ViewStaffDetails = () => {
       ),
       span: 2,
     },
+    // {
+    //   key: 'id',
+    //   label: 'ID',
+    //   children: staff?.id ?? null, // not allowed to change id
+    //   span: 2,
+    // },
     {
-      key: 'id',
-      label: 'ID',
-      children: staff?.id ?? null, // not allowed to change id
+      key: 'park',
+      label: 'Park',
+      children: getParkName(editedUser?.parkId || ''), 
       span: 2,
     },
     {
@@ -158,11 +231,20 @@ const ViewStaffDetails = () => {
           onChange={(value) => handleInputChange('role', value)}
           style={{ minWidth: 200 }} // Set a minimum width to ensure full text is shown
         >
-          {Object.values(StaffType).map((role) => (
-            <Select.Option key={role} value={role}>
-              {role}
-            </Select.Option>
-          ))}
+          {Object.values(StaffType)
+            .filter((role) => {
+              if (user?.role === StaffType.MANAGER) {
+                return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
+              } else if (user?.role === StaffType.SUPERADMIN) {
+                return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+              }
+              return true;
+            })
+            .map((role) => (
+              <Select.Option key={role} value={role}>
+                {role}
+              </Select.Option>
+            ))}
         </Select>
       ) : (
         <Tag>{staff?.role}</Tag>
@@ -182,12 +264,15 @@ const ViewStaffDetails = () => {
       key: 'contactNumber',
       label: 'Contact Number',
       children: inEditMode ? (
-        <Input
-          placeholder="Contact Number"
-          value={editedUser?.contactNumber ?? ''}
-          onChange={(e) => handleInputChange('contactNumber', e.target.value)}
-          required
-        />
+        <Tooltip title={contactNumberError} visible={!!contactNumberError} placement="right" color="#73a397">
+          <Input
+            placeholder="Contact Number"
+            value={editedUser?.contactNumber ?? ''}
+            onChange={handleContactNumberChange}
+            required
+            pattern="^[689]\d{7}$"
+          />
+        </Tooltip>
       ) : (
         staff?.contactNumber ?? null
       ),

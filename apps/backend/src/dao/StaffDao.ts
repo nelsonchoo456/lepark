@@ -15,6 +15,10 @@ class StaffDao {
     return prisma.staff.findMany();
   }
 
+  async getAllStaffsByParkId(parkId: string): Promise<Staff[]> {
+    return prisma.staff.findMany({ where: { parkId } });
+  }
+
   async getStaffById(id: string): Promise<Staff | null> {
     return prisma.staff.findUnique({ where: { id } });
   }
@@ -26,9 +30,9 @@ class StaffDao {
     return prisma.staff.update({ where: { id }, data });
   }
 
-  async isManager(id: string): Promise<boolean> {
+  async isManagerOrSuperadmin(id: string): Promise<boolean> {
     const staff = await prisma.staff.findUnique({ where: { id } });
-    return staff.role === 'MANAGER';
+    return staff.role === 'MANAGER' || staff.role === 'SUPERADMIN';
   }
 
   //   async deleteAdmin(id: string) {

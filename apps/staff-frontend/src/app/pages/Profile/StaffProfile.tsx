@@ -1,5 +1,5 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Modal } from 'antd';
+import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Modal, Switch } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined, LockOutlined } from '@ant-design/icons';
@@ -7,7 +7,16 @@ import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
-import { forgotStaffPassword, StaffType, StaffUpdateData, updateStaffDetails, viewStaffDetails } from '@lepark/data-access';
+import {
+  forgotStaffPassword,
+  getAllParks,
+  ParkResponse,
+  StaffType,
+  StaffUpdateData,
+  updateStaffDetails,
+  updateStaffIsActive,
+  viewStaffDetails,
+} from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
@@ -27,6 +36,8 @@ const StaffProfile = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [userState, setUser] = useState<StaffResponse | null>(null);
   const [editedUser, setEditedUser] = useState<StaffResponse | null>(null);
+  const [contactNumberError, setContactNumberError] = useState('');
+  const [parks, setParks] = useState<ParkResponse[]>([]);
 
   // for change password
 
@@ -35,6 +46,15 @@ const StaffProfile = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
+    // Fetch parks data from the database
+    getAllParks()
+      .then((response) => {
+        setParks(response.data);
+      })
+      .catch((error) => {
+        console.error('There was an error fetching the parks data!', error);
+      });
+
     const fetchUserDetails = async () => {
       try {
         setUser(user);
@@ -57,7 +77,7 @@ const StaffProfile = () => {
     setInEditMode(!inEditMode);
   };
 
-  const handleInputChange = (key: keyof StaffResponse, value: string) => {
+  const handleInputChange = (key: keyof StaffResponse, value: any) => {
     setEditedUser((prev) => {
       if (!prev) return null; // Handle case where prev might be null
 
@@ -95,10 +115,23 @@ const StaffProfile = () => {
       if (user) {
         const responseStaffDetails = await updateStaffDetails(user.id, updatedStaffDetails);
         // console.log('Staff details updated successfully:', responseStaffDetails.data);
+
+        const responseStaffActiveStatus = { data: { isActive: values.isActive } };
+        if (user.role == StaffType.SUPERADMIN || user.role == StaffType.MANAGER) {
+        const responseStaffActiveStatus = await updateStaffIsActive(user.id, values.isActive, user.id);
+        console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
+        }
+
+        // Merge the updated details and active status
+        const updatedUser = {
+          ...responseStaffDetails.data,
+          isActive: responseStaffActiveStatus.data.isActive,
+        };
+
         message.success('Staff details updated successfully!');
-        updateUser(responseStaffDetails.data); // Update user details in the context
-        setUser(responseStaffDetails.data); // Update user details in the state
-        // await refreshUserData(); // Refresh user data to load the latest values
+        updateUser(updatedUser); // Update user details in the context
+        setUser(updatedUser); // Update user details in the state
+        //await refreshUserData(); // Refresh user data to load the latest values
         setInEditMode(false); // Exit edit mode
       }
     } catch (error: any) {
@@ -108,8 +141,31 @@ const StaffProfile = () => {
     }
   };
 
+  const getParkName = (parkId: string) => {
+    const park = parks.find((park) => park.id == parkId);
+    return park ? park.name : 'NParks';
+  };
+
+  const validateContactNumber = (value: string) => {
+    const pattern = /^[689]\d{7}$/;
+    if (!pattern.test(value)) {
+      setContactNumberError('Contact number must consist of exactly 8 digits and be a valid Singapore contact number');
+      return false;
+    } else {
+      setContactNumberError('');
+      return true;
+    }
+  };
+
+  const handleContactNumberChange = (e: { target: { value: any } }) => {
+    const value = e.target.value;
+    validateContactNumber(value);
+    handleInputChange('contactNumber', value);
+  };
+
   const handleSave = () => {
-    if (validateInputs()) {
+    const isContactNumberValid = validateContactNumber(editedUser?.contactNumber ?? '');
+    if (isContactNumberValid && validateInputs()) {
       onFinish(editedUser);
       setInEditMode(false);
     } else {
@@ -160,10 +216,16 @@ const StaffProfile = () => {
       ),
       span: 2,
     },
+    // {
+    //   key: 'id',
+    //   label: 'ID',
+    //   children: userState?.id, // not allowed to change id
+    //   span: 2,
+    // },
     {
-      key: 'id',
-      label: 'ID',
-      children: userState?.id, // not allowed to change id
+      key: 'park',
+      label: 'Park',
+      children: getParkName(editedUser?.parkId || ''),
       span: 2,
     },
     {
@@ -177,7 +239,7 @@ const StaffProfile = () => {
       label: 'Email',
       children: (
         <div className="flex items-center">
-          {user?.role == StaffType.MANAGER ? (
+          {user?.role == StaffType.SUPERADMIN || user?.role == StaffType.MANAGER ? (
             inEditMode ? (
               <Input type="email" value={editedUser?.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} required />
             ) : (
@@ -194,16 +256,52 @@ const StaffProfile = () => {
             </>
           )}
         </div>
-      ), // not allowed to change email unless user is manager
+      ), // not allowed to change email unless user is manager or superadmin
     },
     {
       key: 'contactNumber',
       label: 'Contact Number',
-      children: !inEditMode ? (
-        userState?.contactNumber
+      children: inEditMode ? (
+        <Tooltip title={contactNumberError} visible={!!contactNumberError} placement="right" color="#73a397">
+          <Input
+            placeholder="Contact Number"
+            value={editedUser?.contactNumber ?? ''}
+            onChange={handleContactNumberChange}
+            required
+            pattern="^[689]\d{7}$"
+          />
+        </Tooltip>
       ) : (
-        <Input required defaultValue={editedUser?.contactNumber} onChange={(e) => handleInputChange('contactNumber', e.target.value)} />
+        userState?.contactNumber ?? null
       ),
+    },
+    {
+      key: 'isActive',
+      label: 'Active Status',
+      children: (
+        <div className="flex items-center">
+          {user?.role == StaffType.SUPERADMIN || user?.role == StaffType.MANAGER ? (
+            inEditMode ? (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Switch checked={editedUser?.isActive ?? false} onChange={(checked) => handleInputChange('isActive', checked)} />
+                <span style={{ marginLeft: 8 }}>{editedUser?.isActive ? 'Active' : 'Inactive'}</span>
+              </div>
+            ) : (
+              <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
+            )
+          ) : (
+            <>
+              <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
+              {/* {inEditMode && (
+                <Tooltip title="To change your active status, please contact your manager.">
+                  <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
+                </Tooltip>
+              )} */}
+            </>
+          )}
+        </div>
+      ), // not allowed to change own active status unless user is manager or superadmin
+      span: 2,
     },
   ];
 

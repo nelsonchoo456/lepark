@@ -2,11 +2,10 @@ export enum StaffType {
   MANAGER = 'MANAGER',
   BOTANIST = 'BOTANIST',
   ARBORIST = 'ARBORIST',
-  GARDENER = 'GARDENER',
-  MAINTENANCE_WORKER = 'MAINTENANCE_WORKER',
-  CLEANER = 'CLEANER',
   LANDSCAPE_ARCHITECT = 'LANDSCAPE_ARCHITECT',
   PARK_RANGER = 'PARK_RANGER',
+  VENDOR_MAANGER = 'VENDOR_MANAGER',
+  SUPERADMIN = 'SUPERADMIN',
 }
 
 export interface RegisterStaffData {
@@ -16,6 +15,7 @@ export interface RegisterStaffData {
   password: string;
   contactNumber: string;
   role: StaffType;
+  parkId?: string;
 }
 
 export interface StaffResponse {
@@ -27,6 +27,7 @@ export interface StaffResponse {
   contactNumber: string;
   role: string;
   isActive: boolean;
+  parkId?: string;
 }
 
 export interface LoginData {
