@@ -1,4 +1,4 @@
-import { Descriptions } from 'antd';
+import { Descriptions, Tag } from 'antd';
 import { SpeciesResponse } from '@lepark/data-access';
 import moment from 'moment';
 import { AiOutlineCheck, AiOutlineClose } from 'react-icons/ai';

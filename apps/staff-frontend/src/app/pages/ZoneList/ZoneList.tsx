@@ -100,7 +100,7 @@ const ZoneList: React.FC = () => {
             navigate('/zone/create');
           }}
         >
-          Create Occurrence
+          Create Zone
         </Button>
       </Flex>
 

@@ -6,7 +6,7 @@ import { ContentWrapper, SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import React from 'react';
-import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Slider, Alert, Modal } from 'antd';
+import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Slider, Alert, Modal, Result } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -22,11 +22,13 @@ import {
 } from '@lepark/data-utility';
 import { createSpecies } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
-import { CreateSpeciesData, ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from '@lepark/data-access';
+import { CreateSpeciesData, ConservationStatusEnum, LightTypeEnum, SoilTypeEnum, SpeciesResponse } from '@lepark/data-access';
+import { plantTaxonomy } from '@lepark/data-utility';
 
 const CreateSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
-
+  const navigate = useNavigate();
+  const [createdSpecies, setCreatedSpecies] = useState<SpeciesResponse | null>();
   useEffect(() => {
     const handleResize = () => {
       setWebMode(window.innerWidth >= SCREEN_LG);
@@ -52,6 +54,27 @@ const CreateSpecies = () => {
     wrapperCol: { offset: 8, span: 16 },
   };
   const [tempRange, setTempRange] = useState([1, 1]);
+
+  const [classes, setClasses] = useState<string[]>([]);
+  const [orders, setOrders] = useState<string[]>([]);
+
+  const onPhylumChange = (value: string) => {
+    const selectedPhylum = plantTaxonomy[value as keyof typeof plantTaxonomy];
+    setClasses(Object.keys(selectedPhylum).filter(key => key !== 'classes'));
+    setOrders([]);
+    form.setFieldsValue({ classInput: undefined, orderInput: undefined });
+  };
+
+  const onClassChange = (value: string) => {
+    const selectedPhylum = plantTaxonomy[form.getFieldValue('phylum') as keyof typeof plantTaxonomy];
+    const selectedClass = selectedPhylum[value as keyof typeof selectedPhylum] as { orders?: string[] };
+    if (selectedClass && Array.isArray(selectedClass.orders)) {
+      setOrders(selectedClass.orders);
+    } else {
+      setOrders([]);
+    }
+    form.setFieldsValue({ orderInput: undefined });
+  };
 
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
@@ -88,7 +111,14 @@ const CreateSpecies = () => {
         isToxic: plantCharacteristics.includes('toxic') as boolean,
         isFragrant: plantCharacteristics.includes('fragrant') as boolean,
       };
-
+      if (values.tempRange[0] == values.tempRange[1]) {
+        console.error('Min and max temperatures cannot be the same');
+        Modal.error({
+          title: 'Error',
+          content: 'Min and max temperatures cannot be the same',
+        });
+        return;
+      }
       if (values.tempRange[0] > values.idealTemp || values.tempRange[1] < values.idealTemp) {
         console.error('Ideal temperature must be between min and max temperatures');
         Modal.error({
@@ -103,6 +133,7 @@ const CreateSpecies = () => {
       const response = await createSpecies(speciesData);
       console.log('Species created:', response.data);
       setCreatedSpeciesName(values.speciesInput);
+      setCreatedSpecies(response.data);
       setShowSuccessAlert(true);
       form.resetFields();
       setTimeout(() => setShowSuccessAlert(false), 5000);
@@ -122,30 +153,50 @@ const CreateSpecies = () => {
 
   //slider
 
-  return webMode ? (
+  return (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapper>
       {/* <h1 className="header-1 mb-4">Create Species</h1> */}
       <PageHeader>Create Species</PageHeader>
 
-      {
+      {!showSuccessAlert &&
         <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
-            <Select placeholder="Select a phylum" allowClear>
-              {phylums.map((phylum) => (
-                <Select.Option key={phylum} value={phylum}>
-                  {phylum}
-                </Select.Option>
+            <Select onChange={onPhylumChange} placeholder="Select a phylum">
+              {Object.keys(plantTaxonomy).map((phylum) => (
+                <Select.Option key={phylum} value={phylum}>{phylum}</Select.Option>
               ))}
             </Select>
           </Form.Item>
 
           <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
-            <Input />
+            <Select
+              onChange={onClassChange}
+              placeholder="Select a class"
+              disabled={classes.length === 0}
+            >
+              {classes.map((classItem) => (
+                <Select.Option key={classItem} value={classItem}>{classItem}</Select.Option>
+              ))}
+            </Select>
           </Form.Item>
+
           <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
-            <Input />
+            <Select
+              placeholder="Select an order"
+              disabled={!orders || orders.length === 0}
+            >
+              {orders && orders.length > 0 ? (
+                orders.map((order) => (
+
+                  <Select.Option key={order} value={order}>{order}</Select.Option>
+                ))
+              ) : (
+                <Select.Option value="" disabled>No orders available</Select.Option>
+              )}
+            </Select>
           </Form.Item>
+
           <Form.Item name="familyInput" label="Family" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
@@ -250,18 +301,24 @@ const CreateSpecies = () => {
             name="plantCharacteristics"
             label="Plant Characteristics"
             rules={[{ required: false }]}
-            initialValue={[]} // Ensure it starts as an empty array
+            initialValue={[]}
           >
-            <Checkbox.Group>
-              <Checkbox value="slowGrowing">Slow Growing</Checkbox>
-              <Checkbox value="edible">Edible</Checkbox>
-              <Checkbox value="toxic">Toxic</Checkbox>
-              <Checkbox value="evergreen">Evergreen</Checkbox>
-              <Checkbox value="fragrant">Fragrant</Checkbox>
-              <Checkbox value="droughtTolerant">Drought Tolerant</Checkbox>
-              <Checkbox value="deciduous">Deciduous</Checkbox>
-              <Checkbox value="fastGrowing">Fast Growing</Checkbox>
-            </Checkbox.Group>
+            <Select
+              mode="multiple"
+              style={{ width: '100%' }}
+              placeholder="Select plant characteristics"
+              options={[
+                { value: 'slowGrowing', label: 'Slow Growing' },
+                { value: 'edible', label: 'Edible' },
+                { value: 'toxic', label: 'Toxic' },
+                { value: 'evergreen', label: 'Evergreen' },
+                { value: 'fragrant', label: 'Fragrant' },
+                { value: 'droughtTolerant', label: 'Drought Tolerant' },
+                { value: 'deciduous', label: 'Deciduous' },
+                { value: 'fastGrowing', label: 'Fast Growing' },
+              ]}
+              optionFilterProp="label"
+            />
           </Form.Item>
 
           <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}>
@@ -324,22 +381,21 @@ const CreateSpecies = () => {
         </Form>
       }
       {showSuccessAlert && (
-        <Alert
-          message={`Species "${createdSpeciesName}" created successfully`}
-          type="success"
-          closable
-          onClose={() => setShowSuccessAlert(false)}
+        <Result
+          status="success"
+          title="Created new Species"
+          subTitle={
+            createdSpeciesName && <>Species name: {createdSpeciesName}</>
+          }
+          extra={[
+            <Button key="back" onClick={() => navigate('/species')}>Back to Species Management</Button>,
+            <Button type="primary" key="view" onClick={() => navigate(`/species/${createdSpecies?.id}`)}>
+              View new Species
+            </Button>,
+          ]}
         />
       )}
     </ContentWrapper>
-  ) : (
-    <div
-      className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
-    >
-      {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
-      <PageHeader>Create Species (Mobile)</PageHeader>
-      {/* Add your mobile content here */}
-    </div>
   );
 };
 

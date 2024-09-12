@@ -31,6 +31,8 @@ import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
 import ZoneList from './pages/ZoneList/ZoneList';
+import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
+import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
 
 export function App() {
   return (
@@ -96,6 +98,8 @@ export function App() {
 
               <Route path="/zone">
                 <Route index element={<ZoneList />} />
+                <Route path="create" element={<ZoneCreate />} />
+                <Route path=":id" element={<ZoneDetails />} />
               </Route>
               
               {/* <Route path="/occurence">

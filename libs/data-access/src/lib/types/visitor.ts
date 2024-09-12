@@ -16,6 +16,7 @@ export interface VisitorResponse {
   contactNumber: string;
   favoriteSpecies?: SpeciesResponse[];
 }
+//conflict here
 
 export interface VisitorLoginData {
   email: string;
