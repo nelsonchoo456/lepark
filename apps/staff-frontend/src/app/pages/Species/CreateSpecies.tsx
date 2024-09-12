@@ -6,7 +6,8 @@ import { ContentWrapper, SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import React from 'react';
-import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Slider, Alert, Modal, Result } from 'antd';
+import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Slider, Alert, Modal, Result, Image } from 'antd';
+import { CloseCircleOutlined } from '@ant-design/icons';
 import type { GetProp } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -77,6 +78,14 @@ const CreateSpecies = () => {
   };
 
   const onFinish = async (values: any) => {
+    if (selectedFiles.length === 0) {
+      Modal.error({
+        title: 'Error',
+        content: 'Please upload at least one image.',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       console.log('Form values:', values);
@@ -155,8 +164,8 @@ const CreateSpecies = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
 
     // Store selected files
     setSelectedFiles(files as File[]);
@@ -164,6 +173,11 @@ const CreateSpecies = () => {
     // Generate preview images
     const previewUrls = files.map((file) => URL.createObjectURL(file as File));
     setPreviewImages(previewUrls);
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    setPreviewImages(prevPreviews => prevPreviews.filter((_, i) => i !== index));
   };
 
   //slider
@@ -384,29 +398,76 @@ const CreateSpecies = () => {
             </Space>
           </Form.Item>
 
-          <div>
-            <label>Upload Images:</label>
-            <input type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" />
+          <Form.Item
+          label="Upload Images"
+          required
+          tooltip="At least one image is required"
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg"
+              style={{ display: 'none' }}
+              id="file-upload"
+            />
+            <label htmlFor="file-upload" style={{
+              padding: '4px 15px',
+              border: '1px solid #d9d9d9',
+              borderRadius: '2px',
+              cursor: 'pointer',
+              marginRight: '10px'
+            }}>
+              Choose files
+            </label>
+            <span>{selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''} selected</span>
           </div>
+        </Form.Item>
 
-          <div style={{ marginTop: '20px' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <Form.Item label="Image Previews">
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
               {previewImages.map((imgSrc, index) => (
-                <img key={index} src={imgSrc} alt={`Preview ${index}`} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                <div key={index} style={{ position: 'relative', marginRight: '10px', marginBottom: '10px' }}>
+                  <Image
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    width={100}
+                    height={100}
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <CloseCircleOutlined
+                    style={{
+                      position: 'absolute',
+                      top: '5px',
+                      right: '5px',
+                      fontSize: '16px',
+                      color: 'red',
+                      cursor: 'pointer',
+                      background: 'white',
+                      borderRadius: '50%'
+                    }}
+                    onClick={() => removeImage(index)}
+                  />
+                </div>
               ))}
             </div>
-          </div>
+          </Form.Item>
 
           <Form.Item {...tailLayout}>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                Submit
-              </Button>
-              <Button htmlType="button" onClick={onReset}>
-                Reset
-              </Button>
-            </Space>
-          </Form.Item>
+          <Space>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isSubmitting}
+            >
+              Submit
+            </Button>
+            <Button htmlType="button" onClick={onReset}>
+              Reset
+            </Button>
+          </Space>
+        </Form.Item>
         </Form>
       )}
       {showSuccessAlert && (
