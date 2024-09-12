@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
-import { message } from 'antd'; // or whatever message system you are using
+import { message } from 'antd';
 import { useAuth } from '@lepark/common-ui';
-import { getAllParks, getAllZones, getParkById, getZonesByParkId, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
-import { useNavigate } from 'react-router-dom'; // or your routing solution
+import { getAllParks, getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 
 export const useFetchParks = () => {
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [restrictedParkId, setRestrictedParkId] = useState<number | null>(null);
   const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user || !user.parkId) return;

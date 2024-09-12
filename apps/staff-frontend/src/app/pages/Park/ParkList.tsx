@@ -8,24 +8,12 @@ import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
 import { getAllParks, ParkResponse } from "@lepark/data-access";
 import { useEffect, useState } from "react";
 import { RiEdit2Line } from "react-icons/ri";
+import { useFetchParks } from "../../hooks/Parks/useFetchParks";
 
 const ParkList = () => {
   const navigate = useNavigate();
-  const [parks, setParks] = useState<ParkResponse[]>([]);
-
-  useEffect(() => {
-    const fetchParks = async () => {
-      try {
-        const parksRes = await getAllParks();
-        if (parksRes.status === 200) {
-          setParks(parksRes.data);
-        }
-      } catch (error) {
-        //
-      }
-    };
-    fetchParks();
-  }, []);
+  const { parks, restrictedParkId, loading } = useFetchParks();
+  // const [parks, setParks] = useState<ParkResponse[]>([]);
 
   const columns: TableProps['columns'] = [
     {
