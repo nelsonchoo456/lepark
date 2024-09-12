@@ -33,11 +33,12 @@ const CreateStaff: React.FC = () => {
         email: values.emailInput,
         password: values.passwordInput,
         role: values.roleSelect,
-        parkId: values.parkSelect.toString(),
+        parkId: values.parkSelect,
       };
-      console.log('Received values of form:', newStaffDetails);
+
+      // console.log('Received values of form:', newStaffDetails);
       const response = await registerStaff(newStaffDetails);
-      console.log('Success:', response.data);
+      // console.log('Success:', response.data);
       message.success('Staff added successfully!');
       // Navigate to another page or show success message
       navigate('/staff-management');
@@ -144,7 +145,7 @@ const CreateStaff: React.FC = () => {
             <Text type="secondary">There are no parks created yet!</Text>
           ) : user?.role === StaffType.MANAGER ? (
             <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>
-              <Select.Option key={user?.parkId} value={user?.parkId?.toString()}>
+              <Select.Option key={user?.parkId} value={user?.parkId}>
                 {getParkName(user?.parkId)}
               </Select.Option>
             </Select>
