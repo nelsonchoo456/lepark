@@ -3,11 +3,24 @@ import MainLayout from "../../components/main/MainLayout";
 import { NavButton } from "../../components/buttons/NavButton";
 import { PiPlantFill, PiStarFill, PiTicketFill } from "react-icons/pi";
 import { FaTent } from "react-icons/fa6";
-import { Badge, Card, Space } from "antd";
+import { Badge, Card, Space, TreeSelect, Input } from "antd";
 import { useNavigate, useLocation } from 'react-router-dom'
-import { speciesExamples } from "@lepark/data-utility";
-import { useState, useEffect } from 'react';
+import { plantTaxonomy } from "@lepark/data-utility";
+import { useState, useEffect, useMemo } from 'react';
 import { getAllSpecies, SpeciesResponse } from '@lepark/data-access';
+import { FiSearch } from "react-icons/fi";
+
+// Add these type definitions at the top of your file
+type OrdersType = { orders: string[] };
+type PhylumDataType = {
+  classes: string[];
+  [className: string]: string[] | OrdersType;
+};
+type PlantTaxonomyType = {
+  [phylum: string]: PhylumDataType;
+};
+
+const { SHOW_PARENT } = TreeSelect;
 
 const Discover = () => {
   const navigate = useNavigate();
@@ -16,6 +29,8 @@ const Discover = () => {
   const speciesTitleStyle = "text-xl font-medium text-green-500";
   const [loading, setLoading] = useState(false);
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
+  const [selectedTaxonomy, setSelectedTaxonomy] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchSpecies = async () => {
@@ -33,10 +48,74 @@ const Discover = () => {
     fetchSpecies();
   }, []);
 
+  const treeData = useMemo(() => {
+    const data: any[] = [];
+    Object.entries(plantTaxonomy as PlantTaxonomyType).forEach(([phylum, phylumData]) => {
+      const phylumNode: any = {
+        title: phylum,
+        value: `phylum-${phylum}`,
+        key: `phylum-${phylum}`,
+        children: [],
+      };
+
+      phylumData.classes.forEach((className: string) => {
+        const classNode: any = {
+          title: className,
+          value: `class-${phylum}-${className}`,
+          key: `class-${phylum}-${className}`,
+          children: [],
+        };
+
+        const classData = phylumData[className] as OrdersType;
+        if (classData && 'orders' in classData && Array.isArray(classData.orders)) {
+          classData.orders.forEach((order: string) => {
+            classNode.children.push({
+              title: order,
+              value: `order-${phylum}-${className}-${order}`,
+              key: `order-${phylum}-${className}-${order}`,
+            });
+          });
+        }
+
+        phylumNode.children.push(classNode);
+      });
+
+      data.push(phylumNode);
+    });
+    return data;
+  }, []);
+
+  const filteredSpecies = useMemo(() => {
+    if (loading) return [];
+    return fetchedSpecies.filter((species) => {
+      const matchesSearch = species.commonName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            species.speciesName.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesTaxonomy = selectedTaxonomy.length === 0 || selectedTaxonomy.some((tax) => {
+        const [level, phylum, className, order] = tax.split('-');
+        if (level === 'phylum') return species.phylum.toLowerCase() === phylum.toLowerCase();
+        if (level === 'class') return species.phylum.toLowerCase() === phylum.toLowerCase() &&
+                                    species.class.toLowerCase() === className.toLowerCase();
+        if (level === 'order') return species.phylum.toLowerCase() === phylum.toLowerCase() &&
+                                    species.class.toLowerCase() === className.toLowerCase() &&
+                                    species.order.toLowerCase() === order.toLowerCase();
+        return false;
+      });
+
+      return matchesSearch && matchesTaxonomy;
+    });
+  }, [fetchedSpecies, searchQuery, selectedTaxonomy, loading]);
+
+  const handleTaxonomyChange = (newValue: string[]) => {
+    setSelectedTaxonomy(newValue);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
+
   return (
-    // <MainLayout>
     <div>
-      {/* <div className="md:flex"> */}
       <Card
         size="small"
         style={{
@@ -56,14 +135,31 @@ const Discover = () => {
         </div>
       </Card>
 
-      <div className="justify-center bg-green-50">
-        {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
+      <div className="p-2 flex flex-col md:flex-row justify-between items-center bg-green-50">
+        <TreeSelect
+          treeData={treeData}
+          value={selectedTaxonomy}
+          onChange={handleTaxonomyChange}
+          treeCheckable={true}
+          showCheckedStrategy={SHOW_PARENT}
+          placeholder="Filter by Phylum > Class > Order"
+          style={{ width: '98%', marginBottom: '10px'}}
+        />
+        <Input
+          suffix={<FiSearch />}
+          placeholder="Search species..."
+          onChange={(e) => handleSearch(e.target.value)}
+          style={{ width: '98%' }}
+        />
+      </div>
+
+      <div className="justify-center bg-green-50 max-h-[calc(100vh-20rem)] overflow-y-auto no-scrollbar">
         <div className="flex flex-col items-center max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar">
-          {fetchedSpecies.map((species, index) => (
+          {filteredSpecies.map((species, index) => (
             <Card
               key={index}
               className={cardStyle}
-              bodyStyle={{ padding: 10 }}
+              styles={{ body: { padding: 10 } }}
               onClick={() => {
                 navigate('/discover/view-species', {
                   state: { speciesId: species.id }
@@ -86,10 +182,8 @@ const Discover = () => {
             </Card>
           ))}
         </div>
-        {/* </div> */}
       </div>
     </div>
-    // </MainLayout>
   );
 };
 

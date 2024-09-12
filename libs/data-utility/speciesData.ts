@@ -136,7 +136,7 @@ export const plantTaxonomy = {
     }
   },
   Bryophyta: {
-    classes: ['Marchantiopsida', 'Bryopsida', 'Anthocerotopsida'],
+    classes: ['Marchantiopsida', 'Bryopsida'],
     Marchantiopsida: {
       orders: ['Blasiales', 'Lunulariales', 'Marchantiales', 'Neohodgsoniales', 'Sphaerocarpales']
     },
@@ -147,9 +147,6 @@ export const plantTaxonomy = {
         'Pottiales', 'Grimmiales', 'Encalyptales', 'Funariales',
         'Eubryales', 'Isobryales', 'Hookeriales', 'Hypnobryales'
       ]
-    },
-    Anthocerotopsida: {
-      orders: ['Anthocerotales', 'Notothyladales', 'Phymatocerotales', 'Dendrocerotales']
     }
   },
   Charophyta: {
