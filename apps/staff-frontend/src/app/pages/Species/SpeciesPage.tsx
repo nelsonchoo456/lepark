@@ -10,7 +10,6 @@ import {
 } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species view
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DescriptionsProps } from 'antd';
 import { speciesExamples } from '@lepark/data-utility';
@@ -25,21 +24,21 @@ import {
   Button,
   Table,
   Modal,
-  message
+  message,
+  Tooltip,
+  TableProps
 } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
-import { FiSearch } from 'react-icons/fi';
 import { PlusOutlined } from '@ant-design/icons';
 import { getAllSpecies, deleteSpecies, SpeciesResponse } from '@lepark/data-access';
 
+import { FiSearch, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
+
 const SpeciesPage = () => {
-  const [webMode, setWebMode] = useState<boolean>(
-    window.innerWidth >= SCREEN_LG,
-  );
+  const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const {Search} = Input;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,6 +61,7 @@ const SpeciesPage = () => {
         console.log('fetched species', species.data);
       } catch (error) {
         console.error('Error fetching species:', error);
+        message.error('Failed to fetch species');
       } finally {
         setLoading(false);
       }
@@ -84,7 +84,6 @@ const SpeciesPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      // Show a confirmation dialog
       const confirmed = await new Promise((resolve) => {
         Modal.confirm({
           title: 'Are you sure you want to delete this species?',
@@ -96,13 +95,8 @@ const SpeciesPage = () => {
 
       if (!confirmed) return;
 
-      // Call the delete API
       await deleteSpecies(id);
-
-      // If successful, update the local state
       setFetchedSpecies(prevSpecies => prevSpecies.filter(species => species.id !== id));
-
-      // Show success message
       message.success('Species deleted successfully');
     } catch (error) {
       console.error('Error deleting species:', error);
@@ -110,149 +104,98 @@ const SpeciesPage = () => {
     }
   };
 
-  const handleEdit = (id: string) => {
-    navigate('/species/edit', { state: { speciesId: id } });
+  const renderBooleanTag = (value: boolean | undefined) => {
+    if (value === undefined) return <Tag>Unknown</Tag>;
+    return value ? <Tag color="green">Yes</Tag> : <Tag color="red">No</Tag>;
   };
 
-  const columns = [
+  const columns: TableProps<SpeciesResponse>['columns'] = [
     {
-      key: 'commonName',
       title: 'Common Name',
       dataIndex: 'commonName',
-      render: (text: string) => text,
+      key: 'commonName',
+      render: (text) => text,
     },
     {
-      key: 'class',
-      title: 'Class',
-      dataIndex: 'class',
-      render: (text: string) => text,
+      title: 'Scientific Name',
+      dataIndex: 'speciesName',
+      key: 'speciesName',
+      render: (text) => <i>{text}</i>,
     },
     {
-      key: 'family',
       title: 'Family',
       dataIndex: 'family',
-      render: (text: string) => text,
+      key: 'family',
+      render: (text) => text,
     },
     {
-      key: 'genus',
-      title: 'Genus',
-      dataIndex: 'genus',
-      render: (text: string) => text,
-    },
-    {
-      key: 'conservationStatus',
       title: 'Conservation Status',
       dataIndex: 'conservationStatus',
-      render: (text: string) => (
-        <Tag
-          bordered={false}
-          color={text === 'LEAST_CONCERN' ? 'green' : 'red'}
-        >
-          {text}
-        </Tag>
+      key: 'conservationStatus',
+      render: (status) => {
+        let color = 'green';
+        switch (status) {
+          case 'VULNERABLE':
+            color = 'orange';
+            break;
+          case 'ENDANGERED':
+          case 'CRITICALLY_ENDANGERED':
+            color = 'red';
+            break;
+          default:
+            color = 'green';
+        }
+        return <Tag color={color}>{status.replace('_', ' ')}</Tag>;
+      },
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Flex justify="center" gap={8}>
+          <Tooltip title="View Details">
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`/species/${record.id}`)} />
+          </Tooltip>
+          <Tooltip title="Edit Species">
+            <Button type="link" icon={<FiEdit2 />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
+          </Tooltip>
+          <Tooltip title="Delete Species">
+            <Button type="link" icon={<FiTrash2 />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
+        </Flex>
       ),
     },
   ];
-  // const columns = Object.keys(filteredSpecies[1]).map((label) => ({ key: label, dataIndex: label, label, render: (text: string)=> text}))
-  //console.log('filteredSpecies', filteredSpecies);
 
   return webMode ? (
-    // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1] p-10`} >
     <ContentWrapperDark>
       <PageHeader>Species Management</PageHeader>
-      {/* <CustButton
-        type="primary"
-        className={`m-5`}
-        onClick={() => navigate('/species/create')}
-      >
-        Create Species
-      </CustButton>{' '} */}
-      {/*TODO: fix aesthetics*/}
-      {/* <Search
-        placeholder="Search species"
-        allowClear
-        enterButton="Search"
-        size="large"
-        onSearch={handleSearch}
-        style={{ marginBottom: 20 }}
-      /> */}
-
       <Flex justify="end" gap={10}>
-        <Search
-          placeholder="Search species"
-          allowClear
-          enterButton="Search"
-          onSearch={handleSearch}
-          style={{ marginBottom: 20 }}
+        <Input
+          suffix={<FiSearch />}
+          placeholder="Search species..."
+          onChange={(e) => handleSearch(e.target.value)}
+          style={{ width: 200 }}
         />
         <Button
           type="primary"
-          icon={<PlusOutlined />}
           onClick={() => navigate('/species/create')}
         >
           Create Species
         </Button>
       </Flex>
-      <Card bordered={false}>
+
+      <Card>
         <Table
+          dataSource={filteredSpecies}
           columns={columns}
-          dataSource={filteredSpecies.map((species: any) => ({
-            key: species.id,
-            ...species,
-          }))}
-          expandable={{
-            expandedRowRender: (species) => {
-              const descriptionsItems = Object.entries(species).map(([key, val]) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), children: <p>{"" + val}</p>}))
-              return (
-              <div>
-              <Descriptions items={descriptionsItems} column={2} size="small"/>
-              <Button className='m-1' type="primary" onClick={() => handleEdit(species.id)}>Edit</Button>
-              <Button className='m-1' type="primary" danger onClick={() => handleDelete(species.id)}>Delete</Button>
-              </div>)
-            },
-          }}
+          rowKey="id"
+          loading={loading}
         />
       </Card>
-      {/* filteredSpecies.map((species: any) => (
-        <Card
-          key={species.id}
-          title={species.commonName}
-          style={{ marginBottom: 20 }}
-        >
-          <Row gutter={[16, 16]}>
-            {Object.entries(species).map(([key, value]) => (
-              <Col span={6} key={key}>
-                <div
-                  style={{
-                    border: '1px solid #e8e8e8',
-                    padding: '8px',
-                    background: '#f5f5f5', // Light grey background
-                    height: '100%', // Ensure all boxes have the same height
-                  }}
-                >
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                  </div>
-                  <div>
-                    {typeof value === 'boolean'
-                      ? value
-                        ? 'Yes'
-                        : 'No'
-                      : value?.toString()}
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Card>
-      )) */}
     </ContentWrapperDark>
   ) : (
-    // </div>
-    <div
-      className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
-    >
-      {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
+    <div className="h-[calc(100vh-2rem)] w-screen p-4">
       <PageHeader>Species Management (Mobile)</PageHeader>
       {/* Add your mobile content here */}
     </div>
