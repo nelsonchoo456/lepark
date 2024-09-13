@@ -52,6 +52,18 @@ const ViewStaffDetails = () => {
       } catch (error) {
         console.error(error);
         // message.error('Failed to fetch user details');
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the details of this staff!',
+          });
+          notificationShown.current = true;
+        }
+        if (user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) {
+          navigate('/staff-management');
+        } else {
+        navigate('/');
+        }
       }
     };
 
@@ -61,20 +73,7 @@ const ViewStaffDetails = () => {
   }, [staffId]);
 
   useEffect(() => {
-    if (!user || staff.id == '') {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the details of this staff!',
-        });
-        notificationShown.current = true;
-      }
-      if (user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) {
-        navigate('/staff-management');
-      } else {
-      navigate('/');
-      }
-    } else {
+    if (user || staff.id !== '') {
       if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
         if (!notificationShown.current) {
           notification.error({
