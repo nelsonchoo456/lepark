@@ -219,18 +219,16 @@ const ViewSpeciesDetails = () => {
   return (
     <div className="md:p-4">
       <div className="md:flex w-full gap-4">
-        <div className="md:flex-[2]">
-          <div style={{ width: '1024px', maxWidth: '100%', margin: '0 auto' }}>
-            <SpeciesCarousel images={species?.images || []} />
-            {user && (
-              <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
-                {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-              </Button>
-            )}
-          </div>
+        <div className="w-full md:w-1/2 lg:w-1/2">
+          <SpeciesCarousel images={species?.images || []} />
+          {user && (
+            <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
+              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+            </Button>
+          )}
         </div>
         <div className="flex-[3] flex-col flex p-4 md:p-0">
-          <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.speciesName}</LogoText>
+          <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
 
           <div className="flex flex-col-reverse">
             <div className="flex h-24 w-full gap-3 my-2 md:gap-2 md:mt-auto">
