@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark } from '@lepark/common-ui';
+import { ContentWrapperDark, ImageInput } from '@lepark/common-ui';
 import {
   createPark,
   getOccurrenceById,
@@ -33,6 +33,8 @@ import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
+import useUploadImages from '../../hooks/Images/useUploadImages';
+
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -56,6 +58,8 @@ const OccurrenceEdit = () => {
   const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (!occurrenceId) return;
@@ -69,6 +73,8 @@ const OccurrenceEdit = () => {
           const dateOfBirth = moment(occurrenceData.dateOfBirth);
           const dateObserved = moment(occurrenceData.dateObserved);
           const finalData = { ...occurrenceData, dateObserved, dateOfBirth };
+
+          setCurrentImages(occurrenceData.images);
 
           form.setFieldsValue(finalData);
         }
@@ -121,8 +127,10 @@ const OccurrenceEdit = () => {
         changedData.dateOfBirth = dayjs(changedData.dateOfBirth).toISOString();
       }
 
+      changedData.images = currentImages;
+
       // console.log(changedData);
-      const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData);
+      const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
       if (occurenceRes.status === 200) {
         setCreatedData(occurenceRes.data);
         messageApi.open({
@@ -141,6 +149,10 @@ const OccurrenceEdit = () => {
         content: 'Unable to update Occurrence. Please try again later.',
       });
     }
+  };
+
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const speciesOptions = [
@@ -196,25 +208,25 @@ const OccurrenceEdit = () => {
 
   const breadcrumbItems = [
     {
-      title: "Occurrence Management",
+      title: 'Occurrence Management',
       pathKey: '/occurrences',
       isMain: true,
     },
     {
-      title: occurrence?.title ? occurrence?.title : "Details",
+      title: occurrence?.title ? occurrence?.title : 'Details',
       pathKey: `/occurrences/${occurrence?.id}`,
     },
     {
-      title: "Edit",
+      title: 'Edit',
       pathKey: `/occurrences/${occurrence?.id}/edit`,
-      isCurrent: true
-    }
-  ]
+      isCurrent: true,
+    },
+  ];
 
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Form
           form={form}
@@ -254,6 +266,36 @@ const OccurrenceEdit = () => {
           </Form.Item>
           <Form.Item name="decarbonizationType" label="Decarbonization Type" rules={[{ required: true }]}>
             <Select placeholder="Select a Decarbonization Type" options={decarbonizationTypeOptions} />
+          </Form.Item>
+
+          <Form.Item label={'Image'}>
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
+
+          <Form.Item label={'Images'}>
+            <div className="flex flex-wrap gap-2">
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+            </div>
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8 }}>
