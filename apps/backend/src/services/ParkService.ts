@@ -3,6 +3,13 @@ import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import ParkDao from '../dao/ParkDao';
 import { ParkCreateData, ParkUpdateData } from '../schemas/parkSchema';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
 
 class ParkService {
   public async createPark(data: ParkCreateData): Promise<any> {
@@ -57,6 +64,24 @@ class ParkService {
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
       }
       throw error;
+    }
+  }
+
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+    const params = {
+      Bucket: 'lepark',
+      Key: `park/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+    
+    try {
+      const data = await s3.upload(params).promise();
+      // console.log("uploadImageToS3", data)
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
     }
   }
 };

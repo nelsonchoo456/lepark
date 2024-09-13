@@ -32,6 +32,7 @@ import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
+import PageHeader2 from '../../components/main/PageHeader2';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -192,10 +193,28 @@ const OccurrenceEdit = () => {
       label: 'Removed',
     },
   ];
+
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: occurrence?.title ? occurrence?.title : "Details",
+      pathKey: `/occurrences/${occurrence?.id}`,
+    },
+    {
+      title: "Edit",
+      pathKey: `/occurrences/${occurrence?.id}/edit`,
+      isCurrent: true
+    }
+  ]
+
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Edit Occurrence</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         <Form
           form={form}

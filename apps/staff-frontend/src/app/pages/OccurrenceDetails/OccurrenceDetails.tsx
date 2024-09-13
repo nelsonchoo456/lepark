@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag, Spin } from 'antd';
@@ -12,15 +12,18 @@ import moment from 'moment';
 import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
+import QRTab from './components/QRTab';
 import { ActivityLogResponse, OccurrenceResponse, SpeciesResponse, LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
 import { getOccurrenceById, getSpeciesById } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,7 +32,7 @@ const OccurrenceDetails = () => {
         try {
           const occurrenceResponse = await getOccurrenceById(occurrenceId);
           setOccurrence(occurrenceResponse.data);
-          
+
           if (occurrenceResponse.data.speciesId) {
             const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
             setSpecies(speciesResponse.data);
@@ -89,7 +92,25 @@ const OccurrenceDetails = () => {
       label: 'Status Logs',
       children: <StatusLogs occurrence={occurrence} />,
     },
+    {
+      key: 'qr',
+      label: 'QR',
+      children: occurrence ? <QRTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
+    },
   ];
+
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: occurrence?.title ? occurrence?.title : "Details",
+      pathKey: `/occurrences/${occurrence?.id}`,
+      isCurrent: true
+    },
+  ]
 
   const getWaterRequirementInfo = (value: number) => {
     if (value <= 30) return { text: 'Low', icon: <FaTint className="text-3xl mt-2 text-blue-300" /> };
@@ -146,7 +167,7 @@ const OccurrenceDetails = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader>Occurrence Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -166,7 +187,7 @@ const OccurrenceDetails = () => {
                 className="h-64 flex-1 rounded-lg shadow-lg p-4"
               />
               <div className="flex-1 flex-col flex">
-                <LogoText className="text-2xl py-2 m-0">{occurrence?.speciesName}</LogoText>
+                <LogoText className="text-2xl py-2 m-0">{occurrence?.title}</LogoText>
                 <Descriptions items={descriptionsItems} column={1} size="small" />
 
                 <div className="flex h-24 w-full gap-2 mt-auto">

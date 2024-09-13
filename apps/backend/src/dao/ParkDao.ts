@@ -11,8 +11,9 @@ class ParkDao {
     const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
     const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
 
+    // console.log("createPark", data.images)
     const park = await prisma.$queryRaw`
-      INSERT INTO "Park" (name, description, "address", "contactNumber", "openingHours", "closingHours", "geom", "paths", "parkStatus")
+      INSERT INTO "Park" (name, description, "address", "contactNumber", "openingHours", "closingHours", "images", "geom", "paths", "parkStatus")
       VALUES (
         ${data.name}, 
         ${data.description}, 
@@ -28,11 +29,13 @@ class ParkDao {
         -- ARRAY[${closingHoursArray.join(', ')}]::timestamp[], 
         -- ${prisma.$queryRaw`ARRAY[${data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`)}]::timestamp[]`}, 
         -- ${prisma.$queryRaw`ARRAY[${data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`)}]::timestamp[]`}, 
+        ${data.images}::text[],
         ST_GeomFromText(${data.geom}), 
         ST_LineFromText(${data.paths}, 4326),
+        
         ${data.parkStatus}::"PARK_STATUS_ENUM"
       ) 
-      RETURNING id, name, description, "address", "contactNumber", "openingHours", "closingHours", ST_AsGeoJSON(geom) as "geom", "parkStatus";
+      RETURNING id, name, description, "address", "contactNumber", "openingHours", "closingHours", "images", ST_AsGeoJSON(geom) as "geom", "parkStatus";
     `;
     return park[0];
   }
@@ -60,6 +63,7 @@ class ParkDao {
         "contactNumber" TEXT,
         "openingHours" TIMESTAMP[],
         "closingHours" TIMESTAMP[],
+        images TEXT[],
         geom GEOMETRY,
         paths GEOMETRY,
         "parkStatus" "PARK_STATUS_ENUM"
@@ -79,6 +83,7 @@ class ParkDao {
         "contactNumber",
         "openingHours",
         "closingHours",
+        "images", 
         ST_AsGeoJSON("geom") as geom,
         ST_AsGeoJSON("paths") as paths,
         "parkStatus"
@@ -108,6 +113,7 @@ class ParkDao {
         "contactNumber",
         "openingHours",
         "closingHours",
+        "images", 
         ST_AsGeoJSON("geom") as geom,
         ST_AsGeoJSON("paths") as paths,
         "parkStatus"
@@ -165,6 +171,11 @@ class ParkDao {
       const closingHoursArray = data.closingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
       values.push(closingHoursArray);
     }
+
+    if (data.images) {
+      updates.push(`images = $${updates.length + 1}::text[]`);
+      values.push(data.images);
+    }
   
     if (data.geom) {
       updates.push(`geom = ST_GeomFromText($${updates.length + 1})`);
@@ -191,7 +202,7 @@ class ParkDao {
       UPDATE "Park"
       SET ${updates.join(', ')}
       WHERE id = $${updates.length + 1}
-      RETURNING id, name, description, address, "contactNumber", "openingHours", "closingHours", ST_AsGeoJSON(geom) as geom, ST_AsGeoJSON(paths) as paths, "parkStatus";
+      RETURNING id, name, description, address, "contactNumber", "openingHours", "closingHours", "images", ST_AsGeoJSON(geom) as geom, ST_AsGeoJSON(paths) as paths, "parkStatus";
     `;
   
     // Add the id to the list of values

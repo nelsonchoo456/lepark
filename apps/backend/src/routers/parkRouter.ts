@@ -1,7 +1,9 @@
 import express from 'express';
 import ParkService from '../services/ParkService';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer();
 
 router.post('/createPark', async (req, res) => {
   try {
@@ -41,6 +43,32 @@ router.get('/getParkById/:id', async (req, res) => {
   }
 });
 
+router.post('/upload', upload.array('files', 5), async (req, res) => {
+  try {
+    // Use a type assertion to tell TypeScript that req.file exists
+    const files = req.files as Express.Multer.File[];
+
+    // Check if a file is provided
+    if (!files || files.length === 0) {
+      // return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const uploadedUrls = [];
+
+    for (const file of files) {
+      const fileName = `${Date.now()}-${file.originalname}`; // Create a unique file name
+      const imageUrl = await ParkService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+      console.log("/upload", imageUrl)
+      uploadedUrls.push(imageUrl);
+    }
+
+    // Return the image URL
+    res.status(200).json({ uploadedUrls });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
 
 
 export default router;

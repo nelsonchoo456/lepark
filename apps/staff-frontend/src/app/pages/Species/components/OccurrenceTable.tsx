@@ -1,62 +1,41 @@
-import { ContentWrapperDark } from '@lepark/common-ui';
+import React, { useEffect, useState } from 'react';
+import { Table, Tag, Button, Tooltip, Flex, TableProps } from 'antd';
+import { FiArchive, FiExternalLink, FiEye } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
 import moment from 'moment';
-import PageHeader from '../../components/main/PageHeader';
-import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
-import { useEffect, useState } from 'react';
-import { getAllOccurrences, OccurrenceResponse, getSpeciesById } from '@lepark/data-access';
+import { getOccurrencesBySpeciesId, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
-import PageHeader2 from '../../components/main/PageHeader2';
 
-const OccurrenceList: React.FC = () => {
+interface OccurrenceTableProps {
+  speciesId: string;
+  loading: boolean;
+}
+
+const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   const [occurrences, setOccurrences] = useState<(OccurrenceResponse & { speciesName: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchOccurrences();
-  }, []);
+    const fetchOccurrences = async () => {
+      try {
+        const fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
+        setOccurrences(fetchedOccurrences.data);
+      } catch (error) {
+        console.error('Error fetching occurrences:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchOccurrences = async () => {
-    try {
-      const response = await getAllOccurrences();
-      const occurrencesWithSpeciesNames = await Promise.all(
-        response.data.map(async (occurrence) => {
-          const speciesResponse = await getSpeciesById(occurrence.speciesId);
-          return { ...occurrence, speciesName: speciesResponse.data.speciesName };
-        })
-      );
-      setOccurrences(occurrencesWithSpeciesNames);
-    } catch (error) {
-      message.error('Failed to fetch occurrences');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchOccurrences();
+  }, [speciesId]);
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
   };
 
-  const navigateToSpecies = (speciesId: string) => {
-    navigate(`/species/${speciesId}`);
-  };
-
   const columns: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
-    {
-      title: 'Species Name',
-      dataIndex: 'speciesName',
-      key: 'speciesName',
-      render: (text, record) => (
-        <Flex justify="space-between" align="center">
-          {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(record.speciesId)} />
-          </Tooltip>
-        </Flex>
-      ),
-    },
     {
       title: 'Title',
       dataIndex: 'title',
@@ -124,35 +103,7 @@ const OccurrenceList: React.FC = () => {
     },
   ];
 
-  const breadcrumbItems = [
-    {
-      title: "Occurrence Management",
-      pathKey: '/occurrences',
-      isMain: true,
-      isCurrent: true
-    },
-  ]
-
-  return (
-    <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <Flex justify="end" gap={10}>
-        <Input suffix={<FiSearch />} placeholder="Search in Occurrences..." className="mb-4 bg-white" variant="filled" />
-        <Button
-          type="primary"
-          onClick={() => {
-            navigate('/occurrences/create');
-          }}
-        >
-          Create Occurrence
-        </Button>
-      </Flex>
-
-      <Card>
-        <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
-      </Card>
-    </ContentWrapperDark>
-  );
+  return <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />;
 };
 
-export default OccurrenceList;
+export default OccurrenceTable;

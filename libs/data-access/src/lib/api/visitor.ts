@@ -9,7 +9,7 @@ import {
   VisitorPasswordResetData,
   FavoriteSpeciesRequestData,
   GetFavoriteSpeciesRequestData,
-  GetFavoriteSpeciesResponseData,
+  GetFavoriteSpeciesResponse,
 } from '../types/visitor';
 import client from './client';
 
@@ -128,9 +128,9 @@ export async function addFavoriteSpecies(data: FavoriteSpeciesRequestData): Prom
   }
 }
 
-export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<GetFavoriteSpeciesResponseData>> {
+export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<GetFavoriteSpeciesResponse>> {
   try {
-    const response: AxiosResponse<GetFavoriteSpeciesResponseData> = await client.get(`${URL}/viewFavoriteSpecies/${visitorId}`);
+    const response: AxiosResponse<GetFavoriteSpeciesResponse> = await client.get(`${URL}/viewFavoriteSpecies/${visitorId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -145,6 +145,19 @@ export async function deleteSpeciesFromFavorites(visitorId: string, speciesId: s
   try {
     const response: AxiosResponse<VisitorResponse> = await client.delete(`${URL}/deleteSpeciesFromFavorites/${visitorId}/${speciesId}`);
     return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
+  try {
+    const response: AxiosResponse<{ isFavorite: boolean }> = await client.get(`${URL}/isSpeciesInFavorites/${visitorId}/${speciesId}`);
+    return response.data.isFavorite;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
       throw error.response.data.error;

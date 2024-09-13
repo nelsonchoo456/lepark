@@ -1,4 +1,4 @@
-import { Descriptions, Tag } from 'antd';
+import { Descriptions } from 'antd';
 import { SpeciesResponse } from '@lepark/data-access';
 import moment from 'moment';
 import { AiOutlineCheck, AiOutlineClose } from 'react-icons/ai';
@@ -19,19 +19,12 @@ const InformationTab = ({ species }: { species: SpeciesResponse }) => {
 
   const excludeKeys = [
     'id',
-    'speciesName',
     'commonName',
-    'originCountry',
     'speciesDescription',
     'conservationStatus',
     'lightType',
     'soilType',
     'images',
-    'phylum',
-    'class',
-    'order',
-    'family',
-    'genus',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(species)

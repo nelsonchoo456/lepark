@@ -79,7 +79,7 @@ CREATE TABLE "Occurrence" (
     "dateOfBirth" TIMESTAMP(3),
     "numberOfPlants" DOUBLE PRECISION NOT NULL,
     "biomass" DOUBLE PRECISION NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
     "occurrenceStatus" "OccurrenceStatusEnum" NOT NULL,
     "decarbonizationType" "DecarbonizationTypeEnum" NOT NULL,
     "speciesId" UUID NOT NULL,
@@ -135,6 +135,9 @@ CREATE TABLE "_VisitorfavoriteSpecies" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Staff_email_key" ON "Staff"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Species_speciesName_key" ON "Species"("speciesName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");

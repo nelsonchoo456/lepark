@@ -65,7 +65,7 @@ model Species {
   order                 String
   family                String
   genus                 String
-  speciesName           String
+  speciesName           String                 @unique
   commonName            String
   speciesDescription    String
   conservationStatus    ConservationStatusEnum
@@ -115,7 +115,7 @@ model Occurrence {
   dateOfBirth         DateTime?
   numberOfPlants      Float
   biomass             Float
-  description         String
+  description         String?
   occurrenceStatus    OccurrenceStatusEnum
   decarbonizationType DecarbonizationTypeEnum
   speciesId           String                  @db.Uuid
