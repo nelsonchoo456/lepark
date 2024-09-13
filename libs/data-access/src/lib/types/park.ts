@@ -8,6 +8,7 @@ export interface ParkData {
   geom: any;
   paths: any;
   parkStatus: string;
+  images?: string[];
 }
 export interface StringIdxSig {
   [key: string]: string | undefined
@@ -23,4 +24,5 @@ export interface ParkResponse {
   geom: any;
   paths: any;
   parkStatus: string;
+  images?: string[];
 }

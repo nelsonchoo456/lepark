@@ -9,6 +9,7 @@ import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import useUploadImages from '../../hooks/Images/useUploadImages';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -23,6 +24,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 
 const ParkCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [createdData, setCreatedData] = useState<ParkResponse | null>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -61,7 +63,6 @@ const ParkCreate = () => {
       const openingHours: any[] = [];
       const closingHours: any[] = [];
       daysOfTheWeek.forEach((day, index) => {
-        console.log(formValues[day])
         openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
         closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
       })
@@ -72,14 +73,12 @@ const ParkCreate = () => {
         const polygonData = latLngArrayToPolygon(polygon[0][0]);
         finalData.geom = polygonData;
       }
-      
-      console.log(finalData)
-      const response = await createPark(finalData);
+
+      const response = await createPark(finalData, selectedFiles);
       if (response.status === 201) {
         setCreatedData(response.data)
         setCurrStep(2);
       }
-      
     } catch (error) {
       console.error(error);
       messageApi.open({
@@ -92,11 +91,22 @@ const ParkCreate = () => {
   const content = [
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} />,
+      children: (
+        <CreateDetailsStep
+          handleCurrStep={handleCurrStep}
+          form={form}
+          previewImages={previewImages}
+          handleFileChange={handleFileChange}
+          removeImage={removeImage}
+          onInputClick={onInputClick}
+        />
+      ),
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines}/>,
+      children: (
+        <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines} />
+      ),
     },
     {
       key: 'complete',

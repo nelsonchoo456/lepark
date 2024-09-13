@@ -1,3 +1,4 @@
+import { ImageInput } from '@lepark/common-ui';
 import { SpeciesResponse, ZoneResponse } from '@lepark/data-access';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select } from 'antd';
 const { TextArea } = Input;

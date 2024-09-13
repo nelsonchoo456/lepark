@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Button, Card, Descriptions, Empty, Flex, Space, Tabs, Tag, Typography } from 'antd';
+import { Button, Card, Carousel, Descriptions, Empty, Flex, Space, Tabs, Tag, Typography } from 'antd';
 import { getParkById, ParkResponse } from '@lepark/data-access';
 import { FiSun } from 'react-icons/fi';
 import AboutTab from './components/AboutTab';
@@ -22,24 +22,25 @@ const ParkDetails = () => {
         const parkRes = await getParkById(parseInt(id));
         if (parkRes.status === 200) {
           setPark(parkRes.data);
+          console.log(parkRes.data);
         }
       } catch (error) {
         //
       }
-    }
+    };
     fetchData();
-  }, [id])
+  }, [id]);
 
   const descriptionsItems = [
     {
       key: 'address',
       label: 'Address',
-      children: <div className='font-semibold'>{park?.address}</div>,
+      children: <div className="font-semibold">{park?.address}</div>,
     },
     {
       key: 'contactNumber',
       label: 'Contact Number',
-      children: <div className='font-semibold'>{park?.contactNumber}</div>
+      children: <div className="font-semibold">{park?.contactNumber}</div>,
     },
   ];
 
@@ -48,27 +49,36 @@ const ParkDetails = () => {
     {
       key: 'about',
       label: 'Information',
-      children: park ? <AboutTab park={park} /> : <></>, 
+      children: park ? <AboutTab park={park} /> : <></>,
     },
     {
       key: 'zones',
       label: 'Zones',
       // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-      children: <Empty description={"Zones Coming Soon"}></Empty>
+      children: <Empty description={'Zones Coming Soon'}></Empty>,
     },
     {
       key: 'attractions',
       label: 'Attractions',
       // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-      children: <Empty description={"Attractions Coming Soon"}></Empty>
+      children: <Empty description={'Attractions Coming Soon'}></Empty>,
     },
     {
       key: 'events',
       label: 'Events',
       // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-      children: <Empty description={"Events Coming Soon"}></Empty>
+      children: <Empty description={'Events Coming Soon'}></Empty>,
     },
   ];
+
+  const contentStyle: React.CSSProperties = {
+    height: '160px',
+    color: '#fff',
+    lineHeight: '160px',
+    textAlign: 'center',
+    background: '#364d79',
+    width: '100%',
+  };
 
   return (
     <ContentWrapperDark>
@@ -76,25 +86,37 @@ const ParkDetails = () => {
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
-          <div
-            style={{
-              backgroundImage: `url('https://images.squarespace-cdn.com/content/v1/5b008764710699f45ff1e509/1596530511574-RBL8EAUPS22DY2OKWN5Q/HD.Singapore_Bishan+Park_c+Dreiseitl_109+.jpg?format=2500w')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              color: 'white',
-              overflow: 'hidden',
-            }}
-            className="h-64 flex-1 rounded-lg shadow-lg p-4"
-          />
+          <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {park?.images && park.images.length > 0 ?
+            <Carousel style={{ maxWidth: '100%' }}>
+              {park?.images?.map((url) => (
+                <div key={url}>
+                  <div
+                    style={{
+                      backgroundImage: `url('${url}')`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      color: 'white',
+                      overflow: 'hidden',
+                    }}
+                    className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                  />
+                </div>
+              ))}
+            </Carousel>
+            : <div className='h-64 bg-gray-200 flex items-center justify-center'><Empty description="No Image"/></div>}
+          </div>
           <div className="flex-1 flex-col flex">
-            <div className='w-full flex justify-between items-center'>
+            <div className="w-full flex justify-between items-center">
               <Space>
                 <LogoText className="text-2xl py-2 m-0">{park?.name}</LogoText>
-                <ParkStatusTag>
-                  {park?.parkStatus}
-                </ParkStatusTag>
+                <ParkStatusTag>{park?.parkStatus}</ParkStatusTag>
               </Space>
-              <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`/park/${park?.id}/edit`)}/>
+              <Button
+                icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
+                type="text"
+                onClick={() => navigate(`/park/${park?.id}/edit`)}
+              />
             </div>
             <Typography.Paragraph
               ellipsis={{
@@ -103,7 +125,7 @@ const ParkDetails = () => {
             >
               {park?.description}
             </Typography.Paragraph>
-            <Descriptions items={descriptionsItems} column={1} size="small"/>
+            <Descriptions items={descriptionsItems} column={1} size="small" />
           </div>
         </div>
 
@@ -117,6 +139,6 @@ const ParkDetails = () => {
       </Card>
     </ContentWrapperDark>
   );
-}
+};
 
 export default ParkDetails;
