@@ -39,6 +39,19 @@ export async function getAllStaffs(): Promise<AxiosResponse<StaffResponse[]>> {
   }
 }
 
+export async function getAllStaffsByParkId(parkId?: number): Promise<AxiosResponse<StaffResponse[]>> {
+  try {
+    const response: AxiosResponse<StaffResponse[]> = await client.get(`${URL}/getAllStaffsByParkId/${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function viewStaffDetails(id: string): Promise<AxiosResponse<StaffResponse>> {
   try {
     const response: AxiosResponse<StaffResponse> = await client.get(`${URL}/viewStaffDetails/${id}`);

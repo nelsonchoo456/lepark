@@ -5,6 +5,8 @@ import InformationTab from './components/InformationTab';
 import { FiSun } from 'react-icons/fi';
 import moment from 'moment';
 import AboutTab from './components/AboutTab';
+import { useEffect, useState } from 'react';
+import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse } from '@lepark/data-access';
 
 const plant = {
   id: 1,
@@ -37,13 +39,41 @@ const plant = {
 };
 
 const OccurrenceDetails = () => {
-  const { id } = useParams();
+  const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
+  const [species, setSpecies] = useState<SpeciesResponse | null>(null);
+  const { occurrenceId } = useParams<{ occurrenceId: string }>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (occurrenceId) {
+        console.log(occurrenceId)
+        setLoading(true);
+        try {
+          const occurrenceResponse = await getOccurrenceById(occurrenceId);
+          setOccurrence(occurrenceResponse.data);
+          console.log(occurrenceResponse.data)
+          if (occurrenceResponse.data.speciesId) {
+            
+            const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
+            setSpecies(speciesResponse.data);
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+  }, [occurrenceId]);
 
   const descriptionsItems = [
     {
-      key: 'id',
-      label: 'Occurrence ID',
-      children: plant.id,
+      key: 'title',
+      label: 'Label',
+      children: occurrence?.title,
     },
     {
       key: 'occurrenceStatus',
@@ -95,7 +125,7 @@ const OccurrenceDetails = () => {
           className="shadow-lg p-4 rounded-b-3xl h-96 md:h-[45rem] md:flex-[2] md:rounded-lg"
         />
         <div className="flex-[3] flex-col flex p-4 md:p-0">
-          <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{plant.speciesName}</LogoText>
+          <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
           <div className="flex flex-col-reverse">
             <div className="flex h-24 w-full gap-3 my-2 md:gap-2 md:mt-auto">
               <div className="bg-green-50 h-full w-20 rounded-xl md:rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">

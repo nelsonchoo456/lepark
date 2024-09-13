@@ -18,6 +18,7 @@ export interface ParkCreateData {
   contactNumber?: string;
   openingHours: Date[];
   closingHours: Date[];
+  images?: string[];
   geom: string;
   paths: string;
   parkStatus: string;
@@ -30,6 +31,7 @@ export interface ParkUpdateData {
   contactNumber?: string;
   openingHours?: Date[];
   closingHours?: Date[];
+  images?: string[];
   geom?: string;
   paths?: string;
   parkStatus?: string;
@@ -42,6 +44,7 @@ export interface ParkResponseData {
   contactNumber?: string;
   openingHours: Date[];
   closingHours: Date[];
+  images?: string[];
   geom: any;
   paths: any;
   parkStatus: string;

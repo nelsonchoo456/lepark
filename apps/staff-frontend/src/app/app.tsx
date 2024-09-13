@@ -30,6 +30,7 @@ import ParkEdit from './pages/ParkEdit/ParkEdit';
 import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
+import Task from './pages/Task/Task';
 import ZoneList from './pages/ZoneList/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
@@ -109,7 +110,10 @@ export function App() {
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
               </Route> */}
 
+              <Route path="/task" element={<Task />} />
+
               <Route path="/profile" element={<StaffProfile />} />
+
               <Route path="/staff-management">
                 <Route index element={<StaffManagementPage />} />
                 <Route path=":staffId" element={<ViewStaffDetails />} />

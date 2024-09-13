@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { createOccurrence, getAllZones } from '@lepark/data-access';
+import { createOccurrence } from '@lepark/data-access';
 import { Button, Card, Flex, Form, Input, Result, Steps, message } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
@@ -9,6 +9,9 @@ import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
 import { OccurrenceResponse, ZoneResponse } from '@lepark/data-access';
 import dayjs from 'dayjs';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import { useFetchSpecies } from '../../hooks/Species/useFetchSpecies';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const center = {
   lat: 1.3503881629328163,
@@ -21,10 +24,11 @@ export interface AdjustLatLngInterface {
 }
 
 const OccurrenceCreate = () => {
+  const { zones, loading } = useFetchZones();
+  const { species, speciesLoading } = useFetchSpecies();
   const [currStep, setCurrStep] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
-  const [zones, setZones] = useState<ZoneResponse[]>([]);
   const navigate = useNavigate();
 
   // Form Values
@@ -33,17 +37,6 @@ const OccurrenceCreate = () => {
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
-  useEffect(() => {
-    const fetchZoneData = async () => {
-      const zonesRes = await getAllZones();
-      if (zonesRes.status === 200) {
-        const zonesData = zonesRes.data;
-        setZones(zonesData)
-      } 
-    }
-    fetchZoneData();
-  }, [])
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
@@ -76,7 +69,6 @@ const OccurrenceCreate = () => {
         ...formValues,
         lat,
         lng,
-        speciesId: 'ddd79aa5-3711-4312-835f-356415a8e526',
         dateObserved: formValues.dateObserved ? dayjs(formValues.dateObserved).toISOString() : null,
         dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
@@ -87,6 +79,7 @@ const OccurrenceCreate = () => {
         setCreatedData(response.data);
       }
     } catch (error) {
+      console.log(error)
       messageApi.open({
         type: 'error',
         content: 'Unable to create Occurrence as Species cannot be found. Please try again later.',
@@ -98,7 +91,7 @@ const OccurrenceCreate = () => {
   const content = [
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} zones={zones}/>,
+      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} zones={zones} species={species}/>,
     },
     {
       key: 'location',
@@ -110,10 +103,23 @@ const OccurrenceCreate = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: "Create",
+      pathKey: `/occurrences/create`,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Create an Occurrence</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}
         <Steps

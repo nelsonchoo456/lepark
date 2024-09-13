@@ -1,3 +1,4 @@
+import { ImageInput } from '@lepark/common-ui';
 import {
   Button,
   Checkbox,
@@ -16,6 +17,7 @@ import {
   Typography,
   message
 } from 'antd';
+import useUploadImages from '../../../hooks/Images/useUploadImages';
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -23,10 +25,15 @@ const { Text } = Typography;
 interface CreateDetailsStepProps {
   handleCurrStep: (step: number) => void;
   form: FormInstance;
+  previewImages: string[];
+  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  removeImage: (index: number) => void;
+  onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
 }
 
-const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => {
+const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChange, removeImage, onInputClick }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
+  
 
   const parkStatusOptions = [
     {
@@ -84,6 +91,23 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
         <Select placeholder="Select a Status" options={parkStatusOptions} />
       </Form.Item>
 
+      <Form.Item label={'Image'}>
+        <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick}/>
+      </Form.Item>
+      {previewImages?.length > 0 && <Form.Item label={'Image Previews'}>
+      <div className="flex flex-wrap gap-2">
+          {previewImages.map((imgSrc, index) => (
+            <img
+              key={index}
+              src={imgSrc}
+              alt={`Preview ${index}`}
+              className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+              onClick={() => removeImage(index)}
+            />
+          ))}
+        </div>
+      </Form.Item>}
+
       <Divider orientation="left">Contact Details</Divider>
       <Form.Item name="address" label="Address" rules={[{ required: true }]}>
         <Input placeholder="Park Address" />
@@ -102,11 +126,13 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
         <Input placeholder="Contact Number" />
       </Form.Item>
 
-      <Divider orientation="left">Park Hours <Text type='danger'>{" *"}</Text></Divider>
+      <Divider orientation="left">
+        Park Hours <Text type="danger">{' *'}</Text>
+      </Divider>
 
       <Form.Item label={'Monday'}>
         <Flex>
-          <Form.Item name="monday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="monday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('monday')}>
@@ -117,7 +143,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
       <Form.Item label={'Tuesday'}>
         <Flex>
-          <Form.Item name="tuesday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="tuesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('tuesday')}>
@@ -128,7 +154,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
       <Form.Item label={'Wednesday'}>
         <Flex>
-          <Form.Item name="wednesday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="wednesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('wednesday')}>
@@ -139,7 +165,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
       <Form.Item label={'Thursday'}>
         <Flex>
-          <Form.Item name="thursday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="thursday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('thursday')}>
@@ -150,7 +176,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
       <Form.Item label={'Friday'}>
         <Flex>
-          <Form.Item name="friday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="friday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('friday')}>
@@ -161,7 +187,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
       <Form.Item label={'Saturday'}>
         <Flex>
-          <Form.Item name="saturday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="saturday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('saturday')}>
@@ -172,7 +198,7 @@ const CreateDetailsStep = ({ handleCurrStep, form }: CreateDetailsStepProps) => 
 
       <Form.Item label={'Sunday'}>
         <Flex>
-          <Form.Item name="sunday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('sunday')}>

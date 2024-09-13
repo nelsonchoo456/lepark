@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "StaffRoleEnum" AS ENUM ('MANAGER', 'BOTANIST', 'ARBORIST', 'GARDENER', 'MAINTENANCE_WORKER', 'CLEANER', 'LANDSCAPE_ARCHITECT', 'PARK_RANGER');
+CREATE TYPE "StaffRoleEnum" AS ENUM ('MANAGER', 'BOTANIST', 'ARBORIST', 'LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER', 'SUPERADMIN');
 
 -- CreateEnum
 CREATE TYPE "ConservationStatusEnum" AS ENUM ('LEAST_CONCERN', 'NEAR_THREATENED', 'VULNERABLE', 'ENDANGERED', 'CRITICALLY_ENDANGERED', 'EXTINCT_IN_THE_WILD', 'EXTINCT');
@@ -29,6 +29,7 @@ CREATE TABLE "Staff" (
     "contactNumber" TEXT NOT NULL,
     "role" "StaffRoleEnum" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
+    "parkId" INTEGER,
 
     CONSTRAINT "Staff_pkey" PRIMARY KEY ("id")
 );
@@ -78,7 +79,7 @@ CREATE TABLE "Occurrence" (
     "dateOfBirth" TIMESTAMP(3),
     "numberOfPlants" DOUBLE PRECISION NOT NULL,
     "biomass" DOUBLE PRECISION NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
     "occurrenceStatus" "OccurrenceStatusEnum" NOT NULL,
     "decarbonizationType" "DecarbonizationTypeEnum" NOT NULL,
     "speciesId" UUID NOT NULL,

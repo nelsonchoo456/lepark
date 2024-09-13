@@ -132,6 +132,34 @@ class ZoneDao {
     }
   }
 
+  async getZonesByParkId(parkId: number): Promise<ZoneResponseData[]> {
+    await this.initZonesDB();
+
+    const zones = await prisma.$queryRaw`
+    SELECT 
+      "Zone".id, 
+      "Zone".name, 
+      "Zone".description, 
+      "Zone"."openingHours", 
+      "Zone"."closingHours", 
+      ST_AsGeoJSON("Zone".geom) as geom, 
+      ST_AsGeoJSON("Zone".paths) as paths, 
+      "Zone"."zoneStatus"
+    FROM "Zone"
+    WHERE "Zone"."parkId" = ${parkId};
+    `;
+
+    if (Array.isArray(zones)) {
+      return zones.map(zone => ({
+        ...zone,
+        geom: JSON.parse(zone.geom),  
+        paths: JSON.parse(zone.paths)  
+      }));
+    } else {
+      throw new Error(`Zone with Park ID ${parkId} not found`);
+    }
+  }
 }
+
 
 export default new ZoneDao();

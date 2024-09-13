@@ -1,34 +1,71 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
-import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag } from 'antd';
+import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { getAllStaffs, StaffResponse, StaffType } from '@lepark/data-access';
+import { getAllStaffs, StaffResponse, StaffType, getParkById, ParkResponse, getAllParks, getAllStaffsByParkId } from '@lepark/data-access';
 
 const StaffManagementPage: React.FC = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
+  const [parks, setParks] = useState<ParkResponse[]>([]);
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
+  
   useEffect(() => {
-    fetchStaffData();
-  }, []);
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Staff Management page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    } else {
+      fetchStaffData();
+      fetchParksData();
+    }
+  }, [user]);
 
   const fetchStaffData = async () => {
     try {
-      const response = await getAllStaffs();
-      console.log('Staff table successfully populated!');
-      const data = await response.data;
-      console.log('Fetched staff data:', data);
-      setStaff(data);
+      if (user?.role === StaffType.SUPERADMIN) {
+        const response = await getAllStaffs();
+        const data = await response.data;
+        setStaff(data);
+      } else {
+        const response = await getAllStaffsByParkId(user?.parkId);
+        const data = await response.data;
+        setStaff(data);
+      } 
     } catch (error) {
       console.error('Error fetching staff data:', error);
     }
+  };
+
+  const fetchParksData = async () => {
+    try {
+      const response = await getAllParks();
+      const data = await response.data;
+      setParks(data);
+    } catch (error) {
+      console.error('Error fetching parks data:', error);
+    };
+  };
+
+  const getParkName = (parkId?: number) => {
+    if (!parkId) {
+      return 'NParks';
+    }
+    const park = parks.find((park) => park.id === parkId);
+    return park ? park.name : 'NParks';
   };
 
   const handleViewDetailsClick = (staffRecord: StaffResponse) => {
@@ -38,9 +75,15 @@ const StaffManagementPage: React.FC = () => {
   const { Search } = Input;
   const [searchQuery, setSearchQuery] = useState('');
   const filteredStaff = useMemo(() => {
-    return staff.filter((staffMember) =>
-      Object.values(staffMember).some((value) => value.toString().toLowerCase().includes(searchQuery.toLowerCase())),
-    );
+    return staff.filter((staffMember) => {
+      const fullName = `${staffMember.firstName} ${staffMember.lastName}`.toLowerCase();
+      const parkName = getParkName(staffMember.parkId).toLowerCase();
+      return (
+        fullName.includes(searchQuery.toLowerCase()) ||
+        parkName.includes(searchQuery.toLowerCase()) ||
+        Object.values(staffMember).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    });
   }, [staff, searchQuery]);
 
   const handleSearchBar = (value: string) => {
@@ -78,6 +121,14 @@ const StaffManagementPage: React.FC = () => {
           <div style={{ color: 'grey' }}>{record.email}</div>
         </div>
       ),
+    },
+    {
+      title: 'Park',
+      key: 'park',
+      width: '15%',
+      render: (_, record) => getParkName(record.parkId),
+      filters: user?.role === StaffType.SUPERADMIN ? parks.map((park) => ({ text: park.name, value: park.id })) : undefined,
+      onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => parseInt((record.parkId || '').toString()) === parseInt(value.toString()) : undefined,
     },
     {
       title: 'Status',
@@ -118,7 +169,7 @@ const StaffManagementPage: React.FC = () => {
           </Col> */}
       <PageHeader>Staff Management</PageHeader>
       <Flex justify="end" gap={10}>
-        <Search placeholder="Search for Staff..." allowClear enterButton="Search" onSearch={handleSearchBar} style={{ marginBottom: 20 }} />
+        <Search placeholder="Search for Staff..." allowClear enterButton="Search" onChange={(e) => handleSearchBar(e.target.value)} style={{ marginBottom: 20 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('create-staff')}>
           Add Staff
         </Button>

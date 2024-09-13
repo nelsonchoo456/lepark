@@ -8,6 +8,7 @@ export const StaffSchema = z.object({
   password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
   contactNumber: z.string().min(1, { message: 'Contact number is required' }),
   role: z.nativeEnum(StaffRoleEnum),
+  parkId: z.number().nullable().optional()
 });
 
 export const LoginSchema = z.object({

@@ -49,6 +49,16 @@ class ZoneService {
   public async getZoneById(id: number): Promise<any> {
     return ZoneDao.getZoneById(id);
   }
+
+  public async getZonesByParkId(parkId: number): Promise<any> {
+    if (parkId) {
+      const park = await ParkDao.getParkById(parkId);
+      if (!park) {
+        throw new Error('Park not found.');
+      }
+    }
+    return ZoneDao.getZonesByParkId(parkId);
+  }
 }
 
 export default new ZoneService();

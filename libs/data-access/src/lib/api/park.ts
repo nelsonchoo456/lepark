@@ -1,5 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { ParkData, ParkResponse } from '../types/park';
+import client from './client';
+const URL = '/parks';
 
 const axiosClient = axios.create({
   baseURL: 'http://localhost:3333/api/parks', // Replace with your backend URL
@@ -9,9 +11,18 @@ const axiosClient = axios.create({
   timeout: 5000, // optional: specify request timeout in milliseconds
 });
 
-export async function createPark(data: ParkData): Promise<AxiosResponse<ParkResponse>> {
-
+export async function createPark(data: ParkData, files?: File[]): Promise<AxiosResponse<ParkResponse>> {
   try {
+    const formData = new FormData();
+
+    files?.forEach((file) => {
+      formData.append('files', file); // The key 'files' matches what Multer expects
+    });
+
+    const uploadedUrls = await client.post(`${URL}/upload`, formData);
+    data.images = uploadedUrls.data.uploadedUrls;
+
+    console.log( data.images );
     const response: AxiosResponse<ParkResponse> = await axiosClient.post('/createPark', data);
     return response;
   } catch (error) {
