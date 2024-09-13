@@ -51,27 +51,17 @@ const ViewStaffDetails = () => {
         setEditedUser(response.data);
       } catch (error) {
         console.error(error);
-        message.error('Failed to fetch user details');
+        // message.error('Failed to fetch user details');
       }
     };
-    
+
     if (staffId) {
       fetchUserDetails();
     }
   }, [staffId]);
 
   useEffect(() => {
-    if (user && staff.id !== '') {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Staff Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
+    if (!user || staff.id == '') {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
@@ -79,18 +69,41 @@ const ViewStaffDetails = () => {
         });
         notificationShown.current = true;
       }
-      navigate('/staff-management');
-
+      if (user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) {
+        navigate('/staff-management');
+      } else {
+      navigate('/');
+      }
     } else {
-     // Fetch parks data from the database
-     getAllParks()
-     .then((response) => {
-       setParks(response.data);
-     })
-     .catch((error) => {
-       console.error('There was an error fetching the parks data!', error);
-     });
-  }}
+      if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the Staff Management page!',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
+      } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the details of this staff!',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/staff-management');
+      } else {
+        // Fetch parks data from the database
+        getAllParks()
+          .then((response) => {
+            setParks(response.data);
+          })
+          .catch((error) => {
+            console.error('There was an error fetching the parks data!', error);
+          });
+      }
+    }
   }, [staff, user, navigate]);
 
   const getParkName = (parkId?: number) => {
@@ -217,7 +230,7 @@ const ViewStaffDetails = () => {
     {
       key: 'park',
       label: 'Park',
-      children: getParkName(editedUser?.parkId), 
+      children: getParkName(editedUser?.parkId),
       span: 2,
     },
     {
