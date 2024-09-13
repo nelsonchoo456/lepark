@@ -17,7 +17,6 @@ export const Content = styled.div<ContentProps>`
 export const ContentWrapper = styled.div`
   padding: 1rem;
   height: 100%;
-  height: 100vh;
   overflow: scroll;
 `;
 
