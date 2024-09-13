@@ -30,6 +30,7 @@ const useUploadImages = () => {
   return {
     selectedFiles,
     previewImages,
+    setPreviewImages,
     handleFileChange,
     removeImage,
     onInputClick,

@@ -58,7 +58,7 @@ const OccurrenceEdit = () => {
   const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
 
   useEffect(() => {
@@ -131,6 +131,7 @@ const OccurrenceEdit = () => {
 
       // console.log(changedData);
       const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
+      setPreviewImages([]);
       if (occurenceRes.status === 200) {
         setCreatedData(occurenceRes.data);
         messageApi.open({
