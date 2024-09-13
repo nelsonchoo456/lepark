@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark } from '@lepark/common-ui';
-import { createPark, ParkResponse } from '@lepark/data-access';
-import { Button, Card, Flex, Form, message, Result, Steps } from 'antd';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { createPark, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { Button, Card, Flex, Form, message, notification, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
@@ -22,10 +22,12 @@ export interface AdjustLatLngInterface {
 const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const ParkCreate = () => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const [currStep, setCurrStep] = useState<number>(0);
   const [createdData, setCreatedData] = useState<ParkResponse | null>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
@@ -35,6 +37,19 @@ const ParkCreate = () => {
   const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
+
+  useEffect(() => {
+    if (user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+      notification.error({
+        message: 'Access Denied',
+        description: 'You are not allowed to access the Park Creation page!',
+      });
+      notificationShown.current = true;
+    }
+      navigate('/');
+    }
+  }, [user, navigate]);
   
   const handleCurrStep = async (step: number) => {
     console.log(formValues)

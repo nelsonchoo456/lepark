@@ -10,7 +10,7 @@ import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
-import { StaffResponse } from '@lepark/data-access';
+import { StaffResponse, StaffType } from '@lepark/data-access';
 type MenuItem = Required<MenuProps>['items'][number];
 
 const MainLayout = () => {
@@ -52,6 +52,9 @@ const MainLayout = () => {
     return pathItems[pathItems.length - 1];
   };
 
+  const parkOnClick =
+    userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
+
   useEffect(() => {
     setActiveItems(getLastItemFromPath(location.pathname));
   }, [location.pathname]);
@@ -69,7 +72,7 @@ const MainLayout = () => {
       key: 'park',
       icon: <TbTrees />,
       label: 'Parks',
-      onClick: () => navigate('/park'),
+      onClick: parkOnClick,
       // children: [
       //   {
       //     key: 'park/create',
@@ -105,13 +108,15 @@ const MainLayout = () => {
       //   }
       // ]
     },
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' ? {
-      key: 'staffManagement',
-      icon: <FiUsers />,
-      // icon: <UploadOutlined />,
-      label: 'Staff Management',
-      onClick: () => navigate('/staff-management'),
-    } : null,
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
+      ? {
+          key: 'staffManagement',
+          icon: <FiUsers />,
+          // icon: <UploadOutlined />,
+          label: 'Staff Management',
+          onClick: () => navigate('/staff-management'),
+        }
+      : null,
     {
       key: 'map',
       icon: <GrMapLocation />,
@@ -126,13 +131,20 @@ const MainLayout = () => {
     //   label: 'Account',
     //   onClick: () => navigate('/profile'),
     // },
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'BOTANIST' || userRole === 'ARBORIST' || userRole === 'PARK_RANGER' || userRole === 'VENDOR_MANAGER' ? {
-      key: 'tasks',
-      icon: <FiInbox />,
-      // icon: <UploadOutlined />,
-      label: 'Tasks',
-      onClick: () => navigate('/task'),
-    } : null,
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'BOTANIST' ||
+    userRole === 'ARBORIST' ||
+    userRole === 'PARK_RANGER' ||
+    userRole === 'VENDOR_MANAGER'
+      ? {
+          key: 'tasks',
+          icon: <FiInbox />,
+          // icon: <UploadOutlined />,
+          label: 'Tasks',
+          onClick: () => navigate('/task'),
+        }
+      : null,
     {
       key: 'profile',
       icon: <FiUser />,

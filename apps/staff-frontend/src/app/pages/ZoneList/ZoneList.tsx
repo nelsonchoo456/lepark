@@ -5,7 +5,7 @@ import moment from 'moment';
 import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { StaffResponse, } from '@lepark/data-access';
+import { StaffResponse, StaffType, } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
@@ -80,14 +80,19 @@ const ZoneList: React.FC = () => {
       <PageHeader>Zones Management</PageHeader>
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Zones..." className="mb-4 bg-white" variant="filled" />
-        <Button
-          type="primary"
-          onClick={() => {
-            navigate('/zone/create');
-          }}
-        >
-          Create Zone
-        </Button>
+        <Tooltip title={user?.role !== StaffType.SUPERADMIN 
+          && user?.role !== StaffType.MANAGER 
+          && user?.role !== StaffType.LANDSCAPE_ARCHITECT ? "Not allowed to create zone!" : ""}>
+          <Button
+            type="primary"
+            onClick={() => { navigate('/zone/create'); }}
+            disabled={user?.role !== StaffType.SUPERADMIN 
+              && user?.role !== StaffType.MANAGER 
+              && user?.role !== StaffType.LANDSCAPE_ARCHITECT}
+          >
+            Create Zone
+          </Button>
+        </Tooltip>
       </Flex>
 
       <Card>
