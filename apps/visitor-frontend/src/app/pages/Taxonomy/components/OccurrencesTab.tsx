@@ -1,5 +1,5 @@
 import React from 'react';
-import OccurrenceTable from './OccurrenceTable'; // Adjust the import path as needed
+import OccurrenceTable from './OccurrenceTable';
 import { SpeciesResponse } from '@lepark/data-access';
 
 interface OccurrencesTabProps {

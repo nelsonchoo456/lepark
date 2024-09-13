@@ -24,6 +24,7 @@ const InformationTab = ({ species }: { species: SpeciesResponse }) => {
     'conservationStatus',
     'lightType',
     'soilType',
+    'images',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(species)

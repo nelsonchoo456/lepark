@@ -25,6 +25,7 @@ import {
 import { useParams } from 'react-router-dom';
 import InformationTab from './components/InformationTab';
 import OccurrencesTab from './components/OccurrencesTab';
+import SpeciesCarousel from './components/SpeciesCarousel';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -217,24 +218,16 @@ const ViewSpeciesDetails = () => {
 
   return (
     <div className="md:p-4">
-      {/* <Card className="md:p-4" styles={{ body: { padding: 0 } }} bordered={false}> */}
       <div className="md:flex w-full gap-4">
         <div className="md:flex-[2]">
-          <div
-            style={{
-              backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              color: 'white',
-              overflow: 'hidden',
-            }}
-            className="shadow-lg p-4 rounded-b-3xl h-96 md:h-[45rem] md:rounded-lg"
-          />
-          {user && (
-            <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
-              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-            </Button>
-          )}
+          <div style={{ width: '1024px', maxWidth: '100%', margin: '0 auto' }}>
+            <SpeciesCarousel images={species?.images || []} />
+            {user && (
+              <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
+                {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+              </Button>
+            )}
+          </div>
         </div>
         <div className="flex-[3] flex-col flex p-4 md:p-0">
           <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.speciesName}</LogoText>

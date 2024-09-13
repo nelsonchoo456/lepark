@@ -18,6 +18,7 @@ import { useParams } from 'react-router';
 import PageHeader from '../../components/main/PageHeader';
 import OccurrencesTab from './components/OccurrencesTab';
 import InformationTab from './components/InformationTab';
+import SpeciesCarousel from './components/SpeciesCarousel';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 const ViewSpeciesDetails = () => {
@@ -162,7 +163,7 @@ const ViewSpeciesDetails = () => {
     }
   };
 
-    const carouselSettings = {
+  const carouselSettings = {
     arrows: true,
   };
 
@@ -172,32 +173,9 @@ const ViewSpeciesDetails = () => {
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
-         <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
-              {species?.images && species.images.length > 0 ? (
-                <Carousel {...carouselSettings} className="species-carousel !h-[450px]">
-                  {species.images.map((image, index) => (
-                    <div key={index}>
-                      <img
-                        src={image}
-                        alt={`Species ${index + 1}`}
-                        style={{
-                          width: '100%',
-                          height: 'auto',
-                          minWidth: '400px',
-                          minHeight: '450px',
-                          objectFit: 'cover',
-                          borderRadius: '8px' // Added this line to make the image rounded
-                        }}
-                      />
-                    </div>
-                  ))}
-                </Carousel>
-              ) : (
-                <div style={{ width: '100%', height: '300px', backgroundColor: '#f0f0f0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  No images available
-                </div>
-              )}
-            </div>
+          <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+            <SpeciesCarousel images={species?.images || []} />
+          </div>
 
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{species?.commonName}</LogoText>
