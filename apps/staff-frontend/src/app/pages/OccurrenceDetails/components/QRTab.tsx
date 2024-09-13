@@ -10,7 +10,7 @@ const QRTab = ({ occurrence }: { occurrence: OccurrenceResponse }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    QRCode.toDataURL("http://testURLforOccurrenceId" + occurrence.id)
+    QRCode.toDataURL("http://localhost:4201/occurrence/" + occurrence.id)
       .then(url => {
         setQrCodeUrl(url);
       })
