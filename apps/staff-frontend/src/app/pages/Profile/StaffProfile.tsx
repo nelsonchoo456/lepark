@@ -18,6 +18,7 @@ import {
   viewStaffDetails,
 } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
+import PageHeader2 from '../../components/main/PageHeader2';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 // const initialUser = {
@@ -282,9 +283,18 @@ const StaffProfile = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "My Profile",
+      pathKey: '/profile',
+      isMain: true,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>My Profile</PageHeader>
+       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <div className="flex justify-end items-center mb-4">
         <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5" disabled={isButtonDisabled}>
           Change Password

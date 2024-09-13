@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { registerStaff, RegisterStaffData, StaffResponse, StaffType, ParkResponse, getParkById, getAllParks } from '@lepark/data-access';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const { Option } = Select;
 
@@ -82,9 +83,22 @@ const CreateStaff: React.FC = () => {
     return parkId && park ? park.name : 'NParks';
   };
 
+  const breadcrumbItems = [
+    {
+      title: "Staff Management",
+      pathKey: '/staff-management',
+      isMain: true,
+    },
+    {
+      title: "Create",
+      pathKey: `/staff-management/create-staff`,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Add a new Staff</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Form
         {...layout}
         form={form}

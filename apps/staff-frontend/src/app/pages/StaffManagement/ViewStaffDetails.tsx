@@ -18,6 +18,7 @@ import {
   viewStaffDetails,
 } from '@lepark/data-access';
 import { useNavigate, useParams } from 'react-router-dom';
+import PageHeader2 from '../../components/main/PageHeader2';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const initialUser = {
@@ -303,9 +304,22 @@ const ViewStaffDetails = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Staff Management",
+      pathKey: '/staff-management',
+      isMain: true,
+    },
+    {
+      title: staff.firstName + " " + staff?.lastName ? staff?.firstName + " " + staff?.lastName : "Staff Details",
+      pathKey: `/staff-management/create-staff`,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Staff Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         <Descriptions
           items={descriptionsItems}
