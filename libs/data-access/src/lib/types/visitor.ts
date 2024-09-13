@@ -54,6 +54,6 @@ export interface GetFavoriteSpeciesRequestData {
 }
 
 // Define the data returned by the get favorite species response
-export interface GetFavoriteSpeciesResponseData {
+export interface GetFavoriteSpeciesResponse {
   favoriteSpecies: SpeciesResponse[];
 }

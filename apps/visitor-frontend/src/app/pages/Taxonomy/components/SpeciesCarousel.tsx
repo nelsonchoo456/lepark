@@ -13,7 +13,7 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
       {images && images.length > 0 ? (
-        <Carousel {...carouselSettings} className="species-carousel">
+        <Carousel {...carouselSettings}>
           {images.map((image, index) => (
             <div key={index}>
               <img

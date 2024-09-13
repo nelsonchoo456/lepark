@@ -19,8 +19,17 @@ import EditPasswordModal from './EditPasswordModal';
 import EditEmailModal from './EditEmailModal';
 import { useNavigate } from 'react-router-dom';
 import DeleteAccountModal from './DeleteAccountModal';
-import { updateVisitorDetails, viewVisitorDetails, VisitorResponse, VisitorUpdateData } from '@lepark/data-access';
+import {
+  getFavoriteSpecies,
+  GetFavoriteSpeciesResponse,
+  SpeciesResponse,
+  updateVisitorDetails,
+  viewVisitorDetails,
+  VisitorResponse,
+  VisitorUpdateData,
+} from '@lepark/data-access';
 import { PiSmiley } from 'react-icons/pi';
+import SpeciesCard from './components/SpeciesCard';
 
 const initialVisitor = {
   id: '',
@@ -42,6 +51,8 @@ const ProfilePage = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
+
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -54,6 +65,32 @@ const ProfilePage = () => {
 
     fetchUserDetails();
   }, []);
+
+  useEffect(() => {
+    const fetchFavoriteSpecies = async () => {
+      if (!user) {
+        console.warn('User is not logged in!');
+        return;
+      }
+      try {
+        const response = await getFavoriteSpecies(user.id);
+        const data: GetFavoriteSpeciesResponse = response.data;
+        console.log('Response:', response);
+        console.log('Data from response:', data);
+        if (Array.isArray(data)) {
+          setFavoriteSpecies(data);
+        } else {
+          console.warn('No favorite species found in the response or data is not an array.');
+        }
+      } catch (error) {
+        console.error('Error fetching favorite species:', error);
+      }
+    };
+
+    if (user) {
+      fetchFavoriteSpecies();
+    }
+  }, [user]);
 
   const handleLoginRedirect = () => {
     navigate('/login');
@@ -152,6 +189,10 @@ const ProfilePage = () => {
         [key]: value, // Only update the specific key
       };
     });
+  };
+
+  const navigateToSpecies = (speciesId: string) => {
+    navigate(`/discover/${speciesId}`);
   };
 
   const menu = (
@@ -315,7 +356,24 @@ const ProfilePage = () => {
 
       <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
-          <LogoText className="font-bold text-lg pl-3 pt-1">favorite Species</LogoText>
+          <LogoText className="font-bold text-lg pl-3 pt-1">Favorite Species</LogoText>
+          <div className="w-full overflow-scroll flex gap-2 py-2">
+            {favoriteSpecies && favoriteSpecies.length > 0 ? (
+              favoriteSpecies.map((species) => (
+                <SpeciesCard
+                  key={species.id}
+                  title={species.speciesName}
+                  url={species.images[0]}
+                  extra={<a href="#">More</a>}
+                  onClick={() => navigateToSpecies(species.id)}
+                >
+                  {species.speciesDescription}
+                </SpeciesCard>
+              ))
+            ) : (
+              <p>No favorite species found.</p>
+            )}
+          </div>
         </div>
       </ContentWrapper>
     </div>
