@@ -107,7 +107,7 @@ const ViewSpeciesDetails = () => {
       key: 'information',
       label: 'Information',
       children: species ? <InformationTab species={species} /> : <p>Loading species data...</p>,
-    },
+    }
   ];
 
   const formatEnumString = (str: string) => {

@@ -12,6 +12,7 @@ import moment from 'moment';
 import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
+import QRTab from './components/QRTab';
 import { ActivityLogResponse, OccurrenceResponse, SpeciesResponse, LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
 import { getOccurrenceById, getSpeciesById } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
@@ -31,7 +32,7 @@ const OccurrenceDetails = () => {
         try {
           const occurrenceResponse = await getOccurrenceById(occurrenceId);
           setOccurrence(occurrenceResponse.data);
-          
+
           if (occurrenceResponse.data.speciesId) {
             const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
             setSpecies(speciesResponse.data);
@@ -90,6 +91,11 @@ const OccurrenceDetails = () => {
       key: 'statusLogs',
       label: 'Status Logs',
       children: <StatusLogs occurrence={occurrence} />,
+    },
+    {
+      key: 'qr',
+      label: 'QR',
+      children: occurrence ? <QRTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
     },
   ];
 
