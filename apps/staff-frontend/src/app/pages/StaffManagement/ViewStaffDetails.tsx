@@ -43,11 +43,13 @@ const ViewStaffDetails = () => {
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
         const response = await viewStaffDetails(staffId);
+        console.log(response);
         setStaff(response.data);
         setEditedUser(response.data);
       } catch (error) {
@@ -65,16 +67,18 @@ const ViewStaffDetails = () => {
         } else {
         navigate('/');
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
     if (staffId) {
       fetchUserDetails();
     }
-  }, [staffId]);
+  }, [staffId, user, navigate]);
 
   useEffect(() => {
-    if (user || staff.id !== '') {
+    if (!isLoading && (user || staff.id !== '')) {
       if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
         if (!notificationShown.current) {
           notification.error({
@@ -85,6 +89,8 @@ const ViewStaffDetails = () => {
         }
         navigate('/');
       } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
+        console.log('User parkId:', user.parkId);
+        console.log('Staff parkId:', staff.parkId);
         if (!notificationShown.current) {
           notification.error({
             message: 'Access Denied',
@@ -104,7 +110,7 @@ const ViewStaffDetails = () => {
           });
       }
     }
-  }, [staff, user, navigate]);
+  }, [isLoading, staff, user, navigate]);
 
   const getParkName = (parkId?: number) => {
     const park = parks.find((park) => park.id === parkId);
