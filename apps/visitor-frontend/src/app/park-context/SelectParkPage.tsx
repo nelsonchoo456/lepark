@@ -63,7 +63,7 @@ const SelectParkPage: React.FC = () => {
               key={park.id}
               // size="small"
               style={{
-                backgroundImage: `url('https://upload.wikimedia.org/wikipedia/commons/6/63/Kallang_River_at_Bishan_Park.jpg')`,
+                backgroundImage: `url('${park.images && park.images.length > 0 ? park.images[0] : 'https://upload.wikimedia.org/wikipedia/commons/6/63/Kallang_River_at_Bishan_Park.jpg'}')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 color: 'white',
@@ -75,7 +75,7 @@ const SelectParkPage: React.FC = () => {
               {/* <div className="absolute top-0 left-0 max-w-[1/2] h-full p-4 text-white "> */}
               <div className="absolute top-0 left-0 w-full h-full  text-white ">
                 <div className="bg-gradient-to-br from-green-700/90 via-green-600/40 to-transparent h-full p-4 flex justify-between">
-                  <div><p className="font-medium text-lg md:text-3xl">{park.name}</p>
+                  <div><p className="font-medium text-lg md:text-2xl">{park.name}</p>
                   <div className='flex gap-2'>
                     <TbTrees/> 
                     <Typography.Paragraph
