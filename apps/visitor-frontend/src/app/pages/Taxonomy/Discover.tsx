@@ -25,7 +25,7 @@ const { SHOW_PARENT } = TreeSelect;
 const Discover = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const cardStyle = 'w-[95%] text-left md:w-1/2 m-1 !p-0.01 inline-flex items-center';
+  const cardStyle = 'w-[95%] text-left m-1 !p-0.01 inline-flex items-center';
   const speciesTitleStyle = 'text-xl font-medium text-green-500';
   const [loading, setLoading] = useState(false);
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
@@ -125,7 +125,7 @@ const Discover = () => {
   };
 
   return (
-    <div>
+    <div >
       <Card
         size="small"
         style={{
@@ -153,13 +153,15 @@ const Discover = () => {
           treeCheckable={true}
           showCheckedStrategy={SHOW_PARENT}
           placeholder="Filter by Phylum > Class > Order"
-          style={{ width: '98%', marginBottom: '10px' }}
+          style={{ width: '98%' }}
+          className="md:mb-2,mb-2 md:mt-4, md:mr-1"
         />
         <Input
           suffix={<FiSearch />}
           placeholder="Search species..."
           onChange={(e) => handleSearch(e.target.value)}
           style={{ width: '98%' }}
+          className="md:mb-0 md:ml-1 md:mt-0 mt-2"
         />
       </div>
 
