@@ -6,7 +6,7 @@
 //   REMOVED = 'REMOVED',
 // }
 
-import { OccurrenceStatusEnum } from "./sharedenums";
+import { OccurrenceStatusEnum } from './sharedenums';
 
 export enum DecarbonizationTypeEnum {
   TREE_TROPICAL = 'TREE_TROPICAL',
@@ -57,4 +57,5 @@ export interface OccurrenceUpdateData {
   occurrenceStatus?: OccurrenceStatusEnum;
   decarbonizationType?: DecarbonizationTypeEnum;
   speciesId?: string;
+  images?: string[];
 }
