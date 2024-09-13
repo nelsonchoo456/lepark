@@ -56,7 +56,8 @@ const MainLayout = () => {
     userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
 
   useEffect(() => {
-    setActiveItems(getLastItemFromPath(location.pathname));
+    const activeItem = location.pathname === '/' ? 'home' : getLastItemFromPath(location.pathname); // for the active effect in navbar
+    setActiveItems(getLastItemFromPath(activeItem));
   }, [location.pathname]);
 
   // Navigation
@@ -95,7 +96,7 @@ const MainLayout = () => {
       onClick: () => navigate('/species'),
     },
     {
-      key: 'occurrence',
+      key: 'occurrences',
       icon: <IoLeafOutline />,
       // icon: <UserOutlined />,
       onClick: () => navigate('/occurrences'),
@@ -110,7 +111,7 @@ const MainLayout = () => {
     },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
-          key: 'staffManagement',
+          key: 'staff-management',
           icon: <FiUsers />,
           // icon: <UploadOutlined />,
           label: 'Staff Management',
@@ -138,7 +139,7 @@ const MainLayout = () => {
     userRole === 'PARK_RANGER' ||
     userRole === 'VENDOR_MANAGER'
       ? {
-          key: 'tasks',
+          key: 'task',
           icon: <FiInbox />,
           // icon: <UploadOutlined />,
           label: 'Tasks',
