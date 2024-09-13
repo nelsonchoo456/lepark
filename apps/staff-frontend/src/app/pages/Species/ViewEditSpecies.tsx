@@ -2,19 +2,18 @@ import { useEffect, useState } from 'react';
 import MainLayout from '../../components/main/MainLayout';
 import 'leaflet/dist/leaflet.css';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper} from '@lepark/common-ui';
+import { ContentWrapper, ImageInput } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import React from 'react';
 import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Modal, message } from 'antd';
 import type { GetProp } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  phylums,
-  regions
-} from '@lepark/data-utility';
-import { getSpeciesById, SpeciesResponse, updateSpecies, OccurrenceResponse } from '@lepark/data-access';
+import { regions } from '@lepark/data-utility';
+import { getSpeciesById, SpeciesResponse, updateSpecies} from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
+import  useUploadImages from '../../hooks/Images/useUploadImages';
+
 
 
 import { plantTaxonomy } from '@lepark/data-utility';
@@ -22,8 +21,6 @@ import { plantTaxonomy } from '@lepark/data-utility';
 const ViewEditSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const [form] = Form.useForm();
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [savedSpeciesName, setSavedSpeciesName] = useState('');
   const [speciesObj, setSpeciesObj] = useState<SpeciesResponse>();
   const [speciesId, setSpeciesId] = useState<string>('');
   const location = useLocation();
@@ -32,6 +29,8 @@ const ViewEditSpecies = () => {
   const [orders, setOrders] = useState<string[]>([]);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+   const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
 
   const setId = (id: string) => {
     setSpeciesId(id);
@@ -89,6 +88,23 @@ const ViewEditSpecies = () => {
     }
   }, [speciesObj, form]);
 
+ useEffect(() => {
+    if (speciesObj) {
+      setCurrentImages(speciesObj.images || []);
+    }
+  }, [speciesObj]);
+
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+  const handleNewImageUpload = (files: FileList | null) => {
+    if (files) {
+      const newImageUrls = Array.from(files).map(file => URL.createObjectURL(file));
+      setCurrentImages(prevImages => [...prevImages, ...newImageUrls]);
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
     labelCol: { span: 8 },
@@ -144,7 +160,7 @@ const ViewEditSpecies = () => {
         lightType: values.lightType,
         soilType: values.soilType,
         fertiliserType: values.fertiliserType,
-        images: speciesObj?.images,
+        images: [...currentImages, ...selectedFiles.map(file => URL.createObjectURL(file))],
         waterRequirement: values.waterRequirement,
         fertiliserRequirement: values.fertiliserRequirement,
         idealHumidity: values.idealHumidity,
@@ -171,7 +187,7 @@ const ViewEditSpecies = () => {
         return;
       }
       console.log('Species data to be submitted:', speciesData); // For debugging
-      setSavedSpeciesName(values.speciesName);
+
       setIsSubmitting(true);
       const response = await updateSpecies(speciesId, speciesData);
       console.log('Species saved', response.data);
@@ -490,6 +506,27 @@ if (!webMode) {
             onChange={() => {
             form.validateFields(['idealTemp']);
           }}
+          />
+        </Form.Item>
+
+ <Form.Item label="Images">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {currentImages.map((imgSrc, index) => (
+              <img
+                key={index}
+                src={imgSrc}
+                alt={ `${index}`}
+                className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                onClick={() => handleCurrentImageClick(index)}
+              />
+            ))}
+          </div>
+          <ImageInput
+            type="file"
+            multiple
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleNewImageUpload(e.target.files)}
+            accept="image/png, image/jpeg"
+            onClick={onInputClick}
           />
         </Form.Item>
 
