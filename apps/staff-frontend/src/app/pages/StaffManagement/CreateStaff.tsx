@@ -107,7 +107,7 @@ const CreateStaff: React.FC = () => {
                 if (user?.role === StaffType.MANAGER) {
                   return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
                 } else if (user?.role === StaffType.SUPERADMIN) {
-                  return role === StaffType.MANAGER; //removed option to create SUPERADMIN; we assume SUPERADMINs are created in system
+                  return role !== StaffType.SUPERADMIN; //removed option to create SUPERADMIN; we assume SUPERADMINs are created in system
                 }
                 return true;
               })
