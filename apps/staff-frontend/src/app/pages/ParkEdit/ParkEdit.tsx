@@ -105,7 +105,7 @@ const ParkEdit = () => {
         return acc;
       }, {} as Partial<ParkResponse>);
 
-      const response = await updatePark(parseInt(park.id), changedData);
+      const response = await updatePark(park.id, changedData);
       if (response.status === 201) {
         setCreatedData(response.data);
         messageApi.open({

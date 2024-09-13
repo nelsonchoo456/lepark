@@ -28,11 +28,11 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
   }, [speciesId]);
 
   const columns = [
-    {
-      title: 'Species Name',
-      dataIndex: 'speciesId',
-      key: 'speciesName',
-    },
+    // {
+    //   title: 'Species Name',
+    //   dataIndex: 'speciesId',
+    //   key: 'speciesName',
+    // },
     {
       title: 'Label',
       dataIndex: 'title',
@@ -40,7 +40,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
       render: (text: string) => text,
     },
     {
-      title: 'Occurrence Status',
+      title: 'Status',
       dataIndex: 'occurrenceStatus',
       key: 'occurrenceStatus',
       render: (text: string) => {

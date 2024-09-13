@@ -42,7 +42,7 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, formValues, zon
         className="leaflet-mapview-container"
         style={{ height: '100%', width: '100%' }}
       >
-        <Polygon positions={selectedZone?.geom.coordinates[0].map((item: number[]) => [item[1], item[0]] )}/>
+        {/* <Polygon positions={selectedZone?.geom.coordinates[0].map((item: number[]) => [item[1], item[0]] )}/> */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
