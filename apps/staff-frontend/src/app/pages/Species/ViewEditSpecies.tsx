@@ -32,9 +32,7 @@ const ViewEditSpecies = () => {
    const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
 
-  const setId = (id: string) => {
-    setSpeciesId(id);
-  };
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,23 +48,24 @@ const ViewEditSpecies = () => {
   // Species form
   //fetch species by id
   useEffect(() => {
-    if (speciesIdFromLocation) {
-      setId(speciesIdFromLocation);
+    if (!speciesIdFromLocation) {
+        return;
+    }
       const fetchSingleSpeciesById = async () => {
         try {
           const species = await getSpeciesById(speciesIdFromLocation);
-          setSpeciesObj(species.data);
-          form.setFieldsValue(species.data);
-
+          if (species.status === 200) {
+            setSpeciesObj(species.data);
+            setCurrentImages(species.data.images);
+form.setFieldsValue(species.data);
+          }
           console.log(`fetched species id ${speciesIdFromLocation}`, species.data);
         } catch (error) {
           console.error('Error fetching species:', error);
         }
       };
       fetchSingleSpeciesById();
-    } else {
-      console.error('No species ID provided');
-    }
+
   }, [speciesIdFromLocation, form]);
 
   useEffect(() => {
@@ -88,22 +87,11 @@ const ViewEditSpecies = () => {
     }
   }, [speciesObj, form]);
 
- useEffect(() => {
-    if (speciesObj) {
-      setCurrentImages(speciesObj.images || []);
-    }
-  }, [speciesObj]);
 
   const handleCurrentImageClick = (index: number) => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const handleNewImageUpload = (files: FileList | null) => {
-    if (files) {
-      const newImageUrls = Array.from(files).map(file => URL.createObjectURL(file));
-      setCurrentImages(prevImages => [...prevImages, ...newImageUrls]);
-    }
-  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const layout = {
@@ -146,7 +134,7 @@ const ViewEditSpecies = () => {
     try {
       const plantCharacteristics = values.plantCharacteristics || [];
       const speciesData: Partial<SpeciesResponse> = {
-        id: speciesId,
+        id: speciesIdFromLocation,
         phylum: values.phylum,
         class: values.class,
         order: values.order,
@@ -160,7 +148,7 @@ const ViewEditSpecies = () => {
         lightType: values.lightType,
         soilType: values.soilType,
         fertiliserType: values.fertiliserType,
-        images: [...currentImages, ...selectedFiles.map(file => URL.createObjectURL(file))],
+        images: [],
         waterRequirement: values.waterRequirement,
         fertiliserRequirement: values.fertiliserRequirement,
         idealHumidity: values.idealHumidity,
@@ -186,10 +174,14 @@ const ViewEditSpecies = () => {
         });
         return;
       }
+      speciesData.images = currentImages;
       console.log('Species data to be submitted:', speciesData); // For debugging
 
       setIsSubmitting(true);
-      const response = await updateSpecies(speciesId, speciesData);
+      console.log('currentImages', currentImages);
+      console.log('selectedFiles', selectedFiles);
+      console.log('species ID', speciesIdFromLocation);
+      const response = await updateSpecies(speciesIdFromLocation, speciesData, selectedFiles);
       console.log('Species saved', response.data);
 
       messageApi.open({
@@ -199,7 +191,7 @@ const ViewEditSpecies = () => {
 
       // Add a 1-second delay before navigating
       setTimeout(() => {
-        navigate(`/species/${speciesId}`);
+        navigate(`/species/${speciesIdFromLocation}`);
       }, 1000);
     } catch (error) {
       console.error('Error saving species:', error);
@@ -230,6 +222,7 @@ const ViewEditSpecies = () => {
     form.setFieldsValue({ order: undefined });
   };
 
+// dropdown filter
   useEffect(() => {
     if (speciesObj) {
       const selectedPhylum = plantTaxonomy[speciesObj.phylum as keyof typeof plantTaxonomy];
@@ -509,26 +502,35 @@ if (!webMode) {
           />
         </Form.Item>
 
- <Form.Item label="Images">
-          <div className="flex flex-wrap gap-2 mb-4">
-            {currentImages.map((imgSrc, index) => (
-              <img
-                key={index}
-                src={imgSrc}
-                alt={ `${index}`}
-                className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                onClick={() => handleCurrentImageClick(index)}
-              />
-            ))}
-          </div>
-          <ImageInput
-            type="file"
-            multiple
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleNewImageUpload(e.target.files)}
-            accept="image/png, image/jpeg"
-            onClick={onInputClick}
-          />
-        </Form.Item>
+        <Form.Item label={'Image'}>
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
+
+ <Form.Item label={'Images'}>
+            <div className="flex flex-wrap gap-2">
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+            </div>
+          </Form.Item>
 
 
 

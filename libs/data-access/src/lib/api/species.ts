@@ -53,18 +53,36 @@ export async function getSpeciesById(id: string): Promise<AxiosResponse<SpeciesR
   }
 }
 
-export async function updateSpecies(id: string, data: Partial<SpeciesResponse>): Promise<AxiosResponse<SpeciesResponse>> {
+export async function updateSpecies(
+  id: string,
+  data: Partial<SpeciesResponse>,
+  files?: File[]
+): Promise<AxiosResponse<SpeciesResponse>> {
+  console.log('id', id);
   try {
+    if (files && files.length > 0) {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images = data.images || [];
+      data.images.push(...uploadedUrls.data.uploadedUrls);
+    }
+    console.log('data', data);
     const response: AxiosResponse<SpeciesResponse> = await client.put(`${URL}/updateSpeciesDetails/${id}`, data);
     return response;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
-      throw error.response.data.error;
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
     } else {
       throw error;
     }
   }
 }
+
 
 export async function deleteSpecies(id: string): Promise<AxiosResponse<void>> {
   try {
