@@ -49,7 +49,6 @@ const ViewStaffDetails = () => {
         const response = await viewStaffDetails(staffId);
         setStaff(response.data);
         setEditedUser(response.data);
-        console.log(staff);
       } catch (error) {
         console.error(error);
         message.error('Failed to fetch user details');
@@ -58,7 +57,6 @@ const ViewStaffDetails = () => {
     
     if (staffId) {
       fetchUserDetails();
-      console.log(user?.parkId, staff.parkId);
     }
   }, [staffId]);
 
@@ -144,13 +142,13 @@ const ViewStaffDetails = () => {
       };
 
       const responseStaffRole = await updateStaffRole(staffId, values.role, user.id);
-      console.log('Staff role updated successfully:', responseStaffRole.data);
+      // console.log('Staff role updated successfully:', responseStaffRole.data);
 
       const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id);
-      console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
+      // console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
 
       const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
-      console.log('Staff details updated successfully:', responseStaffDetails.data);
+      // console.log('Staff details updated successfully:', responseStaffDetails.data);
 
       message.success('Staff details updated successfully!');
       await refreshUserData(); // Refresh user data to load the latest values
@@ -236,7 +234,7 @@ const ViewStaffDetails = () => {
               if (user?.role === StaffType.MANAGER) {
                 return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
               } else if (user?.role === StaffType.SUPERADMIN) {
-                return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+                return role !== StaffType.SUPERADMIN;
               }
               return true;
             })
