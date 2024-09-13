@@ -86,6 +86,11 @@ const StaffManagementPage: React.FC = () => {
     });
   }, [staff, searchQuery]);
 
+  const dataSource = filteredStaff.map((staff) => ({
+    ...staff,
+    key: staff.id, // to fix the warning about missing key prop
+}));
+
   const handleSearchBar = (value: string) => {
     setSearchQuery(value);
   };
@@ -177,7 +182,7 @@ const StaffManagementPage: React.FC = () => {
       <Row>
         <Col span={24}>
           <div className="p-5 bg-white shadow-lg rounded-lg">
-            <Table columns={columns} dataSource={filteredStaff} rowKey="key" pagination={{ pageSize: 10 }} />
+            <Table columns={columns} dataSource={dataSource} rowKey="key" pagination={{ pageSize: 10 }} />
           </div>
         </Col>
       </Row>
