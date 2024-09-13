@@ -169,13 +169,17 @@ class StaffService {
         throw new Error('Invalid credentials');
       }
 
+      if (staff.isFirstLogin) {
+        return { requiresPasswordReset: true, user: staff };
+      } 
+
       const token = jwt.sign({ id: staff.id }, JWT_SECRET_KEY, {
         expiresIn: '4h',
       });
 
       const { password, ...user } = staff;
 
-      return { token, user };
+      return { requiresPasswordReset: false, token, user };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -227,8 +231,12 @@ class StaffService {
         throw new Error('Invalid reset token');
       }
 
-      const staff = await StaffDao.getStaffById(decodedToken.id);
+      const staffId = decodedToken.id;
+      if (!staffId) {
+        throw new Error('Invalid token: missing staff ID');
+      }
 
+      const staff = await StaffDao.getStaffById(staffId);
       if (!staff) {
         throw new Error(`Staff not found`);
       }
@@ -242,6 +250,10 @@ class StaffService {
       const hashedPassword = await bcrypt.hash(data.newPassword, 10);
       await StaffDao.updateStaffDetails(staff.id, { password: hashedPassword });
 
+      if (staff.isFirstLogin) {
+        await StaffDao.updateStaffDetails(staff.id, { isFirstLogin: false });
+      }
+
       return { message: 'Password reset successful' };
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -250,6 +262,15 @@ class StaffService {
       }
       throw error;
     }
+  }
+
+  public async getTokenForResetPasswordForFirstLogin(staffId: string): Promise<string> {
+    const resetToken = jwt.sign(
+      { id: staffId, action: 'password_reset' },
+      JWT_SECRET_KEY,
+      { expiresIn: '15m' } // Token expires in 15 minutes
+    );
+    return resetToken;
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {

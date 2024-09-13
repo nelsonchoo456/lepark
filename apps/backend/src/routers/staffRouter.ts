@@ -99,7 +99,7 @@ router.put('/updateStaffIsActive/:id', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const loginData = LoginSchema.parse(req.body);
-    const { token, user } = await StaffService.login(loginData);
+    const { token, user, requiresPasswordReset } = await StaffService.login(loginData);
 
     res.cookie('jwtToken_Staff', token, {
       httpOnly: true,
@@ -107,6 +107,10 @@ router.post('/login', async (req, res) => {
       sameSite: 'strict',
       maxAge: 4 * 60 * 60 * 1000, // 4 hours (needs to be same expiry as the JWT token)
     });
+
+    if (requiresPasswordReset) {
+      return res.status(200).json({ ...user, requiresPasswordReset: true });
+    }
 
     res.status(200).json(user); // send user data in the response body
   } catch (error) {
@@ -171,6 +175,18 @@ router.get('/check-auth', (req, res) => {
     });
   } else {
     res.status(401).send({ message: 'No token provided' });
+  }
+});
+
+router.post('/token-for-reset-password-for-first-login', async (req, res) => {
+  const { staffId } = req.body;
+  try {
+
+    const resetToken = await StaffService.getTokenForResetPasswordForFirstLogin(staffId);
+    res.status(200).send({ message: 'Reset token generated', token: resetToken });
+  } catch (error) {
+    console.error('Error generating reset token:', error);
+    res.status(500).send({ message: 'Internal Server Error' });
   }
 });
 

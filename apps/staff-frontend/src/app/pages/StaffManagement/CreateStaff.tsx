@@ -31,9 +31,10 @@ const CreateStaff: React.FC = () => {
         lastName: values.lastNameInput,
         contactNumber: values.contactNumberInput,
         email: values.emailInput,
-        password: values.passwordInput,
+        password: "stub_password", // To replace with random generated password
         role: values.roleSelect,
         parkId: values.parkSelect,
+        isFirstLogin: true,
       };
 
       // console.log('Received values of form:', newStaffDetails);
@@ -121,12 +122,12 @@ const CreateStaff: React.FC = () => {
         <Form.Item name="emailInput" label="Email" rules={[{ required: true, type: 'email', message: 'Please enter an email.' }]}>
           <Input />
         </Form.Item>
-        <Form.Item name="passwordInput" label="Password" rules={[
+        {/* <Form.Item name="passwordInput" label="Password" rules={[
           { required: true, message: 'Please enter a password.' },
           { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
         ]}>
           <Input.Password />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           name="contactNumberInput"
           label="Contact Number"

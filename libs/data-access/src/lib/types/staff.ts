@@ -16,6 +16,7 @@ export interface RegisterStaffData {
   contactNumber: string;
   role: StaffType;
   parkId?: number;
+  isFirstLogin: boolean;
 }
 
 export interface StaffResponse {

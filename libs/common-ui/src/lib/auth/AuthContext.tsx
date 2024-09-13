@@ -8,7 +8,7 @@ type UserData = Staff | Visitor;
 
 interface AuthContextProps<UserData> {
   user: UserData | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
   updateUser: (user: UserData) => void;
   isLoading: boolean;
@@ -27,11 +27,12 @@ export function AuthWrapper<UserData>({ children, loginApi, logoutApi, fetchUser
   const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<any> => {
     try {
       const response = await loginApi({ email, password });
       const { data } = response;
       setUser(data);
+      return data;
     } catch (error) {
       console.error('Login failed', error);
       throw error;
