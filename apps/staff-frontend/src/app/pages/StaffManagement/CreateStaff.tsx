@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { registerStaff, RegisterStaffData, StaffResponse, StaffType, ParkResponse, getParkById, getAllParks } from '@lepark/data-access';
+import crypto from 'crypto';
 
 const { Option } = Select;
 
@@ -26,12 +27,17 @@ const CreateStaff: React.FC = () => {
 
   const onFinish = async (values: any) => {
     try {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const generatedPassword = Array.from(window.crypto.getRandomValues(new Uint32Array(10)))
+        .map((value) => characters[value % characters.length])
+        .join('');
+
       const newStaffDetails: RegisterStaffData = {
         firstName: values.firstNameInput,
         lastName: values.lastNameInput,
         contactNumber: values.contactNumberInput,
         email: values.emailInput,
-        password: "stub_password", // To replace with random generated password
+        password: generatedPassword,
         role: values.roleSelect,
         parkId: values.parkSelect,
         isFirstLogin: true,
@@ -65,7 +71,6 @@ const CreateStaff: React.FC = () => {
       }
       navigate('/');
     } else {
-      
       // Fetch parks data from the database
       getAllParks()
         .then((response) => {
@@ -142,7 +147,7 @@ const CreateStaff: React.FC = () => {
           <Input />
         </Form.Item>
         <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
-        {parks.length === 0 ? (
+          {parks.length === 0 ? (
             <Text type="secondary">There are no parks created yet!</Text>
           ) : user?.role === StaffType.MANAGER ? (
             <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>

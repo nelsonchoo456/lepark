@@ -42,6 +42,8 @@ class StaffService {
         isActive: true,
       };
 
+      EmailUtil.sendLoginDetailsEmail(data.email, data.password);
+
       return StaffDao.createStaff(updatedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -77,10 +79,7 @@ class StaffService {
     }
   }
 
-  public async updateStaffDetails(
-    id: string,
-    data: Partial<StaffSchemaType>,
-  ): Promise<Staff> {
+  public async updateStaffDetails(id: string, data: Partial<StaffSchemaType>): Promise<Staff> {
     try {
       const existingStaff = await StaffDao.getStaffById(id);
       if (!existingStaff) {
@@ -171,7 +170,7 @@ class StaffService {
 
       if (staff.isFirstLogin) {
         return { requiresPasswordReset: true, user: staff };
-      } 
+      }
 
       const token = jwt.sign({ id: staff.id }, JWT_SECRET_KEY, {
         expiresIn: '4h',
@@ -268,7 +267,7 @@ class StaffService {
     const resetToken = jwt.sign(
       { id: staffId, action: 'password_reset' },
       JWT_SECRET_KEY,
-      { expiresIn: '15m' } // Token expires in 15 minutes
+      { expiresIn: '15m' }, // Token expires in 15 minutes
     );
     return resetToken;
   }
