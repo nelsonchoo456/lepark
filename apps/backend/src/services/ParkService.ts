@@ -77,7 +77,7 @@ class ParkService {
     
     try {
       const data = await s3.upload(params).promise();
-      console.log("uploadImageToS3", data)
+      // console.log("uploadImageToS3", data)
       return data.Location;
     } catch (error) {
       console.error('Error uploading image to S3:', error);

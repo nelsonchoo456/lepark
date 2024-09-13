@@ -11,7 +11,7 @@ class ParkDao {
     const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
     const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
 
-    console.log("createPark", data.images)
+    // console.log("createPark", data.images)
     const park = await prisma.$queryRaw`
       INSERT INTO "Park" (name, description, "address", "contactNumber", "openingHours", "closingHours", "images", "geom", "paths", "parkStatus")
       VALUES (
