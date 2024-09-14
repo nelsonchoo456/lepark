@@ -8,6 +8,11 @@ interface ContentProps {
 export const MobileContent = styled.div<ContentProps>`
   margin-left: ${({ $showSidebar }: ContentProps) =>
     $showSidebar ? MOBILE_SIDEBAR_WIDTH : '0'};
+  padding-top: ${({ $showSidebar }: ContentProps) =>
+    $showSidebar ? '0' : '2.8rem'};
+
+  padding-bottom: ${({ $showSidebar }: ContentProps) =>
+    $showSidebar ? '0' : '64px'};
 `;
 
 // margin-left: ${({ $showSidebar }: ContentProps) =>

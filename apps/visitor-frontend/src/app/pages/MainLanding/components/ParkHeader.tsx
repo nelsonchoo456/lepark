@@ -20,7 +20,7 @@ const ParkHeader = ({ children, cardClassName }: ParkHeaderProps) => {
           overflow: 'hidden',
           cursor: 'pointer',
         }}
-        className={`${cardClassName} mb-2 w-full h-28 bg-green-400 rounded-2xl cursor-pointer md:w-full md:rounded md:h-48`}
+        className={`mb-2 w-full h-28 bg-green-400 rounded-2xl cursor-pointer md:w-full md:rounded md:h-48 ${cardClassName}`}
         onClick={() => navigate('/select-park')}
       >
         <div className="absolute top-0 left-0 w-full h-full p-4 bg-green-700/70 text-white flex cursor-pointer gap-2">

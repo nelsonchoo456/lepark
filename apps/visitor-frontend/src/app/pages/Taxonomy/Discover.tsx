@@ -3,7 +3,7 @@ import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
 import { FaTent } from 'react-icons/fa6';
-import { Badge, Card, Space, TreeSelect, Input } from 'antd';
+import { Badge, Card, Space, TreeSelect, Input, Tag } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { plantTaxonomy } from '@lepark/data-utility';
 import { useState, useEffect, useMemo } from 'react';
@@ -11,6 +11,9 @@ import { getAllSpecies, SpeciesResponse } from '@lepark/data-access';
 import { FiSearch } from 'react-icons/fi';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
+import styled from 'styled-components';
+import { MdArrowDropDown } from 'react-icons/md';
+import { IoIosArrowDown } from 'react-icons/io';
 
 // Add these type definitions at the top of your file
 type OrdersType = { orders: string[] };
@@ -129,25 +132,24 @@ const Discover = () => {
 
   return (
     <div className='h-screen'>
-      <ParkHeader cardClassName="">
+      <ParkHeader cardClassName="md:h-[160px]">
         <div className="flex w-full md:text-center md:mx-auto md:block md:w-auto">
           <div className="flex-1 font-medium text-2xl md:text-3xl">Taxonomy</div>
-          <div className="backdrop-blur bg-white/15 px-3 h-8 flex items-center rounded-full">{selectedPark?.name}</div>
+          {/* <div className="backdrop-blur bg-white/15 px-3 h-8 flex items-center rounded-full">{selectedPark?.name}</div> */}
         </div>
       </ParkHeader>
       <div
-        className="p-2 flex flex-col  justify-between items-center bg-green-50 mt-[-3.5rem] 
+        className="p-2 items-center bg-green-50 mt-[-3.5rem] 
         backdrop-blur bg-white/10 mx-4 rounded-2xl px-4
-        md:flex-row md:-mt-[5rem] md:gap-2 md:backdrop-blur md:bg-white/10 md:mx-4 md:rounded-full md:px-4"
+        md:flex-row md:-mt-[5.5rem] md:gap-2 md:backdrop-blur md:bg-white/10 md:mx-4 md:px-4"
       >
         <Input
           suffix={<FiSearch />}
           placeholder="Search Species..."
           onChange={(e) => handleSearch(e.target.value)}
-          className="w-full mb-2 md:flex-[3] md:mb-0"
-          // className="md:mb-0 md:ml-1 md:mt-0 mt-2"
+          className="w-full mb-2 md:flex-[3] "
         />
-        <div className="text-white opacity-50 z-20 md:block hidden">or</div>
+        {selectedTaxonomy?.length > 0 && <div className='text-sm text-black/50 mb-1 ml-1 md:text-white/75'>Filters:</div>}
         <TreeSelect
           treeData={treeData}
           value={selectedTaxonomy}
@@ -155,16 +157,18 @@ const Discover = () => {
           treeCheckable={true}
           showCheckedStrategy={SHOW_PARENT}
           placeholder={<div className="md:text-white/75 text-green-700">{`Filter by Phylum > Class > Order`}</div>}
-          className="w-full cursor-pointer md:flex-1 md:min-w-[260px]"
+          className="w-full cursor-pointermd:flex-1 md:min-w-[260px] mb-2"
           variant="borderless"
-          // style={{ width: '98%' }}
-          // className="md:mb-2,mb-2 md:mt-4, md:mr-1"
+          treeNodeLabelProp="kekek"
+          suffixIcon={<IoIosArrowDown className="md:text-gray-400 text-green-700 text-lg cursor-pointer"/>}
+          tagRender={(item) => <Tag bordered={false} >{item.label}</Tag>}
         />
+        {selectedTaxonomy?.length > 0 && <div className='h-[1px] w-full bg-black/5'/>}
       </div>
       {!filteredSpecies || filteredSpecies.length == 0 ? (
         <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
           <PiPlantFill className="text-4xl mb-2 mt-10" />
-          No Species listed yet.
+          No Species found.
         </div>
       ) : (
         <div className="justify-center max-h-[calc(100vh-20rem)] overflow-y-auto no-scrollbar md:mt-6">
@@ -192,5 +196,13 @@ const Discover = () => {
     </div>
   );
 };
+
+const TreeSelectNoOverflow = styled(TreeSelect)`
+  .ant-select-selection-overflow {
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    display: none;
+  }
+`;
 
 export default Discover;
