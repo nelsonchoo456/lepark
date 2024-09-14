@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Tooltip, Flex } from 'antd';
+import { Table, Tag, Button, Tooltip, Flex, TableProps } from 'antd';
 import { FiExternalLink } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
-import { getOccurrencesBySpeciesId, OccurrenceResponse } from '@lepark/data-access';
+import { getOccurrencesBySpeciesId, getOccurrencesBySpeciesIdByParkId, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
+import { useAuth } from '@lepark/common-ui';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -11,39 +12,39 @@ interface OccurrenceTableProps {
 }
 
 const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading }) => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]); // Replace 'any' with the appropriate type for your occurrences
 
   useEffect(() => {
     const fetchOccurrences = async () => {
       try {
-        const fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
+        let fetchedOccurrences;
+        if (user?.parkId) {
+          fetchedOccurrences = await getOccurrencesBySpeciesIdByParkId(speciesId, user.parkId);
+        } else {
+          fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
+        }
         setOccurrences(fetchedOccurrences.data);
       } catch (error) {
         console.error('Error fetching occurrences:', error);
       }
     };
-
     fetchOccurrences();
   }, [speciesId]);
 
-  const columns = [
+  const columns: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
-      title: 'Species Name',
-      dataIndex: 'speciesId',
-      key: 'speciesName',
-    },
-    {
-      title: 'Label',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string) => text,
+      render: (text) => text,
     },
     {
       title: 'Occurrence Status',
       dataIndex: 'occurrenceStatus',
       key: 'occurrenceStatus',
-      render: (text: string) => {
+      render: (text) => {
         switch (text) {
           case 'HEALTHY':
             return <Tag color="green">HEALTHY</Tag>;
@@ -55,8 +56,6 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
             return <Tag color="red">URGENT_ACTION_REQUIRED</Tag>;
           case 'REMOVED':
             return <Tag>REMOVED</Tag>;
-          default:
-            return text;
         }
       },
     },
@@ -64,13 +63,19 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
       title: 'Number of Plants',
       dataIndex: 'numberOfPlants',
       key: 'numberOfPlants',
-      render: (text: string) => text,
+      render: (text) => text,
     },
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',
       key: 'dateObserved',
-      render: (text: string) => moment(text).format('D MMM YY'),
+      render: (text) => moment(text).format('D MMM YY'),
+    },
+    {
+      title: 'Date of Birth',
+      dataIndex: 'dateOfBirth',
+      key: 'dateOfBirth',
+      render: (text) => moment(text).format('D MMM YY'),
     },
   ];
 
