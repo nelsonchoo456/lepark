@@ -108,7 +108,7 @@ const ZoneList: React.FC = () => {
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
           </Tooltip>
           <Tooltip title="Delete">
-            <Button danger icon={<MdOutlineDeleteOutline />} onClick={() => showDeleteModal(record as ZoneResponse)} disabled />
+            <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ZoneResponse)}  />
           </Tooltip>
         </Flex>
       ),
@@ -223,6 +223,7 @@ const ZoneList: React.FC = () => {
     navigate(`/zone/${zoneId}`);
   };
 
+  // Confirm Delete Modal utility
   const cancelDelete = () => {
     setZoneToBeDeleted(null);
     setDeleteModalOpen(false);

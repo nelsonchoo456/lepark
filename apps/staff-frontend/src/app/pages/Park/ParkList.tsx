@@ -1,19 +1,24 @@
 import { ContentWrapperDark, useAuth } from "@lepark/common-ui";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip, notification } from "antd";
+import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip, notification, message } from "antd";
 import { occurences } from "./occurences";
 import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
-import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
-import { getAllParks, ParkResponse, StaffResponse, StaffType } from "@lepark/data-access";
+import { FiEye, FiSearch } from "react-icons/fi";
+import { deletePark, ParkResponse, StaffResponse, StaffType } from "@lepark/data-access";
 import { useEffect, useRef, useState } from "react";
 import { RiEdit2Line } from "react-icons/ri";
 import { useFetchParks } from "../../hooks/Parks/useFetchParks";
+import { MdDeleteOutline, MdOutlineDeleteOutline } from "react-icons/md";
+import ConfirmDeleteModal from "../../components/modal/ConfirmDeleteModal";
 
 const ParkList = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const { parks, restrictedParkId, loading } = useFetchParks();
+  const { parks, restrictedParkId, loading, triggerFetch } = useFetchParks();
+  const [messageApi, contextHolder] = message.useMessage();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [parkToBeDeleted, setParkToBeDeleted] = useState<ParkResponse | null>(null);
   // const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
 
@@ -96,13 +101,16 @@ const ParkList = () => {
       title: 'Actions',
       key: 'actions',
       dataIndex: 'id',
-      render: (id) => (
+      render: (id, record) => (
         <Flex justify="center">
           <Tooltip title="View details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
           </Tooltip>
           <Tooltip title="Edit details">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
+          </Tooltip>
+          <Tooltip title="Delete">
+          <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ParkResponse)}  />
           </Tooltip>
         </Flex>
       ),
@@ -113,10 +121,47 @@ const ParkList = () => {
   const navigateTo = (occurenceId: string) =>{
     navigate(`/park/${occurenceId}`)
   }
+
+  // Confirm Delete Modal utility
+  const cancelDelete = () => {
+    setParkToBeDeleted(null);
+    setDeleteModalOpen(false);
+  }
+
+  const showDeleteModal = (park: ParkResponse) => {
+    setDeleteModalOpen(true);
+    setParkToBeDeleted(park);
+  }
   
+  const deleteParkToBeDeleted = async () => {
+    try {
+      if (!parkToBeDeleted) {
+        throw new Error("Unable to delete Park at this time");
+      }
+      await deletePark(parkToBeDeleted.id);
+      triggerFetch();
+      setParkToBeDeleted(null);
+      setDeleteModalOpen(false);
+      messageApi.open({
+        type: 'success',
+        content: `Deleted Park: ${parkToBeDeleted.name}.`,
+      });
+    } catch (error) {
+      console.log(error)
+      setParkToBeDeleted(null);
+      setDeleteModalOpen(false);
+      messageApi.open({
+        type: 'error',
+        content: `Unable to delete Park at this time. Please try again later.`,
+      });
+    }
+  } 
+
   return (
     <ContentWrapperDark>
       <PageHeader>Parks Management</PageHeader>
+      {contextHolder}
+      <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Zone deletes all of its Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
