@@ -10,7 +10,7 @@ router.post('/register', async (req, res) => {
   try {
     const visitorData = VisitorSchema.parse(req.body);
     const visitor = await VisitorService.register(visitorData);
-    res.status(201).json(visitor);
+    res.status(200).json(visitor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

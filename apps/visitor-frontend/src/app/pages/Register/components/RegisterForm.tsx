@@ -10,6 +10,13 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values: any) => {
+    const { password, confirmPassword } = values;
+
+    if (password !== confirmPassword) {
+      message.error('Passwords do not match!');
+      return;
+    }
+
     const newVisitorDetails: RegisterVisitorData = {
       firstName: values.firstName,
       lastName: values.lastName,
@@ -19,10 +26,20 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
       isVerified: false,
     };
 
-    const response = await registerVisitor(newVisitorDetails);
-    message.success('Account created successfully!');
-    navigate('/login');
-    // navigate('/');
+    try {
+      const response = await registerVisitor(newVisitorDetails);
+
+      if (response.status === 200) {
+        message.success('Account created successfully!');
+
+        setTimeout(() => {
+          navigate('/login');
+        }, 1000);
+      }
+    } catch (error) {
+      console.log(error);
+      message.error(String(error));
+    }
   };
 
   const handleGoToLogin = () => {
