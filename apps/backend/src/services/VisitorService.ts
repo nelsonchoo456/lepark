@@ -15,6 +15,7 @@ import {
   PasswordResetSchema,
   PasswordResetSchemaType,
   VerifyUserSchema,
+  VerifyUserSchemaType,
 } from '../schemas/visitorSchema';
 import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
@@ -39,7 +40,7 @@ class VisitorService {
         password: hashedPassword,
       });
 
-      const token = jwt.sign({ email: data.email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '24h' });
+      const token = jwt.sign({ email: data.email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '15min' });
 
       // Send email with the reset link containing the token
       const verificationLink = `http://localhost:4201/verify-user?token=${token}`;
@@ -258,7 +259,7 @@ class VisitorService {
     return favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId) || false;
   }
 
-  public async verifyUser(data: PasswordResetSchemaType) {
+  public async verifyUser(data: VerifyUserSchemaType) {
     try {
       VerifyUserSchema.parse(data);
 
@@ -268,7 +269,7 @@ class VisitorService {
       };
 
       if (decodedToken.action !== 'verify_user') {
-        throw new Error('Invalid reset token');
+        throw new Error('Invalid verification token');
       }
 
       const visitor = await VisitorDao.getVisitorByEmail(decodedToken.email);
@@ -281,11 +282,75 @@ class VisitorService {
         isVerified: true,
       });
 
-      return { message: 'Password reset successful' };
+      return { message: 'Account verified successfully!' };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors.map((e) => `${e.message}`);
         throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      } else if (error.name === 'TokenExpiredError') {
+        throw new Error('Verification token has expired');
+      } else {
+        throw new Error(`Unable to resend verification email: ${error.message}`);
+      }
+    }
+  }
+
+  async resendVerificationEmail(token: string) {
+    try {
+      let decodedToken;
+      try {
+        decodedToken = jwt.verify(token, JWT_SECRET_KEY) as {
+          email: string;
+          action: string;
+        };
+      } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+          // Token is expired, but we still want to resend the email
+          const decoded = jwt.decode(token) as { email: string; action: string };
+          if (!decoded || decoded.action !== 'verify_user') {
+            throw new Error('Invalid verification token');
+          }
+          const { email } = decoded;
+
+          // console.log('Resend email to: ' + email);
+
+          const visitor = await VisitorDao.getVisitorByEmail(email);
+          if (!visitor) {
+            throw new Error('Visitor not found');
+          }
+
+          const newToken = jwt.sign({ email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '15min' });
+
+          const verificationLink = `http://localhost:4201/verify-user?token=${newToken}`;
+
+          EmailUtil.sendVerificationEmail(email, verificationLink);
+          return { message: 'Verification email sent successfully' };
+        } else {
+          throw error;
+        }
+      }
+
+      const { email, action } = decodedToken;
+
+      if (action !== 'verify_user') {
+        throw new Error('Invalid verification token');
+      }
+
+      const visitor = await VisitorDao.getVisitorByEmail(email);
+      if (!visitor) {
+        throw new Error('Visitor not found');
+      }
+
+      const newToken = jwt.sign({ email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '15min' });
+
+      const verificationLink = `http://localhost:4201/verify-user?token=${newToken}`;
+
+      EmailUtil.sendVerificationEmail(email, verificationLink);
+      return { message: 'Verification email sent successfully' };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

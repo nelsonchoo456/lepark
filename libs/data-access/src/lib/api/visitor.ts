@@ -10,6 +10,7 @@ import {
   FavoriteSpeciesRequestData,
   GetFavoriteSpeciesRequestData,
   GetFavoriteSpeciesResponse,
+  VerifyVisitorData,
 } from '../types/visitor';
 import client from './client';
 
@@ -18,6 +19,32 @@ const URL = '/visitors';
 export async function registerVisitor(data: RegisterVisitorData): Promise<AxiosResponse<VisitorResponse>> {
   try {
     const response: AxiosResponse<VisitorResponse> = await client.post(`${URL}/register`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function resendVerificationEmail(token: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
+  try {
+    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/resend-verification-email`, { token });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function verifyVisitor(data: VerifyVisitorData): Promise<AxiosResponse<VisitorResponse>> {
+  try {
+    const response: AxiosResponse<VisitorResponse> = await client.post(`${URL}/verify-user`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

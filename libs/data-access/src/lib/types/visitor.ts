@@ -45,6 +45,10 @@ export interface VisitorPasswordResetData {
   newPassword: string;
 }
 
+export interface VerifyVisitorData {
+  token: string;
+}
+
 // Define the data required to add or delete a favorite species
 export interface FavoriteSpeciesRequestData {
   visitorId: string;

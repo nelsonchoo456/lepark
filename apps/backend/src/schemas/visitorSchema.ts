@@ -32,3 +32,4 @@ export type VisitorSchemaType = z.infer<typeof VisitorSchema>;
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 export type PasswordResetRequestSchemaType = z.infer<typeof PasswordResetRequestSchema>;
 export type PasswordResetSchemaType = z.infer<typeof PasswordResetSchema>;
+export type VerifyUserSchemaType = z.infer<typeof VerifyUserSchema>;

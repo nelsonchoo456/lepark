@@ -19,6 +19,7 @@ import Discover from './pages/Taxonomy/Discover';
 import ViewSpeciesDetails from './pages/Taxonomy/ViewSpecies';
 import SelectParkPage from './park-context/SelectParkPage';
 import { ParkProvider } from './park-context/ParkContext';
+import VerifyUser from './pages/VerifyUser/VerifyUser';
 
 export function App() {
   return (
@@ -48,6 +49,7 @@ export function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-user" element={<VerifyUser />} />
               <Route element={<MainLayout />}>
                 <Route path="/" element={<MainLanding />} />
                 <Route path="/select-park" element={<SelectParkPage />} />
