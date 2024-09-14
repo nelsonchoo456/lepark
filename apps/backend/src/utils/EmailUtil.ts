@@ -27,6 +27,36 @@ class EmailUtility {
     // Send email
     await transporter.sendMail(mailOptions);
   }
+  async sendLoginDetailsEmail(recipientEmail: string, password: string) {
+    // Create a transporter using Gmail's SMTP settings
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com', // replace with your Gmail email
+        pass: 'ezcr eqfz dxtn vbtr', // replace with your App Password
+      },
+      tls: {
+        rejectUnauthorized: false, // Disable certificate validation
+      },
+    });
+
+    // Email message options
+    const mailOptions = {
+      to: recipientEmail, // recipient
+      subject: 'Login Details',
+      html: `<p>Dear User,</p>
+             <p>Your account has been created. Below are your login credentials:</p>
+             <p><strong>Email:</strong> ${recipientEmail}</p>
+             <p><strong>Password:</strong> ${password}</p>
+             <p>Please log in using these credentials. You will be prompted to change your password once you log in.</p>
+             <p>If you did not request this, please contact support.</p>`,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+  }
 }
 
 export default new EmailUtility();

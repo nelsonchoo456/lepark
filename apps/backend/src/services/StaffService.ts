@@ -44,6 +44,8 @@ class StaffService {
         isActive: true,
       };
 
+      EmailUtil.sendLoginDetailsEmail(data.email, data.password);
+
       return StaffDao.createStaff(updatedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
