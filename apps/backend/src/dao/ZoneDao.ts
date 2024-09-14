@@ -159,6 +159,19 @@ class ZoneDao {
       throw new Error(`Zone with Park ID ${parkId} not found`);
     }
   }
+
+  async deleteZoneById(id: number): Promise<void> {
+    await this.initZonesDB();
+    
+    const deletedZone = await prisma.$executeRaw`
+      DELETE FROM "Zone"
+      WHERE id = ${id};
+    `;
+    
+    if (deletedZone === 0) {
+      throw new Error(`Zone with ID ${id} not found`);
+    }
+  }
 }
 
 
