@@ -48,6 +48,10 @@ const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChan
       value: 'LIMITED_ACCESS',
       label: 'Limited Access',
     },
+    {
+      value: 'CLOSED',
+      label: 'Close',
+    },
   ];
 
   const handleApplyToAllChange = (day: string) => {

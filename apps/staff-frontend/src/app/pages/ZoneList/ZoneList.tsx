@@ -1,11 +1,11 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip } from 'antd';
+import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, Typography } from 'antd';
 import moment from 'moment';
 import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { StaffResponse, } from '@lepark/data-access';
+import { StaffResponse, StaffType } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
@@ -28,10 +28,32 @@ const ZoneList: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       render: (text) => (
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align="center" className="font-semibold">
           {text}
         </Flex>
       ),
+      sorter: (a, b) => {
+        return a.name.localeCompare(b.name);
+      },
+      width: '50%',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (text) => (
+        <Typography.Paragraph
+          ellipsis={{
+            rows: 2,
+          }}
+        >
+          {text}
+        </Typography.Paragraph>
+      ),
+      sorter: (a, b) => {
+        return a.description.localeCompare(b.description);
+      },
+      width: '50%',
     },
     {
       title: 'Status',
@@ -46,11 +68,27 @@ const ZoneList: React.FC = () => {
               </Tag>
             );
           case 'UNDER_CONSTRUCTION':
-            return <Tag color="red" bordered={false}>Under Construction</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                Under Construction
+              </Tag>
+            );
           default:
-            return <Tag color="red" bordered={false}>Limited Access</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                Limited Access
+              </Tag>
+            );
         }
       },
+      filters: [
+        { text: 'Open', value: 'OPEN' },
+        { text: 'Under Construction', value: 'UNDER_CONSTRUCTION' },
+        { text: 'Limited Access', value: 'LIMITED_ACCESS' },
+        { text: 'Closed', value: 'CLOSED' },
+      ],
+      onFilter: (value, record) => record.parkStatus === value,
+      width: '1%',
     },
     {
       title: 'Actions',
@@ -58,11 +96,11 @@ const ZoneList: React.FC = () => {
       dataIndex: 'id',
       render: (id) => (
         <Flex justify="center">
-          <Tooltip title="View details">
-            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
+          <Tooltip title="Details Page coming soon">
+            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} disabled />
           </Tooltip>
-          <Tooltip title="Edit details">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
+          <Tooltip title="Edit Page coming soon">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
           </Tooltip>
         </Flex>
       ),
@@ -70,10 +108,109 @@ const ZoneList: React.FC = () => {
     },
   ];
 
-  const navigateTo = (occurenceId: string) =>{
-    navigate(`/zone/${occurenceId}`)
-  }
-  
+  const columnsForSuperadmin: TableProps['columns'] = [
+    {
+      title: 'Park',
+      dataIndex: 'parkName',
+      key: 'parkName',
+      render: (text) => (
+        <Flex justify="space-between" align="center">
+          {text}
+        </Flex>
+      ),
+      sorter: (a, b) => {
+        return a.name.localeCompare(b.name);
+      },
+      width: '33%',
+    },
+    {
+      title: 'Zone Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => (
+        <Flex justify="space-between" align="center" className="font-semibold">
+          {text}
+        </Flex>
+      ),
+      sorter: (a, b) => {
+        return a.name.localeCompare(b.name);
+      },
+      width: '33%',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (text) => (
+        <Typography.Paragraph
+          ellipsis={{
+            rows: 2,
+          }}
+        >
+          {text}
+        </Typography.Paragraph>
+      ),
+      sorter: (a, b) => {
+        return a.description.localeCompare(b.description);
+      },
+      width: '33%',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'zoneStatus',
+      key: 'zoneStatus',
+      render: (text) => {
+        switch (text) {
+          case 'OPEN':
+            return (
+              <Tag color="green" bordered={false}>
+                Open
+              </Tag>
+            );
+          case 'UNDER_CONSTRUCTION':
+            return (
+              <Tag color="red" bordered={false}>
+                Under Construction
+              </Tag>
+            );
+          default:
+            return (
+              <Tag color="red" bordered={false}>
+                Limited Access
+              </Tag>
+            );
+        }
+      },
+      filters: [
+        { text: 'Open', value: 'OPEN' },
+        { text: 'Under Construction', value: 'UNDER_CONSTRUCTION' },
+        { text: 'Limited Access', value: 'LIMITED_ACCESS' },
+        { text: 'Closed', value: 'CLOSED' },
+      ],
+      onFilter: (value, record) => record.parkStatus === value,
+      width: '1%',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      dataIndex: 'id',
+      render: (id) => (
+        <Flex justify="center">
+          <Tooltip title="Details Page coming soon">
+            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} disabled />
+          </Tooltip>
+          <Tooltip title="Edit Page coming soon">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
+          </Tooltip>
+        </Flex>
+      ),
+      width: '1%',
+    },
+  ];
+
+  const navigateTo = (occurenceId: string) => {
+    navigate(`/zone/${occurenceId}`);
+  };
 
   return (
     <ContentWrapperDark>
@@ -91,12 +228,11 @@ const ZoneList: React.FC = () => {
       </Flex>
 
       <Card>
-        <Table
-          dataSource={zones}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-        />
+        {user?.role === StaffType.SUPERADMIN ? (
+          <Table dataSource={zones} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+        ) : (
+          <Table dataSource={zones} columns={columns} rowKey="id" loading={loading} />
+        )}
       </Card>
     </ContentWrapperDark>
   );

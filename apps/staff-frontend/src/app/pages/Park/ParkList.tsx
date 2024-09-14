@@ -21,22 +21,34 @@ const ParkList = () => {
       dataIndex: 'name',
       key: 'name',
       render: (text) => (
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align="center" className='font-semibold'>
           {text}
         </Flex>
       ),
+      sorter: (a, b) => {
+        return a.name.localeCompare(b.name);
+      },
+      width: '33%',
     },
     {
       title: 'Address',
       dataIndex: 'address',
       key: 'address',
       render: (text) => text,
+      sorter: (a, b) => {
+        return a.address.localeCompare(b.address);
+      },
+      width: '33%',
     },
     {
       title: 'Contact Number',
       dataIndex: 'contactNumber',
       key: 'contactNumber',
       render: (text) => text,
+      sorter: (a, b) => {
+        return a.contactNumber.localeCompare(b.contactNumber);
+      },
+      width: '33%',
     },
     {
       title: 'Status',
@@ -56,6 +68,14 @@ const ParkList = () => {
             return <Tag color="red" bordered={false}>Limited Access</Tag>;
         }
       },
+      filters: [
+        { text: 'Open', value: 'OPEN' },
+        { text: 'Under Construction', value: 'UNDER_CONSTRUCTION' },
+        { text: 'Limited Access', value: 'LIMITED_ACCESS' },
+        { text: 'Closed', value: 'CLOSED' },
+      ],
+      onFilter: (value, record) => record.parkStatus === value,
+      width: '1%',
     },
     {
       title: 'Actions',
