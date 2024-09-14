@@ -23,7 +23,19 @@ export async function createOccurrence(data: OccurrenceData): Promise<AxiosRespo
 export async function getAllOccurrences(): Promise<AxiosResponse<OccurrenceResponse[]>> {
   try {
     const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/getAllOccurrences`);
-    console.log(response)
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getOccurrencesByParkId(parkId: number): Promise<AxiosResponse<OccurrenceResponse[]>> {
+  try {
+    const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/getAllOccurrences?parkId=${parkId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -76,6 +88,19 @@ export async function updateOccurrenceDetails(id: string, data: OccurrenceUpdate
 export async function getActivityLogsByOccurrenceId(occurrenceId: string): Promise<AxiosResponse<ActivityLogResponse[]>> {
   try {
     const response: AxiosResponse<ActivityLogResponse[]> = await client.get(`${URL_ACTIVITY_LOGS}/viewActivityLogs/${occurrenceId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function deleteOccurrence(id: string): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteOccurrence/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

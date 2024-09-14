@@ -110,7 +110,7 @@ const ParkList = () => {
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
           </Tooltip>
           <Tooltip title="Delete">
-          <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ParkResponse)}  />
+            <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ParkResponse)}  />
           </Tooltip>
         </Flex>
       ),

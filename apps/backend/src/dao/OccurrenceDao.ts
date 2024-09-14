@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma, Occurrence } from '@prisma/client';
+import ZoneDao from './ZoneDao';
 
 const prisma = new PrismaClient();
 
@@ -8,7 +9,63 @@ class OccurrenceDao {
   }
 
   async getAllOccurrences(): Promise<Occurrence[]> {
-    return prisma.occurrence.findMany();
+    const occurrences = await prisma.occurrence.findMany({
+      include: {
+        species: {
+          select: {
+            id: true,
+            speciesName: true,
+          },
+        },
+      },
+    });
+
+    const zones = await ZoneDao.getAllZones();
+
+    return occurrences.map((occurrence) => {
+      const zone = zones.find((z: any) => z.id === occurrence.zoneId);
+      return {
+        ...occurrence,
+        speciesId: occurrence.species?.id,
+        speciesName: occurrence.species?.speciesName,
+        zoneId: zone?.id,
+        zoneName: zone?.name,
+        parkId: zone?.parkId,
+        parkName: zone?.parkName,
+        parkDescription: zone?.parkDescription,
+      };
+    });
+  }
+
+  async getAllOccurrencesByParkId(parkId: number): Promise<Occurrence[]> {
+    const occurrences = await prisma.occurrence.findMany({
+      include: {
+        species: {
+          select: {
+            id: true,
+            speciesName: true,
+          },
+        },
+      },
+    });
+
+    const zones = await ZoneDao.getAllZones();
+
+    return occurrences
+      .map((occurrence) => {
+        const zone = zones.find((z: any) => z.id === occurrence.zoneId);
+        return {
+          ...occurrence,
+          speciesId: occurrence.species?.id,
+          speciesName: occurrence.species?.speciesName,
+          zoneId: zone?.id,
+          zoneName: zone?.name,
+          parkId: zone?.parkId,
+          parkName: zone?.parkName,
+          parkDescription: zone?.parkDescription,
+        };
+      })
+      .filter((occurrence: any) => occurrence.parkId === parkId);
   }
 
   async getOccurrenceById(id: string): Promise<Occurrence> {
