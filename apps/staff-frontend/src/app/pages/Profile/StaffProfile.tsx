@@ -18,6 +18,8 @@ import {
   viewStaffDetails,
 } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
+import PageHeader2 from '../../components/main/PageHeader2';
+import ChangePasswordModal from './ChangePasswordModal';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 // const initialUser = {
@@ -116,16 +118,16 @@ const StaffProfile = () => {
         const responseStaffDetails = await updateStaffDetails(user.id, updatedStaffDetails);
         // console.log('Staff details updated successfully:', responseStaffDetails.data);
 
-        const responseStaffActiveStatus = { data: { isActive: values.isActive } };
-        if (user.role == StaffType.SUPERADMIN || user.role == StaffType.MANAGER) {
-        const responseStaffActiveStatus = await updateStaffIsActive(user.id, values.isActive, user.id);
-        console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
-        }
+        // const responseStaffActiveStatus = { data: { isActive: values.isActive } };
+        // if (user.role == StaffType.SUPERADMIN || user.role == StaffType.MANAGER) {
+        //   const responseStaffActiveStatus = await updateStaffIsActive(user.id, values.isActive, user.id);
+        //   console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
+        // }
 
         // Merge the updated details and active status
         const updatedUser = {
           ...responseStaffDetails.data,
-          isActive: responseStaffActiveStatus.data.isActive,
+          // isActive: responseStaffActiveStatus.data.isActive,
         };
 
         message.success('Staff details updated successfully!');
@@ -173,17 +175,10 @@ const StaffProfile = () => {
     }
   };
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = () => {
     if (user) {
       setIsPopupVisible(true);
-      setIsButtonDisabled(true);
-      await forgotStaffPassword({ email: user.email });
-      message.success('Password reset email sent successfully');
     }
-  };
-
-  const handlePopupOk = () => {
-    setIsPopupVisible(false);
   };
 
   const handleLogout = async () => {
@@ -231,7 +226,7 @@ const StaffProfile = () => {
     {
       key: 'role',
       label: 'Role',
-      children: <Tag>{userState?.role}</Tag>, // not allowed to change role
+      children: <Tag>{userState?.role}</Tag>, // not allowed to change own role
       span: 2,
     },
     {
@@ -239,24 +234,14 @@ const StaffProfile = () => {
       label: 'Email',
       children: (
         <div className="flex items-center">
-          {user?.role == StaffType.SUPERADMIN || user?.role == StaffType.MANAGER ? (
-            inEditMode ? (
-              <Input type="email" value={editedUser?.email || ''} onChange={(e) => handleInputChange('email', e.target.value)} required />
-            ) : (
-              <span>{userState?.email}</span>
-            )
-          ) : (
-            <>
-              {userState?.email}
-              {inEditMode && (
-                <Tooltip title="To change your email, please contact your manager.">
-                  <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
-                </Tooltip>
-              )}
-            </>
+          {userState?.email}
+          {inEditMode && userState?.role !== StaffType.SUPERADMIN && (
+            <Tooltip title="To change your email, please contact your manager or superadmin.">
+              <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
+            </Tooltip>
           )}
-        </div>
-      ), // not allowed to change email unless user is manager or superadmin
+        </div> // not allowed to change own email
+      ),
     },
     {
       key: 'contactNumber',
@@ -280,41 +265,38 @@ const StaffProfile = () => {
       label: 'Active Status',
       children: (
         <div className="flex items-center">
-          {user?.role == StaffType.SUPERADMIN || user?.role == StaffType.MANAGER ? (
-            inEditMode ? (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Switch checked={editedUser?.isActive ?? false} onChange={(checked) => handleInputChange('isActive', checked)} />
-                <span style={{ marginLeft: 8 }}>{editedUser?.isActive ? 'Active' : 'Inactive'}</span>
-              </div>
-            ) : (
-              <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
-            )
-          ) : (
-            <>
-              <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
-              {/* {inEditMode && (
-                <Tooltip title="To change your active status, please contact your manager.">
-                  <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
-                </Tooltip>
-              )} */}
-            </>
+          <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
+          {inEditMode && userState?.role !== StaffType.SUPERADMIN && (
+            <Tooltip title="To change your active status, please contact your manager or superadmin.">
+              <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
+            </Tooltip>
           )}
         </div>
-      ), // not allowed to change own active status unless user is manager or superadmin
+      ), // not allowed to change own active status 
       span: 2,
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "My Profile",
+      pathKey: '/profile',
+      isMain: true,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>My Profile</PageHeader>
+       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <div className="flex justify-end items-center mb-4">
-        <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5" disabled={isButtonDisabled}>
+        <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5">
           Change Password
         </Button>
         <Button onClick={handleLogout} icon={<LogoutOutlined />}>
           Logout
         </Button>
+        <ChangePasswordModal open={isPopupVisible} onClose={() => setIsPopupVisible(false)} user={user!} />
       </div>
       <Card>
         <Descriptions
@@ -344,9 +326,6 @@ const StaffProfile = () => {
           }
         />
       </Card>
-      <Modal title="Password Reset" open={isPopupVisible} onOk={handlePopupOk} onCancel={handlePopupOk} centered>
-        <p>An email has been sent to your address. Please check your inbox to reset your password.</p>
-      </Modal>
       {/* <div
           className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
           style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}

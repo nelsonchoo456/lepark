@@ -1,7 +1,7 @@
 import express from 'express';
 import StaffService from '../services/StaffService';
 import { StaffRoleEnum } from '@prisma/client';
-import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/staffSchema';
+import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, PasswordChangeSchema } from '../schemas/staffSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
 
@@ -99,7 +99,7 @@ router.put('/updateStaffIsActive/:id', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const loginData = LoginSchema.parse(req.body);
-    const { token, user } = await StaffService.login(loginData);
+    const { token, user, requiresPasswordReset } = await StaffService.login(loginData);
 
     res.cookie('jwtToken_Staff', token, {
       httpOnly: true,
@@ -107,6 +107,10 @@ router.post('/login', async (req, res) => {
       sameSite: 'strict',
       maxAge: 4 * 60 * 60 * 1000, // 4 hours (needs to be same expiry as the JWT token)
     });
+
+    if (requiresPasswordReset) {
+      return res.status(200).json({ ...user, requiresPasswordReset: true });
+    }
 
     res.status(200).json(user); // send user data in the response body
   } catch (error) {
@@ -132,6 +136,17 @@ router.post('/forgot-password', async (req, res) => {
     res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/change-password', async (req, res) => {
+  try {
+    const data = PasswordChangeSchema.parse(req.body);
+    await StaffService.changePassword(data);
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error in /change-password:', error); // Log the error for debugging
+    res.status(400).json({ error: error.message }); // Send the error message to the frontend
   }
 });
 
@@ -171,6 +186,18 @@ router.get('/check-auth', (req, res) => {
     });
   } else {
     res.status(401).send({ message: 'No token provided' });
+  }
+});
+
+router.post('/token-for-reset-password-for-first-login', async (req, res) => {
+  const { staffId } = req.body;
+  try {
+
+    const resetToken = await StaffService.getTokenForResetPasswordForFirstLogin(staffId);
+    res.status(200).send({ message: 'Reset token generated', token: resetToken });
+  } catch (error) {
+    console.error('Error generating reset token:', error);
+    res.status(500).send({ message: 'Internal Server Error' });
   }
 });
 

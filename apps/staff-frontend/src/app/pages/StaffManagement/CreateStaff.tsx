@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { registerStaff, RegisterStaffData, StaffResponse, StaffType, ParkResponse, getParkById, getAllParks } from '@lepark/data-access';
+import PageHeader2 from '../../components/main/PageHeader2';
+import crypto from 'crypto';
 
 const { Option } = Select;
 
@@ -26,14 +28,20 @@ const CreateStaff: React.FC = () => {
 
   const onFinish = async (values: any) => {
     try {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const generatedPassword = Array.from(window.crypto.getRandomValues(new Uint32Array(10)))
+        .map((value) => characters[value % characters.length])
+        .join('');
+
       const newStaffDetails: RegisterStaffData = {
         firstName: values.firstNameInput,
         lastName: values.lastNameInput,
         contactNumber: values.contactNumberInput,
         email: values.emailInput,
-        password: values.passwordInput,
+        password: generatedPassword,
         role: values.roleSelect,
         parkId: values.parkSelect,
+        isFirstLogin: true,
       };
 
       // console.log('Received values of form:', newStaffDetails);
@@ -44,7 +52,7 @@ const CreateStaff: React.FC = () => {
       navigate('/staff-management');
     } catch (error) {
       console.error(error);
-      message.error('Failed to add staff.');
+      message.error('Failed to add staff: ' + error);
       // Handle error, show error message to user
     }
   };
@@ -64,7 +72,6 @@ const CreateStaff: React.FC = () => {
       }
       navigate('/');
     } else {
-      
       // Fetch parks data from the database
       getAllParks()
         .then((response) => {
@@ -81,9 +88,22 @@ const CreateStaff: React.FC = () => {
     return parkId && park ? park.name : 'NParks';
   };
 
+  const breadcrumbItems = [
+    {
+      title: "Staff Management",
+      pathKey: '/staff-management',
+      isMain: true,
+    },
+    {
+      title: "Create",
+      pathKey: `/staff-management/create-staff`,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Add a new Staff</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Form
         {...layout}
         form={form}
@@ -107,7 +127,7 @@ const CreateStaff: React.FC = () => {
                 if (user?.role === StaffType.MANAGER) {
                   return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
                 } else if (user?.role === StaffType.SUPERADMIN) {
-                  return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+                  return role !== StaffType.SUPERADMIN; //removed option to create SUPERADMIN; we assume SUPERADMINs are created in system
                 }
                 return true;
               })
@@ -121,12 +141,12 @@ const CreateStaff: React.FC = () => {
         <Form.Item name="emailInput" label="Email" rules={[{ required: true, type: 'email', message: 'Please enter an email.' }]}>
           <Input />
         </Form.Item>
-        <Form.Item name="passwordInput" label="Password" rules={[
+        {/* <Form.Item name="passwordInput" label="Password" rules={[
           { required: true, message: 'Please enter a password.' },
           { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
         ]}>
           <Input.Password />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           name="contactNumberInput"
           label="Contact Number"
@@ -141,7 +161,7 @@ const CreateStaff: React.FC = () => {
           <Input />
         </Form.Item>
         <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
-        {parks.length === 0 ? (
+          {parks.length === 0 ? (
             <Text type="secondary">There are no parks created yet!</Text>
           ) : user?.role === StaffType.MANAGER ? (
             <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>
@@ -152,7 +172,7 @@ const CreateStaff: React.FC = () => {
           ) : (
             <Select placeholder="Select a Park" allowClear>
               {parks.map((park) => (
-                <Select.Option key={park.id} value={park.id.toString()}>
+                <Select.Option key={park.id} value={park.id}>
                   {park.name}
                 </Select.Option>
               ))}

@@ -9,6 +9,7 @@ import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { getAllStaffs, StaffResponse, StaffType, getParkById, ParkResponse, getAllParks, getAllStaffsByParkId } from '@lepark/data-access';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const StaffManagementPage: React.FC = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
@@ -86,6 +87,11 @@ const StaffManagementPage: React.FC = () => {
     });
   }, [staff, searchQuery]);
 
+  const dataSource = filteredStaff.map((staff) => ({
+    ...staff,
+    key: staff.id, // to fix the warning about missing key prop
+}));
+
   const handleSearchBar = (value: string) => {
     setSearchQuery(value);
   };
@@ -159,6 +165,15 @@ const StaffManagementPage: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Staff Management",
+      pathKey: '/staff-management',
+      isMain: true,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
       {/* <Header className="bg-green-300"></Header> */}
@@ -167,17 +182,17 @@ const StaffManagementPage: React.FC = () => {
       {/* <Col>
             <LogoText className="text-xl font-bold">Staff Management</LogoText>
           </Col> */}
-      <PageHeader>Staff Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Flex justify="end" gap={10}>
         <Search placeholder="Search for Staff..." allowClear enterButton="Search" onChange={(e) => handleSearchBar(e.target.value)} style={{ marginBottom: 20 }} />
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('create-staff')}>
-          Add Staff
+        <Button type="primary" onClick={() => navigate('create-staff')}>
+          Create Staff
         </Button>
       </Flex>
       <Row>
         <Col span={24}>
-          <div className="p-5 bg-white shadow-lg rounded-lg">
-            <Table columns={columns} dataSource={filteredStaff} rowKey="key" pagination={{ pageSize: 10 }} />
+          <div className="p-5 bg-white">
+            <Table columns={columns} dataSource={dataSource} rowKey="key" pagination={{ pageSize: 10 }} />
           </div>
         </Col>
       </Row>

@@ -16,6 +16,7 @@ export interface RegisterStaffData {
   contactNumber: string;
   role: StaffType;
   parkId?: number;
+  isFirstLogin: boolean;
 }
 
 export interface StaffResponse {
@@ -53,4 +54,10 @@ export interface PasswordResetRequestData {
 export interface PasswordResetData {
   token: string;
   newPassword: string;
+}
+
+export interface PasswordChangeData {
+  newPassword: string;
+  currentPassword: string;
+  staffId: string;
 }

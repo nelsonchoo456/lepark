@@ -18,6 +18,7 @@ import {
   viewStaffDetails,
 } from '@lepark/data-access';
 import { useNavigate, useParams } from 'react-router-dom';
+import PageHeader2 from '../../components/main/PageHeader2';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 const initialUser = {
@@ -42,58 +43,74 @@ const ViewStaffDetails = () => {
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
         const response = await viewStaffDetails(staffId);
+        console.log(response);
         setStaff(response.data);
         setEditedUser(response.data);
-        console.log(staff);
       } catch (error) {
         console.error(error);
-        message.error('Failed to fetch user details');
+        // message.error('Failed to fetch user details');
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the details of this staff!',
+          });
+          notificationShown.current = true;
+        }
+        if (user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) {
+          navigate('/staff-management');
+        } else {
+        navigate('/');
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
-    
+
     if (staffId) {
       fetchUserDetails();
-      console.log(user?.parkId, staff.parkId);
     }
-  }, [staffId]);
+  }, [staffId, user, navigate]);
 
   useEffect(() => {
-    if (user && staff.id !== '') {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Staff Management page!',
-        });
-        notificationShown.current = true;
+    if (!isLoading && (user || staff.id !== '')) {
+      if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the Staff Management page!',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
+      } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
+        console.log('User parkId:', user.parkId);
+        console.log('Staff parkId:', staff.parkId);
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the details of this staff!',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/staff-management');
+      } else {
+        // Fetch parks data from the database
+        getAllParks()
+          .then((response) => {
+            setParks(response.data);
+          })
+          .catch((error) => {
+            console.error('There was an error fetching the parks data!', error);
+          });
       }
-      navigate('/');
-    } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the details of this staff!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/staff-management');
-
-    } else {
-     // Fetch parks data from the database
-     getAllParks()
-     .then((response) => {
-       setParks(response.data);
-     })
-     .catch((error) => {
-       console.error('There was an error fetching the parks data!', error);
-     });
-  }}
-  }, [staff, user, navigate]);
+    }
+  }, [isLoading, staff, user, navigate]);
 
   const getParkName = (parkId?: number) => {
     const park = parks.find((park) => park.id === parkId);
@@ -144,13 +161,13 @@ const ViewStaffDetails = () => {
       };
 
       const responseStaffRole = await updateStaffRole(staffId, values.role, user.id);
-      console.log('Staff role updated successfully:', responseStaffRole.data);
+      // console.log('Staff role updated successfully:', responseStaffRole.data);
 
       const responseStaffActiveStatus = await updateStaffIsActive(staffId, values.isActive, user.id);
-      console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
+      // console.log('Staff active status updated successfully:', responseStaffActiveStatus.data);
 
       const responseStaffDetails = await updateStaffDetails(staffId, updatedStaffDetails);
-      console.log('Staff details updated successfully:', responseStaffDetails.data);
+      // console.log('Staff details updated successfully:', responseStaffDetails.data);
 
       message.success('Staff details updated successfully!');
       await refreshUserData(); // Refresh user data to load the latest values
@@ -219,7 +236,7 @@ const ViewStaffDetails = () => {
     {
       key: 'park',
       label: 'Park',
-      children: getParkName(editedUser?.parkId), 
+      children: getParkName(editedUser?.parkId),
       span: 2,
     },
     {
@@ -236,7 +253,7 @@ const ViewStaffDetails = () => {
               if (user?.role === StaffType.MANAGER) {
                 return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
               } else if (user?.role === StaffType.SUPERADMIN) {
-                return role === StaffType.MANAGER || role === StaffType.SUPERADMIN;
+                return role !== StaffType.SUPERADMIN;
               }
               return true;
             })
@@ -293,9 +310,22 @@ const ViewStaffDetails = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Staff Management",
+      pathKey: '/staff-management',
+      isMain: true,
+    },
+    {
+      title: staff.firstName + " " + staff?.lastName ? staff?.firstName + " " + staff?.lastName : "Staff Details",
+      pathKey: `/staff-management/create-staff`,
+      isCurrent: true
+    },
+  ]
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Staff Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         <Descriptions
           items={descriptionsItems}

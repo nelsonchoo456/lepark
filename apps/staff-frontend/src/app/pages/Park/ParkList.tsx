@@ -1,19 +1,34 @@
-import { ContentWrapperDark } from "@lepark/common-ui";
+import { ContentWrapperDark, useAuth } from "@lepark/common-ui";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip } from "antd";
+import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip, notification } from "antd";
 import { occurences } from "./occurences";
 import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from "react-icons/fi";
-import { getAllParks, ParkResponse } from "@lepark/data-access";
-import { useEffect, useState } from "react";
+import { getAllParks, ParkResponse, StaffResponse, StaffType } from "@lepark/data-access";
+import { useEffect, useRef, useState } from "react";
 import { RiEdit2Line } from "react-icons/ri";
 import { useFetchParks } from "../../hooks/Parks/useFetchParks";
 
 const ParkList = () => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const { parks, restrictedParkId, loading } = useFetchParks();
   // const [parks, setParks] = useState<ParkResponse[]>([]);
+  const notificationShown = useRef(false);
+
+  useEffect(() => {
+    if (user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Park Management page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    }
+  }, []);
 
   const columns: TableProps['columns'] = [
     {
@@ -109,7 +124,15 @@ const ParkList = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
-        <Button type="primary" onClick={() => { navigate('/park/create')}}>Create Park</Button>
+           <Tooltip title={user?.role !== StaffType.SUPERADMIN ? "Not allowed to create park!" : ""}>
+          <Button
+            type="primary"
+            onClick={() => { navigate('/park/create'); }}
+            disabled={user?.role !== StaffType.SUPERADMIN}
+          >
+            Create Park
+          </Button>
+        </Tooltip>
       </Flex>
       
       <Card>

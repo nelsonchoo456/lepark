@@ -1,5 +1,6 @@
 import { LogoText } from '@lepark/common-ui';
 import { Button } from 'antd';
+import React from 'react';
 import { IoArrowBack, IoReturnUpBack } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,8 +57,11 @@ const PageHeader2 = ({ breadcrumbItems }: PageHeaderProps) => {
         {breadcrumbItems &&
           breadcrumbItems.map((item, index) => (
             <>
-              <BreadCrumb item={item} key={item.pathKey} />
-              {index < breadcrumbItems.length - 1 && <div className="px-3 text-green-600 opacity-60">/</div>}
+            <React.Fragment key={item.pathKey}>
+            <BreadCrumb item={item} />
+            {index < breadcrumbItems.length - 1 && <div className="px-3 text-green-600 opacity-60">/</div>}
+            </React.Fragment>
+             
             </>
           ))}
       </div>

@@ -1,6 +1,7 @@
 import { Button, Divider, Form, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
+import { getTokenForResetPasswordForFirstLogin } from '@lepark/data-access';
 
 interface LoginStepProps {
   goToForgotPassword: () => void;
@@ -13,9 +14,15 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
   const handleSubmit = async (values: any) => {
     const { email, password } = values;
     try {
-      await login(email, password);
-      message.success('Login successful');
-      navigate('/');
+      const response = await login(email, password);
+      if (response.requiresPasswordReset) {
+        const resetToken = await getTokenForResetPasswordForFirstLogin(response.id);
+        navigate(`/reset-password?token=${resetToken.data.token}`);
+      } else {
+        message.success('Login successful');
+        navigate('/');
+      }
+     
     } catch (error) {
       message.error(String(error));
     }
