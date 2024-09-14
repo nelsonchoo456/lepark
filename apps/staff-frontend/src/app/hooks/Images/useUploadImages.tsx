@@ -32,7 +32,9 @@ const useUploadImages = () => {
     previewImages,
     handleFileChange,
     removeImage,
-    onInputClick
+    onInputClick,
+    setSelectedFiles,
+    setPreviewImages
   };
 };
 
