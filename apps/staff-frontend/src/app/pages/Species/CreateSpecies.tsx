@@ -1,30 +1,21 @@
-import { useEffect, useState } from 'react';
-import MainLayout from '../../components/main/MainLayout';
 import 'leaflet/dist/leaflet.css';
+import { useEffect, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper, SIDEBAR_WIDTH, ImageInput } from '@lepark/common-ui';
+import { ContentWrapper, ImageInput } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
-import React from 'react';
-import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Slider, Alert, Modal, Result, Image } from 'antd';
-import { CloseCircleOutlined } from '@ant-design/icons';
-import type { GetProp } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import {
-  phylums,
-  regions,
-  lightType,
-  soilType,
-  conservationStatus,
-  plantCharacteristics,
-  convertLightType,
-  convertSoilType,
-  convertConservationStatus,
-} from '@lepark/data-utility';
-import { createSpecies } from '@lepark/data-access';
-import PageHeader from '../../components/main/PageHeader';
-import { CreateSpeciesData, ConservationStatusEnum, LightTypeEnum, SoilTypeEnum, SpeciesResponse } from '@lepark/data-access';
-import { plantTaxonomy } from '@lepark/data-utility';
+  ConservationStatusEnum,
+  createSpecies,
+  CreateSpeciesData,
+  LightTypeEnum,
+  SoilTypeEnum,
+  SpeciesResponse,
+} from '@lepark/data-access';
+import { conservationStatus, lightType, plantTaxonomy, regions, soilType } from '@lepark/data-utility';
+import { Button, Form, Input, InputNumber, Modal, Result, Select, Slider, Space } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 
 const CreateSpecies = () => {
@@ -60,8 +51,6 @@ const CreateSpecies = () => {
 
   const [classes, setClasses] = useState<string[]>([]);
   const [orders, setOrders] = useState<string[]>([]);
-
-
 
   const onPhylumChange = (value: string) => {
     const selectedPhylum = plantTaxonomy[value as keyof typeof plantTaxonomy];
@@ -155,7 +144,6 @@ const CreateSpecies = () => {
       // Handle error (e.g., show an error message)
     } finally {
       setIsSubmitting(false);
-
     }
   };
   const onReset = () => {
@@ -164,8 +152,18 @@ const CreateSpecies = () => {
   const { TextArea } = Input;
   const [value, setValue] = useState('');
 
-
-
+  const breadcrumbItems = [
+    {
+      title: 'Species Management',
+      pathKey: '/species',
+      isMain: true,
+    },
+    {
+      title: 'Create Species',
+      pathKey: `/species/create`,
+      isCurrent: true,
+    },
+  ];
 
   //slider
 
@@ -173,7 +171,7 @@ const CreateSpecies = () => {
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapper>
       {/* <h1 className="header-1 mb-4">Create Species</h1> */}
-      <PageHeader>Create Species</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
 
       {!showSuccessAlert && (
         <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
@@ -385,40 +383,36 @@ const CreateSpecies = () => {
             </Space>
           </Form.Item>
 
-            <Form.Item label="Upload Images" required tooltip="At least one image is required">
-  <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-</Form.Item>
+          <Form.Item label="Upload Images" required tooltip="At least one image is required">
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
 
-{previewImages.length > 0 && (
-  <Form.Item label="Image Previews">
-    <div className="flex flex-wrap gap-2">
-      {previewImages.map((imgSrc, index) => (
-        <img
-          key={index}
-          src={imgSrc}
-          alt={`Preview ${index}`}
-          className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-          onClick={() => removeImage(index)}
-        />
-      ))}
-    </div>
-  </Form.Item>
-)}
+          {previewImages.length > 0 && (
+            <Form.Item label="Image Previews">
+              <div className="flex flex-wrap gap-2">
+                {previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+              </div>
+            </Form.Item>
+          )}
 
-        <Form.Item {...tailLayout}>
-          <Space>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isSubmitting}
-            >
-              Submit
-            </Button>
-            <Button htmlType="button" onClick={onReset}>
-              Reset
-            </Button>
-          </Space>
-        </Form.Item>
+          <Form.Item {...tailLayout}>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
+                Submit
+              </Button>
+              <Button htmlType="button" onClick={onReset}>
+                Reset
+              </Button>
+            </Space>
+          </Form.Item>
         </Form>
       )}
       {showSuccessAlert && (

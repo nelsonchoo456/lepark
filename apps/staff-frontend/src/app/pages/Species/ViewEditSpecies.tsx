@@ -1,22 +1,21 @@
-import { useEffect, useState } from 'react';
-import MainLayout from '../../components/main/MainLayout';
 import 'leaflet/dist/leaflet.css';
+import { useEffect, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { ContentWrapper, ImageInput } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
-import React from 'react';
-import { Button, Form, Input, Select, Space, Checkbox, InputNumber, Modal, message } from 'antd';
-import type { GetProp } from 'antd';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { getSpeciesById, SpeciesResponse, updateSpecies } from '@lepark/data-access';
 import { regions } from '@lepark/data-utility';
-import { getSpeciesById, SpeciesResponse, updateSpecies} from '@lepark/data-access';
+import type { GetProp } from 'antd';
+import { Button, Checkbox, Form, Input, InputNumber, message, Modal, Select, Space } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
-import  useUploadImages from '../../hooks/Images/useUploadImages';
+import useUploadImages from '../../hooks/Images/useUploadImages';
 
 
 
 import { plantTaxonomy } from '@lepark/data-utility';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const ViewEditSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
@@ -107,6 +106,23 @@ form.setFieldsValue(species.data);
   const onChange: GetProp<typeof Checkbox.Group, 'onChange'> = (checkedValues) => {
     console.log('checked = ', checkedValues);
   };
+
+  const breadcrumbItems = [
+    {
+      title: "Species Management",
+      pathKey: '/species',
+      isMain: true,
+    },
+    {
+      title: speciesObj?.speciesName ? speciesObj?.speciesName : "Details",
+      pathKey: `/species/${speciesObj?.id}`,
+    },
+    {
+      title: "Edit Species",
+      pathKey: `/species/edit`,
+      isCurrent: true
+    },
+  ]
 
   const lightTypeOptions = [
     { value: 'FULL_SUN', label: 'Full Sun' },
@@ -251,7 +267,7 @@ if (!webMode) {
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapper>
       {contextHolder}
-      <PageHeader>Edit Species</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
 
       <Form
         {...layout}
