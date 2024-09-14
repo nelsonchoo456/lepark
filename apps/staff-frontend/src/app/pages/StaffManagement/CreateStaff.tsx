@@ -52,7 +52,7 @@ const CreateStaff: React.FC = () => {
       navigate('/staff-management');
     } catch (error) {
       console.error(error);
-      message.error('Failed to add staff.');
+      message.error('Failed to add staff: ' + error);
       // Handle error, show error message to user
     }
   };
