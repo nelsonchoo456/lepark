@@ -184,14 +184,15 @@ const SpeciesPage = () => {
           suffix={<FiSearch />}
           placeholder="Search species..."
           onChange={(e) => handleSearch(e.target.value)}
-          style={{ width: 200 }}
+          className="mb-4 bg-white"
+          variant="filled"
         />
         <Button type="primary" onClick={() => navigate('/species/create')}>
           Create Species
         </Button>
       </Flex>
 
-      <Card style={{ marginTop: '10px' }}>
+      <Card>
         <Table dataSource={filteredSpecies} columns={columns} rowKey="id" loading={loading} />
       </Card>
     </ContentWrapperDark>
