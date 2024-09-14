@@ -26,7 +26,14 @@ export const PasswordResetSchema = z.object({
   newPassword: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
 });
 
+export const PasswordChangeSchema = z.object({
+  newPassword: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
+  currentPassword: z.string().min(8, { message: 'Current password is required' }),
+  staffId: z.string().min(1, { message: 'Staff ID is required' })
+});
+
 export type StaffSchemaType = z.infer<typeof StaffSchema>;
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 export type PasswordResetRequestSchemaType = z.infer<typeof PasswordResetRequestSchema>;
 export type PasswordResetSchemaType = z.infer<typeof PasswordResetSchema>;
+export type PasswordChangeSchemaType = z.infer<typeof PasswordChangeSchema>;

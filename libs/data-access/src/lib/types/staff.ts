@@ -55,3 +55,9 @@ export interface PasswordResetData {
   token: string;
   newPassword: string;
 }
+
+export interface PasswordChangeData {
+  newPassword: string;
+  currentPassword: string;
+  staffId: string;
+}

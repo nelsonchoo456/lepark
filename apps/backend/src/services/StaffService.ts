@@ -14,6 +14,8 @@ import {
   PasswordResetRequestSchemaType,
   PasswordResetSchema,
   PasswordResetSchemaType,
+  PasswordChangeSchemaType,
+  PasswordChangeSchema,
 } from '../schemas/staffSchema';
 import { fromZodError } from 'zod-validation-error';
 
@@ -77,10 +79,7 @@ class StaffService {
     }
   }
 
-  public async updateStaffDetails(
-    id: string,
-    data: Partial<StaffSchemaType>,
-  ): Promise<Staff> {
+  public async updateStaffDetails(id: string, data: Partial<StaffSchemaType>): Promise<Staff> {
     try {
       const existingStaff = await StaffDao.getStaffById(id);
       if (!existingStaff) {
@@ -171,7 +170,7 @@ class StaffService {
 
       if (staff.isFirstLogin) {
         return { requiresPasswordReset: true, user: staff };
-      } 
+      }
 
       const token = jwt.sign({ id: staff.id }, JWT_SECRET_KEY, {
         expiresIn: '4h',
@@ -209,6 +208,41 @@ class StaffService {
       // Send email with the reset link containing the token
       const resetLink = `http://localhost:4200/reset-password?token=${resetToken}`;
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async changePassword(data: PasswordChangeSchemaType) {
+    try {
+      PasswordChangeSchema.parse(data);
+      const { newPassword, currentPassword, staffId } = data;
+
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error(`Staff not found`);
+      }
+
+      // Check if password is correct
+      const isPasswordValid = await bcrypt.compare(currentPassword, staff.password);
+      if (!isPasswordValid) {
+        throw new Error('Current password is incorrect!');
+      }
+
+      // Check if new password is different from the old one
+      if (await bcrypt.compare(newPassword, staff.password)) {
+        throw new Error('New password must be different from the old password');
+      }
+
+      // Hash and update the new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await StaffDao.updateStaffDetails(staff.id, { password: hashedPassword });
+
+      return { message: 'Password change successful!' };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -268,7 +302,7 @@ class StaffService {
     const resetToken = jwt.sign(
       { id: staffId, action: 'password_reset' },
       JWT_SECRET_KEY,
-      { expiresIn: '15m' } // Token expires in 15 minutes
+      { expiresIn: '15m' }, // Token expires in 15 minutes
     );
     return resetToken;
   }

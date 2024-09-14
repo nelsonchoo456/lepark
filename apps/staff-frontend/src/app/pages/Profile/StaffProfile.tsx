@@ -19,6 +19,7 @@ import {
 } from '@lepark/data-access';
 import { StaffResponse } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
+import ChangePasswordModal from './ChangePasswordModal';
 // import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
 
 // const initialUser = {
@@ -174,17 +175,10 @@ const StaffProfile = () => {
     }
   };
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = () => {
     if (user) {
       setIsPopupVisible(true);
-      setIsButtonDisabled(true);
-      await forgotStaffPassword({ email: user.email });
-      message.success('Password reset email sent successfully');
     }
-  };
-
-  const handlePopupOk = () => {
-    setIsPopupVisible(false);
   };
 
   const handleLogout = async () => {
@@ -296,12 +290,13 @@ const StaffProfile = () => {
     <ContentWrapperDark>
        <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <div className="flex justify-end items-center mb-4">
-        <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5" disabled={isButtonDisabled}>
+        <Button type="primary" onClick={handleChangePassword} icon={<LockOutlined />} className="mr-5">
           Change Password
         </Button>
         <Button onClick={handleLogout} icon={<LogoutOutlined />}>
           Logout
         </Button>
+        <ChangePasswordModal open={isPopupVisible} onClose={() => setIsPopupVisible(false)} user={user!} />
       </div>
       <Card>
         <Descriptions
@@ -331,9 +326,6 @@ const StaffProfile = () => {
           }
         />
       </Card>
-      <Modal title="Password Reset" open={isPopupVisible} onOk={handlePopupOk} onCancel={handlePopupOk} centered>
-        <p>An email has been sent to your address. Please check your inbox to reset your password.</p>
-      </Modal>
       {/* <div
           className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
           style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}

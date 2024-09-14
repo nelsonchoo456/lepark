@@ -1,7 +1,7 @@
 import express from 'express';
 import StaffService from '../services/StaffService';
 import { StaffRoleEnum } from '@prisma/client';
-import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/staffSchema';
+import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, PasswordChangeSchema } from '../schemas/staffSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
 
@@ -136,6 +136,17 @@ router.post('/forgot-password', async (req, res) => {
     res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/change-password', async (req, res) => {
+  try {
+    const data = PasswordChangeSchema.parse(req.body);
+    await StaffService.changePassword(data);
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error in /change-password:', error); // Log the error for debugging
+    res.status(400).json({ error: error.message }); // Send the error message to the frontend
   }
 });
 

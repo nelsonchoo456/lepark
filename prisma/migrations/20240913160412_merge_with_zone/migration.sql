@@ -30,6 +30,7 @@ CREATE TABLE "Staff" (
     "role" "StaffRoleEnum" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
     "parkId" INTEGER,
+    "isFirstLogin" BOOLEAN NOT NULL,
 
     CONSTRAINT "Staff_pkey" PRIMARY KEY ("id")
 );

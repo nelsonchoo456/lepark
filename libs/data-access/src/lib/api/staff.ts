@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import {
   LoginData,
   LogoutResponse,
+  PasswordChangeData,
   PasswordResetData,
   PasswordResetRequestData,
   RegisterStaffData,
@@ -124,6 +125,20 @@ export async function logoutStaff(): Promise<AxiosResponse<LogoutResponse>> {
 export async function forgotStaffPassword(data: PasswordResetRequestData): Promise<AxiosResponse<{ message: string }>> {
   try {
     const response: AxiosResponse<{ message: string }> = await client.post(`${URL}/forgot-password`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+// Change Password
+export async function changeStaffPassword(data: PasswordChangeData): Promise<AxiosResponse<{ message: string }>> {
+  try {
+    const response: AxiosResponse<{ message: string }> = await client.put(`${URL}/change-password`,  data );
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
