@@ -14,6 +14,7 @@ import {
   PasswordResetRequestSchemaType,
   PasswordResetSchema,
   PasswordResetSchemaType,
+  VerifyUserSchema,
 } from '../schemas/visitorSchema';
 import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
@@ -37,6 +38,12 @@ class VisitorService {
         ...data,
         password: hashedPassword,
       });
+
+      const token = jwt.sign({ email: data.email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '24h' });
+
+      // Send email with the reset link containing the token
+      const verificationLink = `http://localhost:4201/verify-user?token=${token}`;
+      EmailUtil.sendVerificationEmail(data.email, verificationLink);
 
       return VisitorDao.createVisitor(visitorData);
     } catch (error) {
@@ -249,6 +256,39 @@ class VisitorService {
 
     const favoriteSpecies = await VisitorDao.getFavoriteSpecies(visitorId);
     return favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId) || false;
+  }
+
+  public async verifyUser(data: PasswordResetSchemaType) {
+    try {
+      VerifyUserSchema.parse(data);
+
+      const decodedToken = jwt.verify(data.token, JWT_SECRET_KEY) as {
+        email: string;
+        action: string;
+      };
+
+      if (decodedToken.action !== 'verify_user') {
+        throw new Error('Invalid reset token');
+      }
+
+      const visitor = await VisitorDao.getVisitorByEmail(decodedToken.email);
+
+      if (!visitor) {
+        throw new Error('Visitor not found');
+      }
+
+      await VisitorDao.updateVisitorDetails(visitor.id, {
+        isVerified: true,
+      });
+
+      return { message: 'Password reset successful' };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {

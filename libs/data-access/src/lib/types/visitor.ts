@@ -1,4 +1,4 @@
-import { SpeciesResponse } from "./species";
+import { SpeciesResponse } from './species';
 
 export interface RegisterVisitorData {
   firstName: string;
@@ -6,6 +6,7 @@ export interface RegisterVisitorData {
   email: string;
   password: string;
   contactNumber: string;
+  isVerified: boolean;
 }
 
 export interface VisitorResponse {
@@ -15,6 +16,7 @@ export interface VisitorResponse {
   email: string;
   contactNumber: string;
   favoriteSpecies?: SpeciesResponse[];
+  isVerified: boolean;
 }
 //conflict here
 

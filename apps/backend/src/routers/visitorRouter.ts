@@ -1,6 +1,6 @@
 import express from 'express';
 import VisitorService from '../services/VisitorService';
-import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/visitorSchema';
+import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, VerifyUserSchema } from '../schemas/visitorSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
 
@@ -168,6 +168,16 @@ router.get('/isSpeciesInFavorites/:visitorId/:speciesId', async (req, res) => {
     const { visitorId, speciesId } = req.params;
     const isFavorite = await VisitorService.isSpeciesInFavorites(visitorId, speciesId);
     res.status(200).json({ isFavorite });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/verify-user', async (req, res) => {
+  try {
+    const data = VerifyUserSchema.parse(req.body);
+    await VisitorService.verifyUser(data);
+    res.status(200).json({ message: 'User verified successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

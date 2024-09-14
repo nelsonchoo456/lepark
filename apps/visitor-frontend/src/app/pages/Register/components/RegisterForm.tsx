@@ -1,4 +1,5 @@
-import { Button, Divider, Form, Input, Row, Col } from 'antd';
+import { registerVisitor, RegisterVisitorData } from '@lepark/data-access';
+import { Button, Divider, Form, Input, Row, Col, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginStepProps {
@@ -8,11 +9,21 @@ interface LoginStepProps {
 const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
   const navigate = useNavigate();
 
-  const handleSubmit = (values: any) => {
-    const { firstName, lastName, email, password } = values;
-    navigate('/');
-  };
+  const handleSubmit = async (values: any) => {
+    const newVisitorDetails: RegisterVisitorData = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      contactNumber: values.contactNumber,
+      email: values.email,
+      password: values.password,
+      isVerified: false,
+    };
 
+    const response = await registerVisitor(newVisitorDetails);
+    message.success('Account created successfully!');
+    navigate('/login');
+    // navigate('/');
+  };
 
   const handleGoToLogin = () => {
     navigate('/login');
@@ -22,7 +33,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
   // confirmPasswordValidator - checks confirmPassword matches password
   const confirmPasswordValidator = ({ getFieldValue }: any) => ({
     validator(_: any, value: any) {
-      console.log(value)
+      console.log(value);
       if (!value || getFieldValue('password') === value) {
         return Promise.resolve();
       }
@@ -40,11 +51,9 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
               name="firstName"
               label="First Name"
               validateTrigger="onSubmit"
-              rules={[
-                { required: true, message: 'Please enter your First Name' },
-              ]}
+              rules={[{ required: true, message: 'Please enter your First Name' }]}
             >
-              <Input placeholder="First Name" variant="filled"/>
+              <Input placeholder="First Name" variant="filled" />
             </Form.Item>
           </Col>
 
@@ -53,11 +62,9 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
               name="lastName"
               label="Last Name"
               validateTrigger="onSubmit"
-              rules={[
-                { required: true, message: 'Please enter your Last Name' },
-              ]}
+              rules={[{ required: true, message: 'Please enter your Last Name' }]}
             >
-              <Input placeholder="Last Name" variant="filled"/>
+              <Input placeholder="Last Name" variant="filled" />
             </Form.Item>
           </Col>
         </Row>
@@ -71,7 +78,21 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
             { type: 'email', message: 'Please enter a valid Email' },
           ]}
         >
-          <Input placeholder="Email" variant="filled"/>
+          <Input placeholder="Email" variant="filled" />
+        </Form.Item>
+
+        <Form.Item
+          name="contactNumber"
+          label="Contact Number"
+          rules={[
+            { required: true, message: 'Please enter a contact number.' },
+            {
+              pattern: /^[689]\d{7}$/,
+              message: 'Contact number must consist of exactly 8 digits and be a valid Singapore contact number',
+            },
+          ]}
+        >
+          <Input placeholder="Contact Number" variant="filled" />
         </Form.Item>
 
         <Form.Item
@@ -79,9 +100,10 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           label="Password"
           rules={[
             { required: true, message: 'Please enter your password.' },
-            { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
-          ]}>
-          <Input.Password placeholder="Password" variant="filled"/>
+            { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' },
+          ]}
+        >
+          <Input.Password placeholder="Password" variant="filled" />
         </Form.Item>
 
         <Form.Item
@@ -90,7 +112,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
           validateTrigger="onSubmit"
           rules={[{ required: true, message: 'Please re-enter your Password' }, confirmPasswordValidator]}
         >
-          <Input.Password placeholder="Confirm Password" variant="filled"/>
+          <Input.Password placeholder="Confirm Password" variant="filled" />
         </Form.Item>
 
         <Form.Item>
@@ -102,11 +124,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
       <Divider>
         <span className="text-secondary">or</span>
       </Divider>
-      <Button
-        type="link"
-        className="w-full justify-center"
-        onClick={handleGoToLogin}
-      >
+      <Button type="link" className="w-full justify-center" onClick={handleGoToLogin}>
         Return to Login
       </Button>
     </div>
