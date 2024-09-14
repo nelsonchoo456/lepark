@@ -44,11 +44,11 @@ const ViewSpeciesDetails = () => {
   }, [speciesId]);
 
   const descriptionsItems = [
-    /*{
+    {
       key: 'id',
       label: 'Species ID',
       children: species?.id,
-    },*/
+    },
     {
       key: 'speciesName',
       label: 'Species Name',
