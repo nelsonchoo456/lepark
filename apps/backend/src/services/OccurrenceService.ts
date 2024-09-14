@@ -6,6 +6,13 @@ import StaffDao from '../dao/StaffDao';
 import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
 import ZoneDao from '../dao/ZoneDao';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
 
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
@@ -23,7 +30,7 @@ class OccurrenceService {
           throw new Error('Zone not found');
         }
       }
-      
+
       const formattedData = dateFormatter(data);
 
       // Validate input data using Zod
@@ -103,6 +110,23 @@ class OccurrenceService {
       throw new Error('Only managers can delete occurrence.');
     }
     await OccurrenceDao.deleteOccurrence(occurrenceId);
+  }
+
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+    const params = {
+      Bucket: 'lepark',
+      Key: `occurrence/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
   }
 }
 

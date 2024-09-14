@@ -172,7 +172,7 @@ const Discover = () => {
               <div className="flex flex-row items-center">
                 <div className="w-[60px] h-[60px] flex-shrink-0 mr-2 overflow-hidden rounded">
                   <img
-                    src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQLDJn8tSD57Z5Wy8t3nFbaiEG52OP0fK1lTXOckm1CuzNTGrR0"
+                    src={species.images[0]}
                     alt={species.commonName}
                     className="w-full h-full object-cover"
                   />
