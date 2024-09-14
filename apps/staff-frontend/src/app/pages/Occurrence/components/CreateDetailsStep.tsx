@@ -13,7 +13,7 @@ interface CreateDetailsStepProps {
 }
 
 const CreateDetailsStep = ({ handleCurrStep, form, zones, species }: CreateDetailsStepProps) => {
-
+  const nonExstinctSpecies = species.filter((species) => species.conservationStatus !== "EXTINCT")
   const decarbonizationTypeOptions = [
     {
       value: 'TREE_TROPICAL',
@@ -96,7 +96,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, zones, species }: CreateDetai
         <Select placeholder="Select a Zone that this Occurrence belongs to" options={zones?.map((zone) => ({ key: zone.id, value: zone.id, label: zone.name}))}/>
       </Form.Item>
       <Form.Item name="speciesId" label="Species" rules={[{ required: true }]}>
-        <Select placeholder="Select a Species" options={species?.map((species) => ({ key: species.id, value: species.id, label: species.commonName }))}/>
+        <Select placeholder="Select a Species" options={nonExstinctSpecies?.map((species) => ({ key: species.id, value: species.id, label: species.commonName }))}/>
       </Form.Item>
 
       <Divider orientation='left'>About the Occurrence</Divider>
