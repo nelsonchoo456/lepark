@@ -1,5 +1,7 @@
 import { registerVisitor, RegisterVisitorData } from '@lepark/data-access';
 import { Button, Divider, Form, Input, Row, Col, message } from 'antd';
+import { useState } from 'react';
+import { AiOutlineMail } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginStepProps {
@@ -8,6 +10,7 @@ interface LoginStepProps {
 
 const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
   const navigate = useNavigate();
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleSubmit = async (values: any) => {
     const { password, confirmPassword } = values;
@@ -31,10 +34,11 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
 
       if (response.status === 200) {
         message.success('Account created successfully!');
+        setIsRegistered(true);
 
-        setTimeout(() => {
-          navigate('/login');
-        }, 1000);
+        // setTimeout(() => {
+        //   navigate('/login');
+        // }, 1000);
       }
     } catch (error) {
       console.log(error);
@@ -61,89 +65,94 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
   return (
     <div className="w-full">
       <Divider></Divider>
-      <Form layout="vertical" onFinish={handleSubmit}>
-        <Row gutter={16}>
-          <Col span={12}>
+      {isRegistered ? (
+        <div className="flex flex-col items-center justify-center p-4 mt-5 text-center">
+          <AiOutlineMail size={48} className="text-green-400" />
+          <h1 className="text-2xl text-bold">Email Verification Sent</h1>
+          <p className="mt-2">A verification link has been sent to your email address. Please check your inbox and click on the link to verify your account.</p>
+        </div>
+      ) : (
+      <><Form layout="vertical" onFinish={handleSubmit}>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="firstName"
+                  label="First Name"
+                  validateTrigger="onSubmit"
+                  rules={[{ required: true, message: 'Please enter your First Name' }]}
+                >
+                  <Input placeholder="First Name" variant="filled" />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="lastName"
+                  label="Last Name"
+                  validateTrigger="onSubmit"
+                  rules={[{ required: true, message: 'Please enter your Last Name' }]}
+                >
+                  <Input placeholder="Last Name" variant="filled" />
+                </Form.Item>
+              </Col>
+            </Row>
+
             <Form.Item
-              name="firstName"
-              label="First Name"
+              name="email"
+              label="Email"
               validateTrigger="onSubmit"
-              rules={[{ required: true, message: 'Please enter your First Name' }]}
+              rules={[
+                { required: true, message: 'Please enter your Email' },
+                { type: 'email', message: 'Please enter a valid Email' },
+              ]}
             >
-              <Input placeholder="First Name" variant="filled" />
+              <Input placeholder="Email" variant="filled" />
             </Form.Item>
-          </Col>
 
-          <Col span={12}>
             <Form.Item
-              name="lastName"
-              label="Last Name"
-              validateTrigger="onSubmit"
-              rules={[{ required: true, message: 'Please enter your Last Name' }]}
+              name="contactNumber"
+              label="Contact Number"
+              rules={[
+                { required: true, message: 'Please enter a contact number.' },
+                {
+                  pattern: /^[689]\d{7}$/,
+                  message: 'Contact number must consist of exactly 8 digits and be a valid Singapore contact number',
+                },
+              ]}
             >
-              <Input placeholder="Last Name" variant="filled" />
+              <Input placeholder="Contact Number" variant="filled" />
             </Form.Item>
-          </Col>
-        </Row>
 
-        <Form.Item
-          name="email"
-          label="Email"
-          validateTrigger="onSubmit"
-          rules={[
-            { required: true, message: 'Please enter your Email' },
-            { type: 'email', message: 'Please enter a valid Email' },
-          ]}
-        >
-          <Input placeholder="Email" variant="filled" />
-        </Form.Item>
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[
+                { required: true, message: 'Please enter your password.' },
+                { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' },
+              ]}
+            >
+              <Input.Password placeholder="Password" variant="filled" />
+            </Form.Item>
 
-        <Form.Item
-          name="contactNumber"
-          label="Contact Number"
-          rules={[
-            { required: true, message: 'Please enter a contact number.' },
-            {
-              pattern: /^[689]\d{7}$/,
-              message: 'Contact number must consist of exactly 8 digits and be a valid Singapore contact number',
-            },
-          ]}
-        >
-          <Input placeholder="Contact Number" variant="filled" />
-        </Form.Item>
-
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[
-            { required: true, message: 'Please enter your password.' },
-            { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' },
-          ]}
-        >
-          <Input.Password placeholder="Password" variant="filled" />
-        </Form.Item>
-
-        <Form.Item
-          name="confirmPassword"
-          label="Confirm Password"
-          validateTrigger="onSubmit"
-          rules={[{ required: true, message: 'Please re-enter your Password' }, confirmPasswordValidator]}
-        >
-          <Input.Password placeholder="Confirm Password" variant="filled" />
-        </Form.Item>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit" className="w-full">
-            Register
-          </Button>
-        </Form.Item>
-      </Form>
-      <Divider>
-        <span className="text-secondary">or</span>
-      </Divider>
-      <Button type="link" className="w-full justify-center" onClick={handleGoToLogin}>
-        Return to Login
-      </Button>
+            <Form.Item
+              name="confirmPassword"
+              label="Confirm Password"
+              validateTrigger="onSubmit"
+              rules={[{ required: true, message: 'Please re-enter your Password' }, confirmPasswordValidator]}
+            >
+              <Input.Password placeholder="Confirm Password" variant="filled" />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="w-full">
+                Register
+              </Button>
+            </Form.Item>
+          </Form><Divider>
+              <span className="text-secondary">or</span>
+            </Divider><Button type="link" className="w-full justify-center" onClick={handleGoToLogin}>
+              Return to Login
+            </Button></>
+      )}
     </div>
   );
 };

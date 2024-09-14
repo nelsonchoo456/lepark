@@ -7,7 +7,7 @@ const VerificationSuccess: React.FC = () => {
   const navigate = useNavigate();
 
   const handleReturn = () => {
-    navigate('/');
+    navigate('/login');
   };
 
   return (
@@ -15,7 +15,7 @@ const VerificationSuccess: React.FC = () => {
       <FaCheckCircle className="text-green-500" size={48} />
       <p className="text-lg mt-2">Your email has been verified successfully!</p>
       <Button onClick={handleReturn} className="mt-4 px-4 py-2">
-        Return to Leparks
+        Login to Leparks
       </Button>
     </div>
   );

@@ -193,4 +193,14 @@ router.post('/resend-verification-email', async (req, res) => {
   }
 });
 
+router.post('/send-verification-email-with-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+    await VisitorService.sendVerificationEmailWithEmail(email);
+    res.status(200).json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

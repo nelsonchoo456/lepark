@@ -356,6 +356,24 @@ class VisitorService {
     }
   }
 
+  async sendVerificationEmailWithEmail(email: string) {
+    try {
+      const visitor = await VisitorDao.getVisitorByEmail(email);
+      if (!visitor) {
+        throw new Error('Visitor not found');
+      }
+
+      const token = jwt.sign({ email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '15min' });
+
+      const verificationLink = `http://localhost:4201/verify-user?token=${token}`;
+
+      EmailUtil.sendVerificationEmail(email, verificationLink);
+      return { message: 'Verification email sent successfully' };
+    } catch (error) {
+      throw new Error(`Unable to resend verification email: ${error.message}`);
+    }
+  }
+
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {
   //   const admin = await AdminDao.getAdminById(id);
   //   if (!admin) {

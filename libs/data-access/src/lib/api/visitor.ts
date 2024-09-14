@@ -42,6 +42,19 @@ export async function resendVerificationEmail(token: string): Promise<AxiosRespo
   }
 }
 
+export async function sendVerificationEmailWithEmail(email: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
+  try {
+    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/send-verification-email-with-email`, { email });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function verifyVisitor(data: VerifyVisitorData): Promise<AxiosResponse<VisitorResponse>> {
   try {
     const response: AxiosResponse<VisitorResponse> = await client.post(`${URL}/verify-user`, data);

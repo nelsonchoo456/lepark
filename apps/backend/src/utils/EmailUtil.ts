@@ -78,7 +78,7 @@ class EmailUtility {
     const mailOptions = {
       to: visitorEmail, // recipient
       subject: 'Verify Your Email Address',
-      html: `<p>Welcome to Lepark! Please verify your email address by clicking the link below:</p><a href="${verificationLink}">Verify Email</a><p>If you did not sign up, please ignore this email.</p>`,
+      html: `<p>Welcome to Lepark! Please verify your email address by clicking the link below:</p><a href="${verificationLink}">Verify Email</a><p>The link expires in 15 minutes.</p><p>If you did not sign up, please ignore this email.</p>`,
     };
 
     // Send email

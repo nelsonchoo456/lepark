@@ -22,6 +22,7 @@ import DeleteAccountModal from './DeleteAccountModal';
 import {
   getFavoriteSpecies,
   GetFavoriteSpeciesResponse,
+  sendVerificationEmailWithEmail,
   SpeciesResponse,
   updateVisitorDetails,
   viewVisitorDetails,
@@ -30,6 +31,8 @@ import {
 } from '@lepark/data-access';
 import { PiSmiley } from 'react-icons/pi';
 import SpeciesCard from './components/SpeciesCard';
+import { FaSadTear } from 'react-icons/fa';
+import { AiOutlineFrown, AiOutlineSmile } from 'react-icons/ai';
 
 const initialVisitor = {
   id: '',
@@ -50,6 +53,7 @@ const ProfilePage = () => {
   const [isEmailModalVisible, setIsEmailModalVisible] = useState<boolean>(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
   const navigate = useNavigate();
+  const [resendStatus, setResendStatus] = useState(false);
 
   const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
 
@@ -68,6 +72,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchFavoriteSpecies = async () => {
+      console.log(user);
       if (!user) {
         console.warn('User is not logged in!');
         return;
@@ -177,7 +182,7 @@ const ProfilePage = () => {
     // Account deletion logic goes here
     // For example, make an API call to delete the account
     // On success:
-    navigate('/'); // Redirect to home page
+    navigate('/'); 
   };
 
   const handleInputChange = (key: keyof VisitorResponse, value: any) => {
@@ -193,6 +198,16 @@ const ProfilePage = () => {
 
   const navigateToSpecies = (speciesId: string) => {
     navigate(`/discover/${speciesId}`);
+  };
+
+  const handleSendVerificationEmail = async () => {
+    try {
+      const response = await sendVerificationEmailWithEmail(user?.email || '');
+      console.log('Resend verification email', response);
+      setResendStatus(true); 
+    } catch (error) {
+      console.error('Error resending verification email', error);
+    }
   };
 
   const menu = (
@@ -223,6 +238,29 @@ const ProfilePage = () => {
         </Button>
       </div>
     );
+  }
+
+  if (user.isVerified === false) {
+    if (resendStatus) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen text-center pb-20 p-4">
+          <AiOutlineSmile className="text-6xl mb-4" />
+          <h1 className="text-2xl">Verification email has been sent!</h1>
+          <p className="mb-4">Please check your inbox and click on the link to verify your account.</p>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen text-center pb-20 p-4">
+        <AiOutlineFrown className="text-6xl mb-4" />
+        <h1 className="text-2xl">Your account is not verified!</h1>
+        <p className="mb-4">Click below to resend the email verification link.</p>
+        <Button type="primary" onClick={handleSendVerificationEmail} className="px-4 py-2">
+          Resend Verification Email
+        </Button>
+      </div>
+      )
+    }
   }
 
   return (
