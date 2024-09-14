@@ -52,13 +52,16 @@ const MainLayout = () => {
     return pathItems[pathItems.length - 1];
   };
 
-  const parkOnClick =
-    userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
+  const parkOnClick = userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
 
   useEffect(() => {
-    const activeItem = location.pathname === '/' ? 'home' : getLastItemFromPath(location.pathname); // for the active effect in navbar
-    setActiveItems(getLastItemFromPath(activeItem));
-  }, [location.pathname]);
+    const activeItem = location.pathname === '/' ? 'home' : getLastItemFromPath(location.pathname);
+    if (userRole !== StaffType.SUPERADMIN && location.pathname.startsWith(`/park/${user?.parkId}`)) {
+      setActiveItems('park');
+    } else {
+      setActiveItems(getLastItemFromPath(activeItem));
+    }
+  }, [location.pathname, userRole, user?.parkId]);
 
   // Navigation
   const navItems: MenuItem[] = [
@@ -72,7 +75,7 @@ const MainLayout = () => {
     {
       key: 'park',
       icon: <TbTrees />,
-      label: 'Parks',
+      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
       onClick: parkOnClick,
       // children: [
       //   {

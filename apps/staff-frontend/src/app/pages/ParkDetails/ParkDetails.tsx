@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import PageHeader from '../../components/main/PageHeader';
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Button, Card, Carousel, Descriptions, Empty, Flex, Space, Tabs, Tag, Typography } from 'antd';
-import { getParkById, ParkResponse } from '@lepark/data-access';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
+import { Button, Card, Carousel, Descriptions, Empty, Flex, notification, Space, Tabs, Tag, Typography } from 'antd';
+import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { FiSun } from 'react-icons/fi';
 import AboutTab from './components/AboutTab';
 import ParkStatusTag from './components/ParkStatusTag';
@@ -11,12 +11,26 @@ import { RiEdit2Line } from 'react-icons/ri';
 const { Text } = Typography;
 
 const ParkDetails = () => {
+  const { user } = useAuth<StaffResponse>();
   const [park, setPark] = useState<ParkResponse>();
   const navigate = useNavigate();
   const { id } = useParams();
+  const notificationShown = useRef(false);
 
   useEffect(() => {
     if (!id) return;
+
+    if (user?.parkId != parseInt(id) && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the details of this park!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    }
+    
     const fetchData = async () => {
       try {
         const parkRes = await getParkById(parseInt(id));
@@ -25,7 +39,14 @@ const ParkDetails = () => {
           console.log(parkRes.data);
         }
       } catch (error) {
-        //
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Error',
+            description: 'An error occurred while fetching the park details.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       }
     };
     fetchData();
@@ -112,11 +133,13 @@ const ParkDetails = () => {
                 <LogoText className="text-2xl py-2 m-0">{park?.name}</LogoText>
                 <ParkStatusTag>{park?.parkStatus}</ParkStatusTag>
               </Space>
-              <Button
-                icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
-                type="text"
-                onClick={() => navigate(`/park/${park?.id}/edit`)}
-              />
+              {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+                <Button
+                  icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
+                  type="text"
+                  onClick={() => navigate(`/park/${park?.id}/edit`)}
+                />
+              ) : null}
             </div>
             <Typography.Paragraph
               ellipsis={{
