@@ -78,6 +78,17 @@ router.get('/getOccurrencesBySpeciesId/:id', async (req, res) => {
   }
 });
 
+router.get('/getOccurrencesBySpeciesIdByParkId/:speciesId/:parkId', async (req, res) => {
+  try {
+    const speciesId = req.params.speciesId;
+    const parkId = req.params.parkId;
+    const occurrences = await SpeciesService.getOccurrencesBySpeciesIdByParkId(speciesId, parkId);
+    res.status(200).json(occurrences);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
     // Use a type assertion to tell TypeScript that req.file exists
