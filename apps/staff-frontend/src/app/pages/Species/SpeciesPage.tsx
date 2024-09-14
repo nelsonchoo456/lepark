@@ -2,10 +2,10 @@
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapperDark } from '@lepark/common-ui';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species view
-import { deleteSpecies, getAllSpecies, SpeciesResponse } from '@lepark/data-access';
+import { deleteSpecies, getAllSpecies, SpeciesResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Input, message, Modal, Table, TableProps, Tag, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
@@ -18,6 +18,8 @@ const SpeciesPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth<StaffResponse>();
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -164,12 +166,16 @@ const SpeciesPage = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/species/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Edit Species">
-            <Button type="link" icon={<FiEdit2 />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
-          </Tooltip>
-          <Tooltip title="Delete Species">
-            <Button type="link" icon={<FiTrash2 />} onClick={() => handleDelete(record.id)} />
-          </Tooltip>
+          {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) && (
+            <>
+              <Tooltip title="Edit Species">
+                <Button type="link" icon={<FiEdit2 />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
+              </Tooltip>
+              <Tooltip title="Delete Species">
+                <Button type="link" icon={<FiTrash2 />} onClick={() => handleDelete(record.id)} />
+              </Tooltip>
+            </>
+          )}
         </Flex>
       ),
       width: '1%',
