@@ -31,49 +31,38 @@ import { getAllSpecies, deleteSpecies, SpeciesResponse } from '@lepark/data-acce
 import { FiSearch, FiEdit2, FiTrash2, FiEye, FiExternalLink } from 'react-icons/fi';
 
 const SpeciesPage = () => {
-  const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleResize = () => {
-      setWebMode(window.innerWidth >= SCREEN_LG);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchSpecies = async () => {
-      setLoading(true);
-      try {
-        const species = await getAllSpecies();
-        setFetchedSpecies(species.data);
-        console.log('fetched species', species.data);
-      } catch (error) {
-        console.error('Error fetching species:', error);
-        message.error('Failed to fetch species');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSpecies();
   }, []);
 
-  const filteredSpecies = useMemo(() => {
-    if (loading) return [];
-    return fetchedSpecies.filter((species) =>
-      Object.values(species).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
-    );
-  }, [searchQuery, fetchedSpecies, loading]);
+  const fetchSpecies = async () => {
+    setLoading(true);
+    try {
+      const species = await getAllSpecies();
+      setFetchedSpecies(species.data);
+    } catch (error) {
+      console.error('Error fetching species:', error);
+      message.error('Failed to fetch species');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
+  const filteredSpecies = useMemo(() => {
+    return fetchedSpecies.filter((species) =>
+      Object.values(species).some((value) =>
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, fetchedSpecies]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   const handleDelete = async (id: string) => {
@@ -106,7 +95,7 @@ const SpeciesPage = () => {
   const navigateToSpecies = (speciesId: string) => {
     navigate(`/species/${speciesId}`);
   };
-    
+
   const columns: TableProps<SpeciesResponse>['columns'] = [
     {
       title: 'Common Name',
@@ -207,9 +196,10 @@ const SpeciesPage = () => {
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
-          placeholder="Search species..."
-          onChange={(e) => handleSearch(e.target.value)}
-          style={{ width: 200 }}
+          placeholder="Search in Species..."
+          onChange={handleSearch}
+          className="mb-4 bg-white"
+          variant="filled"
         />
         <Button
           type="primary"
