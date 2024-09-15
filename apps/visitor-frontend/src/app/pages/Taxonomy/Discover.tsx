@@ -15,7 +15,8 @@ import styled from 'styled-components';
 import { MdArrowDropDown } from 'react-icons/md';
 import { IoIosArrowDown, IoMdHeart, IoMdHeartDislike, IoMdHeartEmpty } from 'react-icons/io';
 import { useHandleFavoriteSpecies } from '../../hooks/useHandleFavoriteSpecies';
-
+import { IoEarth } from "react-icons/io5";
+import { convertEnumToNormalFormat } from '@lepark/data-utility';
 // Add these type definitions at the top of your file
 type OrdersType = { orders: string[] };
 type PhylumDataType = {
@@ -128,6 +129,44 @@ const Discover = () => {
     setSearchQuery(value);
   };
 
+  const renderConservationStatus = (status: string) => {
+  let color: string;
+  let style: React.CSSProperties = {};
+  switch (status) {
+    case 'LEAST_CONCERN':
+      color = 'green';
+      break;
+    case 'NEAR_THREATENED':
+      color = 'lime';
+      break;
+    case 'VULNERABLE':
+      color = 'orange';
+      break;
+    case 'ENDANGERED':
+      color = 'volcano';
+      break;
+    case 'CRITICALLY_ENDANGERED':
+      color = 'red';
+      break;
+    case 'EXTINCT_IN_THE_WILD':
+      color = 'purple';
+      break;
+    case 'EXTINCT':
+      color = 'white';
+      style = { color: 'rgba(0, 0, 0, 0.85)', border: '1px solid #d9d9d9' };
+      break;
+    default:
+      color = 'default';
+  }
+  return (
+    <Tag
+      color={color}
+      style={style}
+    >
+      {status.replace(/_/g, ' ')}
+    </Tag>
+  ); }
+
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
       <ParkHeader cardClassName="md:h-[160px]">
@@ -137,7 +176,7 @@ const Discover = () => {
         </div>
       </ParkHeader>
       <div
-        className="p-2 items-center bg-green-50 mt-[-3.5rem] 
+        className="p-2 items-center bg-green-50 mt-[-3.5rem]
         backdrop-blur bg-white/10 mx-4 rounded-2xl px-4
         md:flex-row md:-mt-[5.5rem] md:gap-2 md:backdrop-blur md:bg-white/10 md:mx-4 md:px-4"
       >
@@ -176,7 +215,7 @@ const Discover = () => {
           {filteredSpecies.map((species, index) => (
             <div
               onClick={() => navigateToSpecies(species.id)}
-              className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer 
+              className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
                 bg-white rounded-xl mb-2
                 md:border-[1px]
                 hover:bg-green-600/10"
@@ -190,14 +229,15 @@ const Discover = () => {
                   <div className="text-lg font-semibold text-green-700">{species.commonName}</div>
                   <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
                 </div>
+                 <div className="h-full flex-1 hidden md:block">
+                <div className="-mt-[2px] text-green-700/80 italic">Soil: {convertEnumToNormalFormat(species.soilType)}</div>
+                  <div className="-mt-[2px] text-green-700/80 italic">Light: {convertEnumToNormalFormat(species.lightType)}</div>
+                </div>
                 <div className="h-full flex-1 hidden lg:block">
-                  <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
-                  <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
+                  <div className="-mt-[2px] ">{renderConservationStatus(species.conservationStatus)}</div>
+                  <div className="-mt-[2px] text-green-700/80 italic flex items-center"> <IoEarth className="mr-1" />{species.originCountry}</div>
                 </div>
-                <div className="h-full flex-1 hidden md:block">
-                <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
-                  <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
-                </div>
+
                 <div className="h-full">
                   {!user ? (
                     <Button icon={<IoMdHeart className="text-lg text-pastelPink-500" />} shape="circle" type="text" disabled />
