@@ -11,6 +11,8 @@ import {
   GetFavoriteSpeciesRequestData,
   GetFavoriteSpeciesResponse,
   VerifyVisitorData,
+  DeleteVisitorRequestData,
+  DeleteVisitorResponse,
 } from '../types/visitor';
 import client from './client';
 
@@ -31,7 +33,9 @@ export async function registerVisitor(data: RegisterVisitorData): Promise<AxiosR
 
 export async function resendVerificationEmail(token: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
   try {
-    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/resend-verification-email`, { token });
+    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/resend-verification-email`, {
+      token,
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -185,6 +189,18 @@ export async function isSpeciesInFavorites(visitorId: string, speciesId: string)
   try {
     const response: AxiosResponse<{ isFavorite: boolean }> = await client.get(`${URL}/isSpeciesInFavorites/${visitorId}/${speciesId}`);
     return response.data.isFavorite;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function deleteVisitor(data: DeleteVisitorRequestData): Promise<DeleteVisitorResponse> {
+  try {
+    return await client.delete(`${URL}/delete`, { data });
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
       throw error.response.data.error;

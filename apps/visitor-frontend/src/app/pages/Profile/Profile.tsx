@@ -20,6 +20,8 @@ import EditEmailModal from './EditEmailModal';
 import { useNavigate } from 'react-router-dom';
 import DeleteAccountModal from './DeleteAccountModal';
 import {
+  deleteVisitor,
+  DeleteVisitorRequestData,
   getFavoriteSpecies,
   GetFavoriteSpeciesResponse,
   SpeciesResponse,
@@ -97,7 +99,8 @@ const ProfilePage = () => {
   };
 
   const handleEditProfile = () => {
-    setEditing(true);
+    // setEditing(true);
+    navigate('/edit-profile');
   };
 
   const validateInputs = () => {
@@ -173,11 +176,20 @@ const ProfilePage = () => {
     setIsDeleteModalVisible(true);
   };
 
-  const handleDeleteConfirm = () => {
-    // Account deletion logic goes here
-    // For example, make an API call to delete the account
-    // On success:
-    navigate('/'); // Redirect to home page
+  const handleDeleteConfirm = async (password: string) => {
+    try {
+      const data: DeleteVisitorRequestData = {
+        id: user?.id || '',
+        password: password,
+      };
+
+      await deleteVisitor(data);
+      message.success('Account deleted successfully!');
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      message.error('Failed to delete account. Please try again later.');
+    }
   };
 
   const handleInputChange = (key: keyof VisitorResponse, value: any) => {

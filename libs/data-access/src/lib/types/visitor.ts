@@ -63,3 +63,12 @@ export interface GetFavoriteSpeciesRequestData {
 export interface GetFavoriteSpeciesResponse {
   favoriteSpecies: SpeciesResponse[];
 }
+
+export interface DeleteVisitorRequestData {
+  id: string;
+  password: string;
+}
+
+export interface DeleteVisitorResponse {
+  message: string;
+}

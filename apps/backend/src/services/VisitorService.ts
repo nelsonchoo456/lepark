@@ -356,30 +356,29 @@ class VisitorService {
     }
   }
 
-  // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {
-  //   const admin = await AdminDao.getAdminById(id);
-  //   if (!admin) {
-  //     throw new Error(`Admin not found for id: ${id}`);
-  //   }
-  //   if (data.password) {
-  //     data.password = await bcrypt.hash(data.password as string, 10);
-  //   }
+  async delete(data) {
+    try {
+      const visitor = await VisitorDao.getVisitorById(data.id);
 
-  //   return AdminDao.updateAdmin(id, data);
-  // }
+      if (!visitor) {
+        // Use a generic error message to not reveal if the email exists
+        throw new Error('Invalid credentials');
+      }
 
-  // async deleteAdmin(id: string) {
-  //   const admin = await AdminDao.getAdminById(id);
-  //   if (!admin) {
-  //     throw new Error(`Admin not found for id: ${id}`);
-  //   }
-  //   return AdminDao.deleteAdmin(id);
-  // }
+      // Use bcrypt to compare the input password with the stored hash
+      const isPasswordValid = await bcrypt.compare(data.password, visitor.password);
 
-  // //getAdminById
-  // async getAdminById(id: string) {
-  //   return AdminDao.getAdminById(id);
-  // }
+      if (!isPasswordValid) {
+        throw new Error('Password is incorrect');
+      }
+
+      await VisitorDao.deleteVisitor(data.id);
+
+      return { message: 'Visitor deleted successfully' };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 // Utility function to ensure all required fields are present
