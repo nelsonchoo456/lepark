@@ -260,21 +260,21 @@ const StaffProfile = () => {
         userState?.contactNumber ?? null
       ),
     },
-    {
-      key: 'isActive',
-      label: 'Active Status',
-      children: (
-        <div className="flex items-center">
-          <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
-          {inEditMode && userState?.role !== StaffType.SUPERADMIN && (
-            <Tooltip title="To change your active status, please contact your manager or superadmin.">
-              <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
-            </Tooltip>
-          )}
-        </div>
-      ), // not allowed to change own active status 
-      span: 2,
-    },
+    // {
+    //   key: 'isActive',
+    //   label: 'Active Status',
+    //   children: (
+    //     <div className="flex items-center">
+    //       <Tag color={userState?.isActive ? 'green' : 'red'}>{userState?.isActive ? 'Active' : 'Inactive'}</Tag>
+    //       {inEditMode && userState?.role !== StaffType.SUPERADMIN && (
+    //         <Tooltip title="To change your active status, please contact your manager or superadmin.">
+    //           <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
+    //         </Tooltip>
+    //       )}
+    //     </div>
+    //   ), // not allowed to change own active status 
+    //   span: 2,
+    // },
   ];
 
   const breadcrumbItems = [

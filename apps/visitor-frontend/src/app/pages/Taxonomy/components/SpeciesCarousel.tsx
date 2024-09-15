@@ -19,7 +19,7 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
   }
 
   return (
-    <div style={{ width: '100%', margin: '0 auto' }} className='bg-gray-200 rounded'>
+    <div className='bg-gray-200 rounded-b-3xl overflow-hidden md:rounded-xl'>
       {images && images.length > 0 ? (
         <Carousel {...carouselSettings}>
           {images.map((image, index) => (
@@ -29,12 +29,10 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
                 alt={`Species ${index + 1}`}
                 style={{
                   width: '100%',
-                  height: 'auto',
                   minWidth: '400px',
-                  minHeight: '450px',
                   objectFit: 'cover',
-                  borderRadius: '8px', // Added this line to make the image rounded
                 }}
+                className='h-96 md:h-[45rem]'
               />
             </div>
           ))}

@@ -1,6 +1,6 @@
 import express from 'express';
 import VisitorService from '../services/VisitorService';
-import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema } from '../schemas/visitorSchema';
+import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, VerifyUserSchema } from '../schemas/visitorSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
 
@@ -10,7 +10,7 @@ router.post('/register', async (req, res) => {
   try {
     const visitorData = VisitorSchema.parse(req.body);
     const visitor = await VisitorService.register(visitorData);
-    res.status(201).json(visitor);
+    res.status(200).json(visitor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -170,6 +170,45 @@ router.get('/isSpeciesInFavorites/:visitorId/:speciesId', async (req, res) => {
     res.status(200).json({ isFavorite });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/verify-user', async (req, res) => {
+  try {
+    const data = VerifyUserSchema.parse(req.body);
+    await VisitorService.verifyUser(data);
+    res.status(200).json({ message: 'User verified successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/resend-verification-email', async (req, res) => {
+  try {
+    const { token } = req.body;
+    await VisitorService.resendVerificationEmail(token);
+    res.status(200).json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/send-verification-email-with-email', async (req, res) => {
+  try {
+    const { email, id } = req.body;
+    await VisitorService.sendVerificationEmailWithEmail(email, id);
+    res.status(200).json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/delete', async (req, res) => {
+  try {
+    const result = await VisitorService.delete(req.body);
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
   }
 });
 

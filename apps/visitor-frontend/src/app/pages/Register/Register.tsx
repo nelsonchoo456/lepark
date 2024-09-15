@@ -20,7 +20,7 @@ const Register = () => {
   return (
     <LoginLayout>
       <LoginPanel>
-        <div className="flex items-center flex-col w-full max-w-screen-sm p-2 md:p-16">
+        <div className="flex items-center flex-col w-full max-h-screen max-w-screen-sm p-2 md:p-16">
           <div className="flex items-center gap-4 mb-2"><Logo size={2.5}/></div>
           <LogoText className='text-3xl'>Create Account</LogoText>
           <LoginStep handleReturnToMain={handleReturnToMain}/>

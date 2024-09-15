@@ -10,9 +10,11 @@ export const MobileContent = styled.div<ContentProps>`
     $showSidebar ? MOBILE_SIDEBAR_WIDTH : '0'};
   padding-top: ${({ $showSidebar }: ContentProps) =>
     $showSidebar ? '0' : '2.8rem'};
-
   padding-bottom: ${({ $showSidebar }: ContentProps) =>
     $showSidebar ? '0' : '64px'};
+
+  height: 100vh;
+  overflow-y: auto;
 `;
 
 // margin-left: ${({ $showSidebar }: ContentProps) =>
