@@ -43,7 +43,7 @@ const EditProfile = () => {
   const validateInputs = () => {
     if (!editedUser) return false;
     const { firstName, lastName, email, contactNumber } = editedUser;
-    return firstName && lastName && email && contactNumber;
+    return firstName && lastName && email && contactNumber && validateContactNumber(contactNumber);
   };
 
   const validateContactNumber = (value: string) => {
@@ -95,25 +95,20 @@ const EditProfile = () => {
     <ContentWrapperDark>
       <Card title="Edit My Profile">
         <div className="mb-4">
-          <label>First Name</label>
+          <label className="font-bold">First Name</label>
           <Input required value={editedUser?.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />
         </div>
         <div className="mb-4">
-          <label>Last Name</label>
+          <label className="font-bold">Last Name</label>
           <Input required value={editedUser?.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />
         </div>
         <div className="mb-4">
-          <label>Email</label>
-          <div className="flex items-center">
-            {userState?.email}
-            <Tooltip title="To change your email, please contact support.">
-              <RiInformationLine className="ml-2 text-lg text-green-500 cursor-pointer" />
-            </Tooltip>
-          </div>
+          <label className="font-bold">Email</label>
+          <div className="flex items-center">{userState?.email}</div>
         </div>
         <div className="mb-4">
-          <label>Contact Number</label>
-          <Tooltip title={contactNumberError} visible={!!contactNumberError} placement="right" color="#73a397">
+          <label className="font-bold">Contact Number</label>
+          <Tooltip title={contactNumberError} visible={!!contactNumberError} placement="top" color="#73a397">
             <Input
               placeholder="Contact Number"
               value={editedUser?.contactNumber ?? ''}
