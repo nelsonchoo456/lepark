@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag, Spin } from 'antd';
+import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 import InformationTab from './components/InformationTab';
 import { FiSun, FiDroplet, FiThermometer, FiAlertTriangle } from 'react-icons/fi';
 import { MdOutlineTerrain, MdEco } from 'react-icons/md';
@@ -178,16 +178,27 @@ const OccurrenceDetails = () => {
         ) : (
           <>
             <div className="md:flex w-full gap-4">
-              <div
-                style={{
-                  backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  color: 'white',
-                  overflow: 'hidden',
-                }}
-                className="h-64 flex-1 rounded-lg shadow-lg p-4"
-              />
+            <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {occurrence?.images && occurrence.images.length > 0 ?
+              <Carousel style={{ maxWidth: '100%' }}>
+                {occurrence?.images?.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+              : <div className='h-64 bg-gray-200 flex items-center justify-center'>
+                  <Empty description="No Image"/></div>}
+                </div>
               <div className="flex-1 flex-col flex">
                 <LogoText className="text-2xl py-2 m-0">{occurrence?.title}</LogoText>
                 <Descriptions items={descriptionsItems} column={1} size="small" />
