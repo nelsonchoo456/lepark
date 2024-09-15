@@ -17,7 +17,7 @@ import { Color } from 'antd/es/color-picker';
 import EventCard from '../MainLanding/components/EventCard';
 import EditPasswordModal from './EditPasswordModal';
 import EditEmailModal from './EditEmailModal';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DeleteAccountModal from './DeleteAccountModal';
 import {
   getFavoriteSpecies,
@@ -53,7 +53,9 @@ const ProfilePage = () => {
   const [isEmailModalVisible, setIsEmailModalVisible] = useState<boolean>(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [resendStatus, setResendStatus] = useState(false);
+  const location = useLocation();
+  const [resendEmailStatus, setResendEmailStatus] = useState(false);
+  const [changeEmailStatus, setChangeEmailStatus] = useState(false);
 
   const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
 
@@ -69,6 +71,22 @@ const ProfilePage = () => {
 
     fetchUserDetails();
   }, []);
+
+  useEffect(() => {
+    if (changeEmailStatus) {
+      const updateUserDetails = async () => {
+        try {
+          const response = await viewVisitorDetails(user?.id || '');
+          const updatedUser = response.data;
+          updateUser(updatedUser)
+          console.log('Email status updated, re-rendering.');
+        } catch (error) {
+          console.error('Error updating email status:', error);
+        }
+      }
+      updateUserDetails();
+    }
+  }, [changeEmailStatus]);
 
   useEffect(() => {
     const fetchFavoriteSpecies = async () => {
@@ -202,9 +220,9 @@ const ProfilePage = () => {
 
   const handleSendVerificationEmail = async () => {
     try {
-      const response = await sendVerificationEmailWithEmail(user?.email || '');
+      const response = await sendVerificationEmailWithEmail(user?.email || '', user?.id || '');
       console.log('Resend verification email', response);
-      setResendStatus(true); 
+      setResendEmailStatus(true); 
     } catch (error) {
       console.error('Error resending verification email', error);
     }
@@ -240,8 +258,8 @@ const ProfilePage = () => {
     );
   }
 
-  if (user.isVerified === false) {
-    if (resendStatus) {
+  if ((user.isVerified === false) || changeEmailStatus) {
+    if (resendEmailStatus) {
       return (
         <div className="flex flex-col items-center justify-center h-screen text-center pb-20 p-4">
           <AiOutlineSmile className="text-6xl mb-4" />
@@ -344,7 +362,7 @@ const ProfilePage = () => {
                   Logout
                 </CustButton>
                 <EditPasswordModal open={isPasswordModalVisible} onClose={handlePasswordModalCancel} />
-                <EditEmailModal open={isEmailModalVisible} onClose={handleEmailModalCancel} />
+                <EditEmailModal open={isEmailModalVisible} onClose={handleEmailModalCancel} onResendEmail={() => setResendEmailStatus(true)} onChangeEmail={() => setChangeEmailStatus(true)} user={user}/>
                 <DeleteAccountModal
                   visible={isDeleteModalVisible}
                   onConfirm={handleDeleteConfirm}

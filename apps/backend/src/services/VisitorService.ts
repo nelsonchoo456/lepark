@@ -356,12 +356,18 @@ class VisitorService {
     }
   }
 
-  async sendVerificationEmailWithEmail(email: string) {
+  async sendVerificationEmailWithEmail(email: string, id: string) {
     try {
-      const visitor = await VisitorDao.getVisitorByEmail(email);
+      const visitor = await VisitorDao.getVisitorById(id);
       if (!visitor) {
         throw new Error('Visitor not found');
       }
+
+      // set the user's isVerified to false, and update with new email
+      await VisitorDao.updateVisitorDetails(visitor.id, {
+        isVerified: false,
+        email: email,
+      });
 
       const token = jwt.sign({ email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '15min' });
 

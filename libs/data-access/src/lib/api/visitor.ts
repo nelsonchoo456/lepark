@@ -42,9 +42,9 @@ export async function resendVerificationEmail(token: string): Promise<AxiosRespo
   }
 }
 
-export async function sendVerificationEmailWithEmail(email: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
+export async function sendVerificationEmailWithEmail(email: string, id: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
   try {
-    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/send-verification-email-with-email`, { email });
+    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/send-verification-email-with-email`, { email, id });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
