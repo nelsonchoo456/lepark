@@ -14,7 +14,7 @@ interface OccurrenceTableProps {
 const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading }) => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]); // Replace 'any' with the appropriate type for your occurrences
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]);
 
   useEffect(() => {
     const fetchOccurrences = async () => {
@@ -43,13 +43,13 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
       title: 'Label',
       dataIndex: 'title',
       key: 'title',
-      render: (text : string) => text,
+      render: (text: string) => text,
     },
     {
       title: 'Status',
       dataIndex: 'occurrenceStatus',
       key: 'occurrenceStatus',
-      render: (text : string) => {
+      render: (text: string) => {
         switch (text) {
           case 'HEALTHY':
             return <Tag color="green">HEALTHY</Tag>;
@@ -68,19 +68,19 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
       title: 'Number of Plants',
       dataIndex: 'numberOfPlants',
       key: 'numberOfPlants',
-      render: (text : string) => text,
+      render: (text: string) => text,
     },
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',
       key: 'dateObserved',
-      render: (text : string) => moment(text).format('D MMM YY'),
+      render: (text: string) => moment(text).format('D MMM YY'),
     },
     {
       title: 'Date of Birth',
       dataIndex: 'dateOfBirth',
       key: 'dateOfBirth',
-      render: (text : string) => moment(text).format('D MMM YY'),
+      render: (text: string) => moment(text).format('D MMM YY'),
     },
   ];
 

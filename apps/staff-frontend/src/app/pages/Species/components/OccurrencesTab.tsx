@@ -1,8 +1,8 @@
-import React from 'react';
-import OccurrenceTable from './OccurrenceTable'; // Adjust the import path as needed
 import { SpeciesResponse } from '@lepark/data-access';
-import { FiSearch } from 'react-icons/fi';
 import { Input } from 'antd';
+import React from 'react';
+import { FiSearch } from 'react-icons/fi';
+import OccurrenceTable2 from './OccurrenceTable2';
 
 interface OccurrencesTabProps {
   species: SpeciesResponse; // Define the type for species
@@ -23,7 +23,7 @@ const OccurrencesTab: React.FC<OccurrencesTabProps> = ({ species }) => {
         }}
         variant="filled"
       />
-      <OccurrenceTable speciesId={species.id} loading={loading} />
+      <OccurrenceTable2 speciesId={species.id} loading={loading} />
     </div>
   );
 };

@@ -3,10 +3,16 @@ import { Table, Tag, Button, Tooltip, Flex, TableProps, message } from 'antd';
 import { FiArchive, FiExternalLink, FiEye } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
-import { getOccurrencesBySpeciesId, getOccurrencesBySpeciesIdByParkId, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
+import {
+  deleteOccurrence,
+  getOccurrencesBySpeciesId,
+  getOccurrencesBySpeciesIdByParkId,
+  OccurrenceResponse,
+  StaffResponse,
+} from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useAuth } from '@lepark/common-ui';
-import { useFetchOccurrences } from '../../hooks/Occurrences/useFetchOccurrences';
+import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
 import { MdDeleteOutline } from 'react-icons/md';
 
 interface OccurrenceTableProps {
@@ -18,9 +24,6 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   const { occurrences, loading, triggerFetch } = useFetchOccurrences();
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [occurrenceToBeDeleted, setOccurrenceToBeDeleted] = useState<OccurrenceResponse | null>(null);
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
@@ -121,17 +124,6 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              danger
-              type="link"
-              icon={<MdDeleteOutline className="text-error" />}
-              onClick={() => showDeleteModal(record as OccurrenceResponse)}
-            />
-          </Tooltip>
           {/* <Tooltip title="Archive Occurrence">
             <Button
               type="link"
@@ -230,72 +222,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       },
       width: '1%',
     },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
-            <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
-          </Tooltip>
-          <Tooltip title="Edit Details">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              danger
-              type="link"
-              icon={<MdDeleteOutline className="text-error" />}
-              onClick={() => showDeleteModal(record as OccurrenceResponse)}
-            />
-          </Tooltip>
-          {/* <Tooltip title="Archive Occurrence">
-            <Button
-              type="link"
-              icon={<FiArchive />}
-              // onClick={() => navigateToSpecies(record.speciesId)}
-            />
-          </Tooltip> */}
-        </Flex>
-      ),
-      width: '1%',
-    },
   ];
-
-  // Confirm Delete Modal utility
-  const cancelDelete = () => {
-    setOccurrenceToBeDeleted(null);
-    setDeleteModalOpen(false);
-  };
-
-  const showDeleteModal = (occurrence: OccurrenceResponse) => {
-    setDeleteModalOpen(true);
-    setOccurrenceToBeDeleted(occurrence);
-  };
-
-  const deleteOccurrenceToBeDeleted = async () => {
-    try {
-      if (!occurrenceToBeDeleted) {
-        throw new Error('Unable to delete Occurrence at this time');
-      }
-      await deleteOccurrence(occurrenceToBeDeleted.id);
-      // triggerFetch();
-      setOccurrenceToBeDeleted(null);
-      setDeleteModalOpen(false);
-      messageApi.open({
-        type: 'success',
-        content: `Deleted Occurrence: ${occurrenceToBeDeleted.title}.`,
-      });
-    } catch (error) {
-      console.log(error);
-      setOccurrenceToBeDeleted(null);
-      setDeleteModalOpen(false);
-      messageApi.open({
-        type: 'error',
-        content: `Unable to delete Occurrence at this time. Please try again later.`,
-      });
-    }
-  };
 
   return <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />;
 };

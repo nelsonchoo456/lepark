@@ -113,7 +113,7 @@ const ViewSpeciesDetails = () => {
     {
       key: 'occurrences',
       label: 'Occurrences',
-      children: species ? <OccurrencesTab species={species} /> : <p>Loading species data...</p>, //change to OccurrencesTab2 once merged
+      children: species ? <OccurrencesTab species={species} /> : <p>Loading species data...</p>,
     },
     {
       key: 'information',

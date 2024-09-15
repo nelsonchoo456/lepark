@@ -1,13 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Tooltip, Flex, TableProps, message } from 'antd';
-import { FiArchive, FiExternalLink, FiEye } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
-import { getOccurrencesBySpeciesId, getOccurrencesBySpeciesIdByParkId, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
-import { RiEdit2Line } from 'react-icons/ri';
 import { useAuth } from '@lepark/common-ui';
-import { useFetchOccurrences } from '../../hooks/Occurrences/useFetchOccurrences';
+import {
+  deleteOccurrence,
+  getOccurrencesBySpeciesId,
+  getOccurrencesBySpeciesIdByParkId,
+  OccurrenceResponse,
+  StaffResponse,
+  StaffType,
+} from '@lepark/data-access';
+import { Button, Flex, message, Table, TableProps, Tag, Tooltip } from 'antd';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { FiEye } from 'react-icons/fi';
 import { MdDeleteOutline } from 'react-icons/md';
+import { RiEdit2Line } from 'react-icons/ri';
+import { useNavigate } from 'react-router-dom';
+import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -42,23 +49,6 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       width: '33%',
     },
     {
-      title: 'Species Name',
-      dataIndex: 'speciesName',
-      key: 'speciesName',
-      render: (text, record) => (
-        <Flex justify="space-between" align="center">
-          {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(record.speciesId)} />
-          </Tooltip>
-        </Flex>
-      ),
-      sorter: (a, b) => {
-        return a.speciesName.localeCompare(b.speciesName);
-      },
-      width: '33%',
-    },
-    {
       title: 'Zone',
       dataIndex: 'zoneName',
       key: 'zoneName',
@@ -67,7 +57,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
           {text}
         </Flex>
       ),
-      sorter: (a, b) => {
+      sorter: (a, b) => { 
         if (a.zoneName && b.zoneName) {
           return a.zoneName.localeCompare(b.zoneName);
         }
@@ -153,23 +143,6 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       render: (text) => text,
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
-      },
-      width: '33%',
-    },
-    {
-      title: 'Species Name',
-      dataIndex: 'speciesName',
-      key: 'speciesName',
-      render: (text, record) => (
-        <Flex justify="space-between" align="center">
-          {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(record.speciesId)} />
-          </Tooltip>
-        </Flex>
-      ),
-      sorter: (a, b) => {
-        return a.speciesName.localeCompare(b.speciesName);
       },
       width: '33%',
     },
@@ -297,7 +270,15 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
     }
   };
 
-  return <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />;
+  return (
+    <>
+      {user?.role === StaffType.SUPERADMIN ? (
+        <Table dataSource={occurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+      ) : (
+        <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
+      )}
+    </>
+  );
 };
 
 export default OccurrenceTable2;
