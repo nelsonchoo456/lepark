@@ -32,7 +32,8 @@ model Staff {
   contactNumber String
   role          StaffRoleEnum
   isActive      Boolean
-  parkId        Int?       
+  parkId        Int?      
+  isFirstLogin  Boolean 
 }
 
 enum ConservationStatusEnum {

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark } from '@lepark/common-ui';
-import { createZone, getAllParks, ParkResponse, ZoneResponse } from '@lepark/data-access';
-import { Button, Card, Flex, Form, message, Result, Steps } from 'antd';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { createZone, getAllParks, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
+import { Button, Card, Flex, Form, message, notification, Result, Steps } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
@@ -23,12 +23,14 @@ export interface AdjustLatLngInterface {
 const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const ZoneCreate = () => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const { parks, restrictedParkId, loading } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [createdData, setCreatedData] = useState<ZoneResponse | null>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
@@ -38,6 +40,19 @@ const ZoneCreate = () => {
   const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
+
+  useEffect(() => {
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT) {
+      if (!notificationShown.current) {
+      notification.error({
+        message: 'Access Denied',
+        description: 'You are not allowed to access the Zone Creation page!',
+      });
+      notificationShown.current = true;
+    }
+      navigate('/');
+    }
+  }, [user, navigate]);
   
   const handleCurrStep = async (step: number) => {
     console.log(formValues)

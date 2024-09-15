@@ -34,6 +34,7 @@ const useUploadImages = () => {
     handleFileChange,
     removeImage,
     onInputClick,
+    setSelectedFiles,
   };
 };
 

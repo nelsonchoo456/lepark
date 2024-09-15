@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import {
   LoginData,
   LogoutResponse,
+  PasswordChangeData,
   PasswordResetData,
   PasswordResetRequestData,
   RegisterStaffData,
@@ -134,6 +135,20 @@ export async function forgotStaffPassword(data: PasswordResetRequestData): Promi
   }
 }
 
+// Change Password
+export async function changeStaffPassword(data: PasswordChangeData): Promise<AxiosResponse<{ message: string }>> {
+  try {
+    const response: AxiosResponse<{ message: string }> = await client.put(`${URL}/change-password`,  data );
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 // Reset Password
 export async function resetStaffPassword(data: PasswordResetData): Promise<AxiosResponse<{ message: string }>> {
   try {
@@ -150,4 +165,17 @@ export async function resetStaffPassword(data: PasswordResetData): Promise<Axios
 
 export async function fetchStaff(): Promise<AxiosResponse<StaffResponse>> {
   return client.get(`${URL}/check-auth`);
+}
+
+export async function getTokenForResetPasswordForFirstLogin(staffId: string): Promise<AxiosResponse<{ token: string; message: string }>> {
+  try {
+    const response: AxiosResponse<{ token: string; message: string }> = await client.post(`${URL}/token-for-reset-password-for-first-login`, { staffId });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
 }

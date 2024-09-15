@@ -1,6 +1,8 @@
 import { ImageInput } from '@lepark/common-ui';
 import { SpeciesResponse, ZoneResponse } from '@lepark/data-access';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select } from 'antd';
+import dayjs from 'dayjs';
+import moment from 'moment';
 const { TextArea } = Input;
 
 interface CreateDetailsStepProps {
@@ -24,6 +26,7 @@ const CreateDetailsStep = ({
   removeImage,
   onInputClick,
 }: CreateDetailsStepProps) => {
+  const nonExstinctSpecies = species.filter((species) => species.conservationStatus !== "EXTINCT")
   const decarbonizationTypeOptions = [
     {
       value: 'TREE_TROPICAL',
@@ -62,6 +65,37 @@ const CreateDetailsStep = ({
     },
   ];
 
+  const validateDates = (form: FormInstance) => ({
+    validator(_: any, value: moment.Moment) {
+      const dateOfBirth = form.getFieldValue('dateOfBirth') as moment.Moment;
+  
+      if (!value) {
+        // return Promise.reject(new Error('This field is required'));
+      }
+  
+      if (value.isAfter(moment(), 'day')) {
+        return Promise.reject(new Error('Date cannot be beyond today'));
+      }
+  
+      if (dateOfBirth && value.isBefore(dateOfBirth, 'day')) {
+        return Promise.reject(new Error('Date Observed cannot be earlier than Date of Birth'));
+      }
+  
+      return Promise.resolve();
+    }
+  });
+
+  const validateDateOfBirth = {
+    validator(_: any, value: moment.Moment) {
+      if (value.isAfter(moment(), 'day')) {
+        return Promise.reject(new Error('Date of Birth cannot be beyond today'));
+      }
+  
+      return Promise.resolve();
+    }
+  };
+  
+
   return (
     <Form
       form={form}
@@ -78,14 +112,11 @@ const CreateDetailsStep = ({
         />
       </Form.Item>
       <Form.Item name="speciesId" label="Species" rules={[{ required: true }]}>
-        <Select
-          placeholder="Select a Species"
-          options={species?.map((species) => ({ key: species.id, value: species.id, label: species.commonName }))}
-        />
+        <Select placeholder="Select a Species" options={nonExstinctSpecies?.map((species) => ({ key: species.id, value: species.id, label: species.commonName }))}/>
       </Form.Item>
 
-      <Divider orientation="left">About the Occurrence</Divider>
-      <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+      <Divider orientation='left'>About the Occurrence</Divider>
+      <Form.Item name="title" label="Title" rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }]}>
         <Input placeholder="Give this Plant Occurrence a title!" />
       </Form.Item>
       <Form.Item name="description" label="Description">
@@ -94,11 +125,12 @@ const CreateDetailsStep = ({
       <Form.Item name="occurrenceStatus" label="Occurrence Status" rules={[{ required: true }]}>
         <Select placeholder="Select a Status for the Occurrence" options={occurrenceStatusOptions} />
       </Form.Item>
-      <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }]}>
-        <DatePicker className="w-full" />
+
+      <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }, validateDates(form)]}>
+        <DatePicker className="w-full" maxDate={dayjs()}/>
       </Form.Item>
-      <Form.Item name="dateOfBirth" label="Date of Birth">
-        <DatePicker className="w-full" />
+      <Form.Item name="dateOfBirth" label="Date of Birth" rules={[validateDateOfBirth]}>
+        <DatePicker className="w-full" maxDate={dayjs()}/>
       </Form.Item>
       <Form.Item name="numberOfPlants" label="Number of Plants" rules={[{ required: true }]}>
         <InputNumber min={0} className="w-full" placeholder="Number of Plants" />

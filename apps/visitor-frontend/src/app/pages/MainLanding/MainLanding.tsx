@@ -3,11 +3,14 @@ import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
-import { FaTent } from 'react-icons/fa6';
-import { Badge, Card, Space } from 'antd';
+import { FaLocationDot, FaTent } from 'react-icons/fa6';
+import { Badge, Button, Card, Empty, Space } from 'antd';
 import EventCard from './components/EventCard';
 import { useNavigate } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
+import { BsCalendar4Event } from 'react-icons/bs';
+import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
+import ParkHeader from './components/ParkHeader';
 
 const MainLanding = () => {
   const navigate = useNavigate();
@@ -15,27 +18,14 @@ const MainLanding = () => {
 
   return (
     <div>
-      {/* select park button */}
-      <Card
-        size="small"
-        style={{
-          backgroundImage: `url('https://upload.wikimedia.org/wikipedia/commons/6/63/Kallang_River_at_Bishan_Park.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: 'white',
-          overflow: 'hidden',
-          cursor: 'pointer',
-        }}
-        className="mb-2 w-full h-28 bg-green-400 rounded-2xl cursor-pointer md:w-full md:rounded md:h-64"
-        onClick={() => navigate('/select-park')}
-      >
-        <div className="absolute top-0 left-0 w-full h-full p-4 bg-green-700/70 text-white flex cursor-pointer">
-          <div className="md:text-center md:mx-auto">
-            <p className="font-medium">Currently at</p>
-            <p className="font-medium text-2xl md:text-3xl">{selectedPark?.name}</p>
-          </div>
+      <ParkHeader>
+        <FaLocationDot className="text-highlightGreen-200 text-4xl mt-2 md:hidden" />
+        <div className="md:text-center md:mx-auto">
+          <p className="font-light">Exploring</p>
+          <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>
-      </Card>
+      </ParkHeader>
+
       {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
       <div
         className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden relative z-10
@@ -48,7 +38,7 @@ const MainLanding = () => {
             navigate('/discover');
           }}
         >
-          Discover
+          Taxonomy
         </NavButton>
         <NavButton key="attractions" icon={<PiStarFill />}>
           Attractions
@@ -63,9 +53,28 @@ const MainLanding = () => {
 
       {/* </div> */}
       <ContentWrapper>
-        <div className="font-bold text-lg">Our Events</div>
-        <div className="w-full overflow-scroll flex gap-2 py-2">
-          <EventCard
+        <div className="flex items-center">
+          <LogoText className="text-xl">Our Events</LogoText>
+          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+            <Button
+              icon={<MdArrowForward className="text-2xl" />}
+              shape="circle"
+              type="primary"
+              size="large"
+              className="md:bg-transparent md:text-green-500 md:shadow-none"
+            />
+          </div>
+        </div>
+        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem]">
+          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+            <BsCalendar4Event className="text-4xl" />
+            <br />
+            No Events here.
+            <br />
+            Check back soon for Events!
+          </div>
+          {/* <EventCard
             title="Event 1"
             url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
             extra={<a href="#">More</a>}
@@ -88,9 +97,9 @@ const MainLanding = () => {
           </EventCard>
           <EventCard title="Event 3" url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" extra={<a href="#">More</a>}>
             keewerewrk
-          </EventCard>
+          </EventCard> */}
         </div>
-        <br/>
+        <br />
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="Small size card" extra={<a href="#">More</a>} className="my-2 w-full">

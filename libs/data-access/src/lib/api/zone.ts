@@ -62,6 +62,19 @@ export async function getZoneById(id: number): Promise<AxiosResponse<ZoneRespons
   }
 }
 
+export async function deleteZone(id: number): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await axiosClient.delete(`/deleteZone/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 // export async function updatePark(id: number, data: Partial<ParkResponse>): Promise<AxiosResponse<ParkResponse>> {
 //   try {
 //     const response: AxiosResponse<ParkResponse> = await axiosClient.put(`/updatePark/${id}`, data);

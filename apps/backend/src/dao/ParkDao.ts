@@ -222,6 +222,19 @@ class ParkDao {
       throw new Error(`Unable to update park with ID ${id}`);
     }
   }
+
+  async deleteParkById(id: number): Promise<void> {
+    await this.initParksDB();
+    
+    const deletedPark = await prisma.$executeRaw`
+      DELETE FROM "Park"
+      WHERE id = ${id};
+    `;
+    
+    if (deletedPark === 0) {
+      throw new Error(`Park with ID ${id} not found`);
+    }
+  }
 }
 
 const formatDatesArray = (datesArray: Date[]) => {

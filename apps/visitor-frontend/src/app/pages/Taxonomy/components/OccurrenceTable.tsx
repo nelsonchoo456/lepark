@@ -33,18 +33,23 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
     fetchOccurrences();
   }, [speciesId]);
 
-  const columns: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
+  const columns = [
+    // {
+    //   title: 'Species Name',
+    //   dataIndex: 'speciesId',
+    //   key: 'speciesName',
+    // },
     {
-      title: 'Title',
+      title: 'Label',
       dataIndex: 'title',
       key: 'title',
-      render: (text) => text,
+      render: (text : string) => text,
     },
     {
-      title: 'Occurrence Status',
+      title: 'Status',
       dataIndex: 'occurrenceStatus',
       key: 'occurrenceStatus',
-      render: (text) => {
+      render: (text : string) => {
         switch (text) {
           case 'HEALTHY':
             return <Tag color="green">HEALTHY</Tag>;
@@ -63,19 +68,19 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, loading })
       title: 'Number of Plants',
       dataIndex: 'numberOfPlants',
       key: 'numberOfPlants',
-      render: (text) => text,
+      render: (text : string) => text,
     },
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',
       key: 'dateObserved',
-      render: (text) => moment(text).format('D MMM YY'),
+      render: (text : string) => moment(text).format('D MMM YY'),
     },
     {
       title: 'Date of Birth',
       dataIndex: 'dateOfBirth',
       key: 'dateOfBirth',
-      render: (text) => moment(text).format('D MMM YY'),
+      render: (text : string) => moment(text).format('D MMM YY'),
     },
   ];
 

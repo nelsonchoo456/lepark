@@ -15,10 +15,19 @@ router.post('/createOccurrence', async (req, res) => {
   }
 });
 
-router.get('/getAllOccurrences', async (_, res) => {
+router.get('/getAllOccurrences', async (req, res) => {
+  // http://localhost:3333/api/zones/getAllZones
+  // http://localhost:3333/api/zones/getAllZones?parkId=<enter_oarkId_here>
   try {
-    const occurrenceList = await OccurrenceService.getAllOccurrence();
-    res.status(200).json(occurrenceList);
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
+    if (!parkId) {
+      const occurrenceList = await OccurrenceService.getAllOccurrence();
+      res.status(200).json(occurrenceList);
+    } else {
+      const occurrenceList = await OccurrenceService.getAllOccurrenceByParkId(parkId);
+      res.status(200).json(occurrenceList);
+    }
+    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

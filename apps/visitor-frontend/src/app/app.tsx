@@ -48,19 +48,26 @@ export function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route
-                element={
-                  <ProtectedRoute redirectTo="/login">
-                    <MainLayout />
-                  </ProtectedRoute>
-                }
-              >
-                {/* <Route element={<MainLayout />}> */}
+              <Route element={<MainLayout />}>
                 <Route path="/" element={<MainLanding />} />
                 <Route path="/select-park" element={<SelectParkPage />} />
                 <Route path="/map" element={<MapPage />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/payment" element={<Payment />} />
+                <Route
+                    path="/profile"
+                    element={
+                      //<ProtectedRoute redirectTo="/login">
+                        <Profile />
+                      //</ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payment"
+                    element={
+                      <ProtectedRoute redirectTo="/login">
+                        <Payment />
+                      </ProtectedRoute>
+                    }
+                  />
                 <Route path="/occurrence">
                   {/* <Route index element={<OccurrenceList />} /> */}
                   <Route path=":occurrenceId" element={<OccurrenceDetails />} />

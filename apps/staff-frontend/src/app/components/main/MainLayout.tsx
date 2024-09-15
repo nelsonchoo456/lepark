@@ -10,7 +10,7 @@ import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
-import { StaffResponse } from '@lepark/data-access';
+import { StaffResponse, StaffType } from '@lepark/data-access';
 type MenuItem = Required<MenuProps>['items'][number];
 
 const MainLayout = () => {
@@ -52,9 +52,16 @@ const MainLayout = () => {
     return pathItems[pathItems.length - 1];
   };
 
+  const parkOnClick = userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
+
   useEffect(() => {
-    setActiveItems(getLastItemFromPath(location.pathname));
-  }, [location.pathname]);
+    const activeItem = location.pathname === '/' ? 'home' : getLastItemFromPath(location.pathname);
+    if (userRole !== StaffType.SUPERADMIN && location.pathname.startsWith(`/park/${user?.parkId}`)) {
+      setActiveItems('park');
+    } else {
+      setActiveItems(getLastItemFromPath(activeItem));
+    }
+  }, [location.pathname, userRole, user?.parkId]);
 
   // Navigation
   const navItems: MenuItem[] = [
@@ -68,8 +75,8 @@ const MainLayout = () => {
     {
       key: 'park',
       icon: <TbTrees />,
-      label: 'Parks',
-      onClick: () => navigate('/park'),
+      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+      onClick: parkOnClick,
       // children: [
       //   {
       //     key: 'park/create',
@@ -92,7 +99,7 @@ const MainLayout = () => {
       onClick: () => navigate('/species'),
     },
     {
-      key: 'occurrence',
+      key: 'occurrences',
       icon: <IoLeafOutline />,
       // icon: <UserOutlined />,
       onClick: () => navigate('/occurrences'),
@@ -105,13 +112,15 @@ const MainLayout = () => {
       //   }
       // ]
     },
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' ? {
-      key: 'staffManagement',
-      icon: <FiUsers />,
-      // icon: <UploadOutlined />,
-      label: 'Staff Management',
-      onClick: () => navigate('/staff-management'),
-    } : null,
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
+      ? {
+          key: 'staff-management',
+          icon: <FiUsers />,
+          // icon: <UploadOutlined />,
+          label: 'Staff Management',
+          onClick: () => navigate('/staff-management'),
+        }
+      : null,
     {
       key: 'map',
       icon: <GrMapLocation />,
@@ -126,13 +135,20 @@ const MainLayout = () => {
     //   label: 'Account',
     //   onClick: () => navigate('/profile'),
     // },
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'BOTANIST' || userRole === 'ARBORIST' || userRole === 'PARK_RANGER' || userRole === 'VENDOR_MANAGER' ? {
-      key: 'tasks',
-      icon: <FiInbox />,
-      // icon: <UploadOutlined />,
-      label: 'Tasks',
-      onClick: () => navigate('/task'),
-    } : null,
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'BOTANIST' ||
+    userRole === 'ARBORIST' ||
+    userRole === 'PARK_RANGER' ||
+    userRole === 'VENDOR_MANAGER'
+      ? {
+          key: 'task',
+          icon: <FiInbox />,
+          // icon: <UploadOutlined />,
+          label: 'Tasks',
+          onClick: () => navigate('/task'),
+        }
+      : null,
     {
       key: 'profile',
       icon: <FiUser />,

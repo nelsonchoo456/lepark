@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark } from '@lepark/common-ui';
-import { createPark, getParkById, ParkResponse, StringIdxSig, updatePark } from '@lepark/data-access';
-import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
+import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message, notification } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
@@ -25,19 +25,33 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const attributes = ['name', 'description', 'address', 'contactNumber', 'openingHours', 'closingHours'];
 
 const ParkEdit = () => {
+  const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
   const [createdData, setCreatedData] = useState<ParkResponse>();
   const [park, setPark] = useState<ParkResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   useEffect(() => {
     if (!id) return;
+
+    if (!(user?.role === StaffType.MANAGER && user?.parkId === parseInt(id)) && user?.role !== StaffType.SUPERADMIN) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the details of this park!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    }
+
     const fetchData = async () => {
       try {
         const parkRes = await getParkById(parseInt(id));
         if (parkRes.status === 200) {
-          const parkData = parkRes.data
+          const parkData = parkRes.data;
           setPark(parkData);
           const initialValues = {
             ...parkData,
@@ -49,15 +63,22 @@ const ParkEdit = () => {
             saturday: [moment(parkData.openingHours[5]), moment(parkData.closingHours[5])],
             sunday: [moment(parkData.openingHours[6]), moment(parkData.closingHours[6])],
           };
-  
+
           form.setFieldsValue(initialValues);
         }
       } catch (error) {
-        //
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Error',
+            description: 'An error occurred while fetching the park details.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
   // Form Values
   const [form] = Form.useForm();
@@ -85,7 +106,7 @@ const ParkEdit = () => {
   const handleSubmit = async () => {
     if (!park) return;
     try {
-      const formValues = await form.validateFields()
+      const formValues = await form.validateFields();
       const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
 
       const openingHours: any[] = [];
@@ -105,7 +126,7 @@ const ParkEdit = () => {
         return acc;
       }, {} as Partial<ParkResponse>);
 
-      const response = await updatePark(parseInt(park.id), changedData);
+      const response = await updatePark(park.id, changedData);
       if (response.status === 201) {
         setCreatedData(response.data);
         messageApi.open({
@@ -121,7 +142,6 @@ const ParkEdit = () => {
       });
     }
   };
-
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -155,7 +175,7 @@ const ParkEdit = () => {
       {contextHolder}
       <PageHeader>Edit Park</PageHeader>
       <Card>
-        <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" >
+        <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
           {contextHolder}
           <Divider orientation="left">Park Details</Divider>
           <Form.Item name="name" label="Name" rules={[{ required: true }]}>
@@ -268,7 +288,7 @@ const ParkEdit = () => {
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8 }}>
-            <Button type="primary" className="w-full" htmlType='submit'>
+            <Button type="primary" className="w-full" htmlType="submit">
               Save Changes
             </Button>
           </Form.Item>
