@@ -31,7 +31,7 @@ const OccurrenceList: React.FC = () => {
       title: 'Label',
       dataIndex: 'title',
       key: 'title',
-      render: (text) => text,
+      render: (text) => <div className='font-semibold'>{text}</div>,
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },
@@ -141,7 +141,7 @@ const OccurrenceList: React.FC = () => {
       title: 'Label',
       dataIndex: 'title',
       key: 'title',
-      render: (text) => text,
+      render: (text) => <div className='font-semibold'>{text}</div>,
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },

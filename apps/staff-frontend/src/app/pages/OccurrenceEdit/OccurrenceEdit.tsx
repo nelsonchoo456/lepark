@@ -34,6 +34,7 @@ import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { useRestrictOccurence } from '../../hooks/Occurrences/useRestrictOccurrence';
 
 const center = {
   lat: 1.3503881629328163,
@@ -53,37 +54,49 @@ const attributes = ['name', 'description', 'address', 'contactNumber', 'openingH
 
 const OccurrenceEdit = () => {
   const { occurrenceId } = useParams();
+  const { occurrence, species, loading } = useRestrictOccurence(occurrenceId);
   const [form] = Form.useForm();
   const [createdData, setCreatedData] = useState<OccurrenceResponse>();
-  const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
+  // const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
 
+  // useEffect(() => {
+  //   if (!occurrenceId) return;
+  //   const fetchData = async () => {
+  //     try {
+  //       const occurrenceRes = await getOccurrenceById(occurrenceId);
+  //       if (occurrenceRes.status === 200) {
+  //         const occurrenceData = occurrenceRes.data;
+  //         setOccurrence(occurrenceData);
+
+  //         const dateOfBirth = moment(occurrenceData.dateOfBirth);
+  //         const dateObserved = moment(occurrenceData.dateObserved);
+  //         const finalData = { ...occurrenceData, dateObserved, dateOfBirth };
+
+  //         setCurrentImages(occurrenceData.images);
+
+  //         form.setFieldsValue(finalData);
+  //       }
+  //     } catch (error) {
+  //       //
+  //     }
+  //   };
+  //   fetchData();
+  // }, [occurrenceId, form]);
   useEffect(() => {
-    if (!occurrenceId) return;
-    const fetchData = async () => {
-      try {
-        const occurrenceRes = await getOccurrenceById(occurrenceId);
-        if (occurrenceRes.status === 200) {
-          const occurrenceData = occurrenceRes.data;
-          setOccurrence(occurrenceData);
+    if (occurrence) {
+      const dateOfBirth = moment(occurrence.dateOfBirth);
+      const dateObserved = moment(occurrence.dateObserved);
+      const finalData = { ...occurrence, dateObserved, dateOfBirth };
 
-          const dateOfBirth = moment(occurrenceData.dateOfBirth);
-          const dateObserved = moment(occurrenceData.dateObserved);
-          const finalData = { ...occurrenceData, dateObserved, dateOfBirth };
+      setCurrentImages(occurrence.images);
 
-          setCurrentImages(occurrenceData.images);
-
-          form.setFieldsValue(finalData);
-        }
-      } catch (error) {
-        //
-      }
-    };
-    fetchData();
-  }, [occurrenceId, form]);
+      form.setFieldsValue(finalData);
+    }
+  }, [occurrence])
 
   // Map Values
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
@@ -129,20 +142,20 @@ const OccurrenceEdit = () => {
 
       changedData.images = currentImages;
 
-      // console.log(changedData);
-      const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
-      setPreviewImages([]);
-      if (occurenceRes.status === 200) {
-        setCreatedData(occurenceRes.data);
-        messageApi.open({
-          type: 'success',
-          content: 'Saved changes to Occurrence. Redirecting to Occurrence details page...',
-        });
-        // Add a 3-second delay before navigating
-        setTimeout(() => {
-          navigate(`/occurrences/${occurrence.id}`);
-        }, 1000);
-      }
+      console.log(changedData);
+      // const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
+      // setPreviewImages([]);
+      // if (occurenceRes.status === 200) {
+      //   setCreatedData(occurenceRes.data);
+      //   messageApi.open({
+      //     type: 'success',
+      //     content: 'Saved changes to Occurrence. Redirecting to Occurrence details page...',
+      //   });
+      //   // Add a 3-second delay before navigating
+      //   setTimeout(() => {
+      //     navigate(`/occurrences/${occurrence.id}`);
+      //   }, 1000);
+      // }
     } catch (error) {
       console.error('Error updating Occurrence', error);
       messageApi.open({

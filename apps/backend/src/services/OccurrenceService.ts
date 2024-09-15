@@ -77,7 +77,6 @@ class OccurrenceService {
     data: Partial<OccurrenceSchemaType>,
   ): Promise<Occurrence> {
     try {
-      console.log('data', data);
       const existingOccurrence = await OccurrenceDao.getOccurrenceById(id);
       const formattedData = dateFormatter(data);
 
@@ -96,8 +95,6 @@ class OccurrenceService {
         }
         return acc;
       }, {});
-
-      console.log('updateData', updateData);
 
       return OccurrenceDao.updateOccurrenceDetails(id, updateData);
     } catch (error) {
