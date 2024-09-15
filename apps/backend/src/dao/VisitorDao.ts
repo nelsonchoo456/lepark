@@ -69,9 +69,9 @@ class VisitorDao {
     });
   }
 
-  //   async deleteAdmin(id: string) {
-  //     return prisma.admin.delete({ where: { id } });
-  //   }
+  async deleteVisitor(id: string) {
+    return prisma.visitor.delete({ where: { id } });
+  }
 }
 
 export default new VisitorDao();

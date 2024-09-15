@@ -20,6 +20,8 @@ import EditEmailModal from './EditEmailModal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DeleteAccountModal from './DeleteAccountModal';
 import {
+  deleteVisitor,
+  DeleteVisitorRequestData,
   getFavoriteSpecies,
   GetFavoriteSpeciesResponse,
   sendVerificationEmailWithEmail,
@@ -78,12 +80,12 @@ const ProfilePage = () => {
         try {
           const response = await viewVisitorDetails(user?.id || '');
           const updatedUser = response.data;
-          updateUser(updatedUser)
+          updateUser(updatedUser);
           console.log('Email status updated, re-rendering.');
         } catch (error) {
           console.error('Error updating email status:', error);
         }
-      }
+      };
       updateUserDetails();
     }
   }, [changeEmailStatus]);
@@ -120,7 +122,8 @@ const ProfilePage = () => {
   };
 
   const handleEditProfile = () => {
-    setEditing(true);
+    // setEditing(true);
+    navigate('/edit-profile');
   };
 
   const validateInputs = () => {
@@ -196,11 +199,20 @@ const ProfilePage = () => {
     setIsDeleteModalVisible(true);
   };
 
-  const handleDeleteConfirm = () => {
-    // Account deletion logic goes here
-    // For example, make an API call to delete the account
-    // On success:
-    navigate('/'); 
+  const handleDeleteConfirm = async (password: string) => {
+    try {
+      const data: DeleteVisitorRequestData = {
+        id: user?.id || '',
+        password: password,
+      };
+
+      await deleteVisitor(data);
+      message.success('Account deleted successfully!');
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      message.error('Failed to delete account. Please try again later.');
+    }
   };
 
   const handleInputChange = (key: keyof VisitorResponse, value: any) => {
@@ -222,7 +234,7 @@ const ProfilePage = () => {
     try {
       const response = await sendVerificationEmailWithEmail(user?.email || '', user?.id || '');
       console.log('Resend verification email', response);
-      setResendEmailStatus(true); 
+      setResendEmailStatus(true);
     } catch (error) {
       console.error('Error resending verification email', error);
     }
@@ -258,7 +270,7 @@ const ProfilePage = () => {
     );
   }
 
-  if ((user.isVerified === false) || changeEmailStatus) {
+  if (user.isVerified === false || changeEmailStatus) {
     if (resendEmailStatus) {
       return (
         <div className="flex flex-col items-center justify-center h-screen text-center pb-20 p-4">
@@ -270,14 +282,14 @@ const ProfilePage = () => {
     } else {
       return (
         <div className="flex flex-col items-center justify-center h-screen text-center pb-20 p-4">
-        <AiOutlineFrown className="text-6xl mb-4" />
-        <h1 className="text-2xl">Your account is not verified!</h1>
-        <p className="mb-4">Click below to resend the email verification link.</p>
-        <Button type="primary" onClick={handleSendVerificationEmail} className="px-4 py-2">
-          Resend Verification Email
-        </Button>
-      </div>
-      )
+          <AiOutlineFrown className="text-6xl mb-4" />
+          <h1 className="text-2xl">Your account is not verified!</h1>
+          <p className="mb-4">Click below to resend the email verification link.</p>
+          <Button type="primary" onClick={handleSendVerificationEmail} className="px-4 py-2">
+            Resend Verification Email
+          </Button>
+        </div>
+      );
     }
   }
 
@@ -352,7 +364,7 @@ const ProfilePage = () => {
                 {user.firstName} {user.lastName}
               </h2>
               <p className="text-gray-600">{user.email}</p>
-              <p className='text-gray-600'>{user.contactNumber}</p>
+              <p className="text-gray-600">{user.contactNumber}</p>
               <div className="flex space-x-2 mt-4">
                 <Dropdown overlay={menu} placement="bottomRight">
                   <CustButton type="primary" className="w-auto sm:w-auto" icon={<SettingOutlined />}>
@@ -363,7 +375,13 @@ const ProfilePage = () => {
                   Logout
                 </CustButton>
                 <EditPasswordModal open={isPasswordModalVisible} onClose={handlePasswordModalCancel} />
-                <EditEmailModal open={isEmailModalVisible} onClose={handleEmailModalCancel} onResendEmail={() => setResendEmailStatus(true)} onChangeEmail={() => setChangeEmailStatus(true)} user={user}/>
+                <EditEmailModal
+                  open={isEmailModalVisible}
+                  onClose={handleEmailModalCancel}
+                  onResendEmail={() => setResendEmailStatus(true)}
+                  onChangeEmail={() => setChangeEmailStatus(true)}
+                  user={user}
+                />
                 <DeleteAccountModal
                   visible={isDeleteModalVisible}
                   onConfirm={handleDeleteConfirm}

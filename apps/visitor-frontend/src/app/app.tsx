@@ -20,6 +20,7 @@ import ViewSpeciesDetails from './pages/Taxonomy/ViewSpecies';
 import SelectParkPage from './park-context/SelectParkPage';
 import { ParkProvider } from './park-context/ParkContext';
 import VerifyUser from './pages/VerifyUser/VerifyUser';
+import EditProfile from './pages/Profile/EditProfile';
 
 export function App() {
   return (
@@ -55,21 +56,29 @@ export function App() {
                 <Route path="/select-park" element={<SelectParkPage />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route
-                    path="/profile"
-                    element={
-                      //<ProtectedRoute redirectTo="/login">
-                        <Profile />
-                      //</ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/payment"
-                    element={
-                      <ProtectedRoute redirectTo="/login">
-                        <Payment />
-                      </ProtectedRoute>
-                    }
-                  />
+                  path="/profile"
+                  element={
+                    //<ProtectedRoute redirectTo="/login">
+                    <Profile />
+                    //</ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/edit-profile"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EditProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payment"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <Payment />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/occurrence">
                   {/* <Route index element={<OccurrenceList />} /> */}
                   <Route path=":occurrenceId" element={<OccurrenceDetails />} />

@@ -203,4 +203,13 @@ router.post('/send-verification-email-with-email', async (req, res) => {
   }
 });
 
+router.delete('/delete', async (req, res) => {
+  try {
+    const result = await VisitorService.delete(req.body);
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).json({ status: 'error', message: error.message });
+  }
+});
+
 export default router;
