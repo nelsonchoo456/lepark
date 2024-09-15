@@ -18,6 +18,7 @@ import EventCard from '../MainLanding/components/EventCard';
 import EditPasswordModal from './EditPasswordModal';
 import EditEmailModal from './EditEmailModal';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { BsCalendar4Event } from 'react-icons/bs';
 import DeleteAccountModal from './DeleteAccountModal';
 import {
   deleteVisitor,
@@ -35,6 +36,7 @@ import { PiSmiley } from 'react-icons/pi';
 import SpeciesCard from './components/SpeciesCard';
 import { FaSadTear } from 'react-icons/fa';
 import { AiOutlineFrown, AiOutlineSmile } from 'react-icons/ai';
+import { MdArrowForward } from 'react-icons/md';
 
 const initialVisitor = {
   id: '',
@@ -393,39 +395,53 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {/* </div> */}
       <ContentWrapper>
-        <div className="relative py-2 bg-white rounded-2xl shadow ">
-          <LogoText className="font-bold text-lg pl-3 pt-1">My Upcoming Events</LogoText>
-          <div className="w-full overflow-scroll flex gap-2 py-2">
-            <EventCard
-              title="Event 1"
-              url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
-              extra={<a href="#">More</a>}
-            >
-              keewewk
-            </EventCard>
-            <EventCard
-              title="Event 4"
-              url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
-              extra={<a href="#">More</a>}
-            >
-              rwrewrkeek
-            </EventCard>
-            <EventCard
-              title="Event 2"
-              url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
-              extra={<a href="#">More</a>}
-            >
-              keewerewk
-            </EventCard>
-            <EventCard
-              title="Event 3"
-              url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg"
-              extra={<a href="#">More</a>}
-            >
-              keewerewrk
-            </EventCard>
+        <div className="flex items-center">
+          <LogoText className="text-xl">My Events</LogoText>
+          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+            <Button
+              icon={<MdArrowForward className="text-2xl" />}
+              shape="circle"
+              type="primary"
+              size="large"
+              className="md:bg-transparent md:text-green-500 md:shadow-none"
+            />
           </div>
+        </div>
+        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem]">
+          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+            <BsCalendar4Event className="text-4xl" />
+            <br />
+            No Events here.
+            <br />
+            Check back soon for Events!
+          </div>
+          {/* <EventCard
+            title="Event 1"
+            url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
+            extra={<a href="#">More</a>}
+          >
+            keewewk
+          </EventCard>
+          <EventCard
+            title="Event 4"
+            url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
+            extra={<a href="#">More</a>}
+          >
+            rwrewrkeek
+          </EventCard>
+          <EventCard
+            title="Event 2"
+            url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
+            extra={<a href="#">More</a>}
+          >
+            keewerewk
+          </EventCard>
+          <EventCard title="Event 3" url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" extra={<a href="#">More</a>}>
+            keewerewrk
+          </EventCard> */}
         </div>
       </ContentWrapper>
 
