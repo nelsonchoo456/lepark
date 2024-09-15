@@ -17,36 +17,38 @@ import { ActivityLogResponse, OccurrenceResponse, SpeciesResponse, LightTypeEnum
 import { getOccurrenceById, getSpeciesById } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { useRestrictOccurence } from '../../hooks/Occurrences/useRestrictOccurrence';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
-  const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
-  const [species, setSpecies] = useState<SpeciesResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  const { occurrence, species, loading } = useRestrictOccurence(occurrenceId);
+  // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
+  // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (occurrenceId) {
-        setLoading(true);
-        try {
-          const occurrenceResponse = await getOccurrenceById(occurrenceId);
-          setOccurrence(occurrenceResponse.data);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (occurrenceId) {
+  //       setLoading(true);
+  //       try {
+  //         const occurrenceResponse = await getOccurrenceById(occurrenceId);
+  //         setOccurrence(occurrenceResponse.data);
 
-          if (occurrenceResponse.data.speciesId) {
-            const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
-            setSpecies(speciesResponse.data);
-          }
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
+  //         if (occurrenceResponse.data.speciesId) {
+  //           const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
+  //           setSpecies(speciesResponse.data);
+  //         }
+  //       } catch (error) {
+  //         console.error('Error fetching data:', error);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   };
 
-    fetchData();
-  }, [occurrenceId]);
+  //   fetchData();
+  // }, [occurrenceId]);
 
   const descriptionsItems = [
     {
@@ -85,12 +87,12 @@ const OccurrenceDetails = () => {
     {
       key: 'activityLogs',
       label: 'Activity Logs',
-      children: <ActivityLogs occurrence={occurrence} />,
+      children: occurrence && <ActivityLogs occurrence={occurrence} />,
     },
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: <StatusLogs occurrence={occurrence} />,
+      children: occurrence && <StatusLogs occurrence={occurrence} />,
     },
     {
       key: 'qr',

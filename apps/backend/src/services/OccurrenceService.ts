@@ -58,13 +58,14 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrencesByParkId(parkId);
   }
 
-  public async getOccurrenceById(id: string): Promise<Occurrence> {
+  public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: string }> {
     try {
       const occurrence = await OccurrenceDao.getOccurrenceById(id);
+      const zone = await ZoneDao.getZoneById(occurrence.zoneId);
       if (!occurrence) {
         throw new Error('Occurrence not found');
       }
-      return occurrence;
+      return { ...occurrence, parkId: zone.parkId };
     } catch (error) {
       throw new Error(`Unable to fetch occurrence details: ${error.message}`);
     }
