@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark } from '@lepark/common-ui';
-import { createOccurrence } from '@lepark/data-access';
-import { Button, Card, Flex, Form, Input, Result, Steps, message } from 'antd';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { createOccurrence, StaffResponse, StaffType } from '@lepark/data-access';
+import { Button, Card, Flex, Form, Input, Result, Steps, message, notification } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
@@ -25,6 +25,7 @@ export interface AdjustLatLngInterface {
 }
 
 const OccurrenceCreate = () => {
+  const { user } = useAuth<StaffResponse>();
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
   const [currStep, setCurrStep] = useState<number>(0);
@@ -32,6 +33,7 @@ const OccurrenceCreate = () => {
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
@@ -39,6 +41,19 @@ const OccurrenceCreate = () => {
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
+
+  useEffect(() => {
+    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
+      if (!notificationShown.current) {
+      notification.error({
+        message: 'Access Denied',
+        description: 'You are not allowed to access the Occurrence Creation page!',
+      });
+      notificationShown.current = true;
+    }
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
@@ -138,6 +153,10 @@ const OccurrenceCreate = () => {
     },
   ];
 
+  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
+    return <></>
+  }
+  
   return (
     <ContentWrapperDark>
       {contextHolder}

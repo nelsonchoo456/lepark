@@ -104,12 +104,21 @@ const ZoneList: React.FC = () => {
           <Tooltip title="Details Page coming soon">
             <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} disabled />
           </Tooltip>
-          <Tooltip title="Edit Page coming soon">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ZoneResponse)}  />
-          </Tooltip>
+          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+            <>
+              <Tooltip title="Edit Page coming soon">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Button
+                  danger
+                  type="link"
+                  icon={<MdDeleteOutline className="text-error" />}
+                  onClick={() => showDeleteModal(record as ZoneResponse)}
+                />
+              </Tooltip>
+            </>
+          )}
         </Flex>
       ),
       width: '1%',

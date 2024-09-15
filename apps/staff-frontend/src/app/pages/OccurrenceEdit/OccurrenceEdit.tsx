@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark, ImageInput } from '@lepark/common-ui';
+import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import {
   createPark,
   getOccurrenceById,
   getParkById,
   OccurrenceResponse,
   ParkResponse,
+  StaffResponse,
+  StaffType,
   StringIdxSig,
   updateOccurrenceDetails,
   updatePark,
@@ -26,6 +28,7 @@ import {
   Select,
   DatePicker,
   InputNumber,
+  notification,
 } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import moment from 'moment';
@@ -53,6 +56,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const attributes = ['name', 'description', 'address', 'contactNumber', 'openingHours', 'closingHours'];
 
 const OccurrenceEdit = () => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const { occurrenceId } = useParams();
   const { occurrence, species, loading } = useRestrictOccurence(occurrenceId);
   const [form] = Form.useForm();
@@ -62,30 +66,21 @@ const OccurrenceEdit = () => {
   const navigate = useNavigate();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const notificationShown = useRef(false);
+  
+  useEffect(() => {
+    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
+      if (!notificationShown.current) {
+      notification.error({
+        message: 'Access Denied',
+        description: 'You are not allowed to access the Occurrence Creation page!',
+      });
+      notificationShown.current = true;
+    }
+      navigate('/');
+    }
+  }, [user, navigate]);
 
-  // useEffect(() => {
-  //   if (!occurrenceId) return;
-  //   const fetchData = async () => {
-  //     try {
-  //       const occurrenceRes = await getOccurrenceById(occurrenceId);
-  //       if (occurrenceRes.status === 200) {
-  //         const occurrenceData = occurrenceRes.data;
-  //         setOccurrence(occurrenceData);
-
-  //         const dateOfBirth = moment(occurrenceData.dateOfBirth);
-  //         const dateObserved = moment(occurrenceData.dateObserved);
-  //         const finalData = { ...occurrenceData, dateObserved, dateOfBirth };
-
-  //         setCurrentImages(occurrenceData.images);
-
-  //         form.setFieldsValue(finalData);
-  //       }
-  //     } catch (error) {
-  //       //
-  //     }
-  //   };
-  //   fetchData();
-  // }, [occurrenceId, form]);
   useEffect(() => {
     if (occurrence) {
       const dateOfBirth = moment(occurrence.dateOfBirth);
@@ -235,6 +230,10 @@ const OccurrenceEdit = () => {
     },
   ];
 
+  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
+    return <></>;
+  }
+  
   return (
     <ContentWrapperDark>
       {contextHolder}

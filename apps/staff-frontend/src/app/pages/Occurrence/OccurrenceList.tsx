@@ -119,7 +119,7 @@ const OccurrenceList: React.FC = () => {
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           {user?.role === StaffType.SUPERADMIN ||
-            (user?.role === StaffType.MANAGER && (
+            ((user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
               <>
                 <Tooltip title="Edit Details">
                   <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
