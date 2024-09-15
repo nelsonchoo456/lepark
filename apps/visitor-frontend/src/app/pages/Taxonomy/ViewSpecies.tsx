@@ -27,6 +27,7 @@ import InformationTab from './components/InformationTab';
 import OccurrencesTab from './components/OccurrencesTab';
 import SpeciesCarousel from './components/SpeciesCarousel';
 import { IoMdHeart, IoMdHeartDislike } from 'react-icons/io';
+import TaxonomyTab from './components/TaxonomyTab';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -153,14 +154,19 @@ const ViewSpeciesDetails = () => {
   // Tabs Utility
   const tabsItems = [
     {
+      key: 'information',
+      label: 'Information',
+      children: species ? <InformationTab species={species} /> : <p>Loading species data...</p>,
+    },
+    {
       key: 'occurrences',
       label: 'Occurrences',
       children: species ? <OccurrencesTab species={species} /> : <p>Loading species data...</p>,
     },
     {
-      key: 'information',
-      label: 'Information',
-      children: species ? <InformationTab species={species} /> : <p>Loading species data...</p>,
+      key: 'taxonomy',
+      label: 'Taxonomy',
+      children: species ? <TaxonomyTab species={species} /> : <p>Loading species data...</p>,
     },
   ];
 
