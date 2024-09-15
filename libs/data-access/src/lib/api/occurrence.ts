@@ -88,7 +88,7 @@ export async function updateOccurrenceDetails(
   files?: File[],
 ): Promise<AxiosResponse<OccurrenceResponse>> {
   try {
-    if (files) {
+    if (files && files.length > 0) {
       const formData = new FormData();
 
       files?.forEach((file) => {
