@@ -1,5 +1,6 @@
+import { Card } from 'antd';
+import Paragraph from 'antd/es/typography/Paragraph';
 import React from 'react';
-import { Button, Card } from 'antd';
 import defaultSpeciesImage from './genspeciesimage.png';
 
 interface SpeciesCardProps {
@@ -41,7 +42,9 @@ const SpeciesCard: React.FC<SpeciesCardProps> = ({
         <div className="absolute bottom-0 w-full h-full p-4 bg-gradient-to-t from-green-500/90 via-green-600/70 to-transparent text-white flex justify-end items-end ">
           <div className="text-right">
             <div className="mb-2 font-bold text-lg">{title}</div>
-            <div className="text-sm opacity-60">{children}</div>
+            <Paragraph className="text-sm opacity-60" ellipsis={{ rows: 2, expandable: false }} style={{ color: 'white', margin: 0 }}>
+              {children}
+            </Paragraph>
           </div>
         </div>
       </Card>
