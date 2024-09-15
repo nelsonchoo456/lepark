@@ -9,6 +9,7 @@ import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useFetchOccurrences } from '../../hooks/Occurrences/useFetchOccurrences';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 
 const OccurrenceList: React.FC = () => {
   const { occurrences, loading, triggerFetch } = useFetchOccurrences();
@@ -31,7 +32,7 @@ const OccurrenceList: React.FC = () => {
       title: 'Label',
       dataIndex: 'title',
       key: 'title',
-      render: (text) => <div className='font-semibold'>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },
@@ -63,7 +64,7 @@ const OccurrenceList: React.FC = () => {
           {text}
         </Flex>
       ),
-      sorter: (a, b) => { 
+      sorter: (a, b) => {
         if (a.zoneName && b.zoneName) {
           return a.zoneName.localeCompare(b.zoneName);
         }
@@ -117,12 +118,23 @@ const OccurrenceList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-          <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as OccurrenceResponse)}  />
-          </Tooltip>
+          {user?.role === StaffType.SUPERADMIN ||
+            (user?.role === StaffType.MANAGER && (
+              <>
+                <Tooltip title="Edit Details">
+                  <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <Button
+                    danger
+                    type="link"
+                    icon={<MdDeleteOutline className="text-error" />}
+                    onClick={() => showDeleteModal(record as OccurrenceResponse)}
+                  />
+                </Tooltip>
+              </>
+            ))}
+
           {/* <Tooltip title="Archive Occurrence">
             <Button
               type="link"
@@ -263,11 +275,11 @@ const OccurrenceList: React.FC = () => {
   
   const deleteOccurrenceToBeDeleted= async () => {
     try {
-      if (!occurrenceToBeDeleted) {
+      if (!occurrenceToBeDeleted || !user) {
         throw new Error("Unable to delete Occurrence at this time");
       }
-      await deleteOccurrence(occurrenceToBeDeleted.id);
-      // triggerFetch();
+      await deleteOccurrence(occurrenceToBeDeleted.id, user.id);
+      triggerFetch();
       setOccurrenceToBeDeleted(null);
       setDeleteModalOpen(false);
       messageApi.open({
@@ -298,6 +310,7 @@ const OccurrenceList: React.FC = () => {
     <ContentWrapperDark>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <ConfirmDeleteModal onConfirm={deleteOccurrenceToBeDeleted} open={deleteModalOpen} onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Occurrences..." className="mb-4 bg-white" variant="filled" />
         <Button
@@ -305,6 +318,7 @@ const OccurrenceList: React.FC = () => {
           onClick={() => {
             navigate('/occurrences/create');
           }}
+          disabled={user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST}
         >
           Create Occurrence
         </Button>

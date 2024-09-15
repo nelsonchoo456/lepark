@@ -141,21 +141,19 @@ const OccurrenceEdit = () => {
       }
 
       changedData.images = currentImages;
-
-      console.log(changedData);
-      // const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
-      // setPreviewImages([]);
-      // if (occurenceRes.status === 200) {
-      //   setCreatedData(occurenceRes.data);
-      //   messageApi.open({
-      //     type: 'success',
-      //     content: 'Saved changes to Occurrence. Redirecting to Occurrence details page...',
-      //   });
-      //   // Add a 3-second delay before navigating
-      //   setTimeout(() => {
-      //     navigate(`/occurrences/${occurrence.id}`);
-      //   }, 1000);
-      // }
+      const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
+      setPreviewImages([]);
+      if (occurenceRes.status === 200) {
+        setCreatedData(occurenceRes.data);
+        messageApi.open({
+          type: 'success',
+          content: 'Saved changes to Occurrence. Redirecting to Occurrence details page...',
+        });
+        // Add a 3-second delay before navigating
+        setTimeout(() => {
+          navigate(`/occurrences/${occurrence.id}`);
+        }, 1000);
+      }
     } catch (error) {
       console.error('Error updating Occurrence', error);
       messageApi.open({

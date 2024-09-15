@@ -123,9 +123,11 @@ export async function getActivityLogsByOccurrenceId(occurrenceId: string): Promi
   }
 }
 
-export async function deleteOccurrence(id: string): Promise<AxiosResponse<void>> {
+export async function deleteOccurrence(id: string, userId: string): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteOccurrence/${id}`);
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteOccurrence/${id}`, {
+      data: { requesterId: userId }, // Send requesterId in the body
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
