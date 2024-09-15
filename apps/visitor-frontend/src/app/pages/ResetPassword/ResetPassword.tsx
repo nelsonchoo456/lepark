@@ -1,12 +1,13 @@
-import { LoginLayout, LoginPanel, Logo, LogoText } from '@lepark/common-ui';
+import { LoginLayout, LoginPanel, Logo, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Divider, Form, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import LoginAnnouncements from '../Login/components/LoginAnnouncements';
-import { resetVisitorPassword } from '@lepark/data-access';
+import { resetVisitorPassword, VisitorResponse } from '@lepark/data-access';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
   const token = new URLSearchParams(location.search).get('token');
+  const { logout } = useAuth<VisitorResponse>();
 
   const handleSubmit = async (values: any) => {
     const { password, confirmPassword } = values;
@@ -22,6 +23,7 @@ const ResetPassword = () => {
 
         if (response.status === 200) {
           message.success('Password reset successful');
+          logout();
 
           setTimeout(() => {
             navigate('/login');

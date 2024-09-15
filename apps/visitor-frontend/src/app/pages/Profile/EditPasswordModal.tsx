@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
 import { Modal, Form, Input, Button, notification } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
+import { useAuth } from '@lepark/common-ui';
+import { forgotVisitorPassword, VisitorResponse } from '@lepark/data-access';
 
 interface EditPasswordModalProps {
   open: boolean;
@@ -8,83 +10,35 @@ interface EditPasswordModalProps {
 }
 
 const EditPasswordModal: FC<EditPasswordModalProps> = ({ open, onClose }) => {
-  const [form] = Form.useForm();
+  const { user } = useAuth<VisitorResponse>();
+  const handleOk = async () => {
+    try {
+      const data = {
+        email: user?.email || '',
+      };
 
-  const handleOk = () => {
-    form.validateFields().then(values => {
-      // Handle form submission
-      console.log('Received values:', values);
+      await forgotVisitorPassword(data);
 
-      // Simulate a successful password change
       notification.success({
         message: 'Success',
-        description: 'Your password has been changed successfully.',
+        description: 'A reset password link has been sent to your email successfully.',
       });
 
       onClose();
-    }).catch(info => {
-      console.log('Validate Failed:', info);
-    });
+    } catch (error) {}
   };
 
   return (
     <Modal
-      title="Change Password"
+      title="Reset Password"
       open={open} // Updated prop
       onOk={handleOk}
       onCancel={onClose}
-      okText="Save"
+      okText="Reset Password"
       cancelText="Cancel"
-      centered 
+      centered
     >
-      <Form
-        form={form}
-        layout="vertical"
-        name="edit_password"
-        initialValues={{ oldPassword: '', newPassword: '', confirmPassword: '' }}
-      >
-        <Form.Item
-          name="oldPassword"
-          label="Old Password"
-          rules={[{ required: true, message: 'Please input your old password!' }]}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="Old Password"
-          />
-        </Form.Item>
-        <Form.Item
-          name="newPassword"
-          label="New Password"
-          rules={[{ required: true, message: 'Please input your new password!' }]}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="New Password"
-          />
-        </Form.Item>
-        <Form.Item
-          name="confirmPassword"
-          label="Confirm New Password"
-          dependencies={['newPassword']}
-          rules={[
-            { required: true, message: 'Please confirm your new password!' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('newPassword') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error('The two passwords that you entered do not match!'));
-              },
-            }),
-          ]}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="Confirm New Password"
-          />
-        </Form.Item>
-      </Form>
+      <p className="mt-2">A link will be sent to your email. Please check your inbox and click on the link to reset your password.</p>
     </Modal>
   );
 };

@@ -246,7 +246,7 @@ const ProfilePage = () => {
         Edit Profile
       </Menu.Item>
       <Menu.Item key="2" onClick={handleEditPassword} icon={<KeyOutlined />}>
-        Change Password
+        Reset Password
       </Menu.Item>
       <Menu.Item key="3" onClick={handleEditEmail} icon={<MailOutlined />}>
         Change Email
