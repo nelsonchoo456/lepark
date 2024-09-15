@@ -251,7 +251,6 @@ const ProfilePage = () => {
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 mt-[-3rem]">
           <Avatar size={80} icon={<UserOutlined />} className="border-4 border-white bg-green-400" />
         </div>
-
         {/* Profile Info */}
         <div className="flex flex-col items-center w-full p-4 pt-10">
           {editing ? (
@@ -356,7 +355,7 @@ const ProfilePage = () => {
 
       <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
-          <LogoText className="font-bold text-lg pl-3 pt-1">Favorite Species</LogoText>
+          <LogoText className="font-bold text-lg pl-3 pt-1">My Favorite Species</LogoText>
           <div className="w-full overflow-scroll flex gap-2 py-2">
             {favoriteSpecies && favoriteSpecies.length > 0 ? (
               favoriteSpecies.map((species) => (

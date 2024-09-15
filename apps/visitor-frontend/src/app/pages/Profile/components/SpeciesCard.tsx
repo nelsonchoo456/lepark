@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Card } from 'antd';
+import defaultSpeciesImage from './genspeciesimage.png';
 
 interface SpeciesCardProps {
   title: string;
@@ -13,7 +14,7 @@ interface SpeciesCardProps {
 
 const SpeciesCard: React.FC<SpeciesCardProps> = ({
   title,
-  url,
+  url = defaultSpeciesImage, // Set default URL
   extra,
   width = '10rem',
   height = '13rem',

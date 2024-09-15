@@ -3,8 +3,9 @@ import { Table, Tag, Button, Tooltip, Flex, TableProps } from 'antd';
 import { FiArchive, FiExternalLink, FiEye } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
-import { getOccurrencesBySpeciesId, OccurrenceResponse } from '@lepark/data-access';
+import { getOccurrencesBySpeciesId, getOccurrencesBySpeciesIdByParkId, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
+import { useAuth } from '@lepark/common-ui';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -12,6 +13,7 @@ interface OccurrenceTableProps {
 }
 
 const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
+  const { user, updateUser } = useAuth<StaffResponse>();
   const [occurrences, setOccurrences] = useState<(OccurrenceResponse & { speciesName: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -19,7 +21,12 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   useEffect(() => {
     const fetchOccurrences = async () => {
       try {
-        const fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
+        let fetchedOccurrences;
+        if (user?.parkId) {
+          fetchedOccurrences = await getOccurrencesBySpeciesIdByParkId(speciesId, user.parkId);
+        } else {
+          fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
+        }
         setOccurrences(fetchedOccurrences.data);
       } catch (error) {
         console.error('Error fetching occurrences:', error);
@@ -27,7 +34,6 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
         setLoading(false);
       }
     };
-
     fetchOccurrences();
   }, [speciesId]);
 

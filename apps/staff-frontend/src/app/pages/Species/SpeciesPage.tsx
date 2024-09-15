@@ -1,40 +1,24 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useEffect, useState, useMemo } from 'react';
-import MainLayout from '../../components/main/MainLayout';
 import 'leaflet/dist/leaflet.css';
+import { useEffect, useMemo, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { SIDEBAR_WIDTH, CustButton, ContentWrapperDark } from '@lepark/common-ui';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species view
+import { deleteSpecies, getAllSpecies, SpeciesResponse, StaffResponse } from '@lepark/data-access';
+import { Button, Card, Flex, Input, message, Modal, Table, TableProps, Tag, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import type { DescriptionsProps } from 'antd';
-import { speciesExamples } from '@lepark/data-utility';
-import {
-  Descriptions,
-  Card,
-  Row,
-  Col,
-  Input,
-  Tag,
-  Flex,
-  Button,
-  Table,
-  Modal,
-  message,
-  Tooltip,
-  TableProps
-} from 'antd';
 import PageHeader from '../../components/main/PageHeader';
-import { PlusOutlined } from '@ant-design/icons';
-import { getAllSpecies, deleteSpecies, SpeciesResponse } from '@lepark/data-access';
 
-import { FiSearch, FiEdit2, FiTrash2, FiEye, FiExternalLink } from 'react-icons/fi';
+import { FiEdit2, FiEye, FiSearch, FiTrash2 } from 'react-icons/fi';
 
 const SpeciesPage = () => {
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth<StaffResponse>();
+
 
   useEffect(() => {
     fetchSpecies();
@@ -79,7 +63,7 @@ const SpeciesPage = () => {
       if (!confirmed) return;
 
       await deleteSpecies(id);
-      setFetchedSpecies(prevSpecies => prevSpecies.filter(species => species.id !== id));
+      setFetchedSpecies((prevSpecies) => prevSpecies.filter((species) => species.id !== id));
       message.success('Species deleted successfully');
     } catch (error) {
       console.error('Error deleting species:', error);
@@ -110,9 +94,15 @@ const SpeciesPage = () => {
       render: (text) => <i>{text}</i>,
     },
     {
-      title: 'Family',
-      dataIndex: 'family',
-      key: 'family',
+      title: 'Class',
+      dataIndex: 'class',
+      key: 'class',
+      render: (text) => text,
+    },
+    {
+      title: 'Order',
+      dataIndex: 'order',
+      key: 'order',
       render: (text) => text,
     },
     {
@@ -149,10 +139,7 @@ const SpeciesPage = () => {
             color = 'default';
         }
         return (
-          <Tag
-            color={color}
-            style={style}
-          >
+          <Tag color={color} style={style}>
             {status.replace(/_/g, ' ')}
           </Tag>
         );
@@ -166,27 +153,19 @@ const SpeciesPage = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/species/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Edit Species">
-            <Button type="link" icon={<FiEdit2 />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
-          </Tooltip>
-          <Tooltip title="Delete Species">
-            <Button type="link" icon={<FiTrash2 />} onClick={() => handleDelete(record.id)} />
-          </Tooltip>
+          {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) && (
+            <>
+              <Tooltip title="Edit Species">
+                <Button type="link" icon={<FiEdit2 />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
+              </Tooltip>
+              <Tooltip title="Delete Species">
+                <Button type="link" icon={<FiTrash2 />} onClick={() => handleDelete(record.id)} />
+              </Tooltip>
+            </>
+          )}
         </Flex>
       ),
-    },
-    {
-      key: 'speciesId',
-      title: 'Species ID',
-      dataIndex: 'id',
-      render: (text: string) => (
-        <Flex justify="space-between" align="center">
-          {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(text)} />
-          </Tooltip>
-        </Flex>
-      ),
+      width: '1%',
     },
   ];
 
@@ -201,21 +180,13 @@ const SpeciesPage = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
-        <Button
-          type="primary"
-          onClick={() => navigate('/species/create')}
-        >
+        <Button type="primary" onClick={() => navigate('/species/create')}>
           Create Species
         </Button>
       </Flex>
 
       <Card>
-        <Table
-          dataSource={filteredSpecies}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-        />
+        <Table dataSource={filteredSpecies} columns={columns} rowKey="id" loading={loading} />
       </Card>
     </ContentWrapperDark>
   );
