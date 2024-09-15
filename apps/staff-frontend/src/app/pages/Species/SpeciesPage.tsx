@@ -81,15 +81,6 @@ const SpeciesPage = () => {
     }
   };
 
-  const renderBooleanTag = (value: boolean | undefined) => {
-    if (value === undefined) return <Tag>Unknown</Tag>;
-    return value ? <Tag color="green">Yes</Tag> : <Tag color="red">No</Tag>;
-  };
-
-  const navigateToSpecies = (speciesId: string) => {
-    navigate(`/species/${speciesId}`);
-  };
-
   const columns: TableProps<SpeciesResponse>['columns'] = [
     {
       title: 'Common Name',
