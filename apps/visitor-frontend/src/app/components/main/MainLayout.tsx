@@ -7,6 +7,7 @@ import { FiHome, FiMoreHorizontal, FiUser } from "react-icons/fi";
 import { GrMapLocation } from "react-icons/gr";
 import { Divider, Menu } from "antd";
 import { usePark } from "../../park-context/ParkContext";
+import { PiPlant } from "react-icons/pi";
 
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(
@@ -36,6 +37,12 @@ const MainLayout = () => {
       onClick: () => navigate('/'),
     },
     {
+      key: 'discover',
+      icon: <PiPlant style={{ fontSize: "1.5rem" }}/>,
+      label: 'Taxonomy',
+      onClick: () => navigate('/discover'),
+    },
+    {
       key: 'map',
       icon: <GrMapLocation style={{ fontSize: "1.5rem" }}/>,
       label: 'Map',
@@ -47,12 +54,6 @@ const MainLayout = () => {
       label: 'Account',
       onClick: () => navigate('/profile'),
     },
-    {
-      key: 'others',
-      icon: <FiMoreHorizontal style={{ fontSize: "1.5rem" }}/>,
-      label: '',
-      onClick: () => navigate('/'),
-    },
   ]
 
   return (
@@ -60,7 +61,7 @@ const MainLayout = () => {
       <Header showSidebar={showSidebar}>
         <div className="px-4 flex gap-2 items-center">
           <Logo />
-          {selectedPark ? <LogoText>{selectedPark.name}</LogoText> : <LogoText>Leparks</LogoText>}
+          {selectedPark ? <LogoText>{selectedPark.name}</LogoText> : <LogoText>Lepark</LogoText>}
         </div>
       </Header>
       <MobileSidebar>
