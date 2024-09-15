@@ -18,7 +18,9 @@ const SpeciesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { user, updateUser } = useAuth<StaffResponse>();
-
+  const [classFilters, setClassFilters] = useState<{ text: string; value: string }[]>([]);
+  const [orderFilters, setOrderFilters] = useState<{ text: string; value: string }[]>([]);
+  const [conservationStatusFilters, setConservationStatusFilters] = useState<{ text: string; value: string }[]>([]);
 
   useEffect(() => {
     fetchSpecies();
@@ -29,6 +31,16 @@ const SpeciesPage = () => {
     try {
       const species = await getAllSpecies();
       setFetchedSpecies(species.data);
+
+      // Extract unique values for the 'class', 'order', and 'conservationStatus' columns
+      const uniqueClasses = Array.from(new Set(species.data.map((item) => item.class)));
+      const uniqueOrders = Array.from(new Set(species.data.map((item) => item.order)));
+      const uniqueConservationStatuses = Array.from(new Set(species.data.map((item) => item.conservationStatus)));
+
+      // Generate filter options based on unique values
+      setClassFilters(uniqueClasses.map((cls) => ({ text: cls, value: cls })));
+      setOrderFilters(uniqueOrders.map((order) => ({ text: order, value: order })));
+      setConservationStatusFilters(uniqueConservationStatuses.map((status) => ({ text: status, value: status })));
     } catch (error) {
       console.error('Error fetching species:', error);
       message.error('Failed to fetch species');
@@ -39,9 +51,7 @@ const SpeciesPage = () => {
 
   const filteredSpecies = useMemo(() => {
     return fetchedSpecies.filter((species) =>
-      Object.values(species).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      Object.values(species).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
     );
   }, [searchQuery, fetchedSpecies]);
 
@@ -97,18 +107,24 @@ const SpeciesPage = () => {
       title: 'Class',
       dataIndex: 'class',
       key: 'class',
+      filters: classFilters,
+      onFilter: (value, record) => record.class === value,
       render: (text) => text,
     },
     {
       title: 'Order',
       dataIndex: 'order',
       key: 'order',
+      filters: orderFilters,
+      onFilter: (value, record) => record.order === value,
       render: (text) => text,
     },
     {
       title: 'Conservation Status',
       dataIndex: 'conservationStatus',
       key: 'conservationStatus',
+      filters: conservationStatusFilters,
+      onFilter: (value, record) => record.conservationStatus === value,
       render: (status) => {
         let color: string;
         let style: React.CSSProperties = {};
