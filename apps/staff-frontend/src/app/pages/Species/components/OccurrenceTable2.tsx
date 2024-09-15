@@ -111,17 +111,6 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              danger
-              type="link"
-              icon={<MdDeleteOutline className="text-error" />}
-              onClick={() => showDeleteModal(record as OccurrenceResponse)}
-            />
-          </Tooltip>
           {/* <Tooltip title="Archive Occurrence">
             <Button
               type="link"
@@ -272,7 +261,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
 
   return (
     <>
-      {user?.role === StaffType.SUPERADMIN ? (
+      {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) ? (
         <Table dataSource={occurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
       ) : (
         <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
