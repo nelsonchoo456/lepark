@@ -352,6 +352,7 @@ const ProfilePage = () => {
                 {user.firstName} {user.lastName}
               </h2>
               <p className="text-gray-600">{user.email}</p>
+              <p className='text-gray-600'>{user.contactNumber}</p>
               <div className="flex space-x-2 mt-4">
                 <Dropdown overlay={menu} placement="bottomRight">
                   <CustButton type="primary" className="w-auto sm:w-auto" icon={<SettingOutlined />}>
