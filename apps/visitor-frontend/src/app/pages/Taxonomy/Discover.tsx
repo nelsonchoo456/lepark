@@ -31,7 +31,7 @@ const Discover = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedPark } = usePark();
-  const cardStyle = 'w-full text-left m-1 !p-0.01 inline-flex items-center border-x-transparent py-2 px-4 cursor-pointer hover:bg-green-600/10';
+  // const cardStyle = 'w-full text-left inline-flex items-center border-x-transparent py-2 px-4 cursor-pointer hover:bg-green-600/10';
   const speciesTitleStyle = 'text-lg font-medium text-green-700';
   const [loading, setLoading] = useState(false);
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
@@ -171,10 +171,11 @@ const Discover = () => {
           No Species found.
         </div>
       ) : (
-        <div className="justify-center max-h-[calc(100vh-20rem)] overflow-y-auto no-scrollbar md:mt-6">
+        <div className="justify-center max-h-[calc(100vh-20rem)] overflow-y-auto no-scrollbar border-slate-200 border-b-[1px] md:mt-6">
           {/* <div className="flex flex-col items-center max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar"> */}
             {filteredSpecies.map((species, index) => (
-              <Card key={species.id} className={cardStyle} styles={{ body: { padding: 0 } }} onClick={() => navigateToSpecies(species.id)}>
+              // <Card key={species.id} className={cardStyle} styles={{ body: { padding: 0 } }} onClick={() => navigateToSpecies(species.id)}>
+              <div className='w-full text-left inline-flex items-center border-x-transparent py-2 px-4 cursor-pointer border-slate-200 border-t-[1px] hover:bg-green-600/10' onClick={() => navigateToSpecies(species.id)}>
                 <div className="flex flex-row">
                   <div className="w-[60px] h-[60px] flex-shrink-0 mr-2 overflow-hidden rounded-full">
                     <img
@@ -188,7 +189,8 @@ const Discover = () => {
                     <div className='-mt-[2px] text-green-700/80 italic'>{species.speciesName}</div>
                   </div>
                 </div>
-              </Card>
+                </div>
+              // </Card>
             ))}
           {/* </div> */}
         </div>

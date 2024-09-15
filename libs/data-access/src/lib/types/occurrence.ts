@@ -41,6 +41,10 @@ export interface OccurrenceResponse {
   description: string;
   speciesId: string;
   speciesName: string;
+  zoneId: number;
+  zoneName?: string;
+  parkId?: number;
+  parkName?: string;
   images: string[];
   occurrenceStatus?: OccurrenceStatusEnum;
 }
