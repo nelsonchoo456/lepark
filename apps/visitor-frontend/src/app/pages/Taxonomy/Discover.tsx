@@ -170,7 +170,7 @@ const Discover = () => {
         </div>
       ) : (
         <div
-          className="justify-center overflow-y-auto no-scrollbar mx-4 
+          className="justify-center overflow-y-auto mx-4
           md:mt-6 md:bg-white md:flex-1 md:mb-4 md:rounded-xl md:p-4"
         >
           {filteredSpecies.map((species, index) => (
@@ -182,11 +182,20 @@ const Discover = () => {
                 hover:bg-green-600/10"
             >
               <div className="flex flex-row w-full">
-                <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
+                <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
+                ">
                   <img src={species.images[0]} alt={species.commonName} className="w-full h-full object-cover" />
                 </div>
                 <div className="h-full flex-1">
                   <div className="text-lg font-semibold text-green-700">{species.commonName}</div>
+                  <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
+                </div>
+                <div className="h-full flex-1 hidden lg:block">
+                  <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
+                  <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
+                </div>
+                <div className="h-full flex-1 hidden md:block">
+                <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
                   <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
                 </div>
                 <div className="h-full">
