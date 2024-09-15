@@ -95,12 +95,14 @@ const SpeciesPage = () => {
       title: 'Common Name',
       dataIndex: 'commonName',
       key: 'commonName',
+      sorter: (a, b) => a.commonName.localeCompare(b.commonName),
       render: (text) => text,
     },
     {
       title: 'Scientific Name',
       dataIndex: 'speciesName',
       key: 'speciesName',
+      sorter: (a, b) => a.speciesName.localeCompare(b.speciesName),
       render: (text) => <i>{text}</i>,
     },
     {
