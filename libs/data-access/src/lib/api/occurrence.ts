@@ -7,8 +7,18 @@ const URL = '/occurrences';
 const URL_SPECIES = '/species';
 const URL_ACTIVITY_LOGS = '/activityLogs';
 
-export async function createOccurrence(data: OccurrenceData): Promise<AxiosResponse<OccurrenceResponse>> {
+export async function createOccurrence(data: OccurrenceData, files?: File[]): Promise<AxiosResponse<OccurrenceResponse>> {
   try {
+    const formData = new FormData();
+
+    files?.forEach((file) => {
+      formData.append('files', file); // The key 'files' matches what Multer expects
+    });
+
+    const uploadedUrls = await client.post(`${URL}/upload`, formData);
+    data.images = uploadedUrls.data.uploadedUrls;
+
+    console.log(data.images);
     const response: AxiosResponse<OccurrenceResponse> = await client.post(`${URL}/createOccurrence`, data);
     return response;
   } catch (error) {
@@ -72,8 +82,23 @@ export async function getSpeciesNameById(id: string): Promise<AxiosResponse<stri
   }
 }
 
-export async function updateOccurrenceDetails(id: string, data: OccurrenceUpdateData): Promise<AxiosResponse<OccurrenceResponse>> {
+export async function updateOccurrenceDetails(
+  id: string,
+  data: OccurrenceUpdateData,
+  files?: File[],
+): Promise<AxiosResponse<OccurrenceResponse>> {
   try {
+    if (files) {
+      const formData = new FormData();
+
+      files?.forEach((file) => {
+        formData.append('files', file); // The key 'files' matches what Multer expects
+      });
+
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images?.push(...uploadedUrls.data.uploadedUrls);
+    }
+
     const response: AxiosResponse<OccurrenceResponse> = await client.put(`${URL}/updateOccurrenceDetails/${id}`, data);
     return response;
   } catch (error) {

@@ -169,7 +169,7 @@ const Discover = () => {
         <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
           <PiPlantFill className="text-4xl mb-2 mt-10" />
           No Species found.
-        </div>
+          </div>
       ) : (
         <div className="justify-center max-h-[calc(100vh-20rem)] overflow-y-auto no-scrollbar border-slate-200 border-b-[1px] md:mt-6">
           {/* <div className="flex flex-col items-center max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar"> */}
@@ -192,12 +192,32 @@ const Discover = () => {
                 </div>
               // </Card>
             ))}
-          {/* </div> */}
         </div>
       )}
     </div>
   );
 };
+
+{/* <div className="justify-center bg-green-50 max-h-[calc(100vh-20rem)] overflow-y-auto no-scrollbar">
+        <div className="flex flex-col items-center max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar">
+          {filteredSpecies.map((species, index) => (
+            <Card key={index} className={cardStyle} styles={{ body: { padding: 10 } }} onClick={() => navigateToSpecies(species.id)}>
+              <div className="flex flex-row items-center">
+                <div className="w-[60px] h-[60px] flex-shrink-0 mr-2 overflow-hidden rounded">
+                  <img
+                    src={species.images[0]}
+                    alt={species.commonName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="pl-1">
+                  <h2 className={speciesTitleStyle}>{species.commonName}</h2>
+                  <p>{species.speciesName}</p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div> */}
 
 const TreeSelectNoOverflow = styled(TreeSelect)`
   .ant-select-selection-overflow {
