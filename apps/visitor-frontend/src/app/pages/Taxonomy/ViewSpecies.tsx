@@ -218,24 +218,21 @@ const ViewSpeciesDetails = () => {
   };
 
   return (
-    <div className="md:p-4">
-      <div className="md:flex w-full gap-4">
+    <div className="md:p-4 md:h-screen md:overflow-hidden">
+      <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
         <div className="md:w-2/5 h-96">
           <div className="z-20 absolute w-full flex justify-between p-4">
-            <div className="md:hidden backdrop-blur bg-white/75 px-6 py-2 z-20 rounded-full">
+            <div className="md:hidden backdrop-blur bg-white/75 px-6 py-2 z-20 rounded-full box-shadow-md">
               <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
               <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
             </div>
             {user && isFavorite ? (
-              // <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
-              //   {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-              // </Button>
               <Button
                 icon={<IoMdHeartDislike className="text-2xl text-pastelPink-500" />}
                 shape="circle"
                 type="primary"
                 size='large'
-                className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80'
+                className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md'
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemoveFromFavorites();
@@ -247,7 +244,7 @@ const ViewSpeciesDetails = () => {
                   shape="circle"
                   type="primary"
                   size='large'
-                  className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80'
+                  className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md'
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddToFavorites();
@@ -258,7 +255,7 @@ const ViewSpeciesDetails = () => {
           <SpeciesCarousel images={species?.images || []} />
           
         </div>
-        <div className="flex-[3] flex-col flex p-4 md:p-0">
+        <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
           <div className="hidden md:block">
             <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
             <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
