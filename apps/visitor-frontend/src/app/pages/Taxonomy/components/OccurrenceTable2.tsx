@@ -45,23 +45,6 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       width: '33%',
     },
     {
-      title: 'Species Name',
-      dataIndex: 'speciesName',
-      key: 'speciesName',
-      render: (text, record) => (
-        <Flex justify="space-between" align="center">
-          {text}
-          <Tooltip title="Go to Species">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToSpecies(record.speciesId)} />
-          </Tooltip>
-        </Flex>
-      ),
-      sorter: (a, b) => {
-        return a.speciesName.localeCompare(b.speciesName);
-      },
-      width: '33%',
-    },
-    {
       title: 'Zone',
       dataIndex: 'zoneName',
       key: 'zoneName',
