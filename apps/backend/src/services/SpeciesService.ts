@@ -5,6 +5,7 @@ import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
 import SpeciesDao from '../dao/SpeciesDao';
 import StaffDao from '../dao/StaffDao';
 import aws from 'aws-sdk';
+import ZoneDao from '../dao/ZoneDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -131,6 +132,24 @@ class SpeciesService {
   public async getOccurrencesBySpeciesId(speciesId: string) {
     try {
       return await SpeciesDao.findOccurrencesBySpeciesId(speciesId);
+    } catch (error) {
+      throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
+    }
+  }
+
+  public async getOccurrencesBySpeciesIdByParkId(speciesId: string, parkId: string) {
+    try {
+      const occurrences = await this.getOccurrencesBySpeciesId(speciesId);
+      const filteredOccurrences = [];
+
+      for (const occurrence of occurrences) {
+        const zone = await ZoneDao.getZoneById(occurrence.zoneId);
+        if (zone.parkId === parkId) {
+          filteredOccurrences.push(occurrence);
+        }
+      }
+
+      return filteredOccurrences;
     } catch (error) {
       throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
     }

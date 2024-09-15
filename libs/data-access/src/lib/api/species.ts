@@ -109,3 +109,16 @@ export async function getOccurrencesBySpeciesId(id: string): Promise<AxiosRespon
     }
   }
 }
+
+export async function getOccurrencesBySpeciesIdByParkId(speciesId: string, parkId: number): Promise<AxiosResponse<OccurrenceResponse[]>> {
+  try {
+    const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/getOccurrencesBySpeciesIdByParkId/${speciesId}/${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}

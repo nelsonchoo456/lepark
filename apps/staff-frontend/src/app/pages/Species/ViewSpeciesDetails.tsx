@@ -1,6 +1,6 @@
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
-import { Card, Descriptions, Tabs, Carousel } from 'antd';
+import { Card, Descriptions, Tabs } from 'antd';
 import { useEffect, useState } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
 import {
@@ -15,11 +15,10 @@ import {
   GiTombstone,
 } from 'react-icons/gi';
 import { useParams } from 'react-router';
-import PageHeader from '../../components/main/PageHeader';
-import OccurrencesTab from './components/OccurrencesTab';
+import PageHeader2 from '../../components/main/PageHeader2';
 import InformationTab from './components/InformationTab';
+import OccurrencesTab from './components/OccurrencesTab';
 import SpeciesCarousel from './components/SpeciesCarousel';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -43,12 +42,25 @@ const ViewSpeciesDetails = () => {
     fetchData();
   }, [speciesId]);
 
+  const breadcrumbItems = [
+    {
+      title: "Species Management",
+      pathKey: '/species',
+      isMain: true,
+    },
+    {
+      title: species?.speciesName ? species?.speciesName : "Details",
+      pathKey: `/species/${species?.id}`,
+      isCurrent: true
+    },
+  ]
+
   const descriptionsItems = [
-    /*{
+    {
       key: 'id',
       label: 'Species ID',
       children: species?.id,
-    },*/
+    },
     {
       key: 'speciesName',
       label: 'Species Name',
@@ -169,7 +181,7 @@ const ViewSpeciesDetails = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader>Species Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">

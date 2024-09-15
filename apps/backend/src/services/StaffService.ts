@@ -170,6 +170,10 @@ class StaffService {
         throw new Error('Invalid credentials');
       }
 
+      if (staff.isActive === false) {
+        throw new Error('Your account has been deactivated. Please contact your manager for assistance.');
+      }
+
       if (staff.isFirstLogin) {
         return { requiresPasswordReset: true, user: staff };
       }

@@ -1,4 +1,4 @@
-import { SpeciesResponse } from "./species";
+import { SpeciesResponse } from './species';
 
 export interface RegisterVisitorData {
   firstName: string;
@@ -6,6 +6,7 @@ export interface RegisterVisitorData {
   email: string;
   password: string;
   contactNumber: string;
+  isVerified: boolean;
 }
 
 export interface VisitorResponse {
@@ -15,6 +16,7 @@ export interface VisitorResponse {
   email: string;
   contactNumber: string;
   favoriteSpecies?: SpeciesResponse[];
+  isVerified: boolean;
 }
 //conflict here
 
@@ -43,6 +45,10 @@ export interface VisitorPasswordResetData {
   newPassword: string;
 }
 
+export interface VerifyVisitorData {
+  token: string;
+}
+
 // Define the data required to add or delete a favorite species
 export interface FavoriteSpeciesRequestData {
   visitorId: string;
@@ -56,4 +62,13 @@ export interface GetFavoriteSpeciesRequestData {
 // Define the data returned by the get favorite species response
 export interface GetFavoriteSpeciesResponse {
   favoriteSpecies: SpeciesResponse[];
+}
+
+export interface DeleteVisitorRequestData {
+  id: string;
+  password: string;
+}
+
+export interface DeleteVisitorResponse {
+  message: string;
 }

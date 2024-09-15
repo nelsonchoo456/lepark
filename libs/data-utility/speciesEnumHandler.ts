@@ -55,3 +55,16 @@ export function convertSoilType(value: string): SoilTypeEnum | undefined {
 export function convertConservationStatus(value: string): ConservationStatusEnum | undefined {
   return convertToEnum(value, ConservationStatusEnum);
 }
+
+export function convertEnumToNormalFormat(enumString: string): string {
+  // Split the string by underscores
+  const words = enumString.split('_');
+
+  // Capitalize the first letter of each word and lowercase the rest
+  const normalizedWords = words.map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  );
+
+  // Join the words back together with spaces
+  return normalizedWords.join(' ');
+}

@@ -10,6 +10,9 @@ import {
   FavoriteSpeciesRequestData,
   GetFavoriteSpeciesRequestData,
   GetFavoriteSpeciesResponse,
+  VerifyVisitorData,
+  DeleteVisitorRequestData,
+  DeleteVisitorResponse,
 } from '../types/visitor';
 import client from './client';
 import { SpeciesResponse } from '../types/species';
@@ -19,6 +22,47 @@ const URL = '/visitors';
 export async function registerVisitor(data: RegisterVisitorData): Promise<AxiosResponse<VisitorResponse>> {
   try {
     const response: AxiosResponse<VisitorResponse> = await client.post(`${URL}/register`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function resendVerificationEmail(token: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
+  try {
+    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/resend-verification-email`, {
+      token,
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function sendVerificationEmailWithEmail(email: string, id: string): Promise<AxiosResponse<{ message: string } | { error: string }>> {
+  try {
+    const response: AxiosResponse<{ message: string } | { error: string }> = await client.post(`${URL}/send-verification-email-with-email`, { email, id });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function verifyVisitor(data: VerifyVisitorData): Promise<AxiosResponse<VisitorResponse>> {
+  try {
+    const response: AxiosResponse<VisitorResponse> = await client.post(`${URL}/verify-user`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -161,6 +205,18 @@ export async function isSpeciesInFavorites(visitorId: string, speciesId: string)
   try {
     const response: AxiosResponse<{ isFavorite: boolean }> = await client.get(`${URL}/isSpeciesInFavorites/${visitorId}/${speciesId}`);
     return response.data.isFavorite;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function deleteVisitor(data: DeleteVisitorRequestData): Promise<DeleteVisitorResponse> {
+  try {
+    return await client.delete(`${URL}/delete`, { data });
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
       throw error.response.data.error;
