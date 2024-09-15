@@ -116,7 +116,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       },
       width: '1%',
     },
-    {
+    /*{
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
@@ -130,11 +130,11 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
               icon={<FiArchive />}
               // onClick={() => navigateToSpecies(record.speciesId)}
             />
-          </Tooltip> */}
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
-    },
+    }, */
   ];
 
   const columnsForSuperadmin: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
