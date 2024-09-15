@@ -67,6 +67,10 @@ class ParkService {
     }
   }
 
+  public async deleteParkById(id: number): Promise<any> {
+    return ParkDao.deleteParkById(id);
+  }
+
   public async uploadImageToS3(fileBuffer, fileName, mimeType) {
     const params = {
       Bucket: 'lepark',

@@ -8,6 +8,7 @@ export const useFetchParks = () => {
   const [restrictedParkId, setRestrictedParkId] = useState<number | null>(null);
   const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(false);
+  const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -17,7 +18,7 @@ export const useFetchParks = () => {
       fetchParkById(user.parkId)
       setRestrictedParkId(user.parkId);
     }
-  }, [user]);
+  }, [user, trigger]);
 
   const fetchAllParks = async () => {
     setLoading(true);
@@ -47,5 +48,9 @@ export const useFetchParks = () => {
     }
   }
 
-  return { parks, restrictedParkId, setParks, fetchAllParks, loading };
+  const triggerFetch = () => {
+    setTrigger(prev => !prev); // Toggle the trigger value
+  };
+
+  return { parks, restrictedParkId, setParks, fetchAllParks, loading, triggerFetch };
 };

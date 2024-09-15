@@ -37,9 +37,7 @@ const ParkCreate = () => {
   // Map Values
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
   const [lines, setLines] = useState<any[]>([]);  
-  const [lat, setLat] = useState(center.lat);
-  const [lng, setLng] = useState(center.lng);
-
+  
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN) {
       if (!notificationShown.current) {

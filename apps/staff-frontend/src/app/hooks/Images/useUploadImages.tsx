@@ -10,7 +10,7 @@ const useUploadImages = () => {
     if (files.length == 0) return;
     // Store selected files
     // setSelectedFiles(files as File[]);
-    setSelectedFiles((prevFiles) => [...prevFiles, ...files as File[]]);
+    setSelectedFiles((prevFiles) => [...prevFiles, ...(files as File[])]);
 
     // Generate preview images
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file as File));
@@ -24,15 +24,17 @@ const useUploadImages = () => {
   };
 
   const onInputClick = (event: any) => {
-		event.target.value = ''
-	}
+    event.target.value = '';
+  };
 
   return {
     selectedFiles,
     previewImages,
+    setPreviewImages,
     handleFileChange,
     removeImage,
-    onInputClick
+    onInputClick,
+    setSelectedFiles,
   };
 };
 

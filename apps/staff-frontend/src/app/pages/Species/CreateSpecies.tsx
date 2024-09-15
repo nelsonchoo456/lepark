@@ -339,11 +339,11 @@ const CreateSpecies = () => {
           </Form.Item>
 
           <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}>
-            <InputNumber min={1} />
+            <InputNumber min={1} max={100} />
           </Form.Item>
 
           <Form.Item name="fertiliserRequirement" label="Fertiliser Requirement" rules={[{ required: true }]}>
-            <InputNumber onChange={(value) => console.log('Fertiliser Requirement:', value)} />
+            <InputNumber min={1} max={100} onChange={(value) => console.log('Fertiliser Requirement:', value)} />
           </Form.Item>
           <Form.Item name="fertiliserType" label="Fertiliser Type" rules={[{ required: true }]}>
             <Input />

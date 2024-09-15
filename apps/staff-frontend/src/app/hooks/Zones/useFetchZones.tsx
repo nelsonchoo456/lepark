@@ -8,6 +8,7 @@ export const useFetchZones = () => {
   const [zones, setZones] = useState<ZoneResponse[]>([]);
   const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(false);
+  const [trigger, setTrigger] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export const useFetchZones = () => {
     } else if (user?.parkId) {
       fetchZonesByParkId(user?.parkId);
     }
-  }, [user]);
+  }, [user, trigger]);
 
   const fetchAllZones = async () => {
     try {
@@ -43,5 +44,9 @@ export const useFetchZones = () => {
     }
   };
 
-  return { zones, loading, setZones, fetchAllZones, fetchZonesByParkId };
+  const triggerFetch = () => {
+    setTrigger(prev => !prev); // Toggle the trigger value
+  };
+
+  return { zones, loading, setZones, fetchAllZones, fetchZonesByParkId, triggerFetch };
 };

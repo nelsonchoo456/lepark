@@ -34,6 +34,7 @@ import Task from './pages/Task/Task';
 import ZoneList from './pages/ZoneList/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
+import NotFound from './pages/NotFound/NotFound';
 
 export function App() {
   return (
@@ -102,13 +103,6 @@ export function App() {
                 <Route path="create" element={<ZoneCreate />} />
                 <Route path=":id" element={<ZoneDetails />} />
               </Route>
-              
-              {/* <Route path="/occurence">
-                <Route index element={<OccurrenceList />} />
-                <Route path="create" element={<OccurrenceCreate />} />
-                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
-                <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
-              </Route> */}
 
               <Route path="/task" element={<Task />} />
 
@@ -126,6 +120,8 @@ export function App() {
                 <Route path="edit" element={<ViewEditSpecies />} />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
+
+              <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
             </Route>
           </Routes>
         </BrowserRouter>

@@ -43,6 +43,17 @@ router.get('/getParkById/:id', async (req, res) => {
   }
 });
 
+router.delete('/deletePark/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await ParkService.deleteParkById(id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
     // Use a type assertion to tell TypeScript that req.file exists

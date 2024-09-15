@@ -1,5 +1,5 @@
 import React from 'react';
-import { Carousel } from 'antd';
+import { Carousel, Empty } from 'antd';
 
 interface SpeciesCarouselProps {
   images: string[];
@@ -10,8 +10,16 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
     arrows: true,
   };
 
+  console.log(images)
+
+  if (!images || images.length === 0) {
+    return (
+      <div className='h-64 bg-gray-200 flex items-center justify-center'><Empty description="No Image"/></div>
+    )
+  }
+
   return (
-    <div style={{ width: '100%', margin: '0 auto' }}>
+    <div className='bg-gray-200 rounded-b-3xl overflow-hidden md:rounded-xl'>
       {images && images.length > 0 ? (
         <Carousel {...carouselSettings}>
           {images.map((image, index) => (
@@ -21,12 +29,10 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
                 alt={`Species ${index + 1}`}
                 style={{
                   width: '100%',
-                  height: 'auto',
                   minWidth: '400px',
-                  minHeight: '450px',
                   objectFit: 'cover',
-                  borderRadius: '8px', // Added this line to make the image rounded
                 }}
+                className='h-96 md:h-[45rem]'
               />
             </div>
           ))}

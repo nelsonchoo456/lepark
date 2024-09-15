@@ -28,6 +28,7 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines}: 
           zoom={11}
           className="leaflet-mapview-container"
           style={{ height: '60vh', width: '100%' }}
+          key="park-create"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

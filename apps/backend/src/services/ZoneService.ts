@@ -59,6 +59,10 @@ class ZoneService {
     }
     return ZoneDao.getZonesByParkId(parkId);
   }
+
+  public async deleteZoneById(id: number): Promise<any> {
+    return ZoneDao.deleteZoneById(id);
+  }
 }
 
 export default new ZoneService();

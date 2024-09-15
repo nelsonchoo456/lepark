@@ -91,7 +91,19 @@ module.exports = {
           700: '#266b46',
           800: '#1e5236',
           900: '#153923',  // deep, vibrant green
-        }
+        },
+        pastelPink: {
+          50:  '#fff5f7',  // very light, almost white pink
+          100: '#ffe5eb',  
+          200: '#ffccd5',  
+          300: '#ffb3c0',  
+          400: '#ff99aa',  
+          500: '#ff8094',  // soft pastel pink
+          600: '#e67384',  
+          700: '#cc6673',  
+          800: '#b35962',  
+          900: '#994d52',  // slightly deeper, soft pink
+        },
       },
       // -- [ Responsive Config ] --
       screens: {

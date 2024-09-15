@@ -73,14 +73,14 @@ const OccurrenceDetails = () => {
   // Tabs Utility
   const tabsItems = [
     {
-      key: 'about',
-      label: 'About',
-      children: occurrence ? <AboutTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
-    },
-    {
       key: 'information',
       label: 'Information',
       children: occurrence ? <InformationTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
+    },
+    {
+      key: 'about',
+      label: 'Species',
+      children: species && occurrence ? <AboutTab species={species} occurrence={occurrence}/> : <p>Loading Species data...</p>,
     },
     {
       key: 'activityLogs',

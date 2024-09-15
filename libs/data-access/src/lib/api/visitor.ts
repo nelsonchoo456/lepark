@@ -15,6 +15,7 @@ import {
   DeleteVisitorResponse,
 } from '../types/visitor';
 import client from './client';
+import { SpeciesResponse } from '../types/species';
 
 const URL = '/visitors';
 
@@ -172,9 +173,11 @@ export async function addFavoriteSpecies(data: FavoriteSpeciesRequestData): Prom
   }
 }
 
-export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<GetFavoriteSpeciesResponse>> {
+// export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<GetFavoriteSpeciesResponse>> {
+export async function getFavoriteSpecies(visitorId: string): Promise<AxiosResponse<SpeciesResponse[]>> {
   try {
-    const response: AxiosResponse<GetFavoriteSpeciesResponse> = await client.get(`${URL}/viewFavoriteSpecies/${visitorId}`);
+    const response: AxiosResponse<SpeciesResponse[]> = await client.get(`${URL}/viewFavoriteSpecies/${visitorId}`);
+    console.log(response);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

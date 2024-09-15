@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import { useFetchSpecies } from '../../hooks/Species/useFetchSpecies';
 import PageHeader2 from '../../components/main/PageHeader2';
+import useUploadImages from '../../hooks/Images/useUploadImages';
 
 const center = {
   lat: 1.3503881629328163,
@@ -29,6 +30,7 @@ const OccurrenceCreate = () => {
   const [currStep, setCurrStep] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const navigate = useNavigate();
 
   // Form Values
@@ -73,13 +75,13 @@ const OccurrenceCreate = () => {
         dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
 
-      const response = await createOccurrence(finalData);
+      const response = await createOccurrence(finalData, selectedFiles);
       if (response?.status && response.status === 201) {
         setCurrStep(2);
         setCreatedData(response.data);
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       messageApi.open({
         type: 'error',
         content: 'Unable to create Occurrence as Species cannot be found. Please try again later.',
@@ -91,11 +93,31 @@ const OccurrenceCreate = () => {
   const content = [
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} form={form} zones={zones} species={species}/>,
+      children: (
+        <CreateDetailsStep
+          handleCurrStep={handleCurrStep}
+          form={form}
+          zones={zones}
+          species={species}
+          previewImages={previewImages}
+          handleFileChange={handleFileChange}
+          removeImage={removeImage}
+          onInputClick={onInputClick}
+        />
+      ),
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} zones={zones} formValues={formValues}/>,
+      children: (
+        <CreateMapStep
+          handleCurrStep={handleCurrStep}
+          adjustLatLng={adjustLatLng}
+          lat={lat}
+          lng={lng}
+          zones={zones}
+          formValues={formValues}
+        />
+      ),
     },
     {
       key: 'complete',
@@ -105,21 +127,21 @@ const OccurrenceCreate = () => {
 
   const breadcrumbItems = [
     {
-      title: "Occurrence Management",
+      title: 'Occurrence Management',
       pathKey: '/occurrences',
       isMain: true,
     },
     {
-      title: "Create",
+      title: 'Create',
       pathKey: `/occurrences/create`,
-      isCurrent: true
+      isCurrent: true,
     },
-  ]
+  ];
 
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {/* <Tabs items={tabsItems} tabPosition={'left'} /> */}
         <Steps

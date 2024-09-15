@@ -8,7 +8,7 @@ import {
   getSpeciesById,
   isSpeciesInFavorites,
 } from '@lepark/data-access';
-import { Button, message, Tabs } from 'antd';
+import { Button, message, Tabs, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
 import {
@@ -26,6 +26,8 @@ import { useParams } from 'react-router-dom';
 import InformationTab from './components/InformationTab';
 import OccurrencesTab from './components/OccurrencesTab';
 import SpeciesCarousel from './components/SpeciesCarousel';
+import { IoMdHeart, IoMdHeartDislike } from 'react-icons/io';
+import TaxonomyTab from './components/TaxonomyTab';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -152,14 +154,19 @@ const ViewSpeciesDetails = () => {
   // Tabs Utility
   const tabsItems = [
     {
+      key: 'information',
+      label: 'Information',
+      children: species ? <InformationTab species={species} /> : <p>Loading species data...</p>,
+    },
+    {
       key: 'occurrences',
       label: 'Occurrences',
       children: species ? <OccurrencesTab species={species} /> : <p>Loading species data...</p>,
     },
     {
-      key: 'information',
-      label: 'Information',
-      children: species ? <InformationTab species={species} /> : <p>Loading species data...</p>,
+      key: 'taxonomy',
+      label: 'Taxonomy',
+      children: species ? <TaxonomyTab species={species} /> : <p>Loading species data...</p>,
     },
   ];
 
@@ -217,19 +224,57 @@ const ViewSpeciesDetails = () => {
   };
 
   return (
-    <div className="md:p-4">
-      <div className="md:flex w-full gap-4">
-        <div className="w-full md:w-1/2 lg:w-1/2">
+    <div className="md:p-4 md:h-screen md:overflow-hidden">
+      <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
+        <div className="md:w-2/5 h-96">
+          <div className="z-20 absolute w-full flex justify-between p-4">
+            <div className="md:hidden backdrop-blur bg-white/75 px-6 py-2 z-20 rounded-full box-shadow-md">
+              <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
+              <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
+            </div>
+            {user && isFavorite ? (
+              <Button
+                icon={<IoMdHeartDislike className="text-2xl text-pastelPink-500" />}
+                shape="circle"
+                type="primary"
+                size='large'
+                className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveFromFavorites();
+                }}
+            />
+              ) : (
+                <Button
+                  icon={<IoMdHeart className="text-2xl text-pastelPink-500" />}
+                  shape="circle"
+                  type="primary"
+                  size='large'
+                  className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToFavorites();
+                  }}
+                />
+            )}
+          </div>
           <SpeciesCarousel images={species?.images || []} />
-          {user && (
-            <Button type="primary" onClick={isFavorite ? handleRemoveFromFavorites : handleAddToFavorites} className="mt-4 w-full">
-              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-            </Button>
-          )}
+          
         </div>
-        <div className="flex-[3] flex-col flex p-4 md:p-0">
-          <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
-
+        <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
+          <div className="hidden md:block">
+            <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
+            <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
+          </div>
+          <Typography.Paragraph
+            ellipsis={{
+              rows: 3,
+              expandable: true,
+              symbol: 'more',
+            }}
+          >
+            {species?.speciesDescription}
+          </Typography.Paragraph>
           <div className="flex flex-col-reverse">
             <div className="flex h-24 w-full gap-3 my-2 md:gap-2 md:mt-auto">
               <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
@@ -246,7 +291,7 @@ const ViewSpeciesDetails = () => {
               </div>
             </div>
           </div>
-          <div className="py-4">{species?.speciesDescription}</div>
+
           <Tabs
             // centered
             defaultActiveKey="information"

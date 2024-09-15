@@ -20,6 +20,7 @@ interface StyledHeaderProps {
 }
 
 const StyledHeader = styled.div<StyledHeaderProps>`
+  position: fixed;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   border-bottom: 0.75px solid #f8f8f8;
