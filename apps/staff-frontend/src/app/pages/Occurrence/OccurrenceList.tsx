@@ -10,6 +10,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useFetchOccurrences } from '../../hooks/Occurrences/useFetchOccurrences';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
+import { SCREEN_LG } from '../../config/breakpoints';
 
 const OccurrenceList: React.FC = () => {
   const { occurrences, loading, triggerFetch } = useFetchOccurrences();
@@ -170,7 +171,8 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },
-      width: '33%',
+      // width: '33%',
+      fixed: 'left',
     },
     {
       title: 'Species Name',
@@ -187,7 +189,7 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return a.speciesName.localeCompare(b.speciesName);
       },
-      width: '33%',
+      // width: '33%',
     },
     {
       title: 'Park, Zone',
@@ -203,7 +205,7 @@ const OccurrenceList: React.FC = () => {
         }
         return a.zoneId - b.zoneId;
       },
-      width: '33%',
+      // width: '33%',
     },
     {
       title: 'Occurrence Status',
@@ -231,7 +233,7 @@ const OccurrenceList: React.FC = () => {
         { text: 'Removed', value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
-      width: '1%',
+      // width: '1%',
     },
     {
       title: 'Last Observed',
@@ -241,7 +243,7 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return moment(a.dateObserved).valueOf() - moment(b.dateObserved).valueOf();
       },
-      width: '1%',
+      // width: '1%',
     },
     {
       title: 'Actions',
@@ -271,7 +273,8 @@ const OccurrenceList: React.FC = () => {
           </Tooltip> */}
         </Flex>
       ),
-      width: '1%',
+      width: '120px'
+      // width: '1%',
     },
   ];
 
@@ -343,11 +346,11 @@ const OccurrenceList: React.FC = () => {
         </Button>
       </Flex>
 
-      <Card>
+      <Card >
         {user?.role === StaffType.SUPERADMIN ? (
-          <Table dataSource={filteredOccurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+          <Table dataSource={filteredOccurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
         ) : (
-          <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} />
+          <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
         )}
       </Card>
     </ContentWrapperDark>

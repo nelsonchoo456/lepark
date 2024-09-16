@@ -11,6 +11,7 @@ import { useState, useMemo } from 'react';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { deleteZone } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { SCREEN_LG } from '../../config/breakpoints';
 
 const ZoneList: React.FC = () => {
   const { zones, loading, triggerFetch } = useFetchZones();
@@ -356,9 +357,9 @@ const ZoneList: React.FC = () => {
 
       <Card>
         {user?.role === StaffType.SUPERADMIN ? (
-          <Table dataSource={filteredZones} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+          <Table dataSource={filteredZones} columns={columnsForSuperadmin} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
         ) : (
-          <Table dataSource={filteredZones} columns={columns} rowKey="id" loading={loading} />
+          <Table dataSource={filteredZones} columns={columns} rowKey="id" loading={loading}  scroll={{ x: SCREEN_LG }}/>
         )}
       </Card>
     </ContentWrapperDark>
