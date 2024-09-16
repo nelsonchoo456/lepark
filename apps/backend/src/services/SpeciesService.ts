@@ -22,7 +22,7 @@ class SpeciesService {
       const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
 
       if (checkForExistingSpecies) {
-        throw new Error('Species already exists.');
+        throw new Error('Identical species name already exists.');
       }
 
       // Additional temperature checks

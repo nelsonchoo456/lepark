@@ -14,7 +14,7 @@ import {
   StaffResponse,
 } from '@lepark/data-access';
 import { conservationStatus, lightType, plantTaxonomy, regions, soilType } from '@lepark/data-utility';
-import { Button, Form, Input, InputNumber, Modal, notification, Result, Select, Slider, Space, Spin } from 'antd';
+import { Button, Form, Input, InputNumber, message, Modal, notification, Result, Select, Slider, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -162,7 +162,7 @@ const CreateSpecies = () => {
       form.resetFields();
       setTimeout(() => setShowSuccessAlert(false), 5000);
     } catch (error) {
-      console.error('Error creating species:', error);
+      message.error(String(error));
       // Handle error (e.g., show an error message)
     } finally {
       setIsSubmitting(false);
