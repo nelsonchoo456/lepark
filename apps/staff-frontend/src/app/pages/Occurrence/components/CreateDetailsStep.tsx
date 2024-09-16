@@ -56,8 +56,8 @@ const CreateDetailsStep = ({
       label: 'Needs Attention',
     },
     {
-      value: 'URGENT_ACTION_NEEDED',
-      label: 'Urgent Action Needed',
+      value: 'URGENT_ACTION_REQUIRED',
+      label: 'Urgent Action Required',
     },
     {
       value: 'REMOVED',
