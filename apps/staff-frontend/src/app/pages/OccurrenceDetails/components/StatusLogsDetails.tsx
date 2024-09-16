@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select } from 'antd';
+import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select, Empty } from 'antd';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
-import { getStatusLogById, updateStatusLog, getOccurrenceById  } from '@lepark/data-access';
+import { getStatusLogById, updateStatusLog, getOccurrenceById } from '@lepark/data-access';
 import { StatusLogResponse, StatusLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 
@@ -64,7 +64,7 @@ const StatusLogDetails: React.FC = () => {
       value: 'REMOVED',
       label: 'Removed',
     },
-  ]
+  ];
 
   const toggleEditMode = () => {
     if (inEditMode) {
@@ -224,13 +224,17 @@ const StatusLogDetails: React.FC = () => {
           <Title level={4} className="mt-4 mb-2">
             Images
           </Title>
-          <Space size="large" wrap>
-            {statusLog.images && statusLog.images.length > 0 ? (
-              statusLog.images.map((image, index) => <Image key={index} width={200} src={image} className="rounded-md"/>)
-            ) : (
-              <div>No images available</div>
-            )}
-          </Space>
+          {statusLog.images && statusLog.images.length > 0 ? (
+            <Space size="large" wrap>
+              {statusLog.images.map((image, index) => (
+                <Image key={index} width={200} src={image} className="rounded-md" />
+              ))}
+            </Space>
+          ) : (
+            <div className="h-64 bg-gray-200 flex items-center justify-center rounded-lg">
+              <Empty description="No Image" />
+            </div>
+          )}
         </Card>
       </ContentWrapperDark>
     );

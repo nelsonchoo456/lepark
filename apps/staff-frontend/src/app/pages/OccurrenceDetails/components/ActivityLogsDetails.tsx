@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select } from 'antd';
+import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select, Empty } from 'antd';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
@@ -195,13 +195,17 @@ const ActivityLogDetails: React.FC = () => {
           <Title level={4} className="mt-4 mb-2">
             Images
           </Title>
-          <Space size="large" wrap>
-            {activityLog.images && activityLog.images.length > 0 ? (
-              activityLog.images.map((image, index) => <Image key={index} width={200} src={image} className="rounded-md" />)
-            ) : (
-              <div>No images available</div>
-            )}
-          </Space>
+          {activityLog.images && activityLog.images.length > 0 ? (
+            <Space size="large" wrap>
+              {activityLog.images.map((image, index) => (
+                <Image key={index} width={200} src={image} className="rounded-md" />
+              ))}
+            </Space>
+          ) : (
+            <div className='h-64 bg-gray-200 flex items-center justify-center rounded-lg'>
+              <Empty description="No Image"/>
+            </div>
+          )}
         </Card>
       </ContentWrapperDark>
     );
