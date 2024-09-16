@@ -175,7 +175,7 @@ const OccurrenceEdit = () => {
     },
     {
       value: 'TREE_MANGROVE',
-      label: 'Tree Mangronve',
+      label: 'Tree Mangrove',
     },
     {
       value: 'SHRUB',

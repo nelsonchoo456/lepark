@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select } from 'antd';
+import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select, Empty } from 'antd';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
-import { getActivityLogById, updateActivityLog } from '@lepark/data-access';
-import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData } from '@lepark/data-access';
+import { getActivityLogById, updateActivityLog, getOccurrenceById } from '@lepark/data-access';
+import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
+import { useNavigate } from 'react-router-dom';
+import PageHeader2 from '../../../components/main/PageHeader2';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -15,8 +19,17 @@ const ActivityLogDetails: React.FC = () => {
   const { activityLogId } = useParams<{ activityLogId: string }>();
   const [activityLog, setActivityLog] = useState<ActivityLogResponse | null>(null);
   const [editedActivityLog, setEditedActivityLog] = useState<ActivityLogResponse | null>(null);
+  const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
+  const navigate = useNavigate();
+
+  const { user } = useAuth<StaffResponse>();
+
+  const canEdit = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchActivityLogDetails = async () => {
@@ -27,6 +40,10 @@ const ActivityLogDetails: React.FC = () => {
         const response = await getActivityLogById(activityLogId);
         setActivityLog(response.data);
         setEditedActivityLog(response.data);
+
+        // Fetch occurrence details
+        const occurrenceResponse = await getOccurrenceById(response.data.occurrenceId);
+        setOccurrence(occurrenceResponse.data);
       } catch (error) {
         console.error('Error fetching activity log details:', error);
         message.error('Failed to fetch activity log details');
@@ -86,15 +103,15 @@ const ActivityLogDetails: React.FC = () => {
   };
 
   const getDescriptionItems = () => [
+    // {
+    //   key: 'id',
+    //   label: 'Activity Log ID',
+    //   children: activityLog?.id,
+    // },
     {
-      key: 'id',
-      label: 'Activity Log ID',
-      children: activityLog?.id,
-    },
-    {
-      key: 'occurrenceId',
-      label: 'Occurrence ID',
-      children: activityLog?.occurrenceId,
+      key: 'occurrenceTitle',
+      label: 'Occurrence',
+      children: occurrence?.title || 'Loading...',
     },
     {
       key: 'name',
@@ -140,6 +157,23 @@ const ActivityLogDetails: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: occurrence?.title || "Occurrence Details",
+      pathKey: `/occurrences/${occurrence?.id}`,
+    },
+    {
+      title: "Activity Log Details",
+      pathKey: `/occurrences/${occurrence?.id}/activitylog/${activityLog?.id}`,
+      isCurrent: true,
+    },
+  ];
+
   const renderContent = () => {
     if (loading) {
       return <div>Loading...</div>;
@@ -148,7 +182,7 @@ const ActivityLogDetails: React.FC = () => {
     if (!activityLog) {
       return (
         <ContentWrapperDark>
-          <PageHeader>Activity Log Details</PageHeader>
+          <PageHeader2 breadcrumbItems={breadcrumbItems} />
           <Card>
             <div>No activity log found or an error occurred.</div>
           </Card>
@@ -158,7 +192,7 @@ const ActivityLogDetails: React.FC = () => {
 
     return (
       <ContentWrapperDark>
-        <PageHeader>Activity Log Details</PageHeader>
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
         <Card>
           <Descriptions
             bordered
@@ -170,7 +204,9 @@ const ActivityLogDetails: React.FC = () => {
                 {!inEditMode ? (
                   <>
                     <div>Activity Log Details</div>
-                    <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    {canEdit && (
+                      <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    )}
                   </>
                 ) : (
                   <>
@@ -190,13 +226,17 @@ const ActivityLogDetails: React.FC = () => {
           <Title level={4} className="mt-4 mb-2">
             Images
           </Title>
-          <Space size="large" wrap>
-            {activityLog.images && activityLog.images.length > 0 ? (
-              activityLog.images.map((image, index) => <Image key={index} width={200} src={image} />)
-            ) : (
-              <div>No images available</div>
-            )}
-          </Space>
+          {activityLog.images && activityLog.images.length > 0 ? (
+            <Space size="large" wrap>
+              {activityLog.images.map((image, index) => (
+                <Image key={index} width={200} src={image} className="rounded-md" />
+              ))}
+            </Space>
+          ) : (
+            <div className='h-64 bg-gray-200 flex items-center justify-center rounded-lg'>
+              <Empty description="No Image"/>
+            </div>
+          )}
         </Card>
       </ContentWrapperDark>
     );

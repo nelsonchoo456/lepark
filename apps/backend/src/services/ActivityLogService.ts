@@ -3,6 +3,13 @@ import { z } from 'zod';
 import { ActivityLogSchema, ActivityLogSchemaType } from '../schemas/activityLogSchema';
 import ActivityLogDao from '../dao/ActivityLogDao';
 import { fromZodError } from 'zod-validation-error';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
 
 class ActivityLogService {
   public async createActivityLog(data: ActivityLogSchemaType): Promise<ActivityLog> {
@@ -69,6 +76,23 @@ class ActivityLogService {
   // To decide who can delete activity log
   public async deleteActivityLog(id: string): Promise<void> {
     await ActivityLogDao.deleteActivityLog(id);
+  }
+
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+    const params = {
+      Bucket: 'lepark',
+      Key: `activitylog/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
   }
 }
 

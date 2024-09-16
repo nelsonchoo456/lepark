@@ -35,6 +35,7 @@ import ZoneList from './pages/ZoneList/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
 import NotFound from './pages/NotFound/NotFound';
+import Settings from './pages/Settings/Settings';
 
 export function App() {
   return (
@@ -105,6 +106,8 @@ export function App() {
               </Route>
 
               <Route path="/task" element={<Task />} />
+
+              <Route path="/settings" element={<Settings />} />
 
               <Route path="/profile" element={<StaffProfile />} />
 

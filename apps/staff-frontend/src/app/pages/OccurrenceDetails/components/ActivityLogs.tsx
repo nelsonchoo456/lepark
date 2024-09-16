@@ -4,6 +4,10 @@ import { FiEdit, FiEye, FiSearch, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { OccurrenceResponse, ActivityLogResponse, getActivityLogsByOccurrenceId, createActivityLog, deleteActivityLog, ActivityLogTypeEnum } from '@lepark/data-access';
+import useUploadImages from '../../../hooks/Images/useUploadImages';
+import { ImageInput } from '@lepark/common-ui';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
 
 interface ActivityLog {
   id: string;
@@ -22,6 +26,13 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
   const [form] = Form.useForm();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [activityLogToDelete, setActivityLogToDelete] = useState<string | null>(null);
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { user } = useAuth<StaffResponse>();
+
+  const canAddOrDelete = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchActivityLogs = async () => {
@@ -64,12 +75,15 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
       try {
         await createActivityLog({
           ...values,
-          dateCreated: new Date().toISOString(), // Use current date and time
+          dateCreated: new Date().toISOString(),
           occurrenceId: occurrence.id,
-        });
+        }, selectedFiles);
         message.success('Activity log created successfully');
         setIsModalVisible(false);
         form.resetFields();
+        // Clear selected files and preview images
+        selectedFiles.length = 0;
+        previewImages.length = 0;
         // Refresh activity logs
         const response = await getActivityLogsByOccurrenceId(occurrence.id);
         setActivityLogs(response.data);
@@ -115,46 +129,55 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
   };
 
   const columns: TableProps<ActivityLog>['columns'] = [
-    {
-      title: 'Activity Log ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
+    // {
+    //   title: 'Activity Log ID',
+    //   dataIndex: 'id',
+    //   key: 'id',
+    //   sorter: (a, b) => a.id.localeCompare(b.id),
+    // },
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Date Created',
       dataIndex: 'dateCreated',
       key: 'dateCreated',
       render: (dateCreated: string) => moment(dateCreated).format('D MMM YY, HH:mm'),
+      sorter: (a, b) => moment(a.dateCreated).valueOf() - moment(b.dateCreated).valueOf(),
     },
     {
       title: 'Activity Type',
       dataIndex: 'activityLogType',
       key: 'activityLogType',
       render: (activityLogType: string) => <Tag>{activityLogType}</Tag>,
+      filters: Object.values(ActivityLogTypeEnum).map(type => ({ text: type, value: type })),
+      onFilter: (value, record) => record.activityLogType === value,
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="left" gap={8}>
+        <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`activitylog/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Delete Activity Log">
-            <Button
-              type="link"
-              icon={<FiTrash2 />}
-              onClick={() => showDeleteConfirm(record.id)}
-              style={{ color: 'red' }}
-            />
-          </Tooltip>
+          {canAddOrDelete && (
+
+              <Tooltip title="Delete">
+                <Button
+                  danger
+                  type="link"
+                  icon={<FiTrash2 className="text-error" />}
+                  onClick={() => showDeleteConfirm(record.id)}
+                />
+              </Tooltip>
+          )}
         </Flex>
       ),
+      width: '1%',
     },
   ];
 
@@ -170,9 +193,11 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ width: '300px' }}
         />
-        <Button type="primary" icon={<FiPlus />} onClick={showModal}>
-          Add Activity Log
-        </Button>
+        {canAddOrDelete && (
+          <Button type="primary" icon={<FiPlus />} onClick={showModal}>
+            Add Activity Log
+          </Button>
+        )}
       </Flex>
 
       <Table<ActivityLog>
@@ -217,6 +242,30 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
               ))}
             </Select>
           </Form.Item>
+          <Form.Item label="Image">
+            <ImageInput
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg"
+              onClick={onInputClick}
+            />
+          </Form.Item>
+          {previewImages?.length > 0 && (
+            <Form.Item label="Image Previews">
+              <div className="flex flex-wrap gap-2">
+                {previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+              </div>
+            </Form.Item>
+          )}
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Submit

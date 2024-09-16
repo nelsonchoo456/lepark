@@ -160,6 +160,7 @@ const MainLayout = () => {
       icon: <FiSettings />,
       // icon: <UserOutlined />,
       label: 'Settings',
+      onClick: () => navigate('/settings'),
     },
   ];
 

@@ -215,7 +215,7 @@ const ViewEditSpecies = () => {
 
       messageApi.open({
         type: 'success',
-        content: `Successfully edited ${values.speciesName}! Redirecting to Species details page...`,
+        content: `Saved changes to Species. Redirecting to Species details page...`,
       });
 
       // Add a 1-second delay before navigating
