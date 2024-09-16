@@ -69,7 +69,9 @@ const MainLanding = () => {
             <div className='flex justify-center items-center h-full mt-4 opacity-50'>No data</div>
           </Card>
           <Card className="w-full bg-green-50">
-            <Statistic title={<LogoText className='text-lg mr-2'>Plants Needing Care</LogoText>} value={2} />
+            {/* <Statistic title={<LogoText className='text-lg mr-2'>Plants Needing Care</LogoText>} value={2} /> */}
+            <LogoText className='text-lg mr-2'>Tasks Log</LogoText>
+            <div className='flex justify-center items-center h-full mt-4 opacity-50'>No data</div>
           </Card>
           <Card className="w-full bg-green-50">
             {/* <Statistic title={<Badge dot status="warning"><LogoText className='text-lg mr-2'>Pending Tasks</LogoText></Badge>}/> */}
@@ -83,6 +85,16 @@ const MainLanding = () => {
           </Card>
           <Card className="w-full h-86">
             <LogoText>Latest Tasks</LogoText>
+            <div className='flex justify-center items-center h-full mt-20 opacity-50'>No data</div>
+          </Card>
+        </div>
+        <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-4 h-[18rem]">
+          <Card className="w-full h-86">
+            <LogoText>Predictive Visitor Count</LogoText>
+            <div className='flex justify-center items-center h-full mt-20 opacity-50'>No data</div>
+          </Card>
+          <Card className="w-full h-86">
+            <LogoText>Announcements</LogoText>
             <div className='flex justify-center items-center h-full mt-20 opacity-50'>No data</div>
           </Card>
         </div>

@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { SIDEBAR_WIDTH } from "./Sidebar";
 import { COLORS } from "../../config/colors";
+import { SCREEN_LG } from "../../config/breakpoints";
 
 interface ContentProps {
   $showSidebar: boolean;
@@ -18,6 +19,10 @@ export const ContentWrapper = styled.div`
   padding: 1rem;
   height: 100%;
   overflow: scroll;
+
+  @media (max-width: ${SCREEN_LG}px) {
+    padding: 4rem 1rem 1rem 1rem;
+  }
 `;
 
 
@@ -26,4 +31,8 @@ export const ContentWrapperDark = styled.div`
   background-color: ${COLORS.gray[100]};
   height: 100vh;
   overflow: scroll;
+
+  @media (max-width: ${SCREEN_LG}px) {
+    padding: 4rem 1rem 1rem 1rem;
+  }
 `;
