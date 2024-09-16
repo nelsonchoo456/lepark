@@ -144,11 +144,10 @@ class SpeciesService {
 
       for (const occurrence of occurrences) {
         const zone = await ZoneDao.getZoneById(occurrence.zoneId);
-        if (zone.parkId === parkId) {
+        if (String(zone.parkId) === String(parkId)) {
           filteredOccurrences.push(occurrence);
         }
       }
-
       return filteredOccurrences;
     } catch (error) {
       throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
