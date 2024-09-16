@@ -9,6 +9,8 @@ import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData, Occurr
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
+import { useNavigate } from 'react-router-dom';
+import PageHeader2 from '../../../components/main/PageHeader2';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -20,6 +22,7 @@ const ActivityLogDetails: React.FC = () => {
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
+  const navigate = useNavigate();
 
   const { user } = useAuth<StaffResponse>();
 
@@ -154,6 +157,23 @@ const ActivityLogDetails: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: occurrence?.title || "Occurrence Details",
+      pathKey: `/occurrences/${occurrence?.id}`,
+    },
+    {
+      title: "Activity Log Details",
+      pathKey: `/occurrences/${occurrence?.id}/activitylog/${activityLog?.id}`,
+      isCurrent: true,
+    },
+  ];
+
   const renderContent = () => {
     if (loading) {
       return <div>Loading...</div>;
@@ -162,7 +182,7 @@ const ActivityLogDetails: React.FC = () => {
     if (!activityLog) {
       return (
         <ContentWrapperDark>
-          <PageHeader>Activity Log Details</PageHeader>
+          <PageHeader2 breadcrumbItems={breadcrumbItems} />
           <Card>
             <div>No activity log found or an error occurred.</div>
           </Card>
@@ -172,7 +192,7 @@ const ActivityLogDetails: React.FC = () => {
 
     return (
       <ContentWrapperDark>
-        <PageHeader>Activity Log Details</PageHeader>
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
         <Card>
           <Descriptions
             bordered
