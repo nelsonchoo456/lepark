@@ -83,9 +83,9 @@ class SpeciesService {
     try {
       const existingSpecies = await SpeciesDao.getSpeciesById(id);
 
-      const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(existingSpecies.speciesName);
+      const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
 
-      if (checkForExistingSpecies) {
+      if (checkForExistingSpecies && (existingSpecies.id !== checkForExistingSpecies.id)) {
         throw new Error('Identical species name already exists.');
       }
 
