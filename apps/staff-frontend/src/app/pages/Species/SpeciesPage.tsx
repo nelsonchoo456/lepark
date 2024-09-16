@@ -42,7 +42,10 @@ const SpeciesPage = () => {
       // Generate filter options based on unique values
       setClassFilters(uniqueClasses.map((cls) => ({ text: cls, value: cls })));
       setOrderFilters(uniqueOrders.map((order) => ({ text: order, value: order })));
-      setConservationStatusFilters(uniqueConservationStatuses.map((status) => ({ text: status, value: status })));
+      setConservationStatusFilters(uniqueConservationStatuses.map((status) => ({
+        text: status.replace(/_/g, ' '),
+        value: status
+      })));
     } catch (error) {
       console.error('Error fetching species:', error);
       message.error('Failed to fetch species');
