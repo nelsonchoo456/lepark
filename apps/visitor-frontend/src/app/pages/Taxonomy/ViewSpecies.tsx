@@ -232,34 +232,34 @@ const ViewSpeciesDetails = () => {
               <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
               <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
             </div>
-            {user && isFavorite ? (
-              <Button
-                icon={<IoMdHeartDislike className="text-2xl text-pastelPink-500" />}
-                shape="circle"
-                type="primary"
-                size='large'
-                className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md'
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveFromFavorites();
-                }}
-            />
+            {user && user.isVerified && (
+              isFavorite ? (
+                <Button
+                  icon={<IoMdHeartDislike className="text-2xl text-pastelPink-500" />}
+                  shape="circle"
+                  type="primary"
+                  size="large"
+                  className="bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveFromFavorites();
+                  }}
+                />
               ) : (
                 <Button
                   icon={<IoMdHeart className="text-2xl text-pastelPink-500" />}
                   shape="circle"
                   type="primary"
-                  size='large'
-                  className='bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md'
+                  size="large"
+                  className="bg-pastelPink-100/80 hover:bg-pastelPink-200/80 box-shadow-md"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddToFavorites();
                   }}
                 />
-            )}
+              ))}
           </div>
           <SpeciesCarousel images={species?.images || []} />
-          
         </div>
         <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
           <div className="hidden md:block">
