@@ -53,7 +53,9 @@ const SpeciesPage = () => {
 
   const filteredSpecies = useMemo(() => {
     return fetchedSpecies.filter((species) =>
-      Object.values(species).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
+      Object.values(species).some((value) => 
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
     );
   }, [searchQuery, fetchedSpecies]);
 
