@@ -1,7 +1,7 @@
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper, ImageInput, useAuth } from '@lepark/common-ui';
+import { ContentWrapper, ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import {
@@ -14,7 +14,7 @@ import {
   StaffResponse,
 } from '@lepark/data-access';
 import { conservationStatus, lightType, plantTaxonomy, regions, soilType } from '@lepark/data-utility';
-import { Button, Form, Input, InputNumber, message, Modal, notification, Result, Select, Slider, Space, Spin } from 'antd';
+import { Button, Card, Form, Input, InputNumber, message, Modal, notification, Result, Select, Slider, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -198,10 +198,10 @@ const CreateSpecies = () => {
 
   return (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
-    <ContentWrapper>
+    <ContentWrapperDark>
       {/* <h1 className="header-1 mb-4">Create Species</h1> */}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
-
+      <Card>
       {!showSuccessAlert && (
         <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
@@ -459,7 +459,8 @@ const CreateSpecies = () => {
           ]}
         />
       )}
-    </ContentWrapper>
+      </Card>
+    </ContentWrapperDark>
   );
 };
 
