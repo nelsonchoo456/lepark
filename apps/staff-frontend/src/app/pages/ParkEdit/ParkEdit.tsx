@@ -8,6 +8,7 @@ import PageHeader from '../../components/main/PageHeader';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import dayjs from 'dayjs';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -55,13 +56,13 @@ const ParkEdit = () => {
           setPark(parkData);
           const initialValues = {
             ...parkData,
-            monday: [moment(parkData.openingHours[0]), moment(parkData.closingHours[0])],
-            tuesday: [moment(parkData.openingHours[1]), moment(parkData.closingHours[1])],
-            wednesday: [moment(parkData.openingHours[2]), moment(parkData.closingHours[2])],
-            thursday: [moment(parkData.openingHours[3]), moment(parkData.closingHours[3])],
-            friday: [moment(parkData.openingHours[4]), moment(parkData.closingHours[4])],
-            saturday: [moment(parkData.openingHours[5]), moment(parkData.closingHours[5])],
-            sunday: [moment(parkData.openingHours[6]), moment(parkData.closingHours[6])],
+            sunday: [dayjs(parkData.openingHours[0]), dayjs(parkData.closingHours[0])],
+            monday: [dayjs(parkData.openingHours[1]), dayjs(parkData.closingHours[1])],
+            tuesday: [dayjs(parkData.openingHours[2]), dayjs(parkData.closingHours[2])],
+            wednesday: [dayjs(parkData.openingHours[3]), dayjs(parkData.closingHours[3])],
+            thursday: [dayjs(parkData.openingHours[4]), dayjs(parkData.closingHours[4])],
+            friday: [dayjs(parkData.openingHours[5]), dayjs(parkData.closingHours[5])],
+            saturday: [dayjs(parkData.openingHours[6]), dayjs(parkData.closingHours[6])],
           };
 
           form.setFieldsValue(initialValues);
@@ -82,11 +83,6 @@ const ParkEdit = () => {
 
   // Form Values
   const [form] = Form.useForm();
-  // Map Values
-  const [polygon, setPolygon] = useState<LatLng[][]>([]);
-  const [lines, setLines] = useState<any[]>([]);
-  const [lat, setLat] = useState(center.lat);
-  const [lng, setLng] = useState(center.lng);
 
   const parkStatusOptions = [
     {
@@ -112,8 +108,8 @@ const ParkEdit = () => {
       const openingHours: any[] = [];
       const closingHours: any[] = [];
       daysOfTheWeek.forEach((day, index) => {
-        openingHours.push(formValues[day][0] ? moment(formValues[day][0]).toISOString() : null);
-        closingHours.push(formValues[day][1] ? moment(formValues[day][1]).toISOString() : null);
+        openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null);
+        closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null);
       });
 
       const finalData = { ...rest, openingHours, closingHours };
@@ -210,10 +206,21 @@ const ParkEdit = () => {
             Park Hours <Text type="danger">{' *'}</Text>
           </Divider>
 
+          <Form.Item label={'Sunday'} key="sunday">
+            <Flex>
+              <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
+              </Form.Item>
+              <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('sunday')}>
+                <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
+              </Popconfirm>
+            </Flex>
+          </Form.Item>
+
           <Form.Item label={'Monday'} key="monday">
             <Flex>
               <Form.Item name="monday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('monday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -224,7 +231,7 @@ const ParkEdit = () => {
           <Form.Item label={'Tuesday'} key="tuesday">
             <Flex>
               <Form.Item name="tuesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('tuesday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -235,7 +242,7 @@ const ParkEdit = () => {
           <Form.Item label={'Wednesday'} key="wednesday">
             <Flex>
               <Form.Item name="wednesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('wednesday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -246,7 +253,7 @@ const ParkEdit = () => {
           <Form.Item label={'Thursday'} key="thursday">
             <Flex>
               <Form.Item name="thursday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('thursday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -257,7 +264,7 @@ const ParkEdit = () => {
           <Form.Item label={'Friday'} key="friday">
             <Flex>
               <Form.Item name="friday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('friday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -268,20 +275,9 @@ const ParkEdit = () => {
           <Form.Item label={'Saturday'} key="saturday">
             <Flex>
               <Form.Item name="saturday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('saturday')}>
-                <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
-              </Popconfirm>
-            </Flex>
-          </Form.Item>
-
-          <Form.Item label={'Sunday'} key="sunday">
-            <Flex>
-              <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
-              </Form.Item>
-              <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('sunday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
               </Popconfirm>
             </Flex>
