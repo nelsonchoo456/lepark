@@ -20,6 +20,7 @@ import {
   DatePicker,
   InputNumber,
   notification,
+  FormInstance,
 } from 'antd';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
@@ -75,8 +76,8 @@ const OccurrenceEdit = () => {
 
   useEffect(() => {
     if (occurrence) {
-      const dateOfBirth = moment(occurrence.dateOfBirth);
-      const dateObserved = moment(occurrence.dateObserved);
+      const dateOfBirth = dayjs(occurrence.dateOfBirth);
+      const dateObserved = dayjs(occurrence.dateObserved);
       const finalData = { ...occurrence, dateObserved, dateOfBirth };
 
       setCurrentImages(occurrence.images);
@@ -231,6 +232,36 @@ const OccurrenceEdit = () => {
     return <></>;
   }
 
+  const validateDates = (form: FormInstance) => ({
+    validator(_: any, value: moment.Moment) {
+      const dateOfBirth = form.getFieldValue('dateOfBirth') as moment.Moment;
+  
+      if (!value) {
+        // return Promise.reject(new Error('This field is required'));
+      }
+  
+      if (value.isAfter(moment(), 'day')) {
+        return Promise.reject(new Error('Date cannot be beyond today'));
+      }
+  
+      if (dateOfBirth && value.isBefore(dateOfBirth, 'day')) {
+        return Promise.reject(new Error('Date Observed cannot be earlier than Date of Birth'));
+      }
+  
+      return Promise.resolve();
+    }
+  });
+
+  const validateDateOfBirth = {
+    validator(_: any, value: moment.Moment) {
+      if (value.isAfter(moment(), 'day')) {
+        return Promise.reject(new Error('Date of Birth cannot be beyond today'));
+      }
+  
+      return Promise.resolve();
+    }
+  };
+  
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -249,19 +280,19 @@ const OccurrenceEdit = () => {
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
             <Input placeholder="Give this Plant Occurrence a title!" />
           </Form.Item>
-          <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }]}>
-            <DatePicker className="w-full" />
+          <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }, validateDates(form)]}>
+            <DatePicker className="w-full" maxDate={dayjs()}/>
           </Form.Item>
-          <Form.Item name="dateOfBirth" label="Date of Birth">
-            <DatePicker className="w-full" />
+          <Form.Item name="dateOfBirth" label="Date of Birth" rules={[validateDateOfBirth]}>
+            <DatePicker className="w-full" maxDate={dayjs()}/>
           </Form.Item>
           <Form.Item name="numberOfPlants" label="Number of Plants" rules={[{ required: true }]}>
             <InputNumber min={0} className="w-full" placeholder="Number of Plants" />
           </Form.Item>
-          <Form.Item name="biomass" label="Biomass" rules={[{ required: true }]}>
+          <Form.Item name="biomass" label="Biomass (in kg)" rules={[{ required: true }]}>
             <InputNumber min={0} placeholder="Biomass" />
           </Form.Item>
-          <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+          <Form.Item name="description" label="Description">
             <TextArea
               // value={value}
               // onChange={(e) => setValue(e.target.value)}

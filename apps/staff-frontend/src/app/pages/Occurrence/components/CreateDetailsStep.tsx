@@ -135,7 +135,7 @@ const CreateDetailsStep = ({
       <Form.Item name="numberOfPlants" label="Number of Plants" rules={[{ required: true }]}>
         <InputNumber min={0} className="w-full" placeholder="Number of Plants" />
       </Form.Item>
-      <Form.Item name="biomass" label="Biomass" rules={[{ required: true }]}>
+      <Form.Item name="biomass" label="Biomass (in kg)" rules={[{ required: true }]}>
         <InputNumber min={1} placeholder="Biomass" />
       </Form.Item>
       <Form.Item name="decarbonizationType" label="Decarbonization Type" rules={[{ required: true }]}>

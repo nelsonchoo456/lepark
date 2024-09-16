@@ -187,7 +187,7 @@ const OccurrenceDetails = () => {
                             color: 'white',
                             overflow: 'hidden',
                           }}
-                          className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                          className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
                         />
                       </div>
                     ))}

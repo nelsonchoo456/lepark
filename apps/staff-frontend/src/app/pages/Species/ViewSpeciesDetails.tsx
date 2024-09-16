@@ -185,7 +185,7 @@ const ViewSpeciesDetails = () => {
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
-          <div className="w-full md:w-1/2 lg:w-1/2">
+          <div className="w-full md:w-1/2 lg:w-1/2 ">
             <SpeciesCarousel images={species?.images || []} />
           </div>
 

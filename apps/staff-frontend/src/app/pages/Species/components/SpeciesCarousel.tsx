@@ -35,6 +35,7 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
                 style={{
                   width: '100%',
                   height: 'auto',
+                  maxHeight: '450px',
                   minWidth: '400px',
                   minHeight: '450px',
                   objectFit: 'cover',
