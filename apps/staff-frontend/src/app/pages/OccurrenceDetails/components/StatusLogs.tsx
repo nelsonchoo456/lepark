@@ -11,6 +11,8 @@ import {
   createStatusLog,
   deleteStatusLog,
 } from '@lepark/data-access';
+import useUploadImages from '../../../hooks/Images/useUploadImages';
+import { ImageInput } from '@lepark/common-ui';
 
 const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occurrence }) => {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const [form] = Form.useForm();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [statusLogToDelete, setStatusLogToDelete] = useState<string | null>(null);
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
 
   useEffect(() => {
     const fetchStatusLogs = async () => {
@@ -81,6 +84,9 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const handleCancel = () => {
     setIsModalVisible(false);
     form.resetFields();
+    // Clear selected files and preview images
+    selectedFiles.length = 0;
+    previewImages.length = 0;
   };
 
   const handleSubmit = async (values: any) => {
@@ -90,10 +96,13 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
           ...values,
           dateCreated: new Date().toISOString(),
           occurrenceId: occurrence.id,
-        });
+        }, selectedFiles);
         message.success('Status log created successfully');
         setIsModalVisible(false);
         form.resetFields();
+        // Clear selected files and preview images
+        selectedFiles.length = 0;
+        previewImages.length = 0;
         // Refresh status logs
         const response = await getStatusLogsByOccurrenceId(occurrence.id);
         setStatusLogs(response.data);
@@ -209,6 +218,30 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
               ))}
             </Select>
           </Form.Item>
+          <Form.Item label="Image">
+            <ImageInput
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg"
+              onClick={onInputClick}
+            />
+          </Form.Item>
+          {previewImages?.length > 0 && (
+            <Form.Item label="Image Previews">
+              <div className="flex flex-wrap gap-2">
+                {previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+              </div>
+            </Form.Item>
+          )}
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Submit

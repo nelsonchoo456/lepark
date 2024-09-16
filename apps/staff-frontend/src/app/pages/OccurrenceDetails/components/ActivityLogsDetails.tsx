@@ -197,7 +197,7 @@ const ActivityLogDetails: React.FC = () => {
           </Title>
           <Space size="large" wrap>
             {activityLog.images && activityLog.images.length > 0 ? (
-              activityLog.images.map((image, index) => <Image key={index} width={200} src={image} className="rounded" />)
+              activityLog.images.map((image, index) => <Image key={index} width={200} src={image} className="rounded-md" />)
             ) : (
               <div>No images available</div>
             )}

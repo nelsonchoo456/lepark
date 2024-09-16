@@ -4,8 +4,8 @@ import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Inp
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
-import { getStatusLogById, updateStatusLog } from '@lepark/data-access';
-import { StatusLogResponse, StatusLogUpdateData } from '@lepark/data-access';
+import { getStatusLogById, updateStatusLog, getOccurrenceById  } from '@lepark/data-access';
+import { StatusLogResponse, StatusLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 
 const { Title } = Typography;
@@ -15,6 +15,7 @@ const StatusLogDetails: React.FC = () => {
   const { statusLogId } = useParams<{ statusLogId: string }>();
   const [statusLog, setStatusLog] = useState<StatusLogResponse | null>(null);
   const [editedStatusLog, setEditedStatusLog] = useState<StatusLogResponse | null>(null);
+  const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
 
@@ -27,6 +28,10 @@ const StatusLogDetails: React.FC = () => {
         const response = await getStatusLogById(statusLogId);
         setStatusLog(response.data);
         setEditedStatusLog(response.data);
+
+        // Fetch occurrence details
+        const occurrenceResponse = await getOccurrenceById(response.data.occurrenceId);
+        setOccurrence(occurrenceResponse.data);
       } catch (error) {
         console.error('Error fetching status log details:', error);
         message.error('Failed to fetch status log details');
@@ -116,9 +121,9 @@ const StatusLogDetails: React.FC = () => {
       children: statusLog?.id,
     },
     {
-      key: 'occurrenceId',
-      label: 'Occurrence ID',
-      children: statusLog?.occurrenceId,
+      key: 'occurrenceTitle',
+      label: 'Occurrence',
+      children: occurrence?.title || 'Loading...',
     },
     {
       key: 'name',
@@ -221,7 +226,7 @@ const StatusLogDetails: React.FC = () => {
           </Title>
           <Space size="large" wrap>
             {statusLog.images && statusLog.images.length > 0 ? (
-              statusLog.images.map((image, index) => <Image key={index} width={200} src={image} />)
+              statusLog.images.map((image, index) => <Image key={index} width={200} src={image} className="rounded-md"/>)
             ) : (
               <div>No images available</div>
             )}

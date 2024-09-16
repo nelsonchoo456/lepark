@@ -2,12 +2,29 @@ import express from 'express';
 import StatusLogService from '../services/StatusLogService';
 import { Prisma } from '@prisma/client';
 import { StatusLogSchemaType } from '../schemas/statusLogSchema';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer();
 
-router.post('/createStatusLog', async (req, res) => {
+router.post('/createStatusLog', upload.array('files', 5), async (req, res) => {
   try {
-    const statusLog = await StatusLogService.createStatusLog(req.body);
+    const files = req.files as Express.Multer.File[];
+    const statusLogData = JSON.parse(req.body.data);
+
+    const uploadedUrls = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const fileName = `${Date.now()}-${file.originalname}`;
+        const imageUrl = await StatusLogService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+        uploadedUrls.push(imageUrl);
+      }
+    }
+
+    const statusLog = await StatusLogService.createStatusLog({
+      ...statusLogData,
+      images: uploadedUrls,
+    });
     res.status(201).json(statusLog);
   } catch (error) {
     res.status(400).json({ error: error.message });
