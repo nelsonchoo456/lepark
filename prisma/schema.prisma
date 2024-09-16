@@ -127,6 +127,7 @@ model Occurrence {
   statusLogs   StatusLog[]
 
   species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  @@index([zoneId])
   // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
 }
 
