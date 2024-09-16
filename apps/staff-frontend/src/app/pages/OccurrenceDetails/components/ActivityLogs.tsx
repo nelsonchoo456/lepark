@@ -125,23 +125,28 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
       title: 'Activity Log ID',
       dataIndex: 'id',
       key: 'id',
+      sorter: (a, b) => a.id.localeCompare(b.id),
     },
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Date Created',
       dataIndex: 'dateCreated',
       key: 'dateCreated',
       render: (dateCreated: string) => moment(dateCreated).format('D MMM YY, HH:mm'),
+      sorter: (a, b) => moment(a.dateCreated).valueOf() - moment(b.dateCreated).valueOf(),
     },
     {
       title: 'Activity Type',
       dataIndex: 'activityLogType',
       key: 'activityLogType',
       render: (activityLogType: string) => <Tag>{activityLogType}</Tag>,
+      filters: Object.values(ActivityLogTypeEnum).map(type => ({ text: type, value: type })),
+      onFilter: (value, record) => record.activityLogType === value,
     },
     {
       title: 'Actions',

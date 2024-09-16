@@ -57,23 +57,23 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const occurrenceStatusOptions = [
     {
       value: 'HEALTHY',
-      label: 'Healthy',
+      label: 'HEALTHY',
     },
     {
       value: 'MONITOR_AFTER_TREATMENT',
-      label: 'Monitor After Treatment',
+      label: 'MONITOR_AFTER_TREATMENT',
     },
     {
       value: 'NEEDS_ATTENTION',
-      label: 'Needs Attention',
+      label: 'NEEDS_ATTENTION',
     },
     {
       value: 'URGENT_ACTION_NEEDED',
-      label: 'Urgent Action Needed',
+      label: 'URGENT_ACTION_NEEDED',
     },
     {
       value: 'REMOVED',
-      label: 'Removed',
+      label: 'REMOVED',
     },
   ]
 
@@ -148,23 +148,28 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
       title: 'Status Log ID',
       dataIndex: 'id',
       key: 'id',
+      sorter: (a, b) => a.id.localeCompare(b.id),
     },
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Date Created',
       dataIndex: 'dateCreated',
       key: 'dateCreated',
       render: (dateCreated: string) => moment(dateCreated).format('D MMM YY, HH:mm'),
+      sorter: (a, b) => moment(a.dateCreated).valueOf() - moment(b.dateCreated).valueOf(),
     },
     {
       title: 'Status Type',
       dataIndex: 'statusLogType',
       key: 'statusLogType',
       render: (statusLogType: string) => <Tag>{statusLogType}</Tag>,
+      filters: occurrenceStatusOptions.map(type => ({ text: type.label, value: type.value })),
+      onFilter: (value, record) => record.statusLogType === value,
     },
     {
       title: 'Actions',
