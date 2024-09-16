@@ -83,6 +83,12 @@ class SpeciesService {
     try {
       const existingSpecies = await SpeciesDao.getSpeciesById(id);
 
+      const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(existingSpecies.speciesName);
+
+      if (checkForExistingSpecies) {
+        throw new Error('Identical species name already exists.');
+      }
+
       // Merge existing data with update data
       const mergedData = { ...existingSpecies, ...data };
 

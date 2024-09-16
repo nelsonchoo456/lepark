@@ -223,11 +223,11 @@ const ViewEditSpecies = () => {
         navigate(`/species/${speciesIdFromLocation}`);
       }, 1000);
     } catch (error) {
-      console.error('Error saving species:', error);
-      messageApi.open({
+      message.error(String(error));
+      /*messageApi.open({
         type: 'error',
         content: 'Failed to save species. Please try again.',
-      });
+      });*/
     } finally {
       setIsSubmitting(false);
     }
