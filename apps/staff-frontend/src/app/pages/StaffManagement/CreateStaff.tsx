@@ -138,7 +138,7 @@ const CreateStaff: React.FC = () => {
               ))}
           </Select>
         </Form.Item>
-        <Form.Item name="emailInput" label="Email" rules={[{ required: true, type: 'email', message: 'Please enter an email.' }]}>
+        <Form.Item name="emailInput" label="Email" rules={[{ required: true, message: 'Please enter an email.' }, { type: 'email', message: 'Please enter a valid email.' }]}>
           <Input />
         </Form.Item>
         {/* <Form.Item name="passwordInput" label="Password" rules={[

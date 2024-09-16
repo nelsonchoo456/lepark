@@ -39,6 +39,7 @@ const ViewStaffDetails = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [staff, setStaff] = useState<StaffResponse>(initialUser);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
+  const [emailError, setEmailError] = useState('');
   const [contactNumberError, setContactNumberError] = useState('');
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
@@ -174,18 +175,34 @@ const ViewStaffDetails = () => {
       setInEditMode(false); // Exit edit mode
     } catch (error: any) {
       console.error(error);
-      // TODO: filter out specific error messages from the response
-      message.error(error.message || 'Failed to update staff details.');
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('Unique constraint failed on the fields: (`email`)')) {
+        message.error('The email address is already in use. Please use a different email.');
+      } else {
+        message.error(errorMessage || 'Failed to update staff details.');
+      }
     }
   };
 
   const handleSave = () => {
     const isContactNumberValid = validateContactNumber(editedUser?.contactNumber ?? '');
-    if (isContactNumberValid && validateInputs()) {
+    const isEmailValid = validateEmail(editedUser?.email ?? '');
+    if (isContactNumberValid && isEmailValid && validateInputs()) {
       onFinish(editedUser);
       setInEditMode(false);
     } else {
       message.warning('All fields are required.');
+    }
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Invalid email format');
+      return false;
+    } else {
+      setEmailError('');
+      return true;
     }
   };
 
@@ -198,6 +215,12 @@ const ViewStaffDetails = () => {
       setContactNumberError('');
       return true;
     }
+  };
+
+  const handleEmailChange = (e: { target: { value: any } }) => {
+    const value = e.target.value;
+    validateEmail(value);
+    handleInputChange('email', value);
   };
 
   const handleContactNumberChange = (e: { target: { value: any } }) => {
@@ -272,8 +295,16 @@ const ViewStaffDetails = () => {
       key: 'email',
       label: 'Email',
       children: inEditMode ? (
-        <Input placeholder="Email" value={editedUser?.email ?? ''} onChange={(e) => handleInputChange('email', e.target.value)} required />
-      ) : (
+        <Tooltip title={emailError} visible={!!emailError} placement="right" color="#73a397">
+        <Input
+          placeholder="Email"
+          value={editedUser?.email ?? ''}
+          onChange={handleEmailChange}
+          required
+          pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        />
+      </Tooltip>
+         ) : (
         <div className="flex items-center">{staff?.email ?? null}</div>
       ),
     },
