@@ -6,7 +6,7 @@ import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
 import { FiEye, FiSearch } from "react-icons/fi";
 import { deletePark, ParkResponse, StaffResponse, StaffType } from "@lepark/data-access";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { RiEdit2Line } from "react-icons/ri";
 import { useFetchParks } from "../../hooks/Parks/useFetchParks";
 import { MdDeleteOutline, MdOutlineDeleteOutline } from "react-icons/md";
@@ -19,8 +19,8 @@ const ParkList = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [parkToBeDeleted, setParkToBeDeleted] = useState<ParkResponse | null>(null);
-  // const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN) {
@@ -34,6 +34,18 @@ const ParkList = () => {
       navigate('/');
     }
   }, []);
+
+  const filteredParks = useMemo(() => {
+    return parks.filter((park) =>
+      Object.values(park).some((value) => 
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, parks]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   const columns: TableProps['columns'] = [
     {
@@ -118,8 +130,8 @@ const ParkList = () => {
     },
   ];
 
-  const navigateTo = (occurenceId: string) =>{
-    navigate(`/park/${occurenceId}`)
+  const navigateTo = (parkId: string) =>{
+    navigate(`/park/${parkId}`)
   }
 
   // Confirm Delete Modal utility
@@ -168,8 +180,9 @@ const ParkList = () => {
           placeholder="Search in Parks..."
           className="mb-4 bg-white"
           variant="filled"
+          onChange={handleSearch}
         />
-           <Tooltip title={user?.role !== StaffType.SUPERADMIN ? "Not allowed to create park!" : ""}>
+        <Tooltip title={user?.role !== StaffType.SUPERADMIN ? "Not allowed to create park!" : ""}>
           <Button
             type="primary"
             onClick={() => { navigate('/park/create'); }}
@@ -181,7 +194,11 @@ const ParkList = () => {
       </Flex>
       
       <Card>
-        <Table dataSource={parks} columns={columns} />
+        <Table 
+          dataSource={filteredParks} 
+          columns={columns} 
+          rowKey={(record) => record.id}
+        />
       </Card>
     </ContentWrapperDark>
   );

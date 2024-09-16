@@ -37,7 +37,7 @@ import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
-import { useRestrictOccurence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
 
 const center = {
   lat: 1.3503881629328163,
@@ -58,7 +58,7 @@ const attributes = ['name', 'description', 'address', 'contactNumber', 'openingH
 const OccurrenceEdit = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const { occurrenceId } = useParams();
-  const { occurrence, species, loading } = useRestrictOccurence(occurrenceId);
+  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
   const [form] = Form.useForm();
   const [createdData, setCreatedData] = useState<OccurrenceResponse>();
   // const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
@@ -67,16 +67,21 @@ const OccurrenceEdit = () => {
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const notificationShown = useRef(false);
-  
+
   useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
+    if (
+      user?.role !== StaffType.SUPERADMIN &&
+      user?.role !== StaffType.MANAGER &&
+      user?.role !== StaffType.BOTANIST &&
+      user?.role !== StaffType.ARBORIST
+    ) {
       if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Occurrence Creation page!',
-      });
-      notificationShown.current = true;
-    }
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access the Occurrence Creation page!',
+        });
+        notificationShown.current = true;
+      }
       navigate('/');
     }
   }, [user, navigate]);
@@ -91,7 +96,7 @@ const OccurrenceEdit = () => {
 
       form.setFieldsValue(finalData);
     }
-  }, [occurrence])
+  }, [occurrence]);
 
   // Map Values
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
@@ -136,10 +141,10 @@ const OccurrenceEdit = () => {
       }
 
       changedData.images = currentImages;
-      const occurenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
+      const occurrenceRes = await updateOccurrenceDetails(occurrence.id, changedData, selectedFiles);
       setPreviewImages([]);
-      if (occurenceRes.status === 200) {
-        setCreatedData(occurenceRes.data);
+      if (occurrenceRes.status === 200) {
+        setCreatedData(occurrenceRes.data);
         messageApi.open({
           type: 'success',
           content: 'Saved changes to Occurrence. Redirecting to Occurrence details page...',
@@ -230,10 +235,15 @@ const OccurrenceEdit = () => {
     },
   ];
 
-  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
+  if (
+    user?.role !== StaffType.SUPERADMIN &&
+    user?.role !== StaffType.MANAGER &&
+    user?.role !== StaffType.BOTANIST &&
+    user?.role !== StaffType.ARBORIST
+  ) {
     return <></>;
   }
-  
+
   return (
     <ContentWrapperDark>
       {contextHolder}

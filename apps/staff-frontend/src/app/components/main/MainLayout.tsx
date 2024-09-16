@@ -106,7 +106,7 @@ const MainLayout = () => {
       label: 'Occurrences',
       // children: [
       //   {
-      //     key: 'occurence/create',
+      //     key: 'occurrence/create',
       //     label: 'Create',
       //     onClick: () => navigate('/occurrence/create'),
       //   }

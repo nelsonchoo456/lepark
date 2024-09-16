@@ -6,8 +6,8 @@ import { FiEye, FiSearch } from 'react-icons/fi';
 import { StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
-import { MdDeleteOutline, MdOutlineDeleteOutline } from "react-icons/md";
-import { useState } from 'react';
+import { MdDeleteOutline, MdOutlineDeleteOutline } from 'react-icons/md';
+import { useState, useMemo } from 'react';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { deleteZone } from '@lepark/data-access';
 
@@ -17,7 +17,20 @@ const ZoneList: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [zoneToBeDeleted, setZoneToBeDeleted] = useState<ZoneResponse | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const filteredZones = useMemo(() => {
+    return zones.filter((zone) =>
+      Object.values(zone).some((value) => 
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, zones]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/zones/${occurrenceId}`);
@@ -127,11 +140,11 @@ const ZoneList: React.FC = () => {
 
   const columnsForSuperadmin: TableProps['columns'] = [
     {
-      title: 'Park',
-      dataIndex: 'parkName',
-      key: 'parkName',
+      title: 'Zone Name',
+      dataIndex: 'name',
+      key: 'name',
       render: (text) => (
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align="center" className="font-semibold">
           {text}
         </Flex>
       ),
@@ -141,11 +154,11 @@ const ZoneList: React.FC = () => {
       width: '33%',
     },
     {
-      title: 'Zone Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'Park',
+      dataIndex: 'parkName',
+      key: 'parkName',
       render: (text) => (
-        <Flex justify="space-between" align="center" className="font-semibold">
+        <Flex justify="space-between" align="center">
           {text}
         </Flex>
       ),
@@ -220,7 +233,12 @@ const ZoneList: React.FC = () => {
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
           </Tooltip>
           <Tooltip title="Delete">
-            <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ZoneResponse)}  />
+            <Button
+              danger
+              type="link"
+              icon={<MdDeleteOutline className="text-error" />}
+              onClick={() => showDeleteModal(record as ZoneResponse)}
+            />
           </Tooltip>
         </Flex>
       ),
@@ -236,18 +254,18 @@ const ZoneList: React.FC = () => {
   const cancelDelete = () => {
     setZoneToBeDeleted(null);
     setDeleteModalOpen(false);
-  }
+  };
 
   const showDeleteModal = (zone: ZoneResponse) => {
     setDeleteModalOpen(true);
-    console.log(zone)
+    console.log(zone);
     setZoneToBeDeleted(zone);
-  }
+  };
 
   const deleteZoneToBeDeleted = async () => {
     try {
       if (!zoneToBeDeleted) {
-        throw new Error("Unable to delete Zone at this time");
+        throw new Error('Unable to delete Zone at this time');
       }
       await deleteZone(zoneToBeDeleted.id);
       triggerFetch();
@@ -258,7 +276,7 @@ const ZoneList: React.FC = () => {
         content: `Deleted Zone: ${zoneToBeDeleted.name}.`,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setZoneToBeDeleted(null);
       setDeleteModalOpen(false);
       messageApi.open({
@@ -266,24 +284,41 @@ const ZoneList: React.FC = () => {
         content: `Unable to delete Zone at this time. Please try again later.`,
       });
     }
-  } 
+  };
 
   return (
     <ContentWrapperDark>
       {contextHolder}
       <PageHeader>Zones Management</PageHeader>
-      <ConfirmDeleteModal onConfirm={deleteZoneToBeDeleted} open={deleteModalOpen} description='Deleting a Zone deletes all of its Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
+      <ConfirmDeleteModal
+        onConfirm={deleteZoneToBeDeleted}
+        open={deleteModalOpen}
+        description="Deleting a Zone deletes all of its Occurrences."
+        onCancel={cancelDelete}
+      ></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
-        <Input suffix={<FiSearch />} placeholder="Search in Zones..." className="mb-4 bg-white" variant="filled" />
-        <Tooltip title={user?.role !== StaffType.SUPERADMIN 
-          && user?.role !== StaffType.MANAGER 
-          && user?.role !== StaffType.LANDSCAPE_ARCHITECT ? "Not allowed to create zone!" : ""}>
+        <Input 
+          suffix={<FiSearch />} 
+          placeholder="Search in Zones..." 
+          className="mb-4 bg-white" 
+          variant="filled" 
+          onChange={handleSearch}
+        />
+        <Tooltip
+          title={
+            user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.LANDSCAPE_ARCHITECT
+              ? 'Not allowed to create zone!'
+              : ''
+          }
+        >
           <Button
             type="primary"
-            onClick={() => { navigate('/zone/create'); }}
-            disabled={user?.role !== StaffType.SUPERADMIN 
-              && user?.role !== StaffType.MANAGER 
-              && user?.role !== StaffType.LANDSCAPE_ARCHITECT}
+            onClick={() => {
+              navigate('/zone/create');
+            }}
+            disabled={
+              user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.LANDSCAPE_ARCHITECT
+            }
           >
             Create Zone
           </Button>
@@ -292,9 +327,9 @@ const ZoneList: React.FC = () => {
 
       <Card>
         {user?.role === StaffType.SUPERADMIN ? (
-          <Table dataSource={zones} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+          <Table dataSource={filteredZones} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
         ) : (
-          <Table dataSource={zones} columns={columns} rowKey="id" loading={loading} />
+          <Table dataSource={filteredZones} columns={columns} rowKey="id" loading={loading} />
         )}
       </Card>
     </ContentWrapperDark>

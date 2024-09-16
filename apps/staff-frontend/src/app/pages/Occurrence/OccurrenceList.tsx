@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
 import moment from 'moment';
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getAllOccurrences, OccurrenceResponse, getSpeciesById, deleteOccurrence, StaffType, StaffResponse } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -18,6 +18,19 @@ const OccurrenceList: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [occurrenceToBeDeleted, setOccurrenceToBeDeleted] = useState<OccurrenceResponse | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredOccurrences = useMemo(() => {
+    return occurrences.filter((occurrence) =>
+      Object.values(occurrence).some((value) => 
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, occurrences]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
@@ -312,7 +325,13 @@ const OccurrenceList: React.FC = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <ConfirmDeleteModal onConfirm={deleteOccurrenceToBeDeleted} open={deleteModalOpen} onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
-        <Input suffix={<FiSearch />} placeholder="Search in Occurrences..." className="mb-4 bg-white" variant="filled" />
+        <Input 
+          suffix={<FiSearch />} 
+          placeholder="Search in Occurrences..." 
+          className="mb-4 bg-white" 
+          variant="filled" 
+          onChange={handleSearch}
+        />
         <Button
           type="primary"
           onClick={() => {
@@ -326,9 +345,9 @@ const OccurrenceList: React.FC = () => {
 
       <Card>
         {user?.role === StaffType.SUPERADMIN ? (
-          <Table dataSource={occurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+          <Table dataSource={filteredOccurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
         ) : (
-          <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
+          <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} />
         )}
       </Card>
     </ContentWrapperDark>

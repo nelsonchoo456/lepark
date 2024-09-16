@@ -1,10 +1,10 @@
-import { useAuth } from "@lepark/common-ui";
-import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType } from "@lepark/data-access";
-import { message, notification } from "antd";
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from '@lepark/common-ui';
+import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { message, notification } from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export const useRestrictOccurence = (occurrenceId?: string) => {
+export const useRestrictOccurrence = (occurrenceId?: string) => {
   const { user } = useAuth<StaffResponse>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
   const [species, setSpecies] = useState<SpeciesResponse>();
@@ -19,7 +19,7 @@ export const useRestrictOccurence = (occurrenceId?: string) => {
       return;
     }
     fetchOccurrence(occurrenceId);
-  }, [])
+  }, []);
 
   const fetchOccurrence = async (occurrenceId: string) => {
     setLoading(true);
@@ -30,20 +30,18 @@ export const useRestrictOccurence = (occurrenceId?: string) => {
         const occurrence = occurrenceResponse.data;
         handleParkRestrictions(occurrence);
       } else {
-        throw new Error("Unable to fetch Occurrence");
+        throw new Error('Unable to fetch Occurrence');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   // && (user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.ARBORIST))
   const handleParkRestrictions = async (occurrence: OccurrenceResponse) => {
-    if (user?.role === StaffType.SUPERADMIN ||
-      (user?.parkId === occurrence.parkId)
-    ) {
+    if (user?.role === StaffType.SUPERADMIN || user?.parkId === occurrence.parkId) {
       setOccurrence(occurrence);
       const speciesResponse = await getSpeciesById(occurrence.speciesId);
       setSpecies(speciesResponse.data);
@@ -57,7 +55,7 @@ export const useRestrictOccurence = (occurrenceId?: string) => {
       }
       navigate('/');
     }
-  }
+  };
 
   return { occurrence, species, loading };
-}
+};
