@@ -11,6 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 
 import { FiEdit2, FiEye, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { RiEdit2Line } from 'react-icons/ri';
+import { MdDeleteOutline } from 'react-icons/md';
 
 const SpeciesPage = () => {
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
@@ -86,15 +88,17 @@ const SpeciesPage = () => {
       title: 'Common Name',
       dataIndex: 'commonName',
       key: 'commonName',
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.commonName.localeCompare(b.commonName),
-      render: (text) => text,
+      width: '20%',
     },
     {
       title: 'Scientific Name',
       dataIndex: 'speciesName',
       key: 'speciesName',
-      sorter: (a, b) => a.speciesName.localeCompare(b.speciesName),
       render: (text) => <i>{text}</i>,
+      sorter: (a, b) => a.speciesName.localeCompare(b.speciesName),
+      width: '20%',
     },
     {
       title: 'Class',
@@ -102,7 +106,7 @@ const SpeciesPage = () => {
       key: 'class',
       filters: classFilters,
       onFilter: (value, record) => record.class === value,
-      render: (text) => text,
+      width: '15%',
     },
     {
       title: 'Order',
@@ -110,7 +114,7 @@ const SpeciesPage = () => {
       key: 'order',
       filters: orderFilters,
       onFilter: (value, record) => record.order === value,
-      render: (text) => text,
+      width: '15%',
     },
     {
       title: 'Conservation Status',
@@ -153,6 +157,7 @@ const SpeciesPage = () => {
           </Tag>
         );
       },
+      width: '20%',
     },
     {
       title: 'Actions',
@@ -165,16 +170,16 @@ const SpeciesPage = () => {
           {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) && (
             <>
               <Tooltip title="Edit Species">
-                <Button type="link" icon={<FiEdit2 />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
               </Tooltip>
               <Tooltip title="Delete Species">
-                <Button type="link" icon={<FiTrash2 />} onClick={() => handleDelete(record.id)} />
+                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
               </Tooltip>
             </>
           )}
         </Flex>
       ),
-      width: '1%',
+      width: '10%',
     },
   ];
 

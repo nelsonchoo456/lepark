@@ -174,7 +174,7 @@ const OccurrenceEdit = () => {
     },
     {
       value: 'TREE_MANGROVE',
-      label: 'Tree Mangronve',
+      label: 'Tree Mangrove',
     },
     {
       value: 'SHRUB',
@@ -261,7 +261,7 @@ const OccurrenceEdit = () => {
           <Form.Item name="biomass" label="Biomass" rules={[{ required: true }]}>
             <InputNumber min={0} placeholder="Biomass" />
           </Form.Item>
-          <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+          <Form.Item name="description" label="Description">
             <TextArea
               // value={value}
               // onChange={(e) => setValue(e.target.value)}

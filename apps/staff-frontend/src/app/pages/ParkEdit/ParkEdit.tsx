@@ -137,7 +137,7 @@ const ParkEdit = () => {
         setCreatedData(response.data);
         messageApi.open({
           type: 'success',
-          content: 'Saved changes to Park.',
+          content: 'Saved changes to Park.  Redirecting to Park details page...',
         });
         setTimeout(() => {
           navigate(`/park/${park.id}`);
