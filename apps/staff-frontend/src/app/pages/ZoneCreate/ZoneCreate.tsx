@@ -95,6 +95,10 @@ const ZoneCreate = () => {
       if (response.status === 201) {
         setCreatedData(response.data)
         setCurrStep(2);
+        messageApi.open({
+          type: 'success',
+          content: 'Zone created successfully',
+        });
       }
       
     } catch (error) {

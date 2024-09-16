@@ -57,7 +57,7 @@ class ParkDao {
     await prisma.$queryRaw`
       CREATE TABLE IF NOT EXISTS "Park" (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         description TEXT,
         address TEXT,
         "contactNumber" TEXT,
@@ -135,37 +135,45 @@ class ParkDao {
 
   async updatePark(id: number, data: Partial<ParkUpdateData>): Promise<ParkResponseData> {
     await this.initParksDB();
-  
+
+    // If the name is being updated, check if it already exists
+    if (data.name) {
+      const existingPark = await this.getParkByName(data.name);
+      if (existingPark && existingPark.id !== id) {
+        throw new Error('A park with this name already exists');
+      }
+    }
+
     const updates: string[] = [];
     const values: any[] = [];
-  
+
     // Dynamically build the query for each field if it's provided
     if (data.name) {
       updates.push(`name = $${updates.length + 1}`);
       values.push(data.name);
     }
-  
+
     if (data.description) {
       updates.push(`description = $${updates.length + 1}`);
       values.push(data.description);
     }
-  
+
     if (data.address) {
       updates.push(`"address" = $${updates.length + 1}`);
       values.push(data.address);
     }
-  
+
     if (data.contactNumber) {
       updates.push(`"contactNumber" = $${updates.length + 1}`);
       values.push(data.contactNumber);
     }
-  
+
     if (data.openingHours) {
       updates.push(`"openingHours" = $${updates.length + 1}::timestamp[]`);
       const openingHoursArray = data.openingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
       values.push(openingHoursArray);
     }
-  
+
     if (data.closingHours) {
       updates.push(`"closingHours" = $${updates.length + 1}::timestamp[]`);
       const closingHoursArray = data.closingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
@@ -176,27 +184,27 @@ class ParkDao {
       updates.push(`images = $${updates.length + 1}::text[]`);
       values.push(data.images);
     }
-  
+
     if (data.geom) {
       updates.push(`geom = ST_GeomFromText($${updates.length + 1})`);
       values.push(data.geom);
     }
-  
+
     if (data.paths) {
       updates.push(`paths = ST_LineFromText($${updates.length + 1}, 4326)`);
       values.push(data.paths);
     }
-  
+
     if (data.parkStatus) {
       updates.push(`"parkStatus" = $${updates.length + 1}::"PARK_STATUS_ENUM"`);
       values.push(data.parkStatus);
     }
-  
+
     // Check if there are updates to be made
     if (updates.length === 0) {
       throw new Error('No attributes provided for update');
     }
-  
+
     // Build the final SQL query
     const query = `
       UPDATE "Park"
@@ -204,13 +212,13 @@ class ParkDao {
       WHERE id = $${updates.length + 1}
       RETURNING id, name, description, address, "contactNumber", "openingHours", "closingHours", "images", ST_AsGeoJSON(geom) as geom, ST_AsGeoJSON(paths) as paths, "parkStatus";
     `;
-  
+
     // Add the id to the list of values
     values.push(id);
-  
+
     // Execute the query with parameterized values
     const updatedPark = await prisma.$queryRawUnsafe(query, ...values);
-  
+
     if (Array.isArray(updatedPark) && updatedPark.length > 0) {
       const result = updatedPark[0];
       return {
@@ -253,6 +261,38 @@ class ParkDao {
     // Return a random image wrapped in an array
     const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
     return [randomImage];
+  }
+
+  async getParkByName(name: string): Promise<any | null> {
+    await this.initParksDB();
+
+    const park = await prisma.$queryRaw`
+      SELECT 
+        id,
+        name,
+        description,
+        "address", 
+        "contactNumber",
+        "openingHours",
+        "closingHours",
+        "images", 
+        ST_AsGeoJSON("geom") as geom,
+        ST_AsGeoJSON("paths") as paths,
+        "parkStatus"
+      FROM "Park"
+      WHERE name = ${name};
+    `;
+
+    if (Array.isArray(park) && park.length > 0) {
+      const result = park[0];
+      return {
+        ...result,
+        geom: JSON.parse(result.geom),
+        paths: JSON.parse(result.paths)
+      };
+    } else {
+      return null;
+    }
   }
 }
 
