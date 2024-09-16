@@ -10,6 +10,7 @@ import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import PageHeader2 from '../../components/main/PageHeader2';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -127,6 +128,19 @@ const ParkCreate = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Park Management',
+      pathKey: '/park',
+      isMain: true,
+    },
+    {
+      title: 'Create',
+      pathKey: `/park/create`,
+      isCurrent: true,
+    },
+  ];
+
   if (user?.role !== StaffType.SUPERADMIN) { 
     return <></>;
   }
@@ -134,7 +148,7 @@ const ParkCreate = () => {
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Create a Park</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         <Steps
           current={currStep}

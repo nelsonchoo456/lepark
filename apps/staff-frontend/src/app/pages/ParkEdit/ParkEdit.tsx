@@ -10,6 +10,7 @@ import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import PageHeader2 from '../../components/main/PageHeader2';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -182,10 +183,27 @@ const ParkEdit = () => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
+  const breadcrumbItems = [
+    {
+      title: 'Park Management',
+      pathKey: '/park',
+      isMain: true,
+    },
+    {
+      title: park?.name ? park?.name : "Details",
+      pathKey: `/park/${park?.id}`,
+    },
+    {
+      title: "Edit",
+      pathKey: `/park/${park?.id}/edit`,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Edit Park</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
           {contextHolder}

@@ -11,6 +11,7 @@ import { RiEdit2Line } from "react-icons/ri";
 import { useFetchParks } from "../../hooks/Parks/useFetchParks";
 import { MdDeleteOutline, MdOutlineDeleteOutline } from "react-icons/md";
 import ConfirmDeleteModal from "../../components/modal/ConfirmDeleteModal";
+import PageHeader2 from "../../components/main/PageHeader2";
 
 const ParkList = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
@@ -157,9 +158,18 @@ const ParkList = () => {
     }
   } 
 
+  const breadcrumbItems = [
+    {
+      title: 'Parks Management',
+      pathKey: '/park',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Parks Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       {contextHolder}
       <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Park deletes all of its Zones and Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>

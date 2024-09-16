@@ -8,6 +8,7 @@ import { FiSun } from 'react-icons/fi';
 import AboutTab from './components/AboutTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
+import PageHeader2 from '../../components/main/PageHeader2';
 const { Text } = Typography;
 
 const ParkDetails = () => {
@@ -101,9 +102,22 @@ const ParkDetails = () => {
     width: '100%',
   };
 
+  const breadcrumbItems = [
+    {
+      title: 'Parks Management',
+      pathKey: '/park',
+      isMain: true,
+    },
+    {
+      title: park?.name ? park?.name : "Details",
+      pathKey: `/park/${park?.id}`,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Park Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
