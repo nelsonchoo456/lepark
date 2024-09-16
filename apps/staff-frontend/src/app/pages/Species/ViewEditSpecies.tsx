@@ -34,7 +34,7 @@ const ViewEditSpecies = () => {
 
   useEffect(() => {
     if (user && user.id !== '') {
-      if (user.role === StaffType.LANDSCAPE_ARCHITECT || user.role === StaffType.VENDOR_MAANGER || user.role === StaffType.PARK_RANGER) {
+      if (!['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role)) {
         if (!notificationShown.current) {
           notification.error({
             message: 'Access Denied',
