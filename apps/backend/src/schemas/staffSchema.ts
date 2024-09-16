@@ -29,7 +29,8 @@ export const PasswordResetSchema = z.object({
 
 export const PasswordChangeSchema = z.object({
   newPassword: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
-  currentPassword: z.string().min(8, { message: 'Current password is required' }),
+  currentPassword: z.string(),
+  // currentPassword: z.string().min(8, { message: 'Current password is required' }),
   staffId: z.string().min(1, { message: 'Staff ID is required' })
 });
 
