@@ -88,6 +88,7 @@ const SpeciesPage = () => {
       key: 'commonName',
       sorter: (a, b) => a.commonName.localeCompare(b.commonName),
       render: (text) => text,
+      fixed: 'left',
     },
     {
       title: 'Scientific Name',
@@ -148,7 +149,7 @@ const SpeciesPage = () => {
             color = 'default';
         }
         return (
-          <Tag color={color} style={style}>
+          <Tag color={color} style={style} bordered={false}>
             {status.replace(/_/g, ' ')}
           </Tag>
         );
@@ -174,7 +175,7 @@ const SpeciesPage = () => {
           )}
         </Flex>
       ),
-      width: '1%',
+      width: '120px',
     },
   ];
 
@@ -197,7 +198,7 @@ const SpeciesPage = () => {
       </Flex>
 
       <Card>
-        <Table dataSource={filteredSpecies} columns={columns} rowKey="id" loading={loading} />
+        <Table dataSource={filteredSpecies} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
       </Card>
     </ContentWrapperDark>
   );
