@@ -124,7 +124,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
     },
   ];
 
-  const columnsForSuperadmin: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
+  const columnsForAccess: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
       title: 'Label',
       dataIndex: 'title',
@@ -240,7 +240,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       if (!occurrenceToBeDeleted) {
         throw new Error('Unable to delete Occurrence at this time');
       }
-      await deleteOccurrence(occurrenceToBeDeleted.id);
+      await deleteOccurrence(occurrenceToBeDeleted.id, user?.id as string);
       // triggerFetch();
       setOccurrenceToBeDeleted(null);
       setDeleteModalOpen(false);
@@ -261,12 +261,12 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
 
   return (
     <>
-      {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) ? (
-        <Table dataSource={occurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
-      ) : (
-        <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
-      )}
-    </>
+    {user && ['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role) ? (
+      <Table dataSource={occurrences} columns={columnsForAccess} rowKey="id" loading={loading} />
+    ) : (
+      <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
+    )}
+  </>
   );
 };
 

@@ -189,9 +189,11 @@ const SpeciesPage = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
-        <Button type="primary" onClick={() => navigate('/species/create')}>
-          Create Species
-        </Button>
+        {user && ['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role) && (
+          <Button type="primary" onClick={() => navigate('/species/create')}>
+            Create Species
+          </Button>
+        )}
       </Flex>
 
       <Card>
