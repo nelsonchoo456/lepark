@@ -235,6 +235,25 @@ class ParkDao {
       throw new Error(`Park with ID ${id} not found`);
     }
   }
+
+  async getRandomParkImage(): Promise<string[]> {
+    // Fetch all parks
+    const parks: { images: string[] | null }[] = await prisma.$queryRaw`
+      SELECT images FROM "Park";
+    `;
+
+    // Collect all images into a single array
+    const allImages: string[] = parks.flatMap((park: { images: string[] }) => park.images || []);
+
+    // If there are no images, return an empty array
+    if (allImages.length === 0) {
+      return [];
+    }
+
+    // Return a random image wrapped in an array
+    const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
+    return [randomImage];
+  }
 }
 
 const formatDatesArray = (datesArray: Date[]) => {

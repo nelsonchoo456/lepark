@@ -4,11 +4,27 @@ import {
   Divider,
   LogoText,
 } from '@lepark/common-ui';
+import { getRandomParkImage } from '@lepark/data-access';
 import { Button } from 'antd';
+import { useEffect, useState } from 'react';
 import { IoIosInformationCircleOutline } from 'react-icons/io';
 import { IoCallOutline } from 'react-icons/io5';
 
 const LoginAnnouncements = () => {
+  const [parkImages, setParkImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchRandomParkImage();
+  },[])
+
+  const fetchRandomParkImage = async () => {
+    const imageRes = await getRandomParkImage();
+    if (imageRes.status === 200) {
+      const imageData = imageRes.data;
+      setParkImages(imageData)
+    }
+  }
+
   return (
     <AnnouncementsPanel>
       <AnnouncementsCard className="relative overflow-hidden">
@@ -16,7 +32,7 @@ const LoginAnnouncements = () => {
           style={{
             width: '100%',
             height: '100%',
-            backgroundImage: `url('https://media.timeout.com/images/105739621/750/562/image.jpg')`,
+            backgroundImage: `url('${parkImages && parkImages.length > 0 ? parkImages[0] : ""}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             color: 'white',

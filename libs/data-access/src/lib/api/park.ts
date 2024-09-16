@@ -73,6 +73,19 @@ export async function updatePark(id: number, data: Partial<ParkResponse>): Promi
   }
 }
 
+export async function getRandomParkImage(): Promise<AxiosResponse<string[]>> {
+  try {
+    const response: AxiosResponse<string[]> = await axiosClient.get(`/getRandomParkImage`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function deletePark(id: number): Promise<AxiosResponse<void>> {
   try {
     const response: AxiosResponse<void> = await axiosClient.delete(`/deletePark/${id}`);

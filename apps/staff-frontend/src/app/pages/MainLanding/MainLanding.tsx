@@ -1,8 +1,9 @@
 import { ContentWrapper, ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import MainLayout from '../../components/main/MainLayout';
-import { Badge, Card, Statistic } from 'antd';
+import { Badge, Card, Empty, Statistic } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const MainLanding = () => {
   const chartOptions: ApexOptions = {
@@ -45,32 +46,49 @@ const MainLanding = () => {
   const chartSeries = [
     {
       name: 'Visitors',
-      data: [150, 200, 170, 210, 300, 400, 380], // Sample daily visitor counts
+      data: [0, 0, 0, 0, 0, 0, 0], // Sample daily visitor counts
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Dashboard",
+      pathKey: '/',
+      isMain: true,
+    },
+  ]
+
   return (
     <ContentWrapper>
-      <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-4">
-        <Card className="w-full bg-green-50 p-4" styles={{ body: { padding: 0 }}}>
-          <Statistic title={<LogoText className='text-lg mr-2'>Live Visitor Count</LogoText>} value={93} />
-        </Card>
-        <Card className="w-full bg-green-50">
-          <Statistic title={<Badge dot><LogoText className='text-lg mr-2'>Plants Needing Care</LogoText></Badge>} value={2} />
-        </Card>
-        <Card className="w-full bg-green-50">
-        <Statistic title={<Badge dot status="warning"><LogoText className='text-lg mr-2'>Plants Needing Monitoring</LogoText></Badge>} value={4} />
-        </Card>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <div className=''>
+        <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-4">
+          <Card className="w-full bg-green-50 p-4" styles={{ body: { padding: 0 }}}>
+            {/* <Statistic title={<LogoText className='text-lg mr-2'>Live Visitor Count</LogoText>} /> */}
+            <LogoText className='text-lg mr-2'>Live Visitor Count</LogoText>
+            <div className='flex justify-center items-center h-full mt-4 opacity-50'>No data</div>
+          </Card>
+          <Card className="w-full bg-green-50">
+            <Statistic title={<LogoText className='text-lg mr-2'>Plants Needing Care</LogoText>} value={2} />
+          </Card>
+          <Card className="w-full bg-green-50">
+            {/* <Statistic title={<Badge dot status="warning"><LogoText className='text-lg mr-2'>Pending Tasks</LogoText></Badge>}/> */}
+            <LogoText className='text-lg mr-2'>Pending Tasks</LogoText>
+            <div className='flex justify-center items-center h-full mt-4 opacity-50'>No data</div>
+          </Card>
+        </div>
+        <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-4">
+          <Card className="w-full h-86">
+            <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
+          </Card>
+          <Card className="w-full h-86">
+            <LogoText>Latest Tasks</LogoText>
+            <div className='flex justify-center items-center h-full mt-20 opacity-50'>No data</div>
+          </Card>
+        </div>
+        
       </div>
-      <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-4">
-        <Card className="w-full h-64">
-        <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
-        </Card>
-        <Card className="w-full h-64">
-          <LogoText>Latest Tasks</LogoText>
-        </Card>
-      </div>
-      <div className="flex flex-col md:flex-row md:justify-between gap-4">
+      {/* <div className="flex flex-col md:flex-row md:justify-between gap-4">
         <Card className="w-full h-64">
           <LogoText>Something else</LogoText>
         </Card>
@@ -78,7 +96,7 @@ const MainLanding = () => {
           
           <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
         </Card>
-      </div>
+      </div> */}
     </ContentWrapper>
   );
 };
