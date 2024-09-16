@@ -32,10 +32,12 @@ class StaffService {
         throw new Error('Email already exists.');
       }
 
-      // Check if the park exists
-      const parkExists = await ParkDao.getParkById(data.parkId);
-      if (!parkExists) {
-        throw new Error('The specified park does not exist.');
+      // Check if the park exists if the user is not a superadmin
+      if (data.role !== StaffRoleEnum.SUPERADMIN) {
+        const parkExists = await ParkDao.getParkById(data.parkId);
+        if (!parkExists) {
+          throw new Error('The specified park does not exist.');
+        }
       }
 
       const hashedPassword = await bcrypt.hash(data.password, 10);
