@@ -101,7 +101,7 @@ const ProfilePage = () => {
       }
       try {
         const response = await getFavoriteSpecies(user.id);
-        const data: GetFavoriteSpeciesResponse = response.data;
+        const data: SpeciesResponse[] = response.data;
         console.log('Response:', response);
         console.log('Data from response:', data);
         if (Array.isArray(data)) {

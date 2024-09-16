@@ -9,13 +9,14 @@ interface LoginStepProps {
 
 const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const handleSubmit = async (values: any) => {
     const { email, password } = values;
     try {
       const response = await login(email, password);
       if (response.requiresPasswordReset) {
+        logout(); // to clear staff token in cookie
         const resetToken = await getTokenForResetPasswordForFirstLogin(response.id);
         navigate(`/reset-password?token=${resetToken.data.token}`);
       } else {

@@ -15,7 +15,7 @@ import styled from 'styled-components';
 import { MdArrowDropDown } from 'react-icons/md';
 import { IoIosArrowDown, IoMdHeart, IoMdHeartDislike, IoMdHeartEmpty } from 'react-icons/io';
 import { useHandleFavoriteSpecies } from '../../hooks/useHandleFavoriteSpecies';
-import { IoEarth } from "react-icons/io5";
+import { IoEarth } from 'react-icons/io5';
 import { convertEnumToNormalFormat } from '@lepark/data-utility';
 // Add these type definitions at the top of your file
 type OrdersType = { orders: string[] };
@@ -130,42 +130,40 @@ const Discover = () => {
   };
 
   const renderConservationStatus = (status: string) => {
-  let color: string;
-  let style: React.CSSProperties = {};
-  switch (status) {
-    case 'LEAST_CONCERN':
-      color = 'green';
-      break;
-    case 'NEAR_THREATENED':
-      color = 'lime';
-      break;
-    case 'VULNERABLE':
-      color = 'orange';
-      break;
-    case 'ENDANGERED':
-      color = 'volcano';
-      break;
-    case 'CRITICALLY_ENDANGERED':
-      color = 'red';
-      break;
-    case 'EXTINCT_IN_THE_WILD':
-      color = 'purple';
-      break;
-    case 'EXTINCT':
-      color = 'white';
-      style = { color: 'rgba(0, 0, 0, 0.85)', border: '1px solid #d9d9d9' };
-      break;
-    default:
-      color = 'default';
-  }
-  return (
-    <Tag
-      color={color}
-      style={style}
-    >
-      {status.replace(/_/g, ' ')}
-    </Tag>
-  ); }
+    let color: string;
+    let style: React.CSSProperties = {};
+    switch (status) {
+      case 'LEAST_CONCERN':
+        color = 'green';
+        break;
+      case 'NEAR_THREATENED':
+        color = 'lime';
+        break;
+      case 'VULNERABLE':
+        color = 'orange';
+        break;
+      case 'ENDANGERED':
+        color = 'volcano';
+        break;
+      case 'CRITICALLY_ENDANGERED':
+        color = 'red';
+        break;
+      case 'EXTINCT_IN_THE_WILD':
+        color = 'purple';
+        break;
+      case 'EXTINCT':
+        color = 'white';
+        style = { color: 'rgba(0, 0, 0, 0.85)', border: '1px solid #d9d9d9' };
+        break;
+      default:
+        color = 'default';
+    }
+    return (
+      <Tag color={color} style={style}>
+        {status.replace(/_/g, ' ')}
+      </Tag>
+    );
+  };
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
@@ -221,47 +219,53 @@ const Discover = () => {
                 hover:bg-green-600/10"
             >
               <div className="flex flex-row w-full">
-                <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
-                ">
+                <div
+                  className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
+                "
+                >
                   <img src={species.images[0]} alt={species.commonName} className="w-full h-full object-cover" />
                 </div>
                 <div className="h-full flex-1">
                   <div className="text-lg font-semibold text-green-700">{species.commonName}</div>
                   <div className="-mt-[2px] text-green-700/80 italic">{species.speciesName}</div>
                 </div>
-                 <div className="h-full flex-1 hidden md:block">
-                <div className="-mt-[2px] text-green-700/80 italic">Soil: {convertEnumToNormalFormat(species.soilType)}</div>
+                <div className="h-full flex-1 hidden md:block">
+                  <div className="-mt-[2px] text-green-700/80 italic">Soil: {convertEnumToNormalFormat(species.soilType)}</div>
                   <div className="-mt-[2px] text-green-700/80 italic">Light: {convertEnumToNormalFormat(species.lightType)}</div>
                 </div>
                 <div className="h-full flex-1 hidden lg:block">
                   <div className="-mt-[2px] ">{renderConservationStatus(species.conservationStatus)}</div>
-                  <div className="-mt-[2px] text-green-700/80 italic flex items-center"> <IoEarth className="mr-1" />{species.originCountry}</div>
+                  <div className="-mt-[2px] text-green-700/80 italic flex items-center">
+                    {' '}
+                    <IoEarth className="mr-1" />
+                    {species.originCountry}
+                  </div>
                 </div>
 
                 <div className="h-full">
-                  {!user ? (
-                    <Button icon={<IoMdHeart className="text-lg text-pastelPink-500" />} shape="circle" type="text" disabled />
-                  ) : isFavoriteSpecies(species.id) ? (
-                    <Button
-                      icon={<IoMdHeartDislike className="text-lg text-pastelPink-400" />}
-                      shape="circle"
-                      type="text"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveFromFavorites(species.id);
-                      }}
-                    />
-                  ) : (
-                    <Button
-                      icon={<IoMdHeart className="text-lg text-pastelPink-500" />}
-                      shape="circle"
-                      type="text"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToFavorites(species.id);
-                      }}
-                    />
-                  )}
+                  {user &&
+                    user.isVerified &&
+                    (isFavoriteSpecies(species.id) ? (
+                      <Button
+                        icon={<IoMdHeartDislike className="text-lg text-pastelPink-400" />}
+                        shape="circle"
+                        type="text"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFromFavorites(species.id);
+                        }}
+                      />
+                    ) : (
+                      <Button
+                        icon={<IoMdHeart className="text-lg text-pastelPink-500" />}
+                        shape="circle"
+                        type="text"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToFavorites(species.id);
+                        }}
+                      />
+                    ))}
                 </div>
               </div>
             </div>

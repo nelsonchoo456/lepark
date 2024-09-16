@@ -1,8 +1,8 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Button, Input, Tooltip, Tag, message } from 'antd';
+import { Card, Button, Input, Tooltip, Tag, message, notification } from 'antd';
 import { RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import { LockOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { VisitorResponse, VisitorUpdateData, updateVisitorDetails } from '@lepark/data-access';
 
@@ -13,8 +13,21 @@ const EditProfile = () => {
   const [contactNumberError, setContactNumberError] = useState('');
   //   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   useEffect(() => {
+    if (user?.isVerified === false) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You are not allowed to access this page!',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
+    }
+
+
     const fetchUserDetails = async () => {
       try {
         setUser(user);
