@@ -55,11 +55,19 @@ const OccurrenceDetails = () => {
     {
       key: 'occurrenceStatus',
       label: 'Status',
-      children: (
-        <Tag color="green" bordered={false}>
-          {occurrence?.occurrenceStatus}
-        </Tag>
-      ),
+      children: occurrence?.occurrenceStatus === "HEALTHY" ? (
+          <Tag color="green" bordered={false}>HEALTHY</Tag>
+        ) : occurrence?.occurrenceStatus === "MONITOR_AFTER_TREATMENT" ? (
+          <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>
+        ) : occurrence?.occurrenceStatus === "NEEDS_ATTENTION" ? (
+          <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>
+        ) : occurrence?.occurrenceStatus === "URGENT_ACTION_REQUIRED" ? (
+          <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>
+        ) : occurrence?.occurrenceStatus === "REMOVED" ? (
+          <Tag bordered={false}>REMOVED</Tag>
+        ) : (
+          <Tag bordered={false}>{occurrence?.occurrenceStatus}</Tag> 
+        )
     },
     {
       key: 'dateObserved',

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Form, Input, Button, Select, Descriptions, Switch, Space, message, Typography, notification } from 'antd';
+import { Form, Input, Button, Select, Descriptions, Switch, Space, message, Typography, notification, Card, Divider } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
@@ -16,15 +16,6 @@ const CreateStaff: React.FC = () => {
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const { Text } = Typography;
   const notificationShown = useRef(false);
-
-  const layout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 },
-  };
-
-  const tailLayout = {
-    wrapperCol: { offset: 8, span: 16 },
-  };
 
   const onFinish = async (values: any) => {
     try {
@@ -57,10 +48,6 @@ const CreateStaff: React.FC = () => {
     }
   };
 
-  const onReset = () => {
-    form.resetFields();
-  };
-
   useEffect(() => {
     if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
       if (!notificationShown.current) {
@@ -90,109 +77,114 @@ const CreateStaff: React.FC = () => {
 
   const breadcrumbItems = [
     {
-      title: "Staff Management",
+      title: 'Staff Management',
       pathKey: '/staff-management',
       isMain: true,
     },
     {
-      title: "Create",
+      title: 'Create',
       pathKey: `/staff-management/create-staff`,
-      isCurrent: true
+      isCurrent: true,
     },
-  ]
+  ];
 
   return (
     <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <Form
-        {...layout}
-        form={form}
-        name="create_staff"
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        // style={{ maxWidth: 50 }}
-        className="max-w-[600px] mx-auto"
-        autoComplete="off"
-      >
-        <Form.Item name="firstNameInput" label="First Name" rules={[{ required: true, message: 'Please enter a first name.' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="lastNameInput" label="Last Name" rules={[{ required: true, message: 'Please enter a last name.' }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="roleSelect" label="Role" rules={[{ required: true, message: 'Please select a role.' }]}>
-          <Select placeholder="Select a Role" allowClear>
-            {Object.values(StaffType)
-              .filter((role) => {
-                if (user?.role === StaffType.MANAGER) {
-                  return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
-                } else if (user?.role === StaffType.SUPERADMIN) {
-                  return role !== StaffType.SUPERADMIN; //removed option to create SUPERADMIN; we assume SUPERADMINs are created in system
-                }
-                return true;
-              })
-              .map((role) => (
-                <Select.Option key={role} value={role}>
-                  {role}
-                </Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
-        <Form.Item name="emailInput" label="Email" rules={[{ required: true, message: 'Please enter an email.' }, { type: 'email', message: 'Please enter a valid email.' }]}>
-          <Input />
-        </Form.Item>
-        {/* <Form.Item name="passwordInput" label="Password" rules={[
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      <Card>
+        <Form
+          form={form}
+          name="create_staff"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          // style={{ maxWidth: 50 }}
+          className="max-w-[600px] mx-auto mt-8"
+          autoComplete="off"
+          labelCol={{ span: 8 }}
+        >
+          <Divider orientation="left">Staff Details</Divider>
+          <Form.Item name="firstNameInput" label="First Name" rules={[{ required: true, message: 'Please enter a first name.' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="lastNameInput" label="Last Name" rules={[{ required: true, message: 'Please enter a last name.' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="roleSelect" label="Role" rules={[{ required: true, message: 'Please select a role.' }]}>
+            <Select placeholder="Select a Role" allowClear>
+              {Object.values(StaffType)
+                .filter((role) => {
+                  if (user?.role === StaffType.MANAGER) {
+                    return role !== StaffType.MANAGER && role !== StaffType.SUPERADMIN;
+                  } else if (user?.role === StaffType.SUPERADMIN) {
+                    return role !== StaffType.SUPERADMIN; //removed option to create SUPERADMIN; we assume SUPERADMINs are created in system
+                  }
+                  return true;
+                })
+                .map((role) => (
+                  <Select.Option key={role} value={role}>
+                    {role.replace(/_/g, ' ')}
+                  </Select.Option>
+                ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="emailInput"
+            label="Email"
+            rules={[
+              { required: true, message: 'Please enter an email.' },
+              { type: 'email', message: 'Please enter a valid email.' },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          {/* <Form.Item name="passwordInput" label="Password" rules={[
           { required: true, message: 'Please enter a password.' },
           { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
         ]}>
           <Input.Password />
         </Form.Item> */}
-        <Form.Item
-          name="contactNumberInput"
-          label="Contact Number"
-          rules={[
-            { required: true, message: 'Please enter a contact number.' },
-            {
-              pattern: /^[689]\d{7}$/,
-              message: 'Contact number must consist of exactly 8 digits and be a valid Singapore contact number',
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
-          {parks.length === 0 ? (
-            <Text type="secondary">There are no parks created yet!</Text>
-          ) : user?.role === StaffType.MANAGER ? (
-            <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>
-              <Select.Option key={user?.parkId} value={user?.parkId}>
-                {getParkName(user?.parkId)}
-              </Select.Option>
-            </Select>
-          ) : (
-            <Select placeholder="Select a Park" allowClear>
-              {parks.map((park) => (
-                <Select.Option key={park.id} value={park.id}>
-                  {park.name}
+          <Form.Item
+            name="contactNumberInput"
+            label="Contact Number"
+            rules={[
+              { required: true, message: 'Please enter a contact number.' },
+              {
+                pattern: /^[689]\d{7}$/,
+                message: 'Contact number must consist of exactly 8 digits and be a valid Singapore contact number',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="parkSelect" label="Park" rules={[{ required: true, message: 'Please select a park.' }]}>
+            {parks.length === 0 ? (
+              <Text type="secondary">There are no parks created yet!</Text>
+            ) : user?.role === StaffType.MANAGER ? (
+              <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>
+                <Select.Option key={user?.parkId} value={user?.parkId}>
+                  {getParkName(user?.parkId)}
                 </Select.Option>
-              ))}
-            </Select>
-          )}
-        </Form.Item>
-        {/* <Form.Item label="Active Status" name="activeStatus" valuePropName="checked">
+              </Select>
+            ) : (
+              <Select placeholder="Select a Park" allowClear>
+                {parks.map((park) => (
+                  <Select.Option key={park.id} value={park.id}>
+                    {park.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            )}
+          </Form.Item>
+          {/* <Form.Item label="Active Status" name="activeStatus" valuePropName="checked">
           <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
         </Form.Item> */}
-        <Form.Item {...tailLayout}>
-          <Space>
-            <Button type="primary" htmlType="submit" disabled={parks.length === 0}>
+          <Form.Item wrapperCol={{ offset: 8 }}>
+            <Button type="primary" className="w-full" htmlType="submit" disabled={parks.length === 0}>
               Submit
             </Button>
-            <Button htmlType="button" onClick={onReset}>
-              Reset
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+          </Form.Item>
+        </Form>
+      </Card>
     </ContentWrapperDark>
   );
 };

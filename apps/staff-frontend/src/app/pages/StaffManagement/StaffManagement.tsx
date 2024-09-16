@@ -10,6 +10,7 @@ import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { getAllStaffs, StaffResponse, StaffType, getParkById, ParkResponse, getAllParks, getAllStaffsByParkId } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { SCREEN_LG } from '../../config/breakpoints';
 
 const StaffManagementPage: React.FC = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
@@ -79,9 +80,11 @@ const StaffManagementPage: React.FC = () => {
     return staff.filter((staffMember) => {
       const fullName = `${staffMember.firstName} ${staffMember.lastName}`.toLowerCase();
       const parkName = getParkName(staffMember.parkId).toLowerCase();
+      const roleName = staffMember.role.replace(/_/g, ' ').toLowerCase();
       return (
         fullName.includes(searchQuery.toLowerCase()) ||
         parkName.includes(searchQuery.toLowerCase()) ||
+        roleName.includes(searchQuery.toLowerCase()) ||
         Object.values(staffMember).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()))
       );
     });
@@ -108,14 +111,16 @@ const StaffManagementPage: React.FC = () => {
       },
       sortDirections: ['ascend', 'descend'],
       render: (_, record) => `${record.firstName} ${record.lastName}`,
+      fixed: 'left'
     },
     {
       title: 'Role',
       key: 'role',
       width: '20%',
       dataIndex: 'role',
-      filters: Object.values(StaffType).map((role) => ({ text: role, value: role })),
+      filters: Object.values(StaffType).map((role) => ({ text: role.replace(/_/g, ' '), value: role })),
       onFilter: (value, record) => record.role === value,
+      render: (role) => role.replace(/_/g, ' '),
     },
     {
       title: 'Contact',
@@ -156,7 +161,7 @@ const StaffManagementPage: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: '10%',
+      width: '90px',
       render: (_, record) => (
         <Flex key={record.id} justify="center">
           {record.id !== user?.id && <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)} />}
@@ -192,7 +197,7 @@ const StaffManagementPage: React.FC = () => {
       <Row>
         <Col span={24}>
           <div className="p-5 bg-white">
-            <Table columns={columns} dataSource={dataSource} rowKey="key" pagination={{ pageSize: 10 }} />
+            <Table columns={columns} dataSource={dataSource} rowKey="key" pagination={{ pageSize: 10 }} scroll={{ x: SCREEN_LG }}/>
           </div>
         </Col>
       </Row>
