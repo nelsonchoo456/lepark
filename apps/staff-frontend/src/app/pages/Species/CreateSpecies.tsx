@@ -1,7 +1,7 @@
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper, ImageInput } from '@lepark/common-ui';
+import { ContentWrapper, ImageInput, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import {
@@ -11,9 +11,10 @@ import {
   LightTypeEnum,
   SoilTypeEnum,
   SpeciesResponse,
+  StaffResponse,
 } from '@lepark/data-access';
 import { conservationStatus, lightType, plantTaxonomy, regions, soilType } from '@lepark/data-utility';
-import { Button, Form, Input, InputNumber, Modal, Result, Select, Slider, Space } from 'antd';
+import { Button, Form, Input, InputNumber, message, Modal, notification, Result, Select, Slider, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -22,6 +23,27 @@ const CreateSpecies = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const navigate = useNavigate();
   const [createdSpecies, setCreatedSpecies] = useState<SpeciesResponse | null>();
+  const { user, updateUser } = useAuth<StaffResponse>();
+  const notificationShown = useRef(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user && user.id !== '') {
+      if (!['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role)) {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the Create Species page!',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
+      } else {
+        setLoading(false);
+      }
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     const handleResize = () => {
       setWebMode(window.innerWidth >= SCREEN_LG);
@@ -138,9 +160,8 @@ const CreateSpecies = () => {
       setCreatedSpecies(response.data);
       setShowSuccessAlert(true);
       form.resetFields();
-      setTimeout(() => setShowSuccessAlert(false), 5000);
     } catch (error) {
-      console.error('Error creating species:', error);
+      message.error(String(error));
       // Handle error (e.g., show an error message)
     } finally {
       setIsSubmitting(false);
@@ -166,6 +187,14 @@ const CreateSpecies = () => {
   ];
 
   //slider
+  if (loading) {
+    // this displays the loading spinner, if removed the page will display before redirecting for unauthorized users
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" /> {/* Loading spinner */}
+      </div>
+    );
+  }
 
   return (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>

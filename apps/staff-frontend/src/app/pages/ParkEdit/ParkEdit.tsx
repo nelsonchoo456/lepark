@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message, notification } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import dayjs from 'dayjs';
+import useUploadImages from '../../hooks/Images/useUploadImages';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -30,6 +32,8 @@ const ParkEdit = () => {
   const [createdData, setCreatedData] = useState<ParkResponse>();
   const [park, setPark] = useState<ParkResponse>();
   const [messageApi, contextHolder] = message.useMessage();
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
 
@@ -40,7 +44,7 @@ const ParkEdit = () => {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
-          description: 'You are not allowed to access the details of this park!',
+          description: 'You are not allowed to edit the details of this park!',
         });
         notificationShown.current = true;
       }
@@ -55,14 +59,18 @@ const ParkEdit = () => {
           setPark(parkData);
           const initialValues = {
             ...parkData,
-            monday: [moment(parkData.openingHours[0]), moment(parkData.closingHours[0])],
-            tuesday: [moment(parkData.openingHours[1]), moment(parkData.closingHours[1])],
-            wednesday: [moment(parkData.openingHours[2]), moment(parkData.closingHours[2])],
-            thursday: [moment(parkData.openingHours[3]), moment(parkData.closingHours[3])],
-            friday: [moment(parkData.openingHours[4]), moment(parkData.closingHours[4])],
-            saturday: [moment(parkData.openingHours[5]), moment(parkData.closingHours[5])],
-            sunday: [moment(parkData.openingHours[6]), moment(parkData.closingHours[6])],
+            sunday: [dayjs(parkData.openingHours[0]), dayjs(parkData.closingHours[0])],
+            monday: [dayjs(parkData.openingHours[1]), dayjs(parkData.closingHours[1])],
+            tuesday: [dayjs(parkData.openingHours[2]), dayjs(parkData.closingHours[2])],
+            wednesday: [dayjs(parkData.openingHours[3]), dayjs(parkData.closingHours[3])],
+            thursday: [dayjs(parkData.openingHours[4]), dayjs(parkData.closingHours[4])],
+            friday: [dayjs(parkData.openingHours[5]), dayjs(parkData.closingHours[5])],
+            saturday: [dayjs(parkData.openingHours[6]), dayjs(parkData.closingHours[6])],
           };
+          if (parkData.images) {
+            setCurrentImages(parkData.images);
+          }
+          
 
           form.setFieldsValue(initialValues);
         }
@@ -82,11 +90,6 @@ const ParkEdit = () => {
 
   // Form Values
   const [form] = Form.useForm();
-  // Map Values
-  const [polygon, setPolygon] = useState<LatLng[][]>([]);
-  const [lines, setLines] = useState<any[]>([]);
-  const [lat, setLat] = useState(center.lat);
-  const [lng, setLng] = useState(center.lng);
 
   const parkStatusOptions = [
     {
@@ -112,8 +115,8 @@ const ParkEdit = () => {
       const openingHours: any[] = [];
       const closingHours: any[] = [];
       daysOfTheWeek.forEach((day, index) => {
-        openingHours.push(formValues[day][0] ? moment(formValues[day][0]).toISOString() : null);
-        closingHours.push(formValues[day][1] ? moment(formValues[day][1]).toISOString() : null);
+        openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null);
+        closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null);
       });
 
       const finalData = { ...rest, openingHours, closingHours };
@@ -126,13 +129,18 @@ const ParkEdit = () => {
         return acc;
       }, {} as Partial<ParkResponse>);
 
-      const response = await updatePark(park.id, changedData);
+      changedData.images = currentImages;
+      const response = await updatePark(park.id, changedData, selectedFiles);
+      setPreviewImages([]);
       if (response.status === 201) {
         setCreatedData(response.data);
         messageApi.open({
           type: 'success',
           content: 'Saved changes to Park.',
         });
+        setTimeout(() => {
+          navigate(`/park/${park.id}`);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error creating Park', error);
@@ -170,6 +178,10 @@ const ParkEdit = () => {
     }
   };
 
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -186,6 +198,35 @@ const ParkEdit = () => {
           </Form.Item>
           <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={parkStatusOptions} />
+          </Form.Item>
+
+          <Form.Item label={'Image'}>
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
+          <Form.Item label={'Images'}>
+            <div className="flex flex-wrap gap-2">
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+            </div>
           </Form.Item>
 
           <Divider orientation="left">Contact Details</Divider>
@@ -210,10 +251,21 @@ const ParkEdit = () => {
             Park Hours <Text type="danger">{' *'}</Text>
           </Divider>
 
+          <Form.Item label={'Sunday'} key="sunday">
+            <Flex>
+              <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
+              </Form.Item>
+              <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('sunday')}>
+                <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
+              </Popconfirm>
+            </Flex>
+          </Form.Item>
+
           <Form.Item label={'Monday'} key="monday">
             <Flex>
               <Form.Item name="monday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('monday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -224,7 +276,7 @@ const ParkEdit = () => {
           <Form.Item label={'Tuesday'} key="tuesday">
             <Flex>
               <Form.Item name="tuesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('tuesday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -235,7 +287,7 @@ const ParkEdit = () => {
           <Form.Item label={'Wednesday'} key="wednesday">
             <Flex>
               <Form.Item name="wednesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('wednesday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -246,7 +298,7 @@ const ParkEdit = () => {
           <Form.Item label={'Thursday'} key="thursday">
             <Flex>
               <Form.Item name="thursday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('thursday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -257,7 +309,7 @@ const ParkEdit = () => {
           <Form.Item label={'Friday'} key="friday">
             <Flex>
               <Form.Item name="friday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('friday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
@@ -268,20 +320,9 @@ const ParkEdit = () => {
           <Form.Item label={'Saturday'} key="saturday">
             <Flex>
               <Form.Item name="saturday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
+                <RangePicker className="w-full" use12Hours format="hh:mm a" />
               </Form.Item>
               <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('saturday')}>
-                <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
-              </Popconfirm>
-            </Flex>
-          </Form.Item>
-
-          <Form.Item label={'Sunday'} key="sunday">
-            <Flex>
-              <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
-                <RangePicker className="w-full" use12Hours format="h:mm a" />
-              </Form.Item>
-              <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('sunday')}>
                 <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
               </Popconfirm>
             </Flex>

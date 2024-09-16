@@ -43,6 +43,15 @@ router.get('/getParkById/:id', async (req, res) => {
   }
 });
 
+router.get('/getRandomParkImage', async (_, res) => {
+  try {
+    const images = await ParkService.getRandomParkImage();
+    res.status(200).json(images);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.delete('/deletePark/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);

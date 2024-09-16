@@ -34,7 +34,7 @@ const ViewEditSpecies = () => {
 
   useEffect(() => {
     if (user && user.id !== '') {
-      if (user.role === StaffType.LANDSCAPE_ARCHITECT || user.role === StaffType.VENDOR_MAANGER || user.role === StaffType.PARK_RANGER) {
+      if (!['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role)) {
         if (!notificationShown.current) {
           notification.error({
             message: 'Access Denied',
@@ -223,11 +223,11 @@ const ViewEditSpecies = () => {
         navigate(`/species/${speciesIdFromLocation}`);
       }, 1000);
     } catch (error) {
-      console.error('Error saving species:', error);
-      messageApi.open({
+      message.error(String(error));
+      /*messageApi.open({
         type: 'error',
         content: 'Failed to save species. Please try again.',
-      });
+      });*/
     } finally {
       setIsSubmitting(false);
     }

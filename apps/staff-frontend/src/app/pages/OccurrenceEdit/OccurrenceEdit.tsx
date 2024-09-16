@@ -3,26 +3,17 @@ import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import {
-  createPark,
-  getOccurrenceById,
-  getParkById,
   OccurrenceResponse,
-  ParkResponse,
   StaffResponse,
   StaffType,
-  StringIdxSig,
   updateOccurrenceDetails,
-  updatePark,
 } from '@lepark/data-access';
 import {
   Button,
   Card,
-  Divider,
-  Flex,
   Form,
   Input,
   message,
-  Popconfirm,
   Typography,
   TimePicker,
   Select,
@@ -30,10 +21,8 @@ import {
   InputNumber,
   notification,
 } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import moment from 'moment';
 import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -43,8 +32,6 @@ const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
 };
-const { RangePicker } = TimePicker;
-const { Text } = Typography;
 const { TextArea } = Input;
 
 export interface AdjustLatLngInterface {

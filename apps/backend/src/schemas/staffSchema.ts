@@ -14,7 +14,8 @@ export const StaffSchema = z.object({
 
 export const LoginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
-  password: z.string().min(8, { message: 'Password is required or must be at least 8 characters long' }),
+  password: z.string()
+  // password: z.string().min(8, { message: 'Password is required or must be at least 8 characters long' }),
 });
 
 export const PasswordResetRequestSchema = z.object({
@@ -28,7 +29,8 @@ export const PasswordResetSchema = z.object({
 
 export const PasswordChangeSchema = z.object({
   newPassword: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
-  currentPassword: z.string().min(8, { message: 'Current password is required' }),
+  currentPassword: z.string(),
+  // currentPassword: z.string().min(8, { message: 'Current password is required' }),
   staffId: z.string().min(1, { message: 'Staff ID is required' })
 });
 

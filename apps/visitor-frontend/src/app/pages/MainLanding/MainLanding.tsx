@@ -2,7 +2,7 @@ import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
-import { PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
+import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
 import { FaLocationDot, FaTent } from 'react-icons/fa6';
 import { Badge, Button, Card, Empty, Space } from 'antd';
 import EventCard from './components/EventCard';
@@ -102,10 +102,14 @@ const MainLanding = () => {
         <br />
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
-          <Card size="small" title="Small size card" extra={<a href="#">More</a>} className="my-2 w-full">
-            <p>Card content</p>
-            <p>Card content</p>
-            <p>Card content</p>
+          <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
+          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full h-48">
+            <PiPlant className="text-4xl" />
+            <br />
+            No Plant of the Day yet.
+            <br />
+            Check back soon for Plant of the Day!
+            </div>
           </Card>
         </Badge.Ribbon>
       </ContentWrapper>

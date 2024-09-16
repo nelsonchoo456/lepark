@@ -1,27 +1,16 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
+import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 import InformationTab from './components/InformationTab';
-import { FiSun, FiDroplet, FiThermometer, FiAlertTriangle } from 'react-icons/fi';
+import { FiSun } from 'react-icons/fi';
 import { MdOutlineTerrain, MdEco } from 'react-icons/md';
-import { WiRaindrop, WiRaindrops } from 'react-icons/wi';
 import { FaTint } from 'react-icons/fa';
 import moment from 'moment';
 import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
 import QRTab from './components/QRTab';
-import {
-  ActivityLogResponse,
-  OccurrenceResponse,
-  SpeciesResponse,
-  LightTypeEnum,
-  SoilTypeEnum,
-  ConservationStatusEnum,
-} from '@lepark/data-access';
-import { getOccurrenceById, getSpeciesById } from '@lepark/data-access';
+import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';

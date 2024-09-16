@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { createZone, getAllParks, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
-import { Button, Card, Flex, Form, message, notification, Result, Steps } from 'antd';
+import { Button, Card, Flex, Form, message, notification, Result, Steps, Tooltip } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
@@ -178,9 +178,12 @@ const ZoneCreate = () => {
               }
               extra={[
                 <Button key="back" onClick={() => navigate('/zone')}>Back to Zone Management</Button>,
-                <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)}>
-                  View new Zone
-                </Button>,
+                <Tooltip title="Zone details coming soon.">
+                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)} disabled>
+                    View new Zone
+                  </Button>
+                </Tooltip>
+                ,
               ]}
             />
           </Flex>

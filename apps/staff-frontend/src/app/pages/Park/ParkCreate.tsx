@@ -127,6 +127,10 @@ const ParkCreate = () => {
     },
   ];
 
+  if (user?.role !== StaffType.SUPERADMIN) { 
+    return <></>;
+  }
+  
   return (
     <ContentWrapperDark>
       {contextHolder}

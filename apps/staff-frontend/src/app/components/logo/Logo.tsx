@@ -5,7 +5,7 @@ interface LogoInterface {
 }
 
 const Logo = ({ size }: LogoInterface) => {
-  return <img src={parkLogo} alt="Leparks Logo" style={{ width: `${size || 2}rem`, height: `${size || 2}rem` }}/>
+  return <img src={parkLogo} alt="Lepark Logo" style={{ width: `${size || 2}rem`, height: `${size || 2}rem` }}/>
 }
 
 export default Logo;

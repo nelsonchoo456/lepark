@@ -173,7 +173,7 @@ const ParkList = () => {
     <ContentWrapperDark>
       <PageHeader>Parks Management</PageHeader>
       {contextHolder}
-      <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Zone deletes all of its Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
+      <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Park deletes all of its Zones and Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}

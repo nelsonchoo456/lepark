@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { verifyVisitor } from '@lepark/data-access';
+import { verifyVisitor, VisitorResponse } from '@lepark/data-access';
 import VerificationSuccess from './components/VerificationSuccess';
 import VerificationError from './components/VerificationError';
-import { LoginLayout, LoginPanel, Logo, LogoText } from '@lepark/common-ui';
+import { LoginLayout, LoginPanel, Logo, LogoText, useAuth } from '@lepark/common-ui';
 
 const VerifyUser: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [errorMessage, setErrorMessage] = useState('');
+  const { logout } = useAuth<VisitorResponse>();
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -17,6 +18,7 @@ const VerifyUser: React.FC = () => {
         .then((response) => {
           if (response.status === 200) {
             setStatus('success');
+            logout();
           } else {
             setStatus('error');
             setErrorMessage('Verification failed. Please try again.');
@@ -39,7 +41,7 @@ const VerifyUser: React.FC = () => {
           <div className="flex items-center flex-col w-full max-w-screen-sm p-2 md:p-16">
             <div className="flex items-center gap-4">
               <Logo size={2.5} />
-              <LogoText className="text-3xl">Leparks</LogoText>
+              <LogoText className="text-3xl">Lepark</LogoText>
             </div>
             <p>Verifying email...</p>
           </div>
@@ -53,7 +55,7 @@ const VerifyUser: React.FC = () => {
           <div className="flex items-center flex-col w-full max-w-screen-sm p-2 md:p-16">
             <div className="flex items-center gap-4">
               <Logo size={2.5} />
-              <LogoText className="text-3xl">Leparks</LogoText>
+              <LogoText className="text-3xl">Lepark</LogoText>
             </div>
             <VerificationSuccess />
           </div>
@@ -67,7 +69,7 @@ const VerifyUser: React.FC = () => {
           <div className="flex items-center flex-col w-full max-w-screen-sm p-2 md:p-16">
             <div className="flex items-center gap-4">
               <Logo size={2.5} />
-              <LogoText className="text-3xl">Leparks</LogoText>
+              <LogoText className="text-3xl">Lepark</LogoText>
             </div>
             <VerificationError message={errorMessage} />
           </div>

@@ -33,8 +33,6 @@ const SelectParkPage: React.FC = () => {
 
   const handleParkSelect = (park: ParkResponse) => {
     setSelectedPark(park);
-    // Redirect to the home or another page after selection
-    // window.location.href = '/';
     navigate('/');
   };
 
@@ -42,10 +40,16 @@ const SelectParkPage: React.FC = () => {
     const now = dayjs();
     const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
 
-    const openingTime = dayjs(park.openingHours[currentDay]);
-    const closingTime = dayjs(park.closingHours[currentDay]);
+    const openingTime = dayjs(park.openingHours[currentDay]).format('HH:mm');;
+    let closingTime = dayjs(park.closingHours[currentDay]).format('HH:mm');;
+    if (closingTime === "00:00") {
+      closingTime = "24:00"
+    }
 
-    return now.isAfter(openingTime) && now.isBefore(closingTime);
+    const currentTime = now.format('HH:mm');
+
+    // return now.isAfter(openingTime) && now.isBefore(closingTime);
+    return currentTime >= openingTime && currentTime <= closingTime;
   };
   
 
@@ -63,13 +67,13 @@ const SelectParkPage: React.FC = () => {
               key={park.id}
               // size="small"
               style={{
-                backgroundImage: `url('${park.images && park.images.length > 0 ? park.images[0] : 'https://upload.wikimedia.org/wikipedia/commons/6/63/Kallang_River_at_Bishan_Park.jpg'}')`,
+                backgroundImage: `url('${park.images && park.images.length > 0 ? park.images[0] : ''}')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 color: 'white',
                 overflow: 'hidden',
               }}
-              className="w-full h-32 bg-green-400 "
+              className="w-full h-32 bg-green-900 "
             >
               {/* // bg-gradient-to-t from-green-700/90 via-green-600/70 to-transparent flex items-center justify-center*/}
               {/* <div className="absolute top-0 left-0 max-w-[1/2] h-full p-4 text-white "> */}
@@ -87,8 +91,8 @@ const SelectParkPage: React.FC = () => {
                   </div>
                   </div>
                   <div className='flex flex-col h-full justify-between items-end'>
-                    <div className='flex w-20 items-center justify-center backdrop-blur bg-green-700/30 px-4 h-8 rounded-full'>
-                      {isParkOpen(park) ? 'Open Now' : 'Closed'}
+                    <div className={`flex w-20 items-center justify-center backdrop-blur bg-green-700/30 px-4 h-8 rounded-full ${isParkOpen(park) && "text-highlightGreen-300"}`}>
+                      {isParkOpen(park) ? 'Open' : 'Closed'}
                     </div>
                     <Button icon={<MdArrowOutward className='text-2xl'/>} shape="circle" type="primary" size='large'/>
                   </div>

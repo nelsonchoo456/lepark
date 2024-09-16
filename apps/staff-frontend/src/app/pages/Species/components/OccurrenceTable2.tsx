@@ -1,12 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import {
-  deleteOccurrence,
-  getOccurrencesBySpeciesId,
-  getOccurrencesBySpeciesIdByParkId,
-  OccurrenceResponse,
-  StaffResponse,
-  StaffType,
-} from '@lepark/data-access';
+import { deleteOccurrence, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Flex, message, Table, TableProps, Tag, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -14,6 +7,7 @@ import { FiEye } from 'react-icons/fi';
 import { MdDeleteOutline } from 'react-icons/md';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
+import { useFetchOccurrencesForSpecies } from '../../../hooks/Occurrences/useFetchOccurrencesForSpecies';
 import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
 
 interface OccurrenceTableProps {
@@ -28,6 +22,13 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [occurrenceToBeDeleted, setOccurrenceToBeDeleted] = useState<OccurrenceResponse | null>(null);
+  const [filteredOccurrences, setFilteredOccurrences] = useState<OccurrenceResponse[]>([]);
+
+  useEffect(() => {
+    // Filter occurrences based on speciesId
+    const filtered = occurrences.filter((occurrence) => occurrence.speciesId === speciesId);
+    setFilteredOccurrences(filtered);
+  }, [occurrences, speciesId]);
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
@@ -57,7 +58,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
           {text}
         </Flex>
       ),
-      sorter: (a, b) => { 
+      sorter: (a, b) => {
         if (a.zoneName && b.zoneName) {
           return a.zoneName.localeCompare(b.zoneName);
         }
@@ -124,7 +125,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
     },
   ];
 
-  const columnsForSuperadmin: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
+  const columnsForAccess: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
       title: 'Label',
       dataIndex: 'title',
@@ -240,7 +241,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       if (!occurrenceToBeDeleted) {
         throw new Error('Unable to delete Occurrence at this time');
       }
-      await deleteOccurrence(occurrenceToBeDeleted.id);
+      await deleteOccurrence(occurrenceToBeDeleted.id, user?.id as string);
       // triggerFetch();
       setOccurrenceToBeDeleted(null);
       setDeleteModalOpen(false);
@@ -261,10 +262,10 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
 
   return (
     <>
-      {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) ? (
-        <Table dataSource={occurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} />
+      {user && ['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role) ? (
+        <Table dataSource={filteredOccurrences} columns={columnsForAccess} rowKey="id" loading={loading} />
       ) : (
-        <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />
+        <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} />
       )}
     </>
   );

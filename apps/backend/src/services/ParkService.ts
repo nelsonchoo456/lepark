@@ -71,6 +71,10 @@ class ParkService {
     return ParkDao.deleteParkById(id);
   }
 
+  public async getRandomParkImage(): Promise<string[]> {
+    return ParkDao.getRandomParkImage();
+  }
+
   public async uploadImageToS3(fileBuffer, fileName, mimeType) {
     const params = {
       Bucket: 'lepark',
