@@ -26,10 +26,26 @@ export async function createPark(data: ParkData, files?: File[]): Promise<AxiosR
     const response: AxiosResponse<ParkResponse> = await axiosClient.post('/createPark', data);
     return response;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
-      throw error.response.data.error;
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 409) {
+          throw new Error('A park with this name already exists');
+        } else if (error.response.status === 400) {
+          throw new Error(error.response.data.error || 'Bad Request');
+        } else {
+          throw new Error(error.response.data.error || 'An error occurred');
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        throw new Error('No response received from server');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        throw new Error('Error setting up the request');
+      }
     } else {
-      throw error;
+      throw new Error('An unexpected error occurred');
     }
   }
 }
@@ -77,9 +93,21 @@ export async function updatePark(id: number, data: Partial<ParkResponse>, files?
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
+      if (error.response) {
+        if (error.response.status === 409) {
+          throw new Error('A park with this name already exists');
+        } else if (error.response.status === 400) {
+          throw new Error(error.response.data.error || 'Bad Request');
+        } else {
+          throw new Error(error.response.data.error || 'An error occurred');
+        }
+      } else if (error.request) {
+        throw new Error('No response received from server');
+      } else {
+        throw new Error('Error setting up the request');
+      }
     } else {
-      throw error;
+      throw new Error('An unexpected error occurred');
     }
   }
 }

@@ -18,6 +18,7 @@ class ParkService {
       if (!data.name || data.name.length < 3) {
         errors.push('Valid name is required');
       }
+      
       if (!data.address || data.address.length < 3) {
         errors.push('Address is required');
       }
@@ -37,7 +38,14 @@ class ParkService {
       if (errors.length !== 0) {
         throw new Error(`Validation errors: ${errors.join('; ')}`)
       }
-      return ParkDao.createPark(data);
+
+      // Check if a park with the same name already exists
+      const existingPark = await ParkDao.getParkByName(data.name);
+      if (existingPark) {
+        throw new Error('A park with this name already exists');
+      }
+
+      return await ParkDao.createPark(data);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -57,6 +65,14 @@ class ParkService {
 
   public async updatePark(id: number, data: ParkUpdateData): Promise<any> {
     try {
+      // If the name is being updated, check if it already exists
+      if (data.name) {
+        const existingPark = await ParkDao.getParkByName(data.name);
+        if (existingPark && existingPark.id !== id) {
+          throw new Error('A park with this name already exists');
+        }
+      }
+
       return ParkDao.updatePark(id, data);
     } catch (error) {
       if (error instanceof z.ZodError) {

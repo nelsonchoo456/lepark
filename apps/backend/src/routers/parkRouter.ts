@@ -10,7 +10,11 @@ router.post('/createPark', async (req, res) => {
     const park = await ParkService.createPark(req.body);
     res.status(201).json(park);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    if (error.message === 'A park with this name already exists') {
+      res.status(409).json({ error: error.message }); // 409 Conflict
+    } else {
+      res.status(400).json({ error: error.message });
+    }
   }
 });
 
@@ -18,9 +22,13 @@ router.put('/updatePark/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const park = await ParkService.updatePark(id, req.body);
-    res.status(201).json(park);
+    res.status(200).json(park);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    if (error.message === 'A park with this name already exists') {
+      res.status(409).json({ error: error.message }); // 409 Conflict
+    } else {
+      res.status(400).json({ error: error.message });
+    }
   }
 });
 
