@@ -11,6 +11,7 @@ import { useFetchOccurrencesForSpecies } from '../../../hooks/Occurrences/useFet
 import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
 import { Input } from 'antd';
 import { FiSearch } from 'react-icons/fi';
+import { SCREEN_LG } from '../../../config/breakpoints';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -78,15 +79,15 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green">HEALTHY</Tag>;
+            return <Tag color="green" bordered={false}>HEALTHY</Tag>;
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow">MONITOR_AFTER_TREATMENT</Tag>;
+            return <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>;
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange">NEEDS_ATTENTION</Tag>;
+            return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red">URGENT_ACTION_REQUIRED</Tag>;
+            return <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>;
           case 'REMOVED':
-            return <Tag>REMOVED</Tag>;
+            return <Tag bordered={false}>REMOVED</Tag>;
         }
       },
       filters: [
@@ -140,7 +141,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
         variant="filled" 
         onChange={handleSearch}
       />
-      <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} />
+      <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
     </>
   );
 };
