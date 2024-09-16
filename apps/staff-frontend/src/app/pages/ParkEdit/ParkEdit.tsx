@@ -41,7 +41,7 @@ const ParkEdit = () => {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
-          description: 'You are not allowed to access the details of this park!',
+          description: 'You are not allowed to edit the details of this park!',
         });
         notificationShown.current = true;
       }
