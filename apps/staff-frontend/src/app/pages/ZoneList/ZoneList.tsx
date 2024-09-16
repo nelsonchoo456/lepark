@@ -10,6 +10,7 @@ import { MdDeleteOutline, MdOutlineDeleteOutline } from 'react-icons/md';
 import { useState, useMemo } from 'react';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { deleteZone } from '@lepark/data-access';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const ZoneList: React.FC = () => {
   const { zones, loading, triggerFetch } = useFetchZones();
@@ -308,18 +309,22 @@ const ZoneList: React.FC = () => {
         content: `Unable to delete Zone at this time. Please try again later.`,
       });
     }
-  };
+  } 
+
+  const breadcrumbItems = [
+    {
+      title: 'Zones Management',
+      pathKey: '/zone',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
 
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Zones Management</PageHeader>
-      <ConfirmDeleteModal
-        onConfirm={deleteZoneToBeDeleted}
-        open={deleteModalOpen}
-        description="Deleting a Zone deletes all of its Occurrences."
-        onCancel={cancelDelete}
-      ></ConfirmDeleteModal>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <ConfirmDeleteModal onConfirm={deleteZoneToBeDeleted} open={deleteModalOpen} description='Deleting a Zone deletes all of its Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input 
           suffix={<FiSearch />} 
