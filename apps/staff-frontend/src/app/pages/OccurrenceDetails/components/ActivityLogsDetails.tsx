@@ -4,8 +4,8 @@ import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Inp
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
-import { getActivityLogById, updateActivityLog } from '@lepark/data-access';
-import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData } from '@lepark/data-access';
+import { getActivityLogById, updateActivityLog, getOccurrenceById } from '@lepark/data-access';
+import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 
 const { Title } = Typography;
@@ -15,6 +15,7 @@ const ActivityLogDetails: React.FC = () => {
   const { activityLogId } = useParams<{ activityLogId: string }>();
   const [activityLog, setActivityLog] = useState<ActivityLogResponse | null>(null);
   const [editedActivityLog, setEditedActivityLog] = useState<ActivityLogResponse | null>(null);
+  const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
 
@@ -27,6 +28,10 @@ const ActivityLogDetails: React.FC = () => {
         const response = await getActivityLogById(activityLogId);
         setActivityLog(response.data);
         setEditedActivityLog(response.data);
+
+        // Fetch occurrence details
+        const occurrenceResponse = await getOccurrenceById(response.data.occurrenceId);
+        setOccurrence(occurrenceResponse.data);
       } catch (error) {
         console.error('Error fetching activity log details:', error);
         message.error('Failed to fetch activity log details');
@@ -92,9 +97,9 @@ const ActivityLogDetails: React.FC = () => {
       children: activityLog?.id,
     },
     {
-      key: 'occurrenceId',
-      label: 'Occurrence ID',
-      children: activityLog?.occurrenceId,
+      key: 'occurrenceTitle',
+      label: 'Occurrence',
+      children: occurrence?.title || 'Loading...',
     },
     {
       key: 'name',
@@ -192,7 +197,7 @@ const ActivityLogDetails: React.FC = () => {
           </Title>
           <Space size="large" wrap>
             {activityLog.images && activityLog.images.length > 0 ? (
-              activityLog.images.map((image, index) => <Image key={index} width={200} src={image} />)
+              activityLog.images.map((image, index) => <Image key={index} width={200} src={image} className="rounded" />)
             ) : (
               <div>No images available</div>
             )}
