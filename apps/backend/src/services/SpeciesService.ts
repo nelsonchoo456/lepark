@@ -83,6 +83,12 @@ class SpeciesService {
     try {
       const existingSpecies = await SpeciesDao.getSpeciesById(id);
 
+      const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
+
+      if (checkForExistingSpecies && (existingSpecies.id !== checkForExistingSpecies.id)) {
+        throw new Error('Identical species name already exists.');
+      }
+
       // Merge existing data with update data
       const mergedData = { ...existingSpecies, ...data };
 
@@ -144,11 +150,10 @@ class SpeciesService {
 
       for (const occurrence of occurrences) {
         const zone = await ZoneDao.getZoneById(occurrence.zoneId);
-        if (zone.parkId === parkId) {
+        if (String(zone.parkId) === String(parkId)) {
           filteredOccurrences.push(occurrence);
         }
       }
-
       return filteredOccurrences;
     } catch (error) {
       throw new Error(`Error fetching occurrences for species ID ${speciesId}: ${error.message}`);
