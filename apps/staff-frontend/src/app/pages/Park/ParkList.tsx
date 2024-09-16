@@ -12,6 +12,7 @@ import { useFetchParks } from "../../hooks/Parks/useFetchParks";
 import { MdDeleteOutline, MdOutlineDeleteOutline } from "react-icons/md";
 import ConfirmDeleteModal from "../../components/modal/ConfirmDeleteModal";
 import PageHeader2 from "../../components/main/PageHeader2";
+import { SCREEN_LG } from "../../config/breakpoints";
 
 const ParkList = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
@@ -61,7 +62,8 @@ const ParkList = () => {
       sorter: (a, b) => {
         return a.name.localeCompare(b.name);
       },
-      width: '33%',
+      // width: '33%',
+      fixed: 'left'
     },
     {
       title: 'Address',
@@ -71,7 +73,7 @@ const ParkList = () => {
       sorter: (a, b) => {
         return a.address.localeCompare(b.address);
       },
-      width: '33%',
+      // width: '33%',
     },
     {
       title: 'Contact Number',
@@ -81,7 +83,7 @@ const ParkList = () => {
       sorter: (a, b) => {
         return a.contactNumber.localeCompare(b.contactNumber);
       },
-      width: '33%',
+      // width: '33%',
     },
     {
       title: 'Status',
@@ -108,7 +110,8 @@ const ParkList = () => {
         { text: 'Closed', value: 'CLOSED' },
       ],
       onFilter: (value, record) => record.parkStatus === value,
-      width: '1%',
+      // width: '1%',
+      // width: '110px',
     },
     {
       title: 'Actions',
@@ -127,7 +130,7 @@ const ParkList = () => {
           </Tooltip>
         </Flex>
       ),
-      width: '1%',
+      width: '110px',
     },
   ];
 
@@ -208,6 +211,7 @@ const ParkList = () => {
           dataSource={filteredParks} 
           columns={columns} 
           rowKey={(record) => record.id}
+          scroll={{ x: SCREEN_LG }}
         />
       </Card>
     </ContentWrapperDark>

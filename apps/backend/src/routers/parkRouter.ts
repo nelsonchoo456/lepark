@@ -22,6 +22,7 @@ router.put('/updatePark/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const park = await ParkService.updatePark(id, req.body);
+    console.log(park)
     res.status(200).json(park);
   } catch (error) {
     if (error.message === 'A park with this name already exists') {

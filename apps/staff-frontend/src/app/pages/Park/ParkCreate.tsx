@@ -205,7 +205,7 @@ const ParkCreate = () => {
                 createdData && <>Park title: {createdData.name}</>
               }
               extra={[
-                <Button key="back" onClick={() => navigate('/park/create')}>Back to Park Management</Button>,
+                <Button key="back" onClick={() => navigate('/park')}>Back to Park Management</Button>,
                 <Button type="primary" key="view" onClick={() => navigate(`/park/${createdData?.id}`)}>
                   View new Park
                 </Button>,

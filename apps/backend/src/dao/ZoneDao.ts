@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { ZoneCreateData, ZoneResponseData } from "../schemas/zoneSchema";
+import ParkDao from "./ParkDao";
 const prisma = new PrismaClient();
 
 class ZoneDao {
@@ -26,6 +27,8 @@ class ZoneDao {
   }
 
   async initZonesDB(): Promise<void> {
+    await ParkDao.initParksDB();
+    
     await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`; // puyts in the POSTGIS extension to postgres
     
     await prisma.$queryRaw`

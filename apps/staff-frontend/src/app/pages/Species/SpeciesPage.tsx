@@ -207,7 +207,7 @@ const SpeciesPage = () => {
       </Flex>
 
       <Card>
-        <Table dataSource={filteredSpecies} columns={columns} rowKey="id" loading={loading} />
+        <Table dataSource={filteredSpecies} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
       </Card>
     </ContentWrapperDark>
   );
