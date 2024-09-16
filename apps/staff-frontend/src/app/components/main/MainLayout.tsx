@@ -168,13 +168,13 @@ const MainLayout = () => {
       <Header items={navItems} showSidebar={showSidebar}>
         <div className="px-4 flex gap-2 items-center">
           <Logo />
-          <LogoText>Leparks Admin</LogoText>
+          <LogoText>Lepark Admin</LogoText>
         </div>
       </Header>
       <Sidebar>
         <div className="pb-2 px-4 flex gap-2 items-center">
           <Logo />
-          <LogoText>Leparks Admin</LogoText>
+          <LogoText>Lepark Admin</LogoText>
         </div>
         <Menu
           items={navItems}

@@ -28,7 +28,7 @@ const Login = () => {
         <div className="flex items-center flex-col w-full max-w-screen-sm p-2 md:p-16">
           <div className="flex items-center gap-4">
             <Logo size={2.5} />
-            <LogoText className="text-3xl">Leparks Staff</LogoText>
+            <LogoText className="text-3xl">Lepark Staff</LogoText>
           </div>
           {inloginStep ? (
             <LoginStep goToForgotPassword={handleGoToForgotPassword} />

@@ -31,7 +31,7 @@ const VerificationError: React.FC<{ message: string }> = ({ message }) => {
         <>
           <p className="text-lg mt-2">Verification email has been resent. Please check your inbox.</p>
           <Button onClick={handleReturn} className="mt-4 px-4 py-2 ">
-            Return to Leparks
+            Return to Lepark
           </Button>
         </>
       ) : (
@@ -41,7 +41,7 @@ const VerificationError: React.FC<{ message: string }> = ({ message }) => {
             Resend Verification Email
           </Button>
           <Button onClick={handleReturn} className="mt-4 px-4 py-2">
-            Return to Leparks
+            Return to Lepark
           </Button>
         </>
       )}

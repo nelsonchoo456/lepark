@@ -15,7 +15,7 @@ const VerificationSuccess: React.FC = () => {
       <FaCheckCircle className="text-green-500" size={48} />
       <p className="text-lg mt-2">Your email has been verified successfully!</p>
       <Button onClick={handleReturn} className="mt-4 px-4 py-2">
-        Login to Leparks
+        Login to Lepark
       </Button>
     </div>
   );
