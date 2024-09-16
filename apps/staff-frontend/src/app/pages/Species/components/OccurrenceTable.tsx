@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tag, Button, Tooltip, Flex, TableProps } from 'antd';
-import { FiArchive, FiExternalLink, FiEye } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
-import { getOccurrencesBySpeciesId, getOccurrencesBySpeciesIdByParkId, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
-import { RiEdit2Line } from 'react-icons/ri';
 import { useAuth } from '@lepark/common-ui';
+import { deleteOccurrence, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
+import { Button, Flex, Input, message, Table, TableProps, Tag, Tooltip } from 'antd';
+import moment from 'moment';
+import React, { useEffect, useState, useMemo } from 'react';
+import { FiEye, FiSearch } from 'react-icons/fi';
+import { MdDeleteOutline } from 'react-icons/md';
+import { RiEdit2Line } from 'react-icons/ri';
+import { useNavigate } from 'react-router-dom';
+import { useFetchOccurrencesForSpecies } from '../../../hooks/Occurrences/useFetchOccurrencesForSpecies';
+import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -13,40 +16,60 @@ interface OccurrenceTableProps {
 }
 
 const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
-  const { user, updateUser } = useAuth<StaffResponse>();
-  const [occurrences, setOccurrences] = useState<(OccurrenceResponse & { speciesName: string })[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { occurrences, loading, triggerFetch } = useFetchOccurrences();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [occurrenceToBeDeleted, setOccurrenceToBeDeleted] = useState<OccurrenceResponse | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchOccurrences = async () => {
-      try {
-        let fetchedOccurrences;
-        if (user?.parkId) {
-          fetchedOccurrences = await getOccurrencesBySpeciesIdByParkId(speciesId, user.parkId);
-        } else {
-          fetchedOccurrences = await getOccurrencesBySpeciesId(speciesId);
-        }
-        setOccurrences(fetchedOccurrences.data);
-      } catch (error) {
-        console.error('Error fetching occurrences:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOccurrences();
-  }, [speciesId]);
+  const filteredOccurrences = useMemo(() => {
+    return occurrences
+      .filter((occurrence) => occurrence.speciesId === speciesId)
+      .filter((occurrence) =>
+        Object.values(occurrence).some((value) => 
+          value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+  }, [searchQuery, occurrences, speciesId]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
   };
 
-  const columns: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
+  const columns: TableProps<OccurrenceResponse>['columns'] = [
     {
-      title: 'Title',
+      title: 'Label',
       dataIndex: 'title',
       key: 'title',
       render: (text) => text,
+      sorter: (a, b) => {
+        return a.title.localeCompare(b.title);
+      },
+      width: '25%',
+    },
+    {
+      title: 'Zone',
+      dataIndex: 'zoneName',
+      key: 'zoneName',
+      render: (text, record) => (
+        <Flex justify="space-between" align="center">
+          {text}
+        </Flex>
+      ),
+      sorter: (a, b) => {
+        if (a.zoneName && b.zoneName) {
+          return a.zoneName.localeCompare(b.zoneName);
+        }
+        return a.zoneId - b.zoneId;
+      },
+      width: '25%',
     },
     {
       title: 'Occurrence Status',
@@ -66,50 +89,60 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
             return <Tag>REMOVED</Tag>;
         }
       },
-    },
-    {
-      title: 'Number of Plants',
-      dataIndex: 'numberOfPlants',
-      key: 'numberOfPlants',
-      render: (text) => text,
+      filters: [
+        { text: 'Healthy', value: 'HEALTHY' },
+        { text: 'Monitor After Treatment', value: 'MONITOR_AFTER_TREATMENT' },
+        { text: 'Needs Attention', value: 'NEEDS_ATTENTION' },
+        { text: 'Urgent Action Required', value: 'URGENT_ACTION_REQUIRED' },
+        { text: 'Removed', value: 'REMOVED' },
+      ],
+      onFilter: (value, record) => record.occurrenceStatus === value,
+      width: '25%',
     },
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',
       key: 'dateObserved',
       render: (text) => moment(text).format('D MMM YY'),
-    },
-    {
-      title: 'Date of Birth',
-      dataIndex: 'dateOfBirth',
-      key: 'dateOfBirth',
-      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => {
+        return moment(a.dateObserved).valueOf() - moment(b.dateObserved).valueOf();
+      },
+      width: '15%',
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="center" gap={8}>
+        <Flex justify="left" gap={8}>
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Archive Occurrence">
+          {/* <Tooltip title="Archive Occurrence">
             <Button
               type="link"
               icon={<FiArchive />}
               // onClick={() => navigateToSpecies(record.speciesId)}
             />
-          </Tooltip>
+          </Tooltip> */}
         </Flex>
       ),
-      width: '1%',
+      width: '10%',
     },
   ];
 
-  return <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />;
+  return (
+    <>
+      {contextHolder}
+      <Input 
+        suffix={<FiSearch />} 
+        placeholder="Search in Occurrences..." 
+        className="mb-4 bg-white" 
+        variant="filled" 
+        onChange={handleSearch}
+      />
+      <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} />
+    </>
+  );
 };
 
 export default OccurrenceTable;
