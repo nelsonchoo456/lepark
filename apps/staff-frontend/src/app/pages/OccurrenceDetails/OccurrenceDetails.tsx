@@ -13,12 +13,12 @@ import QRTab from './components/QRTab';
 import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { useRestrictOccurence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
 
-  const { occurrence, species, loading } = useRestrictOccurence(occurrenceId);
+  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
   // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const navigate = useNavigate();
@@ -78,7 +78,7 @@ const OccurrenceDetails = () => {
     {
       key: 'about',
       label: 'Species',
-      children: species && occurrence ? <AboutTab species={species} occurrence={occurrence}/> : <p>Loading Species data...</p>,
+      children: species && occurrence ? <AboutTab species={species} occurrence={occurrence} /> : <p>Loading Species data...</p>,
     },
     {
       key: 'activityLogs',
@@ -99,16 +99,16 @@ const OccurrenceDetails = () => {
 
   const breadcrumbItems = [
     {
-      title: "Occurrence Management",
+      title: 'Occurrence Management',
       pathKey: '/occurrences',
       isMain: true,
     },
     {
-      title: occurrence?.title ? occurrence?.title : "Details",
+      title: occurrence?.title ? occurrence?.title : 'Details',
       pathKey: `/occurrences/${occurrence?.id}`,
-      isCurrent: true
+      isCurrent: true,
     },
-  ]
+  ];
 
   const getWaterRequirementInfo = (value: number) => {
     if (value <= 30) return { text: 'Low', icon: <FaTint className="text-3xl mt-2 text-blue-300" /> };
@@ -165,7 +165,7 @@ const OccurrenceDetails = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -174,27 +174,30 @@ const OccurrenceDetails = () => {
         ) : (
           <>
             <div className="md:flex w-full gap-4">
-            <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
-            {occurrence?.images && occurrence.images.length > 0 ?
-              <Carousel style={{ maxWidth: '100%' }}>
-                {occurrence?.images?.map((url) => (
-                  <div key={url}>
-                    <div
-                      style={{
-                        backgroundImage: `url('${url}')`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        color: 'white',
-                        overflow: 'hidden',
-                      }}
-                      className="h-64 flex-1 rounded-lg shadow-lg p-4"
-                    />
+              <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+                {occurrence?.images && occurrence.images.length > 0 ? (
+                  <Carousel style={{ maxWidth: '100%' }}>
+                    {occurrence?.images?.map((url) => (
+                      <div key={url}>
+                        <div
+                          style={{
+                            backgroundImage: `url('${url}')`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            color: 'white',
+                            overflow: 'hidden',
+                          }}
+                          className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                        />
+                      </div>
+                    ))}
+                  </Carousel>
+                ) : (
+                  <div className="h-64 bg-gray-200 flex items-center justify-center">
+                    <Empty description="No Image" />
                   </div>
-                ))}
-              </Carousel>
-              : <div className='h-64 bg-gray-200 flex items-center justify-center'>
-                  <Empty description="No Image"/></div>}
-                </div>
+                )}
+              </div>
               <div className="flex-1 flex-col flex">
                 <LogoText className="text-2xl py-2 m-0">{occurrence?.title}</LogoText>
                 <Descriptions items={descriptionsItems} column={1} size="small" />

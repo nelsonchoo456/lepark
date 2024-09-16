@@ -56,13 +56,10 @@ const PageHeader2 = ({ breadcrumbItems }: PageHeaderProps) => {
         )}
         {breadcrumbItems &&
           breadcrumbItems.map((item, index) => (
-            <>
-            <React.Fragment key={item.pathKey}>
-            <BreadCrumb item={item} />
-            {index < breadcrumbItems.length - 1 && <div className="px-3 text-green-600 opacity-60">/</div>}
+            <React.Fragment key={item.pathKey || index}>
+              <BreadCrumb item={item} />
+              {index < breadcrumbItems.length - 1 && <div className="px-3 text-green-600 opacity-60">/</div>}
             </React.Fragment>
-             
-            </>
           ))}
       </div>
       <div className="w-full h-[1px] bg-gray-400 mb-4" />

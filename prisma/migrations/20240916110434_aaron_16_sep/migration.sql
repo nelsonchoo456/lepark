@@ -124,6 +124,7 @@ CREATE TABLE "Visitor" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "contactNumber" TEXT NOT NULL,
+    "isVerified" BOOLEAN NOT NULL,
 
     CONSTRAINT "Visitor_pkey" PRIMARY KEY ("id")
 );
@@ -139,6 +140,9 @@ CREATE UNIQUE INDEX "Staff_email_key" ON "Staff"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Species_speciesName_key" ON "Species"("speciesName");
+
+-- CreateIndex
+CREATE INDEX "Occurrence_zoneId_idx" ON "Occurrence"("zoneId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");

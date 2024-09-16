@@ -71,7 +71,6 @@ const ParkCreate = () => {
 
   const handleSubmit = async () => {
     try {
-      // console.log(formValues);
       const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
       
       const openingHours: any[] = [];
@@ -92,13 +91,30 @@ const ParkCreate = () => {
       if (response.status === 201) {
         setCreatedData(response.data)
         setCurrStep(2);
+        messageApi.open({
+          type: 'success',
+          content: 'Park created successfully',
+        });
       }
     } catch (error) {
-      console.error(error);
-      messageApi.open({
-        type: 'error',
-        content: 'Unable to create a Park. Please try again later.',
-      });
+      if (error instanceof Error) {
+        if (error.message === 'A park with this name already exists') {
+          messageApi.open({
+            type: 'error',
+            content: 'A park with this name already exists. Please choose a different name.',
+          });
+        } else {
+          messageApi.open({
+            type: 'error',
+            content: error.message || 'An error occurred while creating the park',
+          });
+        }
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: 'An unexpected error occurred while creating the park',
+        });
+      }
     }
   };
 

@@ -133,7 +133,7 @@ const ParkEdit = () => {
       changedData.images = currentImages;
       const response = await updatePark(park.id, changedData, selectedFiles);
       setPreviewImages([]);
-      if (response.status === 201) {
+      if (response.status === 200) {
         setCreatedData(response.data);
         messageApi.open({
           type: 'success',
@@ -144,11 +144,24 @@ const ParkEdit = () => {
         }, 1000);
       }
     } catch (error) {
-      console.error('Error creating Park', error);
-      messageApi.open({
-        type: 'error',
-        content: 'Unable to save changes to Park. Please try again later.',
-      });
+      if (error instanceof Error) {
+        if (error.message === 'A park with this name already exists') {
+          messageApi.open({
+            type: 'error',
+            content: 'A park with this name already exists. Please choose a different name.',
+          });
+        } else {
+          messageApi.open({
+            type: 'error',
+            content: error.message || 'Unable to save changes to Park. Please try again later.',
+          });
+        }
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: 'An unexpected error occurred while updating the park.',
+        });
+      }
     }
   };
 
