@@ -1,11 +1,8 @@
 import { useAuth } from '@lepark/common-ui';
-import {
-  OccurrenceResponse,
-  StaffResponse
-} from '@lepark/data-access';
+import { OccurrenceResponse, StaffResponse } from '@lepark/data-access';
 import { Flex, Table, TableProps, Tag } from 'antd';
 import moment from 'moment';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
 import { useFetchOccurrencesForSpecies } from '../../../hooks/Occurrences/useFetchOccurrencesForSpecies';
@@ -16,9 +13,16 @@ interface OccurrenceTableProps {
 }
 
 const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
-  const { occurrences, loading, triggerFetch } = useFetchOccurrencesForSpecies(speciesId);
+  const { occurrences, loading, triggerFetch } = useFetchOccurrences();
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
+  const [filteredOccurrences, setFilteredOccurrences] = useState<OccurrenceResponse[]>([]);
+
+  useEffect(() => {
+    // Filter occurrences based on speciesId
+    const filtered = occurrences.filter((occurrence) => occurrence.speciesId === speciesId);
+    setFilteredOccurrences(filtered);
+  }, [occurrences, speciesId]);
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
@@ -111,7 +115,7 @@ const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
     }, */
   ];
 
-  return <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} />;
+  return <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} />;
 };
 
 export default OccurrenceTable2;
