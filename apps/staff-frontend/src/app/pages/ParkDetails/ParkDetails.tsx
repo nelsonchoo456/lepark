@@ -5,7 +5,7 @@ import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Flex, notification, Space, Tabs, Tag, Typography } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { FiSun } from 'react-icons/fi';
-import AboutTab from './components/AboutTab';
+import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -71,7 +71,7 @@ const ParkDetails = () => {
     {
       key: 'about',
       label: 'Information',
-      children: park ? <AboutTab park={park} /> : <></>,
+      children: park ? <InformationTab park={park} /> : <></>,
     },
     {
       key: 'zones',
