@@ -1,14 +1,16 @@
 import { useAuth } from '@lepark/common-ui';
 import { deleteOccurrence, OccurrenceResponse, StaffResponse } from '@lepark/data-access';
-import { Button, Flex, Input, message, Table, TableProps, Tag, Tooltip } from 'antd';
+import { Button, Flex, message, Table, TableProps, Tag, Tooltip } from 'antd';
 import moment from 'moment';
-import React, { useEffect, useState, useMemo } from 'react';
-import { FiEye, FiSearch } from 'react-icons/fi';
+import React, { useEffect, useMemo, useState } from 'react';
+import { FiEye } from 'react-icons/fi';
 import { MdDeleteOutline } from 'react-icons/md';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 import { useFetchOccurrencesForSpecies } from '../../../hooks/Occurrences/useFetchOccurrencesForSpecies';
 import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
+import { Input } from 'antd';
+import { FiSearch } from 'react-icons/fi';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -36,8 +38,6 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-
-
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
