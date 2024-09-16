@@ -13,6 +13,8 @@ import {
 } from '@lepark/data-access';
 import useUploadImages from '../../../hooks/Images/useUploadImages';
 import { ImageInput } from '@lepark/common-ui';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
 
 const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occurrence }) => {
   const navigate = useNavigate();
@@ -25,6 +27,12 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [statusLogToDelete, setStatusLogToDelete] = useState<string | null>(null);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { user } = useAuth<StaffResponse>();
+
+  const canAddOrDelete = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchStatusLogs = async () => {
@@ -179,9 +187,11 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`statuslog/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Delete Status Log">
-            <Button type="link" icon={<FiTrash2 />} onClick={() => showDeleteConfirm(record.id)} style={{ color: 'red' }} />
-          </Tooltip>
+          {canAddOrDelete && (
+            <Tooltip title="Delete Status Log">
+              <Button type="link" icon={<FiTrash2 />} onClick={() => showDeleteConfirm(record.id)} style={{ color: 'red' }} />
+            </Tooltip>
+          )}
         </Flex>
       ),
     },
@@ -199,9 +209,11 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ width: '300px' }}
         />
-        <Button type="primary" icon={<FiPlus />} onClick={showModal}>
-          Add Status Log
-        </Button>
+        {canAddOrDelete && (
+          <Button type="primary" icon={<FiPlus />} onClick={showModal}>
+            Add Status Log
+          </Button>
+        )}
       </Flex>
 
       <Table<StatusLogResponse> dataSource={filteredLogs} columns={columns} rowKey="id" pagination={{ pageSize: 10 }} loading={loading} />

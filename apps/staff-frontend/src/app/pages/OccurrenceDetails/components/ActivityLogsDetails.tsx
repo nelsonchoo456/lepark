@@ -7,6 +7,8 @@ import moment from 'moment';
 import { getActivityLogById, updateActivityLog, getOccurrenceById } from '@lepark/data-access';
 import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -18,6 +20,13 @@ const ActivityLogDetails: React.FC = () => {
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
+
+  const { user } = useAuth<StaffResponse>();
+
+  const canEdit = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchActivityLogDetails = async () => {
@@ -175,7 +184,9 @@ const ActivityLogDetails: React.FC = () => {
                 {!inEditMode ? (
                   <>
                     <div>Activity Log Details</div>
-                    <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    {canEdit && (
+                      <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    )}
                   </>
                 ) : (
                   <>

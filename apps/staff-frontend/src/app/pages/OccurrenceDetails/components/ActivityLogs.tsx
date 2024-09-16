@@ -6,6 +6,8 @@ import moment from 'moment';
 import { OccurrenceResponse, ActivityLogResponse, getActivityLogsByOccurrenceId, createActivityLog, deleteActivityLog, ActivityLogTypeEnum } from '@lepark/data-access';
 import useUploadImages from '../../../hooks/Images/useUploadImages';
 import { ImageInput } from '@lepark/common-ui';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
 
 interface ActivityLog {
   id: string;
@@ -25,6 +27,12 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [activityLogToDelete, setActivityLogToDelete] = useState<string | null>(null);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { user } = useAuth<StaffResponse>();
+
+  const canAddOrDelete = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchActivityLogs = async () => {
@@ -156,14 +164,16 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`activitylog/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Delete Activity Log">
-            <Button
-              type="link"
-              icon={<FiTrash2 />}
-              onClick={() => showDeleteConfirm(record.id)}
-              style={{ color: 'red' }}
-            />
-          </Tooltip>
+          {canAddOrDelete && (
+            <Tooltip title="Delete Activity Log">
+              <Button
+                type="link"
+                icon={<FiTrash2 />}
+                onClick={() => showDeleteConfirm(record.id)}
+                style={{ color: 'red' }}
+              />
+            </Tooltip>
+          )}
         </Flex>
       ),
     },
@@ -181,9 +191,11 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ width: '300px' }}
         />
-        <Button type="primary" icon={<FiPlus />} onClick={showModal}>
-          Add Activity Log
-        </Button>
+        {canAddOrDelete && (
+          <Button type="primary" icon={<FiPlus />} onClick={showModal}>
+            Add Activity Log
+          </Button>
+        )}
       </Flex>
 
       <Table<ActivityLog>
