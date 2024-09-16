@@ -32,8 +32,8 @@ const ZoneList: React.FC = () => {
     setSearchQuery(e.target.value);
   };
 
-  const navigateToDetails = (occurrenceId: string) => {
-    navigate(`/zones/${occurrenceId}`);
+  const navigateToDetails = (zoneId: string) => {
+    navigate(`/zones/${zoneId}`);
   };
 
   const navigateToSpecies = (speciesId: string) => {
@@ -91,10 +91,22 @@ const ZoneList: React.FC = () => {
                 Under Construction
               </Tag>
             );
-          default:
+          case 'LIMITED_ACCESS':
+            return (
+              <Tag color="orange" bordered={false}>
+                Limited Access
+              </Tag>
+            );
+          case 'CLOSED':
             return (
               <Tag color="red" bordered={false}>
-                Limited Access
+                Closed
+              </Tag>
+            );
+          default:
+            return (
+              <Tag color="default" bordered={false}>
+                Unknown
               </Tag>
             );
         }
@@ -105,7 +117,7 @@ const ZoneList: React.FC = () => {
         { text: 'Limited Access', value: 'LIMITED_ACCESS' },
         { text: 'Closed', value: 'CLOSED' },
       ],
-      onFilter: (value, record) => record.parkStatus === value,
+      onFilter: (value, record) => record.zoneStatus === value,
       width: '1%',
     },
     {
@@ -203,10 +215,22 @@ const ZoneList: React.FC = () => {
                 Under Construction
               </Tag>
             );
-          default:
+          case 'LIMITED_ACCESS':
+            return (
+              <Tag color="orange" bordered={false}>
+                Limited Access
+              </Tag>
+            );
+          case 'CLOSED':
             return (
               <Tag color="red" bordered={false}>
-                Limited Access
+                Closed
+              </Tag>
+            );
+          default:
+            return (
+              <Tag color="default" bordered={false}>
+                Unknown
               </Tag>
             );
         }
@@ -217,7 +241,7 @@ const ZoneList: React.FC = () => {
         { text: 'Limited Access', value: 'LIMITED_ACCESS' },
         { text: 'Closed', value: 'CLOSED' },
       ],
-      onFilter: (value, record) => record.parkStatus === value,
+      onFilter: (value, record) => record.zoneStatus === value,
       width: '1%',
     },
     {
