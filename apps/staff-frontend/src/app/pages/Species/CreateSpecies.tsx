@@ -160,7 +160,6 @@ const CreateSpecies = () => {
       setCreatedSpecies(response.data);
       setShowSuccessAlert(true);
       form.resetFields();
-      setTimeout(() => setShowSuccessAlert(false), 5000);
     } catch (error) {
       message.error(String(error));
       // Handle error (e.g., show an error message)
