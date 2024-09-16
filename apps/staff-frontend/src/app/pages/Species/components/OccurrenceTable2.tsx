@@ -1,20 +1,17 @@
 import { useAuth } from '@lepark/common-ui';
 import {
   deleteOccurrence,
-  getOccurrencesBySpeciesId,
-  getOccurrencesBySpeciesIdByParkId,
   OccurrenceResponse,
-  StaffResponse,
-  StaffType,
+  StaffResponse
 } from '@lepark/data-access';
 import { Button, Flex, message, Table, TableProps, Tag, Tooltip } from 'antd';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FiEye } from 'react-icons/fi';
 import { MdDeleteOutline } from 'react-icons/md';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
-import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurrences';
+import { useFetchOccurrencesForSpecies } from '../../../hooks/Occurrences/useFetchOccurrencesForSpecies';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -22,7 +19,7 @@ interface OccurrenceTableProps {
 }
 
 const OccurrenceTable2: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
-  const { occurrences, loading, triggerFetch } = useFetchOccurrences();
+  const { occurrences, loading, triggerFetch } = useFetchOccurrencesForSpecies(speciesId);
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
