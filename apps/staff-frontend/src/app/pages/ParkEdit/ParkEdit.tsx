@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message, notification } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
@@ -9,6 +9,7 @@ import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
+import useUploadImages from '../../hooks/Images/useUploadImages';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -31,6 +32,8 @@ const ParkEdit = () => {
   const [createdData, setCreatedData] = useState<ParkResponse>();
   const [park, setPark] = useState<ParkResponse>();
   const [messageApi, contextHolder] = message.useMessage();
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
 
@@ -41,7 +44,7 @@ const ParkEdit = () => {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
-          description: 'You are not allowed to access the details of this park!',
+          description: 'You are not allowed to edit the details of this park!',
         });
         notificationShown.current = true;
       }
@@ -64,6 +67,10 @@ const ParkEdit = () => {
             friday: [dayjs(parkData.openingHours[5]), dayjs(parkData.closingHours[5])],
             saturday: [dayjs(parkData.openingHours[6]), dayjs(parkData.closingHours[6])],
           };
+          if (parkData.images) {
+            setCurrentImages(parkData.images);
+          }
+          
 
           form.setFieldsValue(initialValues);
         }
@@ -122,13 +129,18 @@ const ParkEdit = () => {
         return acc;
       }, {} as Partial<ParkResponse>);
 
-      const response = await updatePark(park.id, changedData);
+      changedData.images = currentImages;
+      const response = await updatePark(park.id, changedData, selectedFiles);
+      setPreviewImages([]);
       if (response.status === 201) {
         setCreatedData(response.data);
         messageApi.open({
           type: 'success',
           content: 'Saved changes to Park.',
         });
+        setTimeout(() => {
+          navigate(`/park/${park.id}`);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error creating Park', error);
@@ -166,6 +178,10 @@ const ParkEdit = () => {
     }
   };
 
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -182,6 +198,35 @@ const ParkEdit = () => {
           </Form.Item>
           <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={parkStatusOptions} />
+          </Form.Item>
+
+          <Form.Item label={'Image'}>
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
+          <Form.Item label={'Images'}>
+            <div className="flex flex-wrap gap-2">
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+            </div>
           </Form.Item>
 
           <Divider orientation="left">Contact Details</Divider>

@@ -74,7 +74,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
 
     // Check if a file is provided
     if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      // return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const uploadedUrls = [];

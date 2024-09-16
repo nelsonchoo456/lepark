@@ -112,7 +112,7 @@ const CreateDetailsStep = ({
         />
       </Form.Item>
       <Form.Item name="speciesId" label="Species" rules={[{ required: true }]}>
-        <Select placeholder="Select a Species" options={nonExstinctSpecies?.map((species) => ({ key: species.id, value: species.id, label: species.commonName }))}/>
+        <Select placeholder="Select a Species" options={nonExstinctSpecies?.map((species) => ({ key: species.id, value: species.id, label: species.speciesName }))}/>
       </Form.Item>
 
       <Divider orientation='left'>About the Occurrence</Divider>

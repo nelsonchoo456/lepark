@@ -60,8 +60,19 @@ export async function getParkById(id: number): Promise<AxiosResponse<ParkRespons
   }
 }
 
-export async function updatePark(id: number, data: Partial<ParkResponse>): Promise<AxiosResponse<ParkResponse>> {
+export async function updatePark(id: number, data: Partial<ParkResponse>, files?: File[]): Promise<AxiosResponse<ParkResponse>> {
   try {
+    if (files && files.length > 0) {
+      const formData = new FormData();
+
+      files?.forEach((file) => {
+        formData.append('files', file); // The key 'files' matches what Multer expects
+      });
+
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images?.push(...uploadedUrls.data.uploadedUrls);
+    }
+    
     const response: AxiosResponse<ParkResponse> = await axiosClient.put(`/updatePark/${id}`, data);
     return response;
   } catch (error) {
