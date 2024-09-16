@@ -152,12 +152,12 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   };
 
   const columns: TableProps<StatusLogResponse>['columns'] = [
-    {
-      title: 'Status Log ID',
-      dataIndex: 'id',
-      key: 'id',
-      sorter: (a, b) => a.id.localeCompare(b.id),
-    },
+    // {
+    //   title: 'Status Log ID',
+    //   dataIndex: 'id',
+    //   key: 'id',
+    //   sorter: (a, b) => a.id.localeCompare(b.id),
+    // },
     {
       title: 'Name',
       dataIndex: 'name',

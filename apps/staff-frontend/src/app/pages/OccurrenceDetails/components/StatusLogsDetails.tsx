@@ -124,11 +124,11 @@ const StatusLogDetails: React.FC = () => {
   };
 
   const getDescriptionItems = () => [
-    {
-      key: 'id',
-      label: 'Status Log ID',
-      children: statusLog?.id,
-    },
+    // {
+    //   key: 'id',
+    //   label: 'Status Log ID',
+    //   children: statusLog?.id,
+    // },
     {
       key: 'occurrenceTitle',
       label: 'Occurrence',

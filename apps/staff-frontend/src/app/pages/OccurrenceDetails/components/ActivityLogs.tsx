@@ -129,12 +129,12 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
   };
 
   const columns: TableProps<ActivityLog>['columns'] = [
-    {
-      title: 'Activity Log ID',
-      dataIndex: 'id',
-      key: 'id',
-      sorter: (a, b) => a.id.localeCompare(b.id),
-    },
+    // {
+    //   title: 'Activity Log ID',
+    //   dataIndex: 'id',
+    //   key: 'id',
+    //   sorter: (a, b) => a.id.localeCompare(b.id),
+    // },
     {
       title: 'Name',
       dataIndex: 'name',
