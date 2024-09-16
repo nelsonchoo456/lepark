@@ -50,7 +50,14 @@ const ResetPassword = () => {
           <div className="w-full">
             <Divider>Reset Password</Divider>
             <Form layout="vertical" onFinish={handleSubmit}>
-              <Form.Item name="password" label="New Password" rules={[{ required: true, message: 'Please enter a new Password' }]}>
+              <Form.Item
+                name="password"
+                label="New Password"
+                rules={[
+                  { required: true, message: 'Please enter a new Password' },
+                  { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' },
+                ]}
+              >
                 <Input.Password placeholder="Password" />
               </Form.Item>
 

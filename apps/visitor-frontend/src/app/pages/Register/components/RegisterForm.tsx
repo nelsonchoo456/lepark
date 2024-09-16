@@ -81,7 +81,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                   validateTrigger="onSubmit"
                   rules={[{ required: true, message: 'Please enter your First Name' }]}
                 >
-                  <Input placeholder="First Name" variant="filled" />
+                  <Input placeholder="First Name" />
                 </Form.Item>
               </Col>
 
@@ -92,7 +92,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                   validateTrigger="onSubmit"
                   rules={[{ required: true, message: 'Please enter your Last Name' }]}
                 >
-                  <Input placeholder="Last Name" variant="filled" />
+                  <Input placeholder="Last Name" />
                 </Form.Item>
               </Col>
             </Row>
@@ -106,7 +106,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                 { type: 'email', message: 'Please enter a valid Email' },
               ]}
             >
-              <Input placeholder="Email" variant="filled" />
+              <Input placeholder="Email" />
             </Form.Item>
 
             <Form.Item
@@ -120,7 +120,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                 },
               ]}
             >
-              <Input placeholder="Contact Number" variant="filled" />
+              <Input placeholder="Contact Number"/>
             </Form.Item>
 
             <Form.Item
@@ -131,7 +131,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
                 { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' },
               ]}
             >
-              <Input.Password placeholder="Password" variant="filled" />
+              <Input.Password placeholder="Password" />
             </Form.Item>
 
             <Form.Item
@@ -140,7 +140,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
               validateTrigger="onSubmit"
               rules={[{ required: true, message: 'Please re-enter your Password' }, confirmPasswordValidator]}
             >
-              <Input.Password placeholder="Confirm Password" variant="filled" />
+              <Input.Password placeholder="Confirm Password" />
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit" className="w-full">

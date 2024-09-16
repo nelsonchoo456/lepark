@@ -38,11 +38,11 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
       <Divider></Divider>
       <Form layout="vertical" onFinish={handleSubmit}>
         <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Please enter your email' }, { type: 'email', message: 'Please enter a valid email'}]}>
-          <Input placeholder="Email" variant="filled" />
+          <Input placeholder="Email"/>
         </Form.Item>
 
         <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Please enter your password' }]}>
-          <Input.Password placeholder="Password" variant="filled" />
+          <Input.Password placeholder="Password" />
         </Form.Item>
 
         <Form.Item>

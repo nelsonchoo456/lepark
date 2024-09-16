@@ -37,7 +37,7 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
           <div className="text-secondary">Please enter your email address. A link to reset your password will be sent to you.</div>
           <br />
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Please enter your Email' }]}>
-            <Input placeholder="Email" variant="filled" />
+            <Input placeholder="Email" />
           </Form.Item>
 
           <Form.Item>
