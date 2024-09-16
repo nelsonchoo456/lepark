@@ -160,22 +160,24 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="left" gap={8}>
+        <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`activitylog/${record.id}`)} />
           </Tooltip>
           {canAddOrDelete && (
-            <Tooltip title="Delete Activity Log">
-              <Button
-                type="link"
-                icon={<FiTrash2 />}
-                onClick={() => showDeleteConfirm(record.id)}
-                style={{ color: 'red' }}
-              />
-            </Tooltip>
+
+              <Tooltip title="Delete">
+                <Button
+                  danger
+                  type="link"
+                  icon={<FiTrash2 className="text-error" />}
+                  onClick={() => showDeleteConfirm(record.id)}
+                />
+              </Tooltip>
           )}
         </Flex>
       ),
+      width: '1%',
     },
   ];
 
