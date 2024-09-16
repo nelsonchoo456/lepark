@@ -282,7 +282,7 @@ const ViewStaffDetails = () => {
             })
             .map((role) => (
               <Select.Option key={role} value={role}>
-                {role}
+                {role.replace(/_/g, ' ')}
               </Select.Option>
             ))}
         </Select>

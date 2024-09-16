@@ -80,9 +80,11 @@ const StaffManagementPage: React.FC = () => {
     return staff.filter((staffMember) => {
       const fullName = `${staffMember.firstName} ${staffMember.lastName}`.toLowerCase();
       const parkName = getParkName(staffMember.parkId).toLowerCase();
+      const roleName = staffMember.role.replace(/_/g, ' ').toLowerCase();
       return (
         fullName.includes(searchQuery.toLowerCase()) ||
         parkName.includes(searchQuery.toLowerCase()) ||
+        roleName.includes(searchQuery.toLowerCase()) ||
         Object.values(staffMember).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()))
       );
     });
@@ -116,8 +118,9 @@ const StaffManagementPage: React.FC = () => {
       key: 'role',
       width: '20%',
       dataIndex: 'role',
-      filters: Object.values(StaffType).map((role) => ({ text: role, value: role })),
+      filters: Object.values(StaffType).map((role) => ({ text: role.replace(/_/g, ' '), value: role })),
       onFilter: (value, record) => record.role === value,
+      render: (role) => role.replace(/_/g, ' '),
     },
     {
       title: 'Contact',
