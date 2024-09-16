@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select } from 'antd';
+import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select, Empty } from 'antd';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
-import { getStatusLogById, updateStatusLog } from '@lepark/data-access';
-import { StatusLogResponse, StatusLogUpdateData } from '@lepark/data-access';
+import { getStatusLogById, updateStatusLog, getOccurrenceById } from '@lepark/data-access';
+import { StatusLogResponse, StatusLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
+import { useNavigate } from 'react-router-dom';
+import PageHeader2 from '../../../components/main/PageHeader2';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -15,8 +19,17 @@ const StatusLogDetails: React.FC = () => {
   const { statusLogId } = useParams<{ statusLogId: string }>();
   const [statusLog, setStatusLog] = useState<StatusLogResponse | null>(null);
   const [editedStatusLog, setEditedStatusLog] = useState<StatusLogResponse | null>(null);
+  const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
+  const navigate = useNavigate();
+
+  const { user } = useAuth<StaffResponse>();
+
+  const canEdit = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchStatusLogDetails = async () => {
@@ -27,6 +40,10 @@ const StatusLogDetails: React.FC = () => {
         const response = await getStatusLogById(statusLogId);
         setStatusLog(response.data);
         setEditedStatusLog(response.data);
+
+        // Fetch occurrence details
+        const occurrenceResponse = await getOccurrenceById(response.data.occurrenceId);
+        setOccurrence(occurrenceResponse.data);
       } catch (error) {
         console.error('Error fetching status log details:', error);
         message.error('Failed to fetch status log details');
@@ -59,7 +76,7 @@ const StatusLogDetails: React.FC = () => {
       value: 'REMOVED',
       label: 'Removed',
     },
-  ]
+  ];
 
   const toggleEditMode = () => {
     if (inEditMode) {
@@ -110,15 +127,15 @@ const StatusLogDetails: React.FC = () => {
   };
 
   const getDescriptionItems = () => [
+    // {
+    //   key: 'id',
+    //   label: 'Status Log ID',
+    //   children: statusLog?.id,
+    // },
     {
-      key: 'id',
-      label: 'Status Log ID',
-      children: statusLog?.id,
-    },
-    {
-      key: 'occurrenceId',
-      label: 'Occurrence ID',
-      children: statusLog?.occurrenceId,
+      key: 'occurrenceTitle',
+      label: 'Occurrence',
+      children: occurrence?.title || 'Loading...',
     },
     {
       key: 'name',
@@ -169,6 +186,23 @@ const StatusLogDetails: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: "Occurrence Management",
+      pathKey: '/occurrences',
+      isMain: true,
+    },
+    {
+      title: occurrence?.title || "Occurrence Details",
+      pathKey: `/occurrences/${occurrence?.id}`,
+    },
+    {
+      title: "Status Log Details",
+      pathKey: `/occurrences/${occurrence?.id}/statuslog/${statusLog?.id}`,
+      isCurrent: true,
+    },
+  ];
+
   const renderContent = () => {
     if (loading) {
       return <div>Loading...</div>;
@@ -177,7 +211,7 @@ const StatusLogDetails: React.FC = () => {
     if (!statusLog) {
       return (
         <ContentWrapperDark>
-          <PageHeader>Status Log Details</PageHeader>
+          <PageHeader2 breadcrumbItems={breadcrumbItems} />
           <Card>
             <div>No status log found or an error occurred.</div>
           </Card>
@@ -187,7 +221,7 @@ const StatusLogDetails: React.FC = () => {
 
     return (
       <ContentWrapperDark>
-        <PageHeader>Status Log Details</PageHeader>
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
         <Card>
           <Descriptions
             bordered
@@ -199,7 +233,9 @@ const StatusLogDetails: React.FC = () => {
                 {!inEditMode ? (
                   <>
                     <div>Status Log Details</div>
-                    <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    {canEdit && (
+                      <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    )}
                   </>
                 ) : (
                   <>
@@ -219,13 +255,17 @@ const StatusLogDetails: React.FC = () => {
           <Title level={4} className="mt-4 mb-2">
             Images
           </Title>
-          <Space size="large" wrap>
-            {statusLog.images && statusLog.images.length > 0 ? (
-              statusLog.images.map((image, index) => <Image key={index} width={200} src={image} />)
-            ) : (
-              <div>No images available</div>
-            )}
-          </Space>
+          {statusLog.images && statusLog.images.length > 0 ? (
+            <Space size="large" wrap>
+              {statusLog.images.map((image, index) => (
+                <Image key={index} width={200} src={image} className="rounded-md" />
+              ))}
+            </Space>
+          ) : (
+            <div className="h-64 bg-gray-200 flex items-center justify-center rounded-lg">
+              <Empty description="No Image" />
+            </div>
+          )}
         </Card>
       </ContentWrapperDark>
     );

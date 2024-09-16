@@ -2,12 +2,29 @@ import express from 'express';
 import ActivityLogService from '../services/ActivityLogService';
 import { Prisma } from '@prisma/client';
 import { ActivityLogSchemaType } from '../schemas/activityLogSchema';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer();
 
-router.post('/createActivityLog', async (req, res) => {
+router.post('/createActivityLog', upload.array('files', 5), async (req, res) => {
   try {
-    const activityLog = await ActivityLogService.createActivityLog(req.body);
+    const files = req.files as Express.Multer.File[];
+    const activityLogData = JSON.parse(req.body.data);
+
+    const uploadedUrls = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const fileName = `${Date.now()}-${file.originalname}`;
+        const imageUrl = await ActivityLogService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+        uploadedUrls.push(imageUrl);
+      }
+    }
+
+    const activityLog = await ActivityLogService.createActivityLog({
+      ...activityLogData,
+      images: uploadedUrls,
+    });
     res.status(201).json(activityLog);
   } catch (error) {
     res.status(400).json({ error: error.message });

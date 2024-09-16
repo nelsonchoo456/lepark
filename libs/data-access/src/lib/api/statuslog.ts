@@ -4,9 +4,21 @@ import { StatusLogData, StatusLogResponse, StatusLogUpdateData } from '../types/
 
 const URL = '/statuslogs';
 
-export async function createStatusLog(data: StatusLogData): Promise<AxiosResponse<StatusLogResponse>> {
+export async function createStatusLog(data: StatusLogData, files?: File[]): Promise<AxiosResponse<StatusLogResponse>> {
   try {
-    const response: AxiosResponse<StatusLogResponse> = await client.post(`${URL}/createStatusLog`, data);
+    const formData = new FormData();
+
+    files?.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    formData.append('data', JSON.stringify(data));
+
+    const response: AxiosResponse<StatusLogResponse> = await client.post(`${URL}/createStatusLog`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

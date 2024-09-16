@@ -48,9 +48,9 @@ const OccurrenceDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'id',
-      label: 'Occurrence ID',
-      children: occurrence?.id,
+      key: 'occurrenceSpecies',
+      label: 'Species',
+      children: species ? species.speciesName : 'Loading...',
     },
     {
       key: 'occurrenceStatus',

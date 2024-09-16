@@ -11,6 +11,10 @@ import {
   createStatusLog,
   deleteStatusLog,
 } from '@lepark/data-access';
+import useUploadImages from '../../../hooks/Images/useUploadImages';
+import { ImageInput } from '@lepark/common-ui';
+import { useAuth } from '@lepark/common-ui';
+import { StaffType, StaffResponse } from '@lepark/data-access';
 
 const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occurrence }) => {
   const navigate = useNavigate();
@@ -22,6 +26,13 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const [form] = Form.useForm();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [statusLogToDelete, setStatusLogToDelete] = useState<string | null>(null);
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { user } = useAuth<StaffResponse>();
+
+  const canAddOrDelete = user?.role === StaffType.SUPERADMIN || 
+    user?.role === StaffType.MANAGER || 
+    user?.role === StaffType.ARBORIST || 
+    user?.role === StaffType.BOTANIST;
 
   useEffect(() => {
     const fetchStatusLogs = async () => {
@@ -54,23 +65,23 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const occurrenceStatusOptions = [
     {
       value: 'HEALTHY',
-      label: 'Healthy',
+      label: 'HEALTHY',
     },
     {
       value: 'MONITOR_AFTER_TREATMENT',
-      label: 'Monitor After Treatment',
+      label: 'MONITOR_AFTER_TREATMENT',
     },
     {
       value: 'NEEDS_ATTENTION',
-      label: 'Needs Attention',
+      label: 'NEEDS_ATTENTION',
     },
     {
       value: 'URGENT_ACTION_NEEDED',
-      label: 'Urgent Action Needed',
+      label: 'URGENT_ACTION_NEEDED',
     },
     {
       value: 'REMOVED',
-      label: 'Removed',
+      label: 'REMOVED',
     },
   ]
 
@@ -81,6 +92,9 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   const handleCancel = () => {
     setIsModalVisible(false);
     form.resetFields();
+    // Clear selected files and preview images
+    selectedFiles.length = 0;
+    previewImages.length = 0;
   };
 
   const handleSubmit = async (values: any) => {
@@ -90,10 +104,13 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
           ...values,
           dateCreated: new Date().toISOString(),
           occurrenceId: occurrence.id,
-        });
+        }, selectedFiles);
         message.success('Status log created successfully');
         setIsModalVisible(false);
         form.resetFields();
+        // Clear selected files and preview images
+        selectedFiles.length = 0;
+        previewImages.length = 0;
         // Refresh status logs
         const response = await getStatusLogsByOccurrenceId(occurrence.id);
         setStatusLogs(response.data);
@@ -135,41 +152,55 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
   };
 
   const columns: TableProps<StatusLogResponse>['columns'] = [
-    {
-      title: 'Status Log ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
+    // {
+    //   title: 'Status Log ID',
+    //   dataIndex: 'id',
+    //   key: 'id',
+    //   sorter: (a, b) => a.id.localeCompare(b.id),
+    // },
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Date Created',
       dataIndex: 'dateCreated',
       key: 'dateCreated',
       render: (dateCreated: string) => moment(dateCreated).format('D MMM YY, HH:mm'),
+      sorter: (a, b) => moment(a.dateCreated).valueOf() - moment(b.dateCreated).valueOf(),
     },
     {
       title: 'Status Type',
       dataIndex: 'statusLogType',
       key: 'statusLogType',
       render: (statusLogType: string) => <Tag>{statusLogType}</Tag>,
+      filters: occurrenceStatusOptions.map(type => ({ text: type.label, value: type.value })),
+      onFilter: (value, record) => record.statusLogType === value,
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="left" gap={8}>
+        <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`statuslog/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Delete Status Log">
-            <Button type="link" icon={<FiTrash2 />} onClick={() => showDeleteConfirm(record.id)} style={{ color: 'red' }} />
-          </Tooltip>
+          {canAddOrDelete && (
+              <Tooltip title="Delete">
+                <Button
+                  danger
+                  type="link"
+                  icon={<FiTrash2 className="text-error" />}
+                  onClick={() => showDeleteConfirm(record.id)}
+                />
+              </Tooltip>
+
+          )}
         </Flex>
       ),
+      width: '1%',
     },
   ];
 
@@ -185,9 +216,11 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ width: '300px' }}
         />
-        <Button type="primary" icon={<FiPlus />} onClick={showModal}>
-          Add Status Log
-        </Button>
+        {canAddOrDelete && (
+          <Button type="primary" icon={<FiPlus />} onClick={showModal}>
+            Add Status Log
+          </Button>
+        )}
       </Flex>
 
       <Table<StatusLogResponse> dataSource={filteredLogs} columns={columns} rowKey="id" pagination={{ pageSize: 10 }} loading={loading} />
@@ -209,6 +242,30 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
               ))}
             </Select>
           </Form.Item>
+          <Form.Item label="Image">
+            <ImageInput
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg"
+              onClick={onInputClick}
+            />
+          </Form.Item>
+          {previewImages?.length > 0 && (
+            <Form.Item label="Image Previews">
+              <div className="flex flex-wrap gap-2">
+                {previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+              </div>
+            </Form.Item>
+          )}
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Submit

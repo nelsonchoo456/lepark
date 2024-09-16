@@ -3,6 +3,13 @@ import { z } from 'zod';
 import { StatusLogSchema, StatusLogSchemaType } from '../schemas/statusLogSchema';
 import StatusLogDao from '../dao/StatusLogDao';
 import { fromZodError } from 'zod-validation-error';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
 
 class StatusLogService {
   public async createStatusLog(data: StatusLogSchemaType): Promise<StatusLog> {
@@ -62,6 +69,23 @@ class StatusLogService {
 
   public async deleteStatusLog(id: string): Promise<void> {
     await StatusLogDao.deleteStatusLog(id);
+  }
+
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+    const params = {
+      Bucket: 'lepark',
+      Key: `statuslog/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
   }
 }
 

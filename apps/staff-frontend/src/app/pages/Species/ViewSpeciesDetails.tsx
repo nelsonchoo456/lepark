@@ -56,11 +56,11 @@ const ViewSpeciesDetails = () => {
   ]
 
   const descriptionsItems = [
-    {
-      key: 'id',
-      label: 'Species ID',
-      children: species?.id,
-    },
+    // {
+    //   key: 'id',
+    //   label: 'Species ID',
+    //   children: species?.id,
+    // },
     {
       key: 'speciesName',
       label: 'Species Name',
@@ -101,11 +101,11 @@ const ViewSpeciesDetails = () => {
       label: 'Country of Origin',
       children: species?.originCountry,
     },
-    {
-      key: 'speciesDescription',
-      label: 'Description',
-      children: species?.speciesDescription,
-    },
+    // {
+    //   key: 'speciesDescription',
+    //   label: 'Description',
+    //   children: species?.speciesDescription,
+    // },
   ];
 
   // Tabs Utility

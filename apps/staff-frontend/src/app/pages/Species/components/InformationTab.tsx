@@ -22,7 +22,6 @@ const InformationTab = ({ species }: { species: SpeciesResponse }) => {
     'speciesName',
     'commonName',
     'originCountry',
-    'speciesDescription',
     'conservationStatus',
     'lightType',
     'soilType',

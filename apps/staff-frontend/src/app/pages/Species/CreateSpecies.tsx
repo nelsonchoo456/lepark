@@ -69,7 +69,8 @@ const CreateSpecies = () => {
   const tailLayout = {
     wrapperCol: { offset: 8, span: 16 },
   };
-  const [tempRange, setTempRange] = useState([1, 1]);
+  const [tempRange, setTempRange] = useState([1, 50]);
+  const [idealTemp, setIdealTemp] = useState(25);
 
   const [classes, setClasses] = useState<string[]>([]);
   const [orders, setOrders] = useState<string[]>([]);
@@ -378,7 +379,7 @@ const CreateSpecies = () => {
           <Form.Item name="idealHumidity" label="Ideal Humidity (%)" rules={[{ required: true }]}>
             <InputNumber min={1} max={100} />
           </Form.Item>
-          <Form.Item name="tempRange" label="Min and Max Temp (C)" rules={[{ required: true }]}>
+          <Form.Item name="tempRange" label="Min and Max Temp (°C)" rules={[{ required: true }]}>
             <Slider
               range
               min={1}
@@ -389,18 +390,29 @@ const CreateSpecies = () => {
                 if (Array.isArray(newValue) && newValue.length === 2) {
                   setTempRange(newValue);
                   form.setFieldsValue({ tempRange: newValue });
+                
+                  // Adjust ideal temp if it's outside the new range
+                  if (idealTemp < newValue[0] || idealTemp > newValue[1]) {
+                    const newIdealTemp = Math.min(Math.max(idealTemp, newValue[0]), newValue[1]);
+                    setIdealTemp(newIdealTemp);
+                    form.setFieldsValue({ idealTemp: newIdealTemp });
+                  }
                 }
               }}
             />
           </Form.Item>
 
-          <Form.Item name="idealTemp" label="Ideal Temp (C)" rules={[{ required: true }]}>
+          <Form.Item name="idealTemp" label="Ideal Temp (°C)" rules={[{ required: true }]}>
             <InputNumber
-              min={1}
-              max={50}
+              min={tempRange[0]}
+              max={tempRange[1]}
               step={0.1}
-              onChange={() => {
-                form.validateFields(['idealTemp']);
+              value={idealTemp}
+              onChange={(value) => {
+                if (value !== null) {
+                  setIdealTemp(value);
+                  form.setFieldsValue({ idealTemp: value });
+                }
               }}
             />
           </Form.Item>
@@ -409,6 +421,7 @@ const CreateSpecies = () => {
             <Space>
               <span>Min: {tempRange[0]}°C</span>
               <span>Max: {tempRange[1]}°C</span>
+              <span>Ideal: {idealTemp}°C</span>
             </Space>
           </Form.Item>
 
