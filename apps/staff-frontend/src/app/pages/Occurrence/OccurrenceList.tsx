@@ -214,15 +214,15 @@ const OccurrenceList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green">Healthy</Tag>;
+            return <Tag color="green" bordered={false}>HEALTHY</Tag>;
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow" className='text-wrap max-w-32'>Moniter After Treatment</Tag>;
+            return <Tag color="yellow" className='text-wrap max-w-32' bordered={false}>MONITOR AFTER TREATMENT</Tag>;
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange">Needs Attention</Tag>;
+            return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red" className='text-wrap max-w-32'>Urgent Action Required</Tag>;
+            return <Tag color="red" className='text-wrap max-w-32' bordered={false}>URGENT ACTION REQUIRED</Tag>;
           case 'REMOVED':
-            return <Tag>REMOVED</Tag>;
+            return <Tag bordered={false}>REMOVED</Tag>;
         }
       },
       filters: [

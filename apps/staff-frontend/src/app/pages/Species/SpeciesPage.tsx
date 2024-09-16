@@ -149,7 +149,7 @@ const SpeciesPage = () => {
             color = 'default';
         }
         return (
-          <Tag color={color} style={style}>
+          <Tag color={color} style={style} bordered={false}>
             {status.replace(/_/g, ' ')}
           </Tag>
         );
