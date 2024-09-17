@@ -1,4 +1,4 @@
-import { Prisma, Occurrence } from '@prisma/client';
+import { Prisma, Occurrence, OccurrenceStatusEnum } from '@prisma/client';
 import { z } from 'zod';
 import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import OccurrenceDao from '../dao/OccurrenceDao';
@@ -128,6 +128,18 @@ class OccurrenceService {
     } catch (error) {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
+    }
+  }
+
+  public async updateOccurrenceStatus(occurrenceId: string, newStatus: string): Promise<Occurrence> {
+    try {
+      const updateData: Prisma.OccurrenceUpdateInput = {
+        occurrenceStatus: newStatus as OccurrenceStatusEnum,
+      };
+
+      return OccurrenceDao.updateOccurrenceDetails(occurrenceId, updateData);
+    } catch (error) {
+      throw new Error(`Unable to update occurrence status: ${error.message}`);
     }
   }
 }

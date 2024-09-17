@@ -97,8 +97,8 @@ const StatusLogDetails: React.FC = () => {
 
   const validateInputs = () => {
     if (editedStatusLog === null) return false;
-    const { name, description, statusLogType } = editedStatusLog;
-    return name && description && statusLogType;
+    const { name, description } = editedStatusLog;
+    return name && description;
   };
 
   const handleSave = async () => {
@@ -107,7 +107,7 @@ const StatusLogDetails: React.FC = () => {
         const updatedStatusLogData: StatusLogUpdateData = {
           name: editedStatusLog?.name,
           description: editedStatusLog?.description,
-          statusLogType: editedStatusLog?.statusLogType,
+          // Remove statusLogType from the update data
         };
         if (!statusLogId) {
           message.error('No status log ID provided.');
@@ -163,26 +163,7 @@ const StatusLogDetails: React.FC = () => {
     {
       key: 'statusLogType',
       label: 'Status Type',
-      children: !inEditMode ? (
-        <Tag>{statusLog?.statusLogType}</Tag>
-      ) : (
-        <Select
-          value={editedStatusLog?.statusLogType}
-          onChange={(value) => handleInputChange('statusLogType', value)}
-          style={{ width: '100%' }}
-        >
-          {/* {Object.values(OccurrenceStatusEnum).map((type) => (
-            <Select.Option key={type} value={type}>
-              {type}
-            </Select.Option>
-          ))} */}
-          {occurrenceStatusOptions.map((option) => (
-            <Select.Option key={option.value} value={option.value}>
-              {option.label}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
+      children: <Tag>{statusLog?.statusLogType}</Tag>,
     },
   ];
 

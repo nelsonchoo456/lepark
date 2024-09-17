@@ -4,6 +4,7 @@ import { StatusLogSchema, StatusLogSchemaType } from '../schemas/statusLogSchema
 import StatusLogDao from '../dao/StatusLogDao';
 import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
+import OccurrenceService from './OccurrenceService';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -20,7 +21,12 @@ class StatusLogService {
 
       const statusLogData = ensureAllFieldsPresent(formattedData);
 
-      return StatusLogDao.createStatusLog(statusLogData);
+      const createdStatusLog = await StatusLogDao.createStatusLog(statusLogData);
+
+      // Update the occurrence status
+      await OccurrenceService.updateOccurrenceStatus(createdStatusLog.occurrenceId, createdStatusLog.statusLogType);
+
+      return createdStatusLog;
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
