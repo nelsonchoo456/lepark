@@ -17,7 +17,7 @@ import { Color } from 'antd/es/color-picker';
 import EventCard from '../MainLanding/components/EventCard';
 import EditPasswordModal from './EditPasswordModal';
 import EditEmailModal from './EditEmailModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BsCalendar4Event } from 'react-icons/bs';
 import DeleteAccountModal from './DeleteAccountModal';
 import {
@@ -290,7 +290,8 @@ const ProfilePage = () => {
           <Button type="primary" onClick={handleSendVerificationEmail} className="px-4 py-2">
             Resend Verification Email
           </Button>
-          <p className="mb-4 mt-4">For any issues, contact customer support at admin@lepark.com</p>
+          <p className="mb-4 mt-8">For any issues, contact customer support at admin@lepark.com</p>
+          <p>Click <a onClick={handleLogout}>here</a> to logout.</p>
         </div>
       );
     }
