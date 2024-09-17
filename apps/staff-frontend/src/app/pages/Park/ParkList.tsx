@@ -186,7 +186,7 @@ const ParkList = () => {
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       {contextHolder}
-      <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Park deletes all of its Zones and Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
+      <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Park will delete all of its Zones and Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}

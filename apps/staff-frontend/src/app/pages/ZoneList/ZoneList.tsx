@@ -325,7 +325,7 @@ const ZoneList: React.FC = () => {
     <ContentWrapperDark>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <ConfirmDeleteModal onConfirm={deleteZoneToBeDeleted} open={deleteModalOpen} description='Deleting a Zone deletes all of its Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
+      <ConfirmDeleteModal onConfirm={deleteZoneToBeDeleted} open={deleteModalOpen} description='Deleting a Zone will delete all of its Occurrences.' onCancel={cancelDelete}></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input 
           suffix={<FiSearch />} 

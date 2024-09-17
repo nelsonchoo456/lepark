@@ -326,7 +326,7 @@ const OccurrenceList: React.FC = () => {
     <ContentWrapperDark>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <ConfirmDeleteModal onConfirm={deleteOccurrenceToBeDeleted} open={deleteModalOpen} onCancel={cancelDelete}></ConfirmDeleteModal>
+      <ConfirmDeleteModal onConfirm={deleteOccurrenceToBeDeleted} open={deleteModalOpen} onCancel={cancelDelete} description='Deleting an Occurrence will delete all of its Logs.'></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
         <Input 
           suffix={<FiSearch />} 

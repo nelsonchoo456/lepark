@@ -1,5 +1,5 @@
-import { ImageInput } from '@lepark/common-ui';
-import { ParkResponse } from '@lepark/data-access';
+import { ImageInput, useAuth } from '@lepark/common-ui';
+import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import {
   Button,
   Checkbox,
@@ -16,8 +16,9 @@ import {
   Select,
   TimePicker,
   Typography,
-  message
+  message,
 } from 'antd';
+import { useEffect, useState } from 'react';
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -32,8 +33,26 @@ interface CreateDetailsStepProps {
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
 }
 
-const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleFileChange, removeImage, onInputClick }: CreateDetailsStepProps) => {
+const CreateDetailsStep = ({
+  handleCurrStep,
+  form,
+  parks,
+  previewImages,
+  handleFileChange,
+  removeImage,
+  onInputClick,
+}: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
+  const { user } = useAuth<StaffResponse>();
+  const [park, setPark] = useState<ParkResponse>();
+
+  useEffect(() => {
+    if (user?.role !== StaffType.SUPERADMIN && user?.parkId) {
+      form.setFieldsValue({ parkId: user?.parkId });
+      const park = parks.find((park) => park.id === user.parkId);
+      setPark(park);
+    }
+  }, [user, parks]);
 
   const zoneStatusOptions = [
     {
@@ -80,9 +99,15 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       {contextHolder}
-      <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
-        <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name}))}/>
-      </Form.Item>
+
+      {user?.role !== StaffType.SUPERADMIN && park ? (
+        <Form.Item label="Park">{park?.name}</Form.Item>
+      ) : (
+        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+          <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
+        </Form.Item>
+      )}
+
       <Divider orientation="left">Zone Details</Divider>
       <Form.Item name="name" label="Name" rules={[{ required: true }]}>
         <Input placeholder="Zone Name" />
@@ -110,11 +135,13 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
         </div>
       </Form.Item>} */}
 
-      <Divider orientation="left">Zone Hours <Text type='danger'>{" *"}</Text></Divider>
+      <Divider orientation="left">
+        Zone Hours <Text type="danger">{' *'}</Text>
+      </Divider>
 
       <Form.Item label={'Monday'}>
         <Flex>
-          <Form.Item name="monday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="monday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('monday')}>
@@ -125,7 +152,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
 
       <Form.Item label={'Tuesday'}>
         <Flex>
-          <Form.Item name="tuesday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="tuesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('tuesday')}>
@@ -136,7 +163,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
 
       <Form.Item label={'Wednesday'}>
         <Flex>
-          <Form.Item name="wednesday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="wednesday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('wednesday')}>
@@ -147,7 +174,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
 
       <Form.Item label={'Thursday'}>
         <Flex>
-          <Form.Item name="thursday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="thursday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('thursday')}>
@@ -158,7 +185,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
 
       <Form.Item label={'Friday'}>
         <Flex>
-          <Form.Item name="friday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="friday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('friday')}>
@@ -169,7 +196,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
 
       <Form.Item label={'Saturday'}>
         <Flex>
-          <Form.Item name="saturday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="saturday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('saturday')}>
@@ -180,7 +207,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, parks, previewImages, handleF
 
       <Form.Item label={'Sunday'}>
         <Flex>
-          <Form.Item name="sunday" noStyle rules={[{ required: true, message: "Please enter valid Park Hours" }]}>
+          <Form.Item name="sunday" noStyle rules={[{ required: true, message: 'Please enter valid Park Hours' }]}>
             <RangePicker className="w-full" use12Hours format="h:mm a" />
           </Form.Item>
           <Popconfirm title="Input for all the other days will be overriden." onConfirm={() => handleApplyToAllChange('sunday')}>
