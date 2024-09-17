@@ -84,7 +84,12 @@ const ZoneCreate = () => {
         closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
       })
 
-      const finalData = { ...rest, openingHours, closingHours}
+      const finalData = { 
+        ...rest, 
+        openingHours, 
+        closingHours,
+        parkId: user?.parkId || rest.parkId // Use user's parkId if available, otherwise use the one from the form
+      }
 
       if (polygon && polygon[0] && polygon[0][0]) {
         const polygonData = latLngArrayToPolygon(polygon[0][0]);
