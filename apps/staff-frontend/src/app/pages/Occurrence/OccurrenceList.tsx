@@ -105,11 +105,11 @@ const OccurrenceList: React.FC = () => {
         }
       },
       filters: [
-        { text: 'Healthy', value: 'HEALTHY' },
-        { text: 'Monitor After Treatment', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'Needs Attention', value: 'NEEDS_ATTENTION' },
-        { text: 'Urgent Action Required', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'Removed', value: 'REMOVED' },
+        { text: 'HEALTHY', value: 'HEALTHY' },
+        { text: 'MONITOR_AFTER_TREATMENT', value: 'MONITOR_AFTER_TREATMENT' },
+        { text: 'NEEDS_ATTENTION', value: 'NEEDS_ATTENTION' },
+        { text: 'URGENT_ACTION_REQUIRED', value: 'URGENT_ACTION_REQUIRED' },
+        { text: 'REMOVED', value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
       width: '1%',
