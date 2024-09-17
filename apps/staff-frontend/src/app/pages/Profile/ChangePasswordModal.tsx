@@ -38,7 +38,7 @@ const ChangePasswordModal: FC<ChangePasswordModalProps> = ({ open, onClose, user
         })
         .catch(error => {
           console.error('Error changing password:', error);
-          message.error(`Error: ${error}`);
+          message.error(String(error));
         });
     }).catch(info => {
       console.log('Validate Failed:', info);
@@ -63,7 +63,9 @@ const ChangePasswordModal: FC<ChangePasswordModalProps> = ({ open, onClose, user
         <Form.Item
           name="currentPassword"
           label="Current Password:"
-          rules={[{ required: true, message: 'Please input your current password!' }]}
+          rules={[{ required: true, message: 'Please input your current password!' },
+            { pattern: /^.{8,}$/, message: 'Current password should be at least 8 characters long.' }
+          ]}
         >
           <Input.Password
             prefix={<LockOutlined />}
