@@ -40,12 +40,17 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
         //   navigate('/login');
         // }, 1000);
       }
-    } catch (error) {
-      console.log(error);
-      message.error(String(error));
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('Invalid email address')) {
+        message.error('Invalid email format.');
+      } else {
+        message.error(errorMessage || 'Failed to update staff details.');
+      }
     }
   };
-
+  
   const handleGoToLogin = () => {
     navigate('/login');
   };

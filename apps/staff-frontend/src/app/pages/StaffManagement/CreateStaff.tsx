@@ -41,10 +41,14 @@ const CreateStaff: React.FC = () => {
       message.success('Staff added successfully!');
       // Navigate to another page or show success message
       navigate('/staff-management');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      message.error('Failed to add staff: ' + error);
-      // Handle error, show error message to user
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('Invalid email address')) {
+        message.error('Invalid email format.');
+      } else {
+        message.error(errorMessage || 'Failed to update staff details.');
+      }
     }
   };
 

@@ -178,6 +178,8 @@ const ViewStaffDetails = () => {
       const errorMessage = error.message || error.toString();
       if (errorMessage.includes('Unique constraint failed on the fields: (`email`)')) {
         message.error('The email address is already in use. Please use a different email.');
+      } else if (errorMessage.includes('Invalid email address')) {
+        message.error('Invalid email format.');
       } else {
         message.error(errorMessage || 'Failed to update staff details.');
       }

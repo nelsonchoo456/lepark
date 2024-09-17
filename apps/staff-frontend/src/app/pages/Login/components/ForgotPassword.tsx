@@ -37,7 +37,10 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
         <Form layout="vertical" onFinish={handleSubmit}>
           <div className="text-secondary">Please enter your email address. A link to reset your password will be sent to you.</div>
           <br />
-          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Please enter your Email' }]}>
+          <Form.Item name="email" label="Email" rules={[
+            { required: true, message: 'Please input an email' },
+            { type: 'email', message: 'Please enter a valid email' },
+          ]}>
             <Input placeholder="Email" />
           </Form.Item>
 
