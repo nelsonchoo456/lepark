@@ -70,10 +70,12 @@ const SpeciesPage = () => {
     try {
       const confirmed = await new Promise((resolve) => {
         Modal.confirm({
-          title: 'Are you sure you want to delete this species?',
-          content: 'All OCCURRENCES of this species will be removed from the database if this species is deleted. This cannot be undone.',
+          title: 'Confirm Deletion?',
+          content: 'Deleting a Species will delete its Occurrences. This cannot be undone.',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
+          okText: "Confirm Delete",
+          okButtonProps: { danger: true }
         });
       });
 

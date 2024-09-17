@@ -1,5 +1,6 @@
-import { Modal } from 'antd';
+import { Flex, Modal } from 'antd';
 import { useState } from 'react';
+import { PiWarningCircleFill } from 'react-icons/pi';
 
 interface ConfirmDeleteModalProps {
   open: boolean;
@@ -14,7 +15,7 @@ const ConfirmDeleteModal = ({ open, confirmLoading, title, description, onConfir
 
   return (
     <Modal
-      title={title ? title : 'Confirm Deletion?'}
+      title={title ? title : <Flex gap={8}><PiWarningCircleFill className='text-mustard-400 text-2xl'/>Confirm Deletion?</Flex>}
       open={open}
       onOk={onConfirm}
       okText="Confirm Delete"
