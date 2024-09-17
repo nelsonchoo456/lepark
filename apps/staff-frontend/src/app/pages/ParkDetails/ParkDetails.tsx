@@ -117,7 +117,9 @@ const ParkDetails = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      {user?.role === StaffType.SUPERADMIN && (
+        <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      )}
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
