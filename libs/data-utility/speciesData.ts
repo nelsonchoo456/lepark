@@ -136,26 +136,29 @@ export const plantTaxonomy = {
     }
   },
   Bryophyta: {
-    classes: ['Marchantiopsida', 'Bryopsida'],
-    Marchantiopsida: {
-      orders: ['Blasiales', 'Lunulariales', 'Marchantiales', 'Neohodgsoniales', 'Sphaerocarpales']
+    classes: ['Hepaticopsida','Anthocerotopsida','Bryopsida'],
+    Hepaticopsida: {
+      orders: ['Calobryales','Jugermanniales','Marchantiales', 'Sphaerocarpales']
+    },
+    Anthocerotopsida: {
+      orders: ['Anthocerotales','Notothyladales','Phymatocerotales','Dendrocerotales']
     },
     Bryopsida: {
       orders: [
         'Tetraphidales', 'Buxbaumiales', 'Polytrichales', 'Dawsoniales',
         'Archidiales', 'Dicranales', 'Fissidentales', 'Syrrhopodontales',
         'Pottiales', 'Grimmiales', 'Encalyptales', 'Funariales',
-        'Eubryales', 'Isobryales', 'Hookeriales', 'Hypnobryales'
+        'Eubryales', 'Isobryales', 'Hookeriales', 'Hypnobryales', 'Hypnales'
       ]
-    }
+    },
   },
-  Charophyta: {
-    classes: ['Prasinophyceae', 'Trebouxiophyceae', 'Chlorophyceae', 'Ulvophyceae', 'Pedinophyceae', 'Chlorodendrophyceae'],
+  Chlorophyta: {
+    classes: ['Prasinophyceae', 'Trebouxiophyceae', 'Chlorophyceae', 'Ulvophyceae', 'Dasycladophyceae', 'Chlorodendrophyceae'],
     Prasinophyceae: {
       orders: ['Mamiellales', 'Chlorodendrales']
     },
     Trebouxiophyceae: {
-      orders: ['Trebouxiales']
+      orders: ['Trebouxiales','Chlorellales','Microthaminales']
     },
     Chlorophyceae: {
       orders: ['Volvocales', 'Chlorococcales', 'Oedogoniales']
@@ -163,27 +166,39 @@ export const plantTaxonomy = {
     Ulvophyceae: {
       orders: ['Ulvales', 'Cladophorales', 'Trentepohliales']
     },
-    Pedinophyceae: {
-      orders: ['Pedinomonadales']
+    Dasycladophyceae: {
+      orders: ['Dasycladales']
     },
     Chlorodendrophyceae: {
       orders: ['Chlorodendrales']
     }
   },
-  Chlorophyta: {
-    classes: ['Prasinophyceae', 'Trebouxiophyceae', 'Chlorophyceae', 'Ulvophyceae'],
-    Prasinophyceae: {
-      orders: ['Mamiellales', 'Chlorodendrales']
+  Charophyta: {
+    classes: ['Charophyceae',
+  'Klebsormidiophyceae',
+  'Zygnematophyceae',
+  'Mesostigmatophyceae',
+  'Coleochaetophyceae',
+  'Chlorokybophyceae'],
+    Charophyceae: {
+      orders: ['Charales']
     },
-    Trebouxiophyceae: {
-      orders: ['Trebouxiales']
+    Klebsormidiophyceae: {
+      orders: ['Klebsormidiales']
     },
-    Chlorophyceae: {
-      orders: ['Volvocales', 'Chlorococcales', 'Oedogoniales']
+    Zygnematophyceae: {
+      orders: ['Zygnematales', 'Desmidiales']
     },
-    Ulvophyceae: {
-      orders: ['Ulvales', 'Cladophorales', 'Trentepohliales']
+    Mesostigmatophyceae: {
+      orders: ['Mesostigmatales']
+    },
+    Coleochaetophyceae: {
+      orders: ['Coleochaetales']
+    },
+    Chlorokybophyceae: {
+      orders: ['Chlorokybales']
     }
+
   },
   Cycadophyta: {
     classes: ['Cycadopsida'],
@@ -206,9 +221,17 @@ export const plantTaxonomy = {
   Gnetophyta: {
     classes: ['Gnetopsida'],
     Gnetopsida: {
-      orders: ['Gnetales']
+      orders: ['Gnetales','Welwitschiales','Ephedrales']
     }
   },
+
+  Lycophyta: {
+    classes: ['Lycopodiopsida'],
+    Lycopodiopsida: {
+      orders: ['Lycopodiales', 'Isoetales', 'Selaginellales']
+    }
+  },
+
   Lycopodiophyta: {
     classes: ['Lycopodiopsida'],
     Lycopodiopsida: {
@@ -218,19 +241,34 @@ export const plantTaxonomy = {
   Magnoliophyta: {
     classes: ['Magnoliopsida', 'Liliopsida'],
     Magnoliopsida: {
-      orders: ['Rosales', 'Fabales', 'Asterales']
+      orders: ['Rosales', 'Fabales', 'Asterales','Caryophyllales','Ericales','Malvales','Lamiales']
     },
     Liliopsida: {
-      orders: ['Poales', 'Liliales', 'Arecales']
+      orders: ['Poales', 'Liliales', 'Arecales','Zingiberales','Orchidales','Asparagales']
     }
   },
   Marchantiophyta: {
     classes: ['Marchantiopsida', 'Jungermanniopsida'],
     Marchantiopsida: {
-      orders: ['Marchantiales', 'Lunularies']
+      orders: ['Marchantiales', 'Sphaerocarpales','Blasiales','Neohodgsoniales']
     },
     Jungermanniopsida: {
       orders: ['Jungermanniales', 'Metzgeriales']
+    }
+  },
+  Monilophyta: {
+    classes: ['Polypodiopsida', 'Equisetopsida', 'Marattiopsida', 'Psilotopsida'],
+    Polypodiopsida: {
+      orders: ['Polypodiales', 'Osmundales', 'Salviniales', 'Cyatheales', 'Hymenophyllales', 'Gleicheniales', 'Schizaeales']
+    },
+    Equisetopsida: {
+      orders: ['Equisetales']
+    },
+    Marattiopsida: {
+      orders: ['Marattiales']
+    },
+    Psilotopsida: {
+      orders: ['Psilotales', 'Ophioglossales']
     }
   },
   Pinophyta: {
@@ -242,7 +280,7 @@ export const plantTaxonomy = {
   Polypodiophyta: {
     classes: ['Polypodiopsida'],
     Polypodiopsida: {
-      orders: ['Polypodiales', 'Osmundales']
+      orders: ['Polypodiales', 'Osmundales','Marattiales','Salviniales','Cyatheales']
     }
   }
 };

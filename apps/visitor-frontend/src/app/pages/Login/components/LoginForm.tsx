@@ -54,12 +54,14 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
       <Divider>
         <span className="text-secondary">or</span>
       </Divider>
-      <Button type="link" className="w-full justify-center" onClick={handleGoToForgotPassword}>
-        Forgot Password?
-      </Button>
-      <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
-        Register
-      </Button>
+      <div className="flex flex-col items-center">
+        <Button type="link" onClick={handleGoToForgotPassword}>
+          Forgot Password?
+        </Button>
+        <Button type="link" onClick={handleGoToRegister}>
+          Register
+        </Button>
+      </div>
       {/* <Button type="link" className="w-full justify-center" onClick={handleReturnToPrev}>
         Continue using without Account
       </Button> */}
