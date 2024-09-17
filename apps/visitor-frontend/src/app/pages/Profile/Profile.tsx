@@ -290,6 +290,7 @@ const ProfilePage = () => {
           <Button type="primary" onClick={handleSendVerificationEmail} className="px-4 py-2">
             Resend Verification Email
           </Button>
+          <p className="mb-4 mt-4">For any issues, contact customer support at admin@lepark.com</p>
         </div>
       );
     }
