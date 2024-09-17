@@ -152,6 +152,14 @@ const CreateSpecies = () => {
         });
         return;
       }
+
+      if (selectedFiles.length === 0) {
+        Modal.error({
+          title: 'Error',
+          content: 'Please upload at least one image.',
+        });
+        return;
+      }
       console.log(speciesData);
       console.log('Species data to be submitted:', JSON.stringify(speciesData)); // For debugging
 
@@ -390,7 +398,7 @@ const CreateSpecies = () => {
                 if (Array.isArray(newValue) && newValue.length === 2) {
                   setTempRange(newValue);
                   form.setFieldsValue({ tempRange: newValue });
-                
+
                   // Adjust ideal temp if it's outside the new range
                   if (idealTemp < newValue[0] || idealTemp > newValue[1]) {
                     const newIdealTemp = Math.min(Math.max(idealTemp, newValue[0]), newValue[1]);
