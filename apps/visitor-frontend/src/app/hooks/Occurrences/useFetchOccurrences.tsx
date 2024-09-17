@@ -18,7 +18,6 @@ export const useFetchOccurrences = () => {
   const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
     if (user?.parkId) {
       fetchOccurrencesByParkId(user.parkId);
     } else {
