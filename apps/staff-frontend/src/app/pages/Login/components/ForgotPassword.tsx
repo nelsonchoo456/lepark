@@ -54,9 +54,11 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
       <Divider>
         <span className="text-secondary">or</span>
       </Divider>
-      <Button type="link" className="w-full justify-center" onClick={handleReturnToLogin}>
-        Return to Log In
-      </Button>
+      <div className="flex justify-center">
+        <Button type="link" onClick={handleReturnToLogin}>
+          Return to Log In
+        </Button>
+      </div>
     </div>
   );
 };
