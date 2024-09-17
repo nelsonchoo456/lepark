@@ -27,7 +27,7 @@ const ViewEditSpecies = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const { user, updateUser } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
   const [loading, setLoading] = useState(true);
@@ -177,7 +177,7 @@ const ViewEditSpecies = () => {
         lightType: values.lightType,
         soilType: values.soilType,
         fertiliserType: values.fertiliserType,
-        images: [],
+        images: currentImages,
         waterRequirement: values.waterRequirement,
         fertiliserRequirement: values.fertiliserRequirement,
         idealHumidity: values.idealHumidity,
@@ -193,7 +193,7 @@ const ViewEditSpecies = () => {
         isToxic: plantCharacteristics.includes('toxic'),
         isFragrant: plantCharacteristics.includes('fragrant'),
       };
-      console.log('Species data to be submitted:', speciesData); // For debugging
+      console.log('Species data to be submitted:', speciesData);
 
       if (values.minTemp > values.ideaTemp || values.maxTemp < values.idealTemp) {
         console.error('Ideal temperature must be between min and max temperatures');
@@ -203,15 +203,12 @@ const ViewEditSpecies = () => {
         });
         return;
       }
-      speciesData.images = currentImages;
-      console.log('Species data to be submitted:', speciesData); // For debugging
 
       setIsSubmitting(true);
-      console.log('currentImages', currentImages);
-      console.log('selectedFiles', selectedFiles);
-      console.log('species ID', speciesIdFromLocation);
       const response = await updateSpecies(speciesIdFromLocation, speciesData, selectedFiles);
       console.log('Species saved', response.data);
+
+      setPreviewImages([]); // Clear preview images after successful submission
 
       messageApi.open({
         type: 'success',
@@ -224,10 +221,6 @@ const ViewEditSpecies = () => {
       }, 1000);
     } catch (error) {
       message.error(String(error));
-      /*messageApi.open({
-        type: 'error',
-        content: 'Failed to save species. Please try again.',
-      });*/
     } finally {
       setIsSubmitting(false);
     }
