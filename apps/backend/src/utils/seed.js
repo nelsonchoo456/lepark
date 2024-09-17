@@ -1,5 +1,5 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
-const { parksData, zonesData, speciesData, occurrenceData, staffData } = require('./mockData');
+const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -219,6 +219,34 @@ async function seed() {
       data: occurrenceCurrent,
     });
     occurrenceList.push(occurrence);
+
+    // For every Occurrence, create 2 ActivityLogs
+    try {
+      const selectedActivityLogs = getRandomItems(activityLogsData, 2);
+      const activityLogs = selectedActivityLogs.map(log => ({
+        ...log,
+        occurrenceId: occurrence.id,
+      }));
+      await prisma.activityLog.createMany({
+        data: activityLogs,
+      })
+    } catch (error) {
+      //
+    }
+
+    // For every Occurrence, create 2 StatusLogs
+    try {
+      const selectedStatusLogs = getRandomItems(statusLogsData, 2);
+      const statusLogs = selectedStatusLogs.map(log => ({
+        ...log,
+        occurrenceId: occurrence.id,
+      }));
+      await prisma.statusLog.createMany({
+        data: statusLogs,
+      });
+    } catch (error) {
+      //
+    }
   }
   console.log(`Total occurrences seeded: ${occurrenceList.length}\n`);
 
@@ -234,6 +262,12 @@ async function seed() {
   }
   console.log(`Total staff seeded: ${staffList.length}\n`);
 }
+
+// Utility function for Activity Logs and Status Logs
+const getRandomItems = (array, count) => {
+  const shuffled = array.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
 
 seed()
   .catch((e) => {
