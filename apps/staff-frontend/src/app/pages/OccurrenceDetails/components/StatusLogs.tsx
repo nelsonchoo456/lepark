@@ -76,8 +76,8 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
       label: 'NEEDS_ATTENTION',
     },
     {
-      value: 'URGENT_ACTION_NEEDED',
-      label: 'URGENT_ACTION_NEEDED',
+      value: 'URGENT_ACTION_REQUIRED',
+      label: 'URGENT_ACTION_REQUIRED',
     },
     {
       value: 'REMOVED',
