@@ -105,6 +105,10 @@ const ParkEdit = () => {
       value: 'LIMITED_ACCESS',
       label: 'Limited Access',
     },
+    {
+      value: 'CLOSED',
+      label: 'Closed',
+    },
   ];
 
   const handleSubmit = async () => {
