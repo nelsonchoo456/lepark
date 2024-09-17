@@ -62,9 +62,11 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
       <Divider>
         <span className="text-secondary">or</span>
       </Divider>
-      <Button type="link" className="w-full justify-center" onClick={handleGoToForgotPassword}>
-        Forgot Password?
-      </Button>
+      <div className="flex justify-center">
+        <Button type="link" onClick={handleGoToForgotPassword}>
+          Forgot Password?
+        </Button>
+      </div>
       {/* <Button type="link" className="w-full justify-center" onClick={handleGoToRegister}>
         Register
       </Button> */}

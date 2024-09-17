@@ -154,9 +154,11 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
             </Form.Item>
           </Form><Divider>
               <span className="text-secondary">or</span>
-            </Divider><Button type="link" className="w-full justify-center" onClick={handleGoToLogin}>
-              Return to Login
-            </Button></>
+            </Divider><div className="flex justify-center">
+              <Button type="link" onClick={handleGoToLogin}>
+                Return to Login
+              </Button>
+            </div></>
       )}
     </div>
   );
