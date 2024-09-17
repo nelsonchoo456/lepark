@@ -1,5 +1,6 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
 const { parksData, zonesData, speciesData, occurrenceData, staffData } = require('./mockData');
+const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
@@ -223,6 +224,9 @@ async function seed() {
 
   const staffList = [];
   for (const staff of staffData) {
+    const hashedPassword = await bcrypt.hash(staff.password, 10);
+    staff.password = hashedPassword;
+
     const createdStaff = await prisma.staff.create({
       data: staff,
     });
