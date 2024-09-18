@@ -16,8 +16,14 @@ const LoginStep = ({ goToForgotPassword }: LoginStepProps) => {
       await login(email, password);
       message.success('Login successful');
       navigate('/');
-    } catch (error) {
-      message.error(String(error));
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('Invalid email address')) {
+        message.error('Invalid email format.');
+      } else {
+        message.error(errorMessage || 'Failed to update staff details.');
+      }
     }
   };
 
