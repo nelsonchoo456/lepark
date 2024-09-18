@@ -5,7 +5,7 @@ import {
   getSpeciesById,
   isSpeciesInFavorites,
   SpeciesResponse,
-  VisitorResponse
+  VisitorResponse,
 } from '@lepark/data-access';
 import { Button, message, Tabs, Typography } from 'antd';
 import { useEffect, useState } from 'react';
@@ -22,11 +22,12 @@ import {
   GiTombstone,
 } from 'react-icons/gi';
 import { IoMdHeart, IoMdHeartDislike } from 'react-icons/io';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import InformationTab from './components/InformationTab';
 import OccurrenceTable from './components/OccurrenceTable';
 import SpeciesCarousel from './components/SpeciesCarousel';
 import TaxonomyTab from './components/TaxonomyTab';
+import { usePark } from '../../park-context/ParkContext';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -35,6 +36,10 @@ const ViewSpeciesDetails = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const { user, updateUser } = useAuth<VisitorResponse>();
   const [visitor, setVisitor] = useState<VisitorResponse | null>(null);
+
+  const location = useLocation();
+  const fromDiscoverPerPark = location.state?.fromDiscoverPerPark || false;
+  const { selectedPark } = usePark();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,7 +165,11 @@ const ViewSpeciesDetails = () => {
     {
       key: 'occurrences',
       label: 'Occurrences',
-      children: species ? <OccurrenceTable speciesId={species.id} loading={false} /> : <p>Loading species data...</p>,
+      children: species ? (
+        <OccurrenceTable speciesId={species.id} loading={false} selectedPark={fromDiscoverPerPark ? selectedPark : undefined} />
+      ) : (
+        <p>Loading species data...</p>
+      ),
     },
     {
       key: 'taxonomy',
@@ -231,8 +240,9 @@ const ViewSpeciesDetails = () => {
               <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
               <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
             </div>
-            {user && user.isVerified && (
-              isFavorite ? (
+            {user &&
+              user.isVerified &&
+              (isFavorite ? (
                 <Button
                   icon={<IoMdHeartDislike className="text-2xl text-pastelPink-500" />}
                   shape="circle"

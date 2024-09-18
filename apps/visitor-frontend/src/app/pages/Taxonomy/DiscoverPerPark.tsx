@@ -61,7 +61,7 @@ const DiscoverPerPark = () => {
   }, [selectedPark]);
 
   const navigateToSpecies = (speciesId: string) => {
-    navigate(`/discover/${speciesId}`);
+    navigate(`/discover/${speciesId}`, { state: { fromDiscoverPerPark: true } });
   };
 
   const treeData = useMemo(() => {

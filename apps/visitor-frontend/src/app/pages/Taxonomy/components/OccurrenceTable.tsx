@@ -17,10 +17,11 @@ interface OccurrenceTableProps {
   speciesId: string;
   loading: boolean;
   excludeOccurrenceId?: string; // Optional prop to exclude a specific occurrence
+  selectedPark?: { id: number }; // Optional prop to filter occurrences by park
 }
 
-const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOccurrenceId }) => {
-  const { occurrences, loading, triggerFetch } = useFetchOccurrences();
+const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOccurrenceId, selectedPark }) => {
+  const { occurrences, loading, triggerFetch } = useFetchOccurrences(selectedPark?.id);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +29,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
   const filteredOccurrences = useMemo(() => {
     return occurrences
       .filter((occurrence) => occurrence.speciesId === speciesId)
-      .filter((occurrence) => occurrence.id !== excludeOccurrenceId) // Exclude the specified occurrence
+      .filter((occurrence) => occurrence.id !== excludeOccurrenceId) // Exclude the specified occurrence if provided
       .filter((occurrence) =>
         Object.values(occurrence).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
       );
