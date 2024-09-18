@@ -40,7 +40,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
   };
 
   const navigateToDetails = (occurrenceId: string) => {
-    navigate(`/occurrence/${occurrenceId}`);
+    navigate(`/occurrence/${occurrenceId}`, { state: { fromDiscoverPerPark: !!selectedPark } });
   };
 
   const columns: TableProps<OccurrenceResponse>['columns'] = [

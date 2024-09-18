@@ -166,7 +166,11 @@ const ViewSpeciesDetails = () => {
       key: 'occurrences',
       label: 'Occurrences',
       children: species ? (
-        <OccurrenceTable speciesId={species.id} loading={false} selectedPark={fromDiscoverPerPark ? selectedPark : undefined} />
+        <OccurrenceTable
+          speciesId={species.id}
+          loading={false}
+          selectedPark={fromDiscoverPerPark && selectedPark ? selectedPark : undefined}
+        />
       ) : (
         <p>Loading species data...</p>
       ),

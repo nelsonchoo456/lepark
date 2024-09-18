@@ -5,7 +5,7 @@ import { FaTint } from 'react-icons/fa';
 import { FiSun } from 'react-icons/fi';
 import { MdEco, MdOutlineTerrain } from 'react-icons/md';
 import { WiDayCloudy, WiDaySunny, WiNightAltCloudy } from 'react-icons/wi';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import AboutTab from './components/AboutTab';
 import InformationTab from './components/InformationTab';
 
@@ -21,9 +21,13 @@ import {
 import moment from 'moment';
 import OccurrenceTable from '../Taxonomy/components/OccurrenceTable';
 import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
+import { usePark } from '../../park-context/ParkContext';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
+  const location = useLocation();
+  const fromDiscoverPerPark = location.state?.fromDiscoverPerPark || false;
+  const { selectedPark } = usePark();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +85,12 @@ const OccurrenceDetails = () => {
       key: 'occurrences',
       label: 'Other Occurrences',
       children: species ? (
-        <OccurrenceTable speciesId={species.id} excludeOccurrenceId={occurrenceId} loading={false} />
+        <OccurrenceTable
+          speciesId={species.id}
+          excludeOccurrenceId={occurrenceId}
+          loading={false}
+          selectedPark={fromDiscoverPerPark && selectedPark ? selectedPark : undefined}
+        />
       ) : (
         <p>Loading data...</p>
       ),
