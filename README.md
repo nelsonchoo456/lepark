@@ -10,15 +10,51 @@
 
 [Click here to finish setting up your workspace!](https://cloud.nx.app/connect/0fAwxHqk1g) -->
 
-## Run tasks
+## How to locally deploy our system
 
-To run the dev server for your app, use:
+1. **Create a PostgreSQL database locally:**
 
-```sh
-npx prisma migrate dev
-node apps/backend/src/utils/seed.js
-nx run-many --target=serve --parallel=100
-```
+2. **Create a `.env` file in the root folder that contains:**
+
+   ```env
+   DATABASE_URL="postgresql://[username]:[password]@localhost:5432/[databaseName]"
+   AWS_ACCESS_KEY_ID="[yourAWSAccessKey]"
+   AWS_SECRET_ACCESS_KEY="[yourAWSSecretAccessKey]"
+   ```
+
+   - Replace `[username]`, `[password]`, and `[databaseName]` with your PostgreSQL credentials.
+   - Replace `[yourAWSAccessKey]` and `[yourAWSSecretAccessKey]` with your AWS Credentials for your S3 bucket.
+
+3. **In the root folder, run:**
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+4. **Preload accounts, parks, zones, species and occurrences by running**
+
+   ```bash
+   node apps/backend/src/utils/seed.js
+   ```
+
+5. **To start the system, run:**
+
+   ```bash
+   nx run-many --target=serve --parallel=100
+   ```
+
+6. **To access the different systems:**
+
+   - Staff: [http://localhost:4200/](http://localhost:4200/)
+   - Visitor: [http://localhost:4201/](http://localhost:4201/)
+
+7. **Login to Staff system using Superadmin:**
+
+   - Email: superadmin@lepark.com
+   - Password: password
+
+8. **Note:**
+   - If you want to test Reset Password, you have to use a real email account when signing up.
 
 <!-- To create a production bundle:
 
