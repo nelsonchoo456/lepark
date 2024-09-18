@@ -167,14 +167,14 @@ const Discover = () => {
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
-      <ParkHeader cardClassName="md:h-[160px]">
+      <ParkHeader cardClassName="h-48 md:h-[160px]">
         <div className="flex w-full md:text-center md:mx-auto md:block md:w-auto">
           <div className="flex-1 font-medium text-2xl md:text-3xl">Taxonomy</div>
           {/* <div className="backdrop-blur bg-white/15 px-3 h-8 flex items-center rounded-full">{selectedPark?.name}</div> */}
         </div>
       </ParkHeader>
       <div
-        className="p-2 items-center bg-green-50 mt-[-3.5rem]
+        className="p-2 items-center bg-green-50 mt-[-2.5rem]
         backdrop-blur bg-white/10 mx-4 rounded-2xl px-4
         md:flex-row md:-mt-[5.5rem] md:gap-2 md:backdrop-blur md:bg-white/10 md:mx-4 md:px-4"
       >

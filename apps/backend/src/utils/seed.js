@@ -207,12 +207,23 @@ async function seed() {
 
   const occurrenceList = [];
   for (let i = 0; i < speciesList.length; i++) {
+    let selectedStatusLogs = []
+    try {
+      selectedStatusLogs = getRandomItems(statusLogsData, 2);
+    } catch (error) {
+      selectedStatusLogs = []
+    }
+
     const occurrenceCurrent = occurrenceData[i];
 
     // Get the species based on index
     const species = speciesList[i];
 
     occurrenceCurrent.speciesId = species.id;
+    
+    if (selectedStatusLogs && selectedStatusLogs.length > 1) {
+      occurrenceCurrent.occurrenceStatus = selectedStatusLogs[1].statusLogType;
+    }
 
     // Create the occurrence with the correct speciesId and zoneId
     const occurrence = await prisma.occurrence.create({
@@ -236,7 +247,6 @@ async function seed() {
 
     // For every Occurrence, create 2 StatusLogs
     try {
-      const selectedStatusLogs = getRandomItems(statusLogsData, 2);
       const statusLogs = selectedStatusLogs.map(log => ({
         ...log,
         occurrenceId: occurrence.id,

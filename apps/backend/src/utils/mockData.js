@@ -1048,14 +1048,6 @@ const statusLogsData = [
     occurrenceId: '',
   },
   {
-    name: "Plant Removed",
-    description: "The plant has been removed from the site due to irrecoverable damage or decay.",
-    images: [],
-    statusLogType: "REMOVED",
-    dateCreated: "2024-09-16T10:30:00Z",
-    occurrenceId: '',
-  },
-  {
     name: "Pest-Free After Treatment",
     description: "No more pests detected after treatment. Keep monitoring for any reappearance.",
     images: [],
