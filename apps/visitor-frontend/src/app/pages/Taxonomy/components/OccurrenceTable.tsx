@@ -3,7 +3,7 @@ import { deleteOccurrence, OccurrenceResponse, StaffResponse } from '@lepark/dat
 import { Button, Flex, message, Table, TableProps, Tag, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiEye } from 'react-icons/fi';
+import { FiArchive, FiEye } from 'react-icons/fi';
 import { MdDeleteOutline } from 'react-icons/md';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +38,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   };
 
   const navigateToDetails = (occurrenceId: string) => {
-    navigate(`/occurrences/${occurrenceId}`);
+    navigate(`/occurrence/${occurrenceId}`);
   };
 
   const columns: TableProps<OccurrenceResponse>['columns'] = [
@@ -122,7 +122,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
         return moment(a.dateObserved).valueOf() - moment(b.dateObserved).valueOf();
       },
       width: '15%',
-    },/*
+    },
     {
       title: 'Actions',
       key: 'actions',
@@ -131,17 +131,10 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {* <Tooltip title="Archive Occurrence">
-            <Button
-              type="link"
-              icon={<FiArchive />}
-              // onClick={() => navigateToSpecies(record.speciesId)}
-            />
-          </Tooltip> 
         </Flex>
       ),
       width: '10%',
-    },*/
+    },
   ];
 
   return (
