@@ -62,7 +62,7 @@ const AboutTab = ({ species, occurrence }: AboutTabProps) => {
                         {
                           title: (
                             <>
-                              <LogoText className="font-bold" onClick={() => navigate(`/species/${species?.id}`)}>
+                              <LogoText className="font-bold" onClick={() => navigate(`/discover/${species?.id}`)}>
                                 {species?.speciesName}
                               </LogoText>
                               <div className="text-xs italic opacity-50">Species</div>
@@ -115,7 +115,7 @@ const AboutTab = ({ species, occurrence }: AboutTabProps) => {
             {/* <div className='text-lg font-bold'>Species</div> */}
             <div
               className="cursor-pointer hover:bg-green-50/40 transition-3s p-2 px-4 rounded-full flex items-center justify-between"
-              onClick={() => navigate(`/species/${species?.id}`)}
+              onClick={() => navigate(`/discover/${species?.id}`)}
             >
               <div>
                 <LogoText className="text-lg">{species?.commonName}</LogoText>
