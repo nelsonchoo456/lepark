@@ -68,7 +68,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
         return a.zoneId - b.zoneId;
       },
       width: '25%',
-    },
+    },/*
     {
       title: 'Occurrence Status',
       dataIndex: 'occurrenceStatus',
@@ -112,7 +112,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
       width: '25%',
-    },
+    },*/
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',
