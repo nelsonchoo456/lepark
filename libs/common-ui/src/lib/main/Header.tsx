@@ -101,7 +101,7 @@ export const Header = ({
 
         <TopCollapsible
           $show={showHeaderSidebar}
-          className="bg-white shadow-lg rounded-b-xl pb-2"
+          className="bg-white shadow-lg rounded-b-xl pb-2 pt-12"
         >
           <Menu items={items} mode="vertical" defaultOpenKeys={['home']} style={{ backgroundColor: "transparent", border: "transparent" }}/>
         </TopCollapsible>
