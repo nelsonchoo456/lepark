@@ -22,7 +22,7 @@ const LoginStep = ({ handleReturnToMain }: LoginStepProps) => {
   // confirmPasswordValidator - checks confirmPassword matches password
   const confirmPasswordValidator = ({ getFieldValue }: any) => ({
     validator(_: any, value: any) {
-      console.log(value)
+      // console.log(value)
       if (!value || getFieldValue('password') === value) {
         return Promise.resolve();
       }

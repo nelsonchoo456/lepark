@@ -25,7 +25,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredOccurrences = useMemo(() => {
-    console.log(occurrences);
+    // console.log(occurrences);
     return occurrences
       .filter((occurrence) => occurrence.speciesId === speciesId)
       .filter((occurrence) =>

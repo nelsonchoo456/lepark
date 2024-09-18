@@ -83,7 +83,7 @@ const ProfilePage = () => {
           const response = await viewVisitorDetails(user?.id || '');
           const updatedUser = response.data;
           updateUser(updatedUser);
-          console.log('Email status updated, re-rendering.');
+          // console.log('Email status updated, re-rendering.');
         } catch (error) {
           console.error('Error updating email status:', error);
         }
@@ -94,7 +94,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchFavoriteSpecies = async () => {
-      console.log(user);
+      // console.log(user);
       if (!user) {
         console.warn('User is not logged in!');
         return;
@@ -102,8 +102,8 @@ const ProfilePage = () => {
       try {
         const response = await getFavoriteSpecies(user.id);
         const data: SpeciesResponse[] = response.data;
-        console.log('Response:', response);
-        console.log('Data from response:', data);
+        // console.log('Response:', response);
+        // console.log('Data from response:', data);
         if (Array.isArray(data)) {
           setFavoriteSpecies(data);
         } else {
@@ -235,7 +235,7 @@ const ProfilePage = () => {
   const handleSendVerificationEmail = async () => {
     try {
       const response = await sendVerificationEmailWithEmail(user?.email || '', user?.id || '');
-      console.log('Resend verification email', response);
+      // console.log('Resend verification email', response);
       setResendEmailStatus(true);
     } catch (error) {
       console.error('Error resending verification email', error);

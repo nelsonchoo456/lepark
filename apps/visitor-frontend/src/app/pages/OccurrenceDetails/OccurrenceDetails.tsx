@@ -47,12 +47,12 @@ const OccurrenceDetails = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (occurrenceId) {
-        console.log(occurrenceId)
+        // console.log(occurrenceId)
         setLoading(true);
         try {
           const occurrenceResponse = await getOccurrenceById(occurrenceId);
           setOccurrence(occurrenceResponse.data);
-          console.log(occurrenceResponse.data)
+          // console.log(occurrenceResponse.data)
           if (occurrenceResponse.data.speciesId) {
             
             const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);

@@ -284,7 +284,7 @@ const ZoneList: React.FC = () => {
 
   const showDeleteModal = (zone: ZoneResponse) => {
     setDeleteModalOpen(true);
-    console.log(zone);
+    // console.log(zone);
     setZoneToBeDeleted(zone);
   };
 

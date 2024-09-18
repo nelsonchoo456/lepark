@@ -21,7 +21,7 @@ const EditEmailModal: FC<EditEmailModalProps> = ({ open, onClose, onResendEmail,
       .then(async (values) => {
         try {
           const response = await sendVerificationEmailWithEmail(values.newEmail, user.id);
-          console.log('Resend verification email', response);
+          // console.log('Resend verification email', response);
           onResendEmail(); 
           onChangeEmail();
           onClose();

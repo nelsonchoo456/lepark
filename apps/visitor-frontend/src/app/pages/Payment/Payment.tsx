@@ -7,7 +7,7 @@ const Payment = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (values: any) => {
-    console.log('Payment Details:', values);
+    // console.log('Payment Details:', values);
     // Add payment processing logic here
     navigate('/confirmation');
   };

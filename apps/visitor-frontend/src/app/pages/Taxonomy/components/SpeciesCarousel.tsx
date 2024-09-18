@@ -10,7 +10,7 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
     arrows: true,
   };
 
-  console.log(images)
+  // console.log(images)
 
   if (!images || images.length === 0) {
     return (

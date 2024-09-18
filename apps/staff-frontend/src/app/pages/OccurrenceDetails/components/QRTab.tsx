@@ -33,7 +33,7 @@ const QRTab = ({ occurrence }: { occurrence: OccurrenceResponse }) => {
                 // For desktop, use the download link approach
                 const link = document.createElement('a');
                 link.href = qrCodeUrl;
-                console.log(occurrence.title);
+                // console.log(occurrence.title);
                 link.download = `${occurrence.title}-${occurrence.id}.png`;
                 document.body.appendChild(link);
                 link.click();

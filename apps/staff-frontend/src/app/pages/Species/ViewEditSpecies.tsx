@@ -74,7 +74,7 @@ const ViewEditSpecies = () => {
           setCurrentImages(species.data.images);
           form.setFieldsValue(species.data);
         }
-        console.log(`fetched species id ${speciesIdFromLocation}`, species.data);
+        // console.log(`fetched species id ${speciesIdFromLocation}`, species.data);
       } catch (error) {
         console.error('Error fetching species:', error);
       }
@@ -193,7 +193,7 @@ const ViewEditSpecies = () => {
         isToxic: plantCharacteristics.includes('toxic'),
         isFragrant: plantCharacteristics.includes('fragrant'),
       };
-      console.log('Species data to be submitted:', speciesData);
+      // console.log('Species data to be submitted:', speciesData);
 
       if (values.minTemp > values.ideaTemp || values.maxTemp < values.idealTemp) {
         console.error('Ideal temperature must be between min and max temperatures');
@@ -206,7 +206,7 @@ const ViewEditSpecies = () => {
 
       setIsSubmitting(true);
       const response = await updateSpecies(speciesIdFromLocation, speciesData, selectedFiles);
-      console.log('Species saved', response.data);
+      // console.log('Species saved', response.data);
 
       setPreviewImages([]); // Clear preview images after successful submission
 

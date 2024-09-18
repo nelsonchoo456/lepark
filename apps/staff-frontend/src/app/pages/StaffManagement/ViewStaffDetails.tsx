@@ -50,7 +50,7 @@ const ViewStaffDetails = () => {
     const fetchUserDetails = async () => {
       try {
         const response = await viewStaffDetails(staffId);
-        console.log(response);
+        // console.log(response);
         setStaff(response.data);
         setEditedUser(response.data);
       } catch (error) {
@@ -90,8 +90,8 @@ const ViewStaffDetails = () => {
         }
         navigate('/');
       } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
-        console.log('User parkId:', user.parkId);
-        console.log('Staff parkId:', staff.parkId);
+        // console.log('User parkId:', user.parkId);
+        // console.log('Staff parkId:', staff.parkId);
         if (!notificationShown.current) {
           notification.error({
             message: 'Access Denied',

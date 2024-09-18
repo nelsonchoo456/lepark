@@ -31,7 +31,7 @@ const ViewSpeciesDetails = () => {
         try {
           const speciesResponse = await getSpeciesById(speciesId);
           setSpecies(speciesResponse.data);
-          console.log(speciesResponse.data);
+          // console.log(speciesResponse.data);
         } catch (error) {
           console.error('Error fetching species data:', error);
         } finally {

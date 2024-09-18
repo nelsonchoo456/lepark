@@ -111,7 +111,7 @@ const OccurrenceEdit = () => {
     if (!occurrence) return;
     try {
       const formValues = await form.validateFields();
-      console.log(formValues);
+      // console.log(formValues);
 
       const changedData: Partial<OccurrenceResponse> = Object.keys(formValues).reduce((acc, key) => {
         const typedKey = key as keyof OccurrenceResponse; // Cast key to the correct type

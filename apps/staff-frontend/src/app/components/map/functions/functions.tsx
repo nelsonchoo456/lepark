@@ -2,7 +2,7 @@ import { LatLng } from "leaflet";
 
 export function latLngArrayToPolygon(latLngArray: any) {
   // Map over the array and format each {lat, lng} pair as "lng lat"
-  console.log(latLngArray)
+  // console.log(latLngArray)
   const coordinates = latLngArray.map((point: LatLng) => `${point.lng} ${point.lat}`).join(', ');
 
   // Ensure the polygon is closed by repeating the first point at the end

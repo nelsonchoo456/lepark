@@ -22,7 +22,7 @@ router.put('/updatePark/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const park = await ParkService.updatePark(id, req.body);
-    console.log(park)
+    // console.log(park)
     res.status(200).json(park);
   } catch (error) {
     if (error.message === 'A park with this name already exists') {
@@ -87,7 +87,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
     for (const file of files) {
       const fileName = `${Date.now()}-${file.originalname}`; // Create a unique file name
       const imageUrl = await ParkService.uploadImageToS3(file.buffer, fileName, file.mimetype);
-      console.log("/upload", imageUrl)
+      // console.log("/upload", imageUrl)
       uploadedUrls.push(imageUrl);
     }
 

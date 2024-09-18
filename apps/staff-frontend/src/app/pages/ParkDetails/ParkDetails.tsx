@@ -37,7 +37,7 @@ const ParkDetails = () => {
         const parkRes = await getParkById(parseInt(id));
         if (parkRes.status === 200) {
           setPark(parkRes.data);
-          console.log(parkRes.data);
+          // console.log(parkRes.data);
         }
       } catch (error) {
         if (!notificationShown.current) {

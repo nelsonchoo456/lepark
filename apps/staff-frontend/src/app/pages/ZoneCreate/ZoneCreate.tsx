@@ -55,7 +55,7 @@ const ZoneCreate = () => {
   }, [user, navigate]);
   
   const handleCurrStep = async (step: number) => {
-    console.log(formValues)
+    // console.log(formValues)
     if (step === 0) {
       setCurrStep(0);
     } else if (step === 1) {
@@ -79,7 +79,7 @@ const ZoneCreate = () => {
       const openingHours: any[] = [];
       const closingHours: any[] = [];
       daysOfTheWeek.forEach((day, index) => {
-        console.log(formValues[day])
+        // console.log(formValues[day])
         openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
         closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
       })

@@ -104,7 +104,7 @@ const CreateSpecies = () => {
 
     setIsSubmitting(true);
     try {
-      console.log('Form values:', values);
+      // console.log('Form values:', values);
       const plantCharacteristics = values.plantCharacteristics || [];
       const speciesData: CreateSpeciesData = {
         phylum: values.phylum as string,
@@ -160,8 +160,8 @@ const CreateSpecies = () => {
         });
         return;
       }
-      console.log(speciesData);
-      console.log('Species data to be submitted:', JSON.stringify(speciesData)); // For debugging
+      // console.log(speciesData);
+      // console.log('Species data to be submitted:', JSON.stringify(speciesData)); // For debugging
 
       const response = await createSpecies(speciesData, selectedFiles);
       console.log('Species created:', response.data);

@@ -53,7 +53,7 @@ const ParkCreate = () => {
   }, [user, navigate]);
   
   const handleCurrStep = async (step: number) => {
-    console.log(formValues)
+    // console.log(formValues)
     if (step === 0) {
       setCurrStep(0);
     } else if (step === 1) {

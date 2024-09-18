@@ -22,7 +22,7 @@ export const useHandleFavoriteSpecies = () => {
     setLoading(true);
     try {
       const favoriteSpeciesRes = await getFavoriteSpecies(userId);
-      console.log(favoriteSpeciesRes)
+      // console.log(favoriteSpeciesRes)
       if (favoriteSpeciesRes.status === 200) {
         const favoriteSpeciesData = favoriteSpeciesRes.data;
         const favoriteSpeciesIds = favoriteSpeciesData.map(item => item.id)
