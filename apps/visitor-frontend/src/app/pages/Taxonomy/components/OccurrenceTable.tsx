@@ -16,22 +16,23 @@ import { SCREEN_LG } from '../../../config/breakpoints';
 interface OccurrenceTableProps {
   speciesId: string;
   loading: boolean;
+  excludeOccurrenceId?: string; // Optional prop to exclude a specific occurrence
 }
 
-const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
+const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOccurrenceId }) => {
   const { occurrences, loading, triggerFetch } = useFetchOccurrences();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredOccurrences = useMemo(() => {
-    // console.log(occurrences);
     return occurrences
       .filter((occurrence) => occurrence.speciesId === speciesId)
+      .filter((occurrence) => occurrence.id !== excludeOccurrenceId) // Exclude the specified occurrence
       .filter((occurrence) =>
         Object.values(occurrence).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
       );
-  }, [searchQuery, occurrences, speciesId]);
+  }, [searchQuery, occurrences, speciesId, excludeOccurrenceId]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -68,7 +69,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
         return a.zoneId - b.zoneId;
       },
       width: '25%',
-    },/*
+    } /*
     {
       title: 'Occurrence Status',
       dataIndex: 'occurrenceStatus',
@@ -112,7 +113,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
       width: '25%',
-    },*/
+    },*/,
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',

@@ -80,7 +80,11 @@ const OccurrenceDetails = () => {
     {
       key: 'occurrences',
       label: 'Other Occurrences',
-      children: species ? <OccurrenceTable speciesId={species.id} loading={false} /> : <p>Loading data...</p>,
+      children: species ? (
+        <OccurrenceTable speciesId={species.id} excludeOccurrenceId={occurrenceId} loading={false} />
+      ) : (
+        <p>Loading data...</p>
+      ),
     },
   ];
 
@@ -141,13 +145,13 @@ const OccurrenceDetails = () => {
     <div className="md:p-4 md:h-screen md:overflow-hidden">
       <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
         <div className="md:w-2/5 h-96">
-            {occurrence?.images && occurrence.images.length > 0 ? (
-              <SpeciesCarousel images={occurrence?.images || []} />
-            ) : (
-              <div className="h-96 bg-gray-200 flex items-center justify-center">
-                <Empty description="No Image" />
-              </div>
-            )}
+          {occurrence?.images && occurrence.images.length > 0 ? (
+            <SpeciesCarousel images={occurrence?.images || []} />
+          ) : (
+            <div className="h-96 bg-gray-200 flex items-center justify-center">
+              <Empty description="No Image" />
+            </div>
+          )}
         </div>
         <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
           <div className="hidden md:block">
