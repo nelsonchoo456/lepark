@@ -1,13 +1,13 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty, Typography } from 'antd';
-import InformationTab from './components/InformationTab';
-import AboutTab from './components/AboutTab';
-import { FiSun } from 'react-icons/fi';
-import { MdOutlineTerrain, MdEco } from 'react-icons/md';
-import { FaTint } from 'react-icons/fa';
+import { LogoText } from '@lepark/common-ui';
+import { Descriptions, Empty, Tabs, Typography } from 'antd';
 import { useEffect, useState } from 'react';
-import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
+import { FaTint } from 'react-icons/fa';
+import { FiSun } from 'react-icons/fi';
+import { MdEco, MdOutlineTerrain } from 'react-icons/md';
+import { WiDayCloudy, WiDaySunny, WiNightAltCloudy } from 'react-icons/wi';
+import { useNavigate, useParams } from 'react-router-dom';
+import AboutTab from './components/AboutTab';
+import InformationTab from './components/InformationTab';
 
 import {
   ConservationStatusEnum,
@@ -19,6 +19,7 @@ import {
   SpeciesResponse,
 } from '@lepark/data-access';
 import moment from 'moment';
+import OccurrenceTable from '../Taxonomy/components/OccurrenceTable';
 import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
 
 const OccurrenceDetails = () => {
@@ -75,6 +76,11 @@ const OccurrenceDetails = () => {
       key: 'about',
       label: 'Species',
       children: species && occurrence ? <AboutTab species={species} occurrence={occurrence} /> : <p>Loading Species data...</p>,
+    },
+    {
+      key: 'occurrences',
+      label: 'Other Occurrences',
+      children: species ? <OccurrenceTable speciesId={species.id} loading={false} /> : <p>Loading data...</p>,
     },
   ];
 

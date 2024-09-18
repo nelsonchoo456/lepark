@@ -1,12 +1,11 @@
 import { LogoText, useAuth } from '@lepark/common-ui';
 import {
-  FavoriteSpeciesRequestData,
-  SpeciesResponse,
-  VisitorResponse,
   addFavoriteSpecies,
   deleteSpeciesFromFavorites,
   getSpeciesById,
   isSpeciesInFavorites,
+  SpeciesResponse,
+  VisitorResponse
 } from '@lepark/data-access';
 import { Button, message, Tabs, Typography } from 'antd';
 import { useEffect, useState } from 'react';
@@ -22,11 +21,11 @@ import {
   GiSiren,
   GiTombstone,
 } from 'react-icons/gi';
+import { IoMdHeart, IoMdHeartDislike } from 'react-icons/io';
 import { useParams } from 'react-router-dom';
 import InformationTab from './components/InformationTab';
-import OccurrencesTab from './components/OccurrencesTab';
+import OccurrenceTable from './components/OccurrenceTable';
 import SpeciesCarousel from './components/SpeciesCarousel';
-import { IoMdHeart, IoMdHeartDislike } from 'react-icons/io';
 import TaxonomyTab from './components/TaxonomyTab';
 
 const ViewSpeciesDetails = () => {
@@ -161,7 +160,7 @@ const ViewSpeciesDetails = () => {
     {
       key: 'occurrences',
       label: 'Occurrences',
-      children: species ? <OccurrencesTab species={species} /> : <p>Loading species data...</p>,
+      children: species ? <OccurrenceTable speciesId={species.id} loading={false} /> : <p>Loading species data...</p>,
     },
     {
       key: 'taxonomy',
