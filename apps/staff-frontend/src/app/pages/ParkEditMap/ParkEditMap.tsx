@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
-import { Button, Card, Form, message, notification, Space } from 'antd';
+import { Button, Card, Form, message, notification, Popconfirm, Space } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import node_image from '../../assets/mapFeatureManager/line.png';
@@ -181,9 +181,17 @@ const ParkEditMap = () => {
             </MapContainer>
           </div>
         </>
-        <Button type="primary" className="w-full" onClick={handleSubmit}>
-          Save Changes
-        </Button>
+        <div className='flex justify-center gap-2'>
+          <Popconfirm title="All changes will be lost." onConfirm={() => navigate(`/park/${park?.id}`)}>
+            <Button>
+              Cancel
+            </Button>
+          </Popconfirm>
+          
+          <Button type="primary" onClick={handleSubmit}>
+            Save Changes
+          </Button>
+        </div>
       </Card>
     </ContentWrapperDark>
   );

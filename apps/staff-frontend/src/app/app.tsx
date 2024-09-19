@@ -38,6 +38,7 @@ import NotFound from './pages/NotFound/NotFound';
 import Settings from './pages/Settings/Settings';
 import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import ParksMap from './pages/ParksMap/ParksMap';
+import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
 
 export function App() {
   return (
@@ -90,6 +91,7 @@ export function App() {
                 <Route path="create" element={<OccurrenceCreate />} />
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
                 <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
+                <Route path=":occurrenceId/edit-location" element={<OccurrenceEditMap />} />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
