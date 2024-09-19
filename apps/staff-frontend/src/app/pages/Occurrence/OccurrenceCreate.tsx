@@ -13,6 +13,7 @@ import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import { useFetchSpecies } from '../../hooks/Species/useFetchSpecies';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { getCentroidOfGeom } from '../../components/map/functions/functions';
 
 const center = {
   lat: 1.3503881629328163,
@@ -29,15 +30,18 @@ const OccurrenceCreate = () => {
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
   const [currStep, setCurrStep] = useState<number>(0);
-  const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
+  
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
   const notificationShown = useRef(false);
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
+
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);

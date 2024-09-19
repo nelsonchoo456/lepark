@@ -15,7 +15,6 @@ interface DraggableMarkerProps {
 }
 
 function DraggableMarker({ lat, lng, adjustLatLng }: DraggableMarkerProps) {
-  // const [position, setPosition] = useState([lat, lng])
   const markerRef = useRef<L.Marker>(null);
   const eventHandlers = useMemo(
     () => ({

@@ -3,18 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { createPark, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, notification, Result, Steps } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
-import moment from 'moment';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import PageHeader2 from '../../components/main/PageHeader2';
-const center = {
-  lat: 1.3503881629328163,
-  lng: 103.85132690751749,
-};
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -24,7 +18,7 @@ export interface AdjustLatLngInterface {
 const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const ParkCreate = () => {
-  const { user, updateUser } = useAuth<StaffResponse>();
+  const { user } = useAuth<StaffResponse>();
   const [currStep, setCurrStep] = useState<number>(0);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [createdData, setCreatedData] = useState<ParkResponse | null>();
@@ -71,31 +65,35 @@ const ParkCreate = () => {
 
   const handleSubmit = async () => {
     try {
-      const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
+      if (!polygon || !(polygon.length > 0) || !polygon[0][0]) {
+        throw new Error ("Please draw Park boundaries on the map.");
+      }
+
+      // const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
       
-      const openingHours: any[] = [];
-      const closingHours: any[] = [];
-      daysOfTheWeek.forEach((day, index) => {
-        openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
-        closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
-      })
+      // const openingHours: any[] = [];
+      // const closingHours: any[] = [];
+      // daysOfTheWeek.forEach((day, index) => {
+      //   openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
+      //   closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
+      // })
 
-      const finalData = { ...rest, openingHours, closingHours}
+      // const finalData = { ...rest, openingHours, closingHours}
 
-      if (polygon && polygon[0] && polygon[0][0]) {
-        const polygonData = latLngArrayToPolygon(polygon[0][0]);
-        finalData.geom = polygonData;
-      }
+      // if (polygon && polygon[0] && polygon[0][0]) {
+      //   const polygonData = latLngArrayToPolygon(polygon[0][0]);
+      //   finalData.geom = polygonData;
+      // }
 
-      const response = await createPark(finalData, selectedFiles);
-      if (response.status === 201) {
-        setCreatedData(response.data)
-        setCurrStep(2);
-        messageApi.open({
-          type: 'success',
-          content: 'Park created successfully',
-        });
-      }
+      // const response = await createPark(finalData, selectedFiles);
+      // if (response.status === 201) {
+      //   setCreatedData(response.data)
+      //   setCurrStep(2);
+      //   messageApi.open({
+      //     type: 'success',
+      //     content: 'Park created successfully',
+      //   });
+      // }
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'A park with this name already exists') {
@@ -175,7 +173,7 @@ const ParkCreate = () => {
             },
             {
               title: 'Location',
-              description: 'Demarcate Park',
+              description: 'Demarcate Park (Required)',
             },
             {
               title: 'Complete',

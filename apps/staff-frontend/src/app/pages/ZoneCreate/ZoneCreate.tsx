@@ -73,7 +73,10 @@ const ZoneCreate = () => {
 
   const handleSubmit = async () => {
     try {
-      // console.log(formValues);
+      if (!polygon || !(polygon.length > 0) || !polygon[0][0]) {
+        throw new Error ("Please draw Zone boundaries on the map.");
+      }
+
       const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
       
       const openingHours: any[] = [];
@@ -107,11 +110,17 @@ const ZoneCreate = () => {
       }
       
     } catch (error) {
-      console.error(error);
-      messageApi.open({
-        type: 'error',
-        content: 'Unable to create a Zone. Please try again later.',
-      });
+      if (error instanceof Error) {
+        messageApi.open({
+          type: 'error',
+          content: error.message || 'An error occurred while creating the Zone',
+        });
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: 'Unable to create a Zone. Please try again later.',
+        });
+      }
     }
   };
 
@@ -133,7 +142,7 @@ const ZoneCreate = () => {
     {
       key: 'location',
       children: (
-        <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines} />
+        <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines} parks={parks} formValues={formValues}/>
       ),
     },
     {

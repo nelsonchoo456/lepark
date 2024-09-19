@@ -34,6 +34,9 @@ class ParkService {
       if (!data.parkStatus) {
         errors.push('Park Status is required');
       }
+      if (!data.geom) {
+        errors.push('Zone Boundaries is required');
+      }
 
       if (errors.length !== 0) {
         throw new Error(`Validation errors: ${errors.join('; ')}`)
