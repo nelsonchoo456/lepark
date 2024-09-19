@@ -41,6 +41,7 @@ import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
+import AssetList from './pages/Asset/AssetList';
 
 export function App() {
   return (
@@ -133,6 +134,7 @@ export function App() {
                   <Route path=":hubId" element={<ViewHubDetails />} />
                   <Route path="create" element={<HubCreate />} />
                 </Route>
+                <Route path="/parkasset" element={<AssetList />} />
               </Route>
               <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
             </Route>

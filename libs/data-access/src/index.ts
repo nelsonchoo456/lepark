@@ -27,3 +27,6 @@ export * from './lib/types/sharedenums';
 
 export * from './lib/api/hub';
 export * from './lib/types/hub';
+
+export * from './lib/api/parkasset';
+export * from './lib/types/parkasset';
