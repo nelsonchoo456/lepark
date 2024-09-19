@@ -22,6 +22,15 @@ CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', '
 -- CreateEnum
 CREATE TYPE "HubStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
 
+-- CreateEnum
+CREATE TYPE "ParkAssetTypeEnum" AS ENUM ('EQUIPMENT_RELATED', 'PLANT_RELATED', 'PLANT_TOOL');
+
+-- CreateEnum
+CREATE TYPE "ParkAssetStatusEnum" AS ENUM ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
+
+-- CreateEnum
+CREATE TYPE "ParkAssetConditionEnum" AS ENUM ('EXCELLENT', 'FAIR', 'POOR', 'DAMAGED');
+
 -- CreateTable
 CREATE TABLE "Staff" (
     "id" UUID NOT NULL,
@@ -167,10 +176,23 @@ CREATE TABLE "Sensor" (
 );
 
 -- CreateTable
-CREATE TABLE "Asset" (
+CREATE TABLE "ParkAsset" (
     "id" UUID NOT NULL,
+    "parkAssetName" TEXT NOT NULL,
+    "parkAssetType" "ParkAssetTypeEnum" NOT NULL,
+    "parkAssetDescription" TEXT,
+    "parkAssetStatus" "ParkAssetStatusEnum" NOT NULL,
+    "acquisitionDate" TIMESTAMP(3) NOT NULL,
+    "recurringMaintenanceDuration" INTEGER NOT NULL,
+    "lastMaintenanceDate" TIMESTAMP(3) NOT NULL,
+    "nextMaintenanceDate" TIMESTAMP(3) NOT NULL,
+    "supplier" TEXT NOT NULL,
+    "supplierContactNumber" TEXT NOT NULL,
+    "parkAssetCondition" "ParkAssetConditionEnum" NOT NULL,
+    "images" TEXT[],
+    "remarks" TEXT,
 
-    CONSTRAINT "Asset_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ParkAsset_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -258,7 +280,7 @@ ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_hubId_fkey" 
 ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "Asset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "ParkAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
