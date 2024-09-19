@@ -37,6 +37,7 @@ import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
 import NotFound from './pages/NotFound/NotFound';
 import Settings from './pages/Settings/Settings';
 import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
+import ParksMap from './pages/ParksMap/ParksMap';
 
 export function App() {
   return (
@@ -95,6 +96,7 @@ export function App() {
 
               <Route path="/park">
                 <Route index element={<ParkList />} />
+                <Route path="map" element={<ParksMap />} />
                 <Route path="create" element={<ParkCreate />} />
                 <Route path=":id" element={<ParkDetails />} />
                 <Route path=":id/edit" element={<ParkEdit />} />
