@@ -19,13 +19,10 @@ class VisitorDao {
     return prisma.visitor.findUnique({ where: { id } });
   }
 
-  async updateVisitorDetails(
-    id: string,
-    data: Prisma.VisitorUpdateInput,
-  ): Promise<Visitor> {
+  async updateVisitorDetails(id: string, data: Prisma.VisitorUpdateInput): Promise<Visitor> {
     return prisma.visitor.update({ where: { id }, data });
   }
-  
+
   // Commented out as duplicate with above method
 
   // async updateVisitor(id: string, data: Prisma.VisitorUpdateInput): Promise<Visitor | null> {
@@ -35,9 +32,46 @@ class VisitorDao {
   //   });
   // }
 
-  //   async deleteAdmin(id: string) {
-  //     return prisma.admin.delete({ where: { id } });
-  //   }
+  async addFavoriteSpecies(visitorId: string, speciesId: string): Promise<Visitor> {
+    return prisma.visitor.update({
+      where: { id: visitorId },
+      data: {
+        favoriteSpecies: {
+          connect: { id: speciesId },
+        },
+      },
+      include: {
+        favoriteSpecies: true,
+      },
+    });
+  }
+
+  async getFavoriteSpecies(visitorId: string) {
+    return prisma.visitor.findUnique({
+      where: { id: visitorId },
+      select: {
+        favoriteSpecies: true,
+      },
+    });
+  }
+
+  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<Visitor> {
+    return prisma.visitor.update({
+      where: { id: visitorId },
+      data: {
+        favoriteSpecies: {
+          disconnect: { id: speciesId },
+        },
+      },
+      include: {
+        favoriteSpecies: true,
+      },
+    });
+  }
+
+  async deleteVisitor(id: string) {
+    return prisma.visitor.delete({ where: { id } });
+  }
 }
 
 export default new VisitorDao();

@@ -14,7 +14,11 @@ import {
   PasswordResetRequestSchemaType,
   PasswordResetSchema,
   PasswordResetSchemaType,
+  PasswordChangeSchemaType,
+  PasswordChangeSchema,
 } from '../schemas/staffSchema';
+import { fromZodError } from 'zod-validation-error';
+import ParkDao from '../dao/ParkDao';
 
 class StaffService {
   public async register(data: StaffSchemaType): Promise<Staff> {
@@ -28,6 +32,14 @@ class StaffService {
         throw new Error('Email already exists.');
       }
 
+      // Check if the park exists if the user is not a superadmin
+      if (data.role !== StaffRoleEnum.SUPERADMIN) {
+        const parkExists = await ParkDao.getParkById(data.parkId);
+        if (!parkExists) {
+          throw new Error('The specified park does not exist.');
+        }
+      }
+
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
       // Convert validated data to Prisma input type
@@ -36,11 +48,18 @@ class StaffService {
         password: hashedPassword,
       });
 
-      return StaffDao.createStaff(staffData);
+      const updatedData = {
+        ...staffData,
+        isActive: true,
+      };
+
+      EmailUtil.sendLoginDetailsEmail(data.email, data.password);
+
+      return StaffDao.createStaff(updatedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -48,6 +67,15 @@ class StaffService {
 
   public async getAllStaffs(): Promise<Staff[]> {
     return StaffDao.getAllStaffs();
+  }
+
+  public async getAllStaffsByParkId(parkId: number): Promise<Staff[]> {
+    try {
+      const staffList = StaffDao.getAllStaffsByParkId(parkId);
+      return staffList;
+    } catch (error) {
+      throw new Error(`Unable to fetch staff list: ${error.message}`);
+    }
   }
 
   public async getStaffById(id: string): Promise<Staff> {
@@ -62,10 +90,7 @@ class StaffService {
     }
   }
 
-  public async updateStaffDetails(
-    id: string,
-    data: Partial<Pick<StaffSchemaType, 'firstName' | 'lastName' | 'contactNumber'>>,
-  ): Promise<Staff> {
+  public async updateStaffDetails(id: string, data: Partial<StaffSchemaType>): Promise<Staff> {
     try {
       const existingStaff = await StaffDao.getStaffById(id);
       if (!existingStaff) {
@@ -82,7 +107,7 @@ class StaffService {
       StaffSchema.parse(mergedData);
 
       // Convert the validated data to Prisma input type
-      const prismaUpdateData: Prisma.StaffUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
+      const prismaUpdateData: Prisma.StaffUpdateInput = Object.entries(mergedData).reduce((acc, [key, value]) => {
         if (value !== undefined) {
           acc[key] = value;
         }
@@ -92,8 +117,8 @@ class StaffService {
       return StaffDao.updateStaffDetails(id, prismaUpdateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -105,10 +130,10 @@ class StaffService {
       if (!staffToUpdate) {
         throw new Error('Staff not found');
       }
-      // Check if the requester is a manager
-      const isRequesterManager = await StaffDao.isManager(requesterId);
-      if (!isRequesterManager) {
-        throw new Error('Only managers can update the role of other staff.');
+      // Check if the requester is a manager or superadmin
+      const isRequesterManagerOrSuperadmin = await StaffDao.isManagerOrSuperadmin(requesterId);
+      if (!isRequesterManagerOrSuperadmin) {
+        throw new Error('Only managers or superadmins can update the role of other staff.');
       }
 
       const updateData: Prisma.StaffUpdateInput = { role };
@@ -125,9 +150,9 @@ class StaffService {
         throw new Error('Staff not found');
       }
       // Check if the requester is a manager
-      const isRequesterManager = await StaffDao.isManager(requesterId);
-      if (!isRequesterManager) {
-        throw new Error("Only managers can update another staff's active status.");
+      const isRequesterManagerOrSuperadmin = await StaffDao.isManagerOrSuperadmin(requesterId);
+      if (!isRequesterManagerOrSuperadmin) {
+        throw new Error("Only managers or superadmins can update another staff's active status.");
       }
 
       const updateData: Prisma.StaffUpdateInput = { isActive };
@@ -154,17 +179,25 @@ class StaffService {
         throw new Error('Invalid credentials');
       }
 
+      if (staff.isActive === false) {
+        throw new Error('Your account has been deactivated. Please contact your manager for assistance.');
+      }
+
+      if (staff.isFirstLogin) {
+        return { requiresPasswordReset: true, user: staff };
+      }
+
       const token = jwt.sign({ id: staff.id }, JWT_SECRET_KEY, {
         expiresIn: '4h',
       });
 
       const { password, ...user } = staff;
 
-      return { token, user };
+      return { requiresPasswordReset: false, token, user };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -192,8 +225,43 @@ class StaffService {
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async changePassword(data: PasswordChangeSchemaType) {
+    try {
+      PasswordChangeSchema.parse(data);
+      const { newPassword, currentPassword, staffId } = data;
+
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error(`Staff not found`);
+      }
+
+      // Check if password is correct
+      const isPasswordValid = await bcrypt.compare(currentPassword, staff.password);
+      if (!isPasswordValid) {
+        throw new Error('Current password is incorrect!');
+      }
+
+      // Check if new password is different from the old one
+      if (await bcrypt.compare(newPassword, staff.password)) {
+        throw new Error('New password must be different from the old password');
+      }
+
+      // Hash and update the new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await StaffDao.updateStaffDetails(staff.id, { password: hashedPassword });
+
+      return { message: 'Password change successful!' };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -212,8 +280,12 @@ class StaffService {
         throw new Error('Invalid reset token');
       }
 
-      const staff = await StaffDao.getStaffById(decodedToken.id);
+      const staffId = decodedToken.id;
+      if (!staffId) {
+        throw new Error('Invalid token: missing staff ID');
+      }
 
+      const staff = await StaffDao.getStaffById(staffId);
       if (!staff) {
         throw new Error(`Staff not found`);
       }
@@ -227,14 +299,27 @@ class StaffService {
       const hashedPassword = await bcrypt.hash(data.newPassword, 10);
       await StaffDao.updateStaffDetails(staff.id, { password: hashedPassword });
 
+      if (staff.isFirstLogin) {
+        await StaffDao.updateStaffDetails(staff.id, { isFirstLogin: false });
+      }
+
       return { message: 'Password reset successful' };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
+  }
+
+  public async getTokenForResetPasswordForFirstLogin(staffId: string): Promise<string> {
+    const resetToken = jwt.sign(
+      { id: staffId, action: 'password_reset' },
+      JWT_SECRET_KEY,
+      { expiresIn: '15m' }, // Token expires in 15 minutes
+    );
+    return resetToken;
   }
 
   // async updateAdmin(id: string, data: Prisma.AdminUpdateInput) {
@@ -265,15 +350,7 @@ class StaffService {
 
 // Utility function to ensure all required fields are present
 function ensureAllFieldsPresent(data: StaffSchemaType & { password: string }): Prisma.StaffCreateInput {
-  if (
-    !data.firstName ||
-    !data.lastName ||
-    !data.email ||
-    !data.role ||
-    !data.contactNumber ||
-    data.isActive === undefined ||
-    !data.password
-  ) {
+  if (!data.firstName || !data.lastName || !data.email || !data.role || !data.contactNumber || !data.password) {
     throw new Error('Missing required fields for staff creation');
   }
   return data as Prisma.StaffCreateInput;

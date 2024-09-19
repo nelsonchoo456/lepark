@@ -5,7 +5,9 @@ import { Content, Header, ListItemType, Logo, LogoText, MobileContent, MobileSid
 import { BottomNavBar } from "./BottomNavBar";
 import { FiHome, FiMoreHorizontal, FiUser } from "react-icons/fi";
 import { GrMapLocation } from "react-icons/gr";
-import { Menu } from "antd";
+import { Divider, Menu } from "antd";
+import { usePark } from "../../park-context/ParkContext";
+import { PiPlant } from "react-icons/pi";
 
 const MainLayout = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(
@@ -13,6 +15,7 @@ const MainLayout = () => {
   );
   const navigate = useNavigate();
   const location = useLocation();
+  const { selectedPark } = usePark();
   
   useEffect(() => {
     const handleResize = () => {
@@ -34,6 +37,12 @@ const MainLayout = () => {
       onClick: () => navigate('/'),
     },
     {
+      key: 'discover',
+      icon: <PiPlant style={{ fontSize: "1.5rem" }}/>,
+      label: 'Taxonomy',
+      onClick: () => navigate('/discover'),
+    },
+    {
       key: 'map',
       icon: <GrMapLocation style={{ fontSize: "1.5rem" }}/>,
       label: 'Map',
@@ -45,24 +54,20 @@ const MainLayout = () => {
       label: 'Account',
       onClick: () => navigate('/profile'),
     },
-    {
-      key: 'others',
-      icon: <FiMoreHorizontal style={{ fontSize: "1.5rem" }}/>,
-      label: '',
-      onClick: () => navigate('/'),
-    },
   ]
 
   return (
     <div>
-      <Header showSidebar={showSidebar} >
+      <Header showSidebar={showSidebar}>
         <div className="px-4 flex gap-2 items-center">
-          <Logo/>
-          <LogoText>Leparks</LogoText>
+          <Logo />
+          {selectedPark ? <LogoText>{selectedPark.name}</LogoText> : <LogoText>Lepark</LogoText>}
         </div>
       </Header>
-      <MobileSidebar >
-        <div className="flex justify-center pb-2"><Logo size={2.5}/></div>
+      <MobileSidebar>
+        <div className="flex justify-center pb-4">
+          <Logo size={2.5} />
+        </div>
         <div className="flex flex-col">
           {navItems.map((item) => (
             <button
@@ -70,19 +75,17 @@ const MainLayout = () => {
               onClick={() => item.onClick && item.onClick()}
               className="flex flex-col items-center py-1 mb-4 text-center hover:text-green-200 transition-all duration-300"
             >
-              <div className="p-1 rounded-full hover:bg-green-200 hover:text-white transition-all duration-300 ease-out hover:scale-110" >
+              <div className="p-1 rounded-full hover:bg-green-200 hover:text-white transition-all duration-300 ease-out hover:scale-110">
                 {item.icon}
               </div>
-              {item.label !== "Others" &&
-                <div className="text-mf">
-                  {item.label}
-                </div>
-              }
+              {item.label !== 'Others' && <div className="text-sm">{item.label}</div>}
             </button>
           ))}
         </div>
       </MobileSidebar>
-      <MobileContent $showSidebar={showSidebar}><Outlet /></MobileContent>
+      <MobileContent $showSidebar={showSidebar}>
+        <Outlet />
+      </MobileContent>
       <BottomNavBar items={navItems} showSidebar={showSidebar} />
     </div>
   );

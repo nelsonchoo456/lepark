@@ -17,11 +17,10 @@ enum StaffRoleEnum {
   MANAGER
   BOTANIST
   ARBORIST
-  GARDENER
-  MAINTENANCE_WORKER
-  CLEANER
   LANDSCAPE_ARCHITECT
   PARK_RANGER
+  VENDOR_MANAGER
+  SUPERADMIN
 }
 
 model Staff {
@@ -33,6 +32,8 @@ model Staff {
   contactNumber String
   role          StaffRoleEnum
   isActive      Boolean
+  parkId        Int?      
+  isFirstLogin  Boolean 
 }
 
 enum ConservationStatusEnum {
@@ -41,7 +42,7 @@ enum ConservationStatusEnum {
   VULNERABLE
   ENDANGERED
   CRITICALLY_ENDANGERED
-  EXTINCT_IN__THE_WILD
+  EXTINCT_IN_THE_WILD
   EXTINCT
 }
 
@@ -53,22 +54,18 @@ enum LightTypeEnum {
 
 enum SoilTypeEnum {
   SANDY
-  CLAY
-  LOAM
-  PEATY
-  SILTY
-  CHALKY
-  SHALLOW
+  CLAYEY
+  LOAMY
 }
 
 model Species {
-  id                    String              @id @default(uuid()) @db.Uuid
+  id                    String                 @id @default(uuid()) @db.Uuid
   phylum                String
   class                 String
   order                 String
   family                String
   genus                 String
-  speciesName           String
+  speciesName           String                 @unique
   commonName            String
   speciesDescription    String
   conservationStatus    ConservationStatusEnum
@@ -91,13 +88,129 @@ model Species {
   isEvergreen           Boolean
   isToxic               Boolean
   isFragrant            Boolean
+  occurrences           Occurrence[]
+  favoritedBy           Visitor[]              @relation("VisitorfavoriteSpecies")
 }
 
+enum DecarbonizationTypeEnum {
+  TREE_TROPICAL
+  TREE_MANGROVE
+  SHRUB
+}
+
+enum OccurrenceStatusEnum {
+  HEALTHY
+  MONITOR_AFTER_TREATMENT
+  NEEDS_ATTENTION
+  URGENT_ACTION_REQUIRED
+  REMOVED
+}
+
+model Occurrence {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  lat                 Float?
+  lng                 Float?
+  title               String
+  dateObserved        DateTime
+  dateOfBirth         DateTime?
+  numberOfPlants      Float
+  biomass             Float
+  description         String?
+  occurrenceStatus    OccurrenceStatusEnum
+  decarbonizationType DecarbonizationTypeEnum
+  speciesId           String                  @db.Uuid
+  zoneId              Int
+
+  // decarbonizationAreaId String @db.Uuid
+  images       String[]
+  activityLogs ActivityLog[]
+  statusLogs   StatusLog[]
+
+  species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  @@index([zoneId])
+  // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+}
+
+enum ActivityLogTypeEnum {
+  WATERED
+  TRIMMED
+  FERTILIZED
+  PRUNED
+  REPLANTED
+  CHECKED_HEALTH
+  TREATED_PESTS
+  SOIL_REPLACED
+  HARVESTED
+  STAKED
+  MULCHED
+  MOVED
+  CHECKED
+  ADDED_COMPOST
+  OTHERS
+}
+
+model ActivityLog {
+  id              String              @id @default(uuid()) @db.Uuid
+  name            String
+  description     String
+  dateCreated     DateTime
+  images          String[]
+  activityLogType ActivityLogTypeEnum
+  occurrenceId    String              @map("occurrenceId") @db.Uuid
+
+  occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+}
+
+model StatusLog {
+  id            String               @id @default(uuid()) @db.Uuid
+  name          String
+  description   String
+  dateCreated   DateTime
+  images        String[]
+  statusLogType OccurrenceStatusEnum
+  occurrenceId  String               @map("occurrenceId") @db.Uuid
+
+  occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+}
+
+// model DecarbonizationArea {
+//   id                  String   @id @default(uuid()) @db.Uuid
+//   carbonSeqValue      Float
+//   startDate           DateTime
+//   endDate             DateTime
+//   carbonSeqFactor     Float
+//   dailyCarbonSeqValye Float
+//   totalBiomass        Float
+//   occurrenceId         String
+
+//   occurrences Occurrence[]
+// }
+
+// enum PARK_STATUS_ENUM {
+//   OPEN 
+//   CLOSED
+//   UNDER_CONSTRUCTION
+//   LIMITED_ACCESS
+// }
+
+// model Park {
+//   id           Int     @id @default(autoincrement())
+//   name         String
+//   description  String
+//   parkStatus   PARK_STATUS_ENUM
+//   openingHours DateTime[]
+//   closingHours DateTime[]
+//   geom         String
+//   paths        String
+// }
+
 model Visitor {
-  id            String        @id @default(uuid()) @db.Uuid
-  firstName     String
-  lastName      String
-  email         String        @unique
-  password      String
-  contactNumber String
+  id              String    @id @default(uuid()) @db.Uuid
+  firstName       String
+  lastName        String
+  email           String    @unique
+  password        String
+  contactNumber   String
+  favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
+  isVerified      Boolean
 }

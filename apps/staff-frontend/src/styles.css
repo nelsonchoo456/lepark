@@ -1,10 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
 
 a {
-  @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
+  @apply text-highlightGreen-400 hover:text-highlightGreen-600;
 }
 
 @layer base {
@@ -21,6 +23,10 @@ a {
   .text-secondary {
     @apply opacity-50
   }
+
+  .header-1 {
+    @apply font-bold font-roboto text-[40px] bg-gradient-to-r from-green-500 via-green-700 to-green-400 inline-block text-transparent bg-clip-text;
+  } 
 }
 .ant-btn-link {
   @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
