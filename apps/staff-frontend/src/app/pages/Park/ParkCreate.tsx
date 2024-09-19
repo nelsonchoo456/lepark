@@ -69,31 +69,31 @@ const ParkCreate = () => {
         throw new Error ("Please draw Park boundaries on the map.");
       }
 
-      // const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
+      const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
       
-      // const openingHours: any[] = [];
-      // const closingHours: any[] = [];
-      // daysOfTheWeek.forEach((day, index) => {
-      //   openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
-      //   closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
-      // })
+      const openingHours: any[] = [];
+      const closingHours: any[] = [];
+      daysOfTheWeek.forEach((day, index) => {
+        openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null)
+        closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null)
+      })
 
-      // const finalData = { ...rest, openingHours, closingHours}
+      const finalData = { ...rest, openingHours, closingHours}
 
-      // if (polygon && polygon[0] && polygon[0][0]) {
-      //   const polygonData = latLngArrayToPolygon(polygon[0][0]);
-      //   finalData.geom = polygonData;
-      // }
+      if (polygon && polygon[0] && polygon[0][0]) {
+        const polygonData = latLngArrayToPolygon(polygon[0][0]);
+        finalData.geom = polygonData;
+      }
 
-      // const response = await createPark(finalData, selectedFiles);
-      // if (response.status === 201) {
-      //   setCreatedData(response.data)
-      //   setCurrStep(2);
-      //   messageApi.open({
-      //     type: 'success',
-      //     content: 'Park created successfully',
-      //   });
-      // }
+      const response = await createPark(finalData, selectedFiles);
+      if (response.status === 201) {
+        setCreatedData(response.data)
+        setCurrStep(2);
+        messageApi.open({
+          type: 'success',
+          content: 'Park created successfully',
+        });
+      }
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'A park with this name already exists') {

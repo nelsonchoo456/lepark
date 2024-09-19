@@ -7,6 +7,7 @@ import { ZoneResponse } from '@lepark/data-access';
 import { useEffect, useState } from 'react';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { getCentroidOfGeom } from '../../../components/map/functions/functions';
+import { COLORS } from '../../../config/colors';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
@@ -29,6 +30,10 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, formValues, zon
 
   return (
     <>
+      <div className='mt-4'>
+        <div className='font-semibold'>Instructions: 
+        </div> Drag the Marker around within the boundaries of your selected Zone.
+      </div>
       <div
         style={{
           height: '45vh',
@@ -53,12 +58,13 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, formValues, zon
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <PolygonFitBounds geom={selectedZone?.geom} adjustLatLng={adjustLatLng}/>
-          <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} />
+          
+          <PolygonFitBounds geom={selectedZone?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={selectedZone?.name}/>
+          <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} backgroundColor={COLORS.sky[400]} />
         </MapContainer>
       </div>
       {selectedZone?.geom?.coordinates && selectedZone?.geom.coordinates.length > 0 && 
-        <div className='font-semibold mb-2 text-[#006400]'>Displaying Zone: {selectedZone.name}</div>}
+        <div className='font-semibold mb-4 text-[#006400]'>Displaying Zone: {selectedZone.name}</div>}
     </>
   );
 };

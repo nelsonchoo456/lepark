@@ -4,6 +4,7 @@ import { EditControl } from 'react-leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L, { GeoJSON } from 'leaflet';
 import { getAllParks, ParkResponse } from '@lepark/data-access';
+import { COLORS } from '../../config/colors';
 
 const tempPolygon = [
   [
@@ -60,9 +61,12 @@ interface MapFeatureManagerProps {
   setPolygon: (item: any[]) => void;
   lines: any[];
   setLines: (item: any[]) => void;
+
+  color?: string;
+  fillColor?: string;
 }
 
-const MapFeatureManager = ({ polygon, setPolygon, lines, setLines }: MapFeatureManagerProps) => {
+const MapFeatureManager = ({ polygon, setPolygon, lines, setLines, color, fillColor }: MapFeatureManagerProps) => {
   // const [polygon, setPolygon] = useState<any[]>([]);  // Holds the single polygon
   // const [lines, setLines] = useState<any[]>([]);      // Holds the multiple lines
   const [parks, setParks] = useState<any>([]);
@@ -154,7 +158,13 @@ const MapFeatureManager = ({ polygon, setPolygon, lines, setLines }: MapFeatureM
         }}
       />
       {/* Render polygon if it exists */}
-      {polygon.length > 0 && <Polygon positions={polygon[0]} />}
+      {polygon.length > 0 && (
+        <Polygon
+          positions={polygon[0]}
+          pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
+          fillOpacity={0.75}
+        />
+      )}
       {/* {parks.length > 0 && <Polygon positions={parks} />} */}
       {/* {parks.length > 0 && <Polygon positions={tempPolygon2[0]} />} */}
       {/* Render multiple lines */}
