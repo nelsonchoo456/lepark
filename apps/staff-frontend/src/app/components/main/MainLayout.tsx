@@ -5,7 +5,7 @@ import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepa
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -161,6 +161,12 @@ const MainLayout = () => {
       // icon: <UserOutlined />,
       label: 'Settings',
       onClick: () => navigate('/settings'),
+    },
+    {
+      key: 'attraction',
+      icon: <TbTicket />,
+      label: 'Attractions',
+      onClick: () => navigate('/attraction'),
     },
   ];
 

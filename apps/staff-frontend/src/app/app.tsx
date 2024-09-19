@@ -36,6 +36,9 @@ import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
 import NotFound from './pages/NotFound/NotFound';
 import Settings from './pages/Settings/Settings';
+import AttractionList from './pages/Attraction/AttractionList';
+import AttractionCreate from './pages/Attraction/AttractionCreate';
+import AttractionDetails from './pages/AttractionDetails/AttractionDetails';
 
 export function App() {
   return (
@@ -122,6 +125,12 @@ export function App() {
                 <Route path="create" element={<CreateSpecies />} />
                 <Route path="edit" element={<ViewEditSpecies />} />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
+              </Route>
+
+              <Route path="/attraction">
+                <Route index element={<AttractionList />} />
+                <Route path="create" element={<AttractionCreate />} />
+                <Route path=":id" element={<AttractionDetails />} />
               </Route>
 
               <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
