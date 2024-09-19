@@ -240,7 +240,7 @@ model Hub {
   macAddress                          String
   radioGroup                          Int
   hubSecret                           String
-  image                               String
+  images                              String[]
   lat                                 Float?
   long                                Float?
   remarks                             String

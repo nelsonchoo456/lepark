@@ -16,7 +16,7 @@ export interface HubData {
   macAddress: string;
   radioGroup: number;
   hubSecret: string;
-  image?: string;
+  image?: string[];
   lat?: number;
   long?: number;
   remarks?: string;
@@ -41,7 +41,7 @@ export interface HubResponse {
   macAddress: string;
   radioGroup: number;
   hubSecret: string;
-  image?: string;
+  image?: string[];
   lat?: number;
   long?: number;
   remarks?: string;

@@ -18,7 +18,7 @@ export const HubSchema = z.object({
   macAddress: z.string().min(1, { message: 'MAC address is required' }),
   radioGroup: z.number().int().min(1, { message: 'Radio group must be a positive integer' }),
   hubSecret: z.string().min(1, { message: 'Hub secret is required' }),
-  image: z.string().optional(),
+  images: z.array(z.string()).optional(),
   lat: z
     .number()
     .min(-90)

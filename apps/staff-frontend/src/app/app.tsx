@@ -39,6 +39,7 @@ import NotFound from './pages/NotFound/NotFound';
 import Settings from './pages/Settings/Settings';
 import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
+import ViewHubDetails from './pages/Hub/ViewHubDetails';
 
 export function App() {
   return (
@@ -128,6 +129,7 @@ export function App() {
               >
                 <Route path="/hubs">
                   <Route index element={<HubList />} />
+                  <Route path=":hubId" element={<ViewHubDetails />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
