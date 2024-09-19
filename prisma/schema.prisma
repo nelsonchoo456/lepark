@@ -32,8 +32,8 @@ model Staff {
   contactNumber String
   role          StaffRoleEnum
   isActive      Boolean
-  parkId        Int?      
-  isFirstLogin  Boolean 
+  parkId        Int?
+  isFirstLogin  Boolean
 }
 
 enum ConservationStatusEnum {
@@ -127,8 +127,9 @@ model Occurrence {
   statusLogs   StatusLog[]
 
   species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
-  @@index([zoneId])
   // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId])
 }
 
 enum ActivityLogTypeEnum {
@@ -213,4 +214,98 @@ model Visitor {
   contactNumber   String
   favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
   isVerified      Boolean
+}
+
+enum HubStatusEnum {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+model Hub {
+  id                                  String        @id @default(uuid()) @db.Uuid
+  serialNumber                        String        @unique
+  hubName                             String
+  hubDescription                      String
+  hubStatus                           HubStatusEnum
+  acquisitionDate                     DateTime
+  //lastCalibratedDate                  DateTime
+  recommendedCalibrationFrequencyDays Int
+  recommendedMaintenanceDuration      Int
+  //lastMaintenanceDate                 DateTime
+  nextMaintenanceDate                 DateTime
+  dataTransmissionInterval            Float
+  ipAddress                           String
+  macAddress                          String
+  radioGroup                          Int
+  hubSecret                           String
+  image                               String
+  lat                                 Float?
+  long                                Float?
+  remarks                             String
+  zoneId                              Int? // for when installed in a zone
+  facilityId                          Int? // for when kept in a facility
+
+  maintenanceHistory MaintenanceHistory[]
+  calibrationHistory CalibrationHistory[]
+  usageMetrics       UsageMetrics[]
+  sensors            Sensor[]
+
+  //facility Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId])
+}
+
+model Sensor {
+  id String @id @default(uuid()) @db.Uuid
+
+  maintenanceHistory MaintenanceHistory[]
+  calibrationHistory CalibrationHistory[]
+  usageMetrics       UsageMetrics[]
+  Hub                Hub?                 @relation(fields: [hubId], references: [id])
+  hubId              String?              @db.Uuid
+}
+
+model Asset {
+  id String @id @default(uuid()) @db.Uuid
+
+  maintenanceHistory MaintenanceHistory[]
+}
+
+model MaintenanceHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  hubId           String?  @map("hubId") @db.Uuid
+  sensorId        String?  @map("sensorId") @db.Uuid
+  assetId         String?  @map("assetId") @db.Uuid
+  maintenanceDate DateTime
+  description     String
+
+  hub    Hub?    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  asset  Asset?  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model CalibrationHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  hubId           String?  @map("hubId") @db.Uuid
+  sensorId        String?  @map("sensorId") @db.Uuid
+  calibrationDate DateTime
+  description     String
+
+  hub    Hub?    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+}
+
+model UsageMetrics {
+  id          String  @id @default(uuid()) @db.Uuid
+  hubId       String? @map("hubId") @db.Uuid
+  sensorId    String? @map("sensorId") @db.Uuid
+  uptime      Float
+  downtime    Float
+  dataVolume  Float
+  description String
+
+  hub    Hub?    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
