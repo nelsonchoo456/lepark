@@ -145,8 +145,8 @@ CREATE TABLE "Visitor" (
 CREATE TABLE "Hub" (
     "id" UUID NOT NULL,
     "serialNumber" TEXT NOT NULL,
-    "hubName" TEXT NOT NULL,
-    "hubDescription" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
     "hubStatus" "HubStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
     "recommendedCalibrationFrequencyDays" INTEGER NOT NULL,
@@ -157,10 +157,10 @@ CREATE TABLE "Hub" (
     "macAddress" TEXT NOT NULL,
     "radioGroup" INTEGER NOT NULL,
     "hubSecret" TEXT NOT NULL,
-    "image" TEXT NOT NULL,
+    "images" TEXT[],
     "lat" DOUBLE PRECISION,
     "long" DOUBLE PRECISION,
-    "remarks" TEXT NOT NULL,
+    "remarks" TEXT,
     "zoneId" INTEGER,
     "facilityId" INTEGER,
 
