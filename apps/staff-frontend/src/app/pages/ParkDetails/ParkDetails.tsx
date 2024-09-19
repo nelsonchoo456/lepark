@@ -9,6 +9,7 @@ import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
+import MapTab from './components/MapTab';
 const { Text } = Typography;
 
 const ParkDetails = () => {
@@ -72,6 +73,11 @@ const ParkDetails = () => {
       key: 'about',
       label: 'Information',
       children: park ? <InformationTab park={park} /> : <></>,
+    },
+    {
+      key: 'map',
+      label: 'Map',
+      children: park ? <MapTab park={park} /> : <></>,
     },
     {
       key: 'zones',

@@ -44,6 +44,7 @@ function DraggableMarker({ lat, lng, adjustLatLng, circleWidth, backgroundColor 
 			html: iconHTML,
 			iconSize: [32, 40],
       iconAnchor: [16, 40],
+      className: ''
 		});
   }
 

@@ -33,13 +33,13 @@ export const CustomMarker = styled.div<CustomMarkerProps>`
 `;
 
 export const CustomMarkerInner = styled.div<CustomMarkerProps>`
-    width: ${({circleWidth}) => circleWidth ?  Math.round(circleWidth * 22 / 30) + "px" : "22px"};
-    height: ${({circleWidth}) => circleWidth ?  Math.round(circleWidth * 22 / 30) + "px" : "22px"};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    // background-color: ${({backgroundColor}) => backgroundColor ? backgroundColor : "#007bff"};
-    background-color: white;
-    border-radius: 50%;
-    z-index: 1;
+  width: ${({circleWidth}) => circleWidth ?  Math.round(circleWidth * 22 / 30) + "px" : "22px"};
+  height: ${({circleWidth}) => circleWidth ?  Math.round(circleWidth * 22 / 30) + "px" : "22px"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // background-color: ${({backgroundColor}) => backgroundColor ? backgroundColor : "#007bff"};
+  background-color: white;
+  border-radius: 50%;
+  z-index: 1;
 `;

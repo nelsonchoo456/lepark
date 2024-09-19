@@ -33,7 +33,7 @@ a {
   @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
 }
 
-.leaflet-div-icon {
+/* .leaflet-div-icon {
   background: transparent !important;
   border: none !important;
-}
+} */

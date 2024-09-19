@@ -16,9 +16,10 @@ interface ZonePolygonProps {
   polygonLabel?: string;
   color?: string;
   fillColor?: string;
+  polygonFields?: {[key: string]: any}
 }
 
-const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, fillColor }: ZonePolygonProps) => {
+const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, fillColor, polygonFields }: ZonePolygonProps) => {
   const map = useMap();
   const centroid = getCentroidOfGeom(geom);
 
@@ -60,6 +61,7 @@ const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, f
       <Polygon
         positions={geom.coordinates[0].map((item: number[]) => [item[1], item[0]])}
         pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
+        {...polygonFields}
       />
     )}
     {
