@@ -2,8 +2,8 @@ import { HubStatusEnum } from '@prisma/client';
 
 export interface HubData {
   serialNumber: string;
-  hubName: string;
-  hubDescription: string;
+  name: string;
+  description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
   lastCalibratedDate: string;
@@ -16,7 +16,7 @@ export interface HubData {
   macAddress: string;
   radioGroup: number;
   hubSecret: string;
-  image?: string[];
+  images?: string[];
   lat?: number;
   long?: number;
   remarks?: string;
@@ -27,8 +27,8 @@ export interface HubData {
 export interface HubResponse {
   id: string;
   serialNumber: string;
-  hubName: string;
-  hubDescription: string;
+  name: string;
+  description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
   lastCalibratedDate: string;
@@ -41,7 +41,7 @@ export interface HubResponse {
   macAddress: string;
   radioGroup: number;
   hubSecret: string;
-  image?: string[];
+  images?: string[];
   lat?: number;
   long?: number;
   remarks?: string;

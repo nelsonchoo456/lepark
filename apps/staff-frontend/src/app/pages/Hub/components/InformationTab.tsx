@@ -11,9 +11,6 @@ const InformationTab = ({ hub }: { hub: HubResponse }) => {
     if (typeof value === 'number') {
       return value.toLocaleString();
     }
-    if (typeof value === 'boolean') {
-      return value ? <AiOutlineCheck className="text-green-500" /> : <AiOutlineClose className="text-red-500" />;
-    }
     return value;
   };
 
@@ -21,7 +18,7 @@ const InformationTab = ({ hub }: { hub: HubResponse }) => {
     'id',
     'serialNumber',
     'hubStatus',
-    'hubName',
+    'name',
     'images',
     'lat',
     'long',
@@ -30,10 +27,11 @@ const InformationTab = ({ hub }: { hub: HubResponse }) => {
     'hubSecret',
     'radioGroup',
     'nextMaintenanceDate',
+    'zoneId',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(hub)
-    .filter(([key]) => !excludeKeys.includes(key))
+    .filter(([key, value]) => !excludeKeys.includes(key) && value !== null && value !== undefined)
     .map(([key, value]) => ({
       key,
       label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase()), // Convert camelCase to Title Case

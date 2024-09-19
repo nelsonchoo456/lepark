@@ -1,7 +1,9 @@
 import express from 'express';
 import HubService from '../services/HubService';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer();
 
 router.post('/createHub', async (req, res) => {
   try {
@@ -49,6 +51,29 @@ router.delete('/deleteHub/:id', async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/upload', upload.array('files', 5), async (req, res) => {
+  try {
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const uploadedUrls = [];
+
+    for (const file of files) {
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const imageUrl = await HubService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+      uploadedUrls.push(imageUrl);
+    }
+
+    res.status(200).json({ uploadedUrls });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
   }
 });
 

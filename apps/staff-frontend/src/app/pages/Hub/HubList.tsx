@@ -54,10 +54,10 @@ const HubList: React.FC = () => {
     },
     {
       title: 'Hub Name',
-      dataIndex: 'hubName',
-      key: 'hubName',
+      dataIndex: 'name',
+      key: 'name',
       render: (text) => <div>{text}</div>,
-      sorter: (a, b) => a.hubName.localeCompare(b.hubName),
+      sorter: (a, b) => a.name.localeCompare(b.name),
       width: '15%',
     },
     {
@@ -199,7 +199,7 @@ const HubList: React.FC = () => {
       <ConfirmDeleteModal
         onCancel={cancelDelete}
         onConfirm={deleteHubToBeDeleted}
-        description={`Are you sure you want to delete the hub "${hubToBeDeleted?.hubName}"?`}
+        description={`Are you sure you want to delete the hub "${hubToBeDeleted?.name}"?`}
         open={deleteModalOpen}
       />
       <Flex justify="end" gap={10}>

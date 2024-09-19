@@ -37,7 +37,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.hubName ? hub?.hubName : 'Details',
+      title: hub?.name ? hub?.name : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -108,11 +108,11 @@ const ViewHubDetails = () => {
       <Card>
         <div className="md:flex w-full gap-4">
           <div className="w-full md:w-1/2 lg:w-1/2 ">
-            <HubCarousel images={hub?.image || []} />
+            <HubCarousel images={hub?.images || []} />
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{hub?.hubName}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
             <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
           </div>
         </div>

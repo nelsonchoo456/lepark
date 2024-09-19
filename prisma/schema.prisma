@@ -226,8 +226,8 @@ enum HubStatusEnum {
 model Hub {
   id                                  String        @id @default(uuid()) @db.Uuid
   serialNumber                        String        @unique
-  hubName                             String
-  hubDescription                      String
+  name                                String
+  description                         String?
   hubStatus                           HubStatusEnum
   acquisitionDate                     DateTime
   //lastCalibratedDate                  DateTime
@@ -243,7 +243,7 @@ model Hub {
   images                              String[]
   lat                                 Float?
   long                                Float?
-  remarks                             String
+  remarks                             String?
   zoneId                              Int? // for when installed in a zone
   facilityId                          Int? // for when kept in a facility
 
