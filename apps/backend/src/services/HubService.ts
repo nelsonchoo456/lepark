@@ -1,13 +1,19 @@
+import aws from 'aws-sdk';
 import { HubSchemaType, HubSchema } from '../schemas/hubSchema';
 import HubDao from '../dao/HubDao';
 import { Prisma, Hub } from '@prisma/client';
 import { z } from 'zod';
 
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
+
 const dateFormatter = (data: any) => {
   const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
-  // Format date fields into JavaScript Date objects
   if (acquisitionDate) {
     formattedData.acquisitionDate = new Date(acquisitionDate);
   }
@@ -26,22 +32,15 @@ const dateFormatter = (data: any) => {
 class HubService {
   public async createHub(data: HubSchemaType): Promise<Hub> {
     try {
-      // Format date fields
       const formattedData = dateFormatter(data);
-
-      // Validate input data using Zod
       HubSchema.parse(formattedData);
 
-      // Check for duplicate serialNumber
       const existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
       if (existingHub) {
         throw new Error(`Hub with serial number ${formattedData.serialNumber} already exists.`);
       }
 
-      // Convert validated data to Prisma input type
       const hubData = formattedData as Prisma.HubCreateInput;
-
-      // Create the hub
       return HubDao.createHub(hubData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -61,13 +60,9 @@ class HubService {
 
   public async updateHubDetails(id: string, data: Partial<HubSchemaType>): Promise<Hub> {
     try {
-      // Format date fields
       const formattedData = dateFormatter(data);
-
-      // Validate input data using Zod
       HubSchema.partial().parse(formattedData);
 
-      // Check for duplicate serialNumber if serialNumber is being updated
       if (formattedData.serialNumber) {
         const existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
         if (existingHub && existingHub.id !== id) {
@@ -75,10 +70,7 @@ class HubService {
         }
       }
 
-      // Convert validated data to Prisma input type
       const updateData = formattedData as Prisma.HubUpdateInput;
-
-      // Update the hub
       return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -90,6 +82,23 @@ class HubService {
 
   public async deleteHub(id: string): Promise<void> {
     await HubDao.deleteHub(id);
+  }
+
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+    const params = {
+      Bucket: 'lepark',
+      Key: `hub/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
   }
 }
 

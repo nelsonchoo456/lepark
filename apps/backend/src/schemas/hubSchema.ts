@@ -4,8 +4,8 @@ import { HubStatusEnum } from '@prisma/client';
 export const HubSchema = z.object({
   id: z.string().uuid().optional(), // ID is optional because it's usually auto-generated
   serialNumber: z.string().min(1, { message: 'Serial number is required' }),
-  hubName: z.string().min(1, { message: 'Hub name is required' }),
-  hubDescription: z.string().min(1, { message: 'Hub description is required' }),
+  name: z.string().min(1, { message: 'Hub name is required' }),
+  description: z.string().optional(),
   hubStatus: z.nativeEnum(HubStatusEnum),
   acquisitionDate: z.date({ message: 'Acquisition date is required' }),
   //lastCalibratedDate: z.date({ message: 'Last calibrated date is required' }),
@@ -18,25 +18,12 @@ export const HubSchema = z.object({
   macAddress: z.string().min(1, { message: 'MAC address is required' }),
   radioGroup: z.number().int().min(1, { message: 'Radio group must be a positive integer' }),
   hubSecret: z.string().min(1, { message: 'Hub secret is required' }),
-  image: z.string().optional(),
-  lat: z
-    .number()
-    .min(-90)
-    .max(90)
-    .optional()
-    .refine((val) => val !== undefined, { message: 'Latitude must be between -90 and 90' }),
-  long: z
-    .number()
-    .min(-180)
-    .max(180)
-    .optional()
-    .refine((val) => val !== undefined, { message: 'Longitude must be between -180 and 180' }),
+  images: z.array(z.string()),
+  lat: z.number().min(-90).max(90).optional(),
+  long: z.number().min(-180).max(180).optional(),
   remarks: z.string().optional(),
   zoneId: z.number().int().optional(),
   facilityId: z.number().int().optional(),
-  maintenanceHistory: z.array(z.any()).optional().default([]),
-  calibrationHistory: z.array(z.any()).optional().default([]),
-  usageMetrics: z.array(z.any()).optional().default([]),
 });
 
 export type HubSchemaType = z.infer<typeof HubSchema>;
