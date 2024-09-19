@@ -5,16 +5,17 @@ import {
   ParkAssetTypeEnum,
   ParkAssetStatusEnum,
   ParkAssetConditionEnum,
-  createParkAsset,
+  updateParkAssetDetails,
+  getParkAssetById,
   ParkAssetData,
   StaffResponse,
 } from '@lepark/data-access';
 import { Button, Card, DatePicker, Form, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
-
+import { useParams } from 'react-router-dom';
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
     .split('_')
@@ -22,13 +23,19 @@ const formatEnumLabel = (enumValue: string): string => {
     .join(' ');
 };
 
-const AssetCreate = () => {
+const AssetEdit = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const navigate = useNavigate();
-  const [createdAsset, setCreatedAsset] = useState<any | null>();
+  const [updatedAsset, setUpdatedAsset] = useState<any | null>();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [form] = Form.useForm();
+  const location = useLocation();
+   const { assetId } = useParams<{ assetId: string }>();
+  console.log('Asset ID:', assetId);
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
 
   useEffect(() => {
     if (user && user.id !== '') {
@@ -36,7 +43,7 @@ const AssetCreate = () => {
         if (!notificationShown.current) {
           notification.error({
             message: 'Access Denied',
-            description: 'You are not allowed to access the Create Asset page!',
+            description: 'You are not allowed to access the Edit Asset page!',
           });
           notificationShown.current = true;
         }
@@ -58,15 +65,35 @@ const AssetCreate = () => {
     };
   }, []);
 
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  useEffect(() => {
+    console.log('Asset ID:', assetId);
+    if (!assetId) return;
 
-  const [form] = Form.useForm();
+    const fetchAssetById = async () => {
+      try {
+        const asset = await getParkAssetById(assetId);
+        if (asset.status === 200) {
+          const assetData = asset.data;
+          console.log('Asset data:', assetData);
+          setCurrentImages(assetData.images || []);
+          form.setFieldsValue({
+            ...assetData,
+            acquisitionDate: dayjs(assetData.acquisitionDate),
+            lastMaintenanceDate: dayjs(assetData.lastMaintenanceDate),
+            nextMaintenanceDate: dayjs(assetData.nextMaintenanceDate),
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching asset:', error);
+      }
+    };
+    fetchAssetById();
+  }, [assetId, form]);
+
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [createdAssetName, setCreatedAssetName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
-
 
   const layout = {
     labelCol: { span: 8 },
@@ -80,7 +107,7 @@ const AssetCreate = () => {
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
-       const assetData: ParkAssetData = {
+      const assetData: ParkAssetData = {
         parkAssetName: values.parkAssetName,
         parkAssetType: values.parkAssetType,
         parkAssetDescription: values.parkAssetDescription,
@@ -92,11 +119,11 @@ const AssetCreate = () => {
         supplier: values.supplier,
         supplierContactNumber: values.supplierContactNumber,
         parkAssetCondition: values.parkAssetCondition,
-        images: [],
+        images: currentImages,
         remarks: values.remarks,
       };
 
-      if (selectedFiles.length === 0) {
+      if (currentImages.length === 0 && selectedFiles.length === 0) {
         Modal.error({
           title: 'Error',
           content: 'Please upload at least one image.',
@@ -104,12 +131,14 @@ const AssetCreate = () => {
         return;
       }
 
-      const response = await createParkAsset(assetData, selectedFiles);
-      console.log('Asset created:', response.data);
-      setCreatedAssetName(values.parkAssetName);
-      setCreatedAsset(response.data);
+       if (!assetId) {
+      throw new Error('Asset ID is missing');
+    }
+
+      const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);
+      console.log('Asset updated:', response.data);
+      setUpdatedAsset(response.data);
       setShowSuccessAlert(true);
-      form.resetFields();
     } catch (error) {
       message.error(String(error));
     } finally {
@@ -117,7 +146,7 @@ const AssetCreate = () => {
     }
   };
 
-   const disabledLastMaintenanceDate = (current: dayjs.Dayjs) => {
+  const disabledLastMaintenanceDate = (current: dayjs.Dayjs) => {
     return current && current > dayjs().endOf('day');
   };
 
@@ -155,12 +184,7 @@ const AssetCreate = () => {
     setNextMaintenanceDate(date);
   };
 
-
-  const onReset = () => {
-    form.resetFields();
-  };
-
-   const onRecurringMaintenanceChange = (value: number | null) => {
+  const onRecurringMaintenanceChange = (value: number | null) => {
     if (value && lastMaintenanceDate) {
       const newNextMaintenanceDate = lastMaintenanceDate.add(value, 'day');
       setNextMaintenanceDate(newNextMaintenanceDate);
@@ -169,12 +193,12 @@ const AssetCreate = () => {
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-  const phoneRegex = /^[89]\d{7}$/;
-  if (!value || phoneRegex.test(value)) {
-    return Promise.resolve();
-  }
-  return Promise.reject('Please enter a valid 8-digit phone number starting with 8 or 9');
-};
+    const phoneRegex = /^[89]\d{7}$/;
+    if (!value || phoneRegex.test(value)) {
+      return Promise.resolve();
+    }
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 8 or 9');
+  };
 
   const breadcrumbItems = [
     {
@@ -183,11 +207,15 @@ const AssetCreate = () => {
       isMain: true,
     },
     {
-      title: 'Create Asset',
-      pathKey: `/parkasset/create`,
+      title: 'Edit Asset',
+      pathKey: `/parkasset/edit`,
       isCurrent: true,
     },
   ];
+
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
 
   if (loading) {
     return (
@@ -207,7 +235,7 @@ const AssetCreate = () => {
               <Input />
             </Form.Item>
 
-             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
+            <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
                   <Select.Option key={type} value={type}>
@@ -231,7 +259,7 @@ const AssetCreate = () => {
               </Select>
             </Form.Item>
 
-                 <Form.Item name="lastMaintenanceDate" label="Last Maintenance Date" rules={[{ required: true }]}>
+            <Form.Item name="lastMaintenanceDate" label="Last Maintenance Date" rules={[{ required: true }]}>
               <DatePicker
                 className="w-full"
                 disabledDate={disabledLastMaintenanceDate}
@@ -247,7 +275,7 @@ const AssetCreate = () => {
               />
             </Form.Item>
 
-               <Form.Item
+            <Form.Item
               name="recurringMaintenanceDuration"
               label="Recurring Maintenance (days)"
               rules={[{ required: true, type: 'number', min: 1, message: 'Please enter a valid number of days' }]}
@@ -292,10 +320,25 @@ const AssetCreate = () => {
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
 
-            {previewImages.length > 0 && (
-              <Form.Item label="Image Previews">
-                <div className="flex flex-wrap gap-2">
-                  {previewImages.map((imgSrc, index) => (
+            <Form.Item label="Current Images">
+              <div className="flex flex-wrap gap-2">
+                {currentImages?.length > 0 &&
+                  currentImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => handleCurrentImageClick(index)}
+                    />
+                  ))}
+              </div>
+            </Form.Item>
+
+            <Form.Item label="New Images">
+              <div className="flex flex-wrap gap-2">
+                {previewImages.length > 0 &&
+                  previewImages.map((imgSrc, index) => (
                     <img
                       key={index}
                       src={imgSrc}
@@ -304,17 +347,13 @@ const AssetCreate = () => {
                       onClick={() => removeImage(index)}
                     />
                   ))}
-                </div>
-              </Form.Item>
-            )}
+              </div>
+            </Form.Item>
 
             <Form.Item {...tailLayout}>
               <Space>
                 <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                  Submit
-                </Button>
-                <Button htmlType="button" onClick={onReset}>
-                  Reset
+                  Update
                 </Button>
               </Space>
             </Form.Item>
@@ -323,14 +362,14 @@ const AssetCreate = () => {
         {showSuccessAlert && (
           <Result
             status="success"
-            title="Created new Asset"
-            subTitle={createdAssetName && <>Asset name: {createdAssetName}</>}
+            title="Updated Asset"
+            subTitle={updatedAsset?.parkAssetName && <>Asset name: {updatedAsset.parkAssetName}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/parkasset')}>
                 Back to Asset Management
               </Button>,
-              <Button type="primary" key="view" onClick={() => navigate(`/assets/${createdAsset?.id}`)}>
-                View new Asset
+              <Button type="primary" key="view" onClick={() => navigate(`/parkasset/${updatedAsset?.id}`)}>
+                View Updated Asset
               </Button>,
             ]}
           />
@@ -340,4 +379,4 @@ const AssetCreate = () => {
   );
 };
 
-export default AssetCreate;
+export default AssetEdit;

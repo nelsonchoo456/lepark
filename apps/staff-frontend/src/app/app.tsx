@@ -43,6 +43,9 @@ import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
 import AssetList from './pages/Asset/AssetList';
 import AssetCreate from './pages/Asset/AssetCreate';
+import AssetDetails from './pages/Asset/AssetDetails';
+import AssetEdit from './pages/Asset/AssetEdit';
+
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -137,6 +140,8 @@ export function App() {
                 <Route path="/parkasset">
                   <Route index element={<AssetList />} />
                   <Route path="create" element={<AssetCreate />} />
+                  <Route path=":assetId" element={<AssetDetails />} />
+                  <Route path="edit/:assetId" element={<AssetEdit />} />
                 </Route>
 
               </Route>
