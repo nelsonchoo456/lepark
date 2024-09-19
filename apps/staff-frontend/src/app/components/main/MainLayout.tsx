@@ -158,7 +158,7 @@ const MainLayout = () => {
       ? {
           key: 'parkasset',
           icon: <PiToolboxBold />,
-          label: 'Park Assets',
+          label: 'Park Assets (non-IoT)',
           onClick: () => navigate('/parkasset'),
         }
       : null,

@@ -42,7 +42,7 @@ import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
 import AssetList from './pages/Asset/AssetList';
-
+import AssetCreate from './pages/Asset/AssetCreate';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -134,7 +134,11 @@ export function App() {
                   <Route path=":hubId" element={<ViewHubDetails />} />
                   <Route path="create" element={<HubCreate />} />
                 </Route>
-                <Route path="/parkasset" element={<AssetList />} />
+                <Route path="/parkasset">
+                  <Route index element={<AssetList />} />
+                  <Route path="create" element={<AssetCreate />} />
+                </Route>
+
               </Route>
               <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
             </Route>

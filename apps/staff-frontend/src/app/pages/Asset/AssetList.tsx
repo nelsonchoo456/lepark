@@ -1,25 +1,32 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
-import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
-import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification, Tabs, message } from 'antd';
-import type { FilterDropdownProps } from 'antd/es/table/interface';
-import Highlighter from 'react-highlight-words';
-import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import PageHeader from '../../components/main/PageHeader';
-import { FiEye, FiSearch } from 'react-icons/fi';
+import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification, message, Tooltip, Card } from 'antd';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { deleteParkAsset, getAllParkAssets, ParkAssetResponse, StaffResponse, StaffType, ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '@lepark/data-access';
-import PageHeader2 from '../../components/main/PageHeader2';
+import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
-import NonIoTAssetsTab from './components/NonIoTAssetsTab';
+import { FiEye, FiSearch } from 'react-icons/fi';
+import { RiEdit2Line } from 'react-icons/ri';
+import { MdDeleteOutline } from 'react-icons/md';
+import { ColumnsType } from 'antd/es/table';
 
-const { TabPane } = Tabs;
+const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
+  const words = enumValue.split('_');
+
+  if (enumType === 'type' || enumType === 'condition') {
+    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  } else {
+    return words.map(word => word.toUpperCase()).join(' ');
+  }
+};
 
 const ParkAssetManagementPage: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
   const [parkAssets, setParkAssets] = useState<ParkAssetResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
@@ -34,24 +41,21 @@ const ParkAssetManagementPage: React.FC = () => {
     } else {
       fetchParkAssetData();
     }
-  }, [user]);
+  }, [user, navigate]); // Added 'navigate' to the dependency array
 
   const fetchParkAssetData = async () => {
+    setLoading(true);
     try {
       const response = await getAllParkAssets();
-      const data = await response.data;
-      setParkAssets(data);
+      setParkAssets(response.data);
     } catch (error) {
       console.error('Error fetching park asset data:', error);
+      message.error('Failed to fetch park assets');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleViewDetailsClick = (assetRecord: ParkAssetResponse) => {
-    navigate(`${assetRecord.id}`);
-  };
-
-  const { Search } = Input;
-  const [searchQuery, setSearchQuery] = useState('');
   const filteredParkAssets = useMemo(() => {
     return parkAssets.filter((asset) => {
       return Object.values(asset).some((value) =>
@@ -60,85 +64,11 @@ const ParkAssetManagementPage: React.FC = () => {
     });
   }, [parkAssets, searchQuery]);
 
-  const dataSource = filteredParkAssets.map((asset) => ({
-    ...asset,
-    key: asset.id,
-  }));
-
-  const handleSearchBar = (value: string) => {
-    setSearchQuery(value);
+  const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  const columns: TableColumnsType<ParkAssetResponse> = [
-    {
-      title: 'Name',
-      key: 'name',
-      dataIndex: 'parkAssetName',
-      width: '20%',
-      sorter: (a, b) => a.parkAssetName.localeCompare(b.parkAssetName),
-      sortDirections: ['ascend', 'descend'],
-      fixed: 'left'
-    },
-    {
-      title: 'Type',
-      key: 'type',
-      dataIndex: 'parkAssetType',
-      width: '15%',
-      filters: Object.values(ParkAssetTypeEnum).map((type) => ({ text: type.replace(/_/g, ' '), value: type })),
-      onFilter: (value, record) => record.parkAssetType === value,
-      render: (type) => type.replace(/_/g, ' '),
-    },
-    {
-      title: 'Status',
-      key: 'status',
-      dataIndex: 'parkAssetStatus',
-      width: '15%',
-      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: status, value: status })),
-      onFilter: (value, record) => record.parkAssetStatus === value,
-      render: (status) => (
-        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : 'red'} bordered={false}>
-          {status}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Condition',
-      key: 'condition',
-      dataIndex: 'parkAssetCondition',
-      width: '15%',
-      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({ text: condition, value: condition })),
-      onFilter: (value, record) => record.parkAssetCondition === value,
-    },
-    {
-      title: 'Next Maintenance',
-      key: 'nextMaintenance',
-      dataIndex: 'nextMaintenanceDate',
-      width: '15%',
-      render: (date) => new Date(date).toLocaleDateString(),
-      sorter: (a, b) => new Date(a.nextMaintenanceDate).getTime() - new Date(b.nextMaintenanceDate).getTime(),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: '10%',
-      render: (_, record) => (
-        <Flex key={record.id} justify="center">
-          <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)} />
-        </Flex>
-      ),
-    },
-  ];
-
-  const breadcrumbItems = [
-    {
-      title: "Park Asset Management",
-      pathKey: '/parkasset',
-      isMain: true,
-      isCurrent: true
-    },
-  ]
-
-   const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string) => {
     try {
       const confirmed = await new Promise<boolean>((resolve) => {
         Modal.confirm({
@@ -162,31 +92,104 @@ const ParkAssetManagementPage: React.FC = () => {
     }
   };
 
-  const handleEdit = (id: string) => {
-    // Implement edit logic here
-    console.log(`Edit asset with id: ${id}`);
-  };
+  const columns: ColumnsType<ParkAssetResponse> = [
+    {
+      title: 'Name',
+      dataIndex: 'parkAssetName',
+      key: 'parkAssetName',
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.parkAssetName.localeCompare(b.parkAssetName),
+      width: '20%',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'parkAssetType',
+      key: 'parkAssetType',
+      filters: Object.values(ParkAssetTypeEnum).map((type) => ({ text: formatEnumLabel(type, 'type'), value: type })),
+      onFilter: (value, record) => record.parkAssetType === value,
+      render: (type: string) => formatEnumLabel(type, 'type'),
+      width: '15%',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'parkAssetStatus',
+      key: 'parkAssetStatus',
+      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
+      onFilter: (value, record) => record.parkAssetStatus === value,
+      render: (status: string) => (
+        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : 'red'} bordered={false}>
+          {formatEnumLabel(status, 'status')}
+        </Tag>
+      ),
+      width: '15%',
+    },
+    {
+      title: 'Condition',
+      dataIndex: 'parkAssetCondition',
+      key: 'parkAssetCondition',
+      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({ text: formatEnumLabel(condition, 'condition'), value: condition })),
+      onFilter: (value, record) => record.parkAssetCondition === value,
+      render: (condition: string) => formatEnumLabel(condition, 'condition'),
+      width: '15%',
+    },
+    {
+      title: 'Next Maintenance',
+      dataIndex: 'nextMaintenanceDate',
+      key: 'nextMaintenanceDate',
+      render: (date: string) => new Date(date).toLocaleDateString(),
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => new Date(a.nextMaintenanceDate).getTime() - new Date(b.nextMaintenanceDate).getTime(),
+      width: '15%',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: React.ReactNode, record: ParkAssetResponse) => (
+        <Flex justify="center" gap={8}>
+          <Tooltip title="View Details">
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
+          </Tooltip>
+          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
+            <>
+              <Tooltip title="Edit Asset">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`edit/${record.id}`)} />
+              </Tooltip>
+              <Tooltip title="Delete Asset">
+                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+              </Tooltip>
+            </>
+          )}
+        </Flex>
+      ),
+      width: '20%',
+    },
+  ];
 
   return (
     <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <Tabs defaultActiveKey="1">
-        <TabPane tab="Non-IoT Assets" key="1">
-          <NonIoTAssetsTab
-            columns={columns}
-            dataSource={dataSource}
-            handleSearchBar={handleSearchBar}
-            handleDelete={handleDelete}
-            handleEdit={handleEdit}
-          />
-        </TabPane>
-        <TabPane tab="IoT Assets" key="2">
-          { /* <IoTAssetsTab /> */ }
-        </TabPane>
-        <TabPane tab="Asset Map" key="3">
-         { /* <AssetMapTab /> */ }
-        </TabPane>
-      </Tabs>
+      <PageHeader>Park Asset Management</PageHeader>
+      <Flex justify="end" gap={10}>
+        <Input
+          suffix={<FiSearch />}
+          placeholder="Search in Park Assets..."
+          onChange={handleSearchBar}
+          className="mb-4 bg-white"
+          variant="filled"
+        />
+        {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
+          <Button type="primary" onClick={() => navigate('create')}>
+            Create Park Asset
+          </Button>
+        )}
+      </Flex>
+      <Card>
+        <Table
+          columns={columns}
+          dataSource={filteredParkAssets}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: SCREEN_LG }}
+        />
+      </Card>
     </ContentWrapperDark>
   );
 };
