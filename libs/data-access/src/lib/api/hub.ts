@@ -1,11 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
 import { HubResponse } from '../types/hub';
+import client from './client';
 
 const URL = '/hubs';
 
 export async function createHub(data: HubResponse): Promise<AxiosResponse<HubResponse>> {
   try {
-    const response: AxiosResponse<HubResponse> = await axios.post(`${URL}/createHub`, data);
+    const response: AxiosResponse<HubResponse> = await client.post(`${URL}/createHub`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -18,7 +19,7 @@ export async function createHub(data: HubResponse): Promise<AxiosResponse<HubRes
 
 export async function getAllHubs(): Promise<AxiosResponse<HubResponse[]>> {
   try {
-    const response: AxiosResponse<HubResponse[]> = await axios.get(`${URL}/getAllHubs`);
+    const response: AxiosResponse<HubResponse[]> = await client.get(`${URL}/getAllHubs`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -31,7 +32,7 @@ export async function getAllHubs(): Promise<AxiosResponse<HubResponse[]>> {
 
 export async function getHubById(id: string): Promise<AxiosResponse<HubResponse>> {
   try {
-    const response: AxiosResponse<HubResponse> = await axios.get(`${URL}/getHubById/${id}`);
+    const response: AxiosResponse<HubResponse> = await client.get(`${URL}/getHubById/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -44,7 +45,7 @@ export async function getHubById(id: string): Promise<AxiosResponse<HubResponse>
 
 export async function updateHubDetails(id: string, data: Partial<HubResponse>): Promise<AxiosResponse<HubResponse>> {
   try {
-    const response: AxiosResponse<HubResponse> = await axios.put(`${URL}/updateHubDetails/${id}`, data);
+    const response: AxiosResponse<HubResponse> = await client.put(`${URL}/updateHubDetails/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -57,7 +58,7 @@ export async function updateHubDetails(id: string, data: Partial<HubResponse>): 
 
 export async function deleteHub(id: string): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await axios.delete(`${URL}/deleteHub/${id}`);
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteHub/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
