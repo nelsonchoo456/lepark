@@ -17,6 +17,7 @@ import statusLogRouter from './routers/statusLogRouter';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import hubRouter from './routers/hubRouter';
+import facilityRouter from './routers/facilityRouter';
 
 dotenv.config();
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', activityLogRouter);
 app.use('/api/statuslogs', statusLogRouter);
 app.use('/api/hubs', hubRouter);
+app.use('/api/facility', facilityRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
