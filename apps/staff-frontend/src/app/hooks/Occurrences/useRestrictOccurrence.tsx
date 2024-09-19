@@ -1,5 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { getOccurrenceById, getSpeciesById, getZoneById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { message, notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
   const { user } = useAuth<StaffResponse>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
   const [species, setSpecies] = useState<SpeciesResponse>();
+  const [zone, setZone] = useState<ZoneResponse>();
   const [loading, setLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -45,6 +46,9 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
       setOccurrence(occurrence);
       const speciesResponse = await getSpeciesById(occurrence.speciesId);
       setSpecies(speciesResponse.data);
+
+      const zoneResponse = await getZoneById(occurrence.zoneId);
+      setZone(zoneResponse.data);
     } else {
       if (!notificationShown.current) {
         notification.error({
@@ -57,5 +61,5 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
     }
   };
 
-  return { occurrence, species, loading };
+  return { occurrence, species, zone, loading };
 };

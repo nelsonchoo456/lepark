@@ -29,7 +29,7 @@ const OccurrenceEditMap = () => {
   const { occurrenceId } = useParams();
   const { zones, loading } = useFetchZones();
   const [createdData, setCreatedData] = useState<OccurrenceResponse>();
-  const { occurrence, species } = useRestrictOccurrence(occurrenceId);
+  const { occurrence } = useRestrictOccurrence(occurrenceId);
   const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
   const notificationShown = useRef(false);
   const navigate = useNavigate();

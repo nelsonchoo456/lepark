@@ -14,11 +14,12 @@ import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/dat
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import OccurrenceMapTab from './components/OccurrenceMapTab';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
 
-  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
+  const { occurrence, species, zone, loading } = useRestrictOccurrence(occurrenceId);
   // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const navigate = useNavigate();
@@ -82,6 +83,11 @@ const OccurrenceDetails = () => {
       key: 'information',
       label: 'Information',
       children: occurrence ? <InformationTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: occurrence && zone ? <OccurrenceMapTab occurrence={occurrence} zone={zone}/> : <p>Loading occurrence data...</p>,
     },
     {
       key: 'about',
