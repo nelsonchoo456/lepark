@@ -56,7 +56,7 @@ const HubList: React.FC = () => {
       title: 'Hub Name',
       dataIndex: 'hubName',
       key: 'hubName',
-      render: (text) => <div className="font-semibold">{text}</div>,
+      render: (text) => <div>{text}</div>,
       sorter: (a, b) => a.hubName.localeCompare(b.hubName),
       width: '15%',
     },
@@ -92,7 +92,7 @@ const HubList: React.FC = () => {
       render: (text) => moment(text).format('D MMM YY'),
       sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
       width: '10%',
-    },/*
+    } /*
     {
       title: 'Data Transmission Interval',
       dataIndex: 'dataTransmissionInterval',
@@ -100,7 +100,7 @@ const HubList: React.FC = () => {
       render: (text) => <div>{text}</div>,
       sorter: (a, b) => a.dataTransmissionInterval - b.dataTransmissionInterval,
       width: '10%',
-    },*/
+    },*/,
     {
       title: 'IP Address',
       dataIndex: 'ipAddress',
