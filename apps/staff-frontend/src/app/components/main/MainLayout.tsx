@@ -78,16 +78,16 @@ const MainLayout = () => {
         key: 'park/map',
         label: 'Map View',
         onClick: parkMapOnClick,
-      }
-    ]
-  }
+      },
+    ],
+  };
   if (userRole !== StaffType.SUPERADMIN) {
     parkNavItem = {
       key: 'park',
       icon: <TbTrees />,
       label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-      onClick: parkOnClick
-    }
+      onClick: parkOnClick,
+    };
   }
 
   // Navigation
@@ -194,12 +194,16 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
-    {
-      key: 'attraction',
-      icon: <TbTicket />,
-      label: 'Attractions',
-      onClick: () => navigate('/attraction'),
-    },
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'PARK_RANGER'
+      ? {
+          key: 'attraction',
+          icon: <TbTicket />,
+          label: 'Attractions',
+          onClick: () => navigate('/attraction'),
+        }
+      : null,
   ];
 
   return (
