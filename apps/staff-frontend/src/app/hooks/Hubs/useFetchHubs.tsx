@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useAuth } from '@lepark/common-ui';
-import { getAllHubs, HubResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { getAllHubs, getHubsByParkId, HubResponse, StaffResponse, StaffType } from '@lepark/data-access';
 
 export const useFetchHubs = () => {
   const [hubs, setHubs] = useState<HubResponse[]>([]);
@@ -11,13 +11,32 @@ export const useFetchHubs = () => {
 
   useEffect(() => {
     if (!user) return;
-    fetchAllHubs();
+    if (user?.role === StaffType.SUPERADMIN) {
+      fetchAllHubs();
+    } else if (user?.parkId) {
+      fetchHubsByParkId(user.parkId);
+    }
   }, [user, trigger]);
 
   const fetchAllHubs = async () => {
     setLoading(true);
     try {
       const hubsRes = await getAllHubs();
+      if (hubsRes.status === 200) {
+        const hubsData = hubsRes.data;
+        setHubs(Array.isArray(hubsData) ? hubsData : []); // Ensure hubsData is an array
+        setLoading(false);
+      }
+    } catch (error) {
+      setHubs([]); // Ensure hubs is an array even on error
+      setLoading(false);
+    }
+  };
+
+  const fetchHubsByParkId = async (parkId: number) => {
+    setLoading(true);
+    try {
+      const hubsRes = await getHubsByParkId(parkId);
       if (hubsRes.status === 200) {
         const hubsData = hubsRes.data;
         setHubs(Array.isArray(hubsData) ? hubsData : []); // Ensure hubsData is an array

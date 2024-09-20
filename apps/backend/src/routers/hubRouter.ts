@@ -16,8 +16,14 @@ router.post('/createHub', async (req, res) => {
 
 router.get('/getAllHubs', async (req, res) => {
   try {
-    const hubs = await HubService.getAllHubs();
-    res.status(200).json(hubs);
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
+    if (!parkId) {
+      const hubs = await HubService.getAllHubs();
+      res.status(200).json(hubs);
+    } else {
+      const hubs = await HubService.getHubsByParkId(parkId);
+      res.status(200).json(hubs);
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

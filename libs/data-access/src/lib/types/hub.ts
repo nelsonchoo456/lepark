@@ -21,7 +21,7 @@ export interface HubData {
   long?: number;
   remarks?: string;
   zoneId?: number;
-  facilityId?: number;
+  facilityId?: string;
 }
 
 export interface HubResponse {
@@ -46,5 +46,7 @@ export interface HubResponse {
   long?: number;
   remarks?: string;
   zoneId?: number;
-  facilityId?: number;
+  facilityId?: string;
+  parkName?: string;
+  facilityName?: string;
 }
