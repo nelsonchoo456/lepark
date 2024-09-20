@@ -94,6 +94,7 @@ const AssetCreate = () => {
         parkAssetCondition: values.parkAssetCondition,
         images: [],
         remarks: values.remarks,
+        facilityId: values.facilityId,
       };
 
       if (selectedFiles.length === 0) {
@@ -169,7 +170,7 @@ const AssetCreate = () => {
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-  const phoneRegex = /^[89]\d{7}$/;
+  const phoneRegex = /^[689]\d{7}$/;
   if (!value || phoneRegex.test(value)) {
     return Promise.resolve();
   }
@@ -288,6 +289,18 @@ const AssetCreate = () => {
               <Input.TextArea />
             </Form.Item>
 
+             <Form.Item
+              name="facilityId"
+              label="Facility ID"
+              rules={[
+                { required: true, message: 'Please input the facility ID!' },
+                { whitespace: true, message: 'Facility ID cannot be empty!' },
+              ]}
+              getValueFromEvent={(e) => e.target.value.trim()} // Trim leading and trailing spaces
+            >
+              <Input />
+            </Form.Item>
+
             <Form.Item label="Upload Images" required tooltip="At least one image is required">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
@@ -329,7 +342,7 @@ const AssetCreate = () => {
               <Button key="back" onClick={() => navigate('/parkasset')}>
                 Back to Asset Management
               </Button>,
-              <Button type="primary" key="view" onClick={() => navigate(`/assets/${createdAsset?.id}`)}>
+              <Button type="primary" key="view" onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}>
                 View new Asset
               </Button>,
             ]}
