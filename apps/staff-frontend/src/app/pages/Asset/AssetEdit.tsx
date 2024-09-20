@@ -81,6 +81,7 @@ const AssetEdit = () => {
             acquisitionDate: dayjs(assetData.acquisitionDate),
             lastMaintenanceDate: dayjs(assetData.lastMaintenanceDate),
             nextMaintenanceDate: dayjs(assetData.nextMaintenanceDate),
+            facilityId: assetData.facilityId, // Add this line to populate facilityId
           });
         }
       } catch (error) {
@@ -121,6 +122,7 @@ const AssetEdit = () => {
         parkAssetCondition: values.parkAssetCondition,
         images: currentImages,
         remarks: values.remarks,
+        facilityId: values.facilityId,
       };
 
       if (currentImages.length === 0 && selectedFiles.length === 0) {
@@ -193,11 +195,11 @@ const AssetEdit = () => {
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-    const phoneRegex = /^[89]\d{7}$/;
+    const phoneRegex = /^[689]\d{5,8}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid 8-digit phone number starting with 8 or 9');
+    return Promise.reject('Please enter a valid 6, 8, or 9-digit phone number starting with 6, 8, or 9');
   };
 
   const breadcrumbItems = [
@@ -314,6 +316,18 @@ const AssetEdit = () => {
 
             <Form.Item name="remarks" label="Remarks">
               <Input.TextArea />
+            </Form.Item>
+
+            <Form.Item
+              name="facilityId"
+              label="Facility ID"
+              rules={[
+                { required: true, message: 'Please input the facility ID!' },
+                { whitespace: true, message: 'Facility ID cannot be empty!' },
+              ]}
+              getValueFromEvent={(e) => e.target.value.trim()} // Trim leading and trailing spaces
+            >
+              <Input />
             </Form.Item>
 
             <Form.Item label="Upload Images" required tooltip="At least one image is required">
