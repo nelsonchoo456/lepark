@@ -258,14 +258,57 @@ model Hub {
   @@index([zoneId])
 }
 
-model Sensor {
-  id String @id @default(uuid()) @db.Uuid
+enum SensorTypeEnum {
+  TEMPERATURE
+  HUMIDITY
+  SOIL_MOISTURE
+  LIGHT
+  CAMERA
+}
 
-  maintenanceHistory MaintenanceHistory[]
-  calibrationHistory CalibrationHistory[]
-  usageMetrics       UsageMetrics[]
-  Hub                Hub?                 @relation(fields: [hubId], references: [id])
-  hubId              String?              @db.Uuid
+enum SensorStatusEnum {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+enum SensorUnitEnum {
+   PERCENT
+   DEGREES_CELSIUS
+   VOLUMETRIC_WATER_CONTENT
+   LUX
+   PAX
+  // Add other units as needed
+}
+
+model Sensor {
+  id                            String           @id @default(uuid()) @db.Uuid
+  sensorName                    String
+  sensorType                    SensorTypeEnum
+  sensorDescription             String?
+  sensorStatus                  SensorStatusEnum
+  acquisitionDate               DateTime
+  lastCalibratedDate            DateTime?
+  calibrationFrequencyDays      Int
+  recurringMaintenanceDuration  Int
+  lastMaintenanceDate           DateTime?
+  nextMaintenanceDate           DateTime?
+  dataFrequencyMinutes          Int
+  sensorUnit                    SensorUnitEnum
+  supplier                      String
+  supplierContactNumber         String
+  image                         String?
+  latitude                      Float?
+  longitude                     Float?
+  remarks                       String?
+
+  hubId                         String?          @db.Uuid
+  hub                           Hub?             @relation(fields: [hubId], references: [id])
+
+  maintenanceHistory            MaintenanceHistory[]
+  calibrationHistory            CalibrationHistory[]
+  usageMetrics                  UsageMetrics[]
 }
 
 enum ParkAssetTypeEnum {

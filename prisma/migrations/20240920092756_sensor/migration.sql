@@ -23,6 +23,15 @@ CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', '
 CREATE TYPE "HubStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
 
 -- CreateEnum
+CREATE TYPE "SensorTypeEnum" AS ENUM ('TEMPERATURE', 'HUMIDITY', 'SOIL_MOISTURE', 'LIGHT', 'CAMERA');
+
+-- CreateEnum
+CREATE TYPE "SensorStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
+
+-- CreateEnum
+CREATE TYPE "SensorUnitEnum" AS ENUM ('PERCENT', 'DEGREES_CELSIUS', 'VOLUMETRIC_WATER_CONTENT', 'LUX', 'PAX');
+
+-- CreateEnum
 CREATE TYPE "ParkAssetTypeEnum" AS ENUM ('EQUIPMENT_RELATED', 'PLANT_RELATED', 'PLANT_TOOL');
 
 -- CreateEnum
@@ -30,6 +39,12 @@ CREATE TYPE "ParkAssetStatusEnum" AS ENUM ('AVAILABLE', 'IN_USE', 'UNDER_MAINTEN
 
 -- CreateEnum
 CREATE TYPE "ParkAssetConditionEnum" AS ENUM ('EXCELLENT', 'FAIR', 'POOR', 'DAMAGED');
+
+-- CreateEnum
+CREATE TYPE "FacilityTypeEnum" AS ENUM ('TOILET', 'PLAYGROUND', 'INFORMATION', 'CARPARK', 'ACCESSIBILITY', 'STAGE', 'WATER_FOUNTAIN', 'PICNIC_AREA', 'BBQ_PIT', 'CAMPING_AREA', 'AED', 'FIRST_AID', 'AMPHITHEATER', 'GAZEBO', 'STOREROOM', 'OTHERS');
+
+-- CreateEnum
+CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'MAINTENANCE');
 
 -- CreateTable
 CREATE TABLE "Staff" (
@@ -162,7 +177,7 @@ CREATE TABLE "Hub" (
     "long" DOUBLE PRECISION,
     "remarks" TEXT,
     "zoneId" INTEGER,
-    "facilityId" INTEGER,
+    "facilityId" UUID,
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
 );
@@ -170,6 +185,24 @@ CREATE TABLE "Hub" (
 -- CreateTable
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
+    "sensorName" TEXT NOT NULL,
+    "sensorType" "SensorTypeEnum" NOT NULL,
+    "sensorDescription" TEXT,
+    "sensorStatus" "SensorStatusEnum" NOT NULL,
+    "acquisitionDate" TIMESTAMP(3) NOT NULL,
+    "lastCalibratedDate" TIMESTAMP(3),
+    "calibrationFrequencyDays" INTEGER NOT NULL,
+    "recurringMaintenanceDuration" INTEGER NOT NULL,
+    "lastMaintenanceDate" TIMESTAMP(3),
+    "nextMaintenanceDate" TIMESTAMP(3),
+    "dataFrequencyMinutes" INTEGER NOT NULL,
+    "sensorUnit" "SensorUnitEnum" NOT NULL,
+    "supplier" TEXT NOT NULL,
+    "supplierContactNumber" TEXT NOT NULL,
+    "image" TEXT,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
+    "remarks" TEXT,
     "hubId" UUID,
 
     CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
@@ -191,6 +224,7 @@ CREATE TABLE "ParkAsset" (
     "parkAssetCondition" "ParkAssetConditionEnum" NOT NULL,
     "images" TEXT[],
     "remarks" TEXT,
+    "facilityId" UUID NOT NULL,
 
     CONSTRAINT "ParkAsset_pkey" PRIMARY KEY ("id")
 );
@@ -229,6 +263,33 @@ CREATE TABLE "UsageMetrics" (
     "description" TEXT NOT NULL,
 
     CONSTRAINT "UsageMetrics_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Facility" (
+    "id" UUID NOT NULL,
+    "facilityName" TEXT NOT NULL,
+    "facilityDescription" TEXT NOT NULL,
+    "isBookable" BOOLEAN NOT NULL,
+    "isPublic" BOOLEAN NOT NULL,
+    "isSheltered" BOOLEAN NOT NULL,
+    "facilityType" "FacilityTypeEnum" NOT NULL,
+    "reservationPolicy" TEXT NOT NULL,
+    "rulesAndRegulations" TEXT NOT NULL,
+    "images" TEXT[],
+    "lastMaintenanceDate" TIMESTAMP(3) NOT NULL,
+    "nextMaintenanceDate" TIMESTAMP(3) NOT NULL,
+    "openingHours" TIMESTAMP(3)[],
+    "closingHours" TIMESTAMP(3)[],
+    "facilityStatus" "FacilityStatusEnum" NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "long" DOUBLE PRECISION NOT NULL,
+    "size" DOUBLE PRECISION NOT NULL,
+    "capacity" DOUBLE PRECISION NOT NULL,
+    "fee" DOUBLE PRECISION NOT NULL,
+    "parkId" INTEGER NOT NULL,
+
+    CONSTRAINT "Facility_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -271,7 +332,13 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Hub" ADD CONSTRAINT "Hub_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
