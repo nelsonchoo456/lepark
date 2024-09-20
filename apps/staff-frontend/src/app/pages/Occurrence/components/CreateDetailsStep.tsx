@@ -108,19 +108,19 @@ const CreateDetailsStep = ({
 
   useEffect(() => {
     if (initialLoad) {
-      // On initial load, set the selectedParkId based on the form's parkId
-      const parkId = form.getFieldValue('parkId');
+      // On initial load, set the selectedParkId based on the form's parkId or the first zone's parkId
+      const parkId = form.getFieldValue('parkId') || (zones[0] && zones[0].parkId);
       if (parkId) {
         setSelectedParkId(parkId);
       }
       setInitialLoad(false);
-    } else if (!selectedParkId) {
-      // Only reset zoneId if selectedParkId becomes null
-      form.setFieldsValue({ zoneId: undefined });
     }
-  }, [selectedParkId, form, initialLoad, setSelectedParkId]);
+  }, [form, zones, setSelectedParkId, initialLoad]);
 
-  const filteredZones = selectedParkId ? zones.filter((zone) => zone.parkId === selectedParkId) : zones;
+  // Filter zones based on selectedParkId for Superadmin, or use all zones for other roles
+  const filteredZones = user?.role === StaffType.SUPERADMIN && selectedParkId
+    ? zones.filter((zone) => zone.parkId === selectedParkId)
+    : zones;
 
   return (
     <Form

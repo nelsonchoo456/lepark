@@ -123,10 +123,10 @@ const OccurrenceCreate = () => {
           handleFileChange={handleFileChange}
           removeImage={removeImage}
           onInputClick={onInputClick}
-          parks={parks} // Add this prop
-          selectedParkId={selectedParkId} // Add this prop
-          setSelectedParkId={setSelectedParkId} // Add this prop
-          user={user} // Add this prop
+          parks={parks}
+          selectedParkId={selectedParkId}
+          setSelectedParkId={setSelectedParkId}
+          user={user}
         />
       ),
     },
