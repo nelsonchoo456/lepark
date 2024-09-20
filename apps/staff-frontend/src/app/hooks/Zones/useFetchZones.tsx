@@ -1,38 +1,43 @@
 import { useState, useEffect } from 'react';
 import { ZoneResponse, getAllZones, getZonesByParkId } from '@lepark/data-access';
+import { useAuth } from '@lepark/common-ui';
+import { StaffResponse, StaffType } from '@lepark/data-access';
 
-export const useFetchZones = (parkId?: number | null) => {
+export const useFetchZones = () => {
   const [zones, setZones] = useState<ZoneResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth<StaffResponse>();
+
+  const fetchZones = async () => {
+    setLoading(true);
+    try {
+      let response;
+      if (user?.role === StaffType.SUPERADMIN) {
+        response = await getAllZones();
+      } else if (user?.parkId) {
+        response = await getZonesByParkId(user.parkId);
+      } else {
+        // Handle case where user is not a superadmin and doesn't have a parkId
+        setZones([]);
+        setLoading(false);
+        return;
+      }
+      setZones(response.data);
+    } catch (error) {
+      console.error('Error fetching zones:', error);
+      setZones([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchZones = async () => {
-      setLoading(true);
-      try {
-        let response;
-        if (parkId === undefined) {
-          // Fetch all zones when no parkId is provided (for ZoneList)
-          response = await getAllZones();
-        } else if (parkId !== null) {
-          // Fetch zones for a specific park (for OccurrenceCreate)
-          response = await getZonesByParkId(parkId);
-        } else {
-          // When parkId is null (for OccurrenceCreate before a park is selected)
-          setZones([]);
-          setLoading(false);
-          return;
-        }
-        setZones(response.data);
-      } catch (error) {
-        console.error('Error fetching zones:', error);
-        setZones([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchZones();
-  }, [parkId]);
+  }, [user]);
 
-  return { zones, loading };
+  const triggerFetch = () => {
+    fetchZones();
+  };
+
+  return { zones, loading, triggerFetch };
 };
