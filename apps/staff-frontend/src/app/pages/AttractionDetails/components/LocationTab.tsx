@@ -39,8 +39,8 @@ const MapTab = ({ attraction, park }: MapTabProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }}/>
-        <PictureMarker lat={attraction.lat} lng={attraction.lng} tooltipLabel={attraction.title} backgroundColor={COLORS.mustard[200]} icon={<TbTicket className='text-highlightGreen-100 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
-     
+        <PictureMarker circleWidth={37} lat={attraction.lat} lng={attraction.lng} tooltipLabel={attraction.title} backgroundColor={COLORS.green[300]} icon={<TbTicket className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
+    
       </MapContainer>
     </div>
     // </>
