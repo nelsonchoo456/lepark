@@ -44,6 +44,7 @@ import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
+import AttractionEdit from './pages/AttractionEdit/AttractionEdit';
 
 export function App() {
   return (
@@ -171,6 +172,7 @@ export function App() {
                 <Route index element={<AttractionList />} />
                 <Route path="create" element={<AttractionCreate />} />
                 <Route path=":id" element={<AttractionDetails />} />
+                <Route path=":id/edit" element={<AttractionEdit />} />
               </Route>
 
               <Route

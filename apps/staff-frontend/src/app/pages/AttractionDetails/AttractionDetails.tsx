@@ -142,7 +142,7 @@ const AttractionDetails = () => {
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"
-                  onClick={() => navigate(`${attraction?.id}/edit`)}
+                  onClick={() => navigate(`edit`)}
                 />
               ) : null}
             </div>

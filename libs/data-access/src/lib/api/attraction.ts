@@ -52,8 +52,16 @@ export async function getAttractionById(id: string): Promise<AxiosResponse<Attra
   }
 }
 
-export async function updateAttractionDetails(id: string, updateData: UpdateAttractionData): Promise<AxiosResponse<Attraction>> {
+export async function updateAttractionDetails(id: string, updateData: UpdateAttractionData, files?: File[]): Promise<AxiosResponse<Attraction>> {
   try {
+    const formData = new FormData();
+    files?.forEach((file) => {
+      formData.append('files', file); // The key 'files' matches what Multer expects
+    });
+
+    const uploadedUrls = await client.post(`${URL}/upload`, formData);
+    updateData.images?.push(...uploadedUrls.data.uploadedUrls);
+    
     const response: AxiosResponse<Attraction> = await client.put(`${URL}/updateAttractionDetails/${id}`, updateData);
     return response;
   } catch (error) {

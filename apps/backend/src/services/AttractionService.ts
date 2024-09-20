@@ -79,7 +79,7 @@ class AttractionService {
       // Check if attraction name already exists in the new park
       const existingAttractionInNewPark = await AttractionDao.getAttractionByTitleAndParkId(mergedData.title, data.parkId);
       if (existingAttractionInNewPark && existingAttractionInNewPark.id !== id) {
-        throw new Error('An attraction with this name already exists in the new park');
+        throw new Error('An attraction with this title already exists in the park');
       }
 
       //  // Validate coordinates are within new park boundaries

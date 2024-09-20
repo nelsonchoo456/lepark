@@ -100,7 +100,9 @@ const CreateDetailsStep = ({
         </Form.Item>
       )}
 
-      <Divider orientation="left">Attraction Hours</Divider>
+      <Divider orientation="left">
+        Attraction Hours <Text type="danger">{' *'}</Text>
+      </Divider>
 
       {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
         <Form.Item key={day} label={day.charAt(0).toUpperCase() + day.slice(1)}>
