@@ -30,7 +30,7 @@ const OccurrenceCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
-  const { parks, parksLoading } = useFetchParks();
+  const { parks } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();

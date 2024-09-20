@@ -6,11 +6,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const useRestrictOccurrence = (occurrenceId?: string) => {
+  const { user } = useAuth<StaffResponse>();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse>();
   const [species, setSpecies] = useState<SpeciesResponse>();
   const [zone, setZone] = useState<ZoneResponse>();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   useEffect(() => {
     if (!occurrenceId || occurrenceId === undefined) {

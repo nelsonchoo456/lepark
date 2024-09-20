@@ -8,6 +8,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import AttractionStatusTag from './components/AttractionStatusTag';
 import InformationTab from './components/InformationTab';
 import { FiExternalLink } from 'react-icons/fi';
+import LocationTab from './components/LocationTab';
 
 const { Text } = Typography;
 
@@ -77,6 +78,11 @@ const AttractionDetails = () => {
       key: 'information',
       label: 'Information',
       children: attraction && park ? <InformationTab attraction={attraction} park={park} /> : <></>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: attraction && park ? <LocationTab attraction={attraction} park={park} /> : <></>,
     },
     {
       key: 'tickets',

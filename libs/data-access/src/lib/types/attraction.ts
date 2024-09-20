@@ -12,8 +12,8 @@ export interface AttractionResponse {
   closingHours: any;
   images?: string[];
   status: AttractionStatus;
-  lat?: number;
-  lng?: number;
+  lat: number;
+  lng: number;
   parkId: number;
 }
 
@@ -24,8 +24,8 @@ export interface CreateAttractionData {
     closingHours: any;
     images?: string[];
     status: AttractionStatus;
-    lat?: number;
-    lng?: number;
+    lat: number;
+    lng: number;
     parkId: number;
 }
 

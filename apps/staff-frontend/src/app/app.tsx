@@ -48,6 +48,7 @@ import AttractionEdit from './pages/AttractionEdit/AttractionEdit';
 import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import ParksMap from './pages/ParksMap/ParksMap';
 import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
+import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
 
 export function App() {
   return (
@@ -186,6 +187,7 @@ export function App() {
                 <Route path="create" element={<AttractionCreate />} />
                 <Route path=":id" element={<AttractionDetails />} />
                 <Route path=":id/edit" element={<AttractionEdit />} />
+                <Route path=":id/edit-map" element={<AttractionEditMap />} />
               </Route>
 
               <Route

@@ -5,6 +5,8 @@ import DraggableMarker from '../../../components/map/DraggableMarker';
 import { AdjustLatLngInterface } from '../AttractionCreate';
 import { ParkResponse } from '@lepark/data-access';
 import { useEffect, useState } from 'react';
+import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
+import { COLORS } from '../../../config/colors';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
@@ -26,35 +28,36 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, formValues, par
   }, [parks, formValues]);
 
   return (
-    <div
-      style={{
-        height: '45vh',
-        zIndex: 1,
-      }}
-      className="py-4 rounded overflow-hidden"
-    >
-      <MapContainer
-        center={[1.287953, 103.851784]}
-        zoom={11}
-        className="leaflet-mapview-container"
-        style={{ height: '100%', width: '100%' }}
+    <>
+      <div className='mt-4'>
+        <div className='font-semibold'>Instructions: 
+        </div> Drag the Marker around within the boundaries of your selected Park.
+      </div>
+      <div
+        style={{
+          height: '45vh',
+          zIndex: 1,
+        }}
+        className="py-4 rounded overflow-hidden"
       >
-        {selectedPark?.geom?.coordinates && selectedPark?.geom.coordinates.length > 0 && (
-          <Polygon
-            positions={selectedPark?.geom.coordinates[0].map((item: number[]) => [item[1], item[0]])}
-            pathOptions={{ color: '#006400', fillColor: '#006400' }}
+        <MapContainer
+          center={[1.287953, 103.851784]}
+          zoom={11}
+          className="leaflet-mapview-container"
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-        )}
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} />
-      </MapContainer>
-      {selectedPark?.geom?.coordinates && selectedPark?.geom.coordinates.length > 0 && (
-        <div className="font-semibold mb-2 text-[#006400]">Displaying Park: {selectedPark.name}</div>
-      )}
-    </div>
+          
+          <PolygonFitBounds geom={selectedPark?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={selectedPark?.name}/>
+          <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} backgroundColor={COLORS.sky[400]} />
+        </MapContainer>
+      </div>
+      {selectedPark?.geom?.coordinates && selectedPark?.geom.coordinates.length > 0 && 
+        <div className='font-semibold mb-4 text-[#006400]'>Displaying Park: {selectedPark.name}</div>}
+    </>
   );
 };
 

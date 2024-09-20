@@ -50,18 +50,6 @@ const InformationTab = ({ attraction, park }: InformationTabProps) => {
       label: 'Park',
       children: park?.name, 
     },
-    {
-        key: 'location',
-        label: 'Location',
-        children: (
-          <Button
-            icon={<FiMapPin />}
-            // onClick={() => window.open(`https://www.google.com/maps?q=${attraction?.lat},${attraction?.lng}`, '_blank')}
-          >
-            View on Map
-          </Button>
-        ),
-      },
   ];
 
   return (
