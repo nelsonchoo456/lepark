@@ -19,31 +19,23 @@ const ParkDetails = () => {
   const notificationShown = useRef(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !user) return;
 
-    if (user?.parkId != parseInt(id) && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the details of this park!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-    
     const fetchData = async () => {
       try {
+        if (user.role !== StaffType.SUPERADMIN && user.parkId !== parseInt(id)) {
+          throw new Error('Unauthorized access');
+        }
+
         const parkRes = await getParkById(parseInt(id));
         if (parkRes.status === 200) {
           setPark(parkRes.data);
-          // console.log(parkRes.data);
         }
       } catch (error) {
         if (!notificationShown.current) {
           notification.error({
             message: 'Error',
-            description: 'An error occurred while fetching the park details.',
+            description: 'You do not have permission to view this park.',
           });
           notificationShown.current = true;
         }
@@ -51,7 +43,7 @@ const ParkDetails = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, navigate, user]);
 
   const descriptionsItems = [
     {
@@ -109,7 +101,7 @@ const ParkDetails = () => {
       isMain: true,
     },
     {
-      title: park?.name ? park?.name : "Details",
+      title: park?.name ? park?.name : 'Details',
       pathKey: `/park/${park?.id}`,
       isCurrent: true,
     },
@@ -117,31 +109,33 @@ const ParkDetails = () => {
 
   return (
     <ContentWrapperDark>
-      {user?.role === StaffType.SUPERADMIN && (
-        <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      )}
+      {user?.role === StaffType.SUPERADMIN && <PageHeader2 breadcrumbItems={breadcrumbItems} />}
       <Card>
         {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
           <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
-            {park?.images && park.images.length > 0 ?
-            <Carousel style={{ maxWidth: '100%' }}>
-              {park?.images?.map((url) => (
-                <div key={url}>
-                  <div
-                    style={{
-                      backgroundImage: `url('${url}')`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      color: 'white',
-                      overflow: 'hidden',
-                    }}
-                    className="h-64 flex-1 rounded-lg shadow-lg p-4"
-                  />
-                </div>
-              ))}
-            </Carousel>
-            : <div className='h-64 bg-gray-200 flex items-center justify-center'><Empty description="No Image"/></div>}
+            {park?.images && park.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {park?.images?.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
           <div className="flex-1 flex-col flex">
             <div className="w-full flex justify-between items-center">

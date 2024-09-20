@@ -72,9 +72,7 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            {/* <Route path="/register" element={<Register />} /> */}
             <Route path="/reset-password" element={<ResetPassword />} />
-            {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
             <Route
               element={
@@ -117,10 +115,34 @@ export function App() {
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
               <Route path="/park">
-                <Route index element={<ParkList />} />
-                <Route path="create" element={<ParkCreate />} />
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/" />
+                      <ParkList />
+                    </>
+                  }
+                />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/" />
+                      <ParkCreate />
+                    </>
+                  }
+                />
                 <Route path=":id" element={<ParkDetails />} />
-                <Route path=":id/edit" element={<ParkEdit />} />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <ParkEdit />
+                    </>
+                  }
+                />
               </Route>
               <Route path="/zone">
                 <Route index element={<ZoneList />} />

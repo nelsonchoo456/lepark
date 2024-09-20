@@ -37,20 +37,10 @@ const ParkEdit = () => {
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (!id) return;
-
-    if (!(user?.role === StaffType.MANAGER && user?.parkId === parseInt(id)) && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to edit the details of this park!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
 
     const fetchData = async () => {
       try {
@@ -87,10 +77,7 @@ const ParkEdit = () => {
       }
     };
     fetchData();
-  }, [id, user]);
-
-  // Form Values
-  const [form] = Form.useForm();
+  }, [id, user, form, navigate]);
 
   const parkStatusOptions = [
     {

@@ -23,19 +23,6 @@ const ParkList = () => {
   const notificationShown = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Park Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, []);
-
   const filteredParks = useMemo(() => {
     return parks.filter((park) =>
       Object.values(park).some((value) => 

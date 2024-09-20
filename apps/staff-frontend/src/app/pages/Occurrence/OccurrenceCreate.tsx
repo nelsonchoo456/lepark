@@ -29,7 +29,7 @@ const OccurrenceCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
-  const { parks, parksLoading } = useFetchParks(); // Add this hook
+  const { parks, parksLoading } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
