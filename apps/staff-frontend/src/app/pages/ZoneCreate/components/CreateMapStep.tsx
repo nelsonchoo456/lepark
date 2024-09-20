@@ -2,12 +2,14 @@ import { Input, Space } from 'antd';
 import { MapContainer, Polygon, TileLayer } from 'react-leaflet';
 import MapFeatureManager from '../../../components/map/MapFeatureManager';
 import { useEffect, useState } from 'react';
-import { ParkResponse } from '@lepark/data-access';
+import { getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { COLORS } from '../../../config/colors';
 import node_image from '../../../assets/mapFeatureManager/line.png';
 import polygon_image from '../../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../../assets/mapFeatureManager/edit.png';
+import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
+import { TbTree } from 'react-icons/tb';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
@@ -21,11 +23,21 @@ interface CreateMapStepProps {
 
 const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, formValues, parks }: CreateMapStepProps) => {
   const [selectedPark, setSelectedPark] = useState<ParkResponse>();
+  const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
 
   useEffect(() => {
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((z) => z.id === formValues.parkId);
       setSelectedPark(selectedPark);
+
+      const fetchZones = async () => {
+        const zonesRes = await getZonesByParkId(formValues.parkId);
+        if (zonesRes.status === 200) {
+          const zonesData = zonesRes.data;
+          setSelectedParkZones(zonesData);
+        }
+      }
+      fetchZones();
     }
   }, [parks, formValues.parkId]);
 
@@ -57,6 +69,11 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
           />
           <MapFeatureManager polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines}/>
           <PolygonFitBounds geom={selectedPark?.geom} polygonLabel={selectedPark?.name}/>
+          {selectedParkZones && selectedParkZones?.length > 0 &&
+          selectedParkZones
+            .map((zone) => (
+              <PolygonWithLabel key={zone.id} entityId={zone.id} geom={zone.geom} polygonLabel={<div className='flex items-center gap-2'><TbTree className='text-xl'/>{zone.name}</div>} color={COLORS.green[600]} fillColor={"transparent"} labelFields={{ color: COLORS.green[800], textShadow: "none" }}/>
+            ))}
         </MapContainer>
       </div>
     </>

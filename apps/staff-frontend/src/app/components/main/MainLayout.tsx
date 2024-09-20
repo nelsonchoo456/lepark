@@ -53,6 +53,7 @@ const MainLayout = () => {
   };
 
   const parkOnClick = userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
+  const parkMapOnClick = userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}/map`) : () => navigate('/park/map');
 
   useEffect(() => {
     const activeItem = location.pathname === '/' ? 'home' : getLastItemFromPath(location.pathname);
@@ -63,6 +64,32 @@ const MainLayout = () => {
     }
   }, [location.pathname, userRole, user?.parkId]);
 
+  let parkNavItem: MenuItem = {
+    key: 'park',
+    icon: <TbTrees />,
+    label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+    children: [
+      {
+        key: 'park',
+        label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
+        onClick: parkOnClick,
+      },
+      {
+        key: 'park/map',
+        label: 'Map View',
+        onClick: parkMapOnClick,
+      }
+    ]
+  }
+  if (userRole !== StaffType.SUPERADMIN) {
+    parkNavItem = {
+      key: 'park',
+      icon: <TbTrees />,
+      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+      onClick: parkOnClick
+    }
+  }
+
   // Navigation
   const navItems: MenuItem[] = [
     {
@@ -72,24 +99,24 @@ const MainLayout = () => {
       label: 'Home',
       onClick: () => navigate('/'),
     },
-    {
-      key: 'park',
-      icon: <TbTrees />,
-      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-      // onClick: parkOnClick,
-      children: [
-        {
-          key: 'park',
-          label: 'List View',
-          onClick: () => navigate('/park'),
-        },
-        {
-          key: 'park/map',
-          label: 'Map View',
-          onClick: () => navigate('/park/map'),
-        }
-      ]
-    },
+    parkNavItem,
+    // {
+    //   key: 'park',
+    //   icon: <TbTrees />,
+    //   label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+    //   children: [
+    //     {
+    //       key: 'park',
+    //       label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
+    //       onClick: parkOnClick,
+    //     },
+    //     {
+    //       key: 'park/map',
+    //       label: 'Map View',
+    //       onClick: parkMapOnClick,
+    //     }
+    //   ]
+    // },
     {
       key: 'zone',
       icon: <TbTree />,

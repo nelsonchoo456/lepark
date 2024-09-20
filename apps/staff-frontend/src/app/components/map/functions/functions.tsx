@@ -4,7 +4,12 @@ import { AdjustLatLngInterface } from "../../../pages/Occurrence/OccurrenceCreat
 
 export function latLngArrayToPolygon(latLngArray: any): string {
   // Map over the array and format each {lat, lng} pair as "lng lat"
-  const coordinates = latLngArray.map((point: LatLng) => `${point.lng} ${point.lat}`).join(', ');
+  const coordinates = latLngArray.map((point: LatLng) => {
+    if (!point.lng || !point.lat) {
+      throw new Error("Please draw valid boundaries. This error may arise if you have unsaved changes");
+    }
+    return `${point.lng} ${point.lat}`
+  }).join(', ');
 
   // Ensure the polygon is closed by repeating the first point at the end
   const firstPoint = `${latLngArray[0].lng} ${latLngArray[0].lat}`;

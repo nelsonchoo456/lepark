@@ -99,6 +99,7 @@ const ZoneCreate = () => {
         finalData.geom = polygonData;
       }
     
+      console.log(finalData)
       const response = await createZone(finalData);
       if (response.status === 201) {
         setCreatedData(response.data)
@@ -110,6 +111,7 @@ const ZoneCreate = () => {
       }
       
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         messageApi.open({
           type: 'error',

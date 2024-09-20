@@ -50,7 +50,7 @@ const ParkEditMap = () => {
         if (parkRes.status === 200) {
           const parkData = parkRes.data;
           setPark(parkData)
-          setPolygon(parkData.geom.coordinates);
+          setPolygon(parkData.geom.coordinates); // AARON LOOK AT THIS CHANGE TO ZONE
           // resetEditPolygon(parkData.geom.coordinates)
         }
       } catch (error) {

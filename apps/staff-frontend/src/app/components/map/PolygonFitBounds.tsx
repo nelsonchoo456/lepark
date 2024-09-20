@@ -24,11 +24,12 @@ const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, f
   const centroid = getCentroidOfGeom(geom);
 
   useEffect(() => {
+    console.log(geom)
     if (geom?.coordinates && geom.coordinates.length > 0) {
       const bounds = geom.coordinates[0].map((item: number[]) => [item[1], item[0]] as [number, number]);
-      map.fitBounds(bounds); // Fit the map to the geom bounds
+      map.fitBounds(bounds); // Fit/zoom the map to the geom bounds
 
-      if (adjustLatLng && lat && lng) {
+      if (adjustLatLng && lat && lng) { // You cannot drag outside the map, if u drag then it returns to centre
         const point = turf.point([lng, lat]);
         const polygon = turf.polygon([geom.coordinates[0]]);
 
