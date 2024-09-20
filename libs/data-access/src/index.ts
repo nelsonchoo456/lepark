@@ -28,3 +28,5 @@ export * from './lib/types/sharedenums';
 export * from './lib/api/attraction';
 export * from './lib/types/attraction';
 
+export * from './lib/api/hub';
+export * from './lib/types/hub';

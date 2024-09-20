@@ -7,7 +7,7 @@ import { Badge, Card, Space, TreeSelect, Input, Tag, Button } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { plantTaxonomy } from '@lepark/data-utility';
 import { useState, useEffect, useMemo } from 'react';
-import { getAllSpecies, SpeciesResponse, VisitorResponse } from '@lepark/data-access';
+import { getAllSpecies, getOccurrencesByParkId, SpeciesResponse, VisitorResponse } from '@lepark/data-access';
 import { FiPause, FiSearch } from 'react-icons/fi';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
@@ -29,10 +29,11 @@ type PlantTaxonomyType = {
 
 const { SHOW_PARENT } = TreeSelect;
 
-const Discover = () => {
+const DiscoverPerPark = () => {
   const navigate = useNavigate();
   const { isFavoriteSpecies, handleRemoveFromFavorites, handleAddToFavorites } = useHandleFavoriteSpecies();
   const { user } = useAuth<VisitorResponse>();
+  const { selectedPark } = usePark();
   const [loading, setLoading] = useState(false);
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
   const [selectedTaxonomy, setSelectedTaxonomy] = useState<string[]>([]);
@@ -42,8 +43,14 @@ const Discover = () => {
     const fetchSpecies = async () => {
       setLoading(true);
       try {
-        const species = await getAllSpecies();
-        setFetchedSpecies(species.data);
+        if (selectedPark) {
+          const speciesOccurrences = await getOccurrencesByParkId(selectedPark.id);
+          const species = await getAllSpecies();
+          const speciesWithOccurrences = species.data.filter((s) =>
+            speciesOccurrences.data.some((occurrence: { speciesId: string }) => occurrence.speciesId === s.id),
+          );
+          setFetchedSpecies(speciesWithOccurrences);
+        }
       } catch (error) {
         console.error('Error fetching species:', error);
       } finally {
@@ -51,10 +58,10 @@ const Discover = () => {
       }
     };
     fetchSpecies();
-  }, []);
+  }, [selectedPark]);
 
   const navigateToSpecies = (speciesId: string) => {
-    navigate(`/discover/${speciesId}`, { state: { fromDiscoverPerPark: false } });
+    navigate(`/discover/${speciesId}`, { state: { fromDiscoverPerPark: true } });
   };
 
   const treeData = useMemo(() => {
@@ -276,4 +283,4 @@ const Discover = () => {
   );
 };
 
-export default Discover;
+export default DiscoverPerPark;

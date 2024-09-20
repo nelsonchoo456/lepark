@@ -57,24 +57,6 @@ const OccurrenceEdit = () => {
   const notificationShown = useRef(false);
 
   useEffect(() => {
-    if (
-      user?.role !== StaffType.SUPERADMIN &&
-      user?.role !== StaffType.MANAGER &&
-      user?.role !== StaffType.BOTANIST &&
-      user?.role !== StaffType.ARBORIST
-    ) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Occurrence Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
     if (occurrence) {
       const dateOfBirth = dayjs(occurrence.dateOfBirth);
       const dateObserved = dayjs(occurrence.dateObserved);
@@ -222,15 +204,6 @@ const OccurrenceEdit = () => {
       isCurrent: true,
     },
   ];
-
-  if (
-    user?.role !== StaffType.SUPERADMIN &&
-    user?.role !== StaffType.MANAGER &&
-    user?.role !== StaffType.BOTANIST &&
-    user?.role !== StaffType.ARBORIST
-  ) {
-    return <></>;
-  }
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {

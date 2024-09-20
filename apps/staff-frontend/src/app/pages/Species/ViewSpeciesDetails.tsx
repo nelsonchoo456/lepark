@@ -17,7 +17,7 @@ import {
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
 import InformationTab from './components/InformationTab';
-import OccurrencesTab from './components/OccurrencesTab';
+import OccurrenceTable from './components/OccurrenceTable';
 import SpeciesCarousel from './components/SpeciesCarousel';
 
 const ViewSpeciesDetails = () => {
@@ -113,7 +113,7 @@ const ViewSpeciesDetails = () => {
     {
       key: 'occurrences',
       label: 'Occurrences',
-      children: species ? <OccurrencesTab species={species} /> : <p>Loading species data...</p>,
+      children: species ? <OccurrenceTable speciesId={species.id} loading={false} /> : <p>Loading species data...</p>,
     },
     {
       key: 'information',
