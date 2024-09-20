@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography } from 'antd';
+import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography, Alert } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
@@ -16,14 +16,18 @@ const ParkDetails = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { park, loading } = useRestrictPark(id);
+  const { park, loading, notFound } = useRestrictPark(id);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
+  if (notFound) {
+    return <EntityNotFound entityName="Park" listPath={user?.role === StaffType.SUPERADMIN ? "/park" : "/"} />;
+  }
+
   if (!park) {
-    return <EntityNotFound entityName="Park" listPath="/park" />;
+    return null; // This case should not happen, but we'll return null just in case
   }
 
   const descriptionsItems = [

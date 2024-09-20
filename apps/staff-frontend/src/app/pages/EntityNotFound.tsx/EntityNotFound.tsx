@@ -17,7 +17,7 @@ const EntityNotFound: React.FC<EntityNotFoundProps> = ({ entityName, listPath })
       subTitle={`Sorry, the ${entityName.toLowerCase()} you are looking for does not exist.`}
       extra={
         <Link to={listPath}>
-          <Button type="primary">Back to List</Button>
+          {listPath === '/' ? <Button type="primary">Return to Home Page</Button> : <Button type="primary">Back to List</Button>}
         </Link>
         }
       />
