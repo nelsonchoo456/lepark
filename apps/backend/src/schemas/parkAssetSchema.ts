@@ -15,8 +15,8 @@ export const ParkAssetSchema = z.object({
   supplierContactNumber: z.string(),
   parkAssetCondition: z.nativeEnum(ParkAssetConditionEnum),
   images: z.array(z.string()).optional(), // Array of image URLs
-  remarks: z.string().optional()
-  //facilityId: z.string().uuid(),
+  remarks: z.string().optional(),
+  facilityId: z.string().uuid(),
 });
 
 export type ParkAssetSchemaType = z.infer<typeof ParkAssetSchema>;

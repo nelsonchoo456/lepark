@@ -8,12 +8,23 @@ class ParkAssetDao {
   }
 
   async getAllParkAssets(): Promise<ParkAsset[]> {
-    return prisma.parkAsset.findMany({
+    const parkAssets = await prisma.parkAsset.findMany({
       include: {
         maintenanceHistory: true,
+        facility: {
+          select: {
+            id: true,
+            facilityName: true,
+          },
+        },
       },
-      //TODO: FETCH FACILITY
     });
+
+    return parkAssets.map((asset) => ({
+      ...asset,
+      facilityId: asset.facility.id,
+      facilityName: asset.facility.facilityName,
+    }));
   }
 
   async getParkAssetById(id: string): Promise<ParkAsset | null> {
@@ -21,8 +32,13 @@ class ParkAssetDao {
       where: { id },
       include: {
         maintenanceHistory: true,
+        facility: {
+          select: {
+            id: true,
+            facilityName: true,
+          },
+        },
       },
-      //TODO: FETCH FACILITY
     });
   }
 
@@ -76,6 +92,29 @@ class ParkAssetDao {
         maintenanceHistory: true,
       },
     });
+  }
+
+  async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
+    const parkAssets = await prisma.parkAsset.findMany({
+      include: {
+        facility: {
+          select: {
+            id: true,
+            facilityName: true,
+            parkId: true,
+          },
+        },
+      },
+    });
+
+    return parkAssets
+      .map((asset) => ({
+        ...asset,
+        facilityId: asset.facility?.id,
+        facilityName: asset.facility?.facilityName,
+        parkId: asset.facility?.parkId,
+      }))
+      .filter((asset) => asset.parkId === parkId);
   }
 }
 

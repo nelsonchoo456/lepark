@@ -2,6 +2,7 @@ import { Prisma, ParkAsset, ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetCon
 import { z } from 'zod';
 import { ParkAssetSchema, ParkAssetSchemaType } from '../schemas/parkAssetSchema';
 import ParkAssetDao from '../dao/ParkAssetDao';
+import FacilityDao from '../dao/FacilityDao';
 import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
 
@@ -14,13 +15,12 @@ const s3 = new aws.S3({
 class ParkAssetService {
   public async createParkAsset(data: ParkAssetSchemaType): Promise<ParkAsset> {
     try {
-      // TODO: WHEN FACILITY  IS DONE
-      /*  if (data.facilityId) {
-        const zone = await FacilityDao.getFacilityById(data.facilityId);
+        if (data.facilityId) {
+        const facility = await FacilityDao.getFacilityById(data.facilityId);
         if (!facility) {
           throw new Error('Facility not found');
         }
-      }*/
+      }
       const formattedData = dateFormatter(data);
       ParkAssetSchema.parse(formattedData);
       const parkAssetData = ensureAllFieldsPresent(formattedData);
@@ -33,12 +33,29 @@ class ParkAssetService {
     }
   }
 
-  public async getAllParkAssets(): Promise<ParkAsset[]> {
-    return ParkAssetDao.getAllParkAssets();
-  }
+public async getAllParkAssets(): Promise<ParkAsset[]> {
+  return ParkAssetDao.getAllParkAssets();
+}
 
-  public async getParkAssetById(id: string): Promise<ParkAsset | null> {
-    return ParkAssetDao.getParkAssetById(id);
+public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
+  return ParkAssetDao.getAllParkAssetsByParkId(parkId);
+}
+
+  public async getParkAssetById(id: string): Promise<ParkAsset & { facilityId?: string, facilityName?: string }> {
+    try {
+      const parkAsset = await ParkAssetDao.getParkAssetById(id);
+      if (!parkAsset) {
+        throw new Error('Park asset not found');
+      }
+      const facility = await FacilityDao.getFacilityById(parkAsset.facilityId);
+      return {
+        ...parkAsset,
+        facilityId: facility?.id,
+        facilityName: facility?.facilityName
+      };
+    } catch (error) {
+      throw new Error(`Unable to fetch park asset details: ${error.message}`);
+    }
   }
 
   public async updateParkAsset(
@@ -48,6 +65,13 @@ class ParkAssetService {
     try {
       const existingAsset = await ParkAssetDao.getParkAssetById(id);
       if (!existingAsset) throw new Error('Park asset not found');
+
+      if (data.facilityId) {
+        const facility = await FacilityDao.getFacilityById(data.facilityId);
+        if (!facility) {
+          throw new Error('Facility not found');
+        }
+      }
 
       const formattedData = dateFormatter(data);
       let mergedData = { ...existingAsset, ...formattedData };
@@ -78,6 +102,8 @@ class ParkAssetService {
   public async getParkAssetsNeedingMaintenance(): Promise<ParkAsset[]> {
     return ParkAssetDao.getParkAssetsNeedingMaintenance();
   }
+
+
 
   public async updateParkAssetStatus(assetId: string, newStatus: ParkAssetStatusEnum): Promise<ParkAsset> {
     try {
@@ -123,12 +149,9 @@ function ensureAllFieldsPresent(data: ParkAssetSchemaType): Prisma.ParkAssetCrea
       !data.nextMaintenanceDate ||
       !data.supplier ||
       !data.supplierContactNumber ||
-      !data.parkAssetCondition //||
-      // TODO: FACILITY
-
-
+      !data.parkAssetCondition ||
      // !data.image ||
-     // !data.facilityId ||
+      !data.facilityId
       //!data.remarks
       ) {
     throw new Error('Missing required fields for park asset creation');

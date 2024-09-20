@@ -303,8 +303,8 @@ model ParkAsset {
   parkAssetCondition            ParkAssetConditionEnum
   images                         String[]
   remarks                       String?
-  // facilityId                 String                  @db.Uuid
-  // facility                   Facility                @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId                 String                  @db.Uuid
+  facility                   Facility                @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory            MaintenanceHistory[]
 }
 
@@ -368,6 +368,7 @@ model Facility {
   fee                   Float
   parkId                Int
   hubs                  Hub[]
+  parkAssets            ParkAsset[]
 }
 
 enum FacilityTypeEnum {

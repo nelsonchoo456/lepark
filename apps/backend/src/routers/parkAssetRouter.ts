@@ -16,9 +16,17 @@ router.post('/createParkAsset', async (req, res) => {
   }
 });
 
-router.get('/getAllParkAssets', async (req, res) => {
+router.get('/getAllParkAssets/:parkId?', async (req, res) => {
   try {
-    const parkAssetList = await ParkAssetService.getAllParkAssets();
+    const parkId = req.params.parkId ? parseInt(req.params.parkId) : undefined;
+    let parkAssetList;
+
+    if (parkId === undefined) {
+      parkAssetList = await ParkAssetService.getAllParkAssets();
+    } else {
+      parkAssetList = await ParkAssetService.getAllParkAssetsByParkId(parkId);
+    }
+
     res.status(200).json(parkAssetList);
   } catch (error) {
     res.status(400).json({ error: error.message });
