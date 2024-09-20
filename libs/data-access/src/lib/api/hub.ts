@@ -39,6 +39,19 @@ export async function getAllHubs(): Promise<AxiosResponse<HubResponse[]>> {
   }
 }
 
+export async function getHubsByParkId(parkId: number): Promise<AxiosResponse<HubResponse[]>> {
+  try {
+    const response: AxiosResponse<HubResponse[]> = await client.get(`${URL}/getAllHubs?parkId=${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getHubById(id: string): Promise<AxiosResponse<HubResponse>> {
   try {
     const response: AxiosResponse<HubResponse> = await client.get(`${URL}/getHubById/${id}`);

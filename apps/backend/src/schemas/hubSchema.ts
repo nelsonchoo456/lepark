@@ -23,7 +23,7 @@ export const HubSchema = z.object({
   long: z.number().min(-180).max(180).optional(),
   remarks: z.string().optional(),
   zoneId: z.number().int().optional(),
-  facilityId: z.number().int().optional(),
+  facilityId: z.string().optional(),
 });
 
 export type HubSchemaType = z.infer<typeof HubSchema>;

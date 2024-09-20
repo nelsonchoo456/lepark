@@ -245,7 +245,8 @@ model Hub {
   long                                Float?
   remarks                             String?
   zoneId                              Int? // for when installed in a zone
-  facilityId                          Int? // for when kept in a facility
+  facilityId                          String?  @db.Uuid
+  facility                            Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   maintenanceHistory MaintenanceHistory[]
   calibrationHistory CalibrationHistory[]
@@ -342,4 +343,54 @@ model UsageMetrics {
 
   hub    Hub?    @relation(fields: [hubId], references: [id], onDelete: Cascade)
   sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+}
+
+model Facility {
+  id                    String    @id @default(uuid()) @db.Uuid
+  facilityName          String
+  facilityDescription   String
+  isBookable            Boolean
+  isPublic              Boolean
+  isSheltered           Boolean
+  facilityType          FacilityTypeEnum
+  reservationPolicy     String
+  rulesAndRegulations   String
+  images                String[]
+  lastMaintenanceDate   DateTime
+  nextMaintenanceDate   DateTime
+  openingHours          DateTime[]
+  closingHours          DateTime[]
+  facilityStatus        FacilityStatusEnum
+  lat                   Float
+  long                   Float
+  size                  Float
+  capacity              Float
+  fee                   Float
+  parkId                Int
+  hubs                  Hub[]
+}
+
+enum FacilityTypeEnum {
+  TOILET
+  PLAYGROUND
+  INFORMATION
+  CARPARK
+  ACCESSIBILITY
+  STAGE
+  WATER_FOUNTAIN
+  PICNIC_AREA
+  BBQ_PIT
+  CAMPING_AREA
+  AED
+  FIRST_AID
+  AMPHITHEATER
+  GAZEBO
+  STOREROOM
+  OTHERS
+}
+
+enum FacilityStatusEnum {
+  OPEN
+  CLOSED
+  MAINTENANCE
 }

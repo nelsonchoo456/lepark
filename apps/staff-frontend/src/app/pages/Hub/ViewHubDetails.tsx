@@ -13,6 +13,7 @@ const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
   const [hub, setHub] = useState<HubResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  //const [facility, setFacility] = useState<FacilityResponse | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,6 +21,8 @@ const ViewHubDetails = () => {
         try {
           const hubResponse = await getHubById(hubId);
           setHub(hubResponse.data);
+          //const facilityResponse = await getFacilityById(hubResponse.data.facilityId);
+          //setFacility(facilityResponse.data);
         } catch (error) {
           console.error('Error fetching hub data:', error);
         } finally {
@@ -92,6 +95,12 @@ const ViewHubDetails = () => {
       label: 'Hub Secret',
       children: hub?.hubSecret,
     },
+    /*
+    {
+      key: 'facilityName',
+      label: 'Facility',
+      children: facility?.facilityName,
+      },*/
   ];
 
   const tabsItems = [

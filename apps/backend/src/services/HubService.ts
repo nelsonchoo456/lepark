@@ -54,6 +54,10 @@ class HubService {
     return HubDao.getAllHubs();
   }
 
+  public async getHubsByParkId(parkId: number): Promise<Hub[]> {
+    return HubDao.getHubsByParkId(parkId);
+  }
+
   public async getHubById(id: string): Promise<Hub | null> {
     return HubDao.getHubById(id);
   }
