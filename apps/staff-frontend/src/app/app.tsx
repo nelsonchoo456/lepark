@@ -45,6 +45,9 @@ import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
 import AttractionEdit from './pages/AttractionEdit/AttractionEdit';
+import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
+import ParksMap from './pages/ParksMap/ParksMap';
+import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
 
 export function App() {
   return (
@@ -115,6 +118,10 @@ export function App() {
                     </>
                   }
                 />
+                <Route path="create" element={<OccurrenceCreate />} />
+                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
+                <Route path=":occurrenceId/edit-location" element={<OccurrenceEditMap />} />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
@@ -147,6 +154,12 @@ export function App() {
                     </>
                   }
                 />
+                <Route index element={<ParkList />} />
+                <Route path="map" element={<ParksMap />} />
+                <Route path="create" element={<ParkCreate />} />
+                <Route path=":id" element={<ParkDetails />} />
+                <Route path=":id/edit" element={<ParkEdit />} />
+                <Route path=":id/edit-map" element={<ParkEditMap />} />
               </Route>
               <Route path="/zone">
                 <Route index element={<ZoneList />} />

@@ -76,14 +76,19 @@ const MainLayout = () => {
       key: 'park',
       icon: <TbTrees />,
       label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-      onClick: parkOnClick,
-      // children: [
-      //   {
-      //     key: 'park/create',
-      //     label: 'Create',
-      //     onClick: () => navigate('/park/create'),
-      //   }
-      // ]
+      // onClick: parkOnClick,
+      children: [
+        {
+          key: 'park',
+          label: 'List View',
+          onClick: () => navigate('/park'),
+        },
+        {
+          key: 'park/map',
+          label: 'Map View',
+          onClick: () => navigate('/park/map'),
+        }
+      ]
     },
     {
       key: 'zone',
