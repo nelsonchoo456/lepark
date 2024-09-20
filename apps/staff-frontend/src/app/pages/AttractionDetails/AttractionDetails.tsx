@@ -27,7 +27,7 @@ const AttractionDetails = () => {
       try {
         const attractionRes = await getAttractionById(id);
         if (attractionRes.status === 200) {
-          setAttraction(attractionRes.data as AttractionResponse);
+          setAttraction(attractionRes.data);
 
           // Fetch park details
           if (attractionRes.data.parkId) {

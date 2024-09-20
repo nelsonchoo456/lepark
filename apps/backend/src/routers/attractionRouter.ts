@@ -24,6 +24,16 @@ router.get('/getAllAttractions', async (req, res) => {
   }
 });
 
+router.get('/getAttractionsByParkId/:parkId', async (req, res) => {
+  try {
+    const parkId = parseInt(req.params.parkId);
+    const attractions = await AttractionService.getAttractionsByParkId(parkId);
+    res.status(200).json(attractions);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/viewAttractionDetails/:id', async (req, res) => {
   try {
     const attractionId = req.params.id;

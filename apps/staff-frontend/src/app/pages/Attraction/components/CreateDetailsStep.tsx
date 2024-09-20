@@ -1,5 +1,5 @@
 import { ImageInput } from '@lepark/common-ui';
-import { ZoneResponse, AttractionStatus, ParkResponse } from '@lepark/data-access';
+import { ZoneResponse, AttractionStatusEnum, ParkResponse } from '@lepark/data-access';
 import { Button, Divider, Flex, Form, FormInstance, Input, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
@@ -27,9 +27,9 @@ const CreateDetailsStep = ({
   const [messageApi, contextHolder] = message.useMessage();
 
   const attractionStatusOptions = [
-    { value: AttractionStatus.OPEN, label: 'Open' },
-    { value: AttractionStatus.CLOSED, label: 'Closed' },
-    { value: AttractionStatus.UNDER_MAINTENANCE, label: 'Under Maintenance' },
+    { value: AttractionStatusEnum.OPEN, label: 'Open' },
+    { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
+    { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
   ];
 
   const handleApplyToAllChange = (day: string) => {

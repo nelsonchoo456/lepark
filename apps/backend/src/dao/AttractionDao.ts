@@ -11,6 +11,10 @@ class AttractionDao {
     return prisma.attraction.findMany();
   }
 
+  async getAttractionsByParkId(parkId: number): Promise<Attraction[]> {
+    return prisma.attraction.findMany({ where: { parkId } });
+  }
+
   async getAttractionById(id: string): Promise<Attraction | null> {
     return prisma.attraction.findUnique({ where: { id } });
   }

@@ -182,12 +182,21 @@ export function App() {
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
 
-              <Route path="/attraction">
-                <Route index element={<AttractionList />} />
-                <Route path="create" element={<AttractionCreate />} />
-                <Route path=":id" element={<AttractionDetails />} />
-                <Route path=":id/edit" element={<AttractionEdit />} />
-                <Route path=":id/edit-map" element={<AttractionEditMap />} />
+              {/* Attraction Routes */}
+              <Route
+                element={
+                  <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                }
+              >
+                <Route path="/attraction">
+                  <Route index element={<AttractionList />} />
+                  <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/attraction" />}>
+                    <Route path="create" element={<AttractionCreate />} />
+                    <Route path=":id/edit" element={<AttractionEdit />} />
+                    <Route path=":id/edit-map" element={<AttractionEditMap />} />
+                  </Route>
+                  <Route path=":id" element={<AttractionDetails />} />
+                </Route>
               </Route>
 
               <Route

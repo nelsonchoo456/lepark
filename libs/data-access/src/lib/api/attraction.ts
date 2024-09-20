@@ -1,11 +1,11 @@
 import { Attraction } from '@prisma/client';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { CreateAttractionData, UpdateAttractionData } from '../types/attraction';
+import { AttractionResponse, CreateAttractionData, UpdateAttractionData } from '../types/attraction';
 import client from './client';
 
 const URL = '/attractions';
 
-export async function createAttraction(data: CreateAttractionData, files?: File[]): Promise<AxiosResponse<Attraction>> {
+export async function createAttraction(data: CreateAttractionData, files?: File[]): Promise<AxiosResponse<AttractionResponse>> {
   try {
     const formData = new FormData();
     files?.forEach((file) => {
@@ -15,7 +15,7 @@ export async function createAttraction(data: CreateAttractionData, files?: File[
     const uploadedUrls = await client.post(`${URL}/upload`, formData);
     data.images = uploadedUrls.data.uploadedUrls;
 
-    const response: AxiosResponse<Attraction> = await client.post(`${URL}/createAttraction`, data);
+    const response: AxiosResponse<AttractionResponse> = await client.post(`${URL}/createAttraction`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -26,9 +26,9 @@ export async function createAttraction(data: CreateAttractionData, files?: File[
   }
 }
 
-export async function getAllAttractions(): Promise<AxiosResponse<Attraction[]>> {
+export async function getAllAttractions(): Promise<AxiosResponse<AttractionResponse[]>> {
   try {
-    const response: AxiosResponse<Attraction[]> = await client.get(`${URL}/getAllAttractions`);
+    const response: AxiosResponse<AttractionResponse[]> = await client.get(`${URL}/getAllAttractions`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -39,9 +39,9 @@ export async function getAllAttractions(): Promise<AxiosResponse<Attraction[]>> 
   }
 }
 
-export async function getAttractionById(id: string): Promise<AxiosResponse<Attraction>> {
+export async function getAttractionsByParkId(parkId: number): Promise<AxiosResponse<AttractionResponse[]>> {
   try {
-    const response: AxiosResponse<Attraction> = await client.get(`${URL}/viewAttractionDetails/${id}`);
+    const response: AxiosResponse<AttractionResponse[]> = await client.get(`${URL}/getAttractionsByParkId/${parkId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -52,7 +52,20 @@ export async function getAttractionById(id: string): Promise<AxiosResponse<Attra
   }
 }
 
-export async function updateAttractionDetails(id: string, updateData: UpdateAttractionData, files?: File[]): Promise<AxiosResponse<Attraction>> {
+export async function getAttractionById(id: string): Promise<AxiosResponse<AttractionResponse>> {
+  try {
+    const response: AxiosResponse<AttractionResponse> = await client.get(`${URL}/viewAttractionDetails/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updateAttractionDetails(id: string, updateData: UpdateAttractionData, files?: File[]): Promise<AxiosResponse<AttractionResponse>> {
   try {
     const formData = new FormData();
     files?.forEach((file) => {
@@ -62,7 +75,7 @@ export async function updateAttractionDetails(id: string, updateData: UpdateAttr
     const uploadedUrls = await client.post(`${URL}/upload`, formData);
     updateData.images?.push(...uploadedUrls.data.uploadedUrls);
     
-    const response: AxiosResponse<Attraction> = await client.put(`${URL}/updateAttractionDetails/${id}`, updateData);
+    const response: AxiosResponse<AttractionResponse> = await client.put(`${URL}/updateAttractionDetails/${id}`, updateData);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

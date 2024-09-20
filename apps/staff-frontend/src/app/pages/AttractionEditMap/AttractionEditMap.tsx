@@ -33,7 +33,7 @@ const AttractionEditMap = () => {
         const attractionRes = await getAttractionById(id);
         if (attractionRes.status === 200) {
           const attractionData = attractionRes.data;
-          setAttraction(attractionData as AttractionResponse);
+          setAttraction(attractionData);
           setLat(attractionData.lat);
           setLng(attractionData.lng);
 

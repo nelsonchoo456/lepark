@@ -1,5 +1,5 @@
 import { LogoText } from '@lepark/common-ui';
-import { AttractionResponse, AttractionStatus, ParkResponse } from '@lepark/data-access';
+import { AttractionResponse, AttractionStatusEnum, ParkResponse } from '@lepark/data-access';
 import { Button, Card, Descriptions, Divider, List, Tag, Typography } from 'antd';
 import AttractionStatusTag from './AttractionStatusTag';
 import { useEffect, useState } from 'react';
@@ -35,7 +35,7 @@ const InformationTab = ({ attraction, park }: InformationTabProps) => {
     {
       key: 'status',
       label: 'Status',
-      children: <AttractionStatusTag status={attraction?.status as AttractionStatus} />,
+      children: <AttractionStatusTag status={attraction?.status as AttractionStatusEnum} />,
     },
     {
       key: 'description',

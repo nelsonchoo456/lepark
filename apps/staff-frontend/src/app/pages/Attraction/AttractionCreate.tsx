@@ -101,7 +101,7 @@ const AttractionCreate = () => {
       const response = await createAttraction(finalData, selectedFiles);
       if (response?.status === 201) {
         setCurrStep(2);
-        setCreatedData(response.data as AttractionResponse);
+        setCreatedData(response.data);
         messageApi.open({
           type: 'success',
           content: 'Attraction created successfully',

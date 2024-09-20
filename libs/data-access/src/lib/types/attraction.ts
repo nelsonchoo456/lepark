@@ -1,4 +1,4 @@
-export enum AttractionStatus {
+export enum AttractionStatusEnum {
   OPEN = 'OPEN',
   CLOSED = 'CLOSED',
   UNDER_MAINTENANCE = 'UNDER_MAINTENANCE',
@@ -11,7 +11,7 @@ export interface AttractionResponse {
   openingHours: any;
   closingHours: any;
   images?: string[];
-  status: AttractionStatus;
+  status: AttractionStatusEnum;
   lat: number;
   lng: number;
   parkId: number;
@@ -23,7 +23,7 @@ export interface CreateAttractionData {
     openingHours: any;
     closingHours: any;
     images?: string[];
-    status: AttractionStatus;
+    status: AttractionStatusEnum;
     lat: number;
     lng: number;
     parkId: number;
@@ -35,7 +35,7 @@ export interface UpdateAttractionData {
     openingHours?: any;
     closingHours?: any;
     images?: string[];
-    status?: AttractionStatus;
+    status?: AttractionStatusEnum;
     lat?: number;
     lng?: number;
     parkId?: number;

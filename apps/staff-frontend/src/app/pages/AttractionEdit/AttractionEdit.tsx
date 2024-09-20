@@ -8,7 +8,7 @@ import {
   AttractionResponse,
   StaffResponse,
   StaffType,
-  AttractionStatus,
+  AttractionStatusEnum,
 } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Select, TimePicker, Typography, message, notification } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -40,7 +40,7 @@ const AttractionEdit = () => {
         const attractionRes = await getAttractionById(id);
         if (attractionRes.status === 200) {
           const attractionData = attractionRes.data;
-          setAttraction(attractionData as AttractionResponse);
+          setAttraction(attractionData);
           const initialValues = {
             ...attractionData,
             sunday: [dayjs(attractionData.openingHours[0]), dayjs(attractionData.closingHours[0])],
@@ -70,9 +70,9 @@ const AttractionEdit = () => {
   }, [id, user, form, navigate]);
 
   const attractionStatusOptions = [
-    { value: AttractionStatus.OPEN, label: 'Open' },
-    { value: AttractionStatus.CLOSED, label: 'Closed' },
-    { value: AttractionStatus.UNDER_MAINTENANCE, label: 'Under Maintenance' },
+    { value: AttractionStatusEnum.OPEN, label: 'Open' },
+    { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
+    { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
   ];
 
   const handleSubmit = async () => {

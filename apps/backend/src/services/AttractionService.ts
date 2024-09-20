@@ -49,6 +49,15 @@ class AttractionService {
     return AttractionDao.getAllAttractions();
   }
 
+  public async getAttractionsByParkId(parkId: number): Promise<Attraction[]> {
+    const park = await ParkDao.getParkById(parkId);
+    if (!park) {
+      throw new Error('Park not found');
+    }
+    
+    return AttractionDao.getAttractionsByParkId(parkId);
+  }
+
   public async getAttractionById(id: string): Promise<Attraction> {
     const attraction = await AttractionDao.getAttractionById(id);
     if (!attraction) {
