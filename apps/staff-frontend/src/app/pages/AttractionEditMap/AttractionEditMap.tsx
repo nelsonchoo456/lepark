@@ -8,7 +8,7 @@ import { FaTicketAlt } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LatLng } from 'leaflet';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { Button, Card, message, Popconfirm } from 'antd';
+import { Button, Card, Flex, Input, message, Popconfirm } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 
 export interface AdjustLatLngInterface {
@@ -156,6 +156,14 @@ const AttractionEditMap = () => {
             <div className="font-semibold mb-4 text-[#006400]">Displaying Park: {park.name}</div>
           )}
         </>
+        <Flex className="w-full max-w-[600px] mx-auto pb-4" gap={10}>
+          <div className="flex-1">
+            Latitude: <Input value={lat} />
+          </div>
+          <div className="flex-1">
+            Longitude: <Input value={lng} />
+          </div>
+        </Flex>
         <div className="flex justify-center gap-2">
           <Popconfirm title="All changes will be lost." onConfirm={() => navigate(`/attraction/${attraction?.id}`)}>
             <Button>Cancel</Button>
