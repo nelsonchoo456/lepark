@@ -1,8 +1,9 @@
 import { ImageInput } from '@lepark/common-ui';
-import { SpeciesResponse, ZoneResponse } from '@lepark/data-access';
+import { ParkResponse, SpeciesResponse, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
+import { useEffect, useState } from 'react';
 const { TextArea } = Input;
 
 interface CreateDetailsStepProps {
@@ -14,6 +15,10 @@ interface CreateDetailsStepProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
+  parks: ParkResponse[]; // Add this prop
+  selectedParkId: number | null; // Add this prop
+  setSelectedParkId: (id: number | null) => void; // Add this prop
+  user: StaffResponse | null; // Add this prop
 }
 
 const CreateDetailsStep = ({
@@ -25,8 +30,12 @@ const CreateDetailsStep = ({
   handleFileChange,
   removeImage,
   onInputClick,
+  parks,
+  selectedParkId,
+  setSelectedParkId,
+  user,
 }: CreateDetailsStepProps) => {
-  const nonExstinctSpecies = species.filter((species) => species.conservationStatus !== "EXTINCT")
+  const nonExtinctSpecies = species.filter((species) => species.conservationStatus !== 'EXTINCT');
   const decarbonizationTypeOptions = [
     {
       value: 'TREE_TROPICAL',
@@ -68,21 +77,21 @@ const CreateDetailsStep = ({
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
       const dateOfBirth = form.getFieldValue('dateOfBirth') as moment.Moment;
-  
+
       if (!value) {
         // return Promise.reject(new Error('This field is required'));
       }
-  
+
       if (value.isAfter(moment(), 'day')) {
         return Promise.reject(new Error('Date cannot be beyond today'));
       }
-  
+
       if (dateOfBirth && value.isBefore(dateOfBirth, 'day')) {
         return Promise.reject(new Error('Date Observed cannot be earlier than Date of Birth'));
       }
-  
+
       return Promise.resolve();
-    }
+    },
   });
 
   const validateDateOfBirth = {
@@ -90,11 +99,28 @@ const CreateDetailsStep = ({
       if (value.isAfter(moment(), 'day')) {
         return Promise.reject(new Error('Date of Birth cannot be beyond today'));
       }
-  
+
       return Promise.resolve();
-    }
+    },
   };
-  
+
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  useEffect(() => {
+    if (initialLoad) {
+      // On initial load, set the selectedParkId based on the form's parkId
+      const parkId = form.getFieldValue('parkId');
+      if (parkId) {
+        setSelectedParkId(parkId);
+      }
+      setInitialLoad(false);
+    } else if (!selectedParkId) {
+      // Only reset zoneId if selectedParkId becomes null
+      form.setFieldsValue({ zoneId: undefined });
+    }
+  }, [selectedParkId, form, initialLoad, setSelectedParkId]);
+
+  const filteredZones = selectedParkId ? zones.filter((zone) => zone.parkId === selectedParkId) : zones;
 
   return (
     <Form
@@ -103,20 +129,41 @@ const CreateDetailsStep = ({
       labelCol={{ span: 8 }}
       className="max-w-[600px] mx-auto mt-8"
     >
-      <Divider orientation="left">Select the Zone, Species</Divider>
+      <Divider orientation="left">Select the Park, Zone, Species</Divider>
+
+      {user?.role === StaffType.SUPERADMIN && (
+        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+          <Select
+            placeholder="Select a Park"
+            options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
+            onChange={(value) => {
+              setSelectedParkId(value);
+              form.setFieldsValue({ zoneId: undefined });
+            }}
+          />
+        </Form.Item>
+      )}
 
       <Form.Item name="zoneId" label="Zone" rules={[{ required: true }]}>
         <Select
           placeholder="Select a Zone that this Occurrence belongs to"
-          options={zones?.map((zone) => ({ key: zone.id, value: zone.id, label: zone.name }))}
+          options={filteredZones?.map((zone) => ({ key: zone.id, value: zone.id, label: zone.name }))}
+          disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
         />
       </Form.Item>
       <Form.Item name="speciesId" label="Species" rules={[{ required: true }]}>
-        <Select placeholder="Select a Species" options={nonExstinctSpecies?.map((species) => ({ key: species.id, value: species.id, label: species.speciesName }))}/>
+        <Select
+          placeholder="Select a Species"
+          options={nonExtinctSpecies?.map((species) => ({ key: species.id, value: species.id, label: species.speciesName }))}
+        />
       </Form.Item>
 
-      <Divider orientation='left'>About the Occurrence</Divider>
-      <Form.Item name="title" label="Title" rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }]}>
+      <Divider orientation="left">About the Occurrence</Divider>
+      <Form.Item
+        name="title"
+        label="Title"
+        rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }]}
+      >
         <Input placeholder="Give this Plant Occurrence a title!" />
       </Form.Item>
       <Form.Item name="description" label="Description">
@@ -127,10 +174,10 @@ const CreateDetailsStep = ({
       </Form.Item>
 
       <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }, validateDates(form)]}>
-        <DatePicker className="w-full" maxDate={dayjs()}/>
+        <DatePicker className="w-full" maxDate={dayjs()} />
       </Form.Item>
       <Form.Item name="dateOfBirth" label="Date of Birth" rules={[validateDateOfBirth]}>
-        <DatePicker className="w-full" maxDate={dayjs()}/>
+        <DatePicker className="w-full" maxDate={dayjs()} />
       </Form.Item>
       <Form.Item name="numberOfPlants" label="Number of Plants" rules={[{ required: true }]}>
         <InputNumber min={0} className="w-full" placeholder="Number of Plants" />
