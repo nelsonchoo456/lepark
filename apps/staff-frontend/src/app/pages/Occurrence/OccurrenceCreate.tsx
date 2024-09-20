@@ -29,13 +29,12 @@ const OccurrenceCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
-  const { parks, parksLoading } = useFetchParks();
+  const { parks } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null); // Add this state
 
   // Form Values
@@ -44,19 +43,6 @@ const OccurrenceCreate = () => {
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Occurrence Creation page!',
-      });
-      notificationShown.current = true;
-    }
-      navigate('/');
-    }
-  }, [user, navigate]);
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
