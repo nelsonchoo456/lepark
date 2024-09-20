@@ -84,6 +84,8 @@ export function App() {
               {/* Nest all protected routes here */}
               <Route path="/" element={<MainLanding />} />
               <Route path="/map" element={<MapPage />} />
+
+              {/* Occurrence Routes */}
               <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
                 <Route
@@ -114,6 +116,8 @@ export function App() {
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
+
+              {/* Park Routes */}
               <Route path="/park">
                 <Route
                   index
@@ -144,25 +148,66 @@ export function App() {
                   }
                 />
               </Route>
+
+              {/* Zone Routes */}
               <Route path="/zone">
                 <Route index element={<ZoneList />} />
-                <Route path="create" element={<ZoneCreate />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneCreate />
+                    </>
+                  }
+                />
                 <Route path=":id" element={<ZoneDetails />} />
               </Route>
+
+              {/* Task Routes */}
               <Route path="/task" element={<Task />} />
+
+              {/* Settings Routes */}
               <Route path="/settings" element={<Settings />} />
+
+              {/* Profile Routes */}
               <Route path="/profile" element={<StaffProfile />} />
+
+              {/* Staff Management Routes */}
               <Route path="/staff-management">
-                <Route index element={<StaffManagementPage />} />
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <StaffManagementPage />
+                    </>
+                  }
+                />
                 <Route path=":staffId" element={<ViewStaffDetails />} />
-                <Route path="create-staff" element={<CreateStaff />} />
+                <Route
+                  path="create-staff"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <CreateStaff />
+                    </>
+                  }
+                />
               </Route>
+
+              {/* Species Routes */}
               <Route path="/species">
                 <Route index element={<SpeciesPage />} />
                 <Route path="create" element={<CreateSpecies />} />
                 <Route path="edit" element={<ViewEditSpecies />} />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
+
+              {/* Hub Routes */}
               <Route
                 element={
                   <RoleProtectedRoute
@@ -177,7 +222,9 @@ export function App() {
                   <Route path="create" element={<HubCreate />} />
                 </Route>
               </Route>
-              <Route path="*" element={<PageNotFound />} /> {/* Catch-all for 404 */}
+
+              {/* Catch-all for 404 */}
+              <Route path="*" element={<PageNotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
