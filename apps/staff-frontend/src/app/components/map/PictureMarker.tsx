@@ -12,9 +12,10 @@ interface PictureMarkerProps {
   backgroundColor?: string;
   icon?: string | JSX.Element | JSX.Element[];
   tooltipLabel?: string | JSX.Element | JSX.Element[];
+  tooltipLabelPermanent?: boolean;
 }
 
-function PictureMarker({ lat, lng, circleWidth, backgroundColor, icon, tooltipLabel }: PictureMarkerProps) {
+function PictureMarker({ lat, lng, circleWidth, backgroundColor, icon, tooltipLabel, tooltipLabelPermanent }: PictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
 
   const getCustomIcon = () => {
@@ -34,7 +35,7 @@ function PictureMarker({ lat, lng, circleWidth, backgroundColor, icon, tooltipLa
   }
 
   return <Marker position={[lat, lng]} ref={markerRef} icon={getCustomIcon()}>
-    {tooltipLabel && <Tooltip offset={[20, -10]} permanent>{tooltipLabel}</Tooltip>}
+    {tooltipLabel && <Tooltip offset={[20, -10]} permanent={tooltipLabelPermanent}>{tooltipLabel}</Tooltip>}
   </Marker>;
 }
 
