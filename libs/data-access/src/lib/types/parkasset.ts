@@ -12,9 +12,9 @@ export interface ParkAssetData {
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
-  images?: string[];
+  images: string[];
   remarks?: string;
-  //facilityId: string;
+  facilityId: string;
 }
 
 export interface ParkAssetResponse {
@@ -30,10 +30,12 @@ export interface ParkAssetResponse {
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
-  images?: string[];
+  images: string[];
   remarks?: string;
+  facilityId: string;
+  facilityName: string;
+  parkId?: number;
   //maintenanceHistory?: MaintenanceHistoryResponse[];
-  //facilityId: string;
 }
 
 export interface ParkAssetUpdateData {
@@ -50,5 +52,5 @@ export interface ParkAssetUpdateData {
   parkAssetCondition?: ParkAssetConditionEnum;
   images?: string[];
   remarks?: string;
-  //facilityId?: string;
+  facilityId?: string;
 }

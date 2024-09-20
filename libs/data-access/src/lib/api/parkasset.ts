@@ -28,10 +28,13 @@ export async function createParkAsset(data: ParkAssetData, files?: File[]): Prom
     }
   }
 }
-
-export async function getAllParkAssets(): Promise<AxiosResponse<ParkAssetResponse[]>> {
+export async function getAllParkAssets(parkId?: number): Promise<AxiosResponse<ParkAssetResponse[]>> {
   try {
-    const response: AxiosResponse<ParkAssetResponse[]> = await client.get(`${URL}/getAllParkAssets`);
+    let url = `${URL}/getAllParkAssets`;
+    if (parkId !== undefined) {
+      url += `/${parkId}`;
+    }
+    const response: AxiosResponse<ParkAssetResponse[]> = await client.get(url);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
