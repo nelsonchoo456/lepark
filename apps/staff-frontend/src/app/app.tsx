@@ -35,7 +35,7 @@ import Task from './pages/Task/Task';
 import ZoneList from './pages/ZoneList/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
-import NotFound from './pages/NotFound/NotFound';
+import PageNotFound from './pages/PageNotFound.tsx/PageNotFound';
 import Settings from './pages/Settings/Settings';
 import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
@@ -177,7 +177,7 @@ export function App() {
                   <Route path="create" element={<HubCreate />} />
                 </Route>
               </Route>
-              <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
+              <Route path="*" element={<PageNotFound />} /> {/* Catch-all for 404 */}
             </Route>
           </Routes>
         </BrowserRouter>
