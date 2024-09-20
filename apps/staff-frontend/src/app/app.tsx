@@ -88,10 +88,31 @@ export function App() {
               <Route path="/map" element={<MapPage />} />
               <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <OccurrenceCreate />
+                    </>
+                  }
+                />
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
-                <Route path="create" element={<OccurrenceCreate />} />
-                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
-                <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
+                <Route
+                  path=":occurrenceId/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <OccurrenceEdit />
+                    </>
+                  }
+                />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
