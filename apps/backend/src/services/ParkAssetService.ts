@@ -41,7 +41,7 @@ public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
   return ParkAssetDao.getAllParkAssetsByParkId(parkId);
 }
 
-  public async getParkAssetById(id: string): Promise<ParkAsset & { facilityId?: string, facilityName?: string }> {
+  public async getParkAssetById(id: string): Promise<ParkAsset & { facilityName?: string; parkId?: number }> {
     try {
       const parkAsset = await ParkAssetDao.getParkAssetById(id);
       if (!parkAsset) {

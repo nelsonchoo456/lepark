@@ -34,7 +34,7 @@ export interface ParkAssetResponse {
   remarks?: string;
   facilityId: string;
   facilityName: string;
-  parkId?: number;
+  parkId: number;
   //maintenanceHistory?: MaintenanceHistoryResponse[];
 }
 

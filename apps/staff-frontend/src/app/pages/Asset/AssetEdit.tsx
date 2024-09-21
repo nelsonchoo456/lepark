@@ -16,6 +16,9 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
+import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
+import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
     .split('_')
@@ -32,27 +35,15 @@ const AssetEdit = () => {
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
   const location = useLocation();
-   const { assetId } = useParams<{ assetId: string }>();
-  console.log('Asset ID:', assetId);
+  const { assetId = '' } = useParams<{ assetId: string }>();
+  const { asset, loading: assetLoading, notFound } = useRestrictAsset(assetId);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
 
-  useEffect(() => {
-    if (user && user.id !== '') {
-      if (!['MANAGER', 'SUPERADMIN', 'PARK_RANGER','LANDSCAPE_ARCHITECT'].includes(user.role)) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the Edit Asset page!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [user, navigate]);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
+  const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -66,35 +57,16 @@ const AssetEdit = () => {
   }, []);
 
   useEffect(() => {
-    console.log('Asset ID:', assetId);
-    if (!assetId) return;
-
-    const fetchAssetById = async () => {
-      try {
-        const asset = await getParkAssetById(assetId);
-        if (asset.status === 200) {
-          const assetData = asset.data;
-          console.log('Asset data:', assetData);
-          setCurrentImages(assetData.images || []);
-          form.setFieldsValue({
-            ...assetData,
-            acquisitionDate: dayjs(assetData.acquisitionDate),
-            lastMaintenanceDate: dayjs(assetData.lastMaintenanceDate),
-            nextMaintenanceDate: dayjs(assetData.nextMaintenanceDate),
-            facilityId: assetData.facilityId, // Add this line to populate facilityId
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching asset:', error);
-      }
-    };
-    fetchAssetById();
-  }, [assetId, form]);
-
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
-  const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
+    if (asset) {
+      setCurrentImages(asset.images || []);
+      form.setFieldsValue({
+        ...asset,
+        acquisitionDate: dayjs(asset.acquisitionDate),
+        lastMaintenanceDate: dayjs(asset.lastMaintenanceDate),
+        nextMaintenanceDate: dayjs(asset.nextMaintenanceDate),
+      });
+    }
+  }, [asset, form]);
 
   const layout = {
     labelCol: { span: 8 },
@@ -133,9 +105,9 @@ const AssetEdit = () => {
         return;
       }
 
-       if (!assetId) {
-      throw new Error('Asset ID is missing');
-    }
+      if (!assetId) {
+        throw new Error('Asset ID is missing');
+      }
 
       const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);
       console.log('Asset updated:', response.data);
@@ -210,7 +182,7 @@ const AssetEdit = () => {
     },
     {
       title: 'Edit Asset',
-      pathKey: `/parkasset/edit`,
+      pathKey: `/parkasset/edit/${assetId}`,
       isCurrent: true,
     },
   ];
@@ -219,12 +191,24 @@ const AssetEdit = () => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  if (loading) {
+  if (assetLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
-      </div>
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
     );
+  }
+
+  if (notFound) {
+    return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
+  }
+
+  if (!asset) {
+    return null;
   }
 
   return (

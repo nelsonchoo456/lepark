@@ -7,40 +7,55 @@ class ParkAssetDao {
     return prisma.parkAsset.create({ data });
   }
 
-  async getAllParkAssets(): Promise<ParkAsset[]> {
-    const parkAssets = await prisma.parkAsset.findMany({
-      include: {
-        maintenanceHistory: true,
-        facility: {
-          select: {
-            id: true,
-            facilityName: true,
-          },
+async getAllParkAssets(): Promise<ParkAsset[]> {
+  const parkAssets = await prisma.parkAsset.findMany({
+    include: {
+      maintenanceHistory: true,
+      facility: {
+        select: {
+          id: true,
+          facilityName: true,
+          parkId: true,
         },
       },
-    });
+    },
+  });
 
-    return parkAssets.map((asset) => ({
+  return parkAssets.map((asset) => ({
+    ...asset,
+    facilityId: asset.facility.id,
+    facilityName: asset.facility.facilityName,
+    parkId: asset.facility.parkId,
+  }));
+}
+
+async getParkAssetById(id: string): Promise<(ParkAsset & { facilityName?: string; parkId?: number }) | null> {
+  const asset = await prisma.parkAsset.findUnique({
+    where: { id },
+    include: {
+      maintenanceHistory: true,
+      facility: {
+        select: {
+          id: true,
+          facilityName: true,
+          parkId: true,
+        },
+      },
+    },
+  });
+
+
+  if (asset) {
+    return {
       ...asset,
       facilityId: asset.facility.id,
       facilityName: asset.facility.facilityName,
-    }));
+      parkId: asset.facility.parkId,
+    };
   }
 
-  async getParkAssetById(id: string): Promise<ParkAsset | null> {
-    return prisma.parkAsset.findUnique({
-      where: { id },
-      include: {
-        maintenanceHistory: true,
-        facility: {
-          select: {
-            id: true,
-            facilityName: true,
-          },
-        },
-      },
-    });
-  }
+  return null;
+}
 
   async updateParkAsset(id: string, data: Prisma.ParkAssetUpdateInput): Promise<ParkAsset> {
     return prisma.parkAsset.update({
