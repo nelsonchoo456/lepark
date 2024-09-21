@@ -68,7 +68,7 @@ export async function updateFacilityDetails(
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images = uploadedUrls.data.uploadedUrls;
+      data.images?.push(...uploadedUrls.data.uploadedUrls);
     }
 
     const response: AxiosResponse<FacilityResponse> = await client.put(`${URL}/updateFacilityDetails/${id}`, data);

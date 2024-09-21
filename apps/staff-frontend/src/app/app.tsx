@@ -44,6 +44,7 @@ import HubCreate from './pages/Hub/HubCreate';
 import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
+import FacilityEdit from './pages/Facility/FacilityEdit';
 
 export function App() {
   return (
@@ -192,6 +193,7 @@ export function App() {
                   <Route index element={<FacilityList />} />
                   <Route path="create" element={<FacilityCreate />} />
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
+                  <Route path=":facilityId/edit" element={<FacilityEdit />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}

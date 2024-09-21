@@ -254,11 +254,11 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item name="size" label="Size" rules={[{ required: true, message: 'Please input the size!' }]}>
-        <InputNumber />
+        <InputNumber min={1} />
       </Form.Item>
 
       <Form.Item name="capacity" label="Capacity" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber />
+        <InputNumber min={1} />
       </Form.Item>
 
       <Form.Item name="fee" label="Fee" rules={[{ required: true, message: 'Please input the fee!' }]}>
