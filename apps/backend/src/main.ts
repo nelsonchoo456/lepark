@@ -16,6 +16,7 @@ import activityLogRouter from './routers/activityLogRouter';
 import statusLogRouter from './routers/statusLogRouter';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import attractionRouter from './routers/attractionRouter';
 import hubRouter from './routers/hubRouter';
 import facilityRouter from './routers/facilityRouter';
 
@@ -59,6 +60,7 @@ app.use('/api/zones', zoneRouter);
 app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', activityLogRouter);
 app.use('/api/statuslogs', statusLogRouter);
+app.use('/api/attractions', attractionRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/facility', facilityRouter);
 

@@ -14,10 +14,16 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
     try {
       await forgotStaffPassword(values);
       setIsEmailSent(true);
-    } catch (error) {
-      message.error('Email does not exist.');
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('Invalid email address')) {
+        message.error('Invalid email format.');
+      } else {
+        // message.error('If the email exists, a reset link has been sent.');
+        setIsEmailSent(true);
+      }
     }
-    // navigate('/');
   };
 
   const handleReturnToLogin = () => {
@@ -32,7 +38,7 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
     <div className="w-full">
       <Divider>Reset Password</Divider>
       {isEmailSent ? (
-        <div className="text-secondary">An email has been sent to your address. Please check your inbox to reset your password.</div>
+        <div className="text-secondary text-center">An email has been sent to your address. Please check your inbox to reset your password.</div>
       ) : (
         <Form layout="vertical" onFinish={handleSubmit}>
           <div className="text-secondary">Please enter your email address. A link to reset your password will be sent to you.</div>

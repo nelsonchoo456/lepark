@@ -278,6 +278,10 @@ class VisitorService {
         throw new Error('Visitor not found');
       }
 
+      if (visitor.isVerified) {
+        throw new Error('Visitor already verified');
+      }
+
       await VisitorDao.updateVisitorDetails(visitor.id, {
         isVerified: true,
       });
@@ -290,7 +294,7 @@ class VisitorService {
       } else if (error.name === 'TokenExpiredError') {
         throw new Error('Verification token has expired');
       } else {
-        throw new Error(`Unable to resend verification email: ${error.message}`);
+        throw new Error(`Unable to verify user: ${error.message}`);
       }
     }
   }
@@ -369,7 +373,7 @@ class VisitorService {
         email: email,
       });
 
-      const token = jwt.sign({ email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '15min' });
+      const token = jwt.sign({ email, action: 'verify_user' }, JWT_SECRET_KEY, { expiresIn: '2min' });
 
       const verificationLink = `http://localhost:4201/verify-user?token=${token}`;
 
