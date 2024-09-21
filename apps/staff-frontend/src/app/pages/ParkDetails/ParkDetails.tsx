@@ -1,68 +1,45 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router';
-import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Button, Card, Carousel, Descriptions, Empty, Flex, notification, Space, Tabs, Tag, Typography } from 'antd';
-import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { FiSun } from 'react-icons/fi';
+import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography, Alert } from 'antd';
+import { StaffResponse, StaffType } from '@lepark/data-access';
 import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
+import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
+
 const { Text } = Typography;
 
 const ParkDetails = () => {
   const { user } = useAuth<StaffResponse>();
-  const [park, setPark] = useState<ParkResponse>();
   const navigate = useNavigate();
   const { id } = useParams();
-  const notificationShown = useRef(false);
+  const { park, loading, notFound } = useRestrictPark(id);
 
-  useEffect(() => {
-    if (!id) return;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-    if (user?.parkId != parseInt(id) && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the details of this park!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-    
-    const fetchData = async () => {
-      try {
-        const parkRes = await getParkById(parseInt(id));
-        if (parkRes.status === 200) {
-          setPark(parkRes.data);
-          // console.log(parkRes.data);
-        }
-      } catch (error) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Error',
-            description: 'An error occurred while fetching the park details.',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      }
-    };
-    fetchData();
-  }, [id]);
+  if (notFound) {
+    return <EntityNotFound entityName="Park" listPath={user?.role === StaffType.SUPERADMIN ? "/park" : "/"} />;
+  }
+
+  if (!park) {
+    return null; // This case should not happen, but we'll return null just in case
+  }
 
   const descriptionsItems = [
     {
       key: 'address',
       label: 'Address',
-      children: <div className="font-semibold">{park?.address}</div>,
+      children: <div className="font-semibold">{park.address}</div>,
     },
     {
       key: 'contactNumber',
       label: 'Contact Number',
-      children: <div className="font-semibold">{park?.contactNumber}</div>,
+      children: <div className="font-semibold">{park.contactNumber}</div>,
     },
   ];
 
@@ -71,7 +48,7 @@ const ParkDetails = () => {
     {
       key: 'about',
       label: 'Information',
-      children: park ? <InformationTab park={park} /> : <></>,
+      children: <InformationTab park={park} />,
     },
     {
       key: 'zones',
@@ -93,15 +70,6 @@ const ParkDetails = () => {
     },
   ];
 
-  const contentStyle: React.CSSProperties = {
-    height: '160px',
-    color: '#fff',
-    lineHeight: '160px',
-    textAlign: 'center',
-    background: '#364d79',
-    width: '100%',
-  };
-
   const breadcrumbItems = [
     {
       title: 'Parks Management',
@@ -109,60 +77,61 @@ const ParkDetails = () => {
       isMain: true,
     },
     {
-      title: park?.name ? park?.name : "Details",
-      pathKey: `/park/${park?.id}`,
+      title: park.name,
+      pathKey: `/park/${park.id}`,
       isCurrent: true,
     },
   ];
 
   return (
     <ContentWrapperDark>
-      {user?.role === StaffType.SUPERADMIN && (
-        <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      )}
+      {user?.role === StaffType.SUPERADMIN && <PageHeader2 breadcrumbItems={breadcrumbItems} />}
       <Card>
-        {/* <Card className='mb-4 bg-white' styles={{ body: { padding: 0 }}} bordered={false}> */}
         <div className="md:flex w-full gap-4">
           <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
-            {park?.images && park.images.length > 0 ?
-            <Carousel style={{ maxWidth: '100%' }}>
-              {park?.images?.map((url) => (
-                <div key={url}>
-                  <div
-                    style={{
-                      backgroundImage: `url('${url}')`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      color: 'white',
-                      overflow: 'hidden',
-                    }}
-                    className="h-64 flex-1 rounded-lg shadow-lg p-4"
-                  />
-                </div>
-              ))}
-            </Carousel>
-            : <div className='h-64 bg-gray-200 flex items-center justify-center'><Empty description="No Image"/></div>}
+            {park?.images && park.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {park?.images?.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
           <div className="flex-1 flex-col flex">
             <div className="w-full flex justify-between items-center">
               <Space>
-                <LogoText className="text-2xl py-2 m-0">{park?.name}</LogoText>
-                <ParkStatusTag>{park?.parkStatus}</ParkStatusTag>
+                <LogoText className="text-2xl py-2 m-0">{park.name}</LogoText>
+                <ParkStatusTag>{park.parkStatus}</ParkStatusTag>
               </Space>
-              {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"
-                  onClick={() => navigate(`/park/${park?.id}/edit`)}
+                  onClick={() => navigate(`/park/${park.id}/edit`)}
                 />
-              ) : null}
+              )}
             </div>
             <Typography.Paragraph
               ellipsis={{
                 rows: 3,
               }}
             >
-              {park?.description}
+              {park.description}
             </Typography.Paragraph>
             <Descriptions items={descriptionsItems} column={1} size="small" />
           </div>

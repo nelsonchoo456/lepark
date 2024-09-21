@@ -14,37 +14,16 @@ import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/dat
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
 
   const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
-  // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
-  // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
-  const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (occurrenceId) {
-  //       setLoading(true);
-  //       try {
-  //         const occurrenceResponse = await getOccurrenceById(occurrenceId);
-  //         setOccurrence(occurrenceResponse.data);
-
-  //         if (occurrenceResponse.data.speciesId) {
-  //           const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
-  //           setSpecies(speciesResponse.data);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching data:', error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [occurrenceId]);
+  if (!loading && !occurrence) {
+    return <EntityNotFound entityName="Occurrence" listPath="/occurrences" />;
+  }
 
   const descriptionsItems = [
     {

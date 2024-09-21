@@ -35,7 +35,7 @@ import Task from './pages/Task/Task';
 import ZoneList from './pages/ZoneList/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
-import NotFound from './pages/NotFound/NotFound';
+import PageNotFound from './pages/PageNotFound.tsx/PageNotFound';
 import Settings from './pages/Settings/Settings';
 import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
@@ -76,9 +76,7 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            {/* <Route path="/register" element={<Register />} /> */}
             <Route path="/reset-password" element={<ResetPassword />} />
-            {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
             <Route
               element={
@@ -90,40 +88,130 @@ export function App() {
               {/* Nest all protected routes here */}
               <Route path="/" element={<MainLanding />} />
               <Route path="/map" element={<MapPage />} />
+
+              {/* Occurrence Routes */}
               <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <OccurrenceCreate />
+                    </>
+                  }
+                />
                 <Route path=":occurrenceId" element={<OccurrenceDetails />} />
-                <Route path="create" element={<OccurrenceCreate />} />
-                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
-                <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
+                <Route
+                  path=":occurrenceId/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <OccurrenceEdit />
+                    </>
+                  }
+                />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
+
+              {/* Park Routes */}
               <Route path="/park">
-                <Route index element={<ParkList />} />
-                <Route path="create" element={<ParkCreate />} />
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/" />
+                      <ParkList />
+                    </>
+                  }
+                />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/" />
+                      <ParkCreate />
+                    </>
+                  }
+                />
                 <Route path=":id" element={<ParkDetails />} />
-                <Route path=":id/edit" element={<ParkEdit />} />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <ParkEdit />
+                    </>
+                  }
+                />
               </Route>
+
+              {/* Zone Routes */}
               <Route path="/zone">
                 <Route index element={<ZoneList />} />
-                <Route path="create" element={<ZoneCreate />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneCreate />
+                    </>
+                  }
+                />
                 <Route path=":id" element={<ZoneDetails />} />
               </Route>
+
+              {/* Task Routes */}
               <Route path="/task" element={<Task />} />
+
+              {/* Settings Routes */}
               <Route path="/settings" element={<Settings />} />
+
+              {/* Profile Routes */}
               <Route path="/profile" element={<StaffProfile />} />
+
+              {/* Staff Management Routes */}
               <Route path="/staff-management">
-                <Route index element={<StaffManagementPage />} />
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <StaffManagementPage />
+                    </>
+                  }
+                />
                 <Route path=":staffId" element={<ViewStaffDetails />} />
-                <Route path="create-staff" element={<CreateStaff />} />
+                <Route
+                  path="create-staff"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <CreateStaff />
+                    </>
+                  }
+                />
               </Route>
+
+              {/* Species Routes */}
               <Route path="/species">
                 <Route index element={<SpeciesPage />} />
                 <Route path="create" element={<CreateSpecies />} />
                 <Route path="edit" element={<ViewEditSpecies />} />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
+
+              {/* Hub Routes */}
               <Route
                 element={
                   <RoleProtectedRoute
@@ -145,7 +233,9 @@ export function App() {
                 </Route>
 
               </Route>
-              <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
+
+              {/* Catch-all for 404 */}
+              <Route path="*" element={<PageNotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
