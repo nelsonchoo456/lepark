@@ -14,6 +14,7 @@ import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Select, TimePicke
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
+import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -24,7 +25,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const AttractionEdit = () => {
   const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
-  const [attraction, setAttraction] = useState<AttractionResponse>();
+  const { attraction, park, loading } = useRestrictAttractions(id);
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
@@ -36,38 +37,25 @@ const AttractionEdit = () => {
     if (!id) return;
 
     const fetchData = async () => {
-      try {
-        const attractionRes = await getAttractionById(id);
-        if (attractionRes.status === 200) {
-          const attractionData = attractionRes.data;
-          setAttraction(attractionData);
+      if (!attraction) return;
+     
           const initialValues = {
-            ...attractionData,
-            sunday: [dayjs(attractionData.openingHours[0]), dayjs(attractionData.closingHours[0])],
-            monday: [dayjs(attractionData.openingHours[1]), dayjs(attractionData.closingHours[1])],
-            tuesday: [dayjs(attractionData.openingHours[2]), dayjs(attractionData.closingHours[2])],
-            wednesday: [dayjs(attractionData.openingHours[3]), dayjs(attractionData.closingHours[3])],
-            thursday: [dayjs(attractionData.openingHours[4]), dayjs(attractionData.closingHours[4])],
-            friday: [dayjs(attractionData.openingHours[5]), dayjs(attractionData.closingHours[5])],
-            saturday: [dayjs(attractionData.openingHours[6]), dayjs(attractionData.closingHours[6])],
+            ...attraction,
+            sunday: [dayjs(attraction.openingHours[0]), dayjs(attraction.closingHours[0])],
+            monday: [dayjs(attraction.openingHours[1]), dayjs(attraction.closingHours[1])],
+            tuesday: [dayjs(attraction.openingHours[2]), dayjs(attraction.closingHours[2])],
+            wednesday: [dayjs(attraction.openingHours[3]), dayjs(attraction.closingHours[3])],
+            thursday: [dayjs(attraction.openingHours[4]), dayjs(attraction.closingHours[4])],
+            friday: [dayjs(attraction.openingHours[5]), dayjs(attraction.closingHours[5])],
+            saturday: [dayjs(attraction.openingHours[6]), dayjs(attraction.closingHours[6])],
           };
-          if (attractionData.images) {
-            setCurrentImages(attractionData.images);
+          if (attraction.images) {
+            setCurrentImages(attraction.images);
           }
-          form.setFieldsValue(initialValues);
-        }
-      } catch (error: any) {
-        console.error(error);
-        const errorMessage = error.message || error.toString();
-        if (errorMessage.includes('An attraction with this title already exists in the park')) {
-          messageApi.error('An attraction with this title already exists in the park.');
-        } else {
-          messageApi.error(errorMessage || 'An error occurred while creating the attraction');
-        }
-      }
+      form.setFieldsValue(initialValues);
     };
     fetchData();
-  }, [id, user, form, navigate]);
+  }, [id,attraction]);
 
   const attractionStatusOptions = [
     { value: AttractionStatusEnum.OPEN, label: 'Open' },
