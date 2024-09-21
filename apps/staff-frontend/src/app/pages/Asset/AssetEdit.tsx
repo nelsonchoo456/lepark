@@ -167,11 +167,11 @@ const AssetEdit = () => {
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-    const phoneRegex = /^[689]\d{5,8}$/;
+    const phoneRegex = /^[689]\d{7}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid 6, 8, or 9-digit phone number starting with 6, 8, or 9');
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
   };
 
   const breadcrumbItems = [
