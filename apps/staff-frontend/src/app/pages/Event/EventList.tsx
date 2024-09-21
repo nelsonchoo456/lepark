@@ -26,10 +26,10 @@ const EventList: React.FC = () => {
   const { facilities } = useFetchFacilities();
 
   const statusConfig: Record<EventStatusEnum, { color: string; label: string }> = {
-    [EventStatusEnum.UPCOMING]: { color: 'blue', label: 'Upcoming' },
-    [EventStatusEnum.ONGOING]: { color: 'green', label: 'Ongoing' },
-    [EventStatusEnum.COMPLETED]: { color: 'gray', label: 'Completed' },
-    [EventStatusEnum.CANCELLED]: { color: 'red', label: 'Cancelled' },
+    [EventStatusEnum.UPCOMING]: { color: 'processing', label: 'Upcoming' },
+    [EventStatusEnum.ONGOING]: { color: 'success', label: 'Ongoing' },
+    [EventStatusEnum.COMPLETED]: { color: 'gold', label: 'Completed' },
+    [EventStatusEnum.CANCELLED]: { color: 'default', label: 'Cancelled' },
   };
 
   const typeConfig: Record<EventTypeEnum, { label: string }> = {

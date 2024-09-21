@@ -5,8 +5,8 @@ import { EventStatusEnum } from '@lepark/data-access';
 const statusConfig: Record<EventStatusEnum, { color: string; label: string }> = {
   UPCOMING: { color: 'processing', label: 'Upcoming' },
   ONGOING: { color: 'success', label: 'Ongoing' },
-  COMPLETED: { color: 'default', label: 'Completed' },
-  CANCELLED: { color: 'error', label: 'Cancelled' },
+  COMPLETED: { color: 'gold', label: 'Completed' },
+  CANCELLED: { color: 'default', label: 'Cancelled' },
 };
 
 interface EventStatusTagProps {

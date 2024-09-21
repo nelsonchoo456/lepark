@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Event } from '@prisma/client';
+import { PrismaClient, Prisma, Event, EventStatusEnum } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -36,7 +36,12 @@ class EventDao {
     return prisma.event.update({ where: { id }, data });
   }
 
+  async updateEventStatus(id: string, status: EventStatusEnum): Promise<Event> {
+    return prisma.event.update({ where: { id }, data: { status } });
+  }
+
   async deleteEvent(id: string): Promise<void> {
+
     await prisma.event.delete({ where: { id } });
   }
 

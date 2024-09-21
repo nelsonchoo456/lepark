@@ -1,4 +1,4 @@
-import { Event } from '@prisma/client';
+import { Event, EventStatusEnum } from '@prisma/client';
 import { z } from 'zod';
 import { EventSchema, EventSchemaType } from '../schemas/eventSchema';
 import EventDao from '../dao/EventDao';
@@ -43,7 +43,8 @@ class EventService {
   }
 
   public async getAllEvents(): Promise<Event[]> {
-    return EventDao.getAllEvents();
+    const events = await EventDao.getAllEvents();
+    return Promise.all(events.map(updateEventStatus));
   }
 
   public async getEventsByParkId(parkId: string): Promise<Event[]> {
@@ -55,8 +56,9 @@ class EventService {
     if (!facility) {
       throw new Error('Facility not found');
     }
-
-    return EventDao.getEventsByFacilityId(facilityId);
+    
+    const events = await EventDao.getEventsByFacilityId(facilityId);
+    return Promise.all(events.map(updateEventStatus));
   }
 
   public async getEventById(id: string): Promise<Event & { parkName?: string }> {
@@ -73,7 +75,7 @@ class EventService {
       // if (!park) {
       //   throw new Error('Park not found');
       // }
-      return event;
+      return updateEventStatus(event);
       //return { ...event, parkName: park.name };
     } catch (error) {
       throw new Error(`Unable to fetch event details: ${error.message}`);
@@ -136,6 +138,32 @@ class EventService {
     }
   }
 }
+
+const updateEventStatus = async (event: Event): Promise<Event> => {
+  if (event.status === EventStatusEnum.CANCELLED) {
+    return event;
+  }
+
+  const now = new Date();
+  const startDateTime = new Date(event.startDate);
+  const endDateTime = new Date(event.endDate);
+  
+  let newStatus = event.status;
+
+  if (now < startDateTime) {
+    newStatus = EventStatusEnum.UPCOMING;
+  } else if (now >= startDateTime && now <= endDateTime) {
+    newStatus = EventStatusEnum.ONGOING;
+  } else if (now > endDateTime) {
+    newStatus = EventStatusEnum.COMPLETED;
+  }
+
+  if (newStatus !== event.status) {
+    return await EventDao.updateEventStatus(event.id, newStatus);
+  }
+
+  return event;
+};
 
 const dateFormatter = (data: any) => {
   const { startDate, endDate, startTime, endTime, ...rest } = data;
