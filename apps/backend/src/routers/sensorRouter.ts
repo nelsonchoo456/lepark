@@ -93,7 +93,7 @@ router.get('/getSensorsNeedingMaintenance', async (_, res) => {
   }
 });
 
-router.post('/upload', upload.array('files', 5), async (req, res) => {
+router.post('/upload', upload.array('files', 1), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
 

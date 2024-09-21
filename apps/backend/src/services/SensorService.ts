@@ -26,7 +26,10 @@ const s3 = new aws.S3({
 };
 function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
   // Add checks for all required fields
-  if (!data.sensorName || !data.sensorType || !data.sensorStatus || !data.acquisitionDate) {
+  if (!data.sensorName || !data.sensorType || !data.sensorStatus || !data.acquisitionDate
+    || !data.hubId || !data.dataFrequencyMinutes || !data.sensorUnit || !data.supplier
+    || data.calibrationFrequencyDays === undefined || data.recurringMaintenanceDuration === undefined
+    || !data.supplierContactNumber) {
     throw new Error('Missing required fields for sensor creation');
   }
   return data as Prisma.SensorCreateInput;
