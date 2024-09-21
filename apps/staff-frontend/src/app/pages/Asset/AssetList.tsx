@@ -29,7 +29,7 @@ const ParkAssetManagementPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER) {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
@@ -43,26 +43,38 @@ const ParkAssetManagementPage: React.FC = () => {
     }
   }, [user, navigate]); // Added 'navigate' to the dependency array
 
-  const fetchParkAssetData = async () => {
-    setLoading(true);
-    try {
-      const response = await getAllParkAssets();
-      setParkAssets(response.data);
-    } catch (error) {
-      console.error('Error fetching park asset data:', error);
-      message.error('Failed to fetch park assets');
-    } finally {
-      setLoading(false);
+const fetchParkAssetData = async () => {
+  setLoading(true);
+  try {
+    let response;
+    if (user?.role === StaffType.SUPERADMIN) {
+      response = await getAllParkAssets();
+    } else if ([StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType)) {
+      if (!user?.parkId) {
+        throw new Error('User park ID not found');
+      }
+      response = await getAllParkAssets(user.parkId);
+    } else {
+      throw new Error('Unauthorized access');
     }
-  };
+    setParkAssets(response.data);
+  } catch (error) {
+    console.error('Error fetching park asset data:', error);
+    message.error('Failed to fetch park assets');
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const filteredParkAssets = useMemo(() => {
-    return parkAssets.filter((asset) => {
-      return Object.values(asset).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
-  }, [parkAssets, searchQuery]);
+// ... rest of the code remains the same
+
+const filteredParkAssets = useMemo(() => {
+  return parkAssets.filter((asset) => {
+    return Object.values(asset).some((value) =>
+      value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+}, [parkAssets, searchQuery]);
 
   const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

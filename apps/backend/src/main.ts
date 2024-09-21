@@ -63,7 +63,7 @@ app.use('/api/activitylogs', activityLogRouter);
 app.use('/api/statuslogs', statusLogRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/parkassets', parkAssetRouter);
-app.use('/api/facility', facilityRouter);
+app.use('/api/facilities', facilityRouter);
 app.use('/api/sensors', sensorRouter);
 
 const port = process.env.PORT || 3333;
