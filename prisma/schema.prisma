@@ -306,6 +306,8 @@ model Sensor {
   hubId                         String?          @db.Uuid
   hub                           Hub?             @relation(fields: [hubId], references: [id])
 
+  facilityId                    String?  @db.Uuid
+  facility          Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory            MaintenanceHistory[]
   calibrationHistory            CalibrationHistory[]
   usageMetrics                  UsageMetrics[]
@@ -412,6 +414,7 @@ model Facility {
   parkId                Int
   hubs                  Hub[]
   parkAssets            ParkAsset[]
+  sensors               Sensor[]
 }
 
 enum FacilityTypeEnum {

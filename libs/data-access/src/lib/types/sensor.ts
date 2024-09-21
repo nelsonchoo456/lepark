@@ -19,7 +19,8 @@ export interface SensorData {
   latitude?: number;
   longitude?: number;
   remarks?: string;
-  hubId: string;
+  hubId?: string;
+  facilityId?: string;
 }
 
 export interface SensorResponse {

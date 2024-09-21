@@ -22,6 +22,7 @@ export const SensorSchema = z.object({
   longitude: z.number().min(-180).max(180).optional(),
   remarks: z.string().optional(),
   hubId: z.string().uuid().optional(),
+  facilityId: z.string().uuid().optional(),
 });
 
 export type SensorSchemaType = z.infer<typeof SensorSchema>;

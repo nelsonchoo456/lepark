@@ -4,6 +4,8 @@ import { fromZodError } from 'zod-validation-error';
 import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
 import SensorDao from '../dao/SensorDao';
 import HubDao from '../dao/HubDao';
+
+import FacilityDao from '../dao/FacilityDao';
 import aws from 'aws-sdk';
 
 const s3 = new aws.S3({
@@ -27,7 +29,7 @@ const s3 = new aws.S3({
 function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
   // Add checks for all required fields
   if (!data.sensorName || !data.sensorType || !data.sensorStatus || !data.acquisitionDate
-    || !data.hubId || !data.dataFrequencyMinutes || !data.sensorUnit || !data.supplier
+    || !data.dataFrequencyMinutes || !data.sensorUnit || !data.supplier
     || data.calibrationFrequencyDays === undefined || data.recurringMaintenanceDuration === undefined
     || !data.supplierContactNumber) {
     throw new Error('Missing required fields for sensor creation');
@@ -42,6 +44,13 @@ class SensorService {
         const hub = await HubDao.getHubById(data.hubId);
         if (!hub) {
           throw new Error('Hub not found');
+        }
+      }
+
+      if (data.facilityId) {
+        const facility = await FacilityDao.getFacilityById(data.facilityId);
+        if (!facility) {
+          throw new Error('Facility not found');
         }
       }
 
@@ -67,13 +76,31 @@ class SensorService {
     return SensorDao.getAllSensors();
   }
 
-  public async getSensorById(id: string): Promise<Sensor> {
-    const sensor = await SensorDao.getSensorById(id);
-    if (!sensor) {
-      throw new Error('Sensor not found');
-    }
-    return sensor;
+  public async getSensorById(id: string): Promise<Sensor & { hubName?: string, facilityName?: string, parkId?: string }> {
+  const sensor = await SensorDao.getSensorById(id);
+  if (!sensor) {
+    throw new Error('Sensor not found');
   }
+
+  const result: any = { ...sensor };
+
+  if (sensor.hubId) {
+    const hub = await HubDao.getHubById(sensor.hubId);
+    if (hub) {
+      result.hubName = hub.name;
+    }
+  }
+
+  if (sensor.facilityId) {
+    const facility = await FacilityDao.getFacilityById(sensor.facilityId);
+    if (facility) {
+      result.facilityName = facility.facilityName;
+      result.parkId = facility.parkId;
+    }
+  }
+
+  return result;
+}
 
   public async updateSensor(
     id: string,
@@ -83,6 +110,20 @@ class SensorService {
       const existingSensor = await SensorDao.getSensorById(id);
       if (!existingSensor) {
         throw new Error('Sensor not found');
+      }
+
+      if (data.facilityId) {
+        const facility = await FacilityDao.getFacilityById(data.facilityId);
+        if (!facility) {
+          throw new Error('Facility not found');
+        }
+      }
+
+      if (data.hubId) {
+        const hub = await HubDao.getHubById(data.hubId);
+        if (!hub) {
+          throw new Error('Hub not found');
+        }
       }
 
       const formattedData = dateFormatter(data);
