@@ -52,6 +52,7 @@ import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
 import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
+import HubEdit from './pages/Hub/HubEdit';
 
 export function App() {
   return (
@@ -184,7 +185,6 @@ export function App() {
                 <Route path="edit" element={<ViewEditSpecies />} />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
-
               {/* Attraction Routes */}
               <Route
                 element={
@@ -201,7 +201,6 @@ export function App() {
                   <Route path=":id" element={<AttractionDetails />} />
                 </Route>
               </Route>
-
               <Route
                 element={
                   <RoleProtectedRoute
@@ -214,6 +213,7 @@ export function App() {
                   <Route index element={<HubList />} />
                   <Route path=":hubId" element={<ViewHubDetails />} />
                   <Route path="create" element={<HubCreate />} />
+                  <Route path=":hubId/edit" element={<HubEdit />} />
                 </Route>
               </Route>
               <Route

@@ -218,7 +218,7 @@ const HubList: React.FC = () => {
           {user?.role === StaffType.SUPERADMIN && (
             <>
               <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
