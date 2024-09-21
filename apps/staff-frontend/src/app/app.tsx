@@ -49,6 +49,9 @@ import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import ParksMap from './pages/ParksMap/ParksMap';
 import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
 import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
+import FacilityList from './pages/Facility/FacilityList';
+import FacilityCreate from './pages/Facility/FacilityCreate';
+import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
 
 export function App() {
   return (
@@ -211,6 +214,20 @@ export function App() {
                   <Route index element={<HubList />} />
                   <Route path=":hubId" element={<ViewHubDetails />} />
                   <Route path="create" element={<HubCreate />} />
+                </Route>
+              </Route>
+              <Route
+                element={
+                  <RoleProtectedRoute
+                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                    redirectTo="/"
+                  />
+                }
+              >
+                <Route path="/facilities">
+                  <Route index element={<FacilityList />} />
+                  <Route path="create" element={<FacilityCreate />} />
+                  <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}

@@ -349,7 +349,7 @@ model Facility {
   closingHours          DateTime[]
   facilityStatus        FacilityStatusEnum
   lat                   Float
-  long                   Float
+  long                  Float
   size                  Float
   capacity              Float
   fee                   Float

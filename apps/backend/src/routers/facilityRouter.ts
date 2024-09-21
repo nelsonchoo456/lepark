@@ -16,8 +16,14 @@ router.post('/createFacility', async (req, res) => {
 
 router.get('/getAllFacilities', async (req, res) => {
   try {
-    const facilities = await FacilityService.getAllFacilities();
-    res.status(200).json(facilities);
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
+    if (!parkId) {
+      const facilities = await FacilityService.getAllFacilities();
+      res.status(200).json(facilities);
+    } else {
+      const facilities = await FacilityService.getFacilitiesByParkId(parkId);
+      res.status(200).json(facilities);
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
