@@ -118,15 +118,13 @@ function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreate
     !data.lastMaintenanceDate ||
     !data.nextMaintenanceDate ||
     !data.openingHours ||
-    !data.openingHours.length ||
     !data.closingHours ||
-    !data.closingHours.length ||
     !data.facilityStatus ||
     !data.lat ||
     !data.long ||
     !data.size ||
     !data.capacity ||
-    !data.fee ||
+    !data.fee === undefined ||
     !data.parkId
   ) {
     throw new Error('Missing required fields for occurrence creation');
