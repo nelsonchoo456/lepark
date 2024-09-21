@@ -47,7 +47,12 @@ const LocationTab = ({ event, facility, park }: LocationTabProps) => {
           circleWidth={37}
           lat={facility.lat ?? 0}
           lng={facility.long ?? 0}
-          tooltipLabel={event.title}
+          tooltipLabel={
+            <div className="text-center">
+              <div className="font-semibold">{event.title}</div>
+              <div className="text-sm text-gray-500">@ { } {facility.facilityName}</div>
+            </div>
+          }
           backgroundColor={COLORS.green[300]} icon={<TbStar className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
       </MapContainer>
     </div>
