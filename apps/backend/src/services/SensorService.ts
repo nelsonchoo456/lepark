@@ -12,19 +12,46 @@ const s3 = new aws.S3({
   region: 'ap-southeast-1',
 });
 
-class SensorService {
-  public async createSensor(data: SensorSchemaType): Promise<Sensor> {
-    try {
-      SensorSchema.parse(data);
+  const dateFormatter = (data: any) => {
+  const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const formattedData = { ...rest };
 
+  // Format dates into JavaScript Date objects
+  if (acquisitionDate) formattedData.acquisitionDate = new Date(acquisitionDate);
+  if (lastCalibratedDate) formattedData.lastCalibratedDate = new Date(lastCalibratedDate);
+  if (lastMaintenanceDate) formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
+  if (nextMaintenanceDate) formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);
+
+  return formattedData;
+};
+function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
+  // Add checks for all required fields
+  if (!data.sensorName || !data.sensorType || !data.sensorStatus || !data.acquisitionDate) {
+    throw new Error('Missing required fields for sensor creation');
+  }
+  return data as Prisma.SensorCreateInput;
+}
+
+class SensorService {
+    public async createSensor(data: SensorSchemaType): Promise<Sensor> {
+    try {
       if (data.hubId) {
         const hub = await HubDao.getHubById(data.hubId);
         if (!hub) {
-          throw new Error('Hub not found.');
+          throw new Error('Hub not found');
         }
       }
 
-      return SensorDao.createSensor(data as Prisma.SensorCreateInput);
+      const formattedData = dateFormatter(data);
+
+      // Validate input data using Zod
+      SensorSchema.parse(formattedData);
+
+      // Convert validated data to Prisma input type
+      const sensorData = ensureAllFieldsPresent(formattedData);
+
+      // Create the sensor, remember to pass in Prisma.SensorCreateInput type
+      return SensorDao.createSensor(sensorData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -33,7 +60,6 @@ class SensorService {
       throw error;
     }
   }
-
   public async getAllSensors(): Promise<Sensor[]> {
     return SensorDao.getAllSensors();
   }
@@ -46,20 +72,44 @@ class SensorService {
     return sensor;
   }
 
-  public async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
+  public async updateSensor(
+    id: string,
+    data: Partial<SensorSchemaType>
+  ): Promise<Sensor> {
     try {
-      const existingSensor = await this.getSensorById(id);
-      const mergedData = { ...existingSensor, ...data };
-      SensorSchema.parse(mergedData);
-
-      if (data.hubId && data.hubId !== existingSensor.hubId) {
-        const hub = await HubDao.getHubById(data.hubId);
-        if (!hub) {
-          throw new Error('Hub not found.');
-        }
+      const existingSensor = await SensorDao.getSensorById(id);
+      if (!existingSensor) {
+        throw new Error('Sensor not found');
       }
 
-      return SensorDao.updateSensor(id, data as Prisma.SensorUpdateInput);
+      const formattedData = dateFormatter(data);
+
+      // Merge existing data with update data
+      let mergedData = { ...existingSensor, ...formattedData };
+      mergedData = Object.fromEntries(
+        Object.entries(mergedData).filter(([key, value]) => value !== null)
+      );
+
+      // Validate merged data using Zod
+      SensorSchema.parse(mergedData);
+
+      // Convert validated SensorSchemaType data to Prisma-compatible update input
+      // This ensures only defined fields are included in the update operation
+      const updateData: Prisma.SensorUpdateInput = Object.entries(formattedData).reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      /*if (updateData.hubId && updateData.hubId !== existingSensor.hubId) {
+        const hub = await HubDao.getHubById(updateData.hubId as string);
+        if (!hub) {
+          throw new Error('Hub not found');
+        }
+      }*/
+
+      return SensorDao.updateSensor(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -109,6 +159,10 @@ class SensorService {
       throw new Error('Error uploading image to S3');
     }
   }
+
+
+
+
 }
 
 export default new SensorService();
