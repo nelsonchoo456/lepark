@@ -7,6 +7,8 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { useFetchParks } from '../../hooks/Parks/useFetchParks';
+import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -15,6 +17,8 @@ export interface AdjustLatLngInterface {
 
 const HubCreate = () => {
   const { user } = useAuth<StaffResponse>();
+  const { parks } = useFetchParks();
+  const { facilities } = useFetchFacilities();
   const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<any | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
@@ -23,6 +27,8 @@ const HubCreate = () => {
 
   // Form Values
   const [form] = Form.useForm();
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
+  const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
 
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
@@ -36,21 +42,24 @@ const HubCreate = () => {
       navigate('/');
     }
   }, [user, navigate]);
-
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields(); // Get form data
       console.log(values);
+
+      // Remove parkId from values
+      const { parkId, ...filteredValues } = values;
+
       const finalData = {
-        ...values,
-        acquisitionDate: values.acquisitionDate ? dayjs(values.acquisitionDate).toISOString() : null,
-        nextMaintenanceDate: values.nextMaintenanceDate ? dayjs(values.nextMaintenanceDate).toISOString() : null,
-        images: selectedFiles.map((file) => file.name), // Ensure images are sent as an array of strings
-        lat: values.lat !== undefined ? parseFloat(values.lat) : undefined,
-        long: values.long !== undefined ? parseFloat(values.long) : undefined,
+        ...filteredValues,
+        acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
+        nextMaintenanceDate: filteredValues.nextMaintenanceDate ? dayjs(filteredValues.nextMaintenanceDate).toISOString() : null,
+        images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [], // Ensure images are sent as an array of strings
+        lat: filteredValues.lat !== undefined ? parseFloat(filteredValues.lat) : undefined,
+        long: filteredValues.long !== undefined ? parseFloat(filteredValues.long) : undefined,
       };
 
-      const response = await createHub(finalData, selectedFiles);
+      const response = await createHub(finalData, selectedFiles.length > 0 ? selectedFiles : undefined);
       if (response?.status && response.status === 201) {
         setCreatedData(response.data);
       }
@@ -92,6 +101,13 @@ const HubCreate = () => {
             handleFileChange={handleFileChange}
             removeImage={removeImage}
             onInputClick={onInputClick}
+            parks={parks}
+            selectedParkId={selectedParkId}
+            setSelectedParkId={setSelectedParkId}
+            facilities={facilities}
+            selectedFacilityId={selectedFacilityId}
+            setSelectedFacilityId={setSelectedFacilityId}
+            user={user}
           />
         ) : (
           <div className="py-4">
