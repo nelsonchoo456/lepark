@@ -33,19 +33,6 @@ const ParkCreate = () => {
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
   const [lines, setLines] = useState<any[]>([]);  
   
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Park Creation page!',
-      });
-      notificationShown.current = true;
-    }
-      navigate('/');
-    }
-  }, [user, navigate]);
-  
   const handleCurrStep = async (step: number) => {
     // console.log(formValues)
     if (step === 0) {
@@ -154,10 +141,6 @@ const ParkCreate = () => {
       isCurrent: true,
     },
   ];
-
-  if (user?.role !== StaffType.SUPERADMIN) { 
-    return <></>;
-  }
   
   return (
     <ContentWrapperDark>

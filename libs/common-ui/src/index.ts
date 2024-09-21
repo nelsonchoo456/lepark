@@ -29,3 +29,4 @@ export { StaffAuthWrapper } from './lib/auth/StaffAuthWrapper';
 export { VisitorAuthWrapper } from './lib/auth/VisitorAuthWrapper';
 export * from './lib/auth/ProtectedRoute';
 export * from './lib/auth/Spinner';
+export * from './lib/auth/RoleProtectedRoute';

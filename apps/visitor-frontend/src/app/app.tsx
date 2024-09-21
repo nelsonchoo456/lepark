@@ -21,6 +21,7 @@ import SelectParkPage from './park-context/SelectParkPage';
 import { ParkProvider } from './park-context/ParkContext';
 import VerifyUser from './pages/VerifyUser/VerifyUser';
 import EditProfile from './pages/Profile/EditProfile';
+import DiscoverPerPark from './pages/Taxonomy/DiscoverPerPark';
 
 export function App() {
   return (
@@ -87,6 +88,7 @@ export function App() {
                 <Route path="/discover">
                   <Route index element={<Discover />} />
                   <Route path=":speciesId" element={<ViewSpeciesDetails />} />
+                  <Route path="park/:parkId" element={<DiscoverPerPark />} />
                 </Route>
               </Route>
             </Routes>

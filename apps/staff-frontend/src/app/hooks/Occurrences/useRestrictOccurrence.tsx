@@ -1,5 +1,6 @@
 import { useAuth } from '@lepark/common-ui';
-import { getOccurrenceById, getSpeciesById, getZoneById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
+import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse, StaffResponse } from '@lepark/data-access';
+import { getZoneById, StaffType, ZoneResponse } from '@lepark/data-access';
 import { message, notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,6 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
   const [species, setSpecies] = useState<SpeciesResponse>();
   const [zone, setZone] = useState<ZoneResponse>();
   const [loading, setLoading] = useState(true);
-  const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const notificationShown = useRef(false);
 
@@ -20,7 +20,7 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
       return;
     }
     fetchOccurrence(occurrenceId);
-  }, []);
+  }, [occurrenceId, navigate]);
 
   const fetchOccurrence = async (occurrenceId: string) => {
     setLoading(true);
@@ -29,7 +29,9 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
 
       if (occurrenceResponse.status === 200) {
         const occurrence = occurrenceResponse.data;
-        handleParkRestrictions(occurrence);
+        setOccurrence(occurrence);
+        const speciesResponse = await getSpeciesById(occurrence.speciesId);
+        setSpecies(speciesResponse.data);
       } else {
         throw new Error('Unable to fetch Occurrence');
       }

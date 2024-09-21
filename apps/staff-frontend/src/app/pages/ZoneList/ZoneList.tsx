@@ -356,11 +356,13 @@ const ZoneList: React.FC = () => {
       </Flex>
 
       <Card>
-        {user?.role === StaffType.SUPERADMIN ? (
-          <Table dataSource={filteredZones} columns={columnsForSuperadmin} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
-        ) : (
-          <Table dataSource={filteredZones} columns={columns} rowKey="id" loading={loading}  scroll={{ x: SCREEN_LG }}/>
-        )}
+        <Table 
+          dataSource={filteredZones} 
+          columns={user?.role === StaffType.SUPERADMIN ? columnsForSuperadmin : columns} 
+          rowKey="id" 
+          loading={loading}  
+          scroll={{ x: SCREEN_LG }}
+        />
       </Card>
     </ContentWrapperDark>
   );

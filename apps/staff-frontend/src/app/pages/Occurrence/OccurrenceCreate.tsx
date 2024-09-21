@@ -13,6 +13,7 @@ import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import { useFetchSpecies } from '../../hooks/Species/useFetchSpecies';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { useFetchParks } from '../../hooks/Parks/useFetchParks'; // Add this import
 import { getCentroidOfGeom } from '../../components/map/functions/functions';
 
 const center = {
@@ -29,6 +30,7 @@ const OccurrenceCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
+  const { parks } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
@@ -37,6 +39,7 @@ const OccurrenceCreate = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const notificationShown = useRef(false);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null); // Add this state
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
@@ -94,6 +97,9 @@ const OccurrenceCreate = () => {
         dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
 
+      // Remove parkId from finalData if it exists
+      delete finalData.parkId;
+
       const response = await createOccurrence(finalData, selectedFiles);
       if (response?.status && response.status === 201) {
         setCurrStep(2);
@@ -103,9 +109,8 @@ const OccurrenceCreate = () => {
       console.log(error);
       messageApi.open({
         type: 'error',
-        content: 'Unable to create Occurrence as Species cannot be found. Please try again later.',
+        content: 'Unable to create Occurrence. Please try again later.',
       });
-      //
     }
   };
 
@@ -122,6 +127,10 @@ const OccurrenceCreate = () => {
           handleFileChange={handleFileChange}
           removeImage={removeImage}
           onInputClick={onInputClick}
+          parks={parks}
+          selectedParkId={selectedParkId}
+          setSelectedParkId={setSelectedParkId}
+          user={user}
         />
       ),
     },

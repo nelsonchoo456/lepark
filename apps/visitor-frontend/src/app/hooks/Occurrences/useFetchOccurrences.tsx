@@ -10,20 +10,20 @@ import {
   StaffResponse,
   StaffType,
 } from '@lepark/data-access';
+import { usePark } from '../../park-context/ParkContext';
 
-export const useFetchOccurrences = () => {
+export const useFetchOccurrences = (selectedParkId?: number) => {
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]);
-  const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(false);
   const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
-    if (user?.parkId) {
-      fetchOccurrencesByParkId(user.parkId);
+    if (selectedParkId) {
+      fetchOccurrencesByParkId(selectedParkId);
     } else {
       fetchAllOccurrences();
     }
-  }, [user, trigger]);
+  }, [selectedParkId, trigger]);
 
   const fetchAllOccurrences = async () => {
     setLoading(true);

@@ -5,7 +5,7 @@ import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepa
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -78,16 +78,16 @@ const MainLayout = () => {
         key: 'park/map',
         label: 'Map View',
         onClick: parkMapOnClick,
-      }
-    ]
-  }
+      },
+    ],
+  };
   if (userRole !== StaffType.SUPERADMIN) {
     parkNavItem = {
       key: 'park',
       icon: <TbTrees />,
       label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-      onClick: parkOnClick
-    }
+      onClick: parkOnClick,
+    };
   }
 
   // Navigation
@@ -194,6 +194,16 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'PARK_RANGER'
+      ? {
+          key: 'attraction',
+          icon: <TbTicket />,
+          label: 'Attractions',
+          onClick: () => navigate('/attraction'),
+        }
+      : null,
   ];
 
   return (

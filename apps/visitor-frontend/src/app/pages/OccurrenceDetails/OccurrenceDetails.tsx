@@ -1,60 +1,47 @@
-import { useParams } from 'react-router';
-import { ContentWrapper, ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { Button, Card, Descriptions, Divider, Segmented, Tabs, Tag } from 'antd';
-import InformationTab from './components/InformationTab';
-import { FiSun } from 'react-icons/fi';
-import moment from 'moment';
-import AboutTab from './components/AboutTab';
+import { LogoText } from '@lepark/common-ui';
+import { Descriptions, Empty, Tabs, Typography } from 'antd';
 import { useEffect, useState } from 'react';
-import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse } from '@lepark/data-access';
+import { FaTint } from 'react-icons/fa';
+import { FiSun } from 'react-icons/fi';
+import { MdEco, MdOutlineTerrain } from 'react-icons/md';
+import { WiDayCloudy, WiDaySunny, WiNightAltCloudy } from 'react-icons/wi';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import AboutTab from './components/AboutTab';
+import InformationTab from './components/InformationTab';
 
-const plant = {
-  id: 1,
-  latitude: 1.3521,
-  longitude: 103.8198,
-  dateObserved: '2024-09-03',
-  occurrenceStatus: 'ACTIVE',
-  numberOfPlants: 150,
-  dateOfBirth: '2024-01-10',
-  biomass: 1200.5,
-  occurrenceDescription: 'Mangrove restoration area',
-  decarbonizationType: 'CARBON_SEQUESTRATION',
-  speciesId: 1001,
-  speciesName: 'Orchid',
-  statusLogs: [
-    {
-      logId: 1,
-      status: 'HEALTHY',
-      dateLogged: '2024-02-15',
-      remarks: 'Plants are growing well',
-    },
-    {
-      logId: 2,
-      status: 'MONITORED',
-      dateLogged: '2024-03-10',
-      remarks: 'Area requires periodic monitoring',
-    },
-  ],
-  decarbonizationAreaId: 501,
-};
+import {
+  ConservationStatusEnum,
+  getOccurrenceById,
+  getSpeciesById,
+  LightTypeEnum,
+  OccurrenceResponse,
+  SoilTypeEnum,
+  SpeciesResponse,
+} from '@lepark/data-access';
+import moment from 'moment';
+import OccurrenceTable from '../Taxonomy/components/OccurrenceTable';
+import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
+import { usePark } from '../../park-context/ParkContext';
 
 const OccurrenceDetails = () => {
+  const { occurrenceId } = useParams<{ occurrenceId: string }>();
+  const location = useLocation();
+  const fromDiscoverPerPark = location.state?.fromDiscoverPerPark || false;
+  const { selectedPark } = usePark();
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
-  const { occurrenceId } = useParams<{ occurrenceId: string }>();
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       if (occurrenceId) {
-        // console.log(occurrenceId)
         setLoading(true);
         try {
           const occurrenceResponse = await getOccurrenceById(occurrenceId);
           setOccurrence(occurrenceResponse.data);
-          // console.log(occurrenceResponse.data)
+
           if (occurrenceResponse.data.speciesId) {
-            
             const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
             setSpecies(speciesResponse.data);
           }
@@ -71,84 +58,151 @@ const OccurrenceDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'title',
-      label: 'Label',
-      children: occurrence?.title,
-    },
-    {
-      key: 'occurrenceStatus',
-      label: 'Status',
-      children: (
-        <Tag color="green" bordered={false}>
-          Active
-        </Tag>
-      ),
+      key: 'occurrenceSpecies',
+      label: 'Species',
+      children: species ? species.speciesName : 'Loading...',
     },
     {
       key: 'dateObserved',
       label: 'Last Observed',
-      children: moment(plant.dateObserved).fromNow(),
+      children: moment(occurrence?.dateObserved).fromNow(),
     },
   ];
 
   // Tabs Utility
   const tabsItems = [
     {
-      key: 'about',
-      label: 'About',
-      children: <></>,
+      key: 'information',
+      label: 'Information',
+      children: occurrence ? <InformationTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
     },
     {
-      key: 'species',
+      key: 'about',
       label: 'Species',
-      children: <AboutTab occurrence={plant} />,
+      children: species && occurrence ? <AboutTab species={species} occurrence={occurrence} /> : <p>Loading Species data...</p>,
     },
-    // {
-    //   key: 'location',
-    //   label: 'Location',
-    //   children: <></>
-    // },
+    {
+      key: 'occurrences',
+      label: 'Other Occurrences',
+      children: species ? (
+        <OccurrenceTable
+          speciesId={species.id}
+          excludeOccurrenceId={occurrenceId}
+          loading={false}
+          selectedPark={fromDiscoverPerPark && selectedPark ? selectedPark : undefined}
+        />
+      ) : (
+        <p>Loading data...</p>
+      ),
+    },
   ];
 
+  const getWaterRequirementInfo = (value: number) => {
+    if (value <= 30) return { text: 'Low', icon: <FaTint className="text-3xl mt-2 text-blue-300" /> };
+    if (value <= 60) return { text: 'Medium', icon: <FaTint className="text-3xl mt-2 text-blue-500" /> };
+    return { text: 'High', icon: <FaTint className="text-3xl mt-2 text-blue-700" /> };
+  };
+
+  const getLightTypeInfo = (lightType: LightTypeEnum) => {
+    switch (lightType) {
+      case LightTypeEnum.FULL_SUN:
+        return { text: 'Full Sun', icon: <WiDaySunny className="text-3xl mt-2 text-yellow-500" /> };
+      case LightTypeEnum.PARTIAL_SHADE:
+        return { text: 'Partial Shade', icon: <WiDayCloudy className="text-3xl mt-2 text-yellow-300" /> };
+      case LightTypeEnum.FULL_SHADE:
+        return { text: 'Full Shade', icon: <WiNightAltCloudy className="text-3xl mt-2 text-gray-500" /> };
+      default:
+        return { text: 'Unknown', icon: <FiSun className="text-3xl mt-2" /> };
+    }
+  };
+
+  const getSoilTypeText = (soilType: SoilTypeEnum) => {
+    switch (soilType) {
+      case SoilTypeEnum.SANDY:
+        return 'Sandy';
+      case SoilTypeEnum.CLAYEY:
+        return 'Clayey';
+      case SoilTypeEnum.LOAMY:
+        return 'Loamy';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getConservationStatusText = (status: ConservationStatusEnum) => {
+    switch (status) {
+      case ConservationStatusEnum.LEAST_CONCERN:
+        return 'Least Concern';
+      case ConservationStatusEnum.NEAR_THREATENED:
+        return 'Near Threatened';
+      case ConservationStatusEnum.VULNERABLE:
+        return 'Vulnerable';
+      case ConservationStatusEnum.ENDANGERED:
+        return 'Endangered';
+      case ConservationStatusEnum.CRITICALLY_ENDANGERED:
+        return 'Critically Endangered';
+      case ConservationStatusEnum.EXTINCT_IN_THE_WILD:
+        return 'Extinct in the Wild';
+      case ConservationStatusEnum.EXTINCT:
+        return 'Extinct';
+      default:
+        return 'Unknown';
+    }
+  };
+
   return (
-    <div className="md:p-4">
-      {/* <Card className="md:p-4" styles={{ body: { padding: 0 } }} bordered={false}> */}
-      <div className="md:flex w-full gap-4">
-        <div
-          style={{
-            backgroundImage: `url('https://www.travelbreatherepeat.com/wp-content/uploads/2020/03/Singapore_Orchids_Purple.jpg')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            color: 'white',
-            overflow: 'hidden',
-          }}
-          className="shadow-lg p-4 rounded-b-3xl h-96 md:h-[45rem] md:flex-[2] md:rounded-lg"
-        />
-        <div className="flex-[3] flex-col flex p-4 md:p-0">
-          <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
-          <div className="flex flex-col-reverse">
-            <div className="flex h-24 w-full gap-3 my-2 md:gap-2 md:mt-auto">
-              <div className="bg-green-50 h-full w-20 rounded-xl md:rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
-                <FiSun className="text-3xl mt-2" />
-                <p className="text-xs mt-2">Partial Shade</p>
-              </div>
-              <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
-                <FiSun className="text-3xl mt-2" />
-                <p className="text-xs mt-2">Every 2 Days</p>
-              </div>
-              <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
-                <FiSun className="text-3xl mt-2" />
-                <p className="text-xs mt-2">Fast-growing</p>
-              </div>
+    <div className="md:p-4 md:h-screen md:overflow-hidden">
+      <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
+        <div className="md:w-2/5 h-96">
+          {occurrence?.images && occurrence.images.length > 0 ? (
+            <SpeciesCarousel images={occurrence?.images || []} />
+          ) : (
+            <div className="h-96 bg-gray-200 flex items-center justify-center">
+              <Empty description="No Image" />
             </div>
+          )}
+        </div>
+        <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
+          <div className="hidden md:block">
+            <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{occurrence?.title}</LogoText>
           </div>
-          <div className="py-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+          <Typography.Paragraph
+            ellipsis={{
+              rows: 3,
+              expandable: true,
+              symbol: 'more',
+            }}
+          >
+            {species?.speciesDescription}
+          </Typography.Paragraph>
+          <Descriptions items={descriptionsItems} column={1} size="small" />
+          <div className="flex h-24 w-full gap-2 mt-2">
+            {species ? (
+              <>
+                <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                  {getWaterRequirementInfo(species.waterRequirement).icon}
+                  <p className="text-xs mt-2">{getWaterRequirementInfo(species.waterRequirement).text}</p>
+                </div>
+                <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                  {getLightTypeInfo(species.lightType).icon}
+                  <p className="text-xs mt-2">{getLightTypeInfo(species.lightType).text}</p>
+                </div>
+                <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                  <MdOutlineTerrain className="text-3xl mt-2" />
+                  <p className="text-xs mt-2">{getSoilTypeText(species.soilType)}</p>
+                </div>
+                <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
+                  <MdEco className="text-3xl mt-2" />
+                  <p className="text-xs mt-2">{getConservationStatusText(species.conservationStatus)}</p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-green-50 h-full w-full rounded-lg flex justify-center items-center text-green-600">
+                <p>Species data not available</p>
+              </div>
+            )}
           </div>
           <Tabs
-            // centered
             defaultActiveKey="information"
             items={tabsItems}
             renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
@@ -156,8 +210,6 @@ const OccurrenceDetails = () => {
           />
         </div>
       </div>
-
-      {/* </Card> */}
     </div>
   );
 };
