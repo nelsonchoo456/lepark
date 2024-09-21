@@ -1,6 +1,6 @@
 import express from 'express';
 import SensorService from '../services/SensorService';
-import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
+import { SensorSchemaType } from '../schemas/sensorSchema';
 import multer from 'multer';
 
 const router = express.Router();
@@ -8,15 +8,14 @@ const upload = multer();
 
 router.post('/createSensor', async (req, res) => {
   try {
-    const sensorData = SensorSchema.parse(req.body);
-    const sensor = await SensorService.createSensor(sensorData);
+    const sensor = await SensorService.createSensor(req.body);
     res.status(201).json(sensor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get('/getAllSensors', async (_, res) => {
+router.get('/getAllSensors', async (req, res) => {
   try {
     const sensors = await SensorService.getAllSensors();
     res.status(200).json(sensors);
@@ -29,11 +28,7 @@ router.get('/getSensorById/:id', async (req, res) => {
   try {
     const sensorId = req.params.id;
     const sensor = await SensorService.getSensorById(sensorId);
-    if (sensor) {
-      res.status(200).json(sensor);
-    } else {
-      res.status(404).json({ error: 'Sensor not found' });
-    }
+    res.status(200).json(sensor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -70,6 +65,16 @@ router.get('/getSensorsByHubId/:hubId', async (req, res) => {
   }
 });
 
+router.get('/getSensorsByFacilityId/:facilityId', async (req, res) => {
+  try {
+    const facilityId = req.params.facilityId;
+    const sensors = await SensorService.getSensorsByFacilityId(facilityId);
+    res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getSensorsNeedingCalibration', async (_, res) => {
   try {
     const sensors = await SensorService.getSensorsNeedingCalibration();
@@ -88,19 +93,29 @@ router.get('/getSensorsNeedingMaintenance', async (_, res) => {
   }
 });
 
-router.post('/upload', upload.single('image'), async (req, res) => {
+router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
-    const file = req.file;
-    if (!file) {
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    const fileName = `${Date.now()}-${file.originalname}`;
-    const imageUrl = await SensorService.uploadImageToS3(file.buffer, fileName, file.mimetype);
-    res.status(200).json({ imageUrl });
+
+    const uploadedUrls = [];
+
+    for (const file of files) {
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const imageUrl = await SensorService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+      uploadedUrls.push(imageUrl);
+    }
+
+    res.status(200).json({ uploadedUrls });
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
   }
 });
+
+
 
 export default router;

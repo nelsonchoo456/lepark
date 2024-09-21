@@ -38,7 +38,7 @@ class SensorService {
     return SensorDao.getAllSensors();
   }
 
-  public async getSensorById(id: string): Promise<Sensor | null> {
+  public async getSensorById(id: string): Promise<Sensor> {
     const sensor = await SensorDao.getSensorById(id);
     if (!sensor) {
       throw new Error('Sensor not found');
@@ -59,7 +59,7 @@ class SensorService {
         }
       }
 
-      return SensorDao.updateSensor(id, data);
+      return SensorDao.updateSensor(id, data as Prisma.SensorUpdateInput);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -78,11 +78,11 @@ class SensorService {
     if (!hub) {
       throw new Error('Hub not found.');
     }
-    return SensorDao.getSensorsByHubId(hubId);
+    return SensorDao.getAllSensorsByFacilityId(hub.facilityId);
   }
 
-  public async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
-    return SensorDao.getSensorsByParkId(parkId);
+  public async getSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
+    return SensorDao.getAllSensorsByFacilityId(facilityId);
   }
 
   public async getSensorsNeedingCalibration(): Promise<Sensor[]> {
@@ -93,7 +93,7 @@ class SensorService {
     return SensorDao.getSensorsNeedingMaintenance();
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `sensor/${fileName}`,

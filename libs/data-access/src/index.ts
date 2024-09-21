@@ -30,3 +30,6 @@ export * from './lib/types/hub';
 
 export * from './lib/api/parkasset';
 export * from './lib/types/parkasset';
+
+export * from './lib/api/sensor';
+export * from './lib/types/sensor';

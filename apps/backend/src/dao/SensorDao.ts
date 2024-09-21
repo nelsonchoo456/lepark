@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma, Sensor } from '@prisma/client';
-import { SensorSchemaType } from '../schemas/sensorSchema';
+import HubDao from './HubDao';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,7 @@ class SensorDao {
   }
 
   async getAllSensors(): Promise<Sensor[]> {
-    return prisma.sensor.findMany({
+    const sensors = await prisma.sensor.findMany({
       include: {
         hub: {
           select: {
@@ -25,6 +25,55 @@ class SensorDao {
           },
         },
       },
+    });
+
+    const hubs = await HubDao.getAllHubs();
+
+    return sensors.map((sensor) => {
+      const hub = hubs.find((h: any) => h.id === sensor.hubId);
+      return {
+        ...sensor,
+        hubId: hub?.id,
+        hubName: hub?.name,
+        facilityId: hub?.facilityId,
+      };
+    });
+  }
+
+  async getAllSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
+    const sensors = await prisma.sensor.findMany({
+      where: {
+        hub: {
+          facilityId,
+        },
+      },
+      include: {
+        hub: {
+          select: {
+            id: true,
+            name: true,
+            facility: {
+              select: {
+                id: true,
+                facilityName: true,
+                parkId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const hubs = await HubDao.getAllHubs();
+
+    return sensors.map((sensor) => {
+      const hub = hubs.find((h: any) => h.id === sensor.hubId);
+      return {
+        ...sensor,
+        hubId: hub?.id,
+        hubName: hub?.name,
+        facilityId: hub?.facilityId,
+      };
     });
   }
 
@@ -49,7 +98,7 @@ class SensorDao {
     });
   }
 
-  async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
+  async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
     return prisma.sensor.update({
       where: { id },
       data,
@@ -58,54 +107,6 @@ class SensorDao {
 
   async deleteSensor(id: string): Promise<void> {
     await prisma.sensor.delete({ where: { id } });
-  }
-
-  async getSensorsByHubId(hubId: string): Promise<Sensor[]> {
-    return prisma.sensor.findMany({
-      where: { hubId },
-      include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-            facility: {
-              select: {
-                id: true,
-                facilityName: true,
-                parkId: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
-
-  async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
-    return prisma.sensor.findMany({
-      where: {
-        hub: {
-          facility: {
-            parkId,
-          },
-        },
-      },
-      include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-            facility: {
-              select: {
-                id: true,
-                facilityName: true,
-                parkId: true,
-              },
-            },
-          },
-        },
-      },
-    });
   }
 
   async getSensorsNeedingCalibration(): Promise<Sensor[]> {
