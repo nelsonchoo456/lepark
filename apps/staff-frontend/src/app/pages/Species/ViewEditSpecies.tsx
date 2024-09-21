@@ -1,53 +1,29 @@
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef, useState } from 'react';
-//import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper, ImageInput, useAuth } from '@lepark/common-ui';
+import { useEffect, useState } from 'react';
+import { ContentWrapper, ImageInput } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-//species form
-import { getSpeciesById, SpeciesResponse, StaffResponse, StaffType, updateSpecies } from '@lepark/data-access';
+import { getSpeciesById, SpeciesResponse, updateSpecies } from '@lepark/data-access';
 import { regions } from '@lepark/data-utility';
 import type { GetProp } from 'antd';
-import { Button, Checkbox, Form, Input, InputNumber, message, Modal, notification, Select, Space, Spin } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Button, Checkbox, Form, Input, InputNumber, message, Modal, Select, Space, Spin } from 'antd';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import useUploadImages from '../../hooks/Images/useUploadImages';
-
 import { plantTaxonomy } from '@lepark/data-utility';
 import PageHeader2 from '../../components/main/PageHeader2';
 
 const ViewEditSpecies = () => {
+  const { speciesId } = useParams<{ speciesId: string }>();
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const [form] = Form.useForm();
   const [speciesObj, setSpeciesObj] = useState<SpeciesResponse>();
-  const [speciesId, setSpeciesId] = useState<string>('');
-  const location = useLocation();
-  const speciesIdFromLocation = location.state?.speciesId;
   const [classes, setClasses] = useState<string[]>([]);
   const [orders, setOrders] = useState<string[]>([]);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
-  const { user, updateUser } = useAuth<StaffResponse>();
-  const notificationShown = useRef(false);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user && user.id !== '') {
-      if (!['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role)) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the Edit Species page!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [user, navigate]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,27 +36,27 @@ const ViewEditSpecies = () => {
     };
   }, []);
 
-  // Species form
-  //fetch species by id
+  // Fetch species by id
   useEffect(() => {
-    if (!speciesIdFromLocation) {
+    if (!speciesId) {
       return;
     }
     const fetchSingleSpeciesById = async () => {
       try {
-        const species = await getSpeciesById(speciesIdFromLocation);
+        const species = await getSpeciesById(speciesId);
         if (species.status === 200) {
           setSpeciesObj(species.data);
           setCurrentImages(species.data.images);
           form.setFieldsValue(species.data);
         }
-        // console.log(`fetched species id ${speciesIdFromLocation}`, species.data);
       } catch (error) {
         console.error('Error fetching species:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchSingleSpeciesById();
-  }, [speciesIdFromLocation, form]);
+  }, [speciesId, form]);
 
   useEffect(() => {
     if (speciesObj) {
@@ -132,7 +108,7 @@ const ViewEditSpecies = () => {
     },
     {
       title: 'Edit Species',
-      pathKey: `/species/edit`,
+      pathKey: `/species/${speciesId}/edit`,
       isCurrent: true,
     },
   ];
@@ -163,7 +139,7 @@ const ViewEditSpecies = () => {
     try {
       const plantCharacteristics = values.plantCharacteristics || [];
       const speciesData: Partial<SpeciesResponse> = {
-        id: speciesIdFromLocation,
+        id: speciesId,
         phylum: values.phylum,
         class: values.class,
         order: values.order,
@@ -205,10 +181,12 @@ const ViewEditSpecies = () => {
       }
 
       setIsSubmitting(true);
-      const response = await updateSpecies(speciesIdFromLocation, speciesData, selectedFiles);
-      // console.log('Species saved', response.data);
-
-      setPreviewImages([]); // Clear preview images after successful submission
+      if (speciesId) {
+        const response = await updateSpecies(speciesId, speciesData, selectedFiles);
+        setPreviewImages([]); // Clear preview images after successful submission
+      } else {
+        throw new Error('Species ID is undefined');
+      }
 
       messageApi.open({
         type: 'success',
@@ -217,7 +195,7 @@ const ViewEditSpecies = () => {
 
       // Add a 1-second delay before navigating
       setTimeout(() => {
-        navigate(`/species/${speciesIdFromLocation}`);
+        navigate(`/species/${speciesId}`);
       }, 1000);
     } catch (error) {
       message.error(String(error));
@@ -261,25 +239,22 @@ const ViewEditSpecies = () => {
   if (!webMode) {
     return (
       <div
-        className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
+        className="h-[calc(100vh-2rem)] w-screen p-4"
       >
-        {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
         <PageHeader>Create Species (Mobile)</PageHeader>
-        {/* Add your mobile content here */}
       </div>
     );
   }
 
-  if (loading) { // this displays the loading spinner, if removed the page will display before redirecting for unauthorized users
+  if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" /> {/* Loading spinner */}
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapper>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />

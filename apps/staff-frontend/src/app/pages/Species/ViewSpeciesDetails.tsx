@@ -1,7 +1,7 @@
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { getSpeciesById, SpeciesResponse } from '@lepark/data-access';
-import { Card, Descriptions, Tabs } from 'antd';
-import { useEffect, useState } from 'react';
+import { Card, Descriptions, Spin, Tabs, notification } from 'antd';
+import { useEffect, useState, useRef } from 'react';
 import { FiCloud, FiMoon, FiSun } from 'react-icons/fi';
 import {
   GiBrokenShield,
@@ -14,7 +14,7 @@ import {
   GiSiren,
   GiTombstone,
 } from 'react-icons/gi';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import InformationTab from './components/InformationTab';
 import OccurrenceTable from './components/OccurrenceTable';
@@ -25,6 +25,8 @@ const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const notificationShown = useRef(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,19 +34,38 @@ const ViewSpeciesDetails = () => {
         try {
           const speciesResponse = await getSpeciesById(speciesId);
           setSpecies(speciesResponse.data);
-          // console.log(speciesResponse.data);
         } catch (error) {
           console.error('Error fetching species data:', error);
+          if (!notificationShown.current) {
+            notification.error({
+              message: 'Access Denied',
+              description: 'You do not have permission to access this resource.',
+            });
+            notificationShown.current = true;
+          }
+          navigate('/');
         } finally {
           setLoading(false);
         }
       }
     };
     fetchData();
-  }, [speciesId]);
+  }, [speciesId, navigate]);
+
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
 
   if (!species) {
-    return <EntityNotFound entityName="Species" listPath="/species" />;
+    return null; // This will handle cases where the species is not found
   }
 
   const breadcrumbItems = [

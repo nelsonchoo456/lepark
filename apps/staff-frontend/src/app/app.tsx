@@ -202,8 +202,26 @@ export function App() {
               {/* Species Routes */}
               <Route path="/species">
                 <Route index element={<SpeciesPage />} />
-                <Route path="create" element={<CreateSpecies />} />
-                <Route path="edit" element={<ViewEditSpecies />} />
+                <Route path="create" element={
+                  <>
+                    <RoleProtectedRoute
+                      allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                      redirectTo="/"
+                    />
+                    <CreateSpecies />
+                    </>
+                  }
+                />
+                <Route path=":speciesId/edit" element={
+                  <>
+                    <RoleProtectedRoute
+                      allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                      redirectTo="/"
+                    />
+                    <ViewEditSpecies />
+                    </>
+                  }
+                />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
 
