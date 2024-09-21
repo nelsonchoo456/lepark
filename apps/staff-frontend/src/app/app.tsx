@@ -45,7 +45,7 @@ import AssetList from './pages/Asset/AssetList';
 import AssetCreate from './pages/Asset/AssetCreate';
 import AssetDetails from './pages/Asset/AssetDetails';
 import AssetEdit from './pages/Asset/AssetEdit';
-//import SensorList from './pages/Sensor/SensorList';
+import SensorList from './pages/Sensor/SensorList';
 import SensorCreate from './pages/Sensor/SensorCreate';
 
 export function App() {
@@ -236,7 +236,8 @@ export function App() {
                 <Route path="/sensor">
 
                   <Route path="create" element={<SensorCreate/>} />
-                  {/*<Route index element={<SensorList/>} />
+                  <Route index element={<SensorList/>} />
+                  {/*
                   <Route path=":sensorId" element={<ViewSensorDetails/>} />
                   <Route path="edit/:sensorId" element={<SensorEdit/>} />*/}
                 </Route>
