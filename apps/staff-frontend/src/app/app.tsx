@@ -54,6 +54,7 @@ import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
 import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
+import EventDetails from './pages/EventDetails/EventDetails';
 
 export function App() {
   return (
@@ -216,8 +217,8 @@ export function App() {
                     <Route path="create" element={<EventCreate />} />
                     <Route path=":id/edit" element={<EventEdit />} />
                     <Route path=":id/edit-map" element={<EventEditMap />} />
-                  </Route>
-                  <Route path=":id" element={<EventDetails />} /> */}
+                  </Route> */}
+                  <Route path=":id" element={<EventDetails />} /> 
                 </Route>
               </Route>
 
