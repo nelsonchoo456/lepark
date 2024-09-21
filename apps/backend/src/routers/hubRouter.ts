@@ -21,6 +21,7 @@ router.get('/getAllHubs', async (req, res) => {
       const hubs = await HubService.getAllHubs();
       res.status(200).json(hubs);
     } else {
+      //console.log('Getting hubs by parkId:', parkId);
       const hubs = await HubService.getHubsByParkId(parkId);
       res.status(200).json(hubs);
     }

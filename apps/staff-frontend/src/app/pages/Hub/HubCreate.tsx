@@ -31,7 +31,9 @@ const HubCreate = () => {
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
+    if (
+      ![StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType)
+    ) {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
@@ -83,11 +85,7 @@ const HubCreate = () => {
       isCurrent: true,
     },
   ];
-
-  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-    return <></>;
-  }
-
+  
   return (
     <ContentWrapperDark>
       {contextHolder}

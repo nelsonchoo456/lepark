@@ -178,10 +178,6 @@ const HubEdit = () => {
     },
   });
 
-  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-    return <></>;
-  }
-
   return (
     <ContentWrapperDark>
       {contextHolder}

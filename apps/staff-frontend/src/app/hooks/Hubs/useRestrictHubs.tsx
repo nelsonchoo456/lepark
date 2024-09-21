@@ -48,13 +48,13 @@ export const useRestrictHub = (hubId?: string) => {
       setPark(parkResponse.data);
     }
 
-    if (user?.role === StaffType.SUPERADMIN || user?.parkId === park?.id) {
-      setHub(hub);
+    if ([StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType) || user?.parkId === park?.id) {
+        setHub(hub);
     } else {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
-          description: 'You are not allowed to access the details of this hub!',
+          description: 'You do not have permission to access this resource.',
         });
         notificationShown.current = true;
       }
