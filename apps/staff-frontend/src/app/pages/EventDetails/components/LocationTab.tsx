@@ -2,7 +2,7 @@ import { EventResponse, FacilityResponse, ParkResponse } from '@lepark/data-acce
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Tooltip } from 'antd';
-import { TbEdit, TbTicket } from 'react-icons/tb';
+import { TbEdit, TbStar, TbTicket } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
@@ -48,7 +48,7 @@ const LocationTab = ({ event, facility, park }: LocationTabProps) => {
           lat={facility.lat ?? 0}
           lng={facility.long ?? 0}
           tooltipLabel={event.title}
-          backgroundColor={COLORS.green[300]} icon={<TbTicket className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
+          backgroundColor={COLORS.green[300]} icon={<TbStar className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
       </MapContainer>
     </div>
   );
