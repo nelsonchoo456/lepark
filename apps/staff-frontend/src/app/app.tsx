@@ -52,6 +52,7 @@ import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
 import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
+import EventList from './pages/Event/EventList';
 
 export function App() {
   return (
@@ -199,6 +200,23 @@ export function App() {
                     <Route path=":id/edit-map" element={<AttractionEditMap />} />
                   </Route>
                   <Route path=":id" element={<AttractionDetails />} />
+                </Route>
+              </Route>
+
+                  {/* Event Routes */}
+                  <Route
+                element={
+                  <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                }
+              >
+                <Route path="/event">
+                  <Route index element={<EventList />} />
+                  {/* <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/event" />}>
+                    <Route path="create" element={<EventCreate />} />
+                    <Route path=":id/edit" element={<EventEdit />} />
+                    <Route path=":id/edit-map" element={<EventEditMap />} />
+                  </Route>
+                  <Route path=":id" element={<EventDetails />} /> */}
                 </Route>
               </Route>
 

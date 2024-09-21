@@ -46,4 +46,5 @@ export interface FacilityResponse {
   fee: number;
   parkId: number;
   hubs?: string[]; // Array of hub IDs associated with this facility
+  events?: string[]; // Array of event IDs associated with this facility
 }

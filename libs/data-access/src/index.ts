@@ -33,3 +33,7 @@ export * from './lib/types/hub';
 
 export * from './lib/api/facility';
 export * from './lib/types/facility';
+
+export * from './lib/api/event';
+export * from './lib/types/event';
+

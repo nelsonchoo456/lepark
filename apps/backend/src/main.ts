@@ -19,6 +19,7 @@ import dotenv from 'dotenv';
 import attractionRouter from './routers/attractionRouter';
 import hubRouter from './routers/hubRouter';
 import facilityRouter from './routers/facilityRouter';
+import eventRouter from './routers/eventRouter';
 
 dotenv.config();
 const app = express();
@@ -63,6 +64,7 @@ app.use('/api/statuslogs', statusLogRouter);
 app.use('/api/attractions', attractionRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/facilities', facilityRouter);
+app.use('/api/events', eventRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
