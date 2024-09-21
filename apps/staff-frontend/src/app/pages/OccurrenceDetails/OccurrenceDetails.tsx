@@ -14,15 +14,25 @@ import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/dat
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
-
   const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
 
-  if (!loading && !occurrence) {
-    return <EntityNotFound entityName="Occurrence" listPath="/occurrences" />;
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
+
+  if (!occurrence) {
+    return null; // This will handle cases where the occurrence is not found or user doesn't have access
   }
 
   const descriptionsItems = [

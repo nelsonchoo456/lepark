@@ -7,7 +7,6 @@ import { notification } from 'antd';
 export const useRestrictPark = (parkId?: string) => {
   const [park, setPark] = useState<ParkResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
@@ -20,8 +19,7 @@ export const useRestrictPark = (parkId?: string) => {
 
     const fetchPark = async (parkId: string) => {
       setLoading(true);
-      setNotFound(false); // Reset notFound state
-      setPark(null); // Reset park state
+      setPark(null);
       try {
         const parkResponse = await getParkById(parseInt(parkId));
 
@@ -32,21 +30,20 @@ export const useRestrictPark = (parkId?: string) => {
           if (user?.role === StaffType.SUPERADMIN || user?.parkId === fetchedPark.id) {
             setPark(fetchedPark);
           } else {
-            if (!notificationShown.current) {
-              notification.error({
-                message: 'Access Denied',
-                description: 'You are not allowed to access this park!',
-              });
-              notificationShown.current = true;
-            }
-            navigate('/');
+            throw new Error('Access denied');
           }
         } else {
-          setNotFound(true);
+          throw new Error('Park not found');
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setNotFound(true);
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -55,5 +52,5 @@ export const useRestrictPark = (parkId?: string) => {
     fetchPark(parkId);
   }, [parkId, navigate, user]);
 
-  return { park, loading, notFound };
+  return { park, loading };
 };

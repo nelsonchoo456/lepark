@@ -8,7 +8,6 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
@@ -21,7 +20,6 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
 
     const fetchOccurrence = async (occurrenceId: string) => {
       setLoading(true);
-      setNotFound(false);
       setOccurrence(null);
       setSpecies(null);
       try {
@@ -36,21 +34,20 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
             const speciesResponse = await getSpeciesById(fetchedOccurrence.speciesId);
             setSpecies(speciesResponse.data);
           } else {
-            if (!notificationShown.current) {
-              notification.error({
-                message: 'Access Denied',
-                description: 'You are not allowed to access this occurrence!',
-              });
-              notificationShown.current = true;
-            }
-            navigate('/');
+            throw new Error('Access denied');
           }
         } else {
-          setNotFound(true);
+          throw new Error('Occurrence not found');
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setNotFound(true);
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -59,5 +56,5 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
     fetchOccurrence(occurrenceId);
   }, [occurrenceId, navigate, user]);
 
-  return { occurrence, species, loading, notFound };
+  return { occurrence, species, loading };
 };

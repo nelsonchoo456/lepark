@@ -7,7 +7,6 @@ import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
 const { Text } = Typography;
@@ -16,18 +15,14 @@ const ParkDetails = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { park, loading, notFound } = useRestrictPark(id);
+  const { park, loading } = useRestrictPark(id);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (notFound) {
-    return <EntityNotFound entityName="Park" listPath={user?.role === StaffType.SUPERADMIN ? "/park" : "/"} />;
-  }
-
   if (!park) {
-    return null; // This case should not happen, but we'll return null just in case
+    return null; // This will handle cases where the park is not found or user doesn't have access
   }
 
   const descriptionsItems = [
