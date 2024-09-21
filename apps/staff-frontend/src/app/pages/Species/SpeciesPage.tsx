@@ -171,7 +171,7 @@ const SpeciesPage = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Species">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/species/${record.id}`)} />
           </Tooltip>
           {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) && (

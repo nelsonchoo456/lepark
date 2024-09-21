@@ -127,16 +127,16 @@ const OccurrenceList: React.FC = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Occurrence">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           {user?.role === StaffType.SUPERADMIN ||
             ((user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
               <>
-                <Tooltip title="Edit Details">
+                <Tooltip title="Edit Occurrence">
                   <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
                 </Tooltip>
-                <Tooltip title="Delete">
+                <Tooltip title="Delete Occurrence">
                   <Button
                     danger
                     type="link"
@@ -267,13 +267,13 @@ const OccurrenceList: React.FC = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Occurrence">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
+          <Tooltip title="Edit Occurrence">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete Occurrence">
             <Button
               danger
               type="link"

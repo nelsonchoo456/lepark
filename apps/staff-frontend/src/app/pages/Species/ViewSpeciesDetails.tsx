@@ -19,7 +19,6 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import InformationTab from './components/InformationTab';
 import OccurrenceTable from './components/OccurrenceTable';
 import SpeciesCarousel from './components/SpeciesCarousel';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
