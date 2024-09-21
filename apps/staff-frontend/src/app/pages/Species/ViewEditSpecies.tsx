@@ -238,9 +238,7 @@ const ViewEditSpecies = () => {
 
   if (!webMode) {
     return (
-      <div
-        className="h-[calc(100vh-2rem)] w-screen p-4"
-      >
+      <div className="h-[calc(100vh-2rem)] w-screen p-4">
         <PageHeader>Create Species (Mobile)</PageHeader>
       </div>
     );
@@ -389,7 +387,7 @@ const ViewEditSpecies = () => {
           />
         </Form.Item>
 
-        <Form.Item name="maxTemp" label rules={[{ required: true }]}>
+        <Form.Item name="maxTemp" label="Max Temp (C)" rules={[{ required: true }]}>
           <InputNumber
             min={0}
             max={50}

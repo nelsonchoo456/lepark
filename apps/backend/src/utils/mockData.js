@@ -292,7 +292,7 @@ const speciesData = [
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQONi83ZpXrEwR0-3vGsICljlgZY1r08vbWsw&s',
     ],
     waterRequirement: 45,
-    fertiliserRequirement: 0,
+    fertiliserRequirement: 10,
     idealHumidity: 90,
     minTemp: 1,
     maxTemp: 20,
