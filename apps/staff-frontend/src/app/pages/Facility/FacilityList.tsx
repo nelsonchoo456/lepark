@@ -95,7 +95,7 @@ const FacilityList: React.FC = () => {
           {user?.role === StaffType.SUPERADMIN && (
             <>
               <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />

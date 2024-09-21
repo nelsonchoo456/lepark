@@ -12,12 +12,12 @@ import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 
 const center = {
   lat: 1.3503881629328163,
-  long: 103.85132690751749,
+  lng: 103.85132690751749,
 };
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
-  long?: number | null;
+  lng?: number | null;
 }
 
 const FacilityCreate = () => {
@@ -33,7 +33,7 @@ const FacilityCreate = () => {
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
   const [lat, setLat] = useState(center.lat);
-  const [long, setLong] = useState(center.long);
+  const [lng, setLng] = useState(center.lng);
 
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
@@ -64,9 +64,9 @@ const FacilityCreate = () => {
     }
   };
 
-  const adjustLatLng = ({ lat, long }: AdjustLatLngInterface) => {
+  const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
     if (lat) setLat(lat);
-    if (long) setLong(long);
+    if (lng) setLng(lng);
   };
 
   const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -81,6 +81,7 @@ const FacilityCreate = () => {
         openingHours.push(formValues[day][0] ? formValues[day][0].toISOString() : null);
         closingHours.push(formValues[day][1] ? formValues[day][1].toISOString() : null);
       });
+      const long = lng;
 
       const finalData = {
         ...rest,
@@ -125,7 +126,7 @@ const FacilityCreate = () => {
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={long} formValues={formValues} />,
+      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} formValues={formValues} />,
     },
     {
       key: 'complete',
@@ -180,7 +181,7 @@ const FacilityCreate = () => {
                 Latitude: <Input value={lat} />
               </div>
               <div className="flex-1">
-                Longitude: <Input value={long} />
+                Longitude: <Input value={lng} />
               </div>
             </Flex>
             <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
