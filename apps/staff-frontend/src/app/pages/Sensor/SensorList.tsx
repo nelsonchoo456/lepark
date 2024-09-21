@@ -23,7 +23,7 @@ const SensorManagementPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
+    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER) {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',

@@ -5,7 +5,7 @@ import {
   createSensor,
   getAllHubs,
   SensorData,
-  StaffResponse,
+  StaffResponse
 } from '@lepark/data-access';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
 import { Button, Card, DatePicker, Form, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
@@ -34,19 +34,24 @@ const SensorCreate = () => {
 
   const [hubs, setHubs] = useState<{ id: string; name: string }[]>([]);
 
-  useEffect(() => {
-    const fetchHubs = async () => {
+   useEffect(() => {
+    const fetchHubsAndFacilities = async () => {
       try {
-        const response = await getAllHubs();
-        setHubs(response.data);
+        const hubsResponse = await getAllHubs();
+        setHubs(hubsResponse.data);
+
+        /*if (user && user.parkId) {
+          const facilitiesResponse = await getAllFacilities(user.parkId);
+          setFacilities(facilitiesResponse.data);
+        }*/
       } catch (error) {
-        console.error('Error fetching hubs:', error);
-        message.error('Failed to fetch hubs');
+        console.error('Error fetching hubs and facilities:', error);
+        message.error('Failed to fetch hubs and facilities');
       }
     };
 
-    fetchHubs();
-  }, []);
+    fetchHubsAndFacilities();
+  }, [user]);
 
   useEffect(() => {
     if (user && user.id !== '') {
@@ -115,7 +120,8 @@ const SensorCreate = () => {
         latitude: values.latitude,
         longitude: values.longitude,
         remarks: values.remarks,
-        hubId: values.hubId,
+        hubId: values.hubId || undefined,
+        facilityId: values.facilityId || undefined,
         image: '', // Initially blank, will be populated by backend
       };
 
@@ -289,17 +295,42 @@ const SensorCreate = () => {
               <Input.TextArea />
             </Form.Item>
 
-             <Form.Item name="hubId" label="Hub" rules={[{ required: true, message: 'Please select a hub' }]}>
-              <Select placeholder="Select a hub">
-                {hubs.map((hub) => (
-                  <Select.Option key={hub.id} value={hub.id}>
-                    {hub.name}
-                  </Select.Option>
-                ))}
-              </Select>
+             <Form.Item name="hubId" label="Hub" rules={[{ required: false }]}>
+              <div className="flex w-full">
+                <Select
+                  placeholder="Select a hub"
+                  allowClear
+                  style={{ width: 'calc(100% - 80px)', marginRight: '8px' }}
+                >
+                  {hubs.map((hub) => (
+                    <Select.Option key={hub.id} value={hub.id}>
+                      {hub.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+                <Button
+                  onClick={() => {
+                    form.setFieldsValue({ hubId: undefined });
+                    form.resetFields(['hubId']);
+                  }}
+                  style={{ width: '80px' }}
+                >
+                  Clear Hub
+                </Button>
+              </div>
             </Form.Item>
 
-              <Form.Item label="Upload Image" required tooltip="One image is required">
+            <Form.Item name="facilityId" label="Facility">
+              {/*<Select placeholder="Select a facility" allowClear>
+                {facilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.facilityName}
+                  </Select.Option>
+                ))
+              </Select>*/}
+            </Form.Item>
+
+              <Form.Item label="Upload Image"  tooltip="One image is required">
               <ImageInput
                 type="file"
                 onChange={handleFileChange}
