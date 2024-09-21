@@ -10,6 +10,7 @@ import { LatLng } from 'leaflet';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import { Button, Card, Flex, Input, message, Popconfirm } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -18,8 +19,7 @@ export interface AdjustLatLngInterface {
 
 const AttractionEditMap = () => {
   const { id } = useParams<{ id: string }>();
-  const [attraction, setAttraction] = useState<AttractionResponse | null>(null);
-  const [park, setPark] = useState<ParkResponse | null>(null);
+  const { attraction, park, loading } = useRestrictAttractions(id);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
@@ -28,32 +28,17 @@ const AttractionEditMap = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) return;
-      try {
-        const attractionRes = await getAttractionById(id);
-        if (attractionRes.status === 200) {
-          const attractionData = attractionRes.data;
-          setAttraction(attractionData);
-          setLat(attractionData.lat);
-          setLng(attractionData.lng);
+      if (!attraction) return;
+      if (!park) return;
 
-          try {
-            const parkRes = await getParkById(attractionData.parkId);
-            if (parkRes.status === 200) {
-              const parkData = parkRes.data;
-              setPark(parkData);
-              setPolygon(parkData.geom.coordinates);
-            }
-          } catch (error) {
-            console.error('Error fetching park details:', error);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching attraction details:', error);
-      }
+      setLat(attraction.lat);
+      setLng(attraction.lng);
+
+      setPolygon(park.geom.coordinates);
     };
+
     fetchData();
-  }, [id]);
+  }, [id, attraction, park]);
 
   const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
     if (lat) {

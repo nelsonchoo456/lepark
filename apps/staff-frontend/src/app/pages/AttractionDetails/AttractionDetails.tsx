@@ -9,47 +9,16 @@ import AttractionStatusTag from './components/AttractionStatusTag';
 import InformationTab from './components/InformationTab';
 import { FiExternalLink } from 'react-icons/fi';
 import LocationTab from './components/LocationTab';
+import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 
 const { Text } = Typography;
 
 const AttractionDetails = () => {
   const { user } = useAuth<StaffResponse>();
-  const [attraction, setAttraction] = useState<AttractionResponse>();
-  const navigate = useNavigate();
   const { id } = useParams();
+  const { attraction, park, loading } = useRestrictAttractions(id);
+  const navigate = useNavigate();
   const notificationShown = useRef(false);
-  const [park, setPark] = useState<ParkResponse>();
-
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        const attractionRes = await getAttractionById(id);
-        if (attractionRes.status === 200) {
-          setAttraction(attractionRes.data);
-
-          // Fetch park details
-          if (attractionRes.data.parkId) {
-            const parkRes = await getParkById(attractionRes.data.parkId);
-            if (parkRes.status === 200) {
-              setPark(parkRes.data as ParkResponse);
-            }
-          }
-        }
-      } catch (error) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Error',
-            description: 'An error occurred while fetching the attraction details.',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/attraction');
-      }
-    };
-    fetchData();
-  }, [id]);
 
   const descriptionsItems = [
     {
