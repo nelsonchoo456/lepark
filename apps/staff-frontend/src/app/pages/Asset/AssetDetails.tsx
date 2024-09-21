@@ -8,46 +8,23 @@ import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAss
 import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
+import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
+import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+
 const AssetDetails = () => {
-  const { assetId } = useParams<{ assetId: string }>();
+  const { assetId = '' } = useParams<{ assetId: string }>();
+  const { asset, loading, notFound } = useRestrictAsset(assetId);
   const navigate = useNavigate();
-  const [asset, setAsset] = useState<ParkAssetResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchData = async () => {
-      if (assetId) {
-        try {
-          const assetResponse = await getParkAssetById(assetId);
-          setAsset(assetResponse.data);
-          // console.log(assetResponse.data);
-        } catch (error) {
-          console.error('Error fetching asset data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [assetId]);
 
-  if (loading) {
-    return <Spin size="large" />;
-  }
+  const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
+    const words = enumValue.split('_');
 
-  if (!asset) {
-    return <div>Asset not found</div>;
-  }
-
-
-   const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
-  const words = enumValue.split('_');
-
-  if (enumType === 'type' || enumType === 'condition') {
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-  } else {
-    return words.map(word => word.toUpperCase()).join(' ');
-  }
-};
+    if (enumType === 'type' || enumType === 'condition') {
+      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    } else {
+      return words.map(word => word.toUpperCase()).join(' ');
+    }
+  };
 
   const descriptionsItems = [
     {
@@ -83,7 +60,6 @@ const AssetDetails = () => {
       label: 'Information',
       children: asset ? <AssetInfoTab asset={asset} /> : <p>Loading asset data...</p>,
     },
-
   ];
 
   const breadcrumbItems = [
@@ -127,72 +103,72 @@ const AssetDetails = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
+
+  if (notFound) {
+    return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
+  }
+
+  if (!asset) {
+    return null;
+  }
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
+        <div className="md:flex w-full gap-4">
+          <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {asset?.images && asset.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {asset.images.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            <div className="md:flex w-full gap-4">
-              <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
-                {asset?.images && asset.images.length > 0 ? (
-                  <Carousel style={{ maxWidth: '100%' }}>
-                    {asset.images.map((url) => (
-                      <div key={url}>
-                        <div
-                          style={{
-                            backgroundImage: `url('${url}')`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            color: 'white',
-                            overflow: 'hidden',
-                          }}
-                          className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
-                        />
-                      </div>
-                    ))}
-                  </Carousel>
-                ) : (
-                  <div className="h-64 bg-gray-200 flex items-center justify-center">
-                    <Empty description="No Image" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 flex-col flex">
-                <LogoText className="text-2xl py-2 m-0">{asset?.parkAssetName}</LogoText>
-                <Descriptions items={descriptionsItems} column={1} size="small" />
+          <div className="flex-1 flex-col flex">
+            <LogoText className="text-2xl py-2 m-0">{asset?.parkAssetName}</LogoText>
+            <Descriptions items={descriptionsItems} column={1} size="small" />
 
-                <div className="flex h-24 w-full gap-2 mt-auto">
-                  {/* <div className="bg-blue-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-blue-600 p-1">
-                  <div className="bg-blue-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-blue-600 p-1">
-                    {getAssetTypeIcon(asset?.parkAssetType)}
-                    <p className="text-xs mt-2">{formatEnumLabel(asset?.parkAssetType, 'type')}</p>
-                  </div>
-                  <div className="bg-blue-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-blue-600 p-1">
-                    <FaWrench className="text-3xl mt-2" />
-                    <p className="text-xs mt-2">Maintenance in {moment(asset?.nextMaintenanceDate).diff(moment(), 'days')} days</p>
-                  </div>
-                  <div className={`bg-blue-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center ${getAssetConditionInfo(asset?.parkAssetCondition).color} p-1`}>
-                    <FaTools className="text-3xl mt-2" />
-                    <p className="text-xs mt-2">{getAssetConditionInfo(asset?.parkAssetCondition).text}</p>
-                  </div>  */}
-                </div>
-              </div>
+            <div className="flex h-24 w-full gap-2 mt-auto">
+              {/* Asset type, maintenance, and condition info can be added here if needed */}
             </div>
+          </div>
+        </div>
 
-            <Tabs
-              centered
-              defaultActiveKey="information"
-              items={tabsItems}
-              renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
-              className="mt-4"
-            />
-          </>
-        )}
+        <Tabs
+          centered
+          defaultActiveKey="information"
+          items={tabsItems}
+          renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
+          className="mt-4"
+        />
       </Card>
     </ContentWrapperDark>
   );
