@@ -21,4 +21,6 @@ export interface ZoneResponse {
   paths: any;
   zoneStatus: string;
   parkId: number;
+  parkName: string;
+  parkDescription: string;
 }
