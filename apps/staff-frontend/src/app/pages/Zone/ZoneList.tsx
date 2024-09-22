@@ -128,15 +128,15 @@ const ZoneList: React.FC = () => {
       dataIndex: 'id',
       render: (id, record) => (
         <Flex justify="center">
-          <Tooltip title="Details Page coming soon">
-            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} disabled />
+          <Tooltip title="View Zone">
+            <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
           </Tooltip>
           {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
             <>
-              <Tooltip title="Edit Page coming soon">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} disabled />
+              <Tooltip title="Edit Zone">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
               </Tooltip>
-              <Tooltip title="Delete">
+              <Tooltip title="Delete Zone">
                 <Button
                   danger
                   type="link"

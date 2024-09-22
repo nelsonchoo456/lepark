@@ -41,6 +41,7 @@ import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
+import ZoneEdit from './pages/ZoneEdit/ZoneEdit';
 
 export function App() {
   return (
@@ -165,7 +166,7 @@ export function App() {
                   }
                 />
                 <Route path=":id" element={<ZoneDetails />} />
-                {/* <Route path=":id/edit" element={<ZoneEdit />} /> */}
+                <Route path=":id/edit" element={<ZoneEdit />} />
               </Route>
 
               {/* Task Routes */}

@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { updateZone, getZoneById, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
+import { updateZone, getZoneById, ZoneResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message, notification } from 'antd';
-import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import PageHeader2 from '../../components/main/PageHeader2';
-import CreateDetailsStep from '../ZoneCreate/components/CreateDetailsStep';
-import CreateMapStep from '../ZoneCreate/components/CreateMapStep';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -27,10 +23,6 @@ const ZoneEdit = () => {
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [form] = Form.useForm();
-
-  // Map Values
-  const [polygon, setPolygon] = useState<LatLng[][]>([]);
-  const [lines, setLines] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -56,12 +48,6 @@ const ZoneEdit = () => {
           }
           
           form.setFieldsValue(initialValues);
-          
-          // Set polygon data if available
-          if (zoneData.geom) {
-            // Convert geom to LatLng[][] format
-            setPolygon([zoneData.geom.coordinates[0].map((coord: number[]) => ({ lat: coord[1], lng: coord[0] }))]);
-          }
         }
       } catch (error) {
         if (!notificationShown.current) {
@@ -91,11 +77,6 @@ const ZoneEdit = () => {
       });
 
       const finalData = { ...rest, openingHours, closingHours };
-
-      if (polygon && polygon[0] && polygon[0][0]) {
-        const polygonData = latLngArrayToPolygon(polygon[0][0]);
-        finalData.geom = polygonData;
-      }
 
       const changedData: Partial<ZoneResponse> = Object.keys(finalData).reduce((acc, key) => {
         const typedKey = key as keyof ZoneResponse;
@@ -132,7 +113,43 @@ const ZoneEdit = () => {
     }
   };
 
-  // ... (other helper functions like handleApplyToAllChange, handleCurrentImageClick)
+  const handleApplyToAllChange = (day: string) => {
+    try {
+      const dayTime = form.getFieldValue(day);
+      if (dayTime) {
+        form.setFieldsValue({
+          monday: dayTime,
+          tuesday: dayTime,
+          wednesday: dayTime,
+          thursday: dayTime,
+          friday: dayTime,
+          saturday: dayTime,
+          sunday: dayTime,
+        });
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: `Please put a valid Zone Hour range for ${day}`,
+        });
+      }
+    } catch (error) {
+      messageApi.open({
+        type: 'error',
+        content: `Please manually input the Zone Hour ranges.`,
+      });
+    }
+  };
+
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+  const zoneStatusOptions = [
+    { value: 'OPEN', label: 'Open' },
+    { value: 'CLOSED', label: 'Closed' },
+    { value: 'UNDER_CONSTRUCTION', label: 'Under Construction' },
+    { value: 'LIMITED_ACCESS', label: 'Limited Access' },
+  ];
 
   const breadcrumbItems = [
     {
@@ -159,24 +176,61 @@ const ZoneEdit = () => {
         <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
           {contextHolder}
           <Divider orientation="left">Zone Details</Divider>
-          <CreateDetailsStep
-            handleCurrStep={() => {}}
-            form={form}
-            parks={[]}  // You might need to fetch parks or pass them as props
-            previewImages={previewImages}
-            handleFileChange={handleFileChange}
-            removeImage={removeImage}
-            onInputClick={onInputClick}
-          />
-          
-          <Divider orientation="left">Zone Location</Divider>
-          <CreateMapStep 
-            handleCurrStep={() => {}} 
-            polygon={polygon} 
-            setPolygon={setPolygon} 
-            lines={lines} 
-            setLines={setLines} 
-          />
+          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+            <Input placeholder="Zone Name" />
+          </Form.Item>
+          <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+            <TextArea placeholder="Zone Description" />
+          </Form.Item>
+          <Form.Item name="zoneStatus" label="Zone Status" rules={[{ required: true }]}>
+            <Select placeholder="Select a Status" options={zoneStatusOptions} />
+          </Form.Item>
+
+          <Form.Item label={'Image'}>
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
+          <Form.Item label={'Images'}>
+            <div className="flex flex-wrap gap-2">
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+            </div>
+          </Form.Item>
+
+          <Divider orientation="left">
+            Zone Hours <Text type="danger">{' *'}</Text>
+          </Divider>
+
+          {daysOfTheWeek.map((day) => (
+            <Form.Item label={day.charAt(0).toUpperCase() + day.slice(1)} key={day}>
+              <Flex>
+                <Form.Item name={day} noStyle rules={[{ required: true, message: 'Please enter valid Zone Hours' }]}>
+                  <RangePicker className="w-full" use12Hours format="hh:mm a" />
+                </Form.Item>
+                <Popconfirm title="Input for all the other days will be overridden." onConfirm={() => handleApplyToAllChange(day)}>
+                  <Button style={{ marginLeft: 16 }}>Apply to all days</Button>
+                </Popconfirm>
+              </Flex>
+            </Form.Item>
+          ))}
 
           <Form.Item wrapperCol={{ offset: 8 }}>
             <Button type="primary" className="w-full" htmlType="submit">
