@@ -1,13 +1,13 @@
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { ContentWrapper, ImageInput, useAuth } from '@lepark/common-ui';
+import { ContentWrapper, ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 //species form
 import { getSpeciesById, SpeciesResponse, StaffResponse, StaffType, updateSpecies } from '@lepark/data-access';
 import { regions } from '@lepark/data-utility';
 import type { GetProp } from 'antd';
-import { Button, Checkbox, Form, Input, InputNumber, message, Modal, notification, Select, Space, Spin } from 'antd';
+import { Button, Card, Checkbox, Form, Input, InputNumber, message, Modal, notification, Select, Space, Spin } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -258,17 +258,17 @@ const ViewEditSpecies = () => {
     }
   }, [speciesObj]);
 
-  if (!webMode) {
-    return (
-      <div
-        className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
-      >
-        {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
-        <PageHeader>Create Species (Mobile)</PageHeader>
-        {/* Add your mobile content here */}
-      </div>
-    );
-  }
+  // if (!webMode) {
+  //   return (
+  //     <div
+  //       className="h-[calc(100vh-2rem)] w-screen p-4" // page wrapper - padding
+  //     >
+  //       {/* <h1 className="header-1 mb-4">Species Mobile Mode</h1> */}
+  //       <PageHeader>Create Species (Mobile)</PageHeader>
+  //       {/* Add your mobile content here */}
+  //     </div>
+  //   );
+  // }
 
   if (loading) { // this displays the loading spinner, if removed the page will display before redirecting for unauthorized users
     return (
@@ -280,10 +280,10 @@ const ViewEditSpecies = () => {
 
   return (
     // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
-    <ContentWrapper>
+    <ContentWrapperDark>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
-
+      <Card>
       <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} className="max-w-[600px] mx-auto" disabled={isSubmitting}>
         <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
           <Select onChange={onPhylumChange} placeholder="Select a phylum">
@@ -474,7 +474,8 @@ const ViewEditSpecies = () => {
           </Space>
         </Form.Item>
       </Form>
-    </ContentWrapper>
+      </Card>
+    </ContentWrapperDark>
   );
 };
 
