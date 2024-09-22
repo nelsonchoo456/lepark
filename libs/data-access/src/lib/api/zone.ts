@@ -1,18 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
 import { ZoneData, ZoneResponse } from '../types/zone';
+import client from './client';
 
-const axiosClient = axios.create({
-  baseURL: 'http://localhost:3333/api/zones', // Replace with your backend URL
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 5000, // optional: specify request timeout in milliseconds
-});
+const URL = '/zones';
+
+// Remove the axiosClient creation
 
 export async function createZone(data: ZoneData): Promise<AxiosResponse<ZoneResponse>> {
-
   try {
-    const response: AxiosResponse<ZoneResponse> = await axiosClient.post('/createZone', data);
+    const response: AxiosResponse<ZoneResponse> = await client.post(`${URL}/createZone`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -25,7 +21,7 @@ export async function createZone(data: ZoneData): Promise<AxiosResponse<ZoneResp
 
 export async function getAllZones(): Promise<AxiosResponse<ZoneResponse[]>> {
   try {
-    const response: AxiosResponse<ZoneResponse[]> = await axiosClient.get(`/getAllZones`);
+    const response: AxiosResponse<ZoneResponse[]> = await client.get(`${URL}/getAllZones`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -38,7 +34,7 @@ export async function getAllZones(): Promise<AxiosResponse<ZoneResponse[]>> {
 
 export async function getZonesByParkId(parkId: number): Promise<AxiosResponse<ZoneResponse[]>> {
   try {
-    const response: AxiosResponse<ZoneResponse[]> = await axiosClient.get(`/getAllZones?parkId=${parkId}`);
+    const response: AxiosResponse<ZoneResponse[]> = await client.get(`${URL}/getAllZones`, { params: { parkId } });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -51,7 +47,7 @@ export async function getZonesByParkId(parkId: number): Promise<AxiosResponse<Zo
 
 export async function getZoneById(id: number): Promise<AxiosResponse<ZoneResponse>> {
   try {
-    const response: AxiosResponse<ZoneResponse> = await axiosClient.get(`/getZoneById/${id}`);
+    const response: AxiosResponse<ZoneResponse> = await client.get(`${URL}/getZoneById/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -64,7 +60,7 @@ export async function getZoneById(id: number): Promise<AxiosResponse<ZoneRespons
 
 export async function deleteZone(id: number): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await axiosClient.delete(`/deleteZone/${id}`);
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteZone/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
