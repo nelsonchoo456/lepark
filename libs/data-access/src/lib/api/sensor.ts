@@ -48,7 +48,7 @@ export async function getAllSensors(facilityId?: string): Promise<AxiosResponse<
 
 export async function getSensorById(id: string): Promise<AxiosResponse<SensorResponse>> {
   try {
-    const response: AxiosResponse<SensorResponse> = await client.get(`${URL}/viewSensorDetails/${id}`);
+    const response: AxiosResponse<SensorResponse> = await client.get(`${URL}/getSensorById/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
