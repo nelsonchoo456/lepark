@@ -1,8 +1,8 @@
-import { getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Checkbox, Space, Tooltip } from 'antd';
-import { TbEdit, TbTree } from 'react-icons/tb';
+import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import type { GetProp } from 'antd';
@@ -18,7 +18,7 @@ const MapTab = ({ park }: MapTabProps) => {
   const navigate = useNavigate();
   const [zones, setZones] = useState<ZoneResponse[]>();
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
-  // const [attractions, setAttractions] = useState<AttractionResponse[]>();
+  const [attractions, setAttractions] = useState<AttractionResponse[]>();
 
   const [showZones, setShowZones] = useState<boolean>(false);
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
@@ -29,6 +29,7 @@ const MapTab = ({ park }: MapTabProps) => {
     if (park.id) {
       fetchZones();
       fetchOccurrences();
+      fetchAttractions();
     }
   }, [park])
 
@@ -45,6 +46,14 @@ const MapTab = ({ park }: MapTabProps) => {
     if (occurrenceRes.status === 200) {
       const occurrenceData = occurrenceRes.data;
       setOccurrences(occurrenceData);
+    }
+  }
+
+  const fetchAttractions = async () => {
+    const attractionsRes = await getAttractionsByParkId(park.id);
+    if (attractionsRes.status === 200) {
+      const attractionsData = attractionsRes.data;
+      setAttractions(attractionsData);
     }
   }
 
@@ -102,6 +111,11 @@ const MapTab = ({ park }: MapTabProps) => {
           {showOccurrences && occurrences &&
             occurrences.map((occurrence) => (
               <PictureMarker circleWidth={30} lat={occurrence.lat} lng={occurrence.lng} backgroundColor={COLORS.green[300]} icon={<PiPlantFill className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={occurrence.title} />
+            ))}
+
+          {showAttractions && attractions &&
+            attractions.map((attraction) => (
+              <PictureMarker circleWidth={30} lat={attraction.lat} lng={attraction.lng} backgroundColor={COLORS.sky[300]} icon={<TbTicket className='text-sky-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={attraction.title} />
             ))}
         </MapContainer>
       </div>
