@@ -49,7 +49,7 @@ export function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/visitor-reset-password" element={<ResetPassword />} />
               <Route path="/verify-user" element={<VerifyUser />} />
               <Route element={<MainLayout />}>
                 <Route path="/" element={<MainLanding />} />

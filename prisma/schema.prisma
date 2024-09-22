@@ -215,4 +215,6 @@ model Visitor {
   contactNumber   String
   favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
   isVerified      Boolean
+  resetToken      String?
+  resetTokenUsed  Boolean   @default(false)
 }
