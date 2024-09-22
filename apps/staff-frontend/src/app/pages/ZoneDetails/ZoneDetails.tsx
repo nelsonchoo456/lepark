@@ -8,6 +8,7 @@ import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import InformationTab from './components/InformationTab';
+import MapTab from './components/MapTab';
 
 const { Text } = Typography;
 
@@ -43,6 +44,11 @@ const ZoneDetails = () => {
       key: 'about',
       label: 'Information',
       children: <InformationTab zone={zone} />,
+    },
+    {
+      key: 'map',
+      label: 'Map',
+      children: zone ? <MapTab zone={zone} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
     {
       key: 'attractions',

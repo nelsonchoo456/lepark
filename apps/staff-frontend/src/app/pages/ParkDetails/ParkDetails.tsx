@@ -49,12 +49,7 @@ const ParkDetails = () => {
     {
       key: 'map',
       label: 'Map',
-      children: park ? <MapTab park={park} /> : <></>,
-    },
-    {
-      key: 'map',
-      label: 'Map',
-      children: park ? <MapTab park={park} /> : <></>,
+      children: park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
     {
       key: 'zones',
