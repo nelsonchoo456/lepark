@@ -166,7 +166,18 @@ export function App() {
                   }
                 />
                 <Route path=":id" element={<ZoneDetails />} />
-                <Route path=":id/edit" element={<ZoneEdit />} />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneEdit />
+                    </>
+                  }
+                />
               </Route>
 
               {/* Task Routes */}

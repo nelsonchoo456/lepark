@@ -17,7 +17,7 @@ export async function createZone(data: ZoneData, files?: File[]): Promise<AxiosR
     const uploadedUrls = await client.post(`${URL}/upload`, formData);
     data.images = uploadedUrls.data.uploadedUrls;
 
-    const response: AxiosResponse<ZoneResponse> = await client.post('/createZone', data);
+    const response: AxiosResponse<ZoneResponse> = await client.post(`${URL}/createZone`, data);
     return response;
   } catch (error) {
     handleAxiosError(error);

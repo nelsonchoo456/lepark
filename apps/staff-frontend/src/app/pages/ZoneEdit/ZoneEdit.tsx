@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { updateZone, getZoneById, ZoneResponse, StaffResponse } from '@lepark/data-access';
-import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message, notification } from 'antd';
+import { updateZone, ZoneResponse, StaffResponse } from '@lepark/data-access';
+import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -16,52 +17,31 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const ZoneEdit = () => {
   const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
-  const [zone, setZone] = useState<ZoneResponse>();
+  const navigate = useNavigate();
+  const { zone, loading } = useRestrictZone(id);
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const navigate = useNavigate();
-  const notificationShown = useRef(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        const zoneRes = await getZoneById(parseInt(id));
-        if (zoneRes.status === 200) {
-          const zoneData = zoneRes.data;
-          setZone(zoneData);
-          const initialValues = {
-            ...zoneData,
-            sunday: [dayjs(zoneData.openingHours[0]), dayjs(zoneData.closingHours[0])],
-            monday: [dayjs(zoneData.openingHours[1]), dayjs(zoneData.closingHours[1])],
-            tuesday: [dayjs(zoneData.openingHours[2]), dayjs(zoneData.closingHours[2])],
-            wednesday: [dayjs(zoneData.openingHours[3]), dayjs(zoneData.closingHours[3])],
-            thursday: [dayjs(zoneData.openingHours[4]), dayjs(zoneData.closingHours[4])],
-            friday: [dayjs(zoneData.openingHours[5]), dayjs(zoneData.closingHours[5])],
-            saturday: [dayjs(zoneData.openingHours[6]), dayjs(zoneData.closingHours[6])],
-          };
-          if (zoneData.images) {
-            setCurrentImages(zoneData.images);
-          }
-          
-          form.setFieldsValue(initialValues);
-        }
-      } catch (error) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Error',
-            description: 'An error occurred while fetching the zone details.',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
+    if (zone) {
+      const initialValues = {
+        ...zone,
+        sunday: [dayjs(zone.openingHours[0]), dayjs(zone.closingHours[0])],
+        monday: [dayjs(zone.openingHours[1]), dayjs(zone.closingHours[1])],
+        tuesday: [dayjs(zone.openingHours[2]), dayjs(zone.closingHours[2])],
+        wednesday: [dayjs(zone.openingHours[3]), dayjs(zone.closingHours[3])],
+        thursday: [dayjs(zone.openingHours[4]), dayjs(zone.closingHours[4])],
+        friday: [dayjs(zone.openingHours[5]), dayjs(zone.closingHours[5])],
+        saturday: [dayjs(zone.openingHours[6]), dayjs(zone.closingHours[6])],
+      };
+      if (zone.images) {
+        setCurrentImages(zone.images);
       }
-    };
-    fetchData();
-  }, [id, form, navigate]);
+      form.setFieldsValue(initialValues);
+    }
+  }, [zone, form]);
 
   const handleSubmit = async () => {
     if (!zone) return;
@@ -146,9 +126,9 @@ const ZoneEdit = () => {
 
   const zoneStatusOptions = [
     { value: 'OPEN', label: 'Open' },
-    { value: 'CLOSED', label: 'Closed' },
     { value: 'UNDER_CONSTRUCTION', label: 'Under Construction' },
     { value: 'LIMITED_ACCESS', label: 'Limited Access' },
+    { value: 'CLOSED', label: 'Closed' },
   ];
 
   const breadcrumbItems = [
@@ -167,6 +147,14 @@ const ZoneEdit = () => {
       isCurrent: true,
     },
   ];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!zone) {
+    return <div>Zone not found</div>;
+  }
 
   return (
     <ContentWrapperDark>
