@@ -6,7 +6,7 @@ import { CreateEventData, EventResponse, UpdateEventData } from '../types/event'
 
 const URL = '/events';
 
-export async function createEvents(data: CreateEventData, files?: File[]): Promise<AxiosResponse<EventResponse>> {
+export async function createEvent(data: CreateEventData, files?: File[]): Promise<AxiosResponse<EventResponse>> {
   try {
     const formData = new FormData();
 
