@@ -50,6 +50,7 @@ import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import ParksMap from './pages/ParksMap/ParksMap';
 import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
 import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
+import ZoneEditMap from './pages/ZoneEditMap/ZoneEditMap';
 
 export function App() {
   return (
@@ -193,6 +194,18 @@ export function App() {
                         redirectTo="/"
                       />
                       <ZoneEdit />
+                    </>
+                  }
+                />
+                 <Route
+                  path=":id/edit-map"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneEditMap />
                     </>
                   }
                 />
