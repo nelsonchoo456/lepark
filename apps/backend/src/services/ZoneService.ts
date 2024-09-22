@@ -1,10 +1,11 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { ZoneCreateData } from '../schemas/zoneSchema';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
 
+const prisma = new PrismaClient();
 class ZoneService {
   public async createZone(data: ZoneCreateData): Promise<any> {
     try {
@@ -64,7 +65,14 @@ class ZoneService {
   }
 
   public async deleteZoneById(id: number): Promise<any> {
-    return ZoneDao.deleteZoneById(id);
+    const res = await ZoneDao.deleteZoneById(id);
+
+    await prisma.occurrence.deleteMany({
+      where: {
+        zoneId: id,
+      },
+    });
+    return res;
   }
 }
 
