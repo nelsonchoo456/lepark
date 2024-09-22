@@ -13,13 +13,15 @@ import {
   EventSuitabilityEnum,
   getFacilitiesByParkId,
   FacilityResponse,
+  getEventsByFacilityId,
 } from '@lepark/data-access';
-import { Button, Card, Divider, Form, Input, Select, DatePicker, TimePicker, InputNumber, message, notification, Switch, Radio } from 'antd';
+import { Button, Card, Divider, Form, Input, Select, DatePicker, TimePicker, InputNumber, message, notification, Switch, Radio, Col, Row } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import dayjs, { Dayjs } from 'dayjs';
+import FacilityInfoCard from '../Event/components/FacilityInfoCard';
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -36,39 +38,69 @@ const EventEdit = () => {
   const [form] = Form.useForm();
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [isCancelled, setIsCancelled] = useState(event?.status === EventStatusEnum.CANCELLED);
-
+  const [maxCapacity, setMaxCapacity] = useState<number | null>(null);
+  const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment } | null>(null);
+  const [bookedDates, setBookedDates] = useState<moment.Moment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialValues, setInitialValues] = useState<any>(null);
 
   useEffect(() => {
     if (!id) return;
 
     const fetchData = async () => {
-      if (!event) return;
+      if (!event || !park) return;
 
-      const initialValues = {
-        ...event,
-        dateRange: [dayjs(event.startDate), dayjs(event.endDate)],
-        timeRange: [dayjs(event.startTime), dayjs(event.endTime)],
-      };
-      if (event.images) {
-        setCurrentImages(event.images);
-      }
-      const defaultIsCancelled = event.status === EventStatusEnum.CANCELLED;
-      setIsCancelled(defaultIsCancelled);
-      form.setFieldsValue({ isCancelled: defaultIsCancelled });
-      form.setFieldsValue(initialValues);
+      setIsLoading(true);
 
-      if (park) {
-        try {
-          const facilitiesResponse = await getFacilitiesByParkId(park.id);
-          setFacilities(facilitiesResponse.data);
-        } catch (error) {
-          console.error('Error fetching facilities:', error);
-          messageApi.error('Failed to fetch facilities');
+      try {
+        const facilitiesResponse = await getFacilitiesByParkId(park.id);
+        setFacilities(facilitiesResponse.data);
+
+        const currentFacility = facilitiesResponse.data.find(f => f.id === event.facilityId);
+        
+        if (currentFacility) {
+          setMaxCapacity(currentFacility.capacity);
+          setOperatingHours({
+            start: moment(currentFacility.openingHours[0]),
+            end: moment(currentFacility.closingHours[0]),
+          });
+
+          const eventsResponse = await getEventsByFacilityId(event.facilityId);
+          const bookedDates = eventsResponse.data
+            .filter(e => e.id !== event.id)
+            .flatMap(e => {
+              const start = moment(e.startDate);
+              const end = moment(e.endDate);
+              const dates = [];
+              for (let m = moment(start); m.diff(end, 'days') <= 0; m.add(1, 'days')) {
+                dates.push(m.clone());
+              }
+              return dates;
+            });
+          setBookedDates(bookedDates);
         }
+
+        const initialValues = {
+          ...event,
+          parkName: park.name,
+          facilityId: event.facilityId,
+          dateRange: [dayjs(event.startDate), dayjs(event.endDate)],
+          timeRange: [dayjs(event.startTime), dayjs(event.endTime)],
+          isCancelled: event.status === EventStatusEnum.CANCELLED,
+        };
+
+        setInitialValues(initialValues);
+        setCurrentImages(event.images || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        messageApi.error('Failed to fetch data');
+        setIsLoading(false);
       }
     };
+
     fetchData();
-  }, [id, event, form, messageApi]);
+  }, [id, event, park]);
 
   const eventStatusOptions = [
     { value: EventStatusEnum.UPCOMING, label: 'Upcoming' },
@@ -97,11 +129,46 @@ const EventEdit = () => {
     { value: EventSuitabilityEnum.FITNESS_ENTHUSIASTS, label: 'Fitness Enthusiasts' },
   ];
 
+  const onFacilityChange = async (facilityId: string) => {
+    const facility = facilities.find((f) => f.id === facilityId);
+    if (facility) {
+      setMaxCapacity(facility.capacity);
+      setOperatingHours({
+        start: moment(facility.openingHours[0]),
+        end: moment(facility.closingHours[0]),
+      });
+
+      try {
+        const eventsResponse = await getEventsByFacilityId(facilityId);
+        const bookedDates = eventsResponse.data
+          .filter(e => e.id !== event?.id) // Exclude the current event
+          .flatMap(e => {
+            const start = moment(e.startDate);
+            const end = moment(e.endDate);
+            const dates = [];
+            for (let m = moment(start); m.diff(end, 'days') <= 0; m.add(1, 'days')) {
+              dates.push(m.clone());
+            }
+            return dates;
+          });
+        setBookedDates(bookedDates);
+      } catch (error) {
+        console.error('Failed to fetch facility events:', error);
+      }
+    } else {
+      setMaxCapacity(null);
+      setOperatingHours(null);
+      setBookedDates([]);
+    }
+    
+    form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined });
+  };
+
   const handleSubmit = async () => {
     if (!event) return;
     try {
       const values = await form.validateFields();
-      const { dateRange, timeRange, parkId, isCancelled, ...rest } = values;
+      const { dateRange, timeRange, parkName, isCancelled, ...rest } = values;
 
       // Combine date and time for start and end
       const startDateTime = dayjs(dateRange[0]).hour(timeRange[0].hour()).minute(timeRange[0].minute()).second(0);
@@ -143,18 +210,52 @@ const EventEdit = () => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const disabledDate = (current: moment.Moment) => {
+   const disabledDate = (current: moment.Moment) => {
     if (!event) return false;
 
-    const originalStartDate = moment(event.startDate).startOf('day');
     const today = moment().startOf('day');
 
-    // Allow selection from the original start date or today, whichever is earlier
-    const earliestSelectableDate = originalStartDate.isBefore(today) ? originalStartDate : today;
+    // Allow selection from today onwards
+    if (current && current.isBefore(today)) {
+      return true;
+    }
 
-    return current && current.isBefore(earliestSelectableDate);
+    // Check if the date is in the bookedDates array
+    return bookedDates.some(bookedDate => bookedDate.isSame(current, 'day'));
   };
 
+  const disabledTime = (current: moment.Moment, type: 'start' | 'end') => {
+    if (!operatingHours) return {};
+
+    const currentHour = current.hour();
+    const currentMinute = current.minute();
+
+    if (type === 'start') {
+      return {
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h < operatingHours.start.hour()),
+        disabledMinutes: (selectedHour: number) => {
+          if (selectedHour === operatingHours.start.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter(m => m < operatingHours.start.minute());
+          }
+          return [];
+        },
+      };
+    }
+
+    if (type === 'end') {
+      return {
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h > operatingHours.end.hour()),
+        disabledMinutes: (selectedHour: number) => {
+          if (selectedHour === operatingHours.end.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter(m => m > operatingHours.end.minute());
+          }
+          return [];
+        },
+      };
+    }
+
+    return {};
+  };
   const cancelOptions = [
     { value: true, label: 'Yes' },
     { value: false, label: 'No' },
@@ -182,8 +283,13 @@ const EventEdit = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-          <Form.Item name="parkId" label="Park">
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : (
+      <Row gutter={[24, 24]}>
+      <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+        <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" initialValues={initialValues}>
+          <Form.Item name="parkName" label="Park">
             <Select placeholder={park?.name} disabled />
           </Form.Item>
 
@@ -219,15 +325,27 @@ const EventEdit = () => {
 
 
           <Form.Item
-            name="maxCapacity"
-            label="Max Capacity"
-            rules={[
-              { required: true, message: 'Please input the maximum capacity' },
-              { type: 'number', min: 1, message: 'Capacity must be at least 1' },
-            ]}
-          >
-            <InputNumber min={1} placeholder="Capacity" />
-          </Form.Item>
+                name="maxCapacity"
+                label="Max Capacity"
+                rules={[
+                  { required: true, message: 'Please input the maximum capacity' },
+                  { type: 'number', min: 1, message: 'Capacity must be at least 1' },
+                  {
+                    validator: (_, value) => {
+                      if (value > maxCapacity!) {
+                        return Promise.reject(`Capacity cannot exceed ${maxCapacity}`);
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <InputNumber 
+                  min={1} 
+                  max={maxCapacity || undefined}
+                  placeholder="Capacity" 
+                />
+              </Form.Item>
 
           <Form.Item label="Images">
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
@@ -262,28 +380,32 @@ const EventEdit = () => {
           )}
 
           <Divider orientation="left">Event Timings</Divider>
-
           <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
-            <RangePicker
-              className="w-full"
-              format="YYYY-MM-DD"
-              disabledDate={(current) => disabledDate(moment(current.toDate()))}
-              onChange={(dates, dateStrings) => {
-                if (dates) {
-                  form.setFieldsValue({
-                    dateRange: dates,
-                  });
-                } else {
-                  form.setFieldsValue({ dateRange: null });
-                }
-              }}
-            />
-          </Form.Item>
+                <RangePicker
+                  className="w-full"
+                  format="YYYY-MM-DD"
+                  disabledDate={(current) => disabledDate(moment(current.toDate()))}
+                  onChange={(dates, dateStrings) => {
+                    if (dates) {
+                      form.setFieldsValue({
+                        dateRange: dates,
+                      });
+                    } else {
+                      form.setFieldsValue({ dateRange: null });
+                    }
+                  }}
+                />
+              </Form.Item>
 
-          <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
-            <TimePicker.RangePicker className="w-full" use12Hours format="h:mm a" minuteStep={5} />
-          </Form.Item>
-
+              <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
+                <TimePicker.RangePicker 
+                  className="w-full" 
+                  use12Hours 
+                  format="h:mm a" 
+                  minuteStep={5}
+                  disabledTime={(time, type) => disabledTime(moment(time.valueOf()), type as 'start' | 'end')}
+                />
+              </Form.Item>
           <Divider orientation="left">Event Status</Divider>
           
           <Form.Item name="isCancelled" label="Cancel Event" rules={[{ required: true }]} >
@@ -301,6 +423,21 @@ const EventEdit = () => {
             </Button>
           </Form.Item>
         </Form>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+            <div style={{ 
+              position: 'sticky', 
+              top: 20,
+              maxWidth: '600px',
+              width: '100%',
+              padding: '20px',
+              paddingRight: '24px',
+            }}>
+              <FacilityInfoCard facility={facility}/>
+            </div>
+          </Col>
+      </Row>
+      )}
       </Card>
     </ContentWrapperDark>
   );

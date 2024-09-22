@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { createEvent, CreateEventData, EventStatusEnum, StaffResponse, StaffType } from '@lepark/data-access';
-import { Button, Card, Flex, Form, Input, Result, Steps, message, notification } from 'antd';
+import { Button, Card, Col, Flex, Form, Input, Result, Row, Steps, message, notification } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import { EventResponse } from '@lepark/data-access';
@@ -134,12 +134,16 @@ const EventCreate = () => {
         />
         {currStep === 0 && (
           <>
-            {content[0].children}
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }} className="max-w-[600px] mx-auto">
+             {content[0].children}
+          <Row gutter={[24, 24]}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }} className="max-w-[600px] mx-auto">
               <Button type="primary" className="w-full" onClick={handleSubmit}>
                 Submit
               </Button>
             </Form.Item>
+            </Col>
+            </Row>
           </>
         )}
         {currStep === 1 && (
