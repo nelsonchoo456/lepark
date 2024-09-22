@@ -53,26 +53,15 @@ const CreateStaff: React.FC = () => {
   };
 
   useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Staff Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    } else {
-      // Fetch parks data from the database
-      getAllParks()
-        .then((response) => {
-          setParks(response.data);
-        })
-        .catch((error) => {
-          console.error('There was an error fetching the parks data!', error);
-        });
-    }
-  }, [user]);
+    // Fetch parks data from the database
+    getAllParks()
+      .then((response) => {
+        setParks(response.data);
+      })
+      .catch((error) => {
+        console.error('There was an error fetching the parks data!', error);
+      });
+  }, []);
 
   const getParkName = (parkId?: number) => {
     const park = parks.find((park) => park.id === parkId);
@@ -164,11 +153,7 @@ const CreateStaff: React.FC = () => {
             {parks.length === 0 ? (
               <Text type="secondary">There are no parks created yet!</Text>
             ) : user?.role === StaffType.MANAGER ? (
-              <Select placeholder={getParkName(user?.parkId)} value={user?.parkId}>
-                <Select.Option key={user?.parkId} value={user?.parkId}>
-                  {getParkName(user?.parkId)}
-                </Select.Option>
-              </Select>
+              <Form.Item>{getParkName(user?.parkId)}</Form.Item>
             ) : (
               <Select placeholder="Select a Park" allowClear>
                 {parks.map((park) => (

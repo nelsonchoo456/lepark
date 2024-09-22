@@ -35,6 +35,13 @@ class StaffDao {
     return staff.role === 'MANAGER' || staff.role === 'SUPERADMIN';
   }
 
+  async updateResetTokenUsed(id: string, used: boolean): Promise<Staff> {
+    return prisma.staff.update({
+      where: { id },
+      data: { resetTokenUsed: used },
+    });
+  }
+
   //   async deleteAdmin(id: string) {
   //     return prisma.admin.delete({ where: { id } });
   //   }

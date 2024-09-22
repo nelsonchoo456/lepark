@@ -1,9 +1,9 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch, notification } from 'antd';
+import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switch, notification, Spin } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import {
@@ -19,7 +19,7 @@ import {
 } from '@lepark/data-access';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
-// import backgroundPicture from '@lepark//common-ui/src/lib/assets/Seeding-rafiki.png';
+import { useRestrictStaff } from '../../hooks/Staffs/useRestrictStaff';
 
 const initialUser = {
   id: '',
@@ -36,82 +36,34 @@ const initialUser = {
 const ViewStaffDetails = () => {
   const { staffId = '' } = useParams();
   const { user, updateUser } = useAuth<StaffResponse>();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { staff, loading } = useRestrictStaff(staffId, refreshKey);
   const [inEditMode, setInEditMode] = useState(false);
-  const [staff, setStaff] = useState<StaffResponse>(initialUser);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
   const [emailError, setEmailError] = useState('');
   const [contactNumberError, setContactNumberError] = useState('');
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+
+  const refreshData = useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+  }, []);
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const response = await viewStaffDetails(staffId);
-        // console.log(response);
-        setStaff(response.data);
-        setEditedUser(response.data);
-      } catch (error) {
-        console.error(error);
-        // message.error('Failed to fetch user details');
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the details of this staff!',
-          });
-          notificationShown.current = true;
-        }
-        if (user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) {
-          navigate('/staff-management');
-        } else {
-        navigate('/');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (staffId) {
-      fetchUserDetails();
+    if (!loading && staff) {
+      // Fetch parks data from the database
+      getAllParks()
+        .then((response) => {
+          setParks(response.data);
+        })
+        .catch((error) => {
+          console.error('There was an error fetching the parks data!', error);
+        });
+      
+      setEditedUser(staff);
     }
-  }, [staffId, user, navigate]);
-
-  useEffect(() => {
-    if (!isLoading && (user || staff.id !== '')) {
-      if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the Staff Management page!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      } else if (user.role === StaffType.MANAGER && user.parkId !== staff.parkId) {
-        // console.log('User parkId:', user.parkId);
-        // console.log('Staff parkId:', staff.parkId);
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the details of this staff!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/staff-management');
-      } else {
-        // Fetch parks data from the database
-        getAllParks()
-          .then((response) => {
-            setParks(response.data);
-          })
-          .catch((error) => {
-            console.error('There was an error fetching the parks data!', error);
-          });
-      }
-    }
-  }, [isLoading, staff, user, navigate]);
+  }, [loading, staff]);
 
   const getParkName = (parkId?: number) => {
     const park = parks.find((park) => park.id === parkId);
@@ -119,7 +71,7 @@ const ViewStaffDetails = () => {
   };
 
   const toggleEditMode = () => {
-    if (inEditMode) {
+    if (inEditMode && staff) {
       setEditedUser(staff); // Reset changes if canceling edit
     }
     setInEditMode(!inEditMode);
@@ -140,7 +92,7 @@ const ViewStaffDetails = () => {
   const refreshUserData = async () => {
     try {
       const updatedUser = await viewStaffDetails(staffId);
-      setStaff(updatedUser.data);
+      setEditedUser(updatedUser.data);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     }
@@ -171,7 +123,7 @@ const ViewStaffDetails = () => {
       // console.log('Staff details updated successfully:', responseStaffDetails.data);
 
       message.success('Staff details updated successfully!');
-      await refreshUserData(); // Refresh user data to load the latest values
+      refreshData(); // Refresh the data after successful update
       setInEditMode(false); // Exit edit mode
     } catch (error: any) {
       console.error(error);
@@ -350,11 +302,27 @@ const ViewStaffDetails = () => {
       isMain: true,
     },
     {
-      title: staff.firstName + " " + staff?.lastName ? staff?.firstName + " " + staff?.lastName : "Staff Details",
-      pathKey: `/staff-management/create-staff`,
+      title: staff ? `${staff.firstName} ${staff.lastName}` : "Staff Details",
+      pathKey: `/staff-management/${staffId}`,
       isCurrent: true
     },
-  ]
+  ];
+
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
+
+  if (!staff) {
+    return null; // This will not be rendered as the hook will redirect unauthorized access
+  }
 
   return (
     <ContentWrapperDark>
@@ -369,7 +337,7 @@ const ViewStaffDetails = () => {
             <div className="w-full flex justify-between">
               {!inEditMode ? (
                 <>
-                  <div>{`${staff?.firstName} ${staff?.lastName}`}</div>
+                  <div>{`${staff.firstName} ${staff.lastName}`}</div>
                   <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
                 </>
               ) : (
@@ -387,10 +355,6 @@ const ViewStaffDetails = () => {
           }
         />
       </Card>
-      {/* <div
-          className="fixed bottom-0 right-0 w-full h-1/2 bg-no-repeat bg-right z-[-1]"
-          style={{ backgroundImage: `url(${backgroundPicture})`, backgroundSize: 'contain' }}
-        /> */}
     </ContentWrapperDark>
   );
 };

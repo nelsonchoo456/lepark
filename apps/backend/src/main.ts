@@ -19,6 +19,7 @@ import dotenv from 'dotenv';
 import attractionRouter from './routers/attractionRouter';
 import hubRouter from './routers/hubRouter';
 import facilityRouter from './routers/facilityRouter';
+import { authenticateJWTStaff } from './middleware/authenticateJWT';
 
 dotenv.config();
 const app = express();
@@ -58,8 +59,8 @@ app.use('/api/visitors', visitorRouter);
 app.use('/api/parks', parkRouter);
 app.use('/api/zones', zoneRouter);
 app.use('/api/occurrences', occurrenceRouter);
-app.use('/api/activitylogs', activityLogRouter);
-app.use('/api/statuslogs', statusLogRouter);
+app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
+app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/facility', facilityRouter);

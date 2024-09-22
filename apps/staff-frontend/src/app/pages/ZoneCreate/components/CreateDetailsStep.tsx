@@ -52,7 +52,7 @@ const CreateDetailsStep = ({
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
     }
-  }, [user, parks]);
+  }, [user, parks, form]);
 
   const zoneStatusOptions = [
     {
@@ -66,6 +66,10 @@ const CreateDetailsStep = ({
     {
       value: 'LIMITED_ACCESS',
       label: 'Limited Access',
+    },
+    {
+      value: 'CLOSED',
+      label: 'Closed',
     },
   ];
 
@@ -118,22 +122,24 @@ const CreateDetailsStep = ({
       <Form.Item name="zoneStatus" label="Zone Status" rules={[{ required: true }]}>
         <Select placeholder="Select a Status" options={zoneStatusOptions} />
       </Form.Item>
-      {/* <Form.Item label={'Image'}>
-        <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick}/>
+      <Form.Item label={'Image'}>
+        <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
-      {previewImages?.length > 0 && <Form.Item label={'Image Previews'}>
-      <div className="flex flex-wrap gap-2">
-          {previewImages.map((imgSrc, index) => (
-            <img
-              key={index}
-              src={imgSrc}
-              alt={`Preview ${index}`}
-              className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-              onClick={() => removeImage(index)}
-            />
-          ))}
-        </div>
-      </Form.Item>} */}
+      {previewImages?.length > 0 && (
+        <Form.Item label={'Image Previews'}>
+          <div className="flex flex-wrap gap-2">
+            {previewImages.map((imgSrc, index) => (
+              <img
+                key={index}
+                src={imgSrc}
+                alt={`Preview ${index}`}
+                className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                onClick={() => removeImage(index)}
+              />
+            ))}
+          </div>
+        </Form.Item>
+      )}
 
       <Divider orientation="left">
         Zone Hours <Text type="danger">{' *'}</Text>

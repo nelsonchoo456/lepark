@@ -2,11 +2,12 @@ import express from 'express';
 import OccurrenceService from '../services/OccurrenceService';
 import { OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createOccurrence', async (req, res) => {
+router.post('/createOccurrence', authenticateJWTStaff, async (req, res) => {
   try {
     const occurrence = await OccurrenceService.createOccurrence(req.body);
     res.status(201).json(occurrence);
@@ -27,7 +28,6 @@ router.get('/getAllOccurrences', async (req, res) => {
       const occurrenceList = await OccurrenceService.getAllOccurrenceByParkId(parkId);
       res.status(200).json(occurrenceList);
     }
-    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -43,7 +43,7 @@ router.get('/viewOccurrenceDetails/:id', async (req, res) => {
   }
 });
 
-router.put('/updateOccurrenceDetails/:id', async (req, res) => {
+router.put('/updateOccurrenceDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const occurrenceId = req.params.id;
     const updateData: Partial<OccurrenceSchemaType> = req.body;
@@ -55,7 +55,7 @@ router.put('/updateOccurrenceDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteOccurrence/:id', async (req, res) => {
+router.delete('/deleteOccurrence/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const occurrenceId = req.params.id;
     const requesterId = req.body.requesterId; // Assuming requesterId is passed in the request body

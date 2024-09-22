@@ -16,7 +16,12 @@ import { ImageInput } from '@lepark/common-ui';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
 
-const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occurrence }) => {
+interface StatusLogsProps {
+  occurrence: OccurrenceResponse | null;
+  onStatusLogCreated: () => void;
+}
+
+const StatusLogs: React.FC<StatusLogsProps> = ({ occurrence, onStatusLogCreated }) => {
   const navigate = useNavigate();
   const [statusLogs, setStatusLogs] = useState<StatusLogResponse[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<StatusLogResponse[]>([]);
@@ -114,6 +119,7 @@ const StatusLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occur
         // Refresh status logs
         const response = await getStatusLogsByOccurrenceId(occurrence.id);
         setStatusLogs(response.data);
+        onStatusLogCreated(); // Call the callback to refresh the occurrence
       } catch (error) {
         console.error('Error creating status log:', error);
         message.error('Failed to create status log');

@@ -58,7 +58,7 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrencesByParkId(parkId);
   }
 
-  public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: string }> {
+  public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: number }> {
     try {
       const occurrence = await OccurrenceDao.getOccurrenceById(id);
       const zone = await ZoneDao.getZoneById(occurrence.zoneId);

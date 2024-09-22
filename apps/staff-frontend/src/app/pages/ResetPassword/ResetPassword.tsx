@@ -1,12 +1,25 @@
+import { useState, useEffect } from 'react';
 import { LoginLayout, LoginPanel, Logo, LogoText } from '@lepark/common-ui';
 import { Button, Divider, Form, Input, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import LoginAnnouncements from '../Login/components/LoginAnnouncements';
 import { resetStaffPassword } from '@lepark/data-access';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isResetSuccessful, setIsResetSuccessful] = useState(false);
   const token = new URLSearchParams(location.search).get('token');
+
+  useEffect(() => {
+    if (isResetSuccessful) {
+      const timer = setTimeout(() => {
+        navigate('/login');
+      }, 1000); // Redirect after 1 second
+
+      return () => clearTimeout(timer);
+    }
+  }, [isResetSuccessful, navigate]);
 
   const handleSubmit = async (values: any) => {
     const { password, confirmPassword } = values;
@@ -21,20 +34,13 @@ const ResetPassword = () => {
         const response = await resetStaffPassword({ token, newPassword: password });
 
         if (response.status === 200) {
-          message.success('Password reset successful');
-
-          setTimeout(() => {
-            navigate('/login');
-          }, 1000);
+          message.success('Password reset successful. Redirecting to login page...');
+          setIsResetSuccessful(true);
         }
       } catch (error) {       
         message.error(String(error));
       }
     }
-  };
-
-  const handleGoToRegister = () => {
-    navigate('/register');
   };
 
   return (

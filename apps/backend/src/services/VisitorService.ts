@@ -10,10 +10,10 @@ import {
   VisitorSchemaType,
   LoginSchema,
   LoginSchemaType,
-  PasswordResetRequestSchema,
-  PasswordResetRequestSchemaType,
-  PasswordResetSchema,
-  PasswordResetSchemaType,
+  VisitorPasswordResetRequestSchema,
+  VisitorPasswordResetRequestSchemaType,
+  VisitorPasswordResetSchema,
+  VisitorPasswordResetSchemaType,
   VerifyUserSchema,
   VerifyUserSchemaType,
 } from '../schemas/visitorSchema';
@@ -143,9 +143,17 @@ class VisitorService {
     }
   }
 
-  public async requestPasswordReset(data: PasswordResetRequestSchemaType) {
+  private generateResetToken(visitorId: string): string {
+    return jwt.sign(
+      { id: visitorId, action: 'password_reset' },
+      JWT_SECRET_KEY,
+      { expiresIn: '15m' }, // Token expires in 15 minutes
+    );
+  }
+
+  async requestPasswordReset(data: VisitorPasswordResetRequestSchemaType) {
     try {
-      PasswordResetRequestSchema.parse(data);
+      VisitorPasswordResetRequestSchema.parse(data);
 
       const visitor = await VisitorDao.getVisitorByEmail(data.email);
       if (!visitor) {
@@ -153,28 +161,27 @@ class VisitorService {
         throw new Error('If the email exists, a reset link has been sent.');
       }
 
-      // Create a short-lived JWT for password reset
-      const resetToken = jwt.sign(
-        { id: visitor.id, action: 'password_reset' },
-        JWT_SECRET_KEY,
-        { expiresIn: '15m' }, // Token expires in 15 minutes
-      );
+      const resetToken = this.generateResetToken(visitor.id);
+      await VisitorDao.updateVisitorDetails(visitor.id, {
+        resetToken: resetToken,
+        resetTokenUsed: false,
+      });
 
       // Send email with the reset link containing the token
-      const resetLink = `http://localhost:4201/reset-password?token=${resetToken}`;
+      const resetLink = `http://localhost:4201/visitor-reset-password?token=${resetToken}`;
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
   }
 
-  public async resetPassword(data: PasswordResetSchemaType) {
+  async resetPassword(data: VisitorPasswordResetSchemaType) {
     try {
-      PasswordResetSchema.parse(data);
+      VisitorPasswordResetSchema.parse(data);
 
       const decodedToken = jwt.verify(data.token, JWT_SECRET_KEY) as {
         id: string;
@@ -185,10 +192,24 @@ class VisitorService {
         throw new Error('Invalid reset token');
       }
 
-      const visitor = await VisitorDao.getVisitorById(decodedToken.id);
+      const visitorId = decodedToken.id;
+      if (!visitorId) {
+        throw new Error('Invalid token: missing visitor ID');
+      }
 
+      const visitor = await VisitorDao.getVisitorById(visitorId);
       if (!visitor) {
-        throw new Error('Visitor not found');
+        throw new Error(`Visitor not found`);
+      }
+
+      // Check if the reset token matches the one stored in the database
+      if (visitor.resetToken !== data.token) {
+        throw new Error('Invalid or expired reset token');
+      }
+
+      // Check if the reset token has already been used
+      if (visitor.resetTokenUsed) {
+        throw new Error('This reset token has already been used. Please request a new password reset.');
       }
 
       // Check if new password is different from the old one
@@ -200,13 +221,15 @@ class VisitorService {
       const hashedPassword = await bcrypt.hash(data.newPassword, 10);
       await VisitorDao.updateVisitorDetails(visitor.id, {
         password: hashedPassword,
+        resetTokenUsed: true, // Mark the current token as used
+        resetToken: null, // Clear the reset token
       });
 
       return { message: 'Password reset successful' };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }

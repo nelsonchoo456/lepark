@@ -32,10 +32,10 @@ import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
 import Task from './pages/Task/Task';
-import ZoneList from './pages/ZoneList/ZoneList';
+import ZoneList from './pages/Zone/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
-import NotFound from './pages/NotFound/NotFound';
+import PageNotFound from './pages/PageNotFound.tsx/PageNotFound';
 import Settings from './pages/Settings/Settings';
 import AttractionList from './pages/Attraction/AttractionList';
 import AttractionCreate from './pages/Attraction/AttractionCreate';
@@ -44,6 +44,7 @@ import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
 import HubCreate from './pages/Hub/HubCreate';
+import ZoneEdit from './pages/ZoneEdit/ZoneEdit';
 import AttractionEdit from './pages/AttractionEdit/AttractionEdit';
 import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import ParksMap from './pages/ParksMap/ParksMap';
@@ -92,6 +93,8 @@ export function App() {
               {/* Nest all protected routes here */}
               <Route path="/" element={<MainLanding />} />
               <Route path="/map" element={<MapPage />} />
+
+              {/* Occurrence Routes */}
               <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
                 <Route
@@ -126,6 +129,8 @@ export function App() {
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
+
+              {/* Park Routes */}
               <Route path="/park">
                 <Route
                   index
@@ -162,24 +167,97 @@ export function App() {
                 <Route path=":id/edit" element={<ParkEdit />} />
                 <Route path=":id/edit-map" element={<ParkEditMap />} />
               </Route>
+
+              {/* Zone Routes */}
               <Route path="/zone">
                 <Route index element={<ZoneList />} />
-                <Route path="create" element={<ZoneCreate />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneCreate />
+                    </>
+                  }
+                />
                 <Route path=":id" element={<ZoneDetails />} />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneEdit />
+                    </>
+                  }
+                />
               </Route>
+
+              {/* Task Routes */}
               <Route path="/task" element={<Task />} />
+
+              {/* Settings Routes */}
               <Route path="/settings" element={<Settings />} />
+
+              {/* Profile Routes */}
               <Route path="/profile" element={<StaffProfile />} />
+
+              {/* Staff Management Routes */}
               <Route path="/staff-management">
-                <Route index element={<StaffManagementPage />} />
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <StaffManagementPage />
+                    </>
+                  }
+                />
                 <Route path=":staffId" element={<ViewStaffDetails />} />
-                <Route path="create-staff" element={<CreateStaff />} />
+                <Route
+                  path="create-staff"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <CreateStaff />
+                    </>
+                  }
+                />
               </Route>
+
+              {/* Species Routes */}
               <Route path="/species">
                 <Route index element={<SpeciesPage />} />
-                <Route path="create" element={<CreateSpecies />} />
-                <Route path="edit" element={<ViewEditSpecies />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <CreateSpecies />
+                    </>
+                  }
+                />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
+                <Route
+                  path=":speciesId/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <ViewEditSpecies />
+                    </>
+                  }
+                />
               </Route>
 
               {/* Attraction Routes */}
@@ -213,7 +291,9 @@ export function App() {
                   <Route path="create" element={<HubCreate />} />
                 </Route>
               </Route>
-              <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
+
+              {/* Catch-all for 404 */}
+              <Route path="*" element={<PageNotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>

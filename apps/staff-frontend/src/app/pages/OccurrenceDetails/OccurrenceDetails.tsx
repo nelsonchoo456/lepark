@@ -10,42 +10,32 @@ import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
 import QRTab from './components/QRTab';
-import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
+import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum, getOccurrenceById, OccurrenceStatusEnum } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { useCallback, useEffect, useState } from 'react';
 import OccurrenceMapTab from './components/OccurrenceMapTab';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
+  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
 
-  const { occurrence, species, zone, loading } = useRestrictOccurrence(occurrenceId);
-  // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
-  // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
-  const navigate = useNavigate();
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (occurrenceId) {
-  //       setLoading(true);
-  //       try {
-  //         const occurrenceResponse = await getOccurrenceById(occurrenceId);
-  //         setOccurrence(occurrenceResponse.data);
-
-  //         if (occurrenceResponse.data.speciesId) {
-  //           const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
-  //           setSpecies(speciesResponse.data);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching data:', error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [occurrenceId]);
+  if (!occurrence) {
+    return null; // This will handle cases where the occurrence is not found or user doesn't have access
+  }
 
   const descriptionsItems = [
     {
@@ -56,19 +46,7 @@ const OccurrenceDetails = () => {
     {
       key: 'occurrenceStatus',
       label: 'Status',
-      children: occurrence?.occurrenceStatus === "HEALTHY" ? (
-          <Tag color="green" bordered={false}>HEALTHY</Tag>
-        ) : occurrence?.occurrenceStatus === "MONITOR_AFTER_TREATMENT" ? (
-          <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>
-        ) : occurrence?.occurrenceStatus === "NEEDS_ATTENTION" ? (
-          <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>
-        ) : occurrence?.occurrenceStatus === "URGENT_ACTION_REQUIRED" ? (
-          <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>
-        ) : occurrence?.occurrenceStatus === "REMOVED" ? (
-          <Tag bordered={false}>REMOVED</Tag>
-        ) : (
-          <Tag bordered={false}>{occurrence?.occurrenceStatus}</Tag> 
-        )
+      children: getStatusTag(occurrence?.occurrenceStatus),
     },
     {
       key: 'dateObserved',
@@ -102,7 +80,12 @@ const OccurrenceDetails = () => {
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: occurrence && <StatusLogs occurrence={occurrence} />,
+      children: occurrence && (
+        <StatusLogs 
+          occurrence={occurrence}
+          onStatusLogCreated={refreshOccurrence}
+        />
+      ),
     },
     {
       key: 'qr',

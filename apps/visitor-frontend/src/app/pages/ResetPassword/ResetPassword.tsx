@@ -1,13 +1,26 @@
+import { useState, useEffect } from 'react';
 import { LoginLayout, LoginPanel, Logo, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Divider, Form, Input, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import LoginAnnouncements from '../Login/components/LoginAnnouncements';
 import { resetVisitorPassword, VisitorResponse } from '@lepark/data-access';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isResetSuccessful, setIsResetSuccessful] = useState(false);
   const token = new URLSearchParams(location.search).get('token');
   const { logout } = useAuth<VisitorResponse>();
+
+  useEffect(() => {
+    if (isResetSuccessful) {
+      const timer = setTimeout(() => {
+        navigate('/login');
+      }, 1000); // Redirect after 1 second
+
+      return () => clearTimeout(timer);
+    }
+  }, [isResetSuccessful, navigate]);
 
   const handleSubmit = async (values: any) => {
     const { password, confirmPassword } = values;
@@ -22,21 +35,14 @@ const ResetPassword = () => {
         const response = await resetVisitorPassword({ token, newPassword: password });
 
         if (response.status === 200) {
-          message.success('Password reset successful');
+          message.success('Password reset successful. Redirecting to login page...');
+          setIsResetSuccessful(true);
           logout();
-
-          setTimeout(() => {
-            navigate('/login');
-          }, 1000);
         }
-      } catch (error) {
+      } catch (error) {       
         message.error(String(error));
       }
     }
-  };
-
-  const handleGoToRegister = () => {
-    navigate('/register');
   };
 
   return (
@@ -50,12 +56,12 @@ const ResetPassword = () => {
           <div className="w-full">
             <Divider>Reset Password</Divider>
             <Form layout="vertical" onFinish={handleSubmit}>
-              <Form.Item
-                name="password"
-                label="New Password"
+              <Form.Item 
+                name="password" 
+                label="New Password" 
                 rules={[
-                  { required: true, message: 'Please enter a new Password' },
-                  { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' },
+                  { required: true, message: 'Please enter a new Password.' },
+                  { pattern: /^.{8,}$/, message: 'Password must be at least 8 characters long.' }
                 ]}
               >
                 <Input.Password placeholder="Password" />
