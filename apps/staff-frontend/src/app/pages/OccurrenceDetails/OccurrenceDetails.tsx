@@ -10,15 +10,16 @@ import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
 import QRTab from './components/QRTab';
-import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
+import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum, getOccurrenceById, OccurrenceStatusEnum } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { useCallback, useEffect, useState } from 'react';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
 
-  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
+  const { occurrence, species, loading, updateOccurrence } = useRestrictOccurrence(occurrenceId);
   // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
   const navigate = useNavigate();
@@ -46,6 +47,37 @@ const OccurrenceDetails = () => {
   //   fetchData();
   // }, [occurrenceId]);
 
+  const refreshOccurrence = useCallback(async () => {
+    if (occurrenceId) {
+      try {
+        const occurrenceResponse = await getOccurrenceById(occurrenceId);
+        if (occurrence) {
+          updateOccurrence(occurrenceResponse.data);
+          // console.log('Occurrence status updated:', occurrenceResponse.data);
+        }
+      } catch (error) {
+        console.error('Error refreshing occurrence:', error);
+      }
+    }
+  }, [occurrenceId, occurrence]);
+
+  const getStatusTag = (status?: string) => {
+    switch (status) {
+      case "HEALTHY":
+        return <Tag color="green" bordered={false}>HEALTHY</Tag>;
+      case "MONITOR_AFTER_TREATMENT":
+        return <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>;
+      case "NEEDS_ATTENTION":
+        return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
+      case "URGENT_ACTION_REQUIRED":
+        return <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>;
+      case "REMOVED":
+        return <Tag bordered={false}>REMOVED</Tag>;
+      default:
+        return <Tag bordered={false}>{status}</Tag>;
+    }
+  };
+
   const descriptionsItems = [
     {
       key: 'occurrenceSpecies',
@@ -55,19 +87,7 @@ const OccurrenceDetails = () => {
     {
       key: 'occurrenceStatus',
       label: 'Status',
-      children: occurrence?.occurrenceStatus === "HEALTHY" ? (
-          <Tag color="green" bordered={false}>HEALTHY</Tag>
-        ) : occurrence?.occurrenceStatus === "MONITOR_AFTER_TREATMENT" ? (
-          <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>
-        ) : occurrence?.occurrenceStatus === "NEEDS_ATTENTION" ? (
-          <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>
-        ) : occurrence?.occurrenceStatus === "URGENT_ACTION_REQUIRED" ? (
-          <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>
-        ) : occurrence?.occurrenceStatus === "REMOVED" ? (
-          <Tag bordered={false}>REMOVED</Tag>
-        ) : (
-          <Tag bordered={false}>{occurrence?.occurrenceStatus}</Tag> 
-        )
+      children: getStatusTag(occurrence?.occurrenceStatus),
     },
     {
       key: 'dateObserved',
@@ -96,7 +116,12 @@ const OccurrenceDetails = () => {
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: occurrence && <StatusLogs occurrence={occurrence} />,
+      children: occurrence && (
+        <StatusLogs 
+          occurrence={occurrence}
+          onStatusLogCreated={refreshOccurrence}
+        />
+      ),
     },
     {
       key: 'qr',
