@@ -8,6 +8,8 @@ import {
   createParkAsset,
   ParkAssetData,
   StaffResponse,
+  FacilityResponse,
+  getAllFacilities,
 } from '@lepark/data-access';
 import { Button, Card, DatePicker, Form, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -66,6 +68,29 @@ const AssetCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
+  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      try {
+        const response = await getAllFacilities();
+        let facilitiesList = response.data;
+
+        if (user && user.role !== 'SUPERADMIN') {
+          facilitiesList = facilitiesList.filter(facility => facility.parkId === user.parkId);
+        }
+
+        setFacilities(facilitiesList);
+      } catch (error) {
+        console.error('Error fetching facilities:', error);
+        message.error('Failed to fetch facilities');
+      }
+    };
+
+    if (user) {
+      fetchFacilities();
+    }
+  }, [user]);
 
 
   const layout = {
@@ -289,17 +314,20 @@ const AssetCreate = () => {
               <Input.TextArea />
             </Form.Item>
 
-             <Form.Item
+              <Form.Item
               name="facilityId"
-              label="Facility ID"
-              rules={[
-                { required: true, message: 'Please input the facility ID!' },
-                { whitespace: true, message: 'Facility ID cannot be empty!' },
-              ]}
-              getValueFromEvent={(e) => e.target.value.trim()} // Trim leading and trailing spaces
+              label="Facility"
+              rules={[{ required: true, message: 'Please select a facility!' }]}
             >
-              <Input />
+              <Select placeholder="Select a facility">
+                {facilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.facilityName}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
+
 
             <Form.Item label="Upload Images" required tooltip="At least one image is required">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />

@@ -52,6 +52,11 @@ const AssetDetails = () => {
       label: 'Last Maintenance',
       children: asset ? moment(asset.lastMaintenanceDate).fromNow() : 'Loading...',
     },
+     {
+      key: 'facilityName',
+      label: 'Facility',
+      children: asset ? asset.facilityName : 'Loading...',
+    },
   ];
 
   const tabsItems = [
