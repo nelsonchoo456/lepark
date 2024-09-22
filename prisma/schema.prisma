@@ -34,6 +34,8 @@ model Staff {
   isActive      Boolean
   parkId        Int?      
   isFirstLogin  Boolean 
+  resetTokenUsed Boolean @default(false)
+  resetToken String?
 }
 
 enum ConservationStatusEnum {
@@ -213,4 +215,6 @@ model Visitor {
   contactNumber   String
   favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
   isVerified      Boolean
+  resetToken      String?
+  resetTokenUsed  Boolean   @default(false)
 }

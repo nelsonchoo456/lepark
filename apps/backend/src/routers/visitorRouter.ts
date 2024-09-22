@@ -1,6 +1,12 @@
 import express from 'express';
 import VisitorService from '../services/VisitorService';
-import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, VerifyUserSchema } from '../schemas/visitorSchema';
+import {
+  VisitorSchema,
+  LoginSchema,
+  VisitorPasswordResetRequestSchema,
+  VisitorPasswordResetSchema,
+  VerifyUserSchema,
+} from '../schemas/visitorSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
 import { authenticateJWTStaff, authenticateJWTVisitor } from '../middleware/authenticateJWT';
@@ -86,7 +92,7 @@ router.post('/logout', authenticateJWTVisitor, (_, res) => {
 
 router.post('/forgot-password', async (req, res) => {
   try {
-    const data = PasswordResetRequestSchema.parse(req.body);
+    const data = VisitorPasswordResetRequestSchema.parse(req.body);
     await VisitorService.requestPasswordReset(data);
     res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (error) {
@@ -96,9 +102,9 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    const data = PasswordResetSchema.parse(req.body);
+    const data = VisitorPasswordResetSchema.parse(req.body);
     await VisitorService.resetPassword(data);
-    res.status(200).json({ message: 'Password reset successfully' });
+    res.status(200).json({ message: 'Password reset successful' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

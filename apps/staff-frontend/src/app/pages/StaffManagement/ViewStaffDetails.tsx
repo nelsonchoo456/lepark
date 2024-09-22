@@ -351,7 +351,7 @@ const ViewStaffDetails = () => {
     },
     {
       title: staff.firstName + " " + staff?.lastName ? staff?.firstName + " " + staff?.lastName : "Staff Details",
-      pathKey: `/staff-management/create-staff`,
+      pathKey: `/staff-management/${staffId}`,
       isCurrent: true
     },
   ]
