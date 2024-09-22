@@ -1,6 +1,6 @@
 # Lepark
 
-<!-- <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+<!-- `<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45">``</a>`
 
 ✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
 
@@ -10,11 +10,18 @@
 
 [Click here to finish setting up your workspace!](https://cloud.nx.app/connect/0fAwxHqk1g) -->
 
+## System Overview
+
+Lepark introduces two interconnected web-based platforms: the Park Staff System and the Park Visitor System.
+
 ## How to locally deploy our system
 
-1. **Create a PostgreSQL database locally:**
+1. **Download and install PostgreSQL and PostGIS**
 
-2. **Create a `.env` file in the root folder that contains:**
+   - For downloading PostgreSQL, follow the instructions for your operating system from the [PostgreSQL Download page](https://www.postgresql.org/download/).
+   - For downloading PostGIS, follow the instructions for your operating system from the [PostGIS Getting Started page](https://postgis.net/documentation/getting_started/) at the "Installing PostGIS" section.
+2. **Create a PostgreSQL database locally:**
+3. **Create a `.env` file in the root folder that contains:**
 
    ```env
    DATABASE_URL="postgresql://[username]:[password]@localhost:5432/[databaseName]"
@@ -24,37 +31,37 @@
 
    - Replace `[username]`, `[password]`, and `[databaseName]` with your PostgreSQL credentials.
    - Replace `[yourAWSAccessKey]` and `[yourAWSSecretAccessKey]` with your AWS Credentials for your S3 bucket.
+4. **In the root folder, run:**
 
-3. **In the root folder, run:**
+   ```
+   npm install
+   ```
+5. **In the root folder, run:**
 
    ```bash
    npx prisma migrate dev
    ```
-
-4. **Preload accounts, parks, zones, species and occurrences by running**
+6. **Preload accounts, parks, zones, species and occurrences by running**
 
    ```bash
    node apps/backend/src/utils/seed.js
    ```
-
-5. **To start the system, run:**
+7. **To start the system, run:**
 
    ```bash
    nx run-many --target=serve --parallel=100
    ```
-
-6. **To access the different systems:**
+8. **To access the different systems:**
 
    - Staff: [http://localhost:4200/](http://localhost:4200/)
    - Visitor: [http://localhost:4201/](http://localhost:4201/)
-
-7. **Login to Staff system using Superadmin:**
+9. **Login to Staff system using Superadmin:**
 
    - Email: superadmin@lepark.com
    - Password: password
+10. **Note:**
 
-8. **Note:**
-   - If you want to test Reset Password, you have to use a real email account when signing up.
+    - If you want to test Reset Password, you have to use a real email account when signing up.
 
 <!-- To create a production bundle:
 
@@ -70,7 +77,7 @@ npx nx show project staff-frontend
 
 <!-- These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+[More about running tasks in the docs »](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
 ## Add new projects
 
@@ -92,7 +99,7 @@ npx nx g @nx/react:lib mylib
 
 You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+[Learn more about Nx plugins »](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry »](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
 [Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
@@ -100,7 +107,7 @@ You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx 
 
 Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+[Install Nx Console »](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
 ## Useful links
 

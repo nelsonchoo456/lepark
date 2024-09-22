@@ -1,12 +1,13 @@
 import express from 'express';
 import multer from 'multer';
 import ZoneService from '../services/ZoneService';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 
 const upload = multer();
 
-router.post('/createZone', async (req, res) => {
+router.post('/createZone', authenticateJWTStaff, async (req, res) => {
   try {
     const zone = await ZoneService.createZone(req.body);
     res.status(201).json(zone);
@@ -37,7 +38,6 @@ router.get('/getAllZones', async (req, res) => {
       const zonesList = await ZoneService.getAllZones();
       res.status(200).json(zonesList);
     }
-
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -53,7 +53,7 @@ router.get('/getZoneById/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteZone/:id', async (req, res) => {
+router.delete('/deleteZone/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await ZoneService.deleteZoneById(id);

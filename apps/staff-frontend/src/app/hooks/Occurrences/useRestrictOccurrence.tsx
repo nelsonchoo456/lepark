@@ -56,5 +56,9 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
     fetchOccurrence(occurrenceId);
   }, [occurrenceId, navigate, user]);
 
-  return { occurrence, species, loading };
+  const updateOccurrence = async (occurrence: OccurrenceResponse) => {
+    setOccurrence(occurrence);
+  };
+
+  return { occurrence, species, loading, updateOccurrence };
 };

@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { ZoneCreateData, ZoneUpdateData } from '../schemas/zoneSchema';
@@ -11,6 +11,8 @@ const s3 = new aws.S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: 'ap-southeast-1',
 });
+
+const prisma = new PrismaClient();
 
 class ZoneService {
   public async createZone(data: ZoneCreateData): Promise<any> {
@@ -68,7 +70,13 @@ class ZoneService {
   }
 
   public async deleteZoneById(id: number): Promise<any> {
-    return ZoneDao.deleteZoneById(id);
+    const res = await ZoneDao.deleteZoneById(id);
+    await prisma.occurrence.deleteMany({
+      where: {
+        zoneId: id,
+      },
+    });
+    return res;
   }
 
   public async updateZone(id: number, data: ZoneUpdateData): Promise<any> {

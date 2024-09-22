@@ -10,10 +10,11 @@ import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
 import QRTab from './components/QRTab';
-import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
+import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum, getOccurrenceById, OccurrenceStatusEnum } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { useCallback, useEffect, useState } from 'react';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
@@ -44,19 +45,7 @@ const OccurrenceDetails = () => {
     {
       key: 'occurrenceStatus',
       label: 'Status',
-      children: occurrence?.occurrenceStatus === "HEALTHY" ? (
-          <Tag color="green" bordered={false}>HEALTHY</Tag>
-        ) : occurrence?.occurrenceStatus === "MONITOR_AFTER_TREATMENT" ? (
-          <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>
-        ) : occurrence?.occurrenceStatus === "NEEDS_ATTENTION" ? (
-          <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>
-        ) : occurrence?.occurrenceStatus === "URGENT_ACTION_REQUIRED" ? (
-          <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>
-        ) : occurrence?.occurrenceStatus === "REMOVED" ? (
-          <Tag bordered={false}>REMOVED</Tag>
-        ) : (
-          <Tag bordered={false}>{occurrence?.occurrenceStatus}</Tag> 
-        )
+      children: getStatusTag(occurrence?.occurrenceStatus),
     },
     {
       key: 'dateObserved',
@@ -85,7 +74,12 @@ const OccurrenceDetails = () => {
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: occurrence && <StatusLogs occurrence={occurrence} />,
+      children: occurrence && (
+        <StatusLogs 
+          occurrence={occurrence}
+          onStatusLogCreated={refreshOccurrence}
+        />
+      ),
     },
     {
       key: 'qr',

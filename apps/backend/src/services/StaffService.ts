@@ -213,12 +213,11 @@ class StaffService {
         throw new Error('If the email exists, a reset link has been sent.');
       }
 
-      // Create a short-lived JWT for password reset
-      const resetToken = jwt.sign(
-        { id: staff.id, action: 'password_reset' },
-        JWT_SECRET_KEY,
-        { expiresIn: '15m' }, // Token expires in 15 minutes
-      );
+      const resetToken = this.generateResetToken(staff.id);
+      await StaffDao.updateStaffDetails(staff.id, { 
+        resetToken: resetToken,
+        resetTokenUsed: false
+      });
 
       // Send email with the reset link containing the token
       const resetLink = `http://localhost:4200/reset-password?token=${resetToken}`;
@@ -290,6 +289,16 @@ class StaffService {
         throw new Error(`Staff not found`);
       }
 
+      // Check if the reset token matches the one stored in the database
+      if (staff.resetToken !== data.token) {
+        throw new Error('Invalid or expired reset token');
+      }
+
+      // Check if the reset token has already been used
+      if (staff.resetTokenUsed) {
+        throw new Error('This reset token has already been used. Please request a new password reset.');
+      }
+
       // Check if new password is different from the old one
       if (await bcrypt.compare(data.newPassword, staff.password)) {
         throw new Error('New password must be different from the old password');
@@ -297,11 +306,12 @@ class StaffService {
 
       // Hash and update the new password
       const hashedPassword = await bcrypt.hash(data.newPassword, 10);
-      await StaffDao.updateStaffDetails(staff.id, { password: hashedPassword });
-
-      if (staff.isFirstLogin) {
-        await StaffDao.updateStaffDetails(staff.id, { isFirstLogin: false });
-      }
+      await StaffDao.updateStaffDetails(staff.id, { 
+        password: hashedPassword,
+        isFirstLogin: false,
+        resetTokenUsed: true, // Mark the current token as used
+        resetToken: null, // Clear the reset token
+      });
 
       return { message: 'Password reset successful' };
     } catch (error) {
@@ -313,12 +323,21 @@ class StaffService {
     }
   }
 
-  public async getTokenForResetPasswordForFirstLogin(staffId: string): Promise<string> {
-    const resetToken = jwt.sign(
+  // New method to generate reset token
+  private generateResetToken(staffId: string): string {
+    return jwt.sign(
       { id: staffId, action: 'password_reset' },
       JWT_SECRET_KEY,
-      { expiresIn: '15m' }, // Token expires in 15 minutes
+      { expiresIn: '15m' } // Token expires in 15 minutes
     );
+  }
+
+  public async getTokenForResetPasswordForFirstLogin(staffId: string): Promise<string> {
+    const resetToken = this.generateResetToken(staffId);
+    await StaffDao.updateStaffDetails(staffId, { 
+      resetToken: resetToken,
+      resetTokenUsed: false
+    });
     return resetToken;
   }
 
