@@ -56,6 +56,7 @@ import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
 import EventCreate from './pages/Event/EventCreate';
+import EventEdit from './pages/EventEdit/EventEdit';
 
 export function App() {
   return (
@@ -216,8 +217,7 @@ export function App() {
                   <Route index element={<EventList />} />
                   <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/event" />}>
                     <Route path="create" element={<EventCreate />} />
-                    {/* <Route path=":id/edit" element={<EventEdit />} />
-                    <Route path=":id/edit-map" element={<EventEditMap />} /> */}
+                    <Route path=":id/edit" element={<EventEdit />} />
                   </Route>
                   <Route path=":id" element={<EventDetails />} /> 
                 </Route>

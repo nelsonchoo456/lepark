@@ -16,14 +16,7 @@ interface CreateDetailsStepProps {
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
 }
 
-const CreateDetailsStep = ({
-  form,
-  parks,
-  previewImages,
-  handleFileChange,
-  removeImage,
-  onInputClick,
-}: CreateDetailsStepProps) => {
+const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, removeImage, onInputClick }: CreateDetailsStepProps) => {
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
 
   const eventTypeOptions = [
@@ -68,7 +61,6 @@ const CreateDetailsStep = ({
 
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-      <Divider orientation="left">Event Details</Divider>
       <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
         <Select
           placeholder="Select a Park for this Event"
@@ -84,6 +76,8 @@ const CreateDetailsStep = ({
           disabled={!form.getFieldValue('parkId')}
         />
       </Form.Item>
+
+      <Divider orientation="left">Event Details</Divider>
 
       <Form.Item name="title" label="Title" rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}>
         <Input placeholder="Event Title" />
@@ -101,30 +95,15 @@ const CreateDetailsStep = ({
         <Select placeholder="Select an Event Suitability" options={eventSuitabilityOptions} />
       </Form.Item>
 
-      <Form.Item 
-        name="maxCapacity" 
-        label="Max Capacity" 
+      <Form.Item
+        name="maxCapacity"
+        label="Max Capacity"
         rules={[
           { required: true, message: 'Please input the maximum capacity' },
-          { type: 'number', min: 1, message: 'Capacity must be at least 1' }
+          { type: 'number', min: 1, message: 'Capacity must be at least 1' },
         ]}
       >
-        <InputNumber 
-          min={1} 
-          placeholder="Capacity"
-        />
-      </Form.Item>
-
-      <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
-        <RangePicker 
-          className="w-full" 
-          format="YYYY-MM-DD" 
-          disabledDate={(current) => disabledDate(moment(current.toDate()))}
-        />
-      </Form.Item>
-
-      <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
-        <TimePicker.RangePicker className="w-full" use12Hours format="h:mm a" minuteStep={5} />
+        <InputNumber min={1} placeholder="Capacity" />
       </Form.Item>
 
       <Form.Item label="Images">
@@ -145,6 +124,16 @@ const CreateDetailsStep = ({
           </div>
         </Form.Item>
       )}
+
+      <Divider orientation="left">Event Timings</Divider>
+
+      <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
+        <RangePicker className="w-full" format="YYYY-MM-DD" disabledDate={(current) => disabledDate(moment(current.toDate()))} />
+      </Form.Item>
+
+      <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
+        <TimePicker.RangePicker className="w-full" use12Hours format="h:mm a" minuteStep={5} />
+      </Form.Item>
     </Form>
   );
 };

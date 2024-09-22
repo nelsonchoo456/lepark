@@ -26,11 +26,11 @@ class EventService {
         throw new Error('Facility not found');
       }
 
-      // Check if event title already exists in the facility
-      const existingEvent = await EventDao.getEventByTitleAndFacilityId(formattedData.title, formattedData.facilityId);
-      if (existingEvent) {
-        throw new Error('An event with this title already exists in the facility');
-      }
+      // // Check if event title already exists in the facility
+      // const existingEvent = await EventDao.getEventByTitleAndFacilityId(formattedData.title, formattedData.facilityId);
+      // if (existingEvent) {
+      //   throw new Error('An event with this title already exists in the facility');
+      // }
 
       return EventDao.createEvent(formattedData);
     } catch (error) {
@@ -48,7 +48,8 @@ class EventService {
   }
 
   public async getEventsByParkId(parkId: string): Promise<Event[]> {
-    return EventDao.getEventsByParkId(parkId);
+    const events = await EventDao.getEventsByParkId(parkId);
+    return Promise.all(events.map(updateEventStatus));
   }
 
   public async getEventsByFacilityId(facilityId: string): Promise<Event[]> {
