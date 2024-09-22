@@ -96,7 +96,7 @@ const ZoneCreate = () => {
         finalData.geom = polygonData;
       }
     
-      const response = await createZone(finalData);
+      const response = await createZone(finalData, selectedFiles);
       if (response.status === 201) {
         setCreatedData(response.data)
         setCurrStep(2);
@@ -187,8 +187,8 @@ const ZoneCreate = () => {
               }
               extra={[
                 <Button key="back" onClick={() => navigate('/zone')}>Back to Zone Management</Button>,
-                <Tooltip title="Zone details coming soon.">
-                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)} disabled>
+                <Tooltip title="View Zone Details">
+                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)}>
                     View new Zone
                   </Button>
                 </Tooltip>

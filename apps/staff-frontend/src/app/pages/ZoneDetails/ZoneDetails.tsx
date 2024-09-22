@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography, Alert } from 'antd';
-import { StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
+import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography } from 'antd';
+import { StaffResponse, StaffType } from '@lepark/data-access';
 import ZoneStatusTag from './components/ZoneStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -25,18 +25,18 @@ const ZoneDetails = () => {
     return null; // This will handle cases where the zone is not found or user doesn't have access
   }
 
-  const descriptionsItems = [
-    {
-      key: 'parkName',
-      label: 'Park',
-      children: <div className="font-semibold">{zone.parkName}</div>,
-    },
-    {
-      key: 'parkId',
-      label: 'Park ID',
-      children: <div className="font-semibold">{zone.parkId}</div>,
-    },
-  ];
+  // const descriptionsItems = [
+  //   {
+  //     key: 'parkName',
+  //     label: 'Park',
+  //     children: <div className="font-semibold">{zone.parkName}</div>,
+  //   },
+  //   {
+  //     key: 'parkId',
+  //     label: 'Park ID',
+  //     children: <div className="font-semibold">{zone.parkId}</div>,
+  //   },
+  // ];
 
   const tabsItems = [
     {
@@ -54,17 +54,22 @@ const ZoneDetails = () => {
       label: 'Events',
       children: <Empty description={'Events Coming Soon'}></Empty>,
     },
+    {
+      key: 'IoT',
+      label: 'IoT',
+      children: <Empty description={'IoT Coming Soon'}></Empty>,
+    }
   ];
 
   const breadcrumbItems = [
     {
       title: 'Zones Management',
-      pathKey: '/zones',
+      pathKey: '/zone',
       isMain: true,
     },
     {
       title: zone.name,
-      pathKey: `/zones/${zone.id}`,
+      pathKey: `/zone/${zone.id}`,
       isCurrent: true,
     },
   ];
@@ -75,9 +80,28 @@ const ZoneDetails = () => {
       <Card>
         <div className="md:flex w-full gap-4">
           <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
-            <div className="h-64 bg-gray-200 flex items-center justify-center">
-              <Empty description="No Image" />
-            </div>
+            {zone?.images && zone.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {zone.images.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
           <div className="flex-1 flex-col flex">
             <div className="w-full flex justify-between items-center">
@@ -89,7 +113,7 @@ const ZoneDetails = () => {
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"
-                  onClick={() => navigate(`/zones/${zone.id}/edit`)}
+                  onClick={() => navigate(`/zone/${zone.id}/edit`)}
                 />
               )}
             </div>
@@ -100,7 +124,7 @@ const ZoneDetails = () => {
             >
               {zone.description}
             </Typography.Paragraph>
-            <Descriptions items={descriptionsItems} column={1} size="small" />
+            {/* <Descriptions items={descriptionsItems} column={1} size="small" /> */}
           </div>
         </div>
 

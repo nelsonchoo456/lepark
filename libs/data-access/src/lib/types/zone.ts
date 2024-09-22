@@ -5,7 +5,8 @@ export interface ZoneData {
   closingHours: any;
   geom?: any;
   paths?: any;
-  zoneStatus: string;
+  zoneStatus: 'OPEN' | 'CLOSED' | 'UNDER_CONSTRUCTION' | 'LIMITED_ACCESS';
+  images?: string[];
   parkId: number;
 }
 
@@ -13,13 +14,12 @@ export interface ZoneResponse {
   id: number;
   name: string;
   description?: string;
-  address?: string;
-  contactNumber?: string;
   openingHours: any;
   closingHours: any;
   geom: any;
   paths: any;
-  zoneStatus: string;
+  zoneStatus: 'OPEN' | 'CLOSED' | 'UNDER_CONSTRUCTION' | 'LIMITED_ACCESS';
+  images?: string[];
   parkId: number;
   parkName: string;
   parkDescription: string;

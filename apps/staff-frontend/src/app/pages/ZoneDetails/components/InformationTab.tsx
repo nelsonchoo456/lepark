@@ -43,11 +43,11 @@ const InformationTab = ({ zone }: InformationTabProps) => {
       label: 'Park Name',
       children: zone?.parkName,
     },
-    {
-      key: 'parkId',
-      label: 'Park ID',
-      children: zone?.parkId,
-    },
+    // {
+    //   key: 'parkId',
+    //   label: 'Park ID',
+    //   children: zone?.parkId,
+    // },
   ];
 
   return (
