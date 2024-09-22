@@ -160,7 +160,6 @@ export function App() {
                     </>
                   }
                 />
-                <Route index element={<ParkList />} />
                 <Route path="map" element={<ParksMap />} />
                 <Route path="create" element={<ParkCreate />} />
                 <Route path=":id" element={<ParkDetails />} />

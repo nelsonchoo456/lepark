@@ -130,11 +130,15 @@ const ViewStaffDetails = () => {
       const errorMessage = error.message || error.toString();
       if (errorMessage.includes('Unique constraint failed on the fields: (`email`)')) {
         message.error('The email address is already in use. Please use a different email.');
+        // Remove this line to stay in edit mode
+        // setInEditMode(false);
       } else if (errorMessage.includes('Invalid email address')) {
         message.error('Invalid email format.');
       } else {
         message.error(errorMessage || 'Failed to update staff details.');
       }
+      // Add this line to ensure we stay in edit mode for all error cases
+      setInEditMode(true);
     }
   };
 
@@ -143,7 +147,8 @@ const ViewStaffDetails = () => {
     const isEmailValid = validateEmail(editedUser?.email ?? '');
     if (isContactNumberValid && isEmailValid && validateInputs()) {
       onFinish(editedUser);
-      setInEditMode(false);
+      // Remove this line to let onFinish handle the edit mode
+      // setInEditMode(false);
     } else {
       message.warning('All fields are required.');
     }
