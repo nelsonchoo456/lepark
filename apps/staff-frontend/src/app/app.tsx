@@ -47,6 +47,9 @@ import AssetDetails from './pages/Asset/AssetDetails';
 import AssetEdit from './pages/Asset/AssetEdit';
 import SensorList from './pages/Sensor/SensorList';
 import SensorCreate from './pages/Sensor/SensorCreate';
+import FacilityList from './pages/Facility/FacilityList';
+import FacilityCreate from './pages/Facility/FacilityCreate';
+import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
 
 export function App() {
   return (
@@ -243,9 +246,21 @@ export function App() {
                 </Route>
 
               </Route>
-
-              {/* Catch-all for 404 */}
-              <Route path="*" element={<PageNotFound />} />
+              <Route
+                element={
+                  <RoleProtectedRoute
+                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                    redirectTo="/"
+                  />
+                }
+              >
+                <Route path="/facilities">
+                  <Route index element={<FacilityList />} />
+                  <Route path="create" element={<FacilityCreate />} />
+                  <Route path=":facilityId" element={<ViewFacilityDetails />} />
+                </Route>
+              </Route>
+              <Route path="*" element={<PageNotFound />} /> {/* Catch-all for 404 */}
             </Route>
           </Routes>
         </BrowserRouter>
