@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import moment from 'moment';
 import CustomIPInput from './CustomIPInput';
 import CustomMACInput from './CustomMACInput';
+import { FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 const { TextArea } = Input;
 
 interface CreateDetailsStepProps {
@@ -13,15 +14,29 @@ interface CreateDetailsStepProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
+  parks: ParkResponse[]; 
+  selectedParkId: number | null; 
+  setSelectedParkId: (id: number | null) => void; 
+  facilities: FacilityResponse[]; 
+  selectedFacilityId: number | null; 
+  setSelectedFacilityId: (id: number | null) => void; 
+  user: StaffResponse | null; 
 }
 
 const CreateDetailsStep = ({
   handleCurrStep,
   form,
-  previewImages = [], // Ensure previewImages is always defined
+  previewImages = [],
   handleFileChange,
   removeImage,
   onInputClick,
+  parks,
+  selectedParkId,
+  setSelectedParkId,
+  facilities,
+  selectedFacilityId,
+  setSelectedFacilityId,
+  user,
 }: CreateDetailsStepProps) => {
   const hubStatusOptions = [
     {
@@ -81,16 +96,33 @@ const CreateDetailsStep = ({
     return Promise.resolve();
   };
 
-  const validateImageUpload = (_: any, value: any) => {
-    if (!previewImages || previewImages.length === 0) {
-      return Promise.reject(new Error('Please upload at least one image'));
-    }
-    return Promise.resolve();
-  };
+  // Filter facilities based on selectedParkId for Superadmin, or use all facilities for other roles
+  const filteredFacilities =
+    user?.role === StaffType.SUPERADMIN && selectedParkId
+      ? facilities.filter((facility) => facility.parkId === selectedParkId)
+      : facilities;
 
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Hub Details</Divider>
+
+      {user?.role === StaffType.SUPERADMIN && (
+        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+          <Select
+            placeholder="Select a Park"
+            options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
+            onChange={(value) => setSelectedParkId(value)}
+          />
+        </Form.Item>
+      )}
+
+      <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+        <Select
+          placeholder="Select a Facility"
+          options={filteredFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+          disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
+        />
+      </Form.Item>
 
       <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
         <Input placeholder="Enter Serial Number" />

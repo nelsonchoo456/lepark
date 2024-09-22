@@ -14,7 +14,7 @@ import PageHeader2 from "../../components/main/PageHeader2";
 import { SCREEN_LG } from "../../config/breakpoints";
 
 const ParkList = () => {
-  const { user, updateUser } = useAuth<StaffResponse>();
+  const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const { parks, restrictedParkId, loading, triggerFetch } = useFetchParks();
   const [messageApi, contextHolder] = message.useMessage();

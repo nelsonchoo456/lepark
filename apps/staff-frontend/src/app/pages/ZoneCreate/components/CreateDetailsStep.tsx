@@ -109,7 +109,7 @@ const CreateDetailsStep = ({
       )}
 
       <Divider orientation="left">Zone Details</Divider>
-      <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+      <Form.Item name="name" label="Name" rules={[{ required: true },  { min: 3, message: 'Valid name must be at least 3 characters long'}]}>
         <Input placeholder="Zone Name" />
       </Form.Item>
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>

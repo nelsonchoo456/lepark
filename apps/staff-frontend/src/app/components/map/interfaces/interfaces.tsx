@@ -12,3 +12,7 @@ export interface GeoManLayers extends Layer {
 	_shape?: string;
 	options: GeoManLayersOptions
 }
+
+export interface GeomType {
+  coordinates: number[][][]; // Adjust this to match the exact structure of your coordinates
+}

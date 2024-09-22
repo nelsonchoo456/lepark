@@ -7,6 +7,7 @@ import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
+import MapTab from './components/MapTab';
 import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
@@ -49,6 +50,11 @@ const ParkDetails = () => {
       key: 'about',
       label: 'Information',
       children: <InformationTab park={park} />,
+    },
+    {
+      key: 'map',
+      label: 'Map',
+      children: park ? <MapTab park={park} /> : <></>,
     },
     {
       key: 'zones',

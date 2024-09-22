@@ -37,6 +37,10 @@ import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
 import PageNotFound from './pages/PageNotFound.tsx/PageNotFound';
 import Settings from './pages/Settings/Settings';
+import AttractionList from './pages/Attraction/AttractionList';
+import AttractionCreate from './pages/Attraction/AttractionCreate';
+import AttractionDetails from './pages/AttractionDetails/AttractionDetails';
+//import AttractionEdit from './pages/Attraction/AttractionEdit';
 import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
@@ -50,6 +54,13 @@ import SensorCreate from './pages/Sensor/SensorCreate';
 import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
+import ViewSensorDetails from './pages/Sensor/ViewSensorDetails';
+import SensorEdit from './pages/Sensor/SensorEdit';
+import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
+import ParksMap from './pages/ParksMap/ParksMap';
+import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
+import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
+import HubEdit from './pages/Hub/HubEdit';
 
 export function App() {
   return (
@@ -122,6 +133,10 @@ export function App() {
                     </>
                   }
                 />
+                <Route path="create" element={<OccurrenceCreate />} />
+                <Route path=":occurrenceId" element={<OccurrenceDetails />} />
+                <Route path=":occurrenceId/edit" element={<OccurrenceEdit />} />
+                <Route path=":occurrenceId/edit-location" element={<OccurrenceEditMap />} />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
@@ -156,6 +171,12 @@ export function App() {
                     </>
                   }
                 />
+                <Route index element={<ParkList />} />
+                <Route path="map" element={<ParksMap />} />
+                <Route path="create" element={<ParkCreate />} />
+                <Route path=":id" element={<ParkDetails />} />
+                <Route path=":id/edit" element={<ParkEdit />} />
+                <Route path=":id/edit-map" element={<ParkEditMap />} />
               </Route>
 
               {/* Zone Routes */}
@@ -215,6 +236,22 @@ export function App() {
                 <Route path="edit" element={<ViewEditSpecies />} />
                 <Route path=":speciesId" element={<ViewSpeciesDetails />} />
               </Route>
+              {/* Attraction Routes */}
+              <Route
+                element={
+                  <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                }
+              >
+                <Route path="/attraction">
+                  <Route index element={<AttractionList />} />
+                  <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/attraction" />}>
+                    <Route path="create" element={<AttractionCreate />} />
+                    {/*<Route path=":id/edit" element={<AttractionEdit />} />*/}
+                    <Route path=":id/edit-map" element={<AttractionEditMap />} />
+                  </Route>
+                  <Route path=":id" element={<AttractionDetails />} />
+                </Route>
+              </Route>
 
               {/* Hub Routes */}
               <Route
@@ -229,22 +266,8 @@ export function App() {
                   <Route index element={<HubList />} />
                   <Route path=":hubId" element={<ViewHubDetails />} />
                   <Route path="create" element={<HubCreate />} />
+                  <Route path=":hubId/edit" element={<HubEdit />} />
                 </Route>
-                <Route path="/parkasset">
-                  <Route index element={<AssetList />} />
-                  <Route path="create" element={<AssetCreate />} />
-                  <Route path=":assetId" element={<AssetDetails />} />
-                  <Route path="edit/:assetId" element={<AssetEdit />} />
-                </Route>
-                <Route path="/sensor">
-
-                  <Route path="create" element={<SensorCreate/>} />
-                  <Route index element={<SensorList/>} />
-                  {/*
-                  <Route path=":sensorId" element={<ViewSensorDetails/>} />
-                  <Route path="edit/:sensorId" element={<SensorEdit/>} />*/}
-                </Route>
-
               </Route>
               <Route
                 element={
@@ -259,8 +282,24 @@ export function App() {
                   <Route path="create" element={<FacilityCreate />} />
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>
+                <Route path="/parkasset">
+                  <Route index element={<AssetList />} />
+                  <Route path="create" element={<AssetCreate />} />
+                  <Route path=":assetId" element={<AssetDetails />} />
+                  <Route path="edit/:assetId" element={<AssetEdit />} />
+                </Route>
+                <Route path="/sensor">
+
+                  <Route path="create" element={<SensorCreate/>} />
+                  <Route index element={<SensorList/>} />
+                  <Route path=":sensorId" element={<ViewSensorDetails/>} />
+                  <Route path="edit/:sensorId" element={<SensorEdit/>} />
+                </Route>
+
               </Route>
-              <Route path="*" element={<PageNotFound />} /> {/* Catch-all for 404 */}
+
+              {/* Catch-all for 404 */}
+              <Route path="*" element={<PageNotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>

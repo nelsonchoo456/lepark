@@ -6,7 +6,7 @@ import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -55,6 +55,7 @@ const MainLayout = () => {
   };
 
   const parkOnClick = userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}`) : () => navigate('/park');
+  const parkMapOnClick = userRole !== StaffType.SUPERADMIN ? () => navigate(`/park/${user?.parkId}/map`) : () => navigate('/park/map');
 
   useEffect(() => {
     const activeItem = location.pathname === '/' ? 'home' : getLastItemFromPath(location.pathname);
@@ -65,6 +66,32 @@ const MainLayout = () => {
     }
   }, [location.pathname, userRole, user?.parkId]);
 
+  let parkNavItem: MenuItem = {
+    key: 'park',
+    icon: <TbTrees />,
+    label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+    children: [
+      {
+        key: 'park',
+        label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
+        onClick: parkOnClick,
+      },
+      {
+        key: 'park/map',
+        label: 'Map View',
+        onClick: parkMapOnClick,
+      },
+    ],
+  };
+  if (userRole !== StaffType.SUPERADMIN) {
+    parkNavItem = {
+      key: 'park',
+      icon: <TbTrees />,
+      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+      onClick: parkOnClick,
+    };
+  }
+
   // Navigation
   const navItems: MenuItem[] = [
     {
@@ -74,19 +101,24 @@ const MainLayout = () => {
       label: 'Home',
       onClick: () => navigate('/'),
     },
-    {
-      key: 'park',
-      icon: <TbTrees />,
-      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-      onClick: parkOnClick,
-      // children: [
-      //   {
-      //     key: 'park/create',
-      //     label: 'Create',
-      //     onClick: () => navigate('/park/create'),
-      //   }
-      // ]
-    },
+    parkNavItem,
+    // {
+    //   key: 'park',
+    //   icon: <TbTrees />,
+    //   label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+    //   children: [
+    //     {
+    //       key: 'park',
+    //       label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
+    //       onClick: parkOnClick,
+    //     },
+    //     {
+    //       key: 'park/map',
+    //       label: 'Map View',
+    //       onClick: parkMapOnClick,
+    //     }
+    //   ]
+    // },
     {
       key: 'zone',
       icon: <TbTree />,
@@ -175,6 +207,16 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'PARK_RANGER'
+      ? {
+          key: 'attraction',
+          icon: <TbTicket />,
+          label: 'Attractions',
+          onClick: () => navigate('/attraction'),
+        }
+      : null,
   ];
 
   return (

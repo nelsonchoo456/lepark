@@ -1,7 +1,15 @@
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { getHubById, HubResponse } from '@lepark/data-access';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
+import {
+  getHubById,
+  HubResponse,
+  getFacilityById,
+  FacilityResponse,
+  StaffResponse,
+  getParkById,
+  ParkResponse,
+} from '@lepark/data-access';
 import { Card, Descriptions, Tabs, Tag } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { FiCloud, FiSun } from 'react-icons/fi';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -13,7 +21,9 @@ const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
   const [hub, setHub] = useState<HubResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  //const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const { user } = useAuth<StaffResponse>();
+  const [park, setPark] = useState<ParkResponse | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,8 +31,13 @@ const ViewHubDetails = () => {
         try {
           const hubResponse = await getHubById(hubId);
           setHub(hubResponse.data);
-          //const facilityResponse = await getFacilityById(hubResponse.data.facilityId);
-          //setFacility(facilityResponse.data);
+          if (hubResponse.data.facilityId) {
+            const facilityResponse = await getFacilityById(hubResponse.data.facilityId);
+            setFacility(facilityResponse.data);
+            console.log(facilityResponse.data);
+            const parkResponse = await getParkById(facilityResponse.data.parkId);
+            setPark(parkResponse.data);
+          }
         } catch (error) {
           console.error('Error fetching hub data:', error);
         } finally {
@@ -53,23 +68,23 @@ const ViewHubDetails = () => {
       children: hub?.serialNumber,
     },
     {
-        key: 'hubStatus',
-        label: 'Hub Status',
-        children: (() => {
-          switch (hub?.hubStatus) {
-            case 'ACTIVE':
-              return <Tag color="green">ACTIVE</Tag>;
-            case 'INACTIVE':
-              return <Tag color="silver">INACTIVE</Tag>;
-            case 'UNDER_MAINTENANCE':
-              return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
-            case 'DECOMMISSIONED':
-              return <Tag color="red">DECOMMISSIONED</Tag>;
-            default:
-              return <Tag>{hub?.hubStatus}</Tag>;
-          }
-        })(),
-      },
+      key: 'hubStatus',
+      label: 'Hub Status',
+      children: (() => {
+        switch (hub?.hubStatus) {
+          case 'ACTIVE':
+            return <Tag color="green">ACTIVE</Tag>;
+          case 'INACTIVE':
+            return <Tag color="silver">INACTIVE</Tag>;
+          case 'UNDER_MAINTENANCE':
+            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+          case 'DECOMMISSIONED':
+            return <Tag color="red">DECOMMISSIONED</Tag>;
+          default:
+            return <Tag>{hub?.hubStatus}</Tag>;
+        }
+      })(),
+    },
     {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
@@ -95,12 +110,20 @@ const ViewHubDetails = () => {
       label: 'Hub Secret',
       children: hub?.hubSecret,
     },
-    /*
     {
       key: 'facilityName',
       label: 'Facility',
       children: facility?.facilityName,
-      },*/
+    },
+  ];
+
+  const descriptionsItemsForSuperAdmin = [
+    ...descriptionsItems,
+    {
+      key: 'parkName',
+      label: 'Park Name',
+      children: park?.name,
+    },
   ];
 
   const tabsItems = [
@@ -122,7 +145,12 @@ const ViewHubDetails = () => {
 
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
-            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
+            <Descriptions
+              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
+              column={1}
+              size="small"
+              className="mb-4"
+            />
           </div>
         </div>
 

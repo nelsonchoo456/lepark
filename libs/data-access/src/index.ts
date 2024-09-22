@@ -25,9 +25,14 @@ export * from './lib/types/statuslog';
 
 export * from './lib/types/sharedenums';
 
+export * from './lib/api/attraction';
+export * from './lib/types/attraction';
+
 export * from './lib/api/hub';
 export * from './lib/types/hub';
 
+export * from './lib/api/facility';
+export * from './lib/types/facility';
 export * from './lib/api/parkasset';
 export * from './lib/types/parkasset';
 

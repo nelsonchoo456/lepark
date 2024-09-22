@@ -48,7 +48,7 @@ export async function getAllSensors(facilityId?: string): Promise<AxiosResponse<
 
 export async function getSensorById(id: string): Promise<AxiosResponse<SensorResponse>> {
   try {
-    const response: AxiosResponse<SensorResponse> = await client.get(`${URL}/viewSensorDetails/${id}`);
+    const response: AxiosResponse<SensorResponse> = await client.get(`${URL}/getSensorById/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -76,7 +76,7 @@ export async function updateSensorDetails(
       data.image = uploadedUrls.data.uploadedUrls[0]; // Assuming only one image for sensors
     }
 
-    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensorDetails/${id}`, data);
+    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensor/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

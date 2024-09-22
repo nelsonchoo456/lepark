@@ -20,6 +20,9 @@ CREATE TYPE "OccurrenceStatusEnum" AS ENUM ('HEALTHY', 'MONITOR_AFTER_TREATMENT'
 CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'TREATED_PESTS', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'OTHERS');
 
 -- CreateEnum
+CREATE TYPE "AttractionStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
+
+-- CreateEnum
 CREATE TYPE "HubStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
 
 -- CreateEnum
@@ -144,6 +147,22 @@ CREATE TABLE "StatusLog" (
 );
 
 -- CreateTable
+CREATE TABLE "Attraction" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "openingHours" TIMESTAMP(3)[],
+    "closingHours" TIMESTAMP(3)[],
+    "images" TEXT[],
+    "status" "AttractionStatusEnum" NOT NULL,
+    "lat" DOUBLE PRECISION,
+    "lng" DOUBLE PRECISION,
+    "parkId" INTEGER NOT NULL,
+
+    CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Visitor" (
     "id" UUID NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -204,6 +223,7 @@ CREATE TABLE "Sensor" (
     "longitude" DOUBLE PRECISION,
     "remarks" TEXT,
     "hubId" UUID,
+    "facilityId" UUID,
 
     CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
 );
@@ -308,6 +328,9 @@ CREATE UNIQUE INDEX "Species_speciesName_key" ON "Species"("speciesName");
 CREATE INDEX "Occurrence_zoneId_idx" ON "Occurrence"("zoneId");
 
 -- CreateIndex
+CREATE INDEX "Attraction_parkId_idx" ON "Attraction"("parkId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
 
 -- CreateIndex
@@ -336,6 +359,9 @@ ALTER TABLE "Hub" ADD CONSTRAINT "Hub_facilityId_fkey" FOREIGN KEY ("facilityId"
 
 -- AddForeignKey
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;

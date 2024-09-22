@@ -7,7 +7,7 @@ import { LoginLayout, LoginPanel, Logo, LogoText, useAuth } from '@lepark/common
 
 const VerifyUser: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'expired' | 'verified'>('verifying');
   const [errorMessage, setErrorMessage] = useState('');
   const { logout } = useAuth<VisitorResponse>();
 
@@ -19,20 +19,36 @@ const VerifyUser: React.FC = () => {
           if (response.status === 200) {
             setStatus('success');
             logout();
+          } 
+        })
+        .catch((error: any) => {
+          console.error(error);
+          const errorMessage = error.message || error.toString();
+          console.log('Error message:', errorMessage);
+          if (errorMessage.includes('TokenExpiredError') || errorMessage.includes('expired')) {
+            setStatus('expired');
+            setErrorMessage('Verification link has expired. Please request a new one.');
+          } else if (errorMessage.includes('Invalid token')) {
+            setStatus('error');
+            setErrorMessage('Invalid verification token. Please try again or request a new one.');
+          } else if (errorMessage.includes('Visitor already verified')) {
+            setStatus('verified');
+            setErrorMessage('Your account has already been verified.');
           } else {
             setStatus('error');
             setErrorMessage('Verification failed. Please try again.');
           }
-        })
-        .catch((error) => {
-          setStatus('error');
-          setErrorMessage('Verification failed. Please try again.');
+          console.log('New status:', status);
         });
     } else {
       setStatus('error');
       setErrorMessage('Invalid verification link.');
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    console.log('Current status:', status);
+  }, [status]);
 
   if (status === 'verifying') {
     return (
@@ -48,7 +64,7 @@ const VerifyUser: React.FC = () => {
         </LoginPanel>
       </LoginLayout>
     );
-  } else if (status === 'success') {
+  } else if (status === 'success' || status === 'verified') {
     return (
       <LoginLayout>
         <LoginPanel>
@@ -57,7 +73,7 @@ const VerifyUser: React.FC = () => {
               <Logo size={2.5} />
               <LogoText className="text-3xl">Lepark</LogoText>
             </div>
-            <VerificationSuccess />
+            <VerificationSuccess message={errorMessage} />
           </div>
         </LoginPanel>
       </LoginLayout>
