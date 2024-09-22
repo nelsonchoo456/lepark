@@ -44,11 +44,16 @@ export interface SensorResponse {
   longitude?: number;
   remarks?: string;
   hubId?: string;
-  hubName?: string;
   facilityId?: string;
-  facilityName?: string;
-  parkId?: number;
-  parkName?: string;
+  hub?: {
+    id: string;
+    name: string;
+  };
+  facility?: {
+    id: string;
+    facilityName: string;
+    parkId?: number;
+  };
 }
 
 export interface SensorUpdateData {

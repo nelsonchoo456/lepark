@@ -23,6 +23,15 @@ export const SensorSchema = z.object({
   remarks: z.string().optional(),
   hubId: z.string().uuid().optional(),
   facilityId: z.string().uuid().optional(),
+  hub: z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+  }).optional(),
+  facility: z.object({
+    id: z.string().uuid(),
+    facilityName: z.string(),
+    parkId: z.number().optional(),
+  }).optional(),
 });
 
 export type SensorSchemaType = z.infer<typeof SensorSchema>;

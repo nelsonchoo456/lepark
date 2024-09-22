@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ImageInput, useAuth } from '@lepark/common-ui';
-import { getSensorById, updateSensorDetails, StaffResponse, SensorResponse, SensorUpdateData } from '@lepark/data-access';
+import { getSensorById, updateSensorDetails, StaffResponse, SensorResponse, SensorUpdateData, getAllHubs, HubResponse } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
-import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
+import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum} from '@prisma/client';
 
 const { TextArea } = Input;
 
@@ -21,29 +21,44 @@ const formatEnumLabel = (enumValue: string): string => {
 };
 
 const SensorEdit = () => {
-  const { user } = useAuth<StaffResponse>();
   const { sensorId } = useParams<{ sensorId: string }>();
   const [form] = Form.useForm();
   const [sensor, setSensor] = useState<SensorResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [messageApi, contextHolder] = message.useMessage();
-  const navigate = useNavigate();
-  const notificationShown = useRef(false);
-  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
-  const { parks } = useFetchParks();
-  const { facilities } = useFetchFacilities();
-  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
-  const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [createdSensorName, setCreatedSensorName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastCalibratedDate, setLastCalibratedDate] = useState<dayjs.Dayjs | null>(null);
-  const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
+  const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
+  const [selectedHubId, setSelectedHubId] = useState<string | null>(null);
+  const { user } = useAuth<StaffResponse>();
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+  const notificationShown = useRef(false);
+  const { handleFileChange, selectedFiles, previewImages, setPreviewImages, removeImage, onInputClick } = useUploadImages();
+  const { parks } = useFetchParks();
+  const { facilities } = useFetchFacilities();
+  const [selectedHubName, setSelectedHubName] = useState<string | null>(null);
+  const [selectedFacilityName, setSelectedFacilityName] = useState<string | null>(null);
+  const [hubs, setHubs] = useState<HubResponse[]>([]);
 
-  useEffect(() => {
+useEffect(() => {
+  const fetchHubs = async () => {
+    try {
+      const response = await getAllHubs(); // You'll need to create this API function
+      setHubs(response.data);
+    } catch (error) {
+      console.error('Error fetching hubs:', error);
+    }
+  };
+  fetchHubs();
+}, []);
+
+
+useEffect(() => {
     const fetchSensor = async () => {
+      setLoading(true);
       try {
-        const response = await getSensorById(sensorId!);
+        const response = await getSensorById(sensorId as string);
         setSensor(response.data);
         form.setFieldsValue({
           ...response.data,
@@ -51,9 +66,15 @@ const SensorEdit = () => {
           lastCalibratedDate: dayjs(response.data.lastCalibratedDate),
           nextMaintenanceDate: dayjs(response.data.nextMaintenanceDate),
           lastMaintenanceDate: dayjs(response.data.lastMaintenanceDate),
+          hubId: response.data.hub?.name, // Set hub name instead of ID
+          facilityId: response.data.facility?.facilityName, // Set facility name instead of ID
         });
+        setSelectedHubId(response.data.hub?.id || null);
+        setSelectedFacilityId(response.data.facility?.id || null);
+        setSelectedHubName(response.data.hub?.name || null);
+        setSelectedFacilityName(response.data.facility?.facilityName || null);
         if (response.data.image) {
-          setPreviewImages([response.data.image]); // Set the initial preview image
+          setPreviewImages([response.data.image]);
         }
       } catch (error) {
         console.error('Error fetching sensor data:', error);
@@ -77,39 +98,36 @@ const SensorEdit = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (values: any) => {
-    if (!sensor) return;
-    setIsSubmitting(true);
-    try {
-      const updatedData: SensorUpdateData = {
-        ...values,
-        acquisitionDate: values.acquisitionDate.toISOString(),
-        lastCalibratedDate: values.lastCalibratedDate.toISOString(),
-        nextMaintenanceDate: values.nextMaintenanceDate.toISOString(),
-      };
-
-      const response = await updateSensorDetails(sensor.id, updatedData, selectedFiles); // Pass only the first file
-      setPreviewImages([]);
-
-      if (response.status === 200) {
-        setSensor(response.data);
-        setCreatedSensorName(values.sensorName);
-        messageApi.open({
-          type: 'success',
-          content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
-        });
-        // Add a 3-second delay before navigating
-        setTimeout(() => {
-          navigate(`/sensor/${sensor?.id}`);
-        }, 1000);
-      }
-    } catch (error) {
-      console.error('Error updating sensor:', error);
-      messageApi.error('Failed to update sensor');
-    } finally {
-      setIsSubmitting(false);
-    }
+   const handleClearFacility = () => {
+    form.setFieldsValue({ facilityId: null });
+    setSelectedFacilityId(null);
   };
+
+  const handleSubmit = async (values: any) => {
+  setIsSubmitting(true);
+  try {
+    // Map hub and facility names back to IDs
+    const submissionData = {
+      ...values,
+      hubId: selectedHubId,
+      facilityId: selectedFacilityId,
+    };
+
+    const response = await updateSensorDetails(sensorId as string, submissionData, selectedFiles);
+    if (response.status === 200) {
+      setShowSuccessAlert(true);
+      setCreatedSensorName(response.data.sensorName);
+    }
+  } catch (error) {
+    console.error('Error updating sensor:', error);
+    messageApi.open({
+      type: 'error',
+      content: 'Failed to update sensor. Please try again.',
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: dayjs.Dayjs) {
@@ -300,36 +318,46 @@ const SensorEdit = () => {
               <Input.TextArea />
             </Form.Item>
 
-            <Form.Item name="hubId" label="Hub" rules={[{ required: false }]}>
-              <div className="flex w-full">
-                <Select placeholder="Select a hub" allowClear style={{ width: 'calc(100% - 80px)', marginRight: '8px' }}>
-                  {parks.map((hub) => (
-                    <Select.Option key={hub.id} value={hub.id}>
-                      {hub.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-                <Button
-                  onClick={() => {
-                    form.setFieldsValue({ hubId: undefined });
-                    form.resetFields(['hubId']);
-                  }}
-                  style={{ width: '80px' }}
-                >
-                  Clear Hub
-                </Button>
-              </div>
-            </Form.Item>
 
-            <Form.Item name="facilityId" label="Facility">
-              <Select placeholder="Select a facility" allowClear>
-                {facilities.map((facility) => (
-                  <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+              <Form.Item name="hubId" label="Hub" rules={[{ required: false }]}>
+  <Select
+    placeholder="Select a hub"
+    allowClear
+    style={{ width: '100%' }}
+    onChange={(value, option) => {
+      setSelectedHubId(value);
+      setSelectedHubName(Array.isArray(option) ? null : option?.children?.toString() || null);
+    }}
+    value={selectedHubName}
+  >
+    {hubs.map((hub) => (
+      <Select.Option key={hub.id} value={hub.id}>
+        {hub.name}
+      </Select.Option>
+    ))}
+  </Select>
+</Form.Item>
+
+<Form.Item label="Facility" name="facilityId">
+  <Select
+    placeholder="Select facility"
+    style={{ width: '100%' }}
+    onChange={(value, option) => {
+      setSelectedFacilityId(value);
+      setSelectedFacilityName(Array.isArray(option) ? null : option?.children?.toString() || null);
+    }}
+    allowClear
+    value={selectedFacilityName}
+  >
+    {facilities.map((facility) => (
+      <Select.Option key={facility.id} value={facility.id}>
+        {facility.facilityName}
+      </Select.Option>
+    ))}
+  </Select>
+</Form.Item>
+
+
 
             <Form.Item label="Upload Image" tooltip="One image is required">
               <ImageInput type="file" onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />

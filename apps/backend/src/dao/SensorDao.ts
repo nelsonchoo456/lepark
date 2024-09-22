@@ -125,37 +125,43 @@ async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
     });
   }
 
-  async getSensorById(id: string): Promise<(Sensor & { facilityName?: string; parkId?: number }) | null> {
-    const sensor = await prisma.sensor.findUnique({
-      where: { id },
-      include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        facility: {
-          select: {
-            id: true,
-            facilityName: true,
-            parkId: true,
-          },
+  async getSensorById(id: string): Promise<(Sensor & { hub?: { id: string; name: string }; facility?: { id: string; facilityName: string; parkId?: number } }) | null> {
+  const sensor = await prisma.sensor.findUnique({
+    where: { id },
+    include: {
+      hub: {
+        select: {
+          id: true,
+          name: true,
         },
       },
-    });
+      facility: {
+        select: {
+          id: true,
+          facilityName: true,
+          parkId: true,
+        },
+      },
+    },
+  });
 
-    if (sensor) {
-      return {
-        ...sensor,
-        facilityId: sensor.facility?.id,
-        facilityName: sensor.facility?.facilityName,
-        parkId: sensor.facility?.parkId,
-      };
-    }
-
-    return null;
+  if (sensor) {
+    return {
+      ...sensor,
+      hub: sensor.hub ? {
+        id: sensor.hub.id,
+        name: sensor.hub.name,
+      } : undefined,
+      facility: sensor.facility ? {
+        id: sensor.facility.id,
+        facilityName: sensor.facility.facilityName,
+        parkId: sensor.facility.parkId,
+      } : undefined,
+    };
   }
+
+  return null;
+}
 
   async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
     return prisma.sensor.update({

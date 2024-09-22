@@ -58,7 +58,6 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
     }
   }
 }
-
 export async function updateSensorDetails(
   id: string,
   data: SensorUpdateData,

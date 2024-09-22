@@ -76,32 +76,14 @@ class SensorService {
     return SensorDao.getAllSensors();
   }
 
-  public async getSensorById(id: string): Promise<Sensor & { hubName?: string, facilityName?: string, parkId?: string }> {
+  public async getSensorById(id: string): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; facilityName: string; parkId?: number } }> {
   const sensor = await SensorDao.getSensorById(id);
   if (!sensor) {
     throw new Error('Sensor not found');
   }
 
-  const result: any = { ...sensor };
-
-  if (sensor.hubId) {
-    const hub = await HubDao.getHubById(sensor.hubId);
-    if (hub) {
-      result.hubName = hub.name;
-    }
-  }
-
-  if (sensor.facilityId) {
-    const facility = await FacilityDao.getFacilityById(sensor.facilityId);
-    if (facility) {
-      result.facilityName = facility.facilityName;
-      result.parkId = facility.parkId;
-    }
-  }
-
-  return result;
+  return sensor;
 }
-
   public async updateSensor(
     id: string,
     data: Partial<SensorSchemaType>
