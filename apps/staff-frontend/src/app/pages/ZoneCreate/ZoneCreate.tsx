@@ -40,19 +40,6 @@ const ZoneCreate = () => {
   const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
-  useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Zone Creation page!',
-      });
-      notificationShown.current = true;
-    }
-      navigate('/');
-    }
-  }, [user, navigate]);
   
   const handleCurrStep = async (step: number) => {
     // console.log(formValues)
