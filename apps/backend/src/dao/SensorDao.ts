@@ -16,6 +16,13 @@ async getAllSensors(): Promise<Sensor[]> {
           id: true,
           name: true,
           facilityId: true,
+          facility: {
+            select: {
+              id: true,
+              facilityName: true,
+              parkId: true,
+            },
+          },
         },
       },
       facility: {
@@ -34,6 +41,8 @@ async getAllSensors(): Promise<Sensor[]> {
       hub: sensor.hub ? {
         id: sensor.hub.id,
         name: sensor.hub.name,
+        facilityId: sensor.hub.facilityId,
+        parkId: sensor.hub.facility?.parkId,
       } : null,
       facility: sensor.facility ? {
         id: sensor.facility.id,
@@ -41,6 +50,40 @@ async getAllSensors(): Promise<Sensor[]> {
         parkId: sensor.facility.parkId,
       } : null,
     };
+  });
+}
+
+async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
+  return prisma.sensor.findMany({
+    where: {
+      OR: [
+        { facility: { parkId: parkId } },
+        { hub: { facility: { parkId: parkId } } }
+      ]
+    },
+    include: {
+      facility: {
+        select: {
+          id: true,
+          facilityName: true,
+          parkId: true,
+        },
+      },
+      hub: {
+        select: {
+          id: true,
+          name: true,
+          zoneId: true,
+          facility: {
+            select: {
+              id: true,
+              facilityName: true,
+              parkId: true,
+            },
+          },
+        },
+      },
+    },
   });
 }
 

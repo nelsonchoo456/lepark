@@ -167,6 +167,10 @@ class SensorService {
     await SensorDao.deleteSensor(id);
   }
 
+  public async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
+  return SensorDao.getSensorsByParkId(parkId);
+}
+
   public async getSensorsByHubId(hubId: string): Promise<Sensor[]> {
     const hub = await HubDao.getHubById(hubId);
     if (!hub) {

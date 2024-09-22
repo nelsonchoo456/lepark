@@ -116,6 +116,16 @@ router.post('/upload', upload.array('files', 1), async (req, res) => {
   }
 });
 
+router.get('/getSensorsByParkId/:parkId', async (req, res) => {
+  try {
+    const parkId = parseInt(req.params.parkId);
+    const sensors = await SensorService.getSensorsByParkId(parkId);
+    res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 
 
 export default router;

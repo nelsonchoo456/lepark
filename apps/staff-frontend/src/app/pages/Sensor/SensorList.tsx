@@ -1,8 +1,8 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification, message, Tooltip, Card } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { deleteSensor, getAllSensors, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { deleteSensor, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
@@ -10,19 +10,20 @@ import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { ColumnsType } from 'antd/es/table';
 import { SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
+import { useFetchSensors } from '../../hooks/Sensors/useFetchSensors';
+
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 };
 
 const SensorManagementPage: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
-  const [sensors, setSensors] = useState<SensorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { sensors, loading, fetchSensors, triggerFetch } = useFetchSensors();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER) {
       if (!notificationShown.current) {
         notification.error({
@@ -32,35 +33,8 @@ const SensorManagementPage: React.FC = () => {
         notificationShown.current = true;
       }
       navigate('/');
-    } else {
-      fetchSensorData();
     }
   }, [user, navigate]);
-
-  const fetchSensorData = async () => {
-    setLoading(true);
-    try {
-      const response = await getAllSensors();
-      setSensors(response.data);
-    } catch (error) {
-      console.error('Error fetching sensor data:', error);
-      message.error('Failed to fetch sensors');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredSensors = useMemo(() => {
-    return sensors.filter((sensor) => {
-      return Object.values(sensor).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
-  }, [sensors, searchQuery]);
-
-  const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -78,12 +52,24 @@ const SensorManagementPage: React.FC = () => {
       if (!confirmed) return;
 
       await deleteSensor(id);
-      setSensors((prevSensors) => prevSensors.filter((sensor) => sensor.id !== id));
       message.success('Sensor deleted successfully');
+      triggerFetch(); // Refresh the sensor list
     } catch (error) {
       console.error('Error deleting sensor:', error);
       message.error('Failed to delete sensor. Please try again.');
     }
+  };
+
+  const filteredSensors = useMemo(() => {
+    return sensors.filter((sensor) => {
+      return Object.values(sensor).some((value) =>
+        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [sensors, searchQuery]);
+
+  const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   const columns: ColumnsType<SensorResponse> = [
@@ -158,7 +144,7 @@ const SensorManagementPage: React.FC = () => {
   ];
 
   return (
-    <ContentWrapperDark>
+     <ContentWrapperDark>
       <PageHeader>Sensor Management</PageHeader>
       <Flex justify="end" gap={10}>
         <Input
