@@ -1,5 +1,5 @@
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 //import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { ContentWrapper, ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
@@ -14,7 +14,7 @@ import {
   StaffResponse,
 } from '@lepark/data-access';
 import { conservationStatus, lightType, plantTaxonomy, regions, soilType } from '@lepark/data-utility';
-import { Button, Card, Form, Input, InputNumber, message, Modal, notification, Result, Select, Slider, Space, Spin } from 'antd';
+import { Button, Card, Form, Input, InputNumber, message, Modal, notification, Result, Select, Slider, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -24,25 +24,7 @@ const CreateSpecies = () => {
   const navigate = useNavigate();
   const [createdSpecies, setCreatedSpecies] = useState<SpeciesResponse | null>();
   const { user, updateUser } = useAuth<StaffResponse>();
-  const notificationShown = useRef(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user && user.id !== '') {
-      if (!['MANAGER', 'SUPERADMIN', 'BOTANIST', 'ARBORIST'].includes(user.role)) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the Create Species page!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [user, navigate]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -195,20 +177,8 @@ const CreateSpecies = () => {
     },
   ];
 
-  //slider
-  if (loading) {
-    // this displays the loading spinner, if removed the page will display before redirecting for unauthorized users
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" /> {/* Loading spinner */}
-      </div>
-    );
-  }
-
   return (
-    // <div className={`h-screen w-[calc(100vw-var(--sidebar-width))] overflow-auto z-[1]`}>
     <ContentWrapperDark>
-      {/* <h1 className="header-1 mb-4">Create Species</h1> */}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
       {!showSuccessAlert && (

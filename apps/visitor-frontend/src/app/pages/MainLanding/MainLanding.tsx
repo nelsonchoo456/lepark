@@ -35,7 +35,7 @@ const MainLanding = () => {
           key="discover"
           icon={<PiPlantFill />}
           onClick={() => {
-            navigate('/discover');
+            navigate(`/discover/park/${selectedPark?.id}`);
           }}
         >
           Taxonomy

@@ -19,6 +19,9 @@ CREATE TYPE "OccurrenceStatusEnum" AS ENUM ('HEALTHY', 'MONITOR_AFTER_TREATMENT'
 -- CreateEnum
 CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'TREATED_PESTS', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'OTHERS');
 
+-- CreateEnum
+CREATE TYPE "HubStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
+
 -- CreateTable
 CREATE TABLE "Staff" (
     "id" UUID NOT NULL,
@@ -130,6 +133,83 @@ CREATE TABLE "Visitor" (
 );
 
 -- CreateTable
+CREATE TABLE "Hub" (
+    "id" UUID NOT NULL,
+    "serialNumber" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "hubStatus" "HubStatusEnum" NOT NULL,
+    "acquisitionDate" TIMESTAMP(3) NOT NULL,
+    "recommendedCalibrationFrequencyDays" INTEGER NOT NULL,
+    "recommendedMaintenanceDuration" INTEGER NOT NULL,
+    "nextMaintenanceDate" TIMESTAMP(3) NOT NULL,
+    "dataTransmissionInterval" DOUBLE PRECISION NOT NULL,
+    "ipAddress" TEXT NOT NULL,
+    "macAddress" TEXT NOT NULL,
+    "radioGroup" INTEGER NOT NULL,
+    "hubSecret" TEXT NOT NULL,
+    "images" TEXT[],
+    "lat" DOUBLE PRECISION,
+    "long" DOUBLE PRECISION,
+    "remarks" TEXT,
+    "zoneId" INTEGER,
+    "facilityId" INTEGER,
+
+    CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Sensor" (
+    "id" UUID NOT NULL,
+    "hubId" UUID,
+
+    CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Asset" (
+    "id" UUID NOT NULL,
+
+    CONSTRAINT "Asset_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MaintenanceHistory" (
+    "id" UUID NOT NULL,
+    "hubId" UUID,
+    "sensorId" UUID,
+    "assetId" UUID,
+    "maintenanceDate" TIMESTAMP(3) NOT NULL,
+    "description" TEXT NOT NULL,
+
+    CONSTRAINT "MaintenanceHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CalibrationHistory" (
+    "id" UUID NOT NULL,
+    "hubId" UUID,
+    "sensorId" UUID,
+    "calibrationDate" TIMESTAMP(3) NOT NULL,
+    "description" TEXT NOT NULL,
+
+    CONSTRAINT "CalibrationHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UsageMetrics" (
+    "id" UUID NOT NULL,
+    "hubId" UUID,
+    "sensorId" UUID,
+    "uptime" DOUBLE PRECISION NOT NULL,
+    "downtime" DOUBLE PRECISION NOT NULL,
+    "dataVolume" DOUBLE PRECISION NOT NULL,
+    "description" TEXT NOT NULL,
+
+    CONSTRAINT "UsageMetrics_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_VisitorfavoriteSpecies" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
@@ -148,6 +228,12 @@ CREATE INDEX "Occurrence_zoneId_idx" ON "Occurrence"("zoneId");
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
+
+-- CreateIndex
+CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_VisitorfavoriteSpecies_AB_unique" ON "_VisitorfavoriteSpecies"("A", "B");
 
 -- CreateIndex
@@ -161,6 +247,30 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "Asset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UsageMetrics" ADD CONSTRAINT "UsageMetrics_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UsageMetrics" ADD CONSTRAINT "UsageMetrics_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;

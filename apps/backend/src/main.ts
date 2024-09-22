@@ -16,6 +16,7 @@ import activityLogRouter from './routers/activityLogRouter';
 import statusLogRouter from './routers/statusLogRouter';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import hubRouter from './routers/hubRouter';
 import { authenticateJWTStaff } from './middleware/authenticateJWT';
 
 dotenv.config();
@@ -58,6 +59,7 @@ app.use('/api/zones', zoneRouter);
 app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
 app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
+app.use('/api/hubs', hubRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

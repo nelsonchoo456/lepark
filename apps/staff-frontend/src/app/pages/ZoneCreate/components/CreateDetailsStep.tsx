@@ -52,7 +52,7 @@ const CreateDetailsStep = ({
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
     }
-  }, [user, parks]);
+  }, [user, parks, form]);
 
   const zoneStatusOptions = [
     {
@@ -118,7 +118,7 @@ const CreateDetailsStep = ({
       <Form.Item name="zoneStatus" label="Zone Status" rules={[{ required: true }]}>
         <Select placeholder="Select a Status" options={zoneStatusOptions} />
       </Form.Item>
-      {/* <Form.Item label={'Image'}>
+      <Form.Item label={'Image'}>
         <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick}/>
       </Form.Item>
       {previewImages?.length > 0 && <Form.Item label={'Image Previews'}>
@@ -133,7 +133,7 @@ const CreateDetailsStep = ({
             />
           ))}
         </div>
-      </Form.Item>} */}
+      </Form.Item>}
 
       <Divider orientation="left">
         Zone Hours <Text type="danger">{' *'}</Text>

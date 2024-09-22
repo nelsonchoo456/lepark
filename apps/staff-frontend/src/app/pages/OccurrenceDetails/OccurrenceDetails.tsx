@@ -18,65 +18,23 @@ import { useCallback, useEffect, useState } from 'react';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
+  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
 
-  const { occurrence, species, loading, updateOccurrence } = useRestrictOccurrence(occurrenceId);
-  // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
-  // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
-  const navigate = useNavigate();
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (occurrenceId) {
-  //       setLoading(true);
-  //       try {
-  //         const occurrenceResponse = await getOccurrenceById(occurrenceId);
-  //         setOccurrence(occurrenceResponse.data);
-
-  //         if (occurrenceResponse.data.speciesId) {
-  //           const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
-  //           setSpecies(speciesResponse.data);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching data:', error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [occurrenceId]);
-
-  const refreshOccurrence = useCallback(async () => {
-    if (occurrenceId) {
-      try {
-        const occurrenceResponse = await getOccurrenceById(occurrenceId);
-        if (occurrence) {
-          updateOccurrence(occurrenceResponse.data);
-          // console.log('Occurrence status updated:', occurrenceResponse.data);
-        }
-      } catch (error) {
-        console.error('Error refreshing occurrence:', error);
-      }
-    }
-  }, [occurrenceId, occurrence]);
-
-  const getStatusTag = (status?: string) => {
-    switch (status) {
-      case "HEALTHY":
-        return <Tag color="green" bordered={false}>HEALTHY</Tag>;
-      case "MONITOR_AFTER_TREATMENT":
-        return <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>;
-      case "NEEDS_ATTENTION":
-        return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
-      case "URGENT_ACTION_REQUIRED":
-        return <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>;
-      case "REMOVED":
-        return <Tag bordered={false}>REMOVED</Tag>;
-      default:
-        return <Tag bordered={false}>{status}</Tag>;
-    }
-  };
+  if (!occurrence) {
+    return null; // This will handle cases where the occurrence is not found or user doesn't have access
+  }
 
   const descriptionsItems = [
     {

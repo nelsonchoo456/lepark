@@ -1,7 +1,6 @@
 import { ContentWrapperDark, useAuth } from "@lepark/common-ui";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip, notification, message } from "antd";
-import { occurences } from "./occurences";
 import moment from "moment";
 import PageHeader from "../../components/main/PageHeader";
 import { FiEye, FiSearch } from "react-icons/fi";
@@ -23,19 +22,6 @@ const ParkList = () => {
   const [parkToBeDeleted, setParkToBeDeleted] = useState<ParkResponse | null>(null);
   const notificationShown = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Park Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, []);
 
   const filteredParks = useMemo(() => {
     return parks.filter((park) =>
@@ -119,13 +105,13 @@ const ParkList = () => {
       dataIndex: 'id',
       render: (id, record) => (
         <Flex justify="center">
-          <Tooltip title="View details">
+          <Tooltip title="View Park">
             <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
           </Tooltip>
-          <Tooltip title="Edit details">
+          <Tooltip title="Edit Park">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete Park">
             <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ParkResponse)}  />
           </Tooltip>
         </Flex>
