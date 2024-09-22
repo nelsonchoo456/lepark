@@ -85,65 +85,67 @@ class SensorService {
   return sensor;
 }
   public async updateSensor(
-    id: string,
-    data: Partial<SensorSchemaType>
-  ): Promise<Sensor> {
-    try {
-      const existingSensor = await SensorDao.getSensorById(id);
-      if (!existingSensor) {
-        throw new Error('Sensor not found');
-      }
+  id: string,
+  data: Partial<SensorSchemaType>
+): Promise<Sensor> {
+  try {
+    const existingSensor = await SensorDao.getSensorById(id);
+    if (!existingSensor) {
+      throw new Error('Sensor not found');
+    }
 
+    if (data.facilityId !== undefined) {
       if (data.facilityId) {
         const facility = await FacilityDao.getFacilityById(data.facilityId);
         if (!facility) {
           throw new Error('Facility not found');
         }
       }
+    }
 
+    if (data.hubId !== undefined) {
       if (data.hubId) {
         const hub = await HubDao.getHubById(data.hubId);
         if (!hub) {
           throw new Error('Hub not found');
         }
       }
-
-      const formattedData = dateFormatter(data);
-
-      // Merge existing data with update data
-      let mergedData = { ...existingSensor, ...formattedData };
-      mergedData = Object.fromEntries(
-        Object.entries(mergedData).filter(([key, value]) => value !== null)
-      );
-
-      // Validate merged data using Zod
-      SensorSchema.parse(mergedData);
-
-      // Convert validated SensorSchemaType data to Prisma-compatible update input
-      // This ensures only defined fields are included in the update operation
-      const updateData: Prisma.SensorUpdateInput = Object.entries(formattedData).reduce((acc, [key, value]) => {
-        if (value !== undefined) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {});
-
-      /*if (updateData.hubId && updateData.hubId !== existingSensor.hubId) {
-        const hub = await HubDao.getHubById(updateData.hubId as string);
-        if (!hub) {
-          throw new Error('Hub not found');
-        }
-      }*/
-
-      return SensorDao.updateSensor(id, updateData);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const validationError = fromZodError(error);
-        throw new Error(`${validationError.message}`);
-      }
-      throw error;
     }
+
+    const formattedData = dateFormatter(data);
+
+    // Merge existing data with update data
+    let mergedData = { ...existingSensor, ...formattedData };
+    mergedData = Object.fromEntries(
+      Object.entries(mergedData).filter(([key, value]) => value !== null)
+    );
+
+    // Validate merged data using Zod
+    SensorSchema.parse(mergedData);
+
+    // Convert validated SensorSchemaType data to Prisma-compatible update input
+    const updateData: Prisma.SensorUpdateInput = Object.entries(formattedData).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    // Update sensor data
+    const updatedSensor = await SensorDao.updateSensor(id, updateData);
+
+    // Update relationships
+    await SensorDao.updateSensorRelationships(id, data.hubId || null, data.facilityId || null);
+
+    return updatedSensor;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const validationError = fromZodError(error);
+      throw new Error(`${validationError.message}`);
+    }
+    throw error;
   }
+}
 
   public async deleteSensor(id: string): Promise<void> {
     await SensorDao.deleteSensor(id);

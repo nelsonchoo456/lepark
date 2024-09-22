@@ -170,6 +170,16 @@ async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
     });
   }
 
+  async updateSensorRelationships(id: string, hubId: string | null, facilityId: string | null): Promise<Sensor> {
+  return prisma.sensor.update({
+    where: { id },
+    data: {
+      hubId,
+      facilityId,
+    },
+  });
+}
+
   async deleteSensor(id: string): Promise<void> {
     await prisma.sensor.delete({ where: { id } });
   }

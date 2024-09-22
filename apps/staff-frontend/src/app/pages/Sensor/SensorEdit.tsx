@@ -103,14 +103,13 @@ useEffect(() => {
     setSelectedFacilityId(null);
   };
 
-  const handleSubmit = async (values: any) => {
+ const handleSubmit = async (values: any) => {
   setIsSubmitting(true);
   try {
-    // Map hub and facility names back to IDs
     const submissionData = {
       ...values,
-      hubId: selectedHubId,
-      facilityId: selectedFacilityId,
+      hubId: selectedHubId || null,
+      facilityId: selectedFacilityId || null,
     };
 
     const response = await updateSensorDetails(sensorId as string, submissionData, selectedFiles);
