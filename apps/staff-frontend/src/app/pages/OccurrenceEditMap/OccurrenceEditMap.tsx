@@ -41,24 +41,6 @@ const OccurrenceEditMap = () => {
   const [lat, setLat] = useState(occurrence?.lat);
   const [lng, setLng] = useState(occurrence?.lng);
 
-  useEffect(() => {
-    if (
-      user?.role !== StaffType.SUPERADMIN &&
-      user?.role !== StaffType.MANAGER &&
-      user?.role !== StaffType.BOTANIST &&
-      user?.role !== StaffType.ARBORIST
-    ) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Occurrence Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   // Set initial Zone, Lat Lng
   useEffect(() => {
     if (occurrence) {

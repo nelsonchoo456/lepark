@@ -1,5 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { getOccurrenceById, getSpeciesById, OccurrenceResponse, SpeciesResponse, StaffResponse, StaffType, getZoneById, ZoneResponse } from '@lepark/data-access';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
@@ -7,6 +7,7 @@ import { notification } from 'antd';
 export const useRestrictOccurrence = (occurrenceId?: string) => {
   const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
   const [species, setSpecies] = useState<SpeciesResponse | null>(null);
+  const [zone, setZone] = useState<ZoneResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
@@ -22,6 +23,7 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
       setLoading(true);
       setOccurrence(null);
       setSpecies(null);
+      setZone(null);
       try {
         const occurrenceResponse = await getOccurrenceById(occurrenceId);
 
@@ -33,6 +35,12 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
             setOccurrence(fetchedOccurrence);
             const speciesResponse = await getSpeciesById(fetchedOccurrence.speciesId);
             setSpecies(speciesResponse.data);
+
+            // Fetch zone information
+            if (fetchedOccurrence.zoneId) {
+              const zoneResponse = await getZoneById(fetchedOccurrence.zoneId);
+              setZone(zoneResponse.data);
+            }
           } else {
             throw new Error('Access denied');
           }
@@ -60,5 +68,5 @@ export const useRestrictOccurrence = (occurrenceId?: string) => {
     setOccurrence(occurrence);
   };
 
-  return { occurrence, species, loading, updateOccurrence };
+  return { occurrence, species, zone, loading, updateOccurrence };
 };

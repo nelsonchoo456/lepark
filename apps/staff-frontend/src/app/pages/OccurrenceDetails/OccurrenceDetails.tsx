@@ -19,7 +19,55 @@ import OccurrenceMapTab from './components/OccurrenceMapTab';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
-  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
+  const { occurrence, species, loading, zone, updateOccurrence } = useRestrictOccurrence(occurrenceId);
+  const navigate = useNavigate();
+
+  const refreshOccurrence = useCallback(async () => {
+    if (occurrenceId) {
+      try {
+        const occurrenceResponse = await getOccurrenceById(occurrenceId);
+        if (occurrence) {
+          updateOccurrence(occurrenceResponse.data);
+          // console.log('Occurrence status updated:', occurrenceResponse.data);
+        }
+      } catch (error) {
+        console.error('Error refreshing occurrence:', error);
+      }
+    }
+  }, [occurrenceId, occurrence, updateOccurrence]);
+
+  const getStatusTag = (status?: string) => {
+    switch (status) {
+      case 'HEALTHY':
+        return (
+          <Tag color="green" bordered={false}>
+            HEALTHY
+          </Tag>
+        );
+      case 'MONITOR_AFTER_TREATMENT':
+        return (
+          <Tag color="yellow" bordered={false}>
+            MONITOR AFTER TREATMENT
+          </Tag>
+        );
+      case 'NEEDS_ATTENTION':
+        return (
+          <Tag color="orange" bordered={false}>
+            NEEDS ATTENTION
+          </Tag>
+        );
+      case 'URGENT_ACTION_REQUIRED':
+        return (
+          <Tag color="red" bordered={false}>
+            URGENT ACTION REQUIRED
+          </Tag>
+        );
+      case 'REMOVED':
+        return <Tag bordered={false}>REMOVED</Tag>;
+      default:
+        return <Tag bordered={false}>{status}</Tag>;
+    }
+  };
 
   if (loading) {
     return (
@@ -65,7 +113,7 @@ const OccurrenceDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: occurrence && zone ? <OccurrenceMapTab occurrence={occurrence} zone={zone}/> : <p>Loading occurrence data...</p>,
+      children: occurrence && zone ? <OccurrenceMapTab occurrence={occurrence} zone={zone} /> : <p>Loading occurrence data...</p>,
     },
     {
       key: 'about',
@@ -80,12 +128,7 @@ const OccurrenceDetails = () => {
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: occurrence && (
-        <StatusLogs 
-          occurrence={occurrence}
-          onStatusLogCreated={refreshOccurrence}
-        />
-      ),
+      children: occurrence && <StatusLogs occurrence={occurrence} onStatusLogCreated={refreshOccurrence} />,
     },
     {
       key: 'qr',

@@ -50,19 +50,6 @@ const ParksMap = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Park Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, []);
-
-  useEffect(() => {
     if (zoomLevel < SHOW_ZONES_ZOOM) {
       setSelectedParkId(null)
     }
