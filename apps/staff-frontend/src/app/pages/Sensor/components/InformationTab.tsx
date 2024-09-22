@@ -19,6 +19,7 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
     'serialNumber',
     'sensorStatus',
     'sensorType',
+    'sensorName',
     'name',
     'image',
     'lat',

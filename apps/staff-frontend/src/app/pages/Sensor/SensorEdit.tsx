@@ -4,7 +4,7 @@ import { ImageInput, useAuth } from '@lepark/common-ui';
 import { getSensorById, updateSensorDetails, StaffResponse, SensorResponse, SensorUpdateData } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, Result } from 'antd';
+import { Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
@@ -45,7 +45,16 @@ const SensorEdit = () => {
       try {
         const response = await getSensorById(sensorId!);
         setSensor(response.data);
-        form.setFieldsValue(response.data);
+        form.setFieldsValue({
+          ...response.data,
+          acquisitionDate: dayjs(response.data.acquisitionDate),
+          lastCalibratedDate: dayjs(response.data.lastCalibratedDate),
+          nextMaintenanceDate: dayjs(response.data.nextMaintenanceDate),
+          lastMaintenanceDate: dayjs(response.data.lastMaintenanceDate),
+        });
+        if (response.data.image) {
+          setPreviewImages([response.data.image]); // Set the initial preview image
+        }
       } catch (error) {
         console.error('Error fetching sensor data:', error);
       } finally {
@@ -69,30 +78,30 @@ const SensorEdit = () => {
   }, [user, navigate]);
 
   const handleSubmit = async (values: any) => {
+    if (!sensor) return;
     setIsSubmitting(true);
     try {
       const updatedData: SensorUpdateData = {
         ...values,
-        acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
-        lastCalibratedDate: dayjs(values.lastCalibratedDate).toISOString(),
-        lastMaintenanceDate: dayjs(values.lastMaintenanceDate).toISOString(),
-        nextMaintenanceDate: dayjs(values.nextMaintenanceDate).toISOString(),
+        acquisitionDate: values.acquisitionDate.toISOString(),
+        lastCalibratedDate: values.lastCalibratedDate.toISOString(),
+        nextMaintenanceDate: values.nextMaintenanceDate.toISOString(),
       };
 
-      const response = await updateSensorDetails(sensorId!, updatedData, selectedFiles);
-      messageApi.success('Sensor updated successfully');
-      setCreatedSensorName(values.sensorName);
+      const response = await updateSensorDetails(sensor.id, updatedData, selectedFiles); // Pass only the first file
       setPreviewImages([]);
+
       if (response.status === 200) {
         setSensor(response.data);
+        setCreatedSensorName(values.sensorName);
         messageApi.open({
-            type: 'success',
-            content: 'Saved changes to Hub. Redirecting to Hub details page...',
-          });
-          // Add a 3-second delay before navigating
-          setTimeout(() => {
-            navigate(`/sensor/${sensor?.id}`);
-          }, 1000);
+          type: 'success',
+          content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
+        });
+        // Add a 3-second delay before navigating
+        setTimeout(() => {
+          navigate(`/sensor/${sensor?.id}`);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error updating sensor:', error);
@@ -102,22 +111,29 @@ const SensorEdit = () => {
     }
   };
 
-  const disabledLastCalibratedDate = (current: dayjs.Dayjs) => {
-    return current && current > dayjs().endOf('day');
-  };
+  const validateDates = (form: FormInstance) => ({
+    validator(_: any, value: dayjs.Dayjs) {
+      if (!value) {
+        return Promise.reject(new Error('Please select a date'));
+      }
+      if (value.isAfter(dayjs(), 'day')) {
+        return Promise.reject(new Error('Date cannot be in the future'));
+      }
+      return Promise.resolve();
+    },
+  });
 
-  const disabledNextMaintenanceDate = (current: dayjs.Dayjs) => {
-    if (!lastCalibratedDate) return false;
-    return current && current.isBefore(lastCalibratedDate);
-  };
-
-  const onLastCalibratedDateChange = (date: dayjs.Dayjs | null) => {
-    setLastCalibratedDate(date);
-  };
-
-  const onNextMaintenanceDateChange = (date: dayjs.Dayjs | null) => {
-    setNextMaintenanceDate(date);
-  };
+  const validateFutureDate = (form: FormInstance) => ({
+    validator(_: any, value: dayjs.Dayjs) {
+      if (!value) {
+        return Promise.reject(new Error('Please select a date'));
+      }
+      if (value.isBefore(dayjs(), 'day')) {
+        return Promise.reject(new Error('Date cannot be in the past'));
+      }
+      return Promise.resolve();
+    },
+  });
 
   const onReset = () => {
     form.resetFields();
@@ -143,7 +159,7 @@ const SensorEdit = () => {
     },
     {
       title: 'Edit',
-      pathKey: `/sensor/${sensor?.id}/edit`,
+      pathKey: `/sensor/edit/${sensor?.id}`,
       isCurrent: true,
     },
   ];
@@ -198,12 +214,20 @@ const SensorEdit = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" />
+            <Form.Item
+              name="acquisitionDate"
+              label="Acquisition Date"
+              rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
+            >
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
 
-            <Form.Item name="lastCalibratedDate" label="Last Calibrated Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" disabledDate={disabledLastCalibratedDate} onChange={onLastCalibratedDateChange} />
+            <Form.Item
+              name="lastCalibratedDate"
+              label="Last Calibrated Date"
+              rules={[{ required: true, message: 'Please enter Last Calibrated Date' }, validateDates(form)]}
+            >
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
 
             <Form.Item
@@ -222,12 +246,20 @@ const SensorEdit = () => {
               <InputNumber className="w-full" min={1} />
             </Form.Item>
 
-            <Form.Item name="lastMaintenanceDate" label="Last Maintenance Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" />
+            <Form.Item
+              name="lastMaintenanceDate"
+              label="Last Maintenance Date"
+              rules={[{ required: true, message: 'Please enter Last Maintenance Date' }, validateDates(form)]}
+            >
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
 
-            <Form.Item name="nextMaintenanceDate" label="Next Maintenance Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" disabledDate={disabledNextMaintenanceDate} onChange={onNextMaintenanceDateChange} />
+            <Form.Item
+              name="nextMaintenanceDate"
+              label="Next Maintenance Date"
+              rules={[{ required: true, message: 'Please enter Next Maintenance Date' }, validateFutureDate(form)]}
+            >
+              <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().startOf('day')} />
             </Form.Item>
 
             <Form.Item name="dataFrequencyMinutes" label="Data Frequency (minutes)" rules={[{ required: true, type: 'number', min: 1 }]}>
@@ -303,7 +335,7 @@ const SensorEdit = () => {
               <ImageInput type="file" onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
 
-            {selectedFiles[0] && previewImages[0] && (
+            {previewImages[0] && (
               <Form.Item label="Image Preview">
                 <div className="flex flex-wrap gap-2">
                   <img
