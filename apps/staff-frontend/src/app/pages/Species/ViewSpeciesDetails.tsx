@@ -19,6 +19,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import InformationTab from './components/InformationTab';
 import OccurrenceTable from './components/OccurrenceTable';
 import SpeciesCarousel from './components/SpeciesCarousel';
+import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
@@ -41,6 +42,10 @@ const ViewSpeciesDetails = () => {
     };
     fetchData();
   }, [speciesId]);
+
+  if (!species) {
+    return <EntityNotFound entityName="Species" listPath="/species" />;
+  }
 
   const breadcrumbItems = [
     {

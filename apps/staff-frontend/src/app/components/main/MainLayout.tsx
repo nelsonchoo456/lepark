@@ -4,11 +4,13 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
+import { FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
 import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
+import { PiToolboxBold } from "react-icons/pi";
 import type { MenuProps } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 type MenuItem = Required<MenuProps>['items'][number];
@@ -179,6 +181,17 @@ const MainLayout = () => {
           // icon: <UploadOutlined />,
           label: 'Tasks',
           onClick: () => navigate('/task'),
+        }
+      : null,
+    userRole === 'SUPERADMIN' ||
+    userRole === 'MANAGER' ||
+    userRole === 'LANDSCAPE_ARCHITECT' ||
+    userRole === 'PARK_RANGER'
+      ? {
+          key: 'parkasset',
+          icon: <PiToolboxBold />,
+          label: 'Park Assets (non-IoT)',
+          onClick: () => navigate('/parkasset'),
         }
       : null,
     {

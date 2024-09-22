@@ -49,19 +49,6 @@ const OccurrenceCreate = () => {
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
 
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Occurrence Creation page!',
-      });
-      notificationShown.current = true;
-    }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
       setCurrStep(0);

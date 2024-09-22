@@ -35,7 +35,7 @@ import Task from './pages/Task/Task';
 import ZoneList from './pages/ZoneList/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
-import NotFound from './pages/NotFound/NotFound';
+import PageNotFound from './pages/PageNotFound.tsx/PageNotFound';
 import Settings from './pages/Settings/Settings';
 import AttractionList from './pages/Attraction/AttractionList';
 import AttractionCreate from './pages/Attraction/AttractionCreate';
@@ -53,6 +53,12 @@ import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
 import HubEdit from './pages/Hub/HubEdit';
+import AssetList from './pages/Asset/AssetList';
+import AssetCreate from './pages/Asset/AssetCreate';
+import AssetDetails from './pages/Asset/AssetDetails';
+import AssetEdit from './pages/Asset/AssetEdit';
+import SensorList from './pages/Sensor/SensorList';
+import SensorCreate from './pages/Sensor/SensorCreate';
 
 export function App() {
   return (
@@ -96,6 +102,8 @@ export function App() {
               {/* Nest all protected routes here */}
               <Route path="/" element={<MainLanding />} />
               <Route path="/map" element={<MapPage />} />
+
+              {/* Occurrence Routes */}
               <Route path="/occurrences">
                 <Route index element={<OccurrenceList />} />
                 <Route
@@ -130,6 +138,8 @@ export function App() {
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
+
+              {/* Park Routes */}
               <Route path="/park">
                 <Route
                   index
@@ -166,19 +176,58 @@ export function App() {
                 <Route path=":id/edit" element={<ParkEdit />} />
                 <Route path=":id/edit-map" element={<ParkEditMap />} />
               </Route>
+
+              {/* Zone Routes */}
               <Route path="/zone">
                 <Route index element={<ZoneList />} />
-                <Route path="create" element={<ZoneCreate />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ZoneCreate />
+                    </>
+                  }
+                />
                 <Route path=":id" element={<ZoneDetails />} />
               </Route>
+
+              {/* Task Routes */}
               <Route path="/task" element={<Task />} />
+
+              {/* Settings Routes */}
               <Route path="/settings" element={<Settings />} />
+
+              {/* Profile Routes */}
               <Route path="/profile" element={<StaffProfile />} />
+
+              {/* Staff Management Routes */}
               <Route path="/staff-management">
-                <Route index element={<StaffManagementPage />} />
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <StaffManagementPage />
+                    </>
+                  }
+                />
                 <Route path=":staffId" element={<ViewStaffDetails />} />
-                <Route path="create-staff" element={<CreateStaff />} />
+                <Route
+                  path="create-staff"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <CreateStaff />
+                    </>
+                  }
+                />
               </Route>
+
+              {/* Species Routes */}
               <Route path="/species">
                 <Route index element={<SpeciesPage />} />
                 <Route path="create" element={<CreateSpecies />} />
@@ -201,6 +250,8 @@ export function App() {
                   <Route path=":id" element={<AttractionDetails />} />
                 </Route>
               </Route>
+
+              {/* Hub Routes */}
               <Route
                 element={
                   <RoleProtectedRoute
@@ -229,8 +280,25 @@ export function App() {
                   <Route path="create" element={<FacilityCreate />} />
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>
+                <Route path="/parkasset">
+                  <Route index element={<AssetList />} />
+                  <Route path="create" element={<AssetCreate />} />
+                  <Route path=":assetId" element={<AssetDetails />} />
+                  <Route path="edit/:assetId" element={<AssetEdit />} />
+                </Route>
+                <Route path="/sensor">
+
+                  <Route path="create" element={<SensorCreate/>} />
+                  <Route index element={<SensorList/>} />
+                  {/*
+                  <Route path=":sensorId" element={<ViewSensorDetails/>} />
+                  <Route path="edit/:sensorId" element={<SensorEdit/>} />*/}
+                </Route>
+
               </Route>
-              <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
+
+              {/* Catch-all for 404 */}
+              <Route path="*" element={<PageNotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>

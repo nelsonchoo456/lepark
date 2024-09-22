@@ -52,7 +52,7 @@ const CreateDetailsStep = ({
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
     }
-  }, [user, parks]);
+  }, [user, parks, form]);
 
   const zoneStatusOptions = [
     {

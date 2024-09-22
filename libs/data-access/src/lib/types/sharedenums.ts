@@ -5,3 +5,23 @@ export enum OccurrenceStatusEnum {
   URGENT_ACTION_REQUIRED = 'URGENT_ACTION_REQUIRED',
   REMOVED = 'REMOVED',
 }
+
+export enum ParkAssetTypeEnum {
+  EQUIPMENT_RELATED = 'EQUIPMENT_RELATED',
+  PLANT_RELATED = 'PLANT_RELATED',
+  PLANT_TOOL = 'PLANT_TOOL',
+}
+
+export enum ParkAssetStatusEnum {
+  AVAILABLE = 'AVAILABLE',
+  IN_USE = 'IN_USE',
+  UNDER_MAINTENANCE = 'UNDER_MAINTENANCE',
+  DECOMMISSIONED = 'DECOMMISSIONED',
+}
+
+export enum ParkAssetConditionEnum {
+  EXCELLENT = 'EXCELLENT',
+  FAIR = 'FAIR',
+  POOR = 'POOR',
+  DAMAGED = 'DAMAGED',
+}
