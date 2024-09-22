@@ -3,7 +3,7 @@ import VisitorService from '../services/VisitorService';
 import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, VerifyUserSchema } from '../schemas/visitorSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
-import { authenticateJWTVisitor } from '../middleware/authenticateJWT';
+import { authenticateJWTStaff, authenticateJWTVisitor } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.get('/getAllVisitors', async (_, res) => {
+router.get('/getAllVisitors', authenticateJWTStaff, async (_, res) => {
   try {
     const visitors = await VisitorService.getAllVisitors();
     res.status(200).json(visitors);

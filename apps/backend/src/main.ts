@@ -51,11 +51,11 @@ app.get('/api', (req, res) => {
 
 // Routes
 app.use('/api/staffs', staffRouter);
-app.use('/api/species', authenticateJWTStaff, speciesRouter);
+app.use('/api/species', speciesRouter);
 app.use('/api/visitors', visitorRouter);
-app.use('/api/parks', authenticateJWTStaff, parkRouter);
-app.use('/api/zones', authenticateJWTStaff, zoneRouter);
-app.use('/api/occurrences', authenticateJWTStaff, occurrenceRouter);
+app.use('/api/parks', parkRouter);
+app.use('/api/zones', zoneRouter);
+app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
 app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 
