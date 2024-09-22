@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-import {
-  createSensor,
-  getAllHubs,
-  SensorData,
-  StaffResponse
-} from '@lepark/data-access';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
 import { Button, Card, DatePicker, Form, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
+import { createSensor, getAllHubs, getAllFacilities, SensorData, StaffResponse, FacilityResponse, HubResponse } from '@lepark/data-access';
+import { useFetchHubs } from '../../hooks/Hubs/useFetchHubs';
+import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
@@ -24,7 +21,7 @@ const formatEnumLabel = (enumValue: string): string => {
 
 
 const SensorCreate = () => {
-    const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const navigate = useNavigate();
   const [createdSensor, setCreatedSensor] = useState<any | null>();
@@ -32,26 +29,27 @@ const SensorCreate = () => {
   const notificationShown = useRef(false);
   const [loading, setLoading] = useState(true);
 
-  const [hubs, setHubs] = useState<{ id: string; name: string }[]>([]);
+  const { hubs, loading: hubsLoading } = useFetchHubs();
+  const { facilities, loading: facilitiesLoading } = useFetchFacilities();
 
-   useEffect(() => {
-    const fetchHubsAndFacilities = async () => {
-      try {
-        const hubsResponse = await getAllHubs();
-        setHubs(hubsResponse.data);
 
-        /*if (user && user.parkId) {
-          const facilitiesResponse = await getAllFacilities(user.parkId);
-          setFacilities(facilitiesResponse.data);
-        }*/
-      } catch (error) {
-        console.error('Error fetching hubs and facilities:', error);
-        message.error('Failed to fetch hubs and facilities');
+  useEffect(() => {
+    if (user && user.id !== '') {
+      if (!['MANAGER', 'SUPERADMIN', 'PARK_RANGER', 'LANDSCAPE_ARCHITECT'].includes(user.role)) {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You are not allowed to access the Create Sensor page!',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
+      } else {
+        setLoading(false);
       }
-    };
+    }
+  }, [user, navigate]);
 
-    fetchHubsAndFacilities();
-  }, [user]);
 
   useEffect(() => {
     if (user && user.id !== '') {
@@ -188,6 +186,30 @@ const SensorCreate = () => {
     );
   }
 
+  const clearHub = () => {
+    form.setFieldsValue({ hubId: undefined, facilityId: undefined });
+    form.resetFields(['hubId', 'facilityId']);
+  };
+
+  const clearFacility = () => {
+    form.setFieldsValue({ facilityId: undefined, hubId: undefined });
+    form.resetFields(['facilityId', 'hubId']);
+  };
+
+  const onHubChange = (value: string) => {
+    if (value) {
+      form.setFieldsValue({ facilityId: undefined });
+      form.resetFields(['facilityId']);
+    }
+  };
+
+  const onFacilityChange = (value: string) => {
+    if (value) {
+      form.setFieldsValue({ hubId: undefined });
+      form.resetFields(['hubId']);
+    }
+  };
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
@@ -295,40 +317,52 @@ const SensorCreate = () => {
               <Input.TextArea />
             </Form.Item>
 
-             <Form.Item name="hubId" label="Hub" rules={[{ required: false }]}>
-              <div className="flex w-full">
-                <Select
-                  placeholder="Select a hub"
-                  allowClear
-                  style={{ width: 'calc(100% - 80px)', marginRight: '8px' }}
-                >
-                  {hubs.map((hub) => (
-                    <Select.Option key={hub.id} value={hub.id}>
-                      {hub.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-                <Button
-                  onClick={() => {
-                    form.setFieldsValue({ hubId: undefined });
-                    form.resetFields(['hubId']);
-                  }}
-                  style={{ width: '80px' }}
-                >
-                  Clear Hub
-                </Button>
-              </div>
-            </Form.Item>
+            <Form.Item name="hubId" label="Hub" rules={[{ required: false }]}>
+        <div className="flex w-full">
+          <Select
+            placeholder="Select a hub"
+            allowClear
+            style={{ width: 'calc(100% - 100px)', marginRight: '8px' }}
+            onChange={onHubChange}
+          >
+            {hubs.map((hub) => (
+              <Select.Option key={hub.id} value={hub.id}>
+                {hub.name}
+              </Select.Option>
+            ))}
+          </Select>
+          <Button
+            onClick={clearHub}
+            style={{ width: '100px' }}
+          >
+            Clear Hub
+          </Button>
+        </div>
+      </Form.Item>
 
-            <Form.Item name="facilityId" label="Facility">
-              {/*<Select placeholder="Select a facility" allowClear>
-                {facilities.map((facility) => (
-                  <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
-                  </Select.Option>
-                ))
-              </Select>*/}
-            </Form.Item>
+      <Form.Item name="facilityId" label="Facility">
+        <div className="flex w-full">
+          <Select
+            placeholder="Select a facility"
+            allowClear
+            style={{ width: 'calc(100% - 100px)', marginRight: '8px' }}
+            onChange={onFacilityChange}
+          >
+            {facilities.map((facility) => (
+              <Select.Option key={facility.id} value={facility.id}>
+                {facility.facilityName}
+              </Select.Option>
+            ))}
+          </Select>
+          <Button
+            onClick={clearFacility}
+            style={{ width: '100px' }}
+          >
+            Clear Facility
+          </Button>
+        </div>
+      </Form.Item>
+
 
               <Form.Item label="Upload Image"  tooltip="One image is required">
               <ImageInput

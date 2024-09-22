@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
@@ -45,6 +46,9 @@ const AssetEdit = () => {
   const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
 
+  const { facilities, loading: facilitiesLoading } = useFetchFacilities();
+
+
   useEffect(() => {
     const handleResize = () => {
       setWebMode(window.innerWidth >= SCREEN_LG);
@@ -56,7 +60,7 @@ const AssetEdit = () => {
     };
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     if (asset) {
       setCurrentImages(asset.images || []);
       form.setFieldsValue({
@@ -64,9 +68,16 @@ const AssetEdit = () => {
         acquisitionDate: dayjs(asset.acquisitionDate),
         lastMaintenanceDate: dayjs(asset.lastMaintenanceDate),
         nextMaintenanceDate: dayjs(asset.nextMaintenanceDate),
+        facilityId: asset.facilityId, // Set the facilityId from the asset
       });
     }
   }, [asset, form]);
+
+  const clearFacility = () => {
+    form.setFieldsValue({ facilityId: undefined });
+    form.resetFields(['facilityId']);
+  };
+
 
   const layout = {
     labelCol: { span: 8 },
@@ -76,6 +87,7 @@ const AssetEdit = () => {
   const tailLayout = {
     wrapperCol: { offset: 8, span: 16 },
   };
+
 
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
@@ -211,6 +223,20 @@ const AssetEdit = () => {
     return null;
   }
 
+if (assetLoading || facilitiesLoading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
+
+
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
@@ -302,17 +328,22 @@ const AssetEdit = () => {
               <Input.TextArea />
             </Form.Item>
 
-            <Form.Item
-              name="facilityId"
-              label="Facility ID"
-              rules={[
-                { required: true, message: 'Please input the facility ID!' },
-                { whitespace: true, message: 'Facility ID cannot be empty!' },
-              ]}
-              getValueFromEvent={(e) => e.target.value.trim()} // Trim leading and trailing spaces
-            >
-              <Input />
-            </Form.Item>
+                 <Form.Item
+     name="facilityId"
+     label="Facility"
+     rules={[{ required: true, message: 'Please select a facility' }]}
+   >
+     <Select
+       placeholder="Select a facility"
+       style={{ width: '100%' }}
+     >
+       {facilities.map((facility) => (
+         <Select.Option key={facility.id} value={facility.id}>
+           {facility.facilityName}
+         </Select.Option>
+       ))}
+     </Select>
+   </Form.Item>
 
             <Form.Item label="Upload Images" required tooltip="At least one image is required">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
