@@ -79,7 +79,7 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
     },
   ];
 
-   return webMode ? (
+  return webMode ? (
     <div
       style={{
         height: '100vh',
@@ -91,44 +91,33 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
         <PageHeader2 breadcrumbItems={breadcrumbItems} />
         {sensors &&
           sensors.map((sensor) => (
-            <>
-              <div key={sensor.id} className="border-b-[1px] border-black/10 py-4 px-2 hover:bg-green-400/10">
-                <div className="flex justify-between gap-2 ">
-                  <div className="flex-auto">
-                    <span className="font-semibold text-wrap">{sensor.sensorName}</span>
-                  </div>
-                </div>
-                <div className="flex mt-2 justify-between">
-                  <SensorStatusTag>{sensor.sensorStatus}</SensorStatusTag>
-                  <div className="flex gap-2">
-                    <Tooltip title="Edit Sensor">
-                      <div className="">
-                        <Button
-                          icon={<TbEdit />}
-                          shape="circle"
-                          size="small"
-                          onClick={() => navigate(`/sensor/edit/${sensor.id}`)}
-                        ></Button>
-                      </div>
-                    </Tooltip>
-                    <Tooltip title="View Details">
-                      <div className="">
-                        <Button icon={<FiEye />} shape="circle" size="small" onClick={() => navigate(`/sensor/${sensor.id}`)}></Button>
-                      </div>
-                    </Tooltip>
-                  </div>
+            <div key={sensor.id} className="border-b-[1px] border-black/10 py-4 px-2 hover:bg-green-400/10">
+              <div className="flex justify-between gap-2 ">
+                <div className="flex-auto">
+                  <span className="font-semibold text-wrap">{sensor.sensorName}</span>
                 </div>
               </div>
-              {user?.role === StaffType.SUPERADMIN && sensor.id.toString() === selectedSensorId && (
-                <div className="bg-green-800/10 px-4 pb-4 rounded">
-                  <div className="font-semibold py-2 opacity-50">Related Data</div>
-                  <div className="h-full border-l-[3px] border-black/10 pl-4">
-                    {/* Add related data here if needed */}
-                    <div className="py-2 opacity-50">No related data available.</div>
-                  </div>
+              <div className="flex mt-2 justify-between">
+                <SensorStatusTag>{sensor.sensorStatus}</SensorStatusTag>
+                <div className="flex gap-2">
+                  <Tooltip title="Edit Sensor">
+                    <div className="">
+                      <Button
+                        icon={<TbEdit />}
+                        shape="circle"
+                        size="small"
+                        onClick={() => navigate(`/sensor/edit/${sensor.id}`)}
+                      ></Button>
+                    </div>
+                  </Tooltip>
+                  <Tooltip title="View Details">
+                    <div className="">
+                      <Button icon={<FiEye />} shape="circle" size="small" onClick={() => navigate(`/sensor/${sensor.id}`)}></Button>
+                    </div>
+                  </Tooltip>
                 </div>
-              )}
-            </>
+              </div>
+            </div>
           ))}
       </Drawer>
       <MapContainer
@@ -144,42 +133,42 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
         <MapZoomListener />
 
         {sensorsWithCoordinates.length > 0 &&
-  sensorsWithCoordinates.map((sensor) => (
-    <Marker
-      key={sensor.id}
-      position={[sensor.latitude ?? 0, sensor.longitude ?? 0]}
-      eventHandlers={{
-        click: (e) => handleSensorMarkerClick(e.target._map, [sensor.latitude ?? 0, sensor.longitude ?? 0], sensor.id),
-      }}
-      icon={L.divIcon({
-        className: 'custom-icon',
-        html: renderToStaticMarkup(
-          <div
-            style={{
-              backgroundColor: COLORS.green[600],
-              color: 'white',
-              borderRadius: '50%',
-              width: '30px',
-              height: '30px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <MdSensors />
-          </div>
-        ),
-      })}
-    >
-      <Popup>
-        <div>
-          <h3>{sensor.sensorName}</h3>
-          <p>Type: {sensor.sensorType}</p>
-          <p>Status: {sensor.sensorStatus}</p>
-        </div>
-      </Popup>
-    </Marker>
-  ))}
+          sensorsWithCoordinates.map((sensor) => (
+            <Marker
+              key={sensor.id}
+              position={[sensor.latitude ?? 0, sensor.longitude ?? 0]}
+              eventHandlers={{
+                click: (e) => handleSensorMarkerClick(e.target._map, [sensor.latitude ?? 0, sensor.longitude ?? 0], sensor.id),
+              }}
+              icon={L.divIcon({
+                className: 'custom-icon',
+                html: renderToStaticMarkup(
+                  <div
+                    style={{
+                      backgroundColor: COLORS.green[600],
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '30px',
+                      height: '30px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <MdSensors />
+                  </div>
+                ),
+              })}
+            >
+              <Popup>
+                <div>
+                  <h3>{sensor.sensorName}</h3>
+                  <p>Type: {sensor.sensorType}</p>
+                  <p>Status: {sensor.sensorStatus}</p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
       </MapContainer>
     </div>
   ) : (
