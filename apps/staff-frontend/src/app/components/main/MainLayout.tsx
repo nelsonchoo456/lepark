@@ -4,7 +4,7 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
-import { FaToolbox } from 'react-icons/fa';
+import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
 import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
@@ -88,7 +88,7 @@ const MainLayout = () => {
 
   const hubsNavItem: MenuItem = {
     key: 'hubs',
-    icon: <FaToolbox />,
+    icon: <FaNetworkWired />,
     label: 'Hubs',
     onClick: () => navigate('/hubs'),
   };
