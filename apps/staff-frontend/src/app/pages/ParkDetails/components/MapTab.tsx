@@ -117,7 +117,7 @@ const MapTab = ({ park }: MapTabProps) => {
         {(user?.role === StaffType.SUPERADMIN ||
           user?.role === StaffType.MANAGER ||
           user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
-          <div className="absolute top-4 right-14 z-[1000]">
+          <div className="absolute top-4 right-3 z-[1000]">
             <Tooltip title="Edit Boundaries">
               <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/park/${park.id}/edit-map`)}>
                 Edit

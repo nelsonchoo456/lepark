@@ -47,7 +47,7 @@ const OccurrenceMapTab = ({ occurrence, zone }: MapTabProps) => {
       </MapContainer>
       
       {canEditLocation && (
-        <div className="absolute top-4 right-14 z-[1000]">
+        <div className="absolute top-4 right-3 z-[1000]">
           <Tooltip title="Edit Location">
             <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/occurrences/${occurrence.id}/edit-location`)}>
               Edit Location

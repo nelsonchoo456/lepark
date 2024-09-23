@@ -158,7 +158,7 @@ export function App() {
                   path=":id/edit"
                   element={
                     <>
-                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]} redirectTo="/" />
                       <ParkEdit />
                     </>
                   }
@@ -169,7 +169,12 @@ export function App() {
                     <ParksMap />
                   </>
                 } />
-                <Route path=":id/edit-map" element={<ParkEditMap />} />
+                <Route path=":id/edit-map" element={
+                  <>
+                    <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]} redirectTo="/" />
+                    <ParkEditMap />
+                  </>
+                } />
               </Route>
 
               {/* Zone Routes */}

@@ -111,16 +111,16 @@ const OccurrenceEditMap = () => {
   const breadcrumbItems = [
     {
       title: 'Occurrence Management',
-      pathKey: '/occurrence',
+      pathKey: '/occurrences',
       isMain: true,
     },
     {
       title: occurrence?.title ? occurrence?.title : 'Details',
-      pathKey: `/occurrence/${occurrence?.id}`,
+      pathKey: `/occurrences/${occurrence?.id}`,
     },
     {
       title: 'Edit Location',
-      pathKey: `/occurrence/${occurrence?.id}/edit-location`,
+      pathKey: `/occurrences/${occurrence?.id}/edit-location`,
       isCurrent: true,
     },
   ];
