@@ -144,14 +144,6 @@ const filteredParkAssets = useMemo(() => {
       width: '15%',
     },
     {
-      title: 'Next Maintenance',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (date: string) => new Date(date).toLocaleDateString(),
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => new Date(a.nextMaintenanceDate).getTime() - new Date(b.nextMaintenanceDate).getTime(),
-      width: '15%',
-    },
-    {
       title: 'Actions',
       key: 'actions',
       render: (_: React.ReactNode, record: ParkAssetResponse) => (
