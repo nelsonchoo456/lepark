@@ -16,10 +16,11 @@ import { Card, Descriptions, Tabs, Tag, Spin } from 'antd';
 import moment from 'moment';
 import SensorCarousel from './components/SensorCarousel';
 import InformationTab from './components/InformationTab';
+import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
 const ViewSensorDetails = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
-  const [sensor, setSensor] = useState<SensorResponse | null>(null);
+  const { sensor } = useRestrictSensors(sensorId);
   const [loading, setLoading] = useState(true);
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [park, setPark] = useState<ParkResponse | null>(null);
@@ -29,14 +30,16 @@ const ViewSensorDetails = () => {
     const fetchData = async () => {
       if (sensorId) {
         try {
-          const response = await getSensorById(sensorId);
-          setSensor(response.data);
-          if (response.data.facilityId) {
-            const facilityResponse = await getFacilityById(response.data.facilityId);
-            setFacility(facilityResponse.data);
-            console.log(facilityResponse.data);
-            const parkResponse = await getParkById(facilityResponse.data.parkId);
-            setPark(parkResponse.data);
+          if (sensor && sensor.facilityId) {
+            const facilityResponse = await getFacilityById(sensor.facilityId);
+            if (facilityResponse.status === 200) {
+              setFacility(facilityResponse.data);
+              console.log(facilityResponse.data);
+              const parkResponse = await getParkById(facilityResponse.data.parkId);
+              if (parkResponse.status === 200) {
+                setPark(parkResponse.data);
+              }
+            }
           }
         } catch (error) {
           console.error('Error fetching sensor data:', error);
@@ -62,7 +65,6 @@ const ViewSensorDetails = () => {
   ];
 
   const descriptionsItems = [
-    //  { key: 'sensorName', label: 'Sensor Name', children: sensor?.sensorName },
     { key: 'sensorType', label: 'Sensor Type', children: sensor?.sensorType },
     {
       key: 'sensorStatus',
@@ -90,12 +92,17 @@ const ViewSensorDetails = () => {
     {
       key: 'facilityName',
       label: 'Facility',
-      children: facility?.facilityName,
+      children: facility?.facilityName || 'N/A', // Ensure only facilityName is rendered
     },
-    /* { key: 'latitude', label: 'Latitude', children: sensor?.latitude },
-    { key: 'longitude', label: 'Longitude', children: sensor?.longitude },
-    { key: 'supplier', label: 'Supplier', children: sensor?.supplier },
-    { key: 'supplierContactNumber', label: 'Supplier Contact', children: sensor?.supplierContactNumber },*/
+  ];
+
+  const descriptionsItemsForSuperAdmin = [
+    ...descriptionsItems,
+    {
+      key: 'parkName',
+      label: 'Park Name',
+      children: park?.name,
+    },
   ];
 
   const tabsItems = [
@@ -105,6 +112,14 @@ const ViewSensorDetails = () => {
       children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
   ];
+
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Spin size="large" />
+      </ContentWrapperDark>
+    );
+  }
 
   return (
     <ContentWrapperDark>
@@ -117,7 +132,12 @@ const ViewSensorDetails = () => {
 
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{sensor?.sensorName}</LogoText>
-            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
+            <Descriptions
+              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
+              column={1}
+              size="small"
+              className="mb-4"
+            />
           </div>
         </div>
 
