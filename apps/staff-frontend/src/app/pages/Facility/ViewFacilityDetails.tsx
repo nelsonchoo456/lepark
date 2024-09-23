@@ -6,6 +6,7 @@ import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
+import LocationTab from './components/LocationTab';
 import FacilityCarousel from './components/FacilityCarousel';
 import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
 
@@ -73,6 +74,11 @@ const ViewFacilityDetails = () => {
       label: 'Information',
       children: facility ? <InformationTab facility={facility} /> : <p>Loading facility data...</p>,
     },
+    {
+      key: 'location',
+      label: 'Location',
+      children: facility ? <LocationTab facility={facility} /> : <p>Loading facility data...</p>,
+    }
   ];
 
   return (

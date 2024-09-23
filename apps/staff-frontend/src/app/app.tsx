@@ -370,6 +370,7 @@ export function App() {
                   <Route path="create" element={<FacilityCreate />} />
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                   <Route path=":facilityId/edit" element={<FacilityEdit />} />
+                  <Route path=":facilityId/edit-location" element={<FacilityEdit />} />
                 </Route>
               </Route>
 

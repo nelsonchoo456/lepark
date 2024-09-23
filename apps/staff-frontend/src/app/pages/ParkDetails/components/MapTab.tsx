@@ -1,4 +1,4 @@
-import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType, getFacilitiesByParkId, FacilityResponse } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
@@ -11,6 +11,8 @@ import { COLORS } from '../../../config/colors';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { PiPlantFill } from 'react-icons/pi';
 import { useAuth } from '@lepark/common-ui';
+import { FaFemale, FaMale } from 'react-icons/fa';
+import FacilityPictureMarker from '../../../components/map/FacilityPictureMarker';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -21,6 +23,7 @@ const MapTab = ({ park }: MapTabProps) => {
   const [zones, setZones] = useState<ZoneResponse[]>();
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [attractions, setAttractions] = useState<AttractionResponse[]>();
+  const [facilities, setFacilities] = useState<FacilityResponse[]>();
 
   const [showZones, setShowZones] = useState<boolean>(false);
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
@@ -32,6 +35,7 @@ const MapTab = ({ park }: MapTabProps) => {
       fetchZones();
       fetchOccurrences();
       fetchAttractions();
+      fetchFacilities();
     }
   }, [park])
 
@@ -59,16 +63,31 @@ const MapTab = ({ park }: MapTabProps) => {
     }
   }
 
+  const fetchFacilities = async () => {
+    const facilitiesRes = await getFacilitiesByParkId(park.id);
+    if (facilitiesRes.status === 200) {
+      const facilitiesData = facilitiesRes.data;
+      setFacilities(facilitiesData);
+    }
+  }
 
   return (
     <>
       <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
         <Space size={20}>
           <div className="font-semibold">Display:</div>
-          <Checkbox onChange={(e) => setShowZones(e.target.checked)}>Zones</Checkbox>
-          <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)}>Occurrences</Checkbox>
-          <Checkbox onChange={(e) => setShowAttractions(e.target.checked)}>Attractions</Checkbox>
-          <Checkbox onChange={(e) => setShowFacilities(e.target.checked)}>Facilities</Checkbox>
+          <Checkbox onChange={(e) => setShowZones(e.target.checked)} checked={showZones}>
+            Zones
+          </Checkbox>
+          <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+            Occurrences
+          </Checkbox>
+          <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions}>
+            Attractions
+          </Checkbox>
+          <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities}>
+            Facilities
+          </Checkbox>
         </Space>
       </Card>
       <div
@@ -89,7 +108,8 @@ const MapTab = ({ park }: MapTabProps) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }} />
-          {showZones && zones &&
+          {showZones &&
+            zones &&
             zones.map((zone) => (
               <PolygonWithLabel
                 key={zone.id}
@@ -106,20 +126,51 @@ const MapTab = ({ park }: MapTabProps) => {
                 labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
               />
             ))}
-          {showOccurrences && occurrences &&
+          {showOccurrences &&
+            occurrences &&
             occurrences.map((occurrence) => (
-              <PictureMarker circleWidth={30} lat={occurrence.lat} lng={occurrence.lng} backgroundColor={COLORS.green[300]} icon={<PiPlantFill className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={occurrence.title} />
+              <PictureMarker
+                circleWidth={30}
+                lat={occurrence.lat}
+                lng={occurrence.lng}
+                backgroundColor={COLORS.green[300]}
+                icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                tooltipLabel={occurrence.title}
+              />
             ))}
 
-          {showAttractions && attractions &&
+          {showAttractions &&
+            attractions &&
             attractions.map((attraction) => (
-              <PictureMarker circleWidth={30} lat={attraction.lat} lng={attraction.lng} backgroundColor={COLORS.sky[300]} icon={<TbTicket className='text-sky-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={attraction.title} />
+              <PictureMarker
+                circleWidth={30}
+                lat={attraction.lat}
+                lng={attraction.lng}
+                backgroundColor={COLORS.mustard[300]}
+                icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                tooltipLabel={attraction.title}
+              />
             ))}
+
+          {showFacilities &&
+            facilities &&
+            facilities.map(
+              (facility) =>
+                facility.lat &&
+                facility.long && (
+                  <FacilityPictureMarker
+                    circleWidth={38}
+                    lat={facility.lat}
+                    lng={facility.long}
+                    innerBackgroundColor={COLORS.sky[400]}
+                    tooltipLabel={facility.facilityName}
+                    facilityType={facility.facilityType}
+                  />
+                ),
+            )}
         </MapContainer>
-        
-        {(user?.role === StaffType.SUPERADMIN ||
-          user?.role === StaffType.MANAGER ||
-          user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
           <div className="absolute top-4 right-3 z-[1000]">
             <Tooltip title="Edit Boundaries">
               <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/park/${park.id}/edit-map`)}>
