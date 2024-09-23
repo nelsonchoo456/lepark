@@ -27,7 +27,6 @@ export function latLngArrayToPolygon(latLngArray: any): string {
     throw new Error("Please make a change to the boundaries.");
   }
 
-  console.log(latLngArray)
   const coordinates = latLngArray.map((point: LatLng) => {
     if (!point.lng || !point.lat) {
       throw new Error("Please draw valid boundaries. This error may arise if you have unsaved changes");

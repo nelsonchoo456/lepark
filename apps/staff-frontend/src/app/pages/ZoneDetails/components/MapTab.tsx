@@ -74,7 +74,7 @@ const MapTab = ({ zone }: MapTabProps) => {
   return (
     <>
      <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
-      <Space >
+      <Space size={20}>
         <div className="font-semibold">Display:</div>
         {park && (
           <Checkbox onChange={(e) => setShowPark(e.target.checked)} checked={showPark}>
@@ -101,6 +101,10 @@ const MapTab = ({ zone }: MapTabProps) => {
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
+          // var OpenStreetMap_Mapnik = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          //   maxZoom: 19,
+          //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          // });
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />

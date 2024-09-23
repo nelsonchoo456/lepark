@@ -1,7 +1,7 @@
 import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Button, Checkbox, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
 import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -62,12 +62,15 @@ const MapTab = ({ park }: MapTabProps) => {
 
   return (
     <>
-      <Space className="mb-4">
-        <Checkbox onChange={(e) => setShowZones(e.target.checked)}>Zones</Checkbox>
-        <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)}>Occurrences</Checkbox>
-        <Checkbox onChange={(e) => setShowAttractions(e.target.checked)}>Attractions</Checkbox>
-        <Checkbox onChange={(e) => setShowFacilities(e.target.checked)}>Facilities</Checkbox>
-      </Space>
+      <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
+        <Space size={20}>
+          <div className="font-semibold">Display:</div>
+          <Checkbox onChange={(e) => setShowZones(e.target.checked)}>Zones</Checkbox>
+          <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)}>Occurrences</Checkbox>
+          <Checkbox onChange={(e) => setShowAttractions(e.target.checked)}>Attractions</Checkbox>
+          <Checkbox onChange={(e) => setShowFacilities(e.target.checked)}>Facilities</Checkbox>
+        </Space>
+      </Card>
       <div
         style={{
           height: '60vh',
