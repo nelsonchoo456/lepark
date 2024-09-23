@@ -13,7 +13,7 @@ import {
 } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Button, Checkbox, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
 import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -73,7 +73,8 @@ const MapTab = ({ zone }: MapTabProps) => {
 
   return (
     <>
-      <Space className="mb-4">
+     <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
+      <Space >
         <div className="font-semibold">Display:</div>
         {park && (
           <Checkbox onChange={(e) => setShowPark(e.target.checked)} checked={showPark}>
@@ -85,6 +86,7 @@ const MapTab = ({ zone }: MapTabProps) => {
         <Checkbox onChange={(e) => setShowAttractions(e.target.checked)}>Attractions</Checkbox>
         <Checkbox onChange={(e) => setShowFacilities(e.target.checked)}>Facilities</Checkbox> */}
       </Space>
+      </Card>
       <div
         style={{
           height: '60vh',

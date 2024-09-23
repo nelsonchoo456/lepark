@@ -1,9 +1,33 @@
 import L, { LatLng } from "leaflet";
 import { GeomType } from "../interfaces/interfaces";
 import { AdjustLatLngInterface } from "../../../pages/Occurrence/OccurrenceCreate";
+import * as turf from '@turf/turf';
+
+export const isLatLngArray = (input: any): input is LatLng[] => {
+  // Check if the input is an array
+  if (!Array.isArray(input)) {
+    return false;
+  }
+
+  // Check each item in the array
+  return input.every(item => {
+    return (
+      item &&
+      typeof item === 'object' &&
+      'lat' in item &&
+      'lng' in item &&
+      typeof item.lat === 'number' &&
+      typeof item.lng === 'number'
+    );
+  });
+};
 
 export function latLngArrayToPolygon(latLngArray: any): string {
-  // Map over the array and format each {lat, lng} pair as "lng lat"
+  if (!isLatLngArray(latLngArray)) {
+    throw new Error("Please make a change to the boundaries.");
+  }
+
+  console.log(latLngArray)
   const coordinates = latLngArray.map((point: LatLng) => {
     if (!point.lng || !point.lat) {
       throw new Error("Please draw valid boundaries. This error may arise if you have unsaved changes");
@@ -24,23 +48,6 @@ export function getCentroidOfGeom(geom: GeomType): AdjustLatLngInterface | null 
     return null; // Handle cases where geom is invalid or empty
   }
 
-  // const coordinates = geom.coordinates[0];
-  // const totalPoints = coordinates.length;
-
-  // const [totalLat, totalLng] = coordinates.reduce(
-  //   (acc, coord) => {
-  //     acc[0] += coord[1]; // Latitude (Y)
-  //     acc[1] += coord[0]; // Longitude (X)
-  //     return acc;
-  //   },
-  //   [0, 0]
-  // );
-
-  // const centroidLat = totalLat / totalPoints;
-  // const centroidLng = totalLng / totalPoints;
-
-  // return { lat: centroidLat, lng: centroidLng };
-
   const latLngs = geom.coordinates[0].map((coord: number[]) => L.latLng(coord[1], coord[0])); // Convert to LatLng
 
   const bounds = L.latLngBounds(latLngs); // Get the bounds of the polygon
@@ -48,3 +55,47 @@ export function getCentroidOfGeom(geom: GeomType): AdjustLatLngInterface | null 
 
   return { lat: center.lat, lng: center.lng };
 }
+
+export const polygonHasOverlap = (newPolygon: any[], existingPolygons?: number[][][]): boolean => {
+  if (!existingPolygons) return false;
+  try {
+    
+    const checkingPolygon = newPolygon.map((item: { lat: number, lng: number }) => ([item.lng, item.lat]));
+    if (
+      checkingPolygon.length > 0 &&
+      (checkingPolygon[0][0] !== checkingPolygon[checkingPolygon.length - 1][0] ||
+        checkingPolygon[0][1] !== checkingPolygon[checkingPolygon.length - 1][1])
+    ) {
+      checkingPolygon.push(checkingPolygon[0]); // Close the polygon
+    }
+
+    return existingPolygons?.some((polygon) => turf.booleanOverlap(turf.polygon([checkingPolygon]), turf.polygon([polygon])));
+  } catch (error) {
+    throw new Error("Unable to check for overlaps");
+  }
+};
+
+export const polygonIsWithin = (newPolygon: any[], existingPolygon: number[][]): boolean => {
+  try {
+    // Convert newPolygon to the format expected by Turf.js (number[][])
+    const checkingPolygon = newPolygon.map((item) => [item.lng, item.lat]);
+
+    // Ensure the polygon is closed
+    if (
+      checkingPolygon.length > 0 &&
+      (checkingPolygon[0][0] !== checkingPolygon[checkingPolygon.length - 1][0] ||
+        checkingPolygon[0][1] !== checkingPolygon[checkingPolygon.length - 1][1])
+    ) {
+      checkingPolygon.push(checkingPolygon[0]); // Close the polygon
+    }
+
+    // Convert to GeoJSON Polygon
+    const newPolygonGeoJSON = turf.polygon([checkingPolygon]);
+    const existingPolygonGeoJSON = turf.polygon([existingPolygon]);
+
+    // Check if newPolygon is fully within existingPolygon
+    return turf.booleanWithin(newPolygonGeoJSON, existingPolygonGeoJSON);
+  } catch (error) {
+    throw new Error("Unable to check if the boundaries is valid.");
+  }
+};
