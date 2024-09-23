@@ -16,6 +16,8 @@ import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
 import { TbTree } from 'react-icons/tb';
 import { COLORS } from '../../config/colors';
+import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
+import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -23,11 +25,10 @@ export interface AdjustLatLngInterface {
 }
 
 const ZoneEditMap = () => {
-  const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
+  const { zone, loading: zoneLoading } = useRestrictZone(id);
+  const { park, loading: parkLoading } = useRestrictPark(zone?.parkId?.toString(), { disableNavigation: true });
   const [createdData, setCreatedData] = useState<ZoneResponse>();
-  const [zone, setZone] = useState<ZoneResponse>();
-  const [park, setPark] = useState<ParkResponse>();
   const [parkZones, setParkZones] = useState<ZoneResponse[]>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]); // original polygon
   const [editPolygon, setEditPolygon] = useState<any[]>([]);
@@ -40,59 +41,15 @@ const ZoneEditMap = () => {
   const [showParkZones, setShowParkZones] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    // Put RBAC here
-
-    fetchData();
-  }, [id, user]);
-
-  useEffect(() => {
     if (!zone) return;
-    fetchParkData();
     fetchParkZonesData();
+    setPolygon(zone.geom.coordinates);
   }, [zone])
-
-  const fetchData = async () => {
-    if (!id) return;
-    try {
-      const zoneRes = await getZoneById(parseInt(id));
-      if (zoneRes.status === 200) {
-        const zoneData = zoneRes.data;
-        setZone(zoneData)
-        setPolygon(zoneData.geom.coordinates); 
-        // resetEditPolygon(parkData.geom.coordinates)
-      }
-    } catch (error) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Error',
-          description: 'An error occurred while fetching the zone details.',
-        });
-        notificationShown.current = true;
-      }
-      setPolygon([]);
-      navigate('/');
-    }
-  };
-
-  const fetchParkData = async () => {
-    if (!zone?.parkId) return;
-    try {
-      const parkRes = await getParkById(zone?.parkId);
-      if (parkRes.status === 200) {
-        const parkData = parkRes.data;
-        setPark(parkData)
-      }
-    } catch (error) {
-      // do nothing
-    }
-  };
 
   const fetchParkZonesData = async () => {
     if (!zone?.parkId) return;
     try {
-      const parkZonesRes = await getZonesByParkId(zone?.parkId);
+      const parkZonesRes = await getZonesByParkId(zone.parkId);
       if (parkZonesRes.status === 200) {
         let parkZonesData = parkZonesRes.data;
         parkZonesData = parkZonesData.filter((zone) => zone.id.toString() !== id)
@@ -157,13 +114,30 @@ const ZoneEditMap = () => {
     {
       title: zone?.name ? zone?.name : 'Details',
       pathKey: `/zone/${zone?.id}`,
-    },
-    {
-      title: 'Edit Boundaries',
-      pathKey: `/zone/${zone?.id}/edit-map`,
       isCurrent: true,
     },
+    // {
+    //   title: 'Edit Boundaries',
+    //   pathKey: `/zone/${zone?.id}/edit-map`,
+    //   isCurrent: true,
+    // },
   ];
+
+  if (zoneLoading) {
+    return <div>Loading zone...</div>;
+  }
+
+  if (!zone) {
+    return <div>Zone not found or access denied</div>;
+  }
+
+  if (parkLoading) {
+    return <div>Loading park...</div>;
+  }
+
+  if (!park) {
+    return <div>Park not found or access denied</div>;
+  }
 
   return (
     <ContentWrapperDark>
@@ -199,7 +173,7 @@ const ZoneEditMap = () => {
                   Other Zones in the Park
                 </Checkbox>
               ) : (
-                <Tooltip title="No ohter Zones in this Park">
+                <Tooltip title="No other Zones in this Park">
                   <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones} disabled>
                     Other Zones in the Park
                   </Checkbox>

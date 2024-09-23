@@ -4,7 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
 
-export const useRestrictPark = (parkId?: string) => {
+
+// Added disableNavigation option to prevent navigation to home if the park is not found
+interface UseRestrictParkOptions {
+  disableNavigation?: boolean;
+}
+
+export const useRestrictPark = (parkId?: string, options: UseRestrictParkOptions = {}) => {
   const [park, setPark] = useState<ParkResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -13,7 +19,9 @@ export const useRestrictPark = (parkId?: string) => {
 
   useEffect(() => {
     if (!parkId || parkId === undefined) {
-      navigate('/');
+      if (!options.disableNavigation) {
+        navigate('/');
+      }
       return;
     }
 
@@ -43,14 +51,16 @@ export const useRestrictPark = (parkId?: string) => {
           });
           notificationShown.current = true;
         }
-        navigate('/');
+        if (!options.disableNavigation) {
+          navigate('/');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchPark(parkId);
-  }, [parkId, navigate, user]);
+  }, [parkId, navigate, user, options.disableNavigation]);
 
   return { park, loading };
 };
