@@ -62,6 +62,7 @@ import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
 import HubEdit from './pages/Hub/HubEdit';
 import SensorCreate2 from './pages/Sensor/SensorCreate2';
+import SensorMap from './pages/Sensor/SensorMap';
 
 export function App() {
   return (
@@ -296,6 +297,7 @@ export function App() {
                   <Route index element={<SensorList/>} />
                   <Route path=":sensorId" element={<ViewSensorDetails/>} />
                   <Route path="edit/:sensorId" element={<SensorEdit/>} />
+                  <Route path="map" element={<SensorMap/>} />
                 </Route>
 
               </Route>

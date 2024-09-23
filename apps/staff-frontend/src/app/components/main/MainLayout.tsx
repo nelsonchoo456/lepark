@@ -13,6 +13,8 @@ import { PiPottedPlant } from 'react-icons/pi';
 import { PiToolboxBold } from "react-icons/pi";
 import type { MenuProps } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
+import { MdSensors } from 'react-icons/md';
+
 type MenuItem = Required<MenuProps>['items'][number];
 
 const MainLayout = () => {
@@ -66,6 +68,24 @@ const MainLayout = () => {
     }
   }, [location.pathname, userRole, user?.parkId]);
 
+  const sensorNavItem: MenuItem = {
+    key: 'sensor',
+    icon: <MdSensors />,
+    label: 'Sensors',
+    children: [
+      {
+        key: 'sensor',
+        label: 'List View',
+        onClick: () => navigate('/sensor'),
+      },
+      {
+        key: 'sensor/map',
+        label: 'Map View',
+        onClick: () => navigate('/sensor/map'),
+      },
+    ],
+  };
+
   let parkNavItem: MenuItem = {
     key: 'park',
     icon: <TbTrees />,
@@ -83,6 +103,7 @@ const MainLayout = () => {
       },
     ],
   };
+
   if (userRole !== StaffType.SUPERADMIN) {
     parkNavItem = {
       key: 'park',
@@ -119,6 +140,7 @@ const MainLayout = () => {
     //     }
     //   ]
     // },
+
     {
       key: 'zone',
       icon: <TbTree />,
@@ -182,6 +204,12 @@ const MainLayout = () => {
           label: 'Tasks',
           onClick: () => navigate('/task'),
         }
+      : null,
+      userRole === StaffType.MANAGER ||
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.LANDSCAPE_ARCHITECT ||
+    userRole === StaffType.PARK_RANGER
+      ? sensorNavItem
       : null,
     userRole === 'SUPERADMIN' ||
     userRole === 'MANAGER' ||
