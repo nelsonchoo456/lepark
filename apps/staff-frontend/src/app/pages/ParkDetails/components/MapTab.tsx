@@ -1,4 +1,4 @@
-import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Checkbox, Space, Tooltip } from 'antd';
@@ -10,11 +10,13 @@ import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { COLORS } from '../../../config/colors';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { PiPlantFill } from 'react-icons/pi';
+import { useAuth } from '@lepark/common-ui';
 
 interface MapTabProps {
   park: ParkResponse;
 }
 const MapTab = ({ park }: MapTabProps) => {
+  const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [zones, setZones] = useState<ZoneResponse[]>();
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
@@ -69,22 +71,15 @@ const MapTab = ({ park }: MapTabProps) => {
       <div
         style={{
           height: '60vh',
-          zIndex: 1,
+          position: 'relative',
         }}
         className="rounded-xl overflow-hidden"
       >
-        <Tooltip title="Edit Boundaries">
-          <div className="absolute z-20 flex justify-end w-full mt-4 pr-4">
-            <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/park/${park.id}/edit-map`)}>
-              Edit{' '}
-            </Button>
-          </div>
-        </Tooltip>
         <MapContainer
           center={[1.287953, 103.851784]}
           zoom={11}
           className="leaflet-mapview-container"
-          style={{ height: '100%', width: '100%', zIndex: 10 }}
+          style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -118,6 +113,18 @@ const MapTab = ({ park }: MapTabProps) => {
               <PictureMarker circleWidth={30} lat={attraction.lat} lng={attraction.lng} backgroundColor={COLORS.sky[300]} icon={<TbTicket className='text-sky-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={attraction.title} />
             ))}
         </MapContainer>
+        
+        {(user?.role === StaffType.SUPERADMIN ||
+          user?.role === StaffType.MANAGER ||
+          user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+          <div className="absolute top-4 right-14 z-[1000]">
+            <Tooltip title="Edit Boundaries">
+              <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/park/${park.id}/edit-map`)}>
+                Edit
+              </Button>
+            </Tooltip>
+          </div>
+        )}
       </div>
     </>
   );

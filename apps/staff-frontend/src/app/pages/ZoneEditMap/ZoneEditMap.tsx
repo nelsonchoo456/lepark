@@ -114,13 +114,12 @@ const ZoneEditMap = () => {
     {
       title: zone?.name ? zone?.name : 'Details',
       pathKey: `/zone/${zone?.id}`,
+    },
+    {
+      title: 'Edit Boundaries',
+      pathKey: `/zone/${zone?.id}/edit-map`,
       isCurrent: true,
     },
-    // {
-    //   title: 'Edit Boundaries',
-    //   pathKey: `/zone/${zone?.id}/edit-map`,
-    //   isCurrent: true,
-    // },
   ];
 
   if (zoneLoading) {

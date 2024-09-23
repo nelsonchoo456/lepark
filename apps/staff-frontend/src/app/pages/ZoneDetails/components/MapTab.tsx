@@ -1,4 +1,16 @@
-import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getParkById, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import {
+  AttractionResponse,
+  getAttractionsByParkId,
+  getOccurrencesByParkId,
+  getParkById,
+  getZoneById,
+  getZonesByParkId,
+  OccurrenceResponse,
+  ParkResponse,
+  StaffResponse,
+  StaffType,
+  ZoneResponse,
+} from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Checkbox, Space, Tooltip } from 'antd';
@@ -10,11 +22,13 @@ import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { COLORS } from '../../../config/colors';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { PiPlantFill } from 'react-icons/pi';
+import { useAuth } from '@lepark/common-ui';
 
 interface MapTabProps {
   zone: ZoneResponse;
 }
 const MapTab = ({ zone }: MapTabProps) => {
+  const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [zones, setZones] = useState<ZoneResponse[]>();
   const [park, setPark] = useState<ParkResponse>();
@@ -31,7 +45,7 @@ const MapTab = ({ zone }: MapTabProps) => {
     if (zone.id) {
       fetchPark();
     }
-  }, [zone])
+  }, [zone]);
 
   const fetchPark = async () => {
     const parkRes = await getParkById(zone.parkId);
@@ -39,8 +53,8 @@ const MapTab = ({ zone }: MapTabProps) => {
       const parkData = parkRes.data;
       setPark(parkData);
     }
-  }
-  
+  };
+
   // const fetchOccurrences = async () => {
   //   const occurrenceRes = await getOccurrences(park.id);
   //   if (occurrenceRes.status === 200) {
@@ -57,12 +71,15 @@ const MapTab = ({ zone }: MapTabProps) => {
   //   }
   // }
 
-
   return (
     <>
       <Space className="mb-4">
-        <div className='font-semibold'>Display:</div>
-        {park && <Checkbox onChange={(e) => setShowPark(e.target.checked)} checked={showPark}>{park.name} (Park)</Checkbox>}
+        <div className="font-semibold">Display:</div>
+        {park && (
+          <Checkbox onChange={(e) => setShowPark(e.target.checked)} checked={showPark}>
+            {park.name} (Park)
+          </Checkbox>
+        )}
         {/* <Checkbox onChange={(e) => setShowZones(e.target.checked)}>Zones</Checkbox> */}
         {/* <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)}>Occurrences</Checkbox>
         <Checkbox onChange={(e) => setShowAttractions(e.target.checked)}>Attractions</Checkbox>
@@ -71,30 +88,25 @@ const MapTab = ({ zone }: MapTabProps) => {
       <div
         style={{
           height: '60vh',
-          zIndex: 1,
+          position: 'relative',
         }}
         className="rounded-xl overflow-hidden"
       >
-        <Tooltip title="Edit Boundaries">
-          <div className="absolute z-20 flex justify-end w-full mt-4 pr-4">
-            <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/zone/${zone.id}/edit-map`)}>
-              Edit{' '}
-            </Button>
-          </div>
-        </Tooltip>
         <MapContainer
           center={[1.287953, 103.851784]}
           zoom={11}
           className="leaflet-mapview-container"
-          style={{ height: '100%', width: '100%', zIndex: 10 }}
+          style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {showPark && <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.5}} polygonLabel={park?.name} color='transparent'/>}
+          {showPark && (
+            <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={park?.name} color="transparent" />
+          )}
           <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.9 }} polygonLabel={zone?.name} />
-          
+
           {/* {showZones && zones &&
             zones.map((zone) => (
               <PolygonWithLabel
@@ -122,6 +134,18 @@ const MapTab = ({ zone }: MapTabProps) => {
               <PictureMarker circleWidth={30} lat={attraction.lat} lng={attraction.lng} backgroundColor={COLORS.sky[300]} icon={<TbTicket className='text-sky-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={attraction.title} />
             ))} */}
         </MapContainer>
+        
+        {(user?.role === StaffType.SUPERADMIN ||
+          user?.role === StaffType.MANAGER ||
+          user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+          <div className="absolute top-4 right-3 z-[1000]">
+            <Tooltip title="Edit Boundaries">
+              <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/zone/${zone.id}/edit-map`)}>
+                Edit
+              </Button>
+            </Tooltip>
+          </div>
+        )}
       </div>
     </>
   );

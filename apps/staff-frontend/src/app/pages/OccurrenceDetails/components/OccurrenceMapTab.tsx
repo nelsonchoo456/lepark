@@ -1,4 +1,4 @@
-import { OccurrenceResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { OccurrenceResponse, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Tooltip } from 'antd';
@@ -8,31 +8,35 @@ import { useRestrictOccurrence } from '../../../hooks/Occurrences/useRestrictOcc
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
 import { PiPlantFill } from 'react-icons/pi';
+import { useAuth } from '@lepark/common-ui';
 
 interface MapTabProps {
   occurrence: OccurrenceResponse;
   zone: ZoneResponse;
 }
+
 const OccurrenceMapTab = ({ occurrence, zone }: MapTabProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth<StaffResponse>();
+
+  const canEditLocation = user?.role === StaffType.SUPERADMIN ||
+    user?.role === StaffType.MANAGER ||
+    user?.role === StaffType.BOTANIST ||
+    user?.role === StaffType.ARBORIST;
 
   return (
-    // <>
     <div
       style={{
         height: '60vh',
-        zIndex: 1,
+        position: 'relative',
       }}
       className="rounded-xl overflow-hidden"
     >
-      <Tooltip title="Edit Boundaries">
-        <div className="absolute z-20 flex justify-end w-full mt-4 pr-4"><Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/occurrences/${occurrence.id}/edit-location`)}>Edit Location</Button></div>
-      </Tooltip>
       <MapContainer
         center={[1.287953, 103.851784]}
         zoom={11}
         className="leaflet-mapview-container"
-        style={{ height: '100%', width: '100%', zIndex: 10 }}
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -41,8 +45,17 @@ const OccurrenceMapTab = ({ occurrence, zone }: MapTabProps) => {
         <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.9 }} polygonLabel={zone?.name}/>
         <PictureMarker circleWidth={37} lat={occurrence.lat} lng={occurrence.lng} tooltipLabel={occurrence.title} backgroundColor={COLORS.green[300]} icon={<PiPlantFill className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
       </MapContainer>
+      
+      {canEditLocation && (
+        <div className="absolute top-4 right-14 z-[1000]">
+          <Tooltip title="Edit Location">
+            <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/occurrences/${occurrence.id}/edit-location`)}>
+              Edit Location
+            </Button>
+          </Tooltip>
+        </div>
+      )}
     </div>
-    // </>
   );
 };
 
