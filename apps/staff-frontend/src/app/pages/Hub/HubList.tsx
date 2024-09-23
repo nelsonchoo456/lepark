@@ -118,12 +118,16 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-          </Tooltip>
+          {user?.role !== StaffType.VENDOR_MAANGER && (
+            <>
+              <Tooltip title="Edit">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+              </Tooltip>
+            </>
+          )}
         </Flex>
       ),
       width: '1%',
@@ -268,7 +272,9 @@ const HubList: React.FC = () => {
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Hubs..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        {[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType) && (
+        {[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(
+          user?.role as StaffType,
+        ) && (
           <Button type="primary" onClick={() => navigate('/hubs/create')}>
             Create Hub
           </Button>

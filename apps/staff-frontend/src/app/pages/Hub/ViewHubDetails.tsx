@@ -1,25 +1,17 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import {
-  getHubById,
-  HubResponse,
-  getFacilityById,
-  FacilityResponse,
-  StaffResponse,
-  getParkById,
-  ParkResponse,
-} from '@lepark/data-access';
-import { Card, Descriptions, Tabs, Tag } from 'antd';
-import { useEffect, useState, useContext } from 'react';
-import { FiCloud, FiSun } from 'react-icons/fi';
+import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse } from '@lepark/data-access';
+import { Card, Descriptions, Spin, Tabs, Tag } from 'antd';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
-import moment from 'moment';
-import InformationTab from './components/InformationTab';
+import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import HubCarousel from './components/HubCarousel';
+import InformationTab from './components/InformationTab';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
-  const [hub, setHub] = useState<HubResponse | null>(null);
+  const { hub } = useRestrictHub(hubId); // Custom hook to fetch hub details
   const [loading, setLoading] = useState(true);
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
@@ -29,14 +21,16 @@ const ViewHubDetails = () => {
     const fetchData = async () => {
       if (hubId) {
         try {
-          const hubResponse = await getHubById(hubId);
-          setHub(hubResponse.data);
-          if (hubResponse.data.facilityId) {
-            const facilityResponse = await getFacilityById(hubResponse.data.facilityId);
-            setFacility(facilityResponse.data);
-            console.log(facilityResponse.data);
-            const parkResponse = await getParkById(facilityResponse.data.parkId);
-            setPark(parkResponse.data);
+          if (hub && hub.facilityId) {
+            const facilityResponse = await getFacilityById(hub.facilityId);
+            if (facilityResponse.status === 200) {
+              setFacility(facilityResponse.data);
+              console.log(facilityResponse.data);
+              const parkResponse = await getParkById(facilityResponse.data.parkId);
+              if (parkResponse.status === 200) {
+                setPark(parkResponse.data);
+              }
+            }
           }
         } catch (error) {
           console.error('Error fetching hub data:', error);
@@ -46,7 +40,7 @@ const ViewHubDetails = () => {
       }
     };
     fetchData();
-  }, [hubId]);
+  }, [hubId, hub]);
 
   const breadcrumbItems = [
     {
@@ -133,6 +127,14 @@ const ViewHubDetails = () => {
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
     },
   ];
+
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Spin size="large" />
+      </ContentWrapperDark>
+    );
+  }
 
   return (
     <ContentWrapperDark>

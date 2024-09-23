@@ -29,21 +29,7 @@ const HubCreate = () => {
   const [form] = Form.useForm();
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (
-      ![StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType)
-    ) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Hub Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
+  
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields(); // Get form data

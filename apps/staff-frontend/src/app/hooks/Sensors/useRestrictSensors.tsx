@@ -1,37 +1,36 @@
 import { useAuth } from '@lepark/common-ui';
-import { getFacilityById, getHubById, getParkById, HubResponse, ParkResponse, StaffResponse } from '@lepark/data-access';
+import { getFacilityById, getSensorById, getParkById, SensorResponse, ParkResponse, StaffResponse } from '@lepark/data-access';
 import { StaffType } from '@lepark/data-access';
 import { message, notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { set } from 'zod';
 
-export const useRestrictHub = (hubId?: string) => {
+export const useRestrictSensors = (sensorId?: string) => {
   const { user } = useAuth<StaffResponse>();
-  const [hub, setHub] = useState<HubResponse>();
+  const [sensor, setSensor] = useState<SensorResponse>();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [park, setPark] = useState<ParkResponse>();
 
   useEffect(() => {
-    if (!hubId || hubId === undefined) {
+    if (!sensorId || sensorId === undefined) {
       navigate('/');
       return;
     }
-    fetchHub(hubId);
-  }, [hubId, navigate]);
+    fetchSensor(sensorId);
+  }, [sensorId, navigate]);
 
-  const fetchHub = async (hubId: string) => {
+  const fetchSensor = async (sensorId: string) => {
     setLoading(true);
     try {
-      const hubResponse = await getHubById(hubId);
+      const sensorResponse = await getSensorById(sensorId);
 
-      if (hubResponse.status === 200) {
-        const hub = hubResponse.data;
-        handleHubRestrictions(hub);
+      if (sensorResponse.status === 200) {
+        const sensor = sensorResponse.data;
+        handleSensorRestrictions(sensor);
       } else {
-        throw new Error('Unable to fetch Hub');
+        throw new Error('Unable to fetch Sensor');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -40,16 +39,16 @@ export const useRestrictHub = (hubId?: string) => {
     }
   };
 
-  const handleHubRestrictions = async (hub: HubResponse) => {
-    if (hub.facilityId) {
-      const facilityResponse = await getFacilityById(hub.facilityId);
+  const handleSensorRestrictions = async (sensor: SensorResponse) => {
+    if (sensor.facilityId) {
+      const facilityResponse = await getFacilityById(sensor.facilityId);
       const facility = facilityResponse.data;
       const parkResponse = await getParkById(facility.parkId);
       setPark(parkResponse.data);
     }
 
-    if (user?.parkId === park?.id || user?.role === StaffType.SUPERADMIN) {
-        setHub(hub);
+    if (user?.parkId === park?.id) {
+      setSensor(sensor);
     } else {
       if (!notificationShown.current) {
         notification.error({
@@ -62,5 +61,5 @@ export const useRestrictHub = (hubId?: string) => {
     }
   };
 
-  return { hub, loading };
+  return { sensor, loading };
 };

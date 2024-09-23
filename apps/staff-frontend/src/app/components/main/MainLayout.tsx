@@ -4,13 +4,13 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
-import { FaToolbox } from 'react-icons/fa';
+import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
 import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
-import { PiToolboxBold } from "react-icons/pi";
+import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
@@ -84,6 +84,13 @@ const MainLayout = () => {
         onClick: () => navigate('/sensor/map'),
       },
     ],
+  };
+
+  const hubsNavItem: MenuItem = {
+    key: 'hubs',
+    icon: <FaNetworkWired />,
+    label: 'Hubs',
+    onClick: () => navigate('/hubs'),
   };
 
   let parkNavItem: MenuItem = {
@@ -205,23 +212,14 @@ const MainLayout = () => {
           onClick: () => navigate('/task'),
         }
       : null,
-      userRole === StaffType.MANAGER ||
-    userRole === StaffType.SUPERADMIN ||
-    userRole === StaffType.LANDSCAPE_ARCHITECT ||
-    userRole === StaffType.PARK_RANGER
-      ? sensorNavItem
-      : null,
-    userRole === 'SUPERADMIN' ||
-    userRole === 'MANAGER' ||
-    userRole === 'LANDSCAPE_ARCHITECT' ||
-    userRole === 'PARK_RANGER'
-      ? {
-          key: 'parkasset',
-          icon: <PiToolboxBold />,
-          label: 'Park Assets (non-IoT)',
-          onClick: () => navigate('/parkasset'),
-        }
-      : null,
+    sensorNavItem,
+    hubsNavItem,
+    {
+      key: 'parkasset',
+      icon: <PiToolboxBold />,
+      label: 'Park Assets (non-IoT)',
+      onClick: () => navigate('/parkasset'),
+    },
     {
       key: 'profile',
       icon: <FiUser />,
@@ -235,9 +233,7 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'PARK_RANGER'
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
           key: 'attraction',
           icon: <TbTicket />,

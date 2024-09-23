@@ -10,7 +10,7 @@ export interface HubData {
   calibrationFrequencyDays: number;
   recurringMaintenanceDuration: number;
   //lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
+  //nextMaintenanceDate: string;
   dataTransmissionInterval: number;
   ipAddress: string;
   macAddress: string;

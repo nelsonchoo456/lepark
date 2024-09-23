@@ -12,7 +12,7 @@ export const HubSchema = z.object({
   recommendedCalibrationFrequencyDays: z.number().int().min(1, { message: 'Calibration frequency must be a positive integer' }),
   recommendedMaintenanceDuration: z.number().int().min(1, { message: 'Recurring maintenance duration must be a positive integer' }),
   //lastMaintenanceDate: z.date({ message: 'Last maintenance date is required' }),
-  nextMaintenanceDate: z.date({ message: 'Next maintenance date is required' }),
+  nextMaintenanceDate: z.date().optional(),
   dataTransmissionInterval: z.number().min(0, { message: 'Data transmission interval must be a non-negative number' }),
   ipAddress: z.string().min(1, { message: 'IP address is required' }),
   macAddress: z.string().min(1, { message: 'MAC address is required' }),

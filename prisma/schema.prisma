@@ -255,7 +255,7 @@ model Hub {
   recommendedCalibrationFrequencyDays Int
   recommendedMaintenanceDuration      Int
   //lastMaintenanceDate                 DateTime
-  nextMaintenanceDate                 DateTime
+  nextMaintenanceDate                 DateTime?
   dataTransmissionInterval            Float
   ipAddress                           String
   macAddress                          String
