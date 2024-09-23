@@ -197,6 +197,54 @@ model Attraction {
   @@index([parkId])
 }
 
+enum EventStatusEnum {
+  ONGOING
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+enum EventTypeEnum {
+  WORKSHOP
+  EXHIBITION
+  GUIDED_TOUR
+  PERFORMANCE
+  TALK
+  COMPETITION
+  FESTIVAL
+  CONFERENCE
+}
+
+enum EventSuitabilityEnum {
+  ANYONE
+  FAMILIES_AND_FRIENDS
+  CHILDREN
+  NATURE_ENTHUSIASTS
+  PETS
+  FITNESS_ENTHUSIASTS
+}
+
+model Event {
+  id              String    @id @default(uuid()) @db.Uuid
+  title           String
+  description     String
+  type            EventTypeEnum
+  suitability     EventSuitabilityEnum
+  startDate       DateTime
+  endDate         DateTime
+  startTime       DateTime
+  endTime         DateTime
+  maxCapacity     Int
+  images          String[]
+  status          EventStatusEnum
+  facilityId      String    @db.Uuid
+
+  facility        Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+}
+
+
 // model DecarbonizationArea {
 //   id                  String   @id @default(uuid()) @db.Uuid
 //   carbonSeqValue      Float
@@ -353,12 +401,13 @@ model Facility {
   closingHours          DateTime[]
   facilityStatus        FacilityStatusEnum
   lat                   Float
-  long                   Float
+  long                  Float
   size                  Float
   capacity              Float
   fee                   Float
   parkId                Int
   hubs                  Hub[]
+  events                Event[]
 }
 
 enum FacilityTypeEnum {
