@@ -31,7 +31,7 @@ import ParkEdit from './pages/ParkEdit/ParkEdit';
 import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
-import Task from './pages/Task/Task';
+import PlantTask from './pages/PlantTask/PlantTask';
 import ZoneList from './pages/Zone/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
@@ -51,6 +51,7 @@ import ParksMap from './pages/ParksMap/ParksMap';
 import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
 import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
 import ZoneEditMap from './pages/ZoneEditMap/ZoneEditMap';
+import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
 
 export function App() {
   return (
@@ -123,12 +124,18 @@ export function App() {
                     </>
                   }
                 />
-                <Route path=":occurrenceId/edit-location" element={
-                  <>
-                    <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]} redirectTo="/" />
-                    <OccurrenceEditMap />
-                  </>
-                } />
+                <Route
+                  path=":occurrenceId/edit-location"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST]}
+                        redirectTo="/"
+                      />
+                      <OccurrenceEditMap />
+                    </>
+                  }
+                />
                 <Route path=":occurrenceId/activitylog/:activityLogId" element={<ActivityLogDetails />} />
                 <Route path=":occurrenceId/statuslog/:statusLogId" element={<StatusLogDetails />} />
               </Route>
@@ -158,23 +165,35 @@ export function App() {
                   path=":id/edit"
                   element={
                     <>
-                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]} redirectTo="/" />
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
                       <ParkEdit />
                     </>
                   }
                 />
-                <Route path="map" element={
-                  <>
-                    <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/" />
-                    <ParksMap />
-                  </>
-                } />
-                <Route path=":id/edit-map" element={
-                  <>
-                    <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]} redirectTo="/" />
-                    <ParkEditMap />
-                  </>
-                } />
+                <Route
+                  path="map"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/" />
+                      <ParksMap />
+                    </>
+                  }
+                />
+                <Route
+                  path=":id/edit-map"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <ParkEditMap />
+                    </>
+                  }
+                />
               </Route>
 
               {/* Zone Routes */}
@@ -205,7 +224,7 @@ export function App() {
                     </>
                   }
                 />
-                 <Route
+                <Route
                   path=":id/edit-map"
                   element={
                     <>
@@ -220,7 +239,8 @@ export function App() {
               </Route>
 
               {/* Task Routes */}
-              <Route path="/task" element={<Task />} />
+              <Route path="/plant-task" element={<PlantTask />} />
+              <Route path="/maintenance-task" element={<MaintenanceTask />} />
 
               {/* Settings Routes */}
               <Route path="/settings" element={<Settings />} />
