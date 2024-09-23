@@ -44,7 +44,7 @@ const VisitorViewAttractionDetails = () => {
     {
       key: 'information',
       label: 'Information',
-      children: attraction ? <AttractionInformationTab attraction={attraction} /> : <p>Loading attraction data...</p>,
+      // children: attraction ? <AttractionInformationTab attraction={attraction} /> : <p>Loading attraction data...</p>,
     },
     // Add other tabs if necessary
   ];
@@ -74,24 +74,10 @@ const VisitorViewAttractionDetails = () => {
                 {attraction?.description}
               </Typography.Paragraph>
               {attraction && (
-                <div className="mb-4">
+                <div className="mb-4 hidden md:block">
                   <Tag color={attraction.status === 'OPEN' ? 'green' : 'red'}>{attraction.status}</Tag>
                 </div>
               )}
-            </div>
-            <div className="ml-8 flex-shrink-0">
-              <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">Opening Hours</LogoText>
-              <table className="table-auto text-sm border-collapse border border-gray-300">
-                <tbody>
-                  {attraction &&
-                    formatHours(attraction.openingHours, attraction.closingHours).map(({ day, hours }, index) => (
-                      <tr key={index} className="border border-gray-300">
-                        <td className="pr-4 font-semibold p-2">{day}</td>
-                        <td className="p-2">{hours}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
             </div>
           </div>
           <Tabs
@@ -100,6 +86,36 @@ const VisitorViewAttractionDetails = () => {
             renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
             className="md:mt-0 md:p-0"
           />
+          <div className="p-4">
+            {attraction && (
+              <div className="mb-4 md:hidden">
+                <Tag color={attraction.status === 'OPEN' ? 'green' : 'red'}>{attraction.status}</Tag>
+              </div>
+            )}
+            <Typography.Paragraph
+              ellipsis={{
+                rows: 3,
+                expandable: true,
+                symbol: 'more',
+              }}
+            >
+              {attraction?.description}
+            </Typography.Paragraph>
+          </div>
+          <div className="mt-4">
+            <LogoText className="text-2xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 mb-2">Opening Hours</LogoText>
+            <table className="table-auto text-sm border-collapse border border-gray-300">
+              <tbody>
+                {attraction &&
+                  formatHours(attraction.openingHours, attraction.closingHours).map(({ day, hours }, index) => (
+                    <tr key={index} className="border border-gray-300">
+                      <td className="pr-4 font-semibold p-2">{day}</td>
+                      <td className="p-2">{hours}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

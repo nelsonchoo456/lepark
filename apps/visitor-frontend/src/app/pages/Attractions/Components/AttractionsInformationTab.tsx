@@ -26,6 +26,8 @@ const AttractionInformationTab = ({ attraction }: { attraction: AttractionRespon
     'status',
     'openingHours',
     'closingHours',
+    'title',
+    'description',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(attraction)
