@@ -64,7 +64,7 @@ const ZoneDetails = () => {
       key: 'IoT',
       label: 'IoT',
       children: <Empty description={'IoT Coming Soon'}></Empty>,
-    }
+    },
   ];
 
   const breadcrumbItems = [
@@ -82,7 +82,7 @@ const ZoneDetails = () => {
 
   return (
     <ContentWrapperDark>
-      {user?.role === StaffType.SUPERADMIN && <PageHeader2 breadcrumbItems={breadcrumbItems} />}
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <div className="md:flex w-full gap-4">
           <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
