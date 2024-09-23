@@ -65,7 +65,7 @@ app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/facility', facilityRouter);
-app.use('/api/plantTasks', plantTaskRouter);
+app.use('/api/planttasks', plantTaskRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
