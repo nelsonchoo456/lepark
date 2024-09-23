@@ -178,7 +178,18 @@ const MainLayout = () => {
           icon: <FiInbox />,
           // icon: <UploadOutlined />,
           label: 'Tasks',
-          onClick: () => navigate('/task'),
+          children: [
+            {
+              key: 'plant-task',
+              label: 'Plant Tasks',
+              onClick: () => navigate('/plant-task'),
+            },
+            {
+              key: 'maintenance-task',
+              label: 'Maintenance Tasks',
+              onClick: () => navigate('/maintenance-task'),
+            },
+          ],
         }
       : null,
     {

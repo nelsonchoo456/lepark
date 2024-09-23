@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, notification, Result } from 'antd';
 import { IoIosInformationCircle } from 'react-icons/io';
 
-const Task = () => {
+const MaintenanceTask = () => {
   const { user, updateUser, logout } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const notificationShown = useRef(false);
@@ -27,11 +27,11 @@ const Task = () => {
   }, [user]);
 
   return (
-    <ContentWrapperDark className='h-screen flex items-center justify-center'>
+    <ContentWrapperDark className="h-screen flex items-center justify-center">
       <Result
-        icon={<IoIosInformationCircle className='text-5xl mx-auto text-mustard-500/50'/>}
+        icon={<IoIosInformationCircle className="text-5xl mx-auto text-mustard-500/50" />}
         title="Coming Soon"
-        subTitle="Tasks Page coming soon."
+        subTitle="Maintenance Tasks Page coming soon."
         extra={
           <Button type="primary" onClick={() => navigate('/')}>
             Return to Home Page
@@ -42,4 +42,4 @@ const Task = () => {
   );
 };
 
-export default Task;
+export default MaintenanceTask;
