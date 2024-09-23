@@ -119,7 +119,7 @@ const ParkDetails = () => {
                 <LogoText className="text-2xl py-2 m-0">{park.name}</LogoText>
                 <ParkStatusTag>{park.parkStatus}</ParkStatusTag>
               </Space>
-              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"

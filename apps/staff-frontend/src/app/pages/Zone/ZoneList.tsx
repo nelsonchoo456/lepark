@@ -131,7 +131,7 @@ const ZoneList: React.FC = () => {
           <Tooltip title="View Zone">
             <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
           </Tooltip>
-          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
             <>
               <Tooltip title="Edit Zone">
                 <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>

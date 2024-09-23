@@ -1,17 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
-import { Button, Card, Form, message, notification, Popconfirm, Space } from 'antd';
+import { ParkResponse, StaffResponse, updatePark } from '@lepark/data-access';
+import { Button, Card, message, Popconfirm, Space } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import node_image from '../../assets/mapFeatureManager/line.png';
 import polygon_image from '../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../assets/mapFeatureManager/edit.png';
 import MapFeatureManagerEdit from '../../components/map/MapFeatureManagerEdit';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -19,54 +20,20 @@ export interface AdjustLatLngInterface {
 }
 
 const ParkEditMap = () => {
-  const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
+  const { park, loading } = useRestrictPark(id);
   const [createdData, setCreatedData] = useState<ParkResponse>();
-  const [park, setPark] = useState<ParkResponse>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]); // original polygon
   const [editPolygon, setEditPolygon] = useState<any[]>([]);
   const [lines, setLines] = useState<any[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    if (!(user?.role === StaffType.MANAGER && user?.parkId === parseInt(id)) && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to edit the details of this park!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
+    if (park && park.geom && park.geom.coordinates) {
+      setPolygon(park.geom.coordinates);
     }
-
-    const fetchData = async () => {
-      try {
-        const parkRes = await getParkById(parseInt(id));
-        if (parkRes.status === 200) {
-          const parkData = parkRes.data;
-          setPark(parkData)
-          setPolygon(parkData.geom.coordinates); // AARON LOOK AT THIS CHANGE TO ZONE
-          // resetEditPolygon(parkData.geom.coordinates)
-        }
-      } catch (error) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Error',
-            description: 'An error occurred while fetching the park details.',
-          });
-          notificationShown.current = true;
-        }
-        setPolygon([]);
-        navigate('/');
-      }
-    };
-    fetchData();
-  }, [id, user]);
+  }, [park]);
 
   // Form Values
 
@@ -131,6 +98,14 @@ const ParkEditMap = () => {
       isCurrent: true,
     },
   ];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!park) {
+    return <div>Park not found or access denied.</div>;
+  }
 
   return (
     <ContentWrapperDark>

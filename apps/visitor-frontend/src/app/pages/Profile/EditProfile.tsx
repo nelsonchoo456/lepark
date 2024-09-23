@@ -20,7 +20,7 @@ const EditProfile = () => {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
-          description: 'You are not allowed to access this page!',
+          description: 'You are not allowed to access this page until you have verified your email!',
         });
         notificationShown.current = true;
       }
