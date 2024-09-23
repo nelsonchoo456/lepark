@@ -68,139 +68,185 @@ const MainLayout = () => {
     }
   }, [location.pathname, userRole, user?.parkId]);
 
- const sensorNavItem: MenuItem = {
-  key: 'sensor',
-  icon: <MdSensors />,
-  label: 'Sensors',
-  children: [
-    {
-      key: 'sensor-list',
-      label: 'List View',
-      onClick: () => navigate('/sensor'),
-    },
-    {
-      key: 'sensor-map',
-      label: 'Map View',
-      onClick: () => navigate('/sensor/map'),
-    },
-  ],
-};
+  const sensorNavItem: MenuItem = {
+    key: 'sensor',
+    icon: <MdSensors />,
+    label: 'Sensors',
+    children: [
+      {
+        key: 'sensor',
+        label: 'List View',
+        onClick: () => navigate('/sensor'),
+      },
+      {
+        key: 'sensor/map',
+        label: 'Map View',
+        onClick: () => navigate('/sensor/map'),
+      },
+    ],
+  };
 
-  const parkNavItem: MenuItem = {
-  key: 'park',
-  icon: <TbTrees />,
-  label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-  ...(userRole === StaffType.SUPERADMIN
-    ? {
-        children: [
-          {
-            key: 'park-list',
-            label: 'List View',
-            onClick: parkOnClick,
-          },
-          {
-            key: 'park-map',
-            label: 'Map View',
-            onClick: parkMapOnClick,
-          },
-        ],
-      }
-    : { onClick: parkOnClick }),
-};
+  let parkNavItem: MenuItem = {
+    key: 'park',
+    icon: <TbTrees />,
+    label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+    children: [
+      {
+        key: 'park',
+        label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
+        onClick: parkOnClick,
+      },
+      {
+        key: 'park/map',
+        label: 'Map View',
+        onClick: parkMapOnClick,
+      },
+    ],
+  };
+
+  if (userRole !== StaffType.SUPERADMIN) {
+    parkNavItem = {
+      key: 'park',
+      icon: <TbTrees />,
+      label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+      onClick: parkOnClick,
+    };
+  }
+
   // Navigation
   const navItems: MenuItem[] = [
-  {
-    key: 'home',
-    icon: <FiHome />,
-    label: 'Home',
-    onClick: () => navigate('/'),
-  },
-  parkNavItem,
-  {
-    key: 'zone',
-    icon: <TbTree />,
-    label: 'Zones',
-    onClick: () => navigate('/zone'),
-  },
-  {
-    key: 'species',
-    icon: <PiPottedPlant />,
-    label: 'Species',
-    onClick: () => navigate('/species'),
-  },
-  {
-    key: 'occurrences',
-    icon: <IoLeafOutline />,
-    onClick: () => navigate('/occurrences'),
-    label: 'Occurrences',
-  },
-  userRole === 'MANAGER' || userRole === 'SUPERADMIN'
-    ? {
-        key: 'staff-management',
-        icon: <FiUsers />,
-        label: 'Staff Management',
-        onClick: () => navigate('/staff-management'),
-      }
-    : null,
-  {
-    key: 'map',
-    icon: <GrMapLocation />,
-    label: 'Map',
-    onClick: () => navigate('/map'),
-  },
-  userRole === 'MANAGER' ||
-  userRole === 'SUPERADMIN' ||
-  userRole === 'BOTANIST' ||
-  userRole === 'ARBORIST' ||
-  userRole === 'PARK_RANGER' ||
-  userRole === 'VENDOR_MANAGER'
-    ? {
-        key: 'task',
-        icon: <FiInbox />,
-        label: 'Tasks',
-        onClick: () => navigate('/task'),
-      }
-    : null,
-  userRole === StaffType.MANAGER ||
-  userRole === StaffType.SUPERADMIN ||
-  userRole === StaffType.LANDSCAPE_ARCHITECT ||
-  userRole === StaffType.PARK_RANGER
-    ? sensorNavItem
-    : null,
-  userRole === 'SUPERADMIN' ||
-  userRole === 'MANAGER' ||
-  userRole === 'LANDSCAPE_ARCHITECT' ||
-  userRole === 'PARK_RANGER'
-    ? {
-        key: 'parkasset',
-        icon: <PiToolboxBold />,
-        label: 'Park Assets (non-IoT)',
-        onClick: () => navigate('/parkasset'),
-      }
-    : null,
-  {
-    key: 'profile',
-    icon: <FiUser />,
-    label: 'Account',
-    onClick: () => navigate('/profile'),
-  },
-  {
-    key: 'settings',
-    icon: <FiSettings />,
-    label: 'Settings',
-    onClick: () => navigate('/settings'),
-  },
-  userRole === 'MANAGER' ||
-  userRole === 'SUPERADMIN' ||
-  userRole === 'PARK_RANGER'
-    ? {
-        key: 'attraction',
-        icon: <TbTicket />,
-        label: 'Attractions',
-        onClick: () => navigate('/attraction'),
-      }
-    : null,
-].filter(Boolean) as MenuItem[];
+    {
+      key: 'home',
+      icon: <FiHome />,
+      // icon: <UserOutlined />,
+      label: 'Home',
+      onClick: () => navigate('/'),
+    },
+    parkNavItem,
+    // {
+    //   key: 'park',
+    //   icon: <TbTrees />,
+    //   label: user?.role === 'superadmin' ? 'Parks' : 'Park',
+    //   children: [
+    //     {
+    //       key: 'park',
+    //       label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
+    //       onClick: parkOnClick,
+    //     },
+    //     {
+    //       key: 'park/map',
+    //       label: 'Map View',
+    //       onClick: parkMapOnClick,
+    //     }
+    //   ]
+    // },
+
+    {
+      key: 'zone',
+      icon: <TbTree />,
+      label: 'Zones',
+      onClick: () => navigate('/zone'),
+    },
+    {
+      key: 'species',
+      icon: <PiPottedPlant />,
+      // icon: <UserOutlined />,
+      label: 'Species',
+      onClick: () => navigate('/species'),
+    },
+    {
+      key: 'occurrences',
+      icon: <IoLeafOutline />,
+      // icon: <UserOutlined />,
+      onClick: () => navigate('/occurrences'),
+      label: 'Occurrences',
+      // children: [
+      //   {
+      //     key: 'occurrence/create',
+      //     label: 'Create',
+      //     onClick: () => navigate('/occurrence/create'),
+      //   }
+      // ]
+    },
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
+      ? {
+          key: 'staff-management',
+          icon: <FiUsers />,
+          // icon: <UploadOutlined />,
+          label: 'Staff Management',
+          onClick: () => navigate('/staff-management'),
+        }
+      : null,
+    {
+      key: 'map',
+      icon: <GrMapLocation />,
+      // icon: <UserOutlined />,
+      label: 'Map',
+      onClick: () => navigate('/map'),
+    },
+    // {
+    //   key: 'account',
+    //   icon: <FiUser />,
+    //   // icon: <UserOutlined />,
+    //   label: 'Account',
+    //   onClick: () => navigate('/profile'),
+    // },
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'BOTANIST' ||
+    userRole === 'ARBORIST' ||
+    userRole === 'PARK_RANGER' ||
+    userRole === 'VENDOR_MANAGER'
+      ? {
+          key: 'task',
+          icon: <FiInbox />,
+          // icon: <UploadOutlined />,
+          label: 'Tasks',
+          onClick: () => navigate('/task'),
+        }
+      : null,
+      userRole === StaffType.MANAGER ||
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.LANDSCAPE_ARCHITECT ||
+    userRole === StaffType.PARK_RANGER
+      ? sensorNavItem
+      : null,
+    userRole === 'SUPERADMIN' ||
+    userRole === 'MANAGER' ||
+    userRole === 'LANDSCAPE_ARCHITECT' ||
+    userRole === 'PARK_RANGER'
+      ? {
+          key: 'parkasset',
+          icon: <PiToolboxBold />,
+          label: 'Park Assets (non-IoT)',
+          onClick: () => navigate('/parkasset'),
+        }
+      : null,
+    {
+      key: 'profile',
+      icon: <FiUser />,
+      label: 'Account',
+      onClick: () => navigate('/profile'),
+    },
+    {
+      key: 'settings',
+      icon: <FiSettings />,
+      // icon: <UserOutlined />,
+      label: 'Settings',
+      onClick: () => navigate('/settings'),
+    },
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'PARK_RANGER'
+      ? {
+          key: 'attraction',
+          icon: <TbTicket />,
+          label: 'Attractions',
+          onClick: () => navigate('/attraction'),
+        }
+      : null,
+  ];
+
   return (
     <div>
       <Header items={navItems} showSidebar={showSidebar}>
