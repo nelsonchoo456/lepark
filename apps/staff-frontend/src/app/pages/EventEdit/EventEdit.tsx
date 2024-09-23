@@ -15,13 +15,31 @@ import {
   FacilityResponse,
   getEventsByFacilityId,
 } from '@lepark/data-access';
-import { Button, Card, Divider, Form, Input, Select, DatePicker, TimePicker, InputNumber, message, notification, Switch, Radio, Col, Row } from 'antd';
+import {
+  Button,
+  Card,
+  Divider,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  TimePicker,
+  InputNumber,
+  message,
+  notification,
+  Switch,
+  Radio,
+  Col,
+  Row,
+} from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import dayjs, { Dayjs } from 'dayjs';
 import FacilityInfoCard from '../Event/components/FacilityInfoCard';
+import { useFetchOpenFacilitiesByPark } from '../../hooks/Facilities/useFetchOpenFacilitiesByPark';
+import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -30,17 +48,18 @@ const EventEdit = () => {
   const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
   const { event, loading, park, facility } = useRestrictEvents(id);
+  const [selectedFacility, setSelectedFacility] = useState<FacilityResponse | null>(null);
+  const { facilities, isLoading: isFacilitiesLoading, error: facilitiesError } = useFetchOpenFacilitiesByPark(park?.id || null);
+  const { bookedDates, isLoading: isEventsLoading, error: eventsError } = useFetchEventsByFacilityId(selectedFacility?.id || null, event?.id);
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [form] = Form.useForm();
-  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [isCancelled, setIsCancelled] = useState(event?.status === EventStatusEnum.CANCELLED);
   const [maxCapacity, setMaxCapacity] = useState<number | null>(null);
   const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment } | null>(null);
-  const [bookedDates, setBookedDates] = useState<moment.Moment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [initialValues, setInitialValues] = useState<any>(null);
 
@@ -53,31 +72,15 @@ const EventEdit = () => {
       setIsLoading(true);
 
       try {
-        const facilitiesResponse = await getFacilitiesByParkId(park.id);
-        setFacilities(facilitiesResponse.data);
+        const currentFacility = facilities.find((f) => f.id === event.facilityId);
 
-        const currentFacility = facilitiesResponse.data.find(f => f.id === event.facilityId);
-        
         if (currentFacility) {
+          setSelectedFacility(currentFacility);
           setMaxCapacity(currentFacility.capacity);
           setOperatingHours({
             start: moment(currentFacility.openingHours[0]),
             end: moment(currentFacility.closingHours[0]),
           });
-
-          const eventsResponse = await getEventsByFacilityId(event.facilityId);
-          const bookedDates = eventsResponse.data
-            .filter(e => e.id !== event.id)
-            .flatMap(e => {
-              const start = moment(e.startDate);
-              const end = moment(e.endDate);
-              const dates = [];
-              for (let m = moment(start); m.diff(end, 'days') <= 0; m.add(1, 'days')) {
-                dates.push(m.clone());
-              }
-              return dates;
-            });
-          setBookedDates(bookedDates);
         }
 
         const initialValues = {
@@ -100,7 +103,7 @@ const EventEdit = () => {
     };
 
     fetchData();
-  }, [id, event, park]);
+  }, [id, event, park, facilities]);
 
   const eventStatusOptions = [
     { value: EventStatusEnum.UPCOMING, label: 'Upcoming' },
@@ -132,35 +135,18 @@ const EventEdit = () => {
   const onFacilityChange = async (facilityId: string) => {
     const facility = facilities.find((f) => f.id === facilityId);
     if (facility) {
+      setSelectedFacility(facility);
       setMaxCapacity(facility.capacity);
       setOperatingHours({
         start: moment(facility.openingHours[0]),
         end: moment(facility.closingHours[0]),
       });
-
-      try {
-        const eventsResponse = await getEventsByFacilityId(facilityId);
-        const bookedDates = eventsResponse.data
-          .filter(e => e.id !== event?.id) // Exclude the current event
-          .flatMap(e => {
-            const start = moment(e.startDate);
-            const end = moment(e.endDate);
-            const dates = [];
-            for (let m = moment(start); m.diff(end, 'days') <= 0; m.add(1, 'days')) {
-              dates.push(m.clone());
-            }
-            return dates;
-          });
-        setBookedDates(bookedDates);
-      } catch (error) {
-        console.error('Failed to fetch facility events:', error);
-      }
     } else {
+      setSelectedFacility(null);
       setMaxCapacity(null);
       setOperatingHours(null);
-      setBookedDates([]);
     }
-    
+
     form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined });
   };
 
@@ -202,7 +188,12 @@ const EventEdit = () => {
       }
     } catch (error: any) {
       console.error(error);
-      messageApi.error('An unexpected error occurred while updating the event.');
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('There is already an event scheduled')) {
+        messageApi.error('There is already an event scheduled at this facility during the specified time.');
+      } else {
+        messageApi.error(errorMessage || 'Failed to update event details.');
+      }
     }
   };
 
@@ -210,7 +201,7 @@ const EventEdit = () => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-   const disabledDate = (current: moment.Moment) => {
+  const disabledDate = (current: moment.Moment) => {
     if (!event) return false;
 
     const today = moment().startOf('day');
@@ -221,7 +212,7 @@ const EventEdit = () => {
     }
 
     // Check if the date is in the bookedDates array
-    return bookedDates.some(bookedDate => bookedDate.isSame(current, 'day'));
+    return bookedDates.some((bookedDate) => bookedDate.isSame(current, 'day'));
   };
 
   const disabledTime = (current: moment.Moment, type: 'start' | 'end') => {
@@ -232,10 +223,10 @@ const EventEdit = () => {
 
     if (type === 'start') {
       return {
-        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h < operatingHours.start.hour()),
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h < operatingHours.start.hour()),
         disabledMinutes: (selectedHour: number) => {
           if (selectedHour === operatingHours.start.hour()) {
-            return Array.from({ length: 60 }, (_, i) => i).filter(m => m < operatingHours.start.minute());
+            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m < operatingHours.start.minute());
           }
           return [];
         },
@@ -244,10 +235,10 @@ const EventEdit = () => {
 
     if (type === 'end') {
       return {
-        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h > operatingHours.end.hour()),
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h > operatingHours.end.hour()),
         disabledMinutes: (selectedHour: number) => {
           if (selectedHour === operatingHours.end.hour()) {
-            return Array.from({ length: 60 }, (_, i) => i).filter(m => m > operatingHours.end.minute());
+            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m > operatingHours.end.minute());
           }
           return [];
         },
@@ -286,158 +277,156 @@ const EventEdit = () => {
         {isLoading ? (
           <div>Loading...</div>
         ) : (
-      <Row gutter={[24, 24]}>
-      <Col xs={24} sm={24} md={24} lg={16} xl={16}>
-        <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" initialValues={initialValues}>
-          <Form.Item name="parkName" label="Park">
-            <Select placeholder={park?.name} disabled />
-          </Form.Item>
-
-          <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
-            <Select
-              placeholder="Select a Facility for this Event"
-              options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
-            />
-          </Form.Item>
-
-          <Divider orientation="left">Event Details</Divider>
-
-          <Form.Item
-            name="title"
-            label="Title"
-            rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}
-          >
-            <Input placeholder="Event Title" />
-          </Form.Item>
-
-          <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-            <TextArea placeholder="Describe the Event" autoSize={{ minRows: 3, maxRows: 5 }} />
-          </Form.Item>
-
-          <Form.Item name="type" label="Type" rules={[{ required: true }]}>
-            <Select placeholder="Select an Event Type" options={eventTypeOptions} />
-          </Form.Item>
-
-          <Form.Item name="suitability" label="Suitability" rules={[{ required: true }]}>
-            <Select placeholder="Select an Event Suitability" options={eventSuitabilityOptions} />
-          </Form.Item>
-
-
-
-          <Form.Item
-                name="maxCapacity"
-                label="Max Capacity"
-                rules={[
-                  { required: true, message: 'Please input the maximum capacity' },
-                  { type: 'number', min: 1, message: 'Capacity must be at least 1' },
-                  {
-                    validator: (_, value) => {
-                      if (value > maxCapacity!) {
-                        return Promise.reject(`Capacity cannot exceed ${maxCapacity}`);
-                      }
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
+          <Row gutter={[24, 24]}>
+            <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+              <Form
+                form={form}
+                onFinish={handleSubmit}
+                labelCol={{ span: 8 }}
+                className="max-w-[600px] mx-auto mt-8"
+                initialValues={initialValues}
               >
-                <InputNumber 
-                  min={1} 
-                  max={maxCapacity || undefined}
-                  placeholder="Capacity" 
-                />
-              </Form.Item>
+                <Form.Item name="parkName" label="Park">
+                  <Select placeholder={park?.name} disabled />
+                </Form.Item>
 
-          <Form.Item label="Images">
-            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-          </Form.Item>
-          <Form.Item label="Current Images">
-            <div className="flex flex-wrap gap-2">
-              {currentImages?.map((imgSrc, index) => (
-                <img
-                  key={index}
-                  src={imgSrc}
-                  alt={`Preview ${index}`}
-                  className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                  onClick={() => handleCurrentImageClick(index)}
-                />
-              ))}
-            </div>
-          </Form.Item>
-          {previewImages?.length > 0 && (
-            <Form.Item label="New Images">
-              <div className="flex flex-wrap gap-2">
-                {previewImages.map((imgSrc, index) => (
-                  <img
-                    key={index}
-                    src={imgSrc}
-                    alt={`Preview ${index}`}
-                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                    onClick={() => removeImage(index)}
+                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+                  <Select
+                    placeholder="Select a Facility for this Event"
+                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+                    onChange={onFacilityChange}
                   />
-                ))}
+                </Form.Item>
+
+                <Divider orientation="left">Event Details</Divider>
+
+                <Form.Item
+                  name="title"
+                  label="Title"
+                  rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}
+                >
+                  <Input placeholder="Event Title" />
+                </Form.Item>
+
+                <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+                  <TextArea placeholder="Describe the Event" autoSize={{ minRows: 3, maxRows: 5 }} />
+                </Form.Item>
+
+                <Form.Item name="type" label="Type" rules={[{ required: true }]}>
+                  <Select placeholder="Select an Event Type" options={eventTypeOptions} />
+                </Form.Item>
+
+                <Form.Item name="suitability" label="Suitability" rules={[{ required: true }]}>
+                  <Select placeholder="Select an Event Suitability" options={eventSuitabilityOptions} />
+                </Form.Item>
+
+                <Form.Item
+                  name="maxCapacity"
+                  label="Max Capacity"
+                  rules={[
+                    { required: true, message: 'Please input the maximum capacity' },
+                    { type: 'number', min: 1, message: 'Capacity must be at least 1' },
+                    {
+                      validator: (_, value) => {
+                        if (value > maxCapacity!) {
+                          return Promise.reject(`Capacity cannot exceed ${maxCapacity}`);
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <InputNumber min={1} max={maxCapacity || undefined} placeholder="Capacity" />
+                </Form.Item>
+
+                <Form.Item label="Images">
+                  <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+                </Form.Item>
+                <Form.Item label="Current Images">
+                  <div className="flex flex-wrap gap-2">
+                    {currentImages?.map((imgSrc, index) => (
+                      <img
+                        key={index}
+                        src={imgSrc}
+                        alt={`Preview ${index}`}
+                        className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                        onClick={() => handleCurrentImageClick(index)}
+                      />
+                    ))}
+                  </div>
+                </Form.Item>
+                {previewImages?.length > 0 && (
+                  <Form.Item label="New Images">
+                    <div className="flex flex-wrap gap-2">
+                      {previewImages.map((imgSrc, index) => (
+                        <img
+                          key={index}
+                          src={imgSrc}
+                          alt={`Preview ${index}`}
+                          className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                          onClick={() => removeImage(index)}
+                        />
+                      ))}
+                    </div>
+                  </Form.Item>
+                )}
+
+                <Divider orientation="left">Event Timings</Divider>
+                <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
+                  <RangePicker
+                    className="w-full"
+                    format="YYYY-MM-DD"
+                    disabledDate={(current) => disabledDate(moment(current.toDate()))}
+                    onChange={(dates, dateStrings) => {
+                      if (dates) {
+                        form.setFieldsValue({
+                          dateRange: dates,
+                        });
+                      } else {
+                        form.setFieldsValue({ dateRange: null });
+                      }
+                    }}
+                  />
+                </Form.Item>
+
+                <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
+                  <TimePicker.RangePicker
+                    className="w-full"
+                    use12Hours
+                    format="h:mm a"
+                    minuteStep={5}
+                    disabledTime={(time, type) => disabledTime(moment(time.valueOf()), type as 'start' | 'end')}
+                  />
+                </Form.Item>
+                <Divider orientation="left">Event Status</Divider>
+
+                <Form.Item name="isCancelled" label="Cancel Event" rules={[{ required: true }]}>
+                  <Radio.Group options={cancelOptions} onChange={(e) => setIsCancelled(e.target.value)} optionType="button" />
+                </Form.Item>
+
+                <Form.Item wrapperCol={{ offset: 8 }}>
+                  <Button type="primary" className="w-full" htmlType="submit">
+                    Save Changes
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Col>
+            <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+              <div
+                style={{
+                  position: 'sticky',
+                  top: 20,
+                  maxWidth: '600px',
+                  width: '100%',
+                  padding: '20px',
+                  paddingRight: '24px',
+                }}
+              >
+                <FacilityInfoCard facility={selectedFacility} />
               </div>
-            </Form.Item>
-          )}
-
-          <Divider orientation="left">Event Timings</Divider>
-          <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
-                <RangePicker
-                  className="w-full"
-                  format="YYYY-MM-DD"
-                  disabledDate={(current) => disabledDate(moment(current.toDate()))}
-                  onChange={(dates, dateStrings) => {
-                    if (dates) {
-                      form.setFieldsValue({
-                        dateRange: dates,
-                      });
-                    } else {
-                      form.setFieldsValue({ dateRange: null });
-                    }
-                  }}
-                />
-              </Form.Item>
-
-              <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
-                <TimePicker.RangePicker 
-                  className="w-full" 
-                  use12Hours 
-                  format="h:mm a" 
-                  minuteStep={5}
-                  disabledTime={(time, type) => disabledTime(moment(time.valueOf()), type as 'start' | 'end')}
-                />
-              </Form.Item>
-          <Divider orientation="left">Event Status</Divider>
-          
-          <Form.Item name="isCancelled" label="Cancel Event" rules={[{ required: true }]} >
-        <Radio.Group
-          options={cancelOptions}
-          onChange={(e) => setIsCancelled(e.target.value)}
-          optionType="button"
-        />
-      </Form.Item>
-
-
-          <Form.Item wrapperCol={{ offset: 8 }}>
-            <Button type="primary" className="w-full" htmlType="submit">
-              Save Changes
-            </Button>
-          </Form.Item>
-        </Form>
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-            <div style={{ 
-              position: 'sticky', 
-              top: 20,
-              maxWidth: '600px',
-              width: '100%',
-              padding: '20px',
-              paddingRight: '24px',
-            }}>
-              <FacilityInfoCard facility={facility}/>
-            </div>
-          </Col>
-      </Row>
-      )}
+            </Col>
+          </Row>
+        )}
       </Card>
     </ContentWrapperDark>
   );

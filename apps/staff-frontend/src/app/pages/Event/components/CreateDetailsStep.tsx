@@ -5,6 +5,8 @@ import { Dayjs } from 'dayjs';
 import moment from 'moment';
 import { useState } from 'react';
 import FacilityInfoCard from './FacilityInfoCard';
+import { useFetchOpenFacilitiesByPark } from '../../../hooks/Facilities/useFetchOpenFacilitiesByPark';
+import { useFetchEventsByFacilityId } from '../../../hooks/Events/useFetchEventsByFacilityId';
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
 
@@ -18,12 +20,12 @@ interface CreateDetailsStepProps {
 }
 
 const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, removeImage, onInputClick }: CreateDetailsStepProps) => {
-  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
+  const { facilities, isLoading: isLoadingFacilities, error: facilitiesError } = useFetchOpenFacilitiesByPark(selectedParkId);
   const [selectedFacility, setSelectedFacility] = useState<FacilityResponse | null>(null);
   const [maxCapacity, setMaxCapacity] = useState<number | null>(null);
   const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment } | null>(null);
-  const [bookedDates, setBookedDates] = useState<moment.Moment[]>([]);
-  const [isLoadingFacilities, setIsLoadingFacilities] = useState(false);
+  const { bookedDates, isLoading: isLoadingEvents, error: eventsError } = useFetchEventsByFacilityId(selectedFacility?.id || null);
 
   const onFacilityChange = (facilityId: string) => {
     const facility = facilities.find((f) => f.id === facilityId);
@@ -39,33 +41,11 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
         start: openingTime,
         end: closingTime
       });
-
-      fetchFacilityEvents(facilityId);
     } else {
       setOperatingHours(null);
-      setBookedDates([]);
     }
     
     form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined });
-  };
-
-  const fetchFacilityEvents = async (facilityId: string) => {
-    try {
-      const response = await getEventsByFacilityId(facilityId);
-      const events = response.data;
-      const bookedDates = events.flatMap(event => {
-        const start = moment(event.startDate);
-        const end = moment(event.endDate);
-        const dates = [];
-        for (let m = moment(start); m.diff(end, 'days') <= 0; m.add(1, 'days')) {
-          dates.push(m.clone());
-        }
-        return dates;
-      });
-      setBookedDates(bookedDates);
-    } catch (error) {
-      console.error('Failed to fetch facility events:', error);
-    }
   };
 
   const eventTypeOptions = [
@@ -88,22 +68,9 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
     { value: EventSuitabilityEnum.FITNESS_ENTHUSIASTS, label: 'Fitness Enthusiasts' },
   ];
 
-  const onParkChange = async (parkId: number) => {
-    if (parkId) {
-      setIsLoadingFacilities(true);
-      try {
-        const fetchedFacilitiesResponse = await getFacilitiesByParkId(parkId);
-        setFacilities(fetchedFacilitiesResponse.data);
-        form.setFieldsValue({ facilityId: undefined }); // Reset facility selection
-      } catch (error) {
-        console.error('Failed to fetch facilities:', error);
-        setFacilities([]);
-      } finally {
-        setIsLoadingFacilities(false);
-      }
-    } else {
-      setFacilities([]);
-    }
+  const onParkChange = (parkId: number) => {
+    setSelectedParkId(parkId);
+    form.setFieldsValue({ facilityId: undefined }); // Reset facility selection
   };
 
   const disabledDate = (current: moment.Moment) => {
