@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { ParkResponse, StaffResponse, updatePark } from '@lepark/data-access';
+import { ParkResponse, StaffResponse, StaffType, updatePark } from '@lepark/data-access';
 import { Button, Card, message, Popconfirm, Space } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MapContainer, TileLayer } from 'react-leaflet';
@@ -22,6 +22,7 @@ export interface AdjustLatLngInterface {
 const ParkEditMap = () => {
   const { id } = useParams();
   const { park, loading } = useRestrictPark(id);
+  const { user } = useAuth<StaffResponse>();
   const [createdData, setCreatedData] = useState<ParkResponse>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]); // original polygon
   const [editPolygon, setEditPolygon] = useState<any[]>([]);
@@ -48,7 +49,7 @@ const ParkEditMap = () => {
       } else {
         throw new Error('Please draw Park boundaries on the map.');
       }
-      
+
       const response = await updatePark(park.id, finalData);
       if (response.status === 200) {
         setCreatedData(response.data);
@@ -83,14 +84,19 @@ const ParkEditMap = () => {
   };
 
   const breadcrumbItems = [
-    {
-      title: 'Park Management',
-      pathKey: '/park',
-      isMain: true,
-    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            title: 'Park Management',
+            pathKey: '/park',
+            isMain: true,
+          },
+        ]
+      : []),
     {
       title: park?.name ? park?.name : 'Details',
       pathKey: `/park/${park?.id}`,
+      ...(user?.role !== StaffType.SUPERADMIN && { isMain: true }),
     },
     {
       title: 'Edit Boundaries',
@@ -156,13 +162,11 @@ const ParkEditMap = () => {
             </MapContainer>
           </div>
         </>
-        <div className='flex justify-center gap-2'>
+        <div className="flex justify-center gap-2">
           <Popconfirm title="All changes will be lost." onConfirm={() => navigate(`/park/${park?.id}`)}>
-            <Button>
-              Cancel
-            </Button>
+            <Button>Cancel</Button>
           </Popconfirm>
-          
+
           <Button type="primary" onClick={handleSubmit}>
             Save Changes
           </Button>

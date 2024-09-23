@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { ParkResponse, StaffResponse, updatePark } from '@lepark/data-access';
+import { ParkResponse, StaffResponse, StaffType, updatePark } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -164,14 +164,19 @@ const ParkEdit = () => {
   };
 
   const breadcrumbItems = [
-    {
-      title: 'Park Management',
-      pathKey: '/park',
-      isMain: true,
-    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            title: 'Park Management',
+            pathKey: '/park',
+            isMain: true,
+          },
+        ]
+      : []),
     {
       title: park?.name ? park?.name : "Details",
       pathKey: `/park/${park?.id}`,
+      ...(user?.role !== StaffType.SUPERADMIN && { isMain: true }),
     },
     {
       title: "Edit",
