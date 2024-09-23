@@ -25,6 +25,7 @@ const ViewSensorDetails = () => {
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [park, setPark] = useState<ParkResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
+  const [sensorWithoutFacility, setSensorWithoutFacility] = useState<SensorResponse>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,9 +38,15 @@ const ViewSensorDetails = () => {
               console.log(facilityResponse.data);
               const parkResponse = await getParkById(facilityResponse.data.parkId);
               if (parkResponse.status === 200) {
+                console.log(parkResponse.data);
                 setPark(parkResponse.data);
               }
             }
+          }
+          // Destructure sensor to remove facility and set sensorWithoutFacility
+          if (sensor) {
+            const { facility, ...sensorWithoutFacility } = sensor;
+            setSensorWithoutFacility(sensorWithoutFacility);
           }
         } catch (error) {
           console.error('Error fetching sensor data:', error);
@@ -49,7 +56,7 @@ const ViewSensorDetails = () => {
       }
     };
     fetchData();
-  }, [sensorId]);
+  }, [sensorId, sensor]);
 
   const breadcrumbItems = [
     {
@@ -92,7 +99,7 @@ const ViewSensorDetails = () => {
     {
       key: 'facilityName',
       label: 'Facility',
-      children: facility?.facilityName || 'N/A', // Ensure only facilityName is rendered
+      children: facility?.facilityName,
     },
   ];
 
@@ -109,7 +116,7 @@ const ViewSensorDetails = () => {
     {
       key: 'information',
       label: 'Information',
-      children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
+      children: sensorWithoutFacility ? <InformationTab sensor={sensorWithoutFacility} /> : <p>Loading sensor data...</p>,
     },
   ];
 
