@@ -10,7 +10,7 @@ import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
-import { PiToolboxBold } from "react-icons/pi";
+import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
@@ -84,6 +84,13 @@ const MainLayout = () => {
         onClick: () => navigate('/sensor/map'),
       },
     ],
+  };
+
+  const hubsNavItem: MenuItem = {
+    key: 'hubs',
+    icon: <FaToolbox />,
+    label: 'Hubs',
+    onClick: () => navigate('/hubs'),
   };
 
   let parkNavItem: MenuItem = {
@@ -205,16 +212,19 @@ const MainLayout = () => {
           onClick: () => navigate('/task'),
         }
       : null,
-      userRole === StaffType.MANAGER ||
+    userRole === StaffType.MANAGER ||
     userRole === StaffType.SUPERADMIN ||
     userRole === StaffType.LANDSCAPE_ARCHITECT ||
     userRole === StaffType.PARK_RANGER
       ? sensorNavItem
       : null,
-    userRole === 'SUPERADMIN' ||
-    userRole === 'MANAGER' ||
-    userRole === 'LANDSCAPE_ARCHITECT' ||
-    userRole === 'PARK_RANGER'
+    userRole === StaffType.MANAGER ||
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.LANDSCAPE_ARCHITECT ||
+    userRole === StaffType.PARK_RANGER
+      ? hubsNavItem
+      : null,
+    userRole === 'SUPERADMIN' || userRole === 'MANAGER' || userRole === 'LANDSCAPE_ARCHITECT' || userRole === 'PARK_RANGER'
       ? {
           key: 'parkasset',
           icon: <PiToolboxBold />,
@@ -235,9 +245,7 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'PARK_RANGER'
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
           key: 'attraction',
           icon: <TbTicket />,
