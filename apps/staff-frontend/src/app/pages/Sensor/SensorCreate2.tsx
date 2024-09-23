@@ -87,7 +87,8 @@ const adjustLatLng = ({ lat: newLat, lng: newLng }: AdjustLatLngInterface) => {
       setCreatedData(response.data);
       setCurrStep(2);
     } catch (error) {
-      messageApi.error('Failed to create sensor. Please try again.');
+      message.error(String(error));
+
     }
   };
 
