@@ -103,7 +103,7 @@ const CreateDetailsStep = ({
       : facilities;
 
   return (
-    <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+    <Form form={form} labelCol={{ span: 12 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Hub Details</Divider>
 
       {user?.role === StaffType.SUPERADMIN && (
@@ -148,24 +148,17 @@ const CreateDetailsStep = ({
       </Form.Item>
       <Form.Item
         name="recommendedCalibrationFrequencyDays"
-        label="Calibration Frequency (Days)"
+        label="Recommended Calibration Frequency (Days)"
         rules={[{ required: true, message: 'Please enter Calibration Frequency in Days' }]}
       >
         <InputNumber min={1} className="w-full" placeholder="Enter Calibration Frequency in Days" />
       </Form.Item>
       <Form.Item
         name="recommendedMaintenanceDuration"
-        label="Maintenance Duration (Days)"
+        label="Recommended Maintenance Duration (Days)"
         rules={[{ required: true, message: 'Please enter Maintenance Duration in Days' }]}
       >
         <InputNumber min={1} className="w-full" placeholder="Enter Maintenance Duration in Days" />
-      </Form.Item>
-      <Form.Item
-        name="nextMaintenanceDate"
-        label="Next Maintenance Date"
-        rules={[{ required: true, message: 'Please enter Next Maintenance Date' }, validateFutureDate(form)]}
-      >
-        <DatePicker className="w-full" minDate={dayjs()} />
       </Form.Item>
       <Form.Item
         name="dataTransmissionInterval"

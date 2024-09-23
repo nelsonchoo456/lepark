@@ -48,7 +48,7 @@ export const useRestrictHub = (hubId?: string) => {
       setPark(parkResponse.data);
     }
 
-    if (user?.parkId === park?.id) {
+    if (user?.parkId === park?.id || user?.role === StaffType.SUPERADMIN) {
         setHub(hub);
     } else {
       if (!notificationShown.current) {

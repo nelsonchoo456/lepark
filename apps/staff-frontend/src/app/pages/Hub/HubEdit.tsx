@@ -97,13 +97,13 @@ const HubEdit = () => {
       if (hubRes.status === 200) {
         setCreatedData(hubRes.data);
         messageApi.open({
-            type: 'success',
-            content: 'Saved changes to Hub. Redirecting to Hub details page...',
-          });
-          // Add a 3-second delay before navigating
-          setTimeout(() => {
-            navigate(`/hubs/${hub.id}`);
-          }, 1000);
+          type: 'success',
+          content: 'Saved changes to Hub. Redirecting to Hub details page...',
+        });
+        // Add a 3-second delay before navigating
+        setTimeout(() => {
+          navigate(`/hubs/${hub.id}`);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error updating Hub', error);
@@ -183,7 +183,7 @@ const HubEdit = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+        <Form form={form} labelCol={{ span: 12 }} className="max-w-[600px] mx-auto mt-8">
           <Divider orientation="left">Hub Details</Divider>
 
           {user?.role === StaffType.SUPERADMIN && (
@@ -228,24 +228,17 @@ const HubEdit = () => {
           </Form.Item>
           <Form.Item
             name="recommendedCalibrationFrequencyDays"
-            label="Calibration Frequency (Days)"
+            label="Recommended Calibration Frequency (Days)"
             rules={[{ required: true, message: 'Please enter Calibration Frequency in Days' }]}
           >
             <InputNumber min={1} className="w-full" placeholder="Enter Calibration Frequency in Days" />
           </Form.Item>
           <Form.Item
             name="recommendedMaintenanceDuration"
-            label="Maintenance Duration (Days)"
+            label="Recommended Maintenance Duration (Days)"
             rules={[{ required: true, message: 'Please enter Maintenance Duration in Days' }]}
           >
             <InputNumber min={1} className="w-full" placeholder="Enter Maintenance Duration in Days" />
-          </Form.Item>
-          <Form.Item
-            name="nextMaintenanceDate"
-            label="Next Maintenance Date"
-            rules={[{ required: true, message: 'Please enter Next Maintenance Date' }, validateFutureDate(form)]}
-          >
-            <DatePicker className="w-full" minDate={dayjs()} />
           </Form.Item>
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
