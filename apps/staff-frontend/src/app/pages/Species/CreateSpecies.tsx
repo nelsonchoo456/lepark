@@ -177,6 +177,10 @@ const CreateSpecies = () => {
     },
   ];
 
+  // Add this function at the beginning of your component
+  const filterOption = (input: string, option?: { label: string; value: string }) =>
+    (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
@@ -184,9 +188,15 @@ const CreateSpecies = () => {
       {!showSuccessAlert && (
         <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
           <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
-            <Select onChange={onPhylumChange} placeholder="Select a phylum">
+            <Select
+              showSearch
+              onChange={onPhylumChange}
+              placeholder="Select a phylum"
+              optionFilterProp="label"
+              filterOption={filterOption}
+            >
               {Object.keys(plantTaxonomy).map((phylum) => (
-                <Select.Option key={phylum} value={phylum}>
+                <Select.Option key={phylum} value={phylum} label={phylum}>
                   {phylum}
                 </Select.Option>
               ))}
@@ -194,9 +204,16 @@ const CreateSpecies = () => {
           </Form.Item>
 
           <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
-            <Select onChange={onClassChange} placeholder="Select a class" disabled={classes.length === 0}>
+            <Select
+              showSearch
+              onChange={onClassChange}
+              placeholder="Select a class"
+              disabled={classes.length === 0}
+              optionFilterProp="label"
+              filterOption={filterOption}
+            >
               {classes.map((classItem) => (
-                <Select.Option key={classItem} value={classItem}>
+                <Select.Option key={classItem} value={classItem} label={classItem}>
                   {classItem}
                 </Select.Option>
               ))}
@@ -204,10 +221,16 @@ const CreateSpecies = () => {
           </Form.Item>
 
           <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
-            <Select placeholder="Select an order" disabled={!orders || orders.length === 0}>
+            <Select
+              showSearch
+              placeholder="Select an order"
+              disabled={!orders || orders.length === 0}
+              optionFilterProp="label"
+              filterOption={filterOption}
+            >
               {orders && orders.length > 0 ? (
                 orders.map((order) => (
-                  <Select.Option key={order} value={order}>
+                  <Select.Option key={order} value={order} label={order}>
                     {order}
                   </Select.Option>
                 ))
@@ -225,7 +248,7 @@ const CreateSpecies = () => {
           <Form.Item name="genusInput" label="Genus" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="speciesInput" label="Species" rules={[{ required: true }]}>
+          <Form.Item name="speciesInput" label="Scientific Name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
           <Form.Item name="commonNameInput" label="Common Name" rules={[{ required: true }]}>
@@ -246,11 +269,11 @@ const CreateSpecies = () => {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a region"
-              optionFilterProp="children"
-              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+              optionFilterProp="label"
+              filterOption={filterOption}
             >
               {regions.map((region) => (
-                <Select.Option key={region} value={region}>
+                <Select.Option key={region} value={region} label={region}>
                   {region}
                 </Select.Option>
               ))}
@@ -262,18 +285,12 @@ const CreateSpecies = () => {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a light type"
-              optionFilterProp="children"
-              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+              optionFilterProp="label"
+              filterOption={filterOption}
             >
               {lightType.map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type === 'FULL_SUN'
-                    ? 'Full Sun'
-                    : type === 'PARTIAL_SHADE'
-                    ? 'Partial Shade'
-                    : type === 'FULL_SHADE'
-                    ? 'Full Shade'
-                    : type}
+                <Select.Option key={type} value={type} label={type === 'FULL_SUN' ? 'Full Sun' : type === 'PARTIAL_SHADE' ? 'Partial Shade' : type === 'FULL_SHADE' ? 'Full Shade' : type}>
+                  {type === 'FULL_SUN' ? 'Full Sun' : type === 'PARTIAL_SHADE' ? 'Partial Shade' : type === 'FULL_SHADE' ? 'Full Shade' : type}
                 </Select.Option>
               ))}
             </Select>
@@ -284,11 +301,11 @@ const CreateSpecies = () => {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a soil type"
-              optionFilterProp="children"
-              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+              optionFilterProp="label"
+              filterOption={filterOption}
             >
               {soilType.map((type) => (
-                <Select.Option key={type} value={type}>
+                <Select.Option key={type} value={type} label={type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}>
                   {type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}
                 </Select.Option>
               ))}
@@ -300,26 +317,12 @@ const CreateSpecies = () => {
               showSearch
               style={{ width: 400 }}
               placeholder="Select a conservation status"
-              optionFilterProp="children"
-              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+              optionFilterProp="label"
+              filterOption={filterOption}
             >
               {conservationStatus.map((status) => (
-                <Select.Option key={status} value={status}>
-                  {status === 'NEAR_THREATENED'
-                    ? 'Near Threatened'
-                    : status === 'LEAST_CONCERN'
-                    ? 'Least Concern'
-                    : status === 'VULNERABLE'
-                    ? 'Vulnerable'
-                    : status === 'ENDANGERED'
-                    ? 'Endangered'
-                    : status === 'CRITICALLY_ENDANGERED'
-                    ? 'Critically Endangered'
-                    : status === 'EXTINCT_IN_THE_WILD'
-                    ? 'Extinct in the Wild'
-                    : status === 'EXTINCT'
-                    ? 'Extinct'
-                    : status}
+                <Select.Option key={status} value={status} label={status === 'NEAR_THREATENED' ? 'Near Threatened' : status === 'LEAST_CONCERN' ? 'Least Concern' : status === 'VULNERABLE' ? 'Vulnerable' : status === 'ENDANGERED' ? 'Endangered' : status === 'CRITICALLY_ENDANGERED' ? 'Critically Endangered' : status === 'EXTINCT_IN_THE_WILD' ? 'Extinct in the Wild' : status === 'EXTINCT' ? 'Extinct' : status}>
+                  {status === 'NEAR_THREATENED' ? 'Near Threatened' : status === 'LEAST_CONCERN' ? 'Least Concern' : status === 'VULNERABLE' ? 'Vulnerable' : status === 'ENDANGERED' ? 'Endangered' : status === 'CRITICALLY_ENDANGERED' ? 'Critically Endangered' : status === 'EXTINCT_IN_THE_WILD' ? 'Extinct in the Wild' : status === 'EXTINCT' ? 'Extinct' : status}
                 </Select.Option>
               ))}
             </Select>
@@ -425,7 +428,7 @@ const CreateSpecies = () => {
 
           <Form.Item {...tailLayout}>
             <Space>
-              <Button type="primary" htmlType="submit" loading={isSubmitting}>
+              <Button type="primary" htmlType="submit">
                 Submit
               </Button>
               <Button htmlType="button" onClick={onReset}>
