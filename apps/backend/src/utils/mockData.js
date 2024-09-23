@@ -941,10 +941,10 @@ const activityLogsData = [
     occurrenceId: '',
   },
   {
-    name: "Pests Treated",
-    description: "Pesticide treatment was applied to eliminate pests found on the plants.",
+    name: "Pests Monitoring",
+    description: "Pests were monitored and treated as needed.",
     images: [],
-    activityLogType: "TREATED_PESTS",
+    activityLogType: "PEST_MONITORING",
     dateCreated: "2024-09-16T10:30:00Z",
     occurrenceId: '',
   },

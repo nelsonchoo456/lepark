@@ -19,6 +19,7 @@ import dotenv from 'dotenv';
 import attractionRouter from './routers/attractionRouter';
 import hubRouter from './routers/hubRouter';
 import facilityRouter from './routers/facilityRouter';
+import plantTaskRouter from './routers/plantTaskRouter';
 import { authenticateJWTStaff } from './middleware/authenticateJWT';
 
 dotenv.config();
@@ -64,6 +65,7 @@ app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/facility', facilityRouter);
+app.use('/api/plantTasks', plantTaskRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
