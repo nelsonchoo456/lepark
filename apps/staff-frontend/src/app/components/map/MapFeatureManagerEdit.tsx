@@ -25,12 +25,13 @@ const MapFeatureManagerEdit = ({ polygon, setPolygon, editPolygon, setEditPolygo
   // const [editPolygon, setEditPolygon] = useState<any[]>([])
   
   useEffect(() => {
-    if (polygon && polygon.length > 0 && editPolygon?.length == 0) {
+    if (polygon && polygon.length > 0 && editPolygon?.length === 0) {
       const bounds = polygon[0].map((item: number[]) => [item[1], item[0]] as [number, number]);
       setEditPolygon([bounds]);
       map.fitBounds(bounds); // Fit the map to the geom bounds
     }
-  }, [polygon, map]);
+  }, [polygon]);
+
 
   const handleCreated = (e: any) => {
     const { layer } = e;
@@ -47,11 +48,19 @@ const MapFeatureManagerEdit = ({ polygon, setPolygon, editPolygon, setEditPolygo
 
     layers.eachLayer((layer: L.Layer) => {
       if (layer instanceof L.Polygon) {
-        setEditPolygon([layer.getLatLngs()]);
-      } else if (layer instanceof L.Polyline) {
+        const latLngs1 = layer.getLatLngs() as L.LatLng[][];
+        // console.log([latLngs1])
+        
+        // const layer2 = layer as any;
+        // const latLngs = layer2.editing.latlngs
+
+        // console.log(latLngs)
+        setEditPolygon([latLngs1]);
+      } 
+      // else if (layer instanceof L.Polyline) {
         // setLines(lines.map((line, index) => (layer._leaflet_id === index ? layer.getLatLngs() : line)));
-        setLines(lines.map((line) => line.getLatLngs()));
-      }
+        // setLines(lines.map((line) => line.getLatLngs()));
+      // }
     });
   };
 
@@ -61,7 +70,7 @@ const MapFeatureManagerEdit = ({ polygon, setPolygon, editPolygon, setEditPolygo
       if (layer instanceof L.Polygon) {
         setEditPolygon([]);
       } else if (layer instanceof L.Polyline) {
-        setLines(lines.filter((line) => line !== layer.getLatLngs()));
+        // setLines(lines.filter((line) => line !== layer.getLatLngs()));
       }
     });
   };
@@ -95,10 +104,13 @@ const MapFeatureManagerEdit = ({ polygon, setPolygon, editPolygon, setEditPolygo
       {/* Render polygon if it exists */}
       {editPolygon.length > 0 && (
         <Polygon
+          key={Math.random()}
           positions={editPolygon[0]}
           pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
         />
       )}
+
+
 
       {lines.map((line, index) => (
         <Polyline key={index} positions={line} />

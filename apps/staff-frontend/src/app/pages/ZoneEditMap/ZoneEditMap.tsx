@@ -65,7 +65,6 @@ const ZoneEditMap = () => {
     try {
       const finalData: any = {};
 
-
       if (editPolygon && editPolygon[0] && editPolygon[0][0]) {
         const polygonData = latLngArrayToPolygon(editPolygon[0][0]);
         finalData.geom = polygonData;
