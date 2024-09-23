@@ -126,7 +126,7 @@ const FacilityCreate = () => {
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} formValues={formValues} />,
+      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} parks={parks} formValues={formValues} />,
     },
     {
       key: 'complete',

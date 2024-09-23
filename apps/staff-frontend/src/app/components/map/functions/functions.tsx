@@ -47,12 +47,37 @@ export function getCentroidOfGeom(geom: GeomType): AdjustLatLngInterface | null 
     return null; // Handle cases where geom is invalid or empty
   }
 
-  const latLngs = geom.coordinates[0].map((coord: number[]) => L.latLng(coord[1], coord[0])); // Convert to LatLng
+  // Method 1
+  // const latLngs = geom.coordinates[0].map((coord: number[]) => L.latLng(coord[1], coord[0])); // Convert to LatLng
 
-  const bounds = L.latLngBounds(latLngs); // Get the bounds of the polygon
-  const center = bounds.getCenter(); // Get the center of the bounds
+  // const bounds = L.latLngBounds(latLngs); // Get the bounds of the polygon
+  // const center = bounds.getCenter(); // Get the center of the bounds
+  // return { lat: center.lat, lng: center.lng };
 
-  return { lat: center.lat, lng: center.lng };
+  // Method 2
+  const coords = geom.coordinates[0];
+  let area = 0;
+  let centerX = 0;
+  let centerY = 0;
+
+  // Calculate centroid using the formula for polygons
+  for (let i = 0; i < coords.length - 1; i++) {
+    const x0 = coords[i][0];
+    const y0 = coords[i][1];
+    const x1 = coords[i + 1][0];
+    const y1 = coords[i + 1][1];
+
+    const factor = (x0 * y1 - x1 * y0);
+    area += factor;
+    centerX += (x0 + x1) * factor;
+    centerY += (y0 + y1) * factor;
+  }
+
+  area *= 0.5;
+  centerX /= (6 * area);
+  centerY /= (6 * area);
+
+  return { lat: centerY, lng: centerX };
 }
 
 export const polygonHasOverlap = (newPolygon: any[], existingPolygons?: number[][][]): boolean => {
