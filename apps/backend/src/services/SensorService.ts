@@ -31,7 +31,7 @@ function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInpu
   if (!data.sensorName || !data.sensorType || !data.sensorStatus || !data.acquisitionDate
     || !data.dataFrequencyMinutes || !data.sensorUnit || !data.supplier
     || data.calibrationFrequencyDays === undefined || data.recurringMaintenanceDuration === undefined
-    || !data.supplierContactNumber) {
+    || !data.supplierContactNumber || !data.serialNumber) {
     throw new Error('Missing required fields for sensor creation');
   }
   return data as Prisma.SensorCreateInput;
@@ -40,6 +40,12 @@ function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInpu
 class SensorService {
     public async createSensor(data: SensorSchemaType): Promise<Sensor> {
     try {
+
+        data.serialNumber = data.serialNumber.trim();
+        const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(data.serialNumber);
+        if (checkForExistingSensor) {
+          throw new Error('Identical sensor serial number already exists.');
+        }
       if (data.hubId) {
         const hub = await HubDao.getHubById(data.hubId);
         if (!hub) {
@@ -93,7 +99,13 @@ class SensorService {
     if (!existingSensor) {
       throw new Error('Sensor not found');
     }
-
+    if (data.serialNumber !== undefined) {
+      data.serialNumber = data.serialNumber.trim();
+      const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(data.serialNumber);
+      if (checkForExistingSensor && existingSensor.id !== checkForExistingSensor.id) {
+        throw new Error('Identical sensor serial number already exists.');
+      }
+    }
     if (data.facilityId !== undefined) {
       if (data.facilityId) {
         const facility = await FacilityDao.getFacilityById(data.facilityId);

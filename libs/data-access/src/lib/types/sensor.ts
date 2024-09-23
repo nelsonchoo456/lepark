@@ -2,6 +2,7 @@ import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client
 
 export interface SensorData {
   sensorName: string;
+  serialNumber: string;
   sensorType: SensorTypeEnum;
   sensorDescription?: string;
   sensorStatus: SensorStatusEnum;
@@ -26,6 +27,7 @@ export interface SensorData {
 export interface SensorResponse {
   id: string;
   sensorName: string;
+  serialNumber: string;
   sensorType: SensorTypeEnum;
   sensorDescription?: string;
   sensorStatus: SensorStatusEnum;
@@ -58,6 +60,7 @@ export interface SensorResponse {
 
 export interface SensorUpdateData {
   sensorName?: string;
+  serialNumber?: string;
   sensorType?: SensorTypeEnum;
   sensorDescription?: string;
   sensorStatus?: SensorStatusEnum;
@@ -76,6 +79,7 @@ export interface SensorUpdateData {
   longitude?: number;
   remarks?: string;
   hubId?: string;
+  facilityId?: string;
 }
 
 export interface SensorMaintenanceHistoryResponse {
