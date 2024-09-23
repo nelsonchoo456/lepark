@@ -20,6 +20,7 @@ import { FiEye } from 'react-icons/fi';
 import { TbEdit, TbTree } from 'react-icons/tb';
 import ParkStatusTag from '../ParkDetails/components/ParkStatusTag';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import React from 'react';
 
 const ParksMap = () => {
   const { user } = useAuth<StaffResponse>();
@@ -89,7 +90,7 @@ const ParksMap = () => {
         <PageHeader2 breadcrumbItems={breadcrumbItems} />
         {parks &&
           parks.map((park) => (
-            <>
+            <React.Fragment key={park.id}>
               <div className="border-b-[1px] border-black/10 py-4 px-2 hover:bg-green-400/10">
                 <div className="flex justify-between gap-2 ">
                   <div className="flex-auto">
@@ -156,7 +157,7 @@ const ParksMap = () => {
               </div>
               )
               */}
-            </>
+            </React.Fragment>
           ))}
       </Drawer>
       <MapContainer
