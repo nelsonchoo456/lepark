@@ -212,26 +212,14 @@ const MainLayout = () => {
           onClick: () => navigate('/task'),
         }
       : null,
-    userRole === StaffType.MANAGER ||
-    userRole === StaffType.SUPERADMIN ||
-    userRole === StaffType.LANDSCAPE_ARCHITECT ||
-    userRole === StaffType.PARK_RANGER
-      ? sensorNavItem
-      : null,
-    userRole === StaffType.MANAGER ||
-    userRole === StaffType.SUPERADMIN ||
-    userRole === StaffType.LANDSCAPE_ARCHITECT ||
-    userRole === StaffType.PARK_RANGER
-      ? hubsNavItem
-      : null,
-    userRole === 'SUPERADMIN' || userRole === 'MANAGER' || userRole === 'LANDSCAPE_ARCHITECT' || userRole === 'PARK_RANGER'
-      ? {
-          key: 'parkasset',
-          icon: <PiToolboxBold />,
-          label: 'Park Assets (non-IoT)',
-          onClick: () => navigate('/parkasset'),
-        }
-      : null,
+    sensorNavItem,
+    hubsNavItem,
+    {
+      key: 'parkasset',
+      icon: <PiToolboxBold />,
+      label: 'Park Assets (non-IoT)',
+      onClick: () => navigate('/parkasset'),
+    },
     {
       key: 'profile',
       icon: <FiUser />,
