@@ -270,8 +270,6 @@ model Hub {
   facility                            Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   maintenanceHistory MaintenanceHistory[]
-  calibrationHistory CalibrationHistory[]
-  usageMetrics       UsageMetrics[]
   sensors            Sensor[]
 
   //facility Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
@@ -331,7 +329,6 @@ model Sensor {
   facility          Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory            MaintenanceHistory[]
   calibrationHistory            CalibrationHistory[]
-  usageMetrics                  UsageMetrics[]
 }
 
 enum ParkAssetTypeEnum {
@@ -394,23 +391,8 @@ model CalibrationHistory {
   calibrationDate DateTime
   description     String
 
-  hub    Hub?    @relation(fields: [hubId], references: [id], onDelete: Cascade)
   sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
-
-model UsageMetrics {
-  id          String  @id @default(uuid()) @db.Uuid
-  hubId       String? @map("hubId") @db.Uuid
-  sensorId    String? @map("sensorId") @db.Uuid
-  uptime      Float
-  downtime    Float
-  dataVolume  Float
-  description String
-
-  hub    Hub?    @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
-}
-
 model Facility {
   id                    String    @id @default(uuid()) @db.Uuid
   facilityName          String
