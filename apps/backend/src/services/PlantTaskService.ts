@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PlantTaskSchema, PlantTaskSchemaType } from '../schemas/plantTaskSchema';
 import PlantTaskDao from '../dao/PlantTaskDao';
 import OccurrenceDao from '../dao/OccurrenceDao';
+import ZoneDao from '../dao/ZoneDao';
 import StaffDao from '../dao/StaffDao';
 import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
@@ -15,8 +16,8 @@ class PlantTaskService {
         throw new Error('Staff not found');
       }
 
-      if (staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
-        throw new Error('Only Botanists and Arborists can create plant tasks');
+      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
+        throw new Error('Only Superadmins, Botanists and Arborists can create plant tasks');
       }
 
       const occurrence = await OccurrenceDao.getOccurrenceById(data.occurrenceId);
@@ -24,7 +25,12 @@ class PlantTaskService {
         throw new Error('Occurrence not found');
       }
 
-      if (occurrence.zone.parkId !== staff.parkId) {
+      const zone = await ZoneDao.getZoneById(occurrence.zoneId);
+      if (!zone) {
+        throw new Error('Zone not found');
+      }
+
+      if (zone.parkId !== staff.parkId) {
         throw new Error('Staff can only create tasks for their assigned park');
       }
 

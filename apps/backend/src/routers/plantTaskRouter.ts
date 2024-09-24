@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.post('/createPlantTask', authenticateJWTStaff, async (req, res) => {
   try {
-    const plantTask = await PlantTaskService.createPlantTask(req.body);
+    const { staffId, ...plantTaskData } = req.body;
+    const plantTask = await PlantTaskService.createPlantTask(plantTaskData, staffId);
     res.status(201).json(plantTask);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -50,6 +51,16 @@ router.delete('/deletePlantTask/:id', authenticateJWTStaff, async (req, res) => 
     const plantTaskId = req.params.id;
     await PlantTaskService.deletePlantTask(plantTaskId);
     res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getPlantTasksByParkId/:parkId', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = parseInt(req.params.parkId, 10);
+    const plantTasks = await PlantTaskService.getPlantTasksByParkId(parkId);
+    res.status(200).json(plantTasks);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

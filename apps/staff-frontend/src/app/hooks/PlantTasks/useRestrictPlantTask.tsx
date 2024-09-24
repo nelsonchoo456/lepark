@@ -1,5 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import { getPlantTaskById, PlantTaskResponse, StaffResponse, StaffRoleEnum } from '@lepark/data-access';
+import { getPlantTaskById, PlantTaskResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
@@ -27,10 +27,7 @@ export const useRestrictPlantTask = (plantTaskId?: string) => {
           const fetchedPlantTask = plantTaskResponse.data;
 
           // Check if user has permission to view this plant task
-          if (
-            (user?.role === StaffRoleEnum.BOTANIST || user?.role === StaffRoleEnum.ARBORIST) &&
-            user?.parkId === fetchedPlantTask.occurrence.zone.parkId
-          ) {
+          if ((user?.role === StaffType.BOTANIST || user?.role === StaffType.ARBORIST) && user?.parkId === fetchedPlantTask.parkId) {
             setPlantTask(fetchedPlantTask);
           } else {
             throw new Error('Access denied');

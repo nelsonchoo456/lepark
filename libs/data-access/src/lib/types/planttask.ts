@@ -36,6 +36,8 @@ export interface PlantTaskResponse {
     firstName: string;
     lastName: string;
   };
+  parkId: number;
+  zoneName?: string;
 }
 
 export interface PlantTaskUpdateData {
