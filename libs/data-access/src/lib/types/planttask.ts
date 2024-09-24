@@ -3,12 +3,9 @@ import { PlantTaskStatusEnum, PlantTaskTypeEnum, PlantTaskUrgencyEnum } from './
 export interface PlantTaskData {
   title: string;
   description: string;
-  taskStatus: PlantTaskStatusEnum;
   taskType: PlantTaskTypeEnum;
   taskUrgency: PlantTaskUrgencyEnum;
-  completedDate?: string | null;
   images?: string[];
-  remarks?: string | null;
   occurrenceId: string;
   assignedStaffId?: string | null;
 }
@@ -22,6 +19,7 @@ export interface PlantTaskResponse {
   taskUrgency: PlantTaskUrgencyEnum;
   createdAt: string;
   updatedAt: string;
+  dueDate: string;
   completedDate: string | null;
   images: string[];
   remarks: string | null;
@@ -36,6 +34,8 @@ export interface PlantTaskResponse {
     firstName: string;
     lastName: string;
   };
+  parkId: number;
+  zoneName?: string;
 }
 
 export interface PlantTaskUpdateData {

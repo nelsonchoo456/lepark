@@ -10,6 +10,7 @@ export const PlantTaskSchema = z.object({
   taskUrgency: z.nativeEnum(PlantTaskUrgencyEnum),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
+  dueDate: z.date().optional().nullable(),
   completedDate: z.date().optional().nullable(),
   images: z.array(z.string()).optional(),
   remarks: z.string().optional().nullable(),

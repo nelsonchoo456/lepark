@@ -17,10 +17,19 @@ CREATE TYPE "DecarbonizationTypeEnum" AS ENUM ('TREE_TROPICAL', 'TREE_MANGROVE',
 CREATE TYPE "OccurrenceStatusEnum" AS ENUM ('HEALTHY', 'MONITOR_AFTER_TREATMENT', 'NEEDS_ATTENTION', 'URGENT_ACTION_REQUIRED', 'REMOVED');
 
 -- CreateEnum
-CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'TREATED_PESTS', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'OTHERS');
+CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', 'PRUNED', 'REPLANTED', 'CHECKED_HEALTH', 'PEST_MONITORING', 'SOIL_REPLACED', 'HARVESTED', 'STAKED', 'MULCHED', 'MOVED', 'CHECKED', 'ADDED_COMPOST', 'SHADE_ADJUSTMENT', 'PLANT_PROPAGATION', 'LIGHT_EXPOSURE_CHECK', 'WATERING_ADJUSTMENT', 'OTHERS');
 
 -- CreateEnum
 CREATE TYPE "AttractionStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
+
+-- CreateEnum
+CREATE TYPE "EventStatusEnum" AS ENUM ('ONGOING', 'UPCOMING', 'COMPLETED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "EventTypeEnum" AS ENUM ('WORKSHOP', 'EXHIBITION', 'GUIDED_TOUR', 'PERFORMANCE', 'TALK', 'COMPETITION', 'FESTIVAL', 'CONFERENCE');
+
+-- CreateEnum
+CREATE TYPE "EventSuitabilityEnum" AS ENUM ('ANYONE', 'FAMILIES_AND_FRIENDS', 'CHILDREN', 'NATURE_ENTHUSIASTS', 'PETS', 'FITNESS_ENTHUSIASTS');
 
 -- CreateEnum
 CREATE TYPE "HubStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
@@ -30,6 +39,15 @@ CREATE TYPE "FacilityTypeEnum" AS ENUM ('TOILET', 'PLAYGROUND', 'INFORMATION', '
 
 -- CreateEnum
 CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'MAINTENANCE');
+
+-- CreateEnum
+CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIMMING', 'PEST_MANAGEMENT', 'SOIL_MAINTENANCE', 'STAKING_SUPPORTING', 'DEBRIS_REMOVAL', 'ENVIRONMENTAL_ADJUSTMENT', 'OTHERS');
+
+-- CreateEnum
+CREATE TYPE "PlantTaskUrgencyEnum" AS ENUM ('IMMEDIATE', 'HIGH', 'NORMAL', 'LOW');
 
 -- CreateTable
 CREATE TABLE "Staff" (
@@ -144,6 +162,25 @@ CREATE TABLE "Attraction" (
     "parkId" INTEGER NOT NULL,
 
     CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Event" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "type" "EventTypeEnum" NOT NULL,
+    "suitability" "EventSuitabilityEnum" NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "startTime" TIMESTAMP(3) NOT NULL,
+    "endTime" TIMESTAMP(3) NOT NULL,
+    "maxCapacity" INTEGER NOT NULL,
+    "images" TEXT[],
+    "status" "EventStatusEnum" NOT NULL,
+    "facilityId" UUID NOT NULL,
+
+    CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -266,6 +303,26 @@ CREATE TABLE "Facility" (
 );
 
 -- CreateTable
+CREATE TABLE "PlantTask" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "taskStatus" "PlantTaskStatusEnum" NOT NULL,
+    "taskType" "PlantTaskTypeEnum" NOT NULL,
+    "taskUrgency" "PlantTaskUrgencyEnum" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "dueDate" TIMESTAMP(3) NOT NULL,
+    "completedDate" TIMESTAMP(3),
+    "images" TEXT[],
+    "remarks" TEXT,
+    "occurrenceId" UUID NOT NULL,
+    "staffId" UUID,
+
+    CONSTRAINT "PlantTask_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_VisitorfavoriteSpecies" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
@@ -282,6 +339,9 @@ CREATE INDEX "Occurrence_zoneId_idx" ON "Occurrence"("zoneId");
 
 -- CreateIndex
 CREATE INDEX "Attraction_parkId_idx" ON "Attraction"("parkId");
+
+-- CreateIndex
+CREATE INDEX "Event_facilityId_idx" ON "Event"("facilityId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
@@ -306,6 +366,9 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Event" ADD CONSTRAINT "Event_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Hub" ADD CONSTRAINT "Hub_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -333,6 +396,12 @@ ALTER TABLE "UsageMetrics" ADD CONSTRAINT "UsageMetrics_hubId_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "UsageMetrics" ADD CONSTRAINT "UsageMetrics_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
