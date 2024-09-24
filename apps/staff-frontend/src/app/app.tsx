@@ -351,9 +351,6 @@ export function App() {
                     <Route path=":id/edit" element={<EventEdit />} />
                   </Route>
                   <Route path=":id" element={<EventDetails />} /> 
-                    <Route path=":id/edit-map" element={<EventEditMap />} />
-                  </Route> */}
-                  <Route path=":id" element={<EventDetails />} />
                 </Route>
               </Route>
 
