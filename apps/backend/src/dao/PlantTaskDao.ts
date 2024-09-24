@@ -44,6 +44,40 @@ class PlantTaskDao {
   async deletePlantTask(id: string): Promise<void> {
     await prisma.plantTask.delete({ where: { id } });
   }
+
+  async getPlantTasksByParkId(parkId: number): Promise<PlantTask[]> {
+    return prisma.plantTask.findMany({
+      where: {
+        occurrence: {
+          zone: {
+            parkId: parkId
+          }
+        }
+      },
+      include: {
+        occurrence: {
+          select: {
+            id: true,
+            title: true,
+            zone: {
+              select: {
+                id: true,
+                name: true,
+                parkId: true
+              }
+            }
+          },
+        },
+        assignedStaff: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
 }
 
 export default new PlantTaskDao();

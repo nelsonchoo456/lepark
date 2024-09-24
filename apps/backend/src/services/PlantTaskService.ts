@@ -5,20 +5,27 @@ import PlantTaskDao from '../dao/PlantTaskDao';
 import OccurrenceDao from '../dao/OccurrenceDao';
 import StaffDao from '../dao/StaffDao';
 import { fromZodError } from 'zod-validation-error';
+import { StaffRoleEnum } from '@prisma/client';
 
 class PlantTaskService {
-  public async createPlantTask(data: PlantTaskSchemaType): Promise<PlantTask> {
+  public async createPlantTask(data: PlantTaskSchemaType, staffId: string): Promise<PlantTask> {
     try {
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error('Staff not found');
+      }
+
+      if (staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
+        throw new Error('Only Botanists and Arborists can create plant tasks');
+      }
+
       const occurrence = await OccurrenceDao.getOccurrenceById(data.occurrenceId);
       if (!occurrence) {
         throw new Error('Occurrence not found');
       }
 
-      if (data.assignedStaffId) {
-        const staff = await StaffDao.getStaffById(data.assignedStaffId);
-        if (!staff) {
-          throw new Error('Staff not found');
-        }
+      if (occurrence.zone.parkId !== staff.parkId) {
+        throw new Error('Staff can only create tasks for their assigned park');
       }
 
       const formattedData = dateFormatter(data);
@@ -79,6 +86,10 @@ class PlantTaskService {
 
   public async deletePlantTask(id: string): Promise<void> {
     await PlantTaskDao.deletePlantTask(id);
+  }
+
+  public async getPlantTasksByParkId(parkId: number): Promise<PlantTask[]> {
+    return PlantTaskDao.getPlantTasksByParkId(parkId);
   }
 }
 

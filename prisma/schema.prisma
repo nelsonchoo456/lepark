@@ -476,6 +476,7 @@ model PlantTask {
   taskUrgency     PlantTaskUrgencyEnum
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
+  dueDate         DateTime?
   completedDate   DateTime?
   images          String[]
   remarks         String?
