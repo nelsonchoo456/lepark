@@ -11,10 +11,10 @@ export interface ParkData {
   images?: string[];
 }
 export interface StringIdxSig {
-  [key: string]: string | undefined
+  [key: string]: string | undefined;
 }
 export interface ParkResponse {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   address?: string;

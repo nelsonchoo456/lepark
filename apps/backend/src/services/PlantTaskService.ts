@@ -1,4 +1,4 @@
-import { Prisma, PlantTask } from '@prisma/client';
+import { Prisma, PlantTask, PlantTaskUrgencyEnum, PlantTaskStatusEnum } from '@prisma/client';
 import { z } from 'zod';
 import { PlantTaskSchema, PlantTaskSchemaType } from '../schemas/plantTaskSchema';
 import PlantTaskDao from '../dao/PlantTaskDao';
@@ -7,6 +7,13 @@ import ZoneDao from '../dao/ZoneDao';
 import StaffDao from '../dao/StaffDao';
 import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
 
 class PlantTaskService {
   public async createPlantTask(data: PlantTaskSchemaType, staffId: string): Promise<PlantTask> {
@@ -30,11 +37,22 @@ class PlantTaskService {
         throw new Error('Zone not found');
       }
 
-      if (zone.parkId !== staff.parkId) {
-        throw new Error('Staff can only create tasks for their assigned park');
+      if (staff.role !== StaffRoleEnum.SUPERADMIN) {
+        if (zone.parkId !== staff.parkId) {
+          throw new Error('Staff can only create tasks for their assigned park');
+        }
       }
 
       const formattedData = dateFormatter(data);
+
+      // Calculate due date based on urgency
+      const createdAt = new Date();
+      const dueDate = this.calculateDueDate(createdAt, formattedData.taskUrgency);
+      const taskStatus = PlantTaskStatusEnum.PENDING;
+
+      formattedData.createdAt = createdAt;
+      formattedData.dueDate = dueDate;
+      formattedData.taskStatus = taskStatus;
       PlantTaskSchema.parse(formattedData);
 
       return PlantTaskDao.createPlantTask(formattedData);
@@ -97,6 +115,54 @@ class PlantTaskService {
   public async getPlantTasksByParkId(parkId: number): Promise<PlantTask[]> {
     return PlantTaskDao.getPlantTasksByParkId(parkId);
   }
+
+  public async uploadImages(files: Express.Multer.File[]): Promise<string[]> {
+    const uploadedUrls = [];
+
+    for (const file of files) {
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const imageUrl = await this.uploadImageToS3(file.buffer, fileName, file.mimetype);
+      uploadedUrls.push(imageUrl);
+    }
+
+    return uploadedUrls;
+  }
+
+  private async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+    const params = {
+      Bucket: 'lepark',
+      Key: `plantTasks/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
+  }
+
+  private calculateDueDate = (createdAt: Date, urgency: PlantTaskUrgencyEnum): Date => {
+    const dueDate = new Date(createdAt);
+    switch (urgency) {
+      case PlantTaskUrgencyEnum.IMMEDIATE:
+        // Due today (0 days)
+        break;
+      case PlantTaskUrgencyEnum.HIGH:
+        dueDate.setDate(dueDate.getDate() + 3);
+        break;
+      case PlantTaskUrgencyEnum.NORMAL:
+        dueDate.setDate(dueDate.getDate() + 7);
+        break;
+      case PlantTaskUrgencyEnum.LOW:
+        dueDate.setDate(dueDate.getDate() + 14);
+        break;
+    }
+    return dueDate;
+  };
 }
 
 const dateFormatter = (data: any) => {

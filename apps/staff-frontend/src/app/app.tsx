@@ -31,7 +31,7 @@ import ParkEdit from './pages/ParkEdit/ParkEdit';
 import OccurrenceEdit from './pages/OccurrenceEdit/OccurrenceEdit';
 import ViewEditSpecies from './pages/Species/ViewEditSpecies';
 import ViewSpeciesDetails from './pages/Species/ViewSpeciesDetails';
-import PlantTask from './pages/PlantTask/PlantTask';
+import PlantTaskList from './pages/PlantTask/PlantTaskList';
 import ZoneList from './pages/Zone/ZoneList';
 import ZoneDetails from './pages/ZoneDetails/ZoneDetails';
 import ZoneCreate from './pages/ZoneCreate/ZoneCreate';
@@ -58,6 +58,8 @@ import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
 import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
+import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
+import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
 export function App() {
   return (
@@ -245,8 +247,18 @@ export function App() {
               </Route>
 
               {/* Task Routes */}
-              <Route path="/plant-task" element={<PlantTask />} />
-              <Route path="/maintenance-task" element={<MaintenanceTask />} />
+              <Route path="/plant-tasks">
+                <Route index element={<PlantTaskList />} />
+                <Route path="create" element={<CreatePlantTask />} />
+                <Route path=":plantTaskId/edit" element={<PlantTaskEdit />} />
+                {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
+              </Route>
+
+
+
+              <Route path="/maintenance-tasks">
+                <Route index element={<MaintenanceTask />} />
+              </Route>
 
               {/* Settings Routes */}
               <Route path="/settings" element={<Settings />} />
@@ -324,8 +336,8 @@ export function App() {
                 </Route>
               </Route>
 
-                  {/* Event Routes */}
-                  <Route
+              {/* Event Routes */}
+              <Route
                 element={
                   <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
                 }
@@ -337,7 +349,7 @@ export function App() {
                     <Route path=":id/edit" element={<EventEdit />} />
                     <Route path=":id/edit-map" element={<EventEditMap />} />
                   </Route> */}
-                  <Route path=":id" element={<EventDetails />} /> 
+                  <Route path=":id" element={<EventDetails />} />
                 </Route>
               </Route>
 

@@ -312,6 +312,7 @@ CREATE TABLE "PlantTask" (
     "taskUrgency" "PlantTaskUrgencyEnum" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "dueDate" TIMESTAMP(3) NOT NULL,
     "completedDate" TIMESTAMP(3),
     "images" TEXT[],
     "remarks" TEXT,
