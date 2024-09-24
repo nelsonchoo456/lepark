@@ -1,5 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Form, Input, Button, Select, Descriptions, Switch, Space, message, Typography, notification, Card, Divider, Flex, Result, Steps } from 'antd';
+import {
+  Form,
+  Input,
+  Button,
+  Select,
+  Descriptions,
+  Switch,
+  Space,
+  message,
+  Typography,
+  notification,
+  Card,
+  Divider,
+  Flex,
+  Result,
+  Steps,
+} from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
@@ -45,11 +61,17 @@ const CreateStaff: React.FC = () => {
       messageApi.success('Staff added successfully!');
     } catch (error: any) {
       console.error(error);
-      const errorMessage = error.message || error.toString();
-      if (errorMessage.includes('Invalid email address')) {
-        messageApi.error('Invalid email format.');
+      if (error.errorFields) {
+        // Form validation error
+        form.scrollToField(error.errorFields[0].name);
       } else {
-        messageApi.error(errorMessage || 'Failed to update staff details.');
+        // API or other error
+        const errorMessage = error.message || error.toString();
+        if (errorMessage.includes('Invalid email address')) {
+          messageApi.error('Invalid email format.');
+        } else {
+          messageApi.error(errorMessage || 'Failed to update staff details.');
+        }
       }
     }
   };
@@ -86,13 +108,7 @@ const CreateStaff: React.FC = () => {
   const content = [
     {
       key: 'details',
-      children: (
-        <CreateDetailsStep
-          form={form}
-          parks={parks}
-          user={user}
-        />
-      ),
+      children: <CreateDetailsStep form={form} parks={parks} user={user} />,
     },
     {
       key: 'complete',
@@ -106,6 +122,7 @@ const CreateStaff: React.FC = () => {
 
   return (
     <ContentWrapperDark>
+      {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Steps
