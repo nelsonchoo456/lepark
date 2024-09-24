@@ -2,7 +2,7 @@ import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
 import { FiEye, FiSearch } from 'react-icons/fi';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EventResponse, StaffType, StaffResponse, deleteEvent, EventStatusEnum, EventTypeEnum } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -15,7 +15,7 @@ import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import dayjs from 'dayjs';
 
 const EventList: React.FC = () => {
-  const { events, loading, triggerFetch } = useFetchEvents();
+  const { events, loading: eventsLoading, triggerFetch } = useFetchEvents();
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -23,7 +23,7 @@ const EventList: React.FC = () => {
   const [eventToBeDeleted, setEventToBeDeleted] = useState<EventResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { parks } = useFetchParks();
-  const { facilities } = useFetchFacilities();
+  const { facilities, loading: facilitiesLoading } = useFetchFacilities();
 
   const statusConfig: Record<EventStatusEnum, { color: string; label: string }> = {
     [EventStatusEnum.UPCOMING]: { color: 'processing', label: 'Upcoming' },
@@ -272,7 +272,7 @@ const EventList: React.FC = () => {
       </Flex>
 
       <Card>
-        <Table dataSource={filteredEvents} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
+        <Table dataSource={filteredEvents} columns={columns} rowKey="id" loading={eventsLoading || facilitiesLoading} scroll={{ x: SCREEN_LG }} />
       </Card>
     </ContentWrapperDark>
   );
