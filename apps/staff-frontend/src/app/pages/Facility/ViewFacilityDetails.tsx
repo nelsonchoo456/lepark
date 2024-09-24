@@ -1,34 +1,21 @@
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { getFacilityById, FacilityResponse } from '@lepark/data-access';
-import { Card, Descriptions, Tabs, Tag } from 'antd';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
+import { getFacilityById, FacilityResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { Button, Card, Descriptions, Tabs, Tag } from 'antd';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
 import FacilityCarousel from './components/FacilityCarousel';
 import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
+import { RiEdit2Line } from 'react-icons/ri';
+import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
-  const [facility, setFacility] = useState<FacilityResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (facilityId) {
-        try {
-          const facilityResponse = await getFacilityById(facilityId);
-          setFacility(facilityResponse.data);
-        } catch (error) {
-          console.error('Error fetching facility data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [facilityId]);
+  const { user } = useAuth<StaffResponse>();
+  const navigate = useNavigate();
+  const { facility, park, loading } = useRestrictFacilities(facilityId);
 
   const breadcrumbItems = [
     {
@@ -85,7 +72,12 @@ const ViewFacilityDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{facility?.facilityName}</LogoText>
+            <div className="w-full flex justify-between items-center">
+              <LogoText className="text-2xl py-2 m-0">{facility?.facilityName}</LogoText>
+              {user?.role !== StaffType.ARBORIST && user?.role !== StaffType.BOTANIST ? (
+                <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`edit`)} />
+              ) : null}
+            </div>
             <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
 
             <div className="flex h-24 w-full gap-2 mt-auto">

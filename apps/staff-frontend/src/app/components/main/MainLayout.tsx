@@ -5,7 +5,7 @@ import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepa
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree, TbTicket, TbCalendarEvent } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -205,9 +205,8 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'PARK_RANGER'
+    { key: 'facilities', icon: <TbBuildingEstate />, label: 'Facilities', onClick: () => navigate('/facilities') },
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
           key: 'attraction',
           icon: <TbTicket />,
@@ -215,16 +214,14 @@ const MainLayout = () => {
           onClick: () => navigate('/attraction'),
         }
       : null,
-      userRole === 'MANAGER' ||
-      userRole === 'SUPERADMIN' ||
-      userRole === 'PARK_RANGER'
-        ? {
-            key: 'event',
-            icon: <TbCalendarEvent />,
-            label: 'Events',
-            onClick: () => navigate('/event'),
-          }
-        : null,
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'event',
+          icon: <TbCalendarEvent />,
+          label: 'Events',
+          onClick: () => navigate('/event'),
+        }
+      : null,
   ];
 
   return (

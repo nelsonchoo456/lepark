@@ -402,7 +402,7 @@ model Facility {
   rulesAndRegulations   String
   images                String[]
   lastMaintenanceDate   DateTime
-  nextMaintenanceDate   DateTime
+  // nextMaintenanceDate   DateTime
   openingHours          DateTime[]
   closingHours          DateTime[]
   facilityStatus        FacilityStatusEnum

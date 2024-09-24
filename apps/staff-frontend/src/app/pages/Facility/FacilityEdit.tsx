@@ -20,6 +20,7 @@ import {
 import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
 
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
@@ -28,45 +29,34 @@ const daysOfTheWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', '
 
 const FacilityEdit = () => {
   const { facilityId } = useParams();
-  const [facility, setFacility] = useState<FacilityResponse>();
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const { facility, park, loading } = useRestrictFacilities(facilityId);
 
   useEffect(() => {
     if (!facilityId) return;
     const fetchData = async () => {
-      try {
-        const facilityRes = await getFacilityById(facilityId);
-        if (facilityRes.status === 200) {
-          const facilityData = facilityRes.data;
-          setFacility(facilityData);
-          const initialValues = {
-            ...facilityData,
-            ...daysOfTheWeek.reduce(
-              (acc, day, index) => ({
-                ...acc,
-                [day]: [dayjs(facilityData.openingHours[index]), dayjs(facilityData.closingHours[index])],
-              }),
-              {},
-            ),
-            lastMaintenanceDate: dayjs(facilityData.lastMaintenanceDate),
-            nextMaintenanceDate: dayjs(facilityData.nextMaintenanceDate),
-          };
-          if (facilityData.images) {
-            setCurrentImages(facilityData.images);
-          }
-          form.setFieldsValue(initialValues);
-        }
-      } catch (error) {
-        message.error('An error occurred while fetching the facility details.');
-        navigate('/');
+      if (!facility) return;
+      const initialValues = {
+        ...facility,
+        ...daysOfTheWeek.reduce(
+          (acc, day, index) => ({
+            ...acc,
+            [day]: [dayjs(facility.openingHours[index]), dayjs(facility.closingHours[index])],
+          }),
+          {},
+        ),
+      };
+      if (facility.images) {
+        setCurrentImages(facility.images);
       }
+      form.setFieldsValue(initialValues);
     };
     fetchData();
-  }, [facilityId, form, navigate]);
+  }, [facilityId, facility]);
 
   const handleSubmit = async () => {
     if (!facility) return;
@@ -82,8 +72,6 @@ const FacilityEdit = () => {
         openingHours,
         closingHours,
         images: currentImages,
-        lastMaintenanceDate: rest.lastMaintenanceDate.toISOString(),
-        nextMaintenanceDate: rest.nextMaintenanceDate.toISOString(),
       };
 
       const response = await updateFacilityDetails(facility.id, finalData, selectedFiles);
@@ -199,18 +187,6 @@ const FacilityEdit = () => {
     },
   ];
 
-  const validateDates = (form: FormInstance) => ({
-    validator(_: any, value: moment.Moment) {
-      const lastMaintenanceDate = form.getFieldValue('lastMaintenanceDate') as moment.Moment;
-
-      if (lastMaintenanceDate && value.isBefore(lastMaintenanceDate, 'day')) {
-        return Promise.reject(new Error('Next Maintenance Date cannot be earlier than Last Maintenance Date'));
-      }
-
-      return Promise.resolve();
-    },
-  });
-
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -268,12 +244,6 @@ const FacilityEdit = () => {
           </Form.Item>
           <Form.Item name="fee" label="Fee" rules={[{ required: true }]}>
             <InputNumber min={0} />
-          </Form.Item>
-          <Form.Item name="lastMaintenanceDate" label="Last Maintenance Date" rules={[{ required: true }]}>
-            <DatePicker />
-          </Form.Item>
-          <Form.Item name="nextMaintenanceDate" label="Next Maintenance Date" rules={[{ required: true }, validateDates(form)]}>
-            <DatePicker />
           </Form.Item>
 
           <Divider orientation="left">Facility Hours</Divider>

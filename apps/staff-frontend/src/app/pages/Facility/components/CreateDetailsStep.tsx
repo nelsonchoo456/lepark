@@ -140,22 +140,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     },
   ];
 
-  const validateDates = (form: FormInstance) => ({
-    validator(_: any, value: moment.Moment) {
-      const lastMaintenanceDate = form.getFieldValue('lastMaintenanceDate') as moment.Moment;
-
-      // if (!value) {
-      //   return Promise.reject(new Error('This field is required'));
-      // }
-
-      if (lastMaintenanceDate && value.isBefore(lastMaintenanceDate, 'day')) {
-        return Promise.reject(new Error('Next Maintenance Date cannot be earlier than Last Maintenance Date'));
-      }
-
-      return Promise.resolve();
-    },
-  });
-
   const handleApplyToAllChange = (day: string) => {
     try {
       const dayTime = form.getFieldValue(day);
@@ -267,22 +251,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
 
       <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
         <Select options={facilityStatusOptions} placeholder="Enter facility status" />
-      </Form.Item>
-
-      <Form.Item
-        name="lastMaintenanceDate"
-        label="Last Maintenance Date"
-        rules={[{ required: true, message: 'Please select the last maintenance date!' }]}
-      >
-        <DatePicker style={{ width: '100%' }} />
-      </Form.Item>
-
-      <Form.Item
-        name="nextMaintenanceDate"
-        label="Next Maintenance Date"
-        rules={[{ required: true, message: 'Please select the next maintenance date!' }, validateDates(form)]}
-      >
-        <DatePicker style={{ width: '100%' }} />
       </Form.Item>
 
       <Divider orientation="left">

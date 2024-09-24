@@ -326,8 +326,8 @@ export function App() {
                 </Route>
               </Route>
 
-                  {/* Event Routes */}
-                  <Route
+              {/* Event Routes */}
+              <Route
                 element={
                   <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
                 }
@@ -338,7 +338,7 @@ export function App() {
                     <Route path="create" element={<EventCreate />} />
                     <Route path=":id/edit" element={<EventEdit />} />
                   </Route>
-                  <Route path=":id" element={<EventDetails />} /> 
+                  <Route path=":id" element={<EventDetails />} />
                 </Route>
               </Route>
 
@@ -358,20 +358,21 @@ export function App() {
               </Route>
 
               {/* Facility Routes */}
-              <Route
-                element={
-                  <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
-                    redirectTo="/"
-                  />
-                }
-              >
-                <Route path="/facilities">
-                  <Route index element={<FacilityList />} />
+
+              <Route path="/facilities">
+                <Route index element={<FacilityList />} />
+                <Route
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                      redirectTo="/"
+                    />
+                  }
+                >
                   <Route path="create" element={<FacilityCreate />} />
-                  <Route path=":facilityId" element={<ViewFacilityDetails />} />
                   <Route path=":facilityId/edit" element={<FacilityEdit />} />
                 </Route>
+                <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
 
               {/* Catch-all for 404 */}
