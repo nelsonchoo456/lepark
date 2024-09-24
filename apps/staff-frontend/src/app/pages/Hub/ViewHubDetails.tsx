@@ -25,7 +25,7 @@ const ViewHubDetails = () => {
             const facilityResponse = await getFacilityById(hub.facilityId);
             if (facilityResponse.status === 200) {
               setFacility(facilityResponse.data);
-              console.log(facilityResponse.data);
+              //console.log(facilityResponse.data);
               const parkResponse = await getParkById(facilityResponse.data.parkId);
               if (parkResponse.status === 200) {
                 setPark(parkResponse.data);
