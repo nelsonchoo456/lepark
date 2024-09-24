@@ -58,6 +58,8 @@ import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
 import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
+import EventCreate from './pages/Event/EventCreate';
+import EventEdit from './pages/EventEdit/EventEdit';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
@@ -344,9 +346,11 @@ export function App() {
               >
                 <Route path="/event">
                   <Route index element={<EventList />} />
-                  {/* <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/event" />}>
+                  <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/event" />}>
                     <Route path="create" element={<EventCreate />} />
                     <Route path=":id/edit" element={<EventEdit />} />
+                  </Route>
+                  <Route path=":id" element={<EventDetails />} /> 
                     <Route path=":id/edit-map" element={<EventEditMap />} />
                   </Route> */}
                   <Route path=":id" element={<EventDetails />} />
