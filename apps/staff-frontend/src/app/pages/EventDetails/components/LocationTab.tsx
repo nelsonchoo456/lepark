@@ -25,13 +25,13 @@ const LocationTab = ({ event, facility, park }: LocationTabProps) => {
       }}
       className="rounded-xl overflow-hidden"
     >
-      <Tooltip title="Edit Location">
+      {/* <Tooltip title="Edit Location">
         <div className="absolute z-20 flex justify-end w-full mt-4 pr-4">
           <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-map`)}>
             Edit
           </Button>
         </div>
-      </Tooltip>
+      </Tooltip> */}
       <MapContainer
         center={[1.287953, 103.851784]}
         zoom={11}
