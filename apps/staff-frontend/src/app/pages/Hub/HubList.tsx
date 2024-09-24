@@ -200,11 +200,11 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
+      title: 'Mac Address',
+      dataIndex: 'macAddress',
+      key: 'macAddress',
+      render: (text) => <div>{text}</div>,
+      sorter: (a, b) => a.macAddress.localeCompare(b.macAddress),
       width: '10%',
     },
     {
