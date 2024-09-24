@@ -38,7 +38,7 @@ import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import dayjs, { Dayjs } from 'dayjs';
 import FacilityInfoCard from '../Event/components/FacilityInfoCard';
-import { useFetchOpenFacilitiesByPark } from '../../hooks/Facilities/useFetchOpenFacilitiesByPark';
+import { useFetchOpenFacilitiesByPark } from '../../hooks/Facilities/useFetchFacilitiesByPark';
 import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
 
 const { TextArea } = Input;

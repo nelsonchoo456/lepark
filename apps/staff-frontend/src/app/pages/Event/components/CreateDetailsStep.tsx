@@ -5,7 +5,7 @@ import { Dayjs } from 'dayjs';
 import moment from 'moment';
 import { useState } from 'react';
 import FacilityInfoCard from './FacilityInfoCard';
-import { useFetchOpenFacilitiesByPark } from '../../../hooks/Facilities/useFetchOpenFacilitiesByPark';
+import { useFetchOpenFacilitiesByPark } from '../../../hooks/Facilities/useFetchFacilitiesByPark';
 import { useFetchEventsByFacilityId } from '../../../hooks/Events/useFetchEventsByFacilityId';
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;

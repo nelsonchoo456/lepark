@@ -73,8 +73,13 @@ const EventCreate = () => {
       }
     } catch (error: any) {
       console.error(error);
-      const errorMessage = error.message || error.toString();
-      messageApi.error(errorMessage || 'An error occurred while creating the event');
+      if (error.errorFields) {
+        // Form validation error
+        form.scrollToField(error.errorFields[0].name);
+      } else {
+        const errorMessage = error.message || error.toString();
+        messageApi.error(errorMessage || 'An error occurred while creating the event.');
+      }
     }
   };
 
