@@ -65,14 +65,24 @@ const ViewSensorDetails = () => {
       isMain: true,
     },
     {
-      title: sensor?.sensorName ? sensor?.sensorName : 'Details',
+      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
       isCurrent: true,
     },
   ];
 
+  const capitalize = (str: string) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   const descriptionsItems = [
-    { key: 'sensorType', label: 'Sensor Type', children: sensor?.sensorType },
+    {
+      key: 'name',
+      label: 'Name',
+      children: sensor?.sensorName,
+    },
+    { key: 'sensorType', label: 'Sensor Type', children: capitalize(sensor?.sensorType ?? '') },
     {
       key: 'sensorStatus',
       label: 'Sensor Status',
@@ -92,17 +102,19 @@ const ViewSensorDetails = () => {
       })(),
     },
     {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('D MMM YY') : null,
-    },
-    {
       key: 'facilityName',
       label: 'Facility',
       children: facility?.facilityName,
     },
   ];
 
+  if (sensor?.nextMaintenanceDate) {
+    descriptionsItems.push({
+      key: 'nextMaintenanceDate',
+      label: 'Next Maintenance Date',
+      children: moment(sensor.nextMaintenanceDate).format('D MMM YY'),
+    });
+  }
   const descriptionsItemsForSuperAdmin = [
     ...descriptionsItems,
     {
@@ -138,7 +150,7 @@ const ViewSensorDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{sensor?.sensorName}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{sensor?.serialNumber}</LogoText>
             <Descriptions
               items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
               column={1}

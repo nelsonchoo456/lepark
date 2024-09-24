@@ -167,7 +167,7 @@ useEffect(() => {
       isMain: true,
     },
     {
-      title: sensor?.sensorName ? sensor?.sensorName : 'Details',
+      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
     },
     {

@@ -47,7 +47,7 @@ export const useRestrictSensors = (sensorId?: string) => {
       setPark(parkResponse.data);
     }
 
-    if (user?.parkId === park?.id) {
+    if (user?.parkId === park?.id || user?.role === StaffType.SUPERADMIN) {
       setSensor(sensor);
     } else {
       if (!notificationShown.current) {
