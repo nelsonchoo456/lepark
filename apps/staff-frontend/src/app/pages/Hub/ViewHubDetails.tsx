@@ -133,7 +133,7 @@ const ViewHubDetails = () => {
 
   if (loading) {
     return (
-      <ContentWrapperDark>
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
       </ContentWrapperDark>
     );
