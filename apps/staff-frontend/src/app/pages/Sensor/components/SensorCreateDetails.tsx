@@ -16,7 +16,6 @@ interface SensorCreateDetailsProps {
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
   user: StaffResponse | null;
-  onHubChange: (value: string | undefined) => void;
   onFacilityChange: (value: string | undefined) => void;
 }
 
@@ -29,7 +28,6 @@ const SensorCreateDetails = ({
   handleFileChange,
   removeImage,
   onInputClick,
-  onHubChange,
   onFacilityChange,
 }: SensorCreateDetailsProps) => {
   const formatEnumLabel = (enumValue: string): string => {
@@ -75,6 +73,9 @@ const SensorCreateDetails = ({
       <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
         <Input />
       </Form.Item>
+      <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
       <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true }]}>
         <Select placeholder="Select sensor type">
           {Object.values(SensorTypeEnum).map((type) => (
@@ -102,18 +103,13 @@ const SensorCreateDetails = ({
       <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
         <DatePicker className="w-full" disabledDate={disabledLastCalibratedDate} />
       </Form.Item>
-      <Form.Item name="calibrationFrequencyDays" label="Calibration Frequency (Days)" rules={[{ required: true }]}>
-        <InputNumber min={1} className="w-full" />
+      <Form.Item name="calibrationFrequencyDays" label="Calibration Frequency"  rules={[{ required: true }]}>
+        <InputNumber placeholder="Enter frequency in days" min={1} className="w-full" />
       </Form.Item>
-      <Form.Item name="recurringMaintenanceDuration" label="Recurring Maintenance Duration (Days)" rules={[{ required: true }]}>
-        <InputNumber min={1} className="w-full" />
+      <Form.Item name="recurringMaintenanceDuration" label="Recurring Maintenance" rules={[{ required: true }]}>
+        <InputNumber placeholder="Enter duration in days" min={1} className="w-full" />
       </Form.Item>
-      <Form.Item name="lastMaintenanceDate" label="Last Maintenance Date">
-        <DatePicker className="w-full" />
-      </Form.Item>
-      <Form.Item name="nextMaintenanceDate" label="Next Maintenance Date">
-        <DatePicker className="w-full" disabledDate={disabledNextMaintenanceDate} />
-      </Form.Item>
+
       <Form.Item name="dataFrequencyMinutes" label="Data Frequency (Minutes)" rules={[{ required: true }]}>
         <InputNumber min={1} className="w-full" />
       </Form.Item>
@@ -133,7 +129,7 @@ const SensorCreateDetails = ({
         name="supplierContactNumber"
         label="Supplier Contact Number"
         rules={[
-          { required: true, message: 'Please input the supplier contact number!' },
+          { required: true, message: 'Please input the supplier contact number' },
           { validator: validatePhoneNumber }
         ]}
       >
@@ -142,23 +138,10 @@ const SensorCreateDetails = ({
       <Form.Item name="remarks" label="Remarks">
         <TextArea />
       </Form.Item>
-   <Form.Item name="hubId" label="Hub">
-  <Select
-    placeholder="Select a hub"
-    allowClear
-    onChange={onHubChange}
-  >
-    {hubs.map((hub) => (
-      <Select.Option key={hub.id} value={hub.id}>
-        {hub.name}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
-<Form.Item name="facilityId" label="Facility">
+
+<Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
   <Select
     placeholder="Select a facility"
-    allowClear
     onChange={onFacilityChange}
   >
     {facilities.map((facility) => (

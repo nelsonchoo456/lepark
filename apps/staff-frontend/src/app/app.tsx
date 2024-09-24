@@ -263,14 +263,7 @@ export function App() {
                 <Route path="create" element={<HubCreate />} />
                 <Route path=":hubId/edit" element={<HubEdit />} />
               </Route>
-              <Route
-                element={
-                  <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.BOTANIST, StaffType.ARBORIST, StaffType.PARK_RANGER]}
-                    redirectTo="/"
-                  />
-                }
-              >
+
                 <Route path="/facilities">
                   <Route index element={<FacilityList />} />
                   <Route path="create" element={<FacilityCreate />} />
@@ -283,14 +276,13 @@ export function App() {
                   <Route path="edit/:assetId" element={<AssetEdit />} />
                 </Route>
                 <Route path="/sensor">
-                  <Route path="create2" element={<SensorCreate />} />
                   <Route path="create" element={<SensorCreate2 />} />
                   <Route index element={<SensorList />} />
                   <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="edit/:sensorId" element={<SensorEdit />} />
                   <Route path="map" element={<SensorMap />} />
                 </Route>
-              </Route>
+
 
               {/* Catch-all for 404 */}
               <Route path="*" element={<PageNotFound />} />

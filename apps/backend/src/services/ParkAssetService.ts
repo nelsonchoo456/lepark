@@ -145,8 +145,8 @@ function ensureAllFieldsPresent(data: ParkAssetSchemaType): Prisma.ParkAssetCrea
       !data.parkAssetStatus ||
       !data.acquisitionDate ||
       !data.recurringMaintenanceDuration ||
-      !data.lastMaintenanceDate ||
-      !data.nextMaintenanceDate ||
+      //!data.lastMaintenanceDate ||
+      //!data.nextMaintenanceDate ||
       !data.supplier ||
       !data.supplierContactNumber ||
       !data.parkAssetCondition ||

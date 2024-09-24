@@ -87,7 +87,8 @@ const adjustLatLng = ({ lat: newLat, lng: newLng }: AdjustLatLngInterface) => {
       setCreatedData(response.data);
       setCurrStep(2);
     } catch (error) {
-      messageApi.error('Failed to create sensor. Please try again.');
+      message.error(String(error));
+
     }
   };
 
@@ -107,20 +108,9 @@ const adjustLatLng = ({ lat: newLat, lng: newLng }: AdjustLatLngInterface) => {
         removeImage={removeImage}
         onInputClick={onInputClick}
         user={user}
-        onHubChange={(value) => {
-          if (value) {
-            form.setFieldsValue({ hubId: value, facilityId: undefined });
-            form.resetFields(['facilityId']);
-          } else {
-            form.resetFields(['hubId', 'facilityId']);
-          }
-        }}
         onFacilityChange={(value) => {
           if (value) {
-            form.setFieldsValue({ facilityId: value, hubId: undefined });
-            form.resetFields(['hubId']);
-          } else {
-            form.resetFields(['hubId', 'facilityId']);
+            form.setFieldsValue({ facilityId: value});
           }
         }}
       />

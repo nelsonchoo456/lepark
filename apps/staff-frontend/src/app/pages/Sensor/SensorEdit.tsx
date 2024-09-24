@@ -118,11 +118,7 @@ useEffect(() => {
       setCreatedSensorName(response.data.sensorName);
     }
   } catch (error) {
-    console.error('Error updating sensor:', error);
-    messageApi.open({
-      type: 'error',
-      content: 'Failed to update sensor. Please try again.',
-    });
+    message.error(String(error));
   } finally {
     setIsSubmitting(false);
   }
@@ -207,6 +203,10 @@ useEffect(() => {
               <Input />
             </Form.Item>
 
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true }]}>
               <Select placeholder="Select sensor type">
                 {Object.values(SensorTypeEnum).map((type) => (
@@ -249,35 +249,22 @@ useEffect(() => {
 
             <Form.Item
               name="calibrationFrequencyDays"
-              label="Calibration Frequency (days)"
+              label="Calibration Frequency"
+
               rules={[{ required: true, type: 'number', min: 1 }]}
             >
-              <InputNumber className="w-full" min={1} />
+              <InputNumber className="w-full" min={1} placeholder="Enter Calibration Frequency (days)" />
             </Form.Item>
 
             <Form.Item
               name="recurringMaintenanceDuration"
-              label="Maintenance Duration (days)"
+              label="Maintenance Duration"
               rules={[{ required: true, type: 'number', min: 1 }]}
             >
-              <InputNumber className="w-full" min={1} />
+              <InputNumber className="w-full" min={1} placeholder="Enter Maintenance Duration" />
             </Form.Item>
 
-            <Form.Item
-              name="lastMaintenanceDate"
-              label="Last Maintenance Date"
-              rules={[{ required: true, message: 'Please enter Last Maintenance Date' }, validateDates(form)]}
-            >
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
-            </Form.Item>
 
-            <Form.Item
-              name="nextMaintenanceDate"
-              label="Next Maintenance Date"
-              rules={[{ required: true, message: 'Please enter Next Maintenance Date' }, validateFutureDate(form)]}
-            >
-              <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().startOf('day')} />
-            </Form.Item>
 
             <Form.Item name="dataFrequencyMinutes" label="Data Frequency (minutes)" rules={[{ required: true, type: 'number', min: 1 }]}>
               <InputNumber className="w-full" min={1} />
@@ -318,24 +305,6 @@ useEffect(() => {
             </Form.Item>
 
 
-              <Form.Item name="hubId" label="Hub" rules={[{ required: false }]}>
-  <Select
-    placeholder="Select a hub"
-    allowClear
-    style={{ width: '100%' }}
-    onChange={(value, option) => {
-      setSelectedHubId(value);
-      setSelectedHubName(Array.isArray(option) ? null : option?.children?.toString() || null);
-    }}
-    value={selectedHubName}
-  >
-    {hubs.map((hub) => (
-      <Select.Option key={hub.id} value={hub.id}>
-        {hub.name}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
 
 <Form.Item label="Facility" name="facilityId">
   <Select

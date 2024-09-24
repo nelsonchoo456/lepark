@@ -180,6 +180,10 @@ async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
   });
 }
 
+ async getSensorBySerialNumber(serialNumber: string): Promise<Sensor> {
+    return prisma.sensor.findUnique({ where: { serialNumber } });
+  }
+
   async deleteSensor(id: string): Promise<void> {
     await prisma.sensor.delete({ where: { id } });
   }

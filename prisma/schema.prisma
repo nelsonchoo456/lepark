@@ -304,6 +304,7 @@ enum SensorUnitEnum {
 model Sensor {
   id                            String           @id @default(uuid()) @db.Uuid
   sensorName                    String
+  serialNumber                  String           @unique
   sensorType                    SensorTypeEnum
   sensorDescription             String?
   sensorStatus                  SensorStatusEnum
@@ -321,12 +322,10 @@ model Sensor {
   latitude                      Float?
   longitude                     Float?
   remarks                       String?
-
   hubId                         String?          @db.Uuid
   hub                           Hub?             @relation(fields: [hubId], references: [id])
-
-  facilityId                    String?  @db.Uuid
-  facility          Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId                    String?          @db.Uuid
+  facility                      Facility?        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory            MaintenanceHistory[]
   calibrationHistory            CalibrationHistory[]
 }
@@ -359,15 +358,15 @@ model ParkAsset {
   parkAssetStatus               ParkAssetStatusEnum
   acquisitionDate               DateTime
   recurringMaintenanceDuration  Int
-  lastMaintenanceDate           DateTime
-  nextMaintenanceDate           DateTime
+  lastMaintenanceDate           DateTime?              // Keep this field
+  nextMaintenanceDate           DateTime?              // Keep this field
   supplier                      String
   supplierContactNumber         String
   parkAssetCondition            ParkAssetConditionEnum
-  images                         String[]
+  images                        String[]
   remarks                       String?
-  facilityId                 String                  @db.Uuid
-  facility                   Facility                @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId                    String                  @db.Uuid
+  facility                      Facility                @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory            MaintenanceHistory[]
 }
 
