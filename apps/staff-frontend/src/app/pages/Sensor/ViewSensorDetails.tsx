@@ -35,10 +35,10 @@ const ViewSensorDetails = () => {
             const facilityResponse = await getFacilityById(sensor.facilityId);
             if (facilityResponse.status === 200) {
               setFacility(facilityResponse.data);
-              console.log(facilityResponse.data);
+              //console.log(facilityResponse.data);
               const parkResponse = await getParkById(facilityResponse.data.parkId);
               if (parkResponse.status === 200) {
-                console.log(parkResponse.data);
+                //console.log(parkResponse.data);
                 setPark(parkResponse.data);
               }
             }

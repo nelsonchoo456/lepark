@@ -1,7 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ImageInput, useAuth } from '@lepark/common-ui';
-import { getSensorById, updateSensorDetails, StaffResponse, SensorResponse, SensorUpdateData, getAllHubs, HubResponse } from '@lepark/data-access';
+import {
+  getSensorById,
+  updateSensorDetails,
+  StaffResponse,
+  SensorResponse,
+  SensorUpdateData,
+  getAllHubs,
+  HubResponse,
+} from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
@@ -9,7 +17,7 @@ import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
-import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum} from '@prisma/client';
+import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
 
 const { TextArea } = Input;
 
@@ -41,20 +49,19 @@ const SensorEdit = () => {
   const [selectedFacilityName, setSelectedFacilityName] = useState<string | null>(null);
   const [hubs, setHubs] = useState<HubResponse[]>([]);
 
-useEffect(() => {
-  const fetchHubs = async () => {
-    try {
-      const response = await getAllHubs(); // You'll need to create this API function
-      setHubs(response.data);
-    } catch (error) {
-      console.error('Error fetching hubs:', error);
-    }
-  };
-  fetchHubs();
-}, []);
+  useEffect(() => {
+    const fetchHubs = async () => {
+      try {
+        const response = await getAllHubs(); // You'll need to create this API function
+        setHubs(response.data);
+      } catch (error) {
+        console.error('Error fetching hubs:', error);
+      }
+    };
+    fetchHubs();
+  }, []);
 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchSensor = async () => {
       setLoading(true);
       try {
@@ -98,31 +105,39 @@ useEffect(() => {
     }
   }, [user, navigate]);
 
-   const handleClearFacility = () => {
+  const handleClearFacility = () => {
     form.setFieldsValue({ facilityId: null });
     setSelectedFacilityId(null);
   };
 
- const handleSubmit = async (values: any) => {
-  setIsSubmitting(true);
-  try {
-    const submissionData = {
-      ...values,
-      hubId: selectedHubId || null,
-      facilityId: selectedFacilityId || null,
-    };
+  const disabledLastCalibratedDate = (current: dayjs.Dayjs) => {
+    return current && current > dayjs().endOf('day');
+  };
 
-    const response = await updateSensorDetails(sensorId as string, submissionData, selectedFiles);
-    if (response.status === 200) {
-      setShowSuccessAlert(true);
-      setCreatedSensorName(response.data.sensorName);
+  const onFacilityChange = (value: string | undefined) => {
+    setSelectedFacilityId(value || null);
+  };
+
+  const handleSubmit = async (values: any) => {
+    setIsSubmitting(true);
+    try {
+      const submissionData = {
+        ...values,
+        hubId: selectedHubId || null,
+        facilityId: selectedFacilityId || null,
+      };
+
+      const response = await updateSensorDetails(sensorId as string, submissionData, selectedFiles);
+      if (response.status === 200) {
+        setShowSuccessAlert(true);
+        setCreatedSensorName(response.data.sensorName);
+      }
+    } catch (error) {
+      message.error(String(error));
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    message.error(String(error));
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: dayjs.Dayjs) {
@@ -202,11 +217,9 @@ useEffect(() => {
             <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-
             <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
-        <Input />
-      </Form.Item>
-
+              <Input />
+            </Form.Item>
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true }]}>
               <Select placeholder="Select sensor type">
                 {Object.values(SensorTypeEnum).map((type) => (
@@ -216,11 +229,9 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>
-
-            <Form.Item name="sensorDescription" label="Description">
-              <Input.TextArea />
+            <Form.Item name="sensorDescription" label="Sensor Description">
+              <TextArea />
             </Form.Item>
-
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true }]}>
               <Select placeholder="Select sensor status">
                 {Object.values(SensorStatusEnum).map((status) => (
@@ -230,46 +241,22 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>
-
-            <Form.Item
-              name="acquisitionDate"
-              label="Acquisition Date"
-              rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
-            >
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+              <DatePicker className="w-full" />
+            </Form.Item>
+            <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
+              <DatePicker className="w-full" disabledDate={disabledLastCalibratedDate} />
+            </Form.Item>
+            <Form.Item name="calibrationFrequencyDays" label="Calibration Frequency" rules={[{ required: true }]}>
+              <InputNumber placeholder="Enter frequency in days" min={1} className="w-full" />
+            </Form.Item>
+            <Form.Item name="recurringMaintenanceDuration" label="Recurring Maintenance" rules={[{ required: true }]}>
+              <InputNumber placeholder="Enter duration in days" min={1} className="w-full" />
             </Form.Item>
 
-            <Form.Item
-              name="lastCalibratedDate"
-              label="Last Calibrated Date"
-              rules={[{ required: true, message: 'Please enter Last Calibrated Date' }, validateDates(form)]}
-            >
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+            <Form.Item name="dataFrequencyMinutes" label="Data Frequency (Minutes)" rules={[{ required: true }]}>
+              <InputNumber min={1} className="w-full" />
             </Form.Item>
-
-            <Form.Item
-              name="calibrationFrequencyDays"
-              label="Calibration Frequency"
-
-              rules={[{ required: true, type: 'number', min: 1 }]}
-            >
-              <InputNumber className="w-full" min={1} placeholder="Enter Calibration Frequency (days)" />
-            </Form.Item>
-
-            <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Maintenance Duration"
-              rules={[{ required: true, type: 'number', min: 1 }]}
-            >
-              <InputNumber className="w-full" min={1} placeholder="Enter Maintenance Duration" />
-            </Form.Item>
-
-
-
-            <Form.Item name="dataFrequencyMinutes" label="Data Frequency (minutes)" rules={[{ required: true, type: 'number', min: 1 }]}>
-              <InputNumber className="w-full" min={1} />
-            </Form.Item>
-
             <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
               <Select placeholder="Select sensor unit">
                 {Object.values(SensorUnitEnum).map((unit) => (
@@ -279,67 +266,44 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-
             <Form.Item
               name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[{ required: true, message: 'Please input the supplier contact number!' }, { validator: validatePhoneNumber }]}
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
             >
               <Input />
             </Form.Item>
-
-            <Form.Item name="latitude" label="Latitude" rules={[{ type: 'number', min: -90, max: 90 }]}>
-              <InputNumber className="w-full" />
-            </Form.Item>
-
-            <Form.Item name="longitude" label="Longitude" rules={[{ type: 'number', min: -180, max: 180 }]}>
-              <InputNumber className="w-full" />
-            </Form.Item>
-
             <Form.Item name="remarks" label="Remarks">
-              <Input.TextArea />
+              <TextArea />
             </Form.Item>
 
-
-
-<Form.Item label="Facility" name="facilityId">
-  <Select
-    placeholder="Select facility"
-    style={{ width: '100%' }}
-    onChange={(value, option) => {
-      setSelectedFacilityId(value);
-      setSelectedFacilityName(Array.isArray(option) ? null : option?.children?.toString() || null);
-    }}
-    allowClear
-    value={selectedFacilityName}
-  >
-    {facilities.map((facility) => (
-      <Select.Option key={facility.id} value={facility.id}>
-        {facility.facilityName}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
-
-
-
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
+              <Select placeholder="Select a facility" onChange={onFacilityChange}>
+                {facilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.facilityName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
             <Form.Item label="Upload Image" tooltip="One image is required">
               <ImageInput type="file" onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
-
-            {previewImages[0] && (
+            {previewImages.length > 0 && (
               <Form.Item label="Image Preview">
                 <div className="flex flex-wrap gap-2">
-                  <img
-                    src={previewImages[0]}
-                    alt="Preview"
-                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                    onClick={() => removeImage(0)}
-                  />
+                  {previewImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => removeImage(index)}
+                    />
+                  ))}
                 </div>
               </Form.Item>
             )}

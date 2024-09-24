@@ -45,19 +45,6 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
     };
   }, []);
 
-  useEffect(() => {
-    if (!['MANAGER', 'SUPERADMIN', 'PARK_RANGER', 'LANDSCAPE_ARCHITECT'].includes(user?.role || '')) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Sensor Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   const MapZoomListener = () => {
     const map = useMapEvent('zoomend', () => {
       setZoomLevel(map.getZoom());

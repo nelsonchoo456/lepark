@@ -23,19 +23,6 @@ const SensorManagementPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { sensors, loading, fetchSensors, triggerFetch } = useFetchSensors();
 
-  React.useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Sensor Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   const handleDelete = async (id: string) => {
     try {
       const confirmed = await new Promise<boolean>((resolve) => {
