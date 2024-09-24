@@ -9,6 +9,7 @@ import {
   SensorUpdateData,
   getAllHubs,
   HubResponse,
+  getFacilityById,
 } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -18,6 +19,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
+import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
 const { TextArea } = Input;
 
@@ -31,11 +33,9 @@ const formatEnumLabel = (enumValue: string): string => {
 const SensorEdit = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
   const [form] = Form.useForm();
-  const [sensor, setSensor] = useState<SensorResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { sensor, loading } = useRestrictSensors(sensorId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [createdSensorName, setCreatedSensorName] = useState('');
   const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
   const [selectedHubId, setSelectedHubId] = useState<string | null>(null);
   const { user } = useAuth<StaffResponse>();
@@ -47,12 +47,14 @@ const SensorEdit = () => {
   const { facilities } = useFetchFacilities();
   const [selectedHubName, setSelectedHubName] = useState<string | null>(null);
   const [selectedFacilityName, setSelectedFacilityName] = useState<string | null>(null);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [hubs, setHubs] = useState<HubResponse[]>([]);
+  const [createdData, setCreatedData] = useState<SensorResponse>();
 
   useEffect(() => {
     const fetchHubs = async () => {
       try {
-        const response = await getAllHubs(); // You'll need to create this API function
+        const response = await getAllHubs();
         setHubs(response.data);
       } catch (error) {
         console.error('Error fetching hubs:', error);
@@ -62,56 +64,35 @@ const SensorEdit = () => {
   }, []);
 
   useEffect(() => {
-    const fetchSensor = async () => {
-      setLoading(true);
-      try {
-        const response = await getSensorById(sensorId as string);
-        setSensor(response.data);
-        form.setFieldsValue({
-          ...response.data,
-          acquisitionDate: dayjs(response.data.acquisitionDate),
-          lastCalibratedDate: dayjs(response.data.lastCalibratedDate),
-          nextMaintenanceDate: dayjs(response.data.nextMaintenanceDate),
-          lastMaintenanceDate: dayjs(response.data.lastMaintenanceDate),
-          hubId: response.data.hub?.name, // Set hub name instead of ID
-          facilityId: response.data.facility?.facilityName, // Set facility name instead of ID
-        });
-        setSelectedHubId(response.data.hub?.id || null);
-        setSelectedFacilityId(response.data.facility?.id || null);
-        setSelectedHubName(response.data.hub?.name || null);
-        setSelectedFacilityName(response.data.facility?.facilityName || null);
-        if (response.data.image) {
-          setPreviewImages([response.data.image]);
-        }
-      } catch (error) {
-        console.error('Error fetching sensor data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSensor();
-  }, [sensorId, form]);
+    if (sensor) {
+      const acquisitionDate = dayjs(sensor.acquisitionDate);
+      const lastCalibratedDate = sensor.lastCalibratedDate ? dayjs(sensor.lastCalibratedDate) : null;
+      const finalData = { ...sensor, acquisitionDate, lastCalibratedDate };
 
-  useEffect(() => {
-    if (!['SUPERADMIN', 'MANAGER', 'LANDSCAPE_ARCHITECT', 'PARK_RANGER'].includes(user?.role as string)) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Sensor Edit page!',
-        });
-        notificationShown.current = true;
+      if (sensor.image) {
+        setPreviewImages([sensor.image]);
       }
-      navigate('/');
+
+      form.setFieldsValue(finalData);
+
+      // Fetch facility details to get parkId
+      if (sensor.facilityId) {
+        fetchFacilityDetails(sensor.facilityId);
+      }
     }
-  }, [user, navigate]);
+  }, [sensor]);
 
-  const handleClearFacility = () => {
-    form.setFieldsValue({ facilityId: null });
-    setSelectedFacilityId(null);
-  };
-
-  const disabledLastCalibratedDate = (current: dayjs.Dayjs) => {
-    return current && current > dayjs().endOf('day');
+  const fetchFacilityDetails = async (facilityId: string) => {
+    try {
+      const facilityResponse = await getFacilityById(facilityId);
+      if (facilityResponse.status === 200) {
+        const facility = facilityResponse.data;
+        setSelectedParkId(facility.parkId);
+        form.setFieldsValue({ parkId: facility.parkId });
+      }
+    } catch (error) {
+      console.error('Error fetching facility details:', error);
+    }
   };
 
   const onFacilityChange = (value: string | undefined) => {
@@ -119,18 +100,41 @@ const SensorEdit = () => {
   };
 
   const handleSubmit = async (values: any) => {
+    if (!sensor) return;
     setIsSubmitting(true);
     try {
-      const submissionData = {
-        ...values,
-        hubId: selectedHubId || null,
-        facilityId: selectedFacilityId || null,
-      };
+      const formValues = await form.validateFields();
 
-      const response = await updateSensorDetails(sensorId as string, submissionData, selectedFiles);
+      console.log('Form values:', formValues);
+
+      const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
+        const typedKey = key as keyof SensorResponse; // Cast key to the correct type
+        if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
+          acc[typedKey] = formValues[typedKey];
+        }
+        return acc;
+      }, {} as Partial<SensorResponse>);
+
+      if (changedData.acquisitionDate) {
+        changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
+      }
+      if (changedData.lastCalibratedDate) {
+        changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
+      }
+
+      console.log('Submitting data:', changedData);
+
+      const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
       if (response.status === 200) {
-        setShowSuccessAlert(true);
-        setCreatedSensorName(response.data.sensorName);
+        console.log('Response:', response.data);
+        setCreatedData(response.data);
+        messageApi.open({
+          type: 'success',
+          content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
+        });
+        setTimeout(() => {
+          navigate(`/sensor/${sensor.id}`);
+        }, 1000);
       }
     } catch (error) {
       message.error(String(error));
@@ -146,18 +150,6 @@ const SensorEdit = () => {
       }
       if (value.isAfter(dayjs(), 'day')) {
         return Promise.reject(new Error('Date cannot be in the future'));
-      }
-      return Promise.resolve();
-    },
-  });
-
-  const validateFutureDate = (form: FormInstance) => ({
-    validator(_: any, value: dayjs.Dayjs) {
-      if (!value) {
-        return Promise.reject(new Error('Please select a date'));
-      }
-      if (value.isBefore(dayjs(), 'day')) {
-        return Promise.reject(new Error('Date cannot be in the past'));
       }
       return Promise.resolve();
     },
@@ -194,9 +186,9 @@ const SensorEdit = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
-      </div>
+      </ContentWrapperDark>
     );
   }
 
@@ -241,11 +233,15 @@ const SensorEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" />
+            <Form.Item
+              name="acquisitionDate"
+              label="Acquisition Date"
+              rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
+            >
+              <DatePicker className="w-full" maxDate={dayjs()} />
             </Form.Item>
             <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
-              <DatePicker className="w-full" disabledDate={disabledLastCalibratedDate} />
+              <DatePicker className="w-full" />
             </Form.Item>
             <Form.Item name="calibrationFrequencyDays" label="Calibration Frequency" rules={[{ required: true }]}>
               <InputNumber placeholder="Enter frequency in days" min={1} className="w-full" />

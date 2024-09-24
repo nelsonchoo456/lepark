@@ -28,6 +28,7 @@ export const useRestrictSensors = (sensorId?: string) => {
 
       if (sensorResponse.status === 200) {
         const sensor = sensorResponse.data;
+        console.log('sensor:', sensor.facility);
         handleSensorRestrictions(sensor);
       } else {
         throw new Error('Unable to fetch Sensor');

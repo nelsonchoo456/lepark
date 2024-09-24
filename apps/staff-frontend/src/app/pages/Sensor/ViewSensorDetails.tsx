@@ -30,8 +30,10 @@ const ViewSensorDetails = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (sensorId) {
+        console.log('viewdetails sensor', sensor);
         try {
           if (sensor && sensor.facilityId) {
+            console.log('sensor:', sensor);
             const facilityResponse = await getFacilityById(sensor.facilityId);
             if (facilityResponse.status === 200) {
               setFacility(facilityResponse.data);
@@ -134,7 +136,7 @@ const ViewSensorDetails = () => {
 
   if (loading) {
     return (
-      <ContentWrapperDark>
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
       </ContentWrapperDark>
     );

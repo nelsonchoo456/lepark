@@ -36,9 +36,7 @@ router.get('/getSensorById/:id', async (req, res) => {
 
 router.put('/updateSensor/:id', async (req, res) => {
   try {
-    const sensorId = req.params.id;
-    const updateData: Partial<SensorSchemaType> = req.body;
-    const updatedSensor = await SensorService.updateSensor(sensorId, updateData);
+    const updatedSensor = await SensorService.updateSensor(req.params.id, req.body);
     res.status(200).json(updatedSensor);
   } catch (error) {
     res.status(400).json({ error: error.message });

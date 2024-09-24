@@ -14,7 +14,7 @@ const s3 = new aws.S3({
   region: 'ap-southeast-1',
 });
 
-  const dateFormatter = (data: any) => {
+const dateFormatter = (data: any) => {
   const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
@@ -28,24 +28,32 @@ const s3 = new aws.S3({
 };
 function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
   // Add checks for all required fields
-  if (!data.sensorName || !data.sensorType || !data.sensorStatus || !data.acquisitionDate
-    || !data.dataFrequencyMinutes || !data.sensorUnit || !data.supplier
-    || data.calibrationFrequencyDays === undefined || data.recurringMaintenanceDuration === undefined
-    || !data.supplierContactNumber || !data.serialNumber) {
+  if (
+    !data.sensorName ||
+    !data.sensorType ||
+    !data.sensorStatus ||
+    !data.acquisitionDate ||
+    !data.dataFrequencyMinutes ||
+    !data.sensorUnit ||
+    !data.supplier ||
+    data.calibrationFrequencyDays === undefined ||
+    data.recurringMaintenanceDuration === undefined ||
+    !data.supplierContactNumber ||
+    !data.serialNumber
+  ) {
     throw new Error('Missing required fields for sensor creation');
   }
   return data as Prisma.SensorCreateInput;
 }
 
 class SensorService {
-    public async createSensor(data: SensorSchemaType): Promise<Sensor> {
+  public async createSensor(data: SensorSchemaType): Promise<Sensor> {
     try {
-
-        data.serialNumber = data.serialNumber.trim();
-        const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(data.serialNumber);
-        if (checkForExistingSensor) {
-          throw new Error('Identical sensor serial number already exists.');
-        }
+      data.serialNumber = data.serialNumber.trim();
+      const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(data.serialNumber);
+      if (checkForExistingSensor) {
+        throw new Error('Identical sensor serial number already exists.');
+      }
       if (data.hubId) {
         const hub = await HubDao.getHubById(data.hubId);
         if (!hub) {
@@ -82,90 +90,75 @@ class SensorService {
     return SensorDao.getAllSensors();
   }
 
-  public async getSensorById(id: string): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; facilityName: string; parkId?: number } }> {
-  const sensor = await SensorDao.getSensorById(id);
-  if (!sensor) {
-    throw new Error('Sensor not found');
-  }
-
-  return sensor;
-}
-  public async updateSensor(
-  id: string,
-  data: Partial<SensorSchemaType>
-): Promise<Sensor> {
-  try {
-    const existingSensor = await SensorDao.getSensorById(id);
-    if (!existingSensor) {
+  public async getSensorById(
+    id: string,
+  ): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; facilityName: string; parkId?: number } }> {
+    const sensor = await SensorDao.getSensorById(id);
+    if (!sensor) {
       throw new Error('Sensor not found');
     }
-    if (data.serialNumber !== undefined) {
-      data.serialNumber = data.serialNumber.trim();
-      const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(data.serialNumber);
-      if (checkForExistingSensor && existingSensor.id !== checkForExistingSensor.id) {
-        throw new Error('Identical sensor serial number already exists.');
-      }
-    }
-    if (data.facilityId !== undefined) {
-      if (data.facilityId) {
-        const facility = await FacilityDao.getFacilityById(data.facilityId);
-        if (!facility) {
-          throw new Error('Facility not found');
-        }
-      }
-    }
 
-    if (data.hubId !== undefined) {
-      if (data.hubId) {
-        const hub = await HubDao.getHubById(data.hubId);
-        if (!hub) {
-          throw new Error('Hub not found');
-        }
-      }
-    }
-
-    const formattedData = dateFormatter(data);
-
-    // Merge existing data with update data
-    let mergedData = { ...existingSensor, ...formattedData };
-    mergedData = Object.fromEntries(
-      Object.entries(mergedData).filter(([key, value]) => value !== null)
-    );
-
-    // Validate merged data using Zod
-    SensorSchema.parse(mergedData);
-
-    // Convert validated SensorSchemaType data to Prisma-compatible update input
-    const updateData: Prisma.SensorUpdateInput = Object.entries(formattedData).reduce((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
-    // Update sensor data
-    const updatedSensor = await SensorDao.updateSensor(id, updateData);
-
-    // Update relationships
-    await SensorDao.updateSensorRelationships(id, data.hubId || null, data.facilityId || null);
-
-    return updatedSensor;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const validationError = fromZodError(error);
-      throw new Error(`${validationError.message}`);
-    }
-    throw error;
+    return sensor;
   }
-}
+  public async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
+    try {
+      const formattedData = dateFormatter(data);
+      if (formattedData.serialNumber) {
+        formattedData.serialNumber = formattedData.serialNumber.trim();
+      }
+      SensorSchema.partial().parse(formattedData);
+
+      if (formattedData.serialNumber) {
+        const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(formattedData.serialNumber);
+        if (checkForExistingSensor && checkForExistingSensor.id !== id) {
+          throw new Error(`Sensor with serial number ${formattedData.serialNumber} already exists.`);
+        }
+      }
+
+      const existingSensor = await SensorDao.getSensorById(id);
+      if (!existingSensor) {
+        throw new Error('Sensor not found');
+      }
+
+      if (formattedData.facilityId !== undefined) {
+        if (formattedData.facilityId) {
+          const facility = await FacilityDao.getFacilityById(formattedData.facilityId);
+          if (!facility) {
+            throw new Error('Facility not found');
+          }
+        }
+      }
+
+      if (formattedData.hubId !== undefined) {
+        if (formattedData.hubId) {
+          const hub = await HubDao.getHubById(formattedData.hubId);
+          if (!hub) {
+            throw new Error('Hub not found');
+          }
+        }
+      }
+
+      const updateData = formattedData as Prisma.HubUpdateInput;
+
+      const updatedSensor = await SensorDao.updateSensor(id, updateData);
+      console.log('updated sensor:', updatedSensor);
+      return updatedSensor;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
 
   public async deleteSensor(id: string): Promise<void> {
     await SensorDao.deleteSensor(id);
   }
 
   public async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
-  return SensorDao.getSensorsByParkId(parkId);
-}
+    return SensorDao.getSensorsByParkId(parkId);
+  }
 
   public async getSensorsByHubId(hubId: string): Promise<Sensor[]> {
     const hub = await HubDao.getHubById(hubId);
@@ -203,10 +196,6 @@ class SensorService {
       throw new Error('Error uploading image to S3');
     }
   }
-
-
-
-
 }
 
 export default new SensorService();
