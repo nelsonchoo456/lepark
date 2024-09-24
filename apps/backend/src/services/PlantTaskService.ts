@@ -16,9 +16,9 @@ const s3 = new aws.S3({
 });
 
 class PlantTaskService {
-  public async createPlantTask(data: PlantTaskSchemaType, staffId: string): Promise<PlantTask> {
+  public async createPlantTask(data: PlantTaskSchemaType, submittingStaffId: string): Promise<PlantTask> {
     try {
-      const staff = await StaffDao.getStaffById(staffId);
+      const staff = await StaffDao.getStaffById(submittingStaffId);
       if (!staff) {
         throw new Error('Staff not found');
       }
@@ -48,11 +48,12 @@ class PlantTaskService {
       // Calculate due date based on urgency
       const createdAt = new Date();
       const dueDate = this.calculateDueDate(createdAt, formattedData.taskUrgency);
-      const taskStatus = PlantTaskStatusEnum.PENDING;
+      const taskStatus = PlantTaskStatusEnum.OPEN;
 
       formattedData.createdAt = createdAt;
       formattedData.dueDate = dueDate;
       formattedData.taskStatus = taskStatus;
+      formattedData.submittingStaffId = submittingStaffId;
       PlantTaskSchema.parse(formattedData);
 
       return PlantTaskDao.createPlantTask(formattedData);

@@ -79,6 +79,16 @@ class OccurrenceDao {
   async deleteOccurrence(id: string): Promise<void> {
     await prisma.occurrence.delete({ where: { id } });
   }
+
+  async getOccurrencesByIds(ids: string[]): Promise<any[]> {
+    return prisma.occurrence.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }
 
 export default new OccurrenceDao();

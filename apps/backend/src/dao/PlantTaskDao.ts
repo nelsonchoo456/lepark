@@ -43,6 +43,10 @@ class PlantTaskDao {
     const zones = await ZoneDao.getZonesByParkId(parkId);
     const zoneIds = zones.map(zone => zone.id);
 
+    if (zoneIds.length === 0) {
+      return []; // Return an empty array if no zones are found
+    }
+
     const plantTasks = await prisma.plantTask.findMany({
       include: {
         occurrence: {
@@ -63,7 +67,7 @@ class PlantTaskDao {
       where: {
         occurrence: {
           zoneId: {
-            in: zoneIds,
+            in: zoneIds, // Ensure zoneIds is an array
           },
         },
       },
