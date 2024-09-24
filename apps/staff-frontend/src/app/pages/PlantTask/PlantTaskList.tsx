@@ -4,13 +4,22 @@ import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } f
 import moment from 'moment';
 import { FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
-import { getAllPlantTasks, PlantTaskResponse, StaffType, StaffResponse, deletePlantTask } from '@lepark/data-access';
+import { getAllPlantTasks, PlantTaskResponse, StaffType, StaffResponse, deletePlantTask, PlantTaskTypeEnum } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MdDeleteOutline } from 'react-icons/md';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Typography } from 'antd';
+
+// Utility function to format task type
+const formatTaskType = (taskType: string) => {
+  return taskType
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 const PlantTaskList: React.FC = () => {
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
@@ -60,7 +69,7 @@ const PlantTaskList: React.FC = () => {
       key: 'title',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.title.localeCompare(b.title),
-      width: '25%',
+      width: '20%',
     },
     {
       title: 'Description',
@@ -75,7 +84,23 @@ const PlantTaskList: React.FC = () => {
           {text}
         </Typography.Paragraph>
       ),
-      width: '30%',
+      width: '25%',
+    },
+    {
+      title: 'Task Type',
+      dataIndex: 'taskType',
+      key: 'taskType',
+      render: (text) => (
+        <Flex justify="space-between" align="center">
+          {formatTaskType(text)}
+        </Flex>
+      ),
+      filters: Object.values(PlantTaskTypeEnum).map((type) => ({
+        text: formatTaskType(type),
+        value: type,
+      })),
+      onFilter: (value, record) => record.taskType === value,
+      width: '15%',
     },
     {
       title: 'Urgency',
@@ -118,7 +143,7 @@ const PlantTaskList: React.FC = () => {
         { text: 'LOW', value: 'LOW' },
       ],
       onFilter: (value, record) => record.taskUrgency === value,
-      width: '15%',
+      width: '10%',
     },
     {
       title: 'Due Date',
@@ -126,7 +151,7 @@ const PlantTaskList: React.FC = () => {
       key: 'dueDate',
       render: (text) => moment(text).format('D MMM YY'),
       sorter: (a, b) => moment(a.dueDate).valueOf() - moment(b.dueDate).valueOf(),
-      width: '15%',
+      width: '10%',
     },
     {
       title: 'Status',
@@ -169,7 +194,7 @@ const PlantTaskList: React.FC = () => {
         { text: 'CANCELLED', value: 'CANCELLED' },
       ],
       onFilter: (value, record) => record.taskStatus === value,
-      width: '15%',
+      width: '10%',
     },
     {
       title: 'Actions',
@@ -179,20 +204,15 @@ const PlantTaskList: React.FC = () => {
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN ||
-            (user?.role === StaffType.MANAGER && (
-              <>
-                <Tooltip title="Edit Plant Task">
-                  <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/plant-tasks/${record.id}/edit`)} />
-                </Tooltip>
-                <Tooltip title="Delete Plant Task">
-                  <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-                </Tooltip>
-              </>
-            ))}
+          <Tooltip title="Edit Plant Task">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/plant-tasks/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete Plant Task">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+          </Tooltip>
         </Flex>
       ),
-      width: '15%',
+      width: '10%',
     },
   ];
 
@@ -233,8 +253,6 @@ const PlantTaskList: React.FC = () => {
     },
   ];
 
-  const canCreatePlantTask = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
-
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -253,16 +271,14 @@ const PlantTaskList: React.FC = () => {
           variant="filled"
           onChange={handleSearch}
         />
-        {canCreatePlantTask && (
-          <Button
-            type="primary"
-            onClick={() => {
-              navigate('/plant-tasks/create');
-            }}
-          >
-            Create Plant Task
-          </Button>
-        )}
+        <Button
+          type="primary"
+          onClick={() => {
+            navigate('/plant-tasks/create');
+          }}
+        >
+          Create Plant Task
+        </Button>
       </Flex>
 
       <Card>

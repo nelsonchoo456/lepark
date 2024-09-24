@@ -37,6 +37,9 @@ const CreatePlantTask = () => {
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
 
+  const [isZoneDisabled, setIsZoneDisabled] = useState(true);
+  const [isOccurrenceDisabled, setIsOccurrenceDisabled] = useState(true);
+
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
       fetchParks();
@@ -110,6 +113,12 @@ const CreatePlantTask = () => {
       }
 
       const values = await form.validateFields();
+
+      if (selectedFiles.length === 0) {
+        messageApi.error('Please upload at least one image.');
+        return;
+      }
+
       const { parkId, zoneId, ...plantTaskData } = values;
       const taskData = {
         ...plantTaskData,
@@ -142,6 +151,24 @@ const CreatePlantTask = () => {
   const filterOption = (input: string, option?: { label: string; value: string }) =>
     (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+  const handleParkChange = (value: string) => {
+    const parkId = parseInt(value, 10);
+    setSelectedParkId(parkId);
+    form.setFieldsValue({ zoneId: null, occurrenceId: null });
+    setZones([]);
+    setOccurrences([]);
+    setIsZoneDisabled(false); // Enable Zone field
+    setIsOccurrenceDisabled(true); // Disable Occurrence field
+  };
+
+  const handleZoneChange = (value: string) => {
+    const zoneId = parseInt(value, 10);
+    setSelectedZoneId(zoneId);
+    form.setFieldsValue({ occurrenceId: null });
+    setOccurrences([]);
+    setIsOccurrenceDisabled(false); // Enable Occurrence field
+  };
+
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -157,8 +184,8 @@ const CreatePlantTask = () => {
                   placeholder="Select a Park"
                   optionFilterProp="children"
                   filterOption={filterOption}
-                  options={parks.map((park) => ({ value: park.id, label: park.name }))}
-                  onChange={(value) => setSelectedParkId(value)}
+                  options={parks.map((park) => ({ value: park.id.toString(), label: park.name }))}
+                  onChange={handleParkChange}
                 />
               </Form.Item>
             )}
@@ -168,8 +195,9 @@ const CreatePlantTask = () => {
                 placeholder="Select a Zone"
                 optionFilterProp="children"
                 filterOption={filterOption}
-                options={zones.map((zone) => ({ value: zone.id, label: zone.name }))}
-                onChange={(value) => setSelectedZoneId(value)}
+                options={zones.map((zone) => ({ value: zone.id.toString(), label: zone.name }))}
+                onChange={handleZoneChange}
+                disabled={isZoneDisabled} // Disable Zone field initially
               />
             </Form.Item>
             <Form.Item name="occurrenceId" label="Occurrence" rules={[{ required: true }]}>
@@ -178,7 +206,8 @@ const CreatePlantTask = () => {
                 placeholder="Select an Occurrence"
                 optionFilterProp="children"
                 filterOption={filterOption}
-                options={occurrences.map((occurrence) => ({ value: occurrence.id, label: occurrence.title }))}
+                options={occurrences.map((occurrence) => ({ value: occurrence.id.toString(), label: occurrence.title }))}
+                disabled={isOccurrenceDisabled} // Disable Occurrence field initially
               />
             </Form.Item>
             <Form.Item
@@ -197,7 +226,7 @@ const CreatePlantTask = () => {
             <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
-            <Form.Item label="Images">
+            <Form.Item label="Upload Images" required tooltip="At least one image is required">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
             {previewImages?.length > 0 && (

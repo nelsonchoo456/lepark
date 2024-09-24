@@ -11,7 +11,7 @@ export interface ZoneData {
 }
 
 export interface ZoneResponse {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   openingHours: any;
