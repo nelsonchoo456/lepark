@@ -3,7 +3,7 @@ import PictureMarker from './PictureMarker';
 // import { FacilityTypeEnum } from '@prisma/client';
 // import { PiFirstAidFill } from 'react-icons/pi';
 // import { IoInformationSharp } from 'react-icons/io5';
-import { FaMale, FaFemale, FaCampground, FaWater, FaCar } from 'react-icons/fa';
+import { FaMale, FaFemale, FaCampground, FaCar } from 'react-icons/fa';
 import { FaPersonShelter } from "react-icons/fa6";
 import { IoInformationSharp, IoAccessibilitySharp } from 'react-icons/io5';
 import { IoIosWater } from "react-icons/io";
@@ -11,7 +11,6 @@ import { GiFirstAidKit, GiFireplace, GiTheaterCurtains } from 'react-icons/gi';
 import {  MdOutlineStorage } from 'react-icons/md';
 import { TbPlayFootball } from "react-icons/tb";
 import {  PiPicnicTableBold } from 'react-icons/pi';
-import { BsFillHeartPulseFill } from 'react-icons/bs';
 import { GrAed } from 'react-icons/gr';
 
 interface FacilityPictureMarkerProps {

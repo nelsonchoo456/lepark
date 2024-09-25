@@ -1,4 +1,5 @@
 import { FacilityTypeEnum, FacilityStatusEnum } from '@prisma/client';
+import { EventResponse } from './event';
 
 export interface FacilityData {
   facilityName: string;
@@ -66,4 +67,30 @@ export interface FacilityResponse {
   parkId: number;
   hubs?: string[]; // Array of hub IDs associated with this facility
   events?: string[]; // Array of event IDs associated with this facility
+}
+
+export interface FacilityWithEvents {
+  id: string;
+  facilityName: string;
+  facilityDescription: string;
+  isBookable: boolean;
+  isPublic: boolean;
+  isSheltered: boolean;
+  facilityType: FacilityTypeEnum;
+  reservationPolicy: string;
+  rulesAndRegulations: string;
+  images?: string[];
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  openingHours: string[];
+  closingHours: string[];
+  facilityStatus: FacilityStatusEnum;
+  lat?: number;
+  long?: number;
+  size: number;
+  capacity: number;
+  fee: number;
+  parkId: number;
+  hubs?: string[]; // Array of hub IDs associated with this facility
+  events: EventResponse[]; // Array of event IDs associated with this facility
 }

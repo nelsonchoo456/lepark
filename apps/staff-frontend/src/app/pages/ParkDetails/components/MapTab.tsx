@@ -1,7 +1,7 @@
-import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType, getFacilitiesByParkId, FacilityResponse } from '@lepark/data-access';
+import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType, getFacilitiesByParkId, FacilityResponse, getEventsByParkId, EventResponse, FacilityWithEvents } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
+import { Avatar, Button, Card, Checkbox, Space, Tooltip } from 'antd';
 import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -13,6 +13,7 @@ import { PiPlantFill } from 'react-icons/pi';
 import { useAuth } from '@lepark/common-ui';
 import { FaFemale, FaMale } from 'react-icons/fa';
 import FacilityPictureMarker from '../../../components/map/FacilityPictureMarker';
+import FacilityEventsPictureMarker from '../../../components/map/FacilityEventsPictureMarker';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -23,11 +24,14 @@ const MapTab = ({ park }: MapTabProps) => {
   const [zones, setZones] = useState<ZoneResponse[]>();
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [attractions, setAttractions] = useState<AttractionResponse[]>();
+  const [events, setEvents] = useState<EventResponse[]>();
+  const [facilityEvents, setFacilityEvents] = useState<FacilityWithEvents[]>();
   const [facilities, setFacilities] = useState<FacilityResponse[]>();
 
   const [showZones, setShowZones] = useState<boolean>(false);
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
   const [showAttractions, setShowAttractions] = useState<boolean>(false);
+  const [showEvents, setShowEvents] = useState<boolean>(false);
   const [showFacilities, setShowFacilities] = useState<boolean>(false);
 
   useEffect(() => {
@@ -35,6 +39,7 @@ const MapTab = ({ park }: MapTabProps) => {
       fetchZones();
       fetchOccurrences();
       fetchAttractions();
+      fetchEvents();
       fetchFacilities();
     }
   }, [park])
@@ -63,6 +68,37 @@ const MapTab = ({ park }: MapTabProps) => {
     }
   }
 
+  const fetchEvents = async () => {
+    const eventsRes = await getEventsByParkId(park.id);
+    if (eventsRes.status === 200) {
+      const eventsData = eventsRes.data;
+
+      const facilityMap: Record<string, any> = {};
+
+      eventsData.forEach(event => {
+        const { facility, ...restEvent } = event
+        const facilityId = event.facilityId;
+
+        if (!facilityMap[facilityId]) {
+          facilityMap[facilityId] = {
+            ...event.facility,
+            events: [{...restEvent}],
+          };
+        } else {
+          facilityMap[facilityId].events.push(restEvent);
+        }
+      });
+
+      console.log(Object.values(facilityMap))
+      setFacilityEvents(Object.values(facilityMap))
+      // setEvents(eventsData);
+    }
+
+    
+
+    
+  }
+
   const fetchFacilities = async () => {
     const facilitiesRes = await getFacilitiesByParkId(park.id);
     if (facilitiesRes.status === 200) {
@@ -84,6 +120,9 @@ const MapTab = ({ park }: MapTabProps) => {
           </Checkbox>
           <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions}>
             Attractions
+          </Checkbox>
+          <Checkbox onChange={(e) => setShowEvents(e.target.checked)} checked={showEvents}>
+            Events
           </Checkbox>
           <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities}>
             Facilities
@@ -152,7 +191,9 @@ const MapTab = ({ park }: MapTabProps) => {
               />
             ))}
 
-          {showFacilities &&
+          
+
+          {showFacilities && !showEvents &&
             facilities &&
             facilities.map(
               (facility) =>
@@ -168,6 +209,36 @@ const MapTab = ({ park }: MapTabProps) => {
                   />
                 ),
             )}
+
+          {/* {showEvents &&
+            events &&
+            events.map((event) => (
+              event.facility?.lat &&
+              event.facility?.long &&
+              <PictureMarker
+                circleWidth={30}
+                lat={event.facility.lat}
+                lng={event.facility.long}
+                backgroundColor={COLORS.mustard[300]}
+                icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                tooltipLabel={event.title}
+              />
+            ))}  */}
+
+          {showEvents &&
+            facilityEvents &&
+            facilityEvents.map((facility) => (
+              facility.lat &&
+              facility.long &&
+              <FacilityEventsPictureMarker
+                circleWidth={38}
+                events={facility.events}
+                lat={facility.lat}
+                lng={facility.long}
+                facilityType={facility.facilityType}
+                // tooltipLabel={facility.facilityName}
+              />
+            ))} 
         </MapContainer>
 
         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
