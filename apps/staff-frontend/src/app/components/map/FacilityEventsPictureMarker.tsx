@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import L from 'leaflet';
+import { useRef, useState } from 'react';
+import L, { DivIcon } from 'leaflet';
 import { Marker, Tooltip } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EventResponse } from '@lepark/data-access';
@@ -13,7 +13,8 @@ import { TbPlayFootball } from 'react-icons/tb';
 import { PiPicnicTableBold } from 'react-icons/pi';
 import { GrAed } from 'react-icons/gr';
 import { PictureMarkerInner } from '@lepark/common-ui';
-import { BiSolidCalendarEvent } from "react-icons/bi";
+import { BiSolidCalendarEvent } from 'react-icons/bi';
+import HoverInformation, { HoverItem } from './HoverInformation';
 
 interface FacilityEventsPictureMarkerProps {
   lat: number;
@@ -23,6 +24,8 @@ interface FacilityEventsPictureMarkerProps {
   circleWidth?: number;
   tooltipLabel?: string | JSX.Element | JSX.Element[];
   tooltipLabelPermanent?: boolean;
+  hovered?: HoverItem | null;
+  setHovered: (hovered: any) => void;
 }
 
 function FacilityEventsPictureMarker({
@@ -33,9 +36,18 @@ function FacilityEventsPictureMarker({
   tooltipLabel,
   tooltipLabelPermanent,
   events = [],
+  hovered,
+  setHovered
 }: FacilityEventsPictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
+
   const eventMarkerGap = 16;
+
+  // const handleMouseOut = () => {
+  //   setTimeout(() => {
+  //     setHoveredEvent(null);
+  //   }, 7000);
+  // };
 
   // Make sure consistent with FacilityPictureMarker
   const icon =
@@ -125,8 +137,9 @@ function FacilityEventsPictureMarker({
   };
 
   const getCustomIcon = (event: EventResponse, index: number) => {
+    const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth
     const iconHTML = renderToStaticMarkup(
-      <PictureMarkerInner circleWidth={circleWidth} innerBackgroundColor="transparent">
+      <PictureMarkerInner circleWidth={thisCircleWidth} innerBackgroundColor="transparent">
         <div
           style={{
             width: '100%',
@@ -134,20 +147,18 @@ function FacilityEventsPictureMarker({
             backgroundImage: `url('${event?.images && event?.images.length > 0 ? event.images[0] : ''}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            // border: '1px solid green',
-            // backgroundColor: '#DC9600',
           }}
-          className="rounded-full flex items-center justify-center text-white shrink-0 border-2 border-sky-500 bg-sky-400"
+          className="rounded-full shadow-md flex items-center justify-center text-white shrink-0 border-2 border-sky-500 bg-sky-400"
         >
-          {!(event?.images && event?.images.length > 0) && <BiSolidCalendarEvent className='text-lg'/>}
+          {!(event?.images && event?.images.length > 0) && <BiSolidCalendarEvent className="text-lg" />}
         </div>
       </PictureMarkerInner>,
     );
 
     return L.divIcon({
       html: iconHTML,
-      iconSize: [circleWidth, circleWidth],
-      iconAnchor: [circleWidth / 2 - (index + 1) * eventMarkerGap, circleWidth],
+      iconSize: [thisCircleWidth, thisCircleWidth],
+      iconAnchor: [thisCircleWidth / 2 - (index + 1) * eventMarkerGap, thisCircleWidth],
       className: '',
     });
   };
@@ -166,104 +177,28 @@ function FacilityEventsPictureMarker({
       {events.map((event, index) => (
         <Marker
           key={event.id}
-          // position={adjustMarkerPosition(index)}
           position={[lat, lng]}
           icon={getCustomIcon(event, index)}
           eventHandlers={{
-            click: () => console.log(`Clicked on event with ID: ${event.id}`),
+            click: () => setHovered({ ...event, image: event.images ? event.images[0] : null, entityType: "EVENT" }),
           }}
+          riseOnHover
         >
-          {event && (
-            <Tooltip offset={[(index + 1) * eventMarkerGap, -circleWidth / 2]} permanent={tooltipLabelPermanent}>
-              {event.title}
-            </Tooltip>
-          )}
+          <Tooltip offset={[(index + 1) * eventMarkerGap, -circleWidth / 2]} permanent={tooltipLabelPermanent}>
+            {event.title}
+          </Tooltip> 
         </Marker>
       ))}
+      {/* {hovered && (
+        <HoverInformation
+          key={hovered.id}
+          title={hovered.title}
+          setHoveredItem={setHoveredEvent}
+          children={<></>}
+        />
+      )} */}
     </>
   );
 }
 
 export default FacilityEventsPictureMarker;
-
-// import { useCallback, useMemo, useRef, useState } from 'react';
-// import L from 'leaflet';
-// import { MapContainer, Marker, Popup, Tooltip } from 'react-leaflet';
-// import { AdjustLatLngInterface } from '../../pages/Occurrence/OccurrenceCreate';
-// import { renderToStaticMarkup } from 'react-dom/server';
-// import { HtmlPictureMarker, PictureMarkerInner } from '@lepark/common-ui';
-// import { COLORS } from '../../config/colors';
-// import { EventResponse } from '@lepark/data-access';
-// import { Avatar } from 'antd';
-
-// interface FacilityEventsPictureMarkerProps {
-//   lat: number;
-//   lng: number;
-//   events?: EventResponse[];
-//   circleWidth?: number;
-//   backgroundColor?: string;
-//   innerBackgroundColor?: string;
-//   icon?: string | JSX.Element | JSX.Element[];
-//   tooltipLabel?: string | JSX.Element | JSX.Element[];
-//   tooltipLabelPermanent?: boolean;
-//   teardrop?: boolean;
-// }
-
-// function FacilityEventsPictureMarker({
-//   lat,
-//   lng,
-//   circleWidth,
-//   backgroundColor,
-//   icon,
-//   tooltipLabel,
-//   tooltipLabelPermanent,
-//   events,
-// }: FacilityEventsPictureMarkerProps) {
-//   const markerRef = useRef<L.Marker>(null);
-
-//   const getCustomIcon = () => {
-//     const iconHTML = renderToStaticMarkup(
-//       <div className="flex relative -ml-1">
-//         {events?.map((event, index) => (
-//           <div
-//             key={event.id}
-//             onClick={() => console.log(event.id)}
-//             style={{
-//               width: circleWidth,
-//               height: circleWidth,
-//               zIndex: events.length - index,
-//               backgroundImage: `url('${event?.images && event?.images?.length > 0 ? event?.images[0] : ""}')`,
-//               backgroundSize: 'cover',
-//               backgroundPosition: 'center',
-//               overflow: 'hidden',
-//             }}
-//             className={`rounded-full flex items-center justify-center text-white border-[1px] border-green-500 bg-mustard-400 -ml-2 shrink-0`}
-//           >
-//             {!(event?.images && event?.images?.length > 0) && "k"
-
-//             }
-//           </div>
-//         ))}
-//       </div>,
-//     );
-
-//     return L.divIcon({
-//       html: iconHTML,
-//       iconSize: [32, 40],
-//       iconAnchor: [16, 40],
-//       className: '',
-//     });
-//   };
-
-//   return (
-//     <Marker position={[lat, lng]} ref={markerRef} icon={getCustomIcon()}>
-//       {tooltipLabel && (
-//         <Tooltip offset={[20, -10]} permanent={tooltipLabelPermanent}>
-//           {tooltipLabel}
-//         </Tooltip>
-//       )}
-//     </Marker>
-//   );
-// }
-
-// export default FacilityEventsPictureMarker;

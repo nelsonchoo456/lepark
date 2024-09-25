@@ -12,8 +12,10 @@ import {  MdOutlineStorage } from 'react-icons/md';
 import { TbPlayFootball } from "react-icons/tb";
 import {  PiPicnicTableBold } from 'react-icons/pi';
 import { GrAed } from 'react-icons/gr';
+import { HoverItem } from './HoverInformation';
 
 interface FacilityPictureMarkerProps {
+  id: string;
   lat: number;
   lng: number;
   circleWidth?: number;
@@ -21,9 +23,11 @@ interface FacilityPictureMarkerProps {
   tooltipLabel?: string | JSX.Element | JSX.Element[];
   tooltipLabelPermanent?: boolean;
   facilityType: string;
+  hovered?: HoverItem | null;
+  setHovered: (hovered: any) => void;
 }
 
-function FacilityPictureMarker({ lat, lng, circleWidth, tooltipLabel, innerBackgroundColor, facilityType }: FacilityPictureMarkerProps) {
+function FacilityPictureMarker({ id, lat, lng, circleWidth, tooltipLabel, innerBackgroundColor, facilityType, hovered, setHovered }: FacilityPictureMarkerProps) {
   const icon = facilityType === 'TOILET' ? (
     <div className="flex gap-0 justify-center">
       <FaMale className="text-white drop-shadow-lg border-r-2 border-white" style={{ fontSize: '1rem' }} />
@@ -93,6 +97,8 @@ function FacilityPictureMarker({ lat, lng, circleWidth, tooltipLabel, innerBackg
 
   return (
     <PictureMarker
+      id={id}
+      entityType='FACILITY'
       circleWidth={circleWidth}
       lat={lat}
       lng={lng}
@@ -100,6 +106,8 @@ function FacilityPictureMarker({ lat, lng, circleWidth, tooltipLabel, innerBackg
       icon={icon}
       tooltipLabel={tooltipLabel}
       teardrop={false}
+      hovered={hovered}
+      setHovered={setHovered}
     />
   );
 }

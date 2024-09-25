@@ -1,7 +1,7 @@
 import { AttractionResponse, getAttractionsByParkId, getOccurrencesByParkId, getZoneById, getZonesByParkId, OccurrenceResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType, getFacilitiesByParkId, FacilityResponse, getEventsByParkId, EventResponse, FacilityWithEvents } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Avatar, Button, Card, Checkbox, Space, Tooltip } from 'antd';
+import { Avatar, Button, Card, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
 import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -14,6 +14,9 @@ import { useAuth } from '@lepark/common-ui';
 import { FaFemale, FaMale } from 'react-icons/fa';
 import FacilityPictureMarker from '../../../components/map/FacilityPictureMarker';
 import FacilityEventsPictureMarker from '../../../components/map/FacilityEventsPictureMarker';
+import HoverInformation, { HoverItem } from '../../../components/map/HoverInformation';
+import { MdArrowOutward } from 'react-icons/md';
+import ParkStatusTag from './ParkStatusTag';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -33,6 +36,8 @@ const MapTab = ({ park }: MapTabProps) => {
   const [showAttractions, setShowAttractions] = useState<boolean>(false);
   const [showEvents, setShowEvents] = useState<boolean>(false);
   const [showFacilities, setShowFacilities] = useState<boolean>(false);
+
+  const [hovered, setHovered] = useState<HoverItem | null>(null); // Shared hover state
 
   useEffect(() => {
     if (park.id) {
@@ -169,12 +174,44 @@ const MapTab = ({ park }: MapTabProps) => {
             occurrences &&
             occurrences.map((occurrence) => (
               <PictureMarker
+                id={occurrence.id}
+                entityType="OCCURRENCE"
                 circleWidth={30}
                 lat={occurrence.lat}
                 lng={occurrence.lng}
                 backgroundColor={COLORS.green[300]}
                 icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
                 tooltipLabel={occurrence.title}
+                hovered={hovered}
+                setHovered={() =>
+                  setHovered({
+                    ...occurrence,
+                    image: occurrence.images ? occurrence.images[0] : null,
+                    entityType: 'OCCURRENCE',
+                    children: (
+                      <div className="h-full w-full flex flex-col justify-between">
+                        <div>
+                          <p className="italic text-secondary">{occurrence.speciesName}</p>
+                          <Tooltip title="View Zone details" placement="topLeft">
+                            <p
+                              className="text-green-600 cursor-pointer hover:text-green-900"
+                              onClick={() => navigate(`/zone/${occurrence.zoneId}`)}
+                            >
+                              @ {occurrence.zoneName}
+                            </p>
+                          </Tooltip>
+                        </div>
+                        <div className="flex justify-end">
+                          <Tooltip title="View Occurrence details">
+                            <Button shape="circle" onClick={() => navigate(`/occurrences/${occurrence.id}`)}>
+                              <MdArrowOutward />
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      </div>
+                    ),
+                  })
+                }
               />
             ))}
 
@@ -182,64 +219,120 @@ const MapTab = ({ park }: MapTabProps) => {
             attractions &&
             attractions.map((attraction) => (
               <PictureMarker
+                id={attraction.id}
+                entityType="ATTRACTION"
                 circleWidth={30}
                 lat={attraction.lat}
                 lng={attraction.lng}
                 backgroundColor={COLORS.mustard[300]}
                 icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
                 tooltipLabel={attraction.title}
+                hovered={hovered}
+                setHovered={() =>
+                  setHovered({
+                    ...attraction,
+                    title: <div className='flex justify-between items-center'>{attraction.title}<ParkStatusTag>{attraction.status}</ParkStatusTag></div>,
+                    image: attraction.images ? attraction.images[0] : null,
+                    entityType: 'ATTRACTION',
+                    children: (
+                      <div className="h-full w-full flex flex-col justify-between">
+                        <div>
+                          <Typography.Paragraph
+                            ellipsis={{
+                              rows: 3,
+                            }}
+                          >
+                            {attraction.description}
+                          </Typography.Paragraph>
+                        </div>
+                        <div className="flex justify-end">
+                          <Tooltip title="View Attraction details">
+                            <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
+                              <MdArrowOutward />
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      </div>
+                    ),
+                  })
+                }
               />
             ))}
 
-          
-
-          {showFacilities && !showEvents &&
+          {showFacilities &&
+            !showEvents &&
             facilities &&
             facilities.map(
               (facility) =>
                 facility.lat &&
                 facility.long && (
                   <FacilityPictureMarker
+                    id={facility.id}
                     circleWidth={38}
                     lat={facility.lat}
                     lng={facility.long}
                     innerBackgroundColor={COLORS.sky[400]}
                     tooltipLabel={facility.facilityName}
                     facilityType={facility.facilityType}
+                    hovered={hovered}
+                    setHovered={() =>
+                      setHovered({
+                        ...facility,
+                        title: facility.facilityName,
+                        image: facility.images ? facility.images[0] : null,
+                        entityType: 'FACILITY',
+                        children: (
+                          <div className="h-full w-full flex flex-col justify-between">
+                            <div className='flex justify-between flex-wrap'>
+                              <p className="italic text-secondary">{facility.facilityType}</p>
+                              <ParkStatusTag>{facility.facilityStatus}</ParkStatusTag>
+                            </div> 
+                            <div className="flex justify-end">
+                              <Tooltip title="View Facility details">
+                                <Button shape="circle" onClick={() => navigate(`/facility/${facility.id}`)}>
+                                  <MdArrowOutward />
+                                </Button>
+                              </Tooltip>
+                            </div>
+                          </div>
+                        ),
+                      })
+                    }
                   />
                 ),
             )}
 
-          {/* {showEvents &&
-            events &&
-            events.map((event) => (
-              event.facility?.lat &&
-              event.facility?.long &&
-              <PictureMarker
-                circleWidth={30}
-                lat={event.facility.lat}
-                lng={event.facility.long}
-                backgroundColor={COLORS.mustard[300]}
-                icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
-                tooltipLabel={event.title}
-              />
-            ))}  */}
-
           {showEvents &&
             facilityEvents &&
-            facilityEvents.map((facility) => (
-              facility.lat &&
-              facility.long &&
-              <FacilityEventsPictureMarker
-                circleWidth={38}
-                events={facility.events}
-                lat={facility.lat}
-                lng={facility.long}
-                facilityType={facility.facilityType}
-                // tooltipLabel={facility.facilityName}
-              />
-            ))} 
+            facilityEvents.map(
+              (facility) =>
+                facility.lat &&
+                facility.long && (
+                  <FacilityEventsPictureMarker
+                    circleWidth={38}
+                    events={facility.events}
+                    lat={facility.lat}
+                    lng={facility.long}
+                    facilityType={facility.facilityType}
+                    hovered={hovered}
+                    setHovered={setHovered}
+                  />
+                ),
+            )}
         </MapContainer>
+
+        {hovered && (
+          <HoverInformation
+            item={{
+              id: hovered.id,
+              title: hovered.title,
+              image: hovered.image,
+              entityType: hovered.entityType,
+              children: hovered.children,
+            }}
+            setHovered={setHovered}
+          />
+        )}
 
         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
           <div className="absolute top-4 right-3 z-[1000]">
