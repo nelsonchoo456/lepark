@@ -31,10 +31,8 @@ export const useRestrictAsset = (assetId?: string) => {
           console.log("fetchedAsset park id is" + fetchedAsset.parkId);
           // Check if user has permission to view this asset
           if (user?.role === StaffType.SUPERADMIN ||
-              (user?.role === StaffType.MANAGER && user?.parkId === fetchedAsset.parkId) ||
-              (user?.role === StaffType.LANDSCAPE_ARCHITECT && user?.parkId === fetchedAsset.parkId) ||
-              (user?.role === StaffType.PARK_RANGER && user?.parkId === fetchedAsset.parkId)) {
-            setAsset(fetchedAsset);
+    (user?.role !== StaffType.SUPERADMIN && user?.parkId === fetchedAsset.parkId)) {
+  setAsset(fetchedAsset);
           } else {
             console.log(user?.parkId, fetchedAsset.parkId);
             if (!notificationShown.current) {

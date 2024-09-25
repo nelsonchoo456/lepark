@@ -186,7 +186,7 @@ const AssetEdit = () => {
 
   const breadcrumbItems = [
     {
-      title: 'Asset Management',
+      title: 'Park Asset Management',
       pathKey: '/parkasset',
       isMain: true,
     },
@@ -377,7 +377,7 @@ if (assetLoading || facilitiesLoading) {
             subTitle={updatedAsset?.parkAssetName && <>Asset name: {updatedAsset.parkAssetName}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/parkasset')}>
-                Back to Asset Management
+                Back to Park Asset Management
               </Button>,
               <Button type="primary" key="view" onClick={() => navigate(`/parkasset/${updatedAsset?.id}`)}>
                 View Updated Asset

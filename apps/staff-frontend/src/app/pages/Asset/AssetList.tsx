@@ -9,6 +9,7 @@ import { FiEye, FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { ColumnsType } from 'antd/es/table';
+import { useFetchAssets } from '../../hooks/Asset/useFetchAssets';
 
 const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
   const words = enumValue.split('_');
@@ -21,64 +22,31 @@ const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condi
 };
 
 const ParkAssetManagementPage: React.FC = () => {
-  const { user } = useAuth<StaffResponse>();
-  const [parkAssets, setParkAssets] = useState<ParkAssetResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+const { user } = useAuth<StaffResponse>();
+  const { assets: parkAssets, loading, triggerFetch } = useFetchAssets();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Park Asset Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    } else {
-      fetchParkAssetData();
-    }
-  }, [user, navigate]); // Added 'navigate' to the dependency array
 
-const fetchParkAssetData = async () => {
-  setLoading(true);
-  try {
-    let response;
-    if (user?.role === StaffType.SUPERADMIN) {
-      response = await getAllParkAssets();
-    } else if ([StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType)) {
-      if (!user?.parkId) {
-        throw new Error('User park ID not found');
-      }
-      response = await getAllParkAssets(user.parkId);
-    } else {
-      throw new Error('Unauthorized access');
-    }
-    setParkAssets(response.data);
-  } catch (error) {
-    console.error('Error fetching park asset data:', error);
-    message.error('Failed to fetch park assets');
-  } finally {
-    setLoading(false);
-  }
-};
+
+
+
+
 
 // ... rest of the code remains the same
 
 const filteredParkAssets = useMemo(() => {
-  return parkAssets.filter((asset) => {
-    return Object.values(asset).some((value) =>
-      value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
-}, [parkAssets, searchQuery]);
+    return parkAssets.filter((asset) => {
+      return Object.values(asset).some((value) =>
+        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [parkAssets, searchQuery]);
 
   const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
 
   const handleDelete = async (id: string) => {
     try {
@@ -96,7 +64,7 @@ const filteredParkAssets = useMemo(() => {
       if (!confirmed) return;
 
       await deleteParkAsset(id);
-      setParkAssets((prevAssets) => prevAssets.filter((asset) => asset.id !== id));
+      triggerFetch(); // Refresh the asset list after deletion
       message.success('Asset deleted successfully');
     } catch (error) {
       console.error('Error deleting asset:', error);
@@ -149,12 +117,12 @@ const filteredParkAssets = useMemo(() => {
       render: (_: React.ReactNode, record: ParkAssetResponse) => (
         <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
-            <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
           {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
             <>
               <Tooltip title="Edit Asset">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
               </Tooltip>
               <Tooltip title="Delete Asset">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
@@ -169,7 +137,7 @@ const filteredParkAssets = useMemo(() => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader>Park Asset Management</PageHeader>
+      <PageHeader>Park Asset Management (View All)</PageHeader>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
@@ -178,11 +146,14 @@ const filteredParkAssets = useMemo(() => {
           className="mb-4 bg-white"
           variant="filled"
         />
-        {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-          <Button type="primary" onClick={() => navigate('create')}>
+          <Button type="primary" onClick={() => navigate('/parkasset')}>
+    View Assets By Status
+  </Button>
+
+          <Button type="primary" onClick={() => navigate('/parkasset/create')}>
             Create Park Asset
           </Button>
-        )}
+
       </Flex>
       <Card>
         <Table

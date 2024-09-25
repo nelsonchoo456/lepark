@@ -220,7 +220,7 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
 
   const breadcrumbItems = [
     {
-      title: 'Asset Management',
+      title: 'Park Asset Management',
       pathKey: '/parkasset',
       isMain: true,
     },
@@ -408,19 +408,25 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
             </Form.Item>
           </Form>
         )}
-        {showSuccessAlert && (
+                {showSuccessAlert && (
           <Result
             status="success"
-            title="Created new Asset"
-            subTitle={createdAssetName && <>Asset name: {createdAssetName}</>}
+            title={createMultiple ? "Created new Assets" : "Created new Asset"}
+            subTitle={createdAssetName && <>Asset name(s): {createdAssetName}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/parkasset')}>
-                Back to Asset Management
+                Back to Park Asset Management
               </Button>,
-              <Button type="primary" key="view" onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}>
-                View new Asset
-              </Button>,
-            ]}
+              !createMultiple && (
+                <Button
+                  type="primary"
+                  key="view"
+                  onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}
+                >
+                  View new Asset
+                </Button>
+              ),
+            ].filter(Boolean)}
           />
         )}
       </Card>

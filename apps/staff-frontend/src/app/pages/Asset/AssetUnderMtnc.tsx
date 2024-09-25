@@ -1,91 +1,70 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { Button, Input, Table, Flex, Tag, notification, message, Tooltip, Card } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Button, Input, Table, Flex, Tag, message, Tooltip, Card, Modal } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { getAllParkAssets, ParkAssetResponse, StaffResponse, StaffType, ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '@lepark/data-access';
+import { deleteParkAsset, ParkAssetResponse, StaffResponse, StaffType, ParkAssetStatusEnum, ParkAssetTypeEnum, ParkAssetConditionEnum } from '@lepark/data-access';
+import { useFetchAssets } from '../../hooks/Asset/useFetchAssets';
+import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { ColumnsType } from 'antd/es/table';
-import PageHeader2 from '../../components/main/PageHeader2';
+import { MdDeleteOutline } from 'react-icons/md';
 
 const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
   const words = enumValue.split('_');
-
   if (enumType === 'type' || enumType === 'condition') {
     return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
   } else {
     return words.map(word => word.toUpperCase()).join(' ');
   }
 };
-
 const AssetUnderMtnc: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
-  const [underMaintenanceAssets, setUnderMaintenanceAssets] = useState<ParkAssetResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { assets, loading, triggerFetch } = useFetchAssets();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const breadcrumbItems = [
-    {
-      title: 'Park Asset Overview',
-      pathKey: '/parkasset',
-      isMain: true,
-    },
-    {
-      title: 'Park Assets Under Maintenance',
-      pathKey: '/parkasset/undermaintenance',
-      isCurrent: true,
-    },
-  ];
-
-  useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Under Maintenance Park Assets page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    } else {
-      fetchUnderMaintenanceAssetData();
-    }
-  }, [user, navigate]);
-
-  const fetchUnderMaintenanceAssetData = async () => {
-    setLoading(true);
-    try {
-      let response;
-      if (user?.role === StaffType.SUPERADMIN) {
-        response = await getAllParkAssets();
-      } else if ([StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(user?.role as StaffType)) {
-        if (!user?.parkId) {
-          throw new Error('User park ID not found');
-        }
-        response = await getAllParkAssets(user.parkId);
-      } else {
-        throw new Error('Unauthorized access');
-      }
-      const underMaintenanceAssets = response.data.filter(asset => asset.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE);
-      setUnderMaintenanceAssets(underMaintenanceAssets);
-    } catch (error) {
-      console.error('Error fetching under maintenance park asset data:', error);
-      message.error('Failed to fetch under maintenance park assets');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const underMaintenanceAssets = useMemo(() => {
+    return assets.filter(asset => asset.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE);
+  }, [assets]);
 
   const filteredUnderMaintenanceAssets = useMemo(() => {
-    return underMaintenanceAssets.filter((asset) => {
-      return Object.values(asset).some((value) =>
+    return underMaintenanceAssets.filter((asset) =>
+      Object.values(asset).some((value) =>
         value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
+      )
+    );
   }, [underMaintenanceAssets, searchQuery]);
+
+  const breadcrumbItems = [
+    { title: 'Park Asset Management', pathKey: '/parkasset', isMain: true },
+    { title: 'Park Assets Under Maintenance', pathKey: '/parkasset/undermaintenance', isCurrent: true },
+  ];
+
+  const handleDelete = async (id: string) => {
+    try {
+      const confirmed = await new Promise<boolean>((resolve) => {
+        Modal.confirm({
+          title: 'Confirm Deletion?',
+          content: 'Deleting an Asset cannot be undone. Are you sure you want to proceed?',
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false),
+          okText: "Confirm Delete",
+          okButtonProps: { danger: true }
+        });
+      });
+
+      if (!confirmed) return;
+
+      await deleteParkAsset(id);
+      triggerFetch();
+      message.success('Asset deleted successfully');
+    } catch (error) {
+      console.error('Error deleting asset:', error);
+      message.error('Failed to delete asset. Please try again.');
+    }
+  };
 
   const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -124,9 +103,9 @@ const AssetUnderMtnc: React.FC = () => {
       filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
       onFilter: (value, record) => record.parkAssetStatus === value,
       render: (status: string) => (
-        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : 'red'} bordered={false}>
-          {formatEnumLabel(status, 'status')}
-        </Tag>
+       <Tag color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : 'red'} bordered={false}>
+  {formatEnumLabel(status, 'status')}
+</Tag>
       ),
       width: '15%',
     },
@@ -138,11 +117,12 @@ const AssetUnderMtnc: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-            <Tooltip title="Edit Asset">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
-            </Tooltip>
-          )}
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '20%',
@@ -160,6 +140,9 @@ const AssetUnderMtnc: React.FC = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
+        <Button type="primary" onClick={() => navigate('/parkasset/create')}>
+          Create Park Asset
+        </Button>
       </Flex>
       <Card>
         <Table
