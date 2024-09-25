@@ -37,6 +37,19 @@ const TicketListingDetails: React.FC = () => {
   const handleInputChange = (key: string, value: any) => {
     setEditedTicketListing((prev) => {
       if (prev === null) return null;
+      
+      // Handle price input
+      if (key === 'price') {
+        const regex = /^\d*\.?\d{0,2}$/;
+        if (regex.test(value) || value === '') {
+          return {
+            ...prev,
+            [key]: value,
+          };
+        }
+        return prev;
+      }
+  
       return {
         ...prev,
         [key]: value,
@@ -45,7 +58,7 @@ const TicketListingDetails: React.FC = () => {
 
     // Check for existing active listing when changing to active
     if (key === 'isActive' && value === true) {
-      checkExistingActiveListing();
+    checkExistingActiveListing();
     }
   };
   
@@ -73,11 +86,12 @@ const TicketListingDetails: React.FC = () => {
 
   const validateInputs = () => {
     if (editedTicketListing === null) return false;
-    const { category, nationality, isActive } = editedTicketListing;
+    const { category, nationality, isActive, price } = editedTicketListing;
     return (
       category &&
       nationality &&
-      isActive !== undefined
+      isActive !== undefined &&
+      price !== undefined
     );
   };
 
@@ -98,7 +112,7 @@ const TicketListingDetails: React.FC = () => {
       const updatedTicketListingData: UpdateAttractionTicketListingData = {
         category: ticketListing?.category,
         nationality: ticketListing?.nationality,
-        price: ticketListing?.price,
+        price: parseFloat(editedTicketListing?.price.toString() || '0'),
         isActive: editedTicketListing?.isActive,
         attractionId: ticketListing?.attractionId,
       };
@@ -163,7 +177,32 @@ const TicketListingDetails: React.FC = () => {
     {
       key: 'price',
       label: 'Price',
-      children: `$${ticketListing?.price.toFixed(2)}`,
+      children: inEditMode ? (
+        <Input
+          type="number"
+          value={editedTicketListing?.price}
+          onChange={(e) => {
+            const value = e.target.value;
+            const regex = /^(\d+(\.\d{0,2})?)?$/;
+            if (regex.test(value)) {
+              handleInputChange('price', value);
+            } else {
+              e.target.value = value.replace(/[^\d.]/g, '');
+              const parts = e.target.value.split('.');
+              if (parts[1] && parts[1].length > 2) {
+                parts[1] = parts[1].slice(0, 2);
+              }
+              const newValue = parts.join('.');
+              handleInputChange('price', newValue);
+            }
+          }}
+          step="0.01"
+          min="0"
+          style={{ width: '100%' }}
+        />
+      ) : (
+        `$${parseFloat(ticketListing?.price.toString() || '0').toFixed(2)}`
+      ),
     },
     {
         key: 'isActive',

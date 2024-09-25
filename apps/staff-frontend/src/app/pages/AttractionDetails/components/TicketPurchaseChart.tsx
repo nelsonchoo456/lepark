@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import Chart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
-import { AttractionTicketListingResponse } from '@lepark/data-access';
+// import React, { useState, useEffect } from 'react';
+// import Chart from 'react-apexcharts';
+// import { ApexOptions } from 'apexcharts';
+// import { AttractionTicketListingResponse } from '@lepark/data-access';
 
-interface TicketPurchaseChartProps {
-  ticketListings: AttractionTicketListingResponse[];
-}
+// interface TicketPurchaseChartProps {
+//   ticketListings: AttractionTicketListingResponse[];
+// }
 
-const TicketPurchaseChart: React.FC<TicketPurchaseChartProps> = ({ ticketListings }) => {
-  const [chartData, setChartData] = useState<{ dates: string[], series: number[] }>({
-    dates: [],
-    series: [],
-  });
+// const TicketPurchaseChart: React.FC<TicketPurchaseChartProps> = ({ ticketListings }) => {
+//   const [chartData, setChartData] = useState<{ dates: string[], series: number[] }>({
+//     dates: [],
+//     series: [],
+//   });
 
 //   useEffect(() => {
 //     // Sort ticketListings by date
@@ -40,43 +40,43 @@ const TicketPurchaseChart: React.FC<TicketPurchaseChartProps> = ({ ticketListing
 //     setChartData({ dates, series });
 //   }, [ticketListings]);
 
-  const options: ApexOptions = {
-    chart: {
-      type: 'line',
-      height: 350,
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    xaxis: {
-      categories: chartData.dates,
-      type: 'datetime',
-    },
-    yaxis: {
-      title: {
-        text: 'Total Tickets Sold',
-      },
-    },
-    tooltip: {
-      x: {
-        format: 'dd MMM yyyy'
-      },
-    },
-  };
+//   const options: ApexOptions = {
+//     chart: {
+//       type: 'line',
+//       height: 350,
+//     },
+//     stroke: {
+//       curve: 'smooth',
+//     },
+//     xaxis: {
+//       categories: chartData.dates,
+//       type: 'datetime',
+//     },
+//     yaxis: {
+//       title: {
+//         text: 'Total Tickets Sold',
+//       },
+//     },
+//     tooltip: {
+//       x: {
+//         format: 'dd MMM yyyy'
+//       },
+//     },
+//   };
 
-  const series = [{
-    name: 'Total Tickets Sold',
-    data: chartData.series,
-  }];
+//   const series = [{
+//     name: 'Total Tickets Sold',
+//     data: chartData.series,
+//   }];
 
-  return (
-    <Chart
-      options={options}
-      series={series}
-      type="line"
-      height={350}
-    />
-  );
-};
+//   return (
+//     <Chart
+//       options={options}
+//       series={series}
+//       type="line"
+//       height={350}
+//     />
+//   );
+// };
 
-export default TicketPurchaseChart;
+// export default TicketPurchaseChart;

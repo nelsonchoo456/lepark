@@ -15,7 +15,7 @@ import {
 } from '@lepark/data-access';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
-import TicketPurchaseChart from './TicketPurchaseChart';
+// import TicketPurchaseChart from './TicketPurchaseChart';
 
 interface TicketsTabProps {
   attraction: AttractionResponse | null;
@@ -256,7 +256,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
 
   return (
     <>
-      <TicketPurchaseChart ticketListings={ticketListings} />
+      {/* <TicketPurchaseChart ticketListings={ticketListings} /> */}
       <Flex justify="space-between" align="center" className="mb-4">
         <Input
           suffix={<FiSearch />}
