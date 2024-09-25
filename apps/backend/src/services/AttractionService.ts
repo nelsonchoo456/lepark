@@ -1,6 +1,6 @@
-import { Attraction } from '@prisma/client';
+import { Attraction, AttractionTicketListing } from '@prisma/client';
 import { z } from 'zod';
-import { AttractionSchema, AttractionSchemaType } from '../schemas/attractionSchema';
+import { AttractionSchema, AttractionSchemaType, AttractionTicketListingSchema, AttractionTicketListingSchemaType } from '../schemas/attractionSchema';
 import AttractionDao from '../dao/AttractionDao';
 import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
@@ -146,6 +146,57 @@ class AttractionService {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
     }
+  }
+
+  public async createAttractionTicketListing(data: AttractionTicketListingSchemaType): Promise<AttractionTicketListing> {
+    try {
+      const formattedData = dateFormatter(data);
+      AttractionTicketListingSchema.parse(formattedData);
+
+      // Check if the attraction exists
+      const attraction = await AttractionDao.getAttractionById(formattedData.attractionId);
+      if (!attraction) {
+        throw new Error('Attraction not found');
+      }
+
+      return AttractionDao.createAttractionTicketListing(formattedData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+
+  public async getAllAttractionTicketListings(): Promise<AttractionTicketListing[]> {
+    return AttractionDao.getAllAttractionTicketListings();
+  }
+
+  public async getAttractionTicketListingsByAttractionId(attractionId: string): Promise<AttractionTicketListing[]> {
+    return AttractionDao.getAttractionTicketListingsByAttractionId(attractionId);
+  }
+
+  public async updateAttractionTicketListing(id: string, data: Partial<AttractionTicketListingSchemaType>): Promise<AttractionTicketListing> {
+    try {
+      const existingTicketListing = await AttractionDao.getAttractionTicketListingById(id);
+      if (!existingTicketListing) {
+        throw new Error('Ticket listing not found');
+      }
+
+      AttractionTicketListingSchema.parse(data);
+      return AttractionDao.updateAttractionTicketListing(id, data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+
+  public async deleteAttractionTicketListing(id: string): Promise<void> {
+    await AttractionDao.deleteAttractionTicketListing(id);
   }
 }
 

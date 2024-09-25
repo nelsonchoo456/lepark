@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Attraction } from '@prisma/client';
+import { PrismaClient, Prisma, Attraction, AttractionTicketListing } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -29,6 +29,30 @@ class AttractionDao {
 
   async getAttractionByTitleAndParkId(title: string, parkId: number): Promise<Attraction | null> {
     return prisma.attraction.findFirst({ where: { title, parkId } });
+  }
+
+  async createAttractionTicketListing(data: Prisma.AttractionTicketListingCreateInput): Promise<AttractionTicketListing> {
+    return prisma.attractionTicketListing.create({ data });
+  }
+
+  async getAllAttractionTicketListings(): Promise<AttractionTicketListing[]> {
+    return prisma.attractionTicketListing.findMany();
+  }
+
+  async getAttractionTicketListingsByAttractionId(attractionId: string): Promise<AttractionTicketListing[]> {
+    return prisma.attractionTicketListing.findMany({ where: { attractionId } });
+  }
+
+  async getAttractionTicketListingById(id: string): Promise<AttractionTicketListing | null> {
+    return prisma.attractionTicketListing.findUnique({ where: { id } });
+  }
+
+  async updateAttractionTicketListing(id: string, data: Prisma.AttractionTicketListingUpdateInput): Promise<AttractionTicketListing> {
+    return prisma.attractionTicketListing.update({ where: { id }, data });
+  }
+
+  async deleteAttractionTicketListing(id: string): Promise<void> {
+    await prisma.attractionTicketListing.delete({ where: { id } });
   }
 }
 

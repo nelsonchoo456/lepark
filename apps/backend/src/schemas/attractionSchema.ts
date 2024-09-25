@@ -1,4 +1,4 @@
-import { AttractionStatusEnum } from '@prisma/client';
+import { AttractionStatusEnum, AttractionTicketCategoryEnum, AttractionTicketNationalityEnum } from '@prisma/client';
 import { z } from 'zod';
 
 export const AttractionSchema = z.object({
@@ -13,4 +13,13 @@ export const AttractionSchema = z.object({
   parkId: z.number()
 });
 
+export const AttractionTicketListingSchema = z.object({
+  category: z.nativeEnum(AttractionTicketCategoryEnum),
+  nationality: z.nativeEnum(AttractionTicketNationalityEnum),
+  price: z.number(),
+  isActive: z.boolean(),
+  attractionId: z.string()
+});
+
 export type AttractionSchemaType = z.infer<typeof AttractionSchema>;
+export type AttractionTicketListingSchemaType = z.infer<typeof AttractionTicketListingSchema>;

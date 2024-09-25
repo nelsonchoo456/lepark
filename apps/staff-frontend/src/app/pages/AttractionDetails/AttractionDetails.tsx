@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Flex, notification, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
@@ -10,6 +10,7 @@ import InformationTab from './components/InformationTab';
 import { FiExternalLink } from 'react-icons/fi';
 import LocationTab from './components/LocationTab';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
+import TicketsTab from './components/TicketsTab';
 
 const { Text } = Typography;
 
@@ -19,6 +20,11 @@ const AttractionDetails = () => {
   const { attraction, park, loading } = useRestrictAttractions(id);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
+  const [, setRefreshToggle] = useState(false);
+  
+  const triggerFetch = useCallback(() => {
+    setRefreshToggle(prev => !prev);
+  }, []);
 
   const descriptionsItems = [
     {
@@ -56,7 +62,7 @@ const AttractionDetails = () => {
     {
       key: 'tickets',
       label: 'Tickets',
-      children: <Empty description={'Tickets Coming Soon'}></Empty>,
+      children: attraction ? <TicketsTab attraction={attraction} onTicketListingCreated={triggerFetch} /> : <></>,
     },
     {
       key: 'occupancy',

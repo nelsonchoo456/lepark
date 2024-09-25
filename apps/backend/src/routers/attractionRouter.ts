@@ -1,6 +1,6 @@
 import express from 'express';
 import AttractionService from '../services/AttractionService';
-import { AttractionSchemaType } from '../schemas/attractionSchema';
+import { AttractionSchemaType, AttractionTicketListingSchemaType } from '../schemas/attractionSchema';
 import multer from 'multer';
 
 const router = express.Router();
@@ -85,6 +85,55 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+router.post('/createAttractionTicketListing', async (req, res) => {
+  try {
+    const ticketListing = await AttractionService.createAttractionTicketListing(req.body);
+    res.status(201).json(ticketListing);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getAllAttractionTicketListings', async (req, res) => {
+  try {
+    const ticketListings = await AttractionService.getAllAttractionTicketListings();
+    res.status(200).json(ticketListings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getAttractionTicketListingsByAttractionId/:attractionId', async (req, res) => {
+  try {
+    const attractionId = req.params.attractionId;
+    const ticketListings = await AttractionService.getAttractionTicketListingsByAttractionId(attractionId);
+    res.status(200).json(ticketListings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/updateAttractionTicketListing/:id', async (req, res) => {
+  try {
+    const ticketListingId = req.params.id;
+    const updateData: Partial<AttractionTicketListingSchemaType> = req.body;
+    const updatedTicketListing = await AttractionService.updateAttractionTicketListing(ticketListingId, updateData);
+    res.status(200).json(updatedTicketListing);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/deleteAttractionTicketListing/:id', async (req, res) => {
+  try {
+    const ticketListingId = req.params.id;
+    await AttractionService.deleteAttractionTicketListing(ticketListingId);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
