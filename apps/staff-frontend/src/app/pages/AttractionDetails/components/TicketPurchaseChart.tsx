@@ -13,32 +13,32 @@ const TicketPurchaseChart: React.FC<TicketPurchaseChartProps> = ({ ticketListing
     series: [],
   });
 
-  useEffect(() => {
-    // // Sort ticketListings by date
-    // const sortedListings = [...ticketListings].sort((a, b) => 
-    //   new Date(a.date).getTime() - new Date(b.date).getTime()
-    // );
+//   useEffect(() => {
+//     // Sort ticketListings by date
+//     const sortedListings = [...ticketListings].sort((a, b) => 
+//       new Date(a.date).getTime() - new Date(b.date).getTime()
+//     );
 
-    // // Aggregate total tickets sold per date
-    // const aggregatedData = sortedListings.reduce((acc, listing) => {
-    //   const date = new Date(listing.date).toISOString().split('T')[0];
-    //   if (!acc[date]) {
-    //     acc[date] = 0;
-    //   }
-    //   acc[date] += listing.ticketsSold;
-    //   return acc;
-    // }, {} as Record<string, number>);
+//     // Aggregate total tickets sold per date
+//     const aggregatedData = sortedListings.reduce((acc, listing) => {
+//       const date = new Date(listing.date).toISOString().split('T')[0];
+//       if (!acc[date]) {
+//         acc[date] = 0;
+//       }
+//       acc[date] += listing.ticketsSold;
+//       return acc;
+//     }, {} as Record<string, number>);
 
-    // // Calculate cumulative sum
-    // let cumulativeSum = 0;
-    // const dates = Object.keys(aggregatedData);
-    // const series = dates.map(date => {
-    //   cumulativeSum += aggregatedData[date];
-    //   return cumulativeSum;
-    // });
+//     // Calculate cumulative sum
+//     let cumulativeSum = 0;
+//     const dates = Object.keys(aggregatedData);
+//     const series = dates.map(date => {
+//       cumulativeSum += aggregatedData[date];
+//       return cumulativeSum;
+//     });
 
-    // setChartData({ dates, series });
-  }, [ticketListings]);
+//     setChartData({ dates, series });
+//   }, [ticketListings]);
 
   const options: ApexOptions = {
     chart: {

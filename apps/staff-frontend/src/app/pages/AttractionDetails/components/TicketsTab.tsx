@@ -11,6 +11,7 @@ import {
   deleteAttractionTicketListing,
   AttractionTicketCategoryEnum,
   AttractionTicketNationalityEnum,
+  updateAttractionTicketListingDetails,
 } from '@lepark/data-access';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
@@ -32,6 +33,9 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [ticketListingToDelete, setTicketListingToDelete] = useState<string | null>(null);
   const { user } = useAuth<StaffResponse>();
+  const [promptModalVisible, setPromptModalVisible] = useState(false);
+  const [existingListing, setExistingListing] = useState<AttractionTicketListingResponse | null>(null);
+  const [newListingValues, setNewListingValues] = useState<any>(null);
 
   const canAddOrDelete = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
 
@@ -41,6 +45,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         try {
           const response = await getAttractionTicketListingsByAttractionId(attraction.id);
           setTicketListings(response.data);
+          setFilteredListings(response.data);
         } catch (error) {
           console.error('Error fetching ticket listings:', error);
         } finally {
@@ -53,13 +58,16 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
   }, [attraction]);
 
   useEffect(() => {
-    const lowercasedFilter = searchTerm.toLowerCase();
-    const filtered = ticketListings.filter(
-      (listing) =>
-        listing.category.toLowerCase().includes(lowercasedFilter) ||
-        listing.nationality.toLowerCase().includes(lowercasedFilter) ||
-        listing.price.toString().includes(lowercasedFilter),
-    );
+    const searchTerms = searchTerm.toLowerCase().split(' ').filter(term => term.length > 0);
+    const filtered = ticketListings.filter((listing) => {
+      const listingString = `
+        ${listing.category.toLowerCase()}
+        ${listing.nationality.toLowerCase()}
+        ${listing.price.toString()}
+        ${listing.isActive ? 'active' : 'inactive'}
+      `;
+      return searchTerms.every(term => listingString.includes(term));
+    });
     setFilteredListings(filtered);
   }, [searchTerm, ticketListings]);
 
@@ -75,23 +83,87 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
   const handleSubmit = async (values: any) => {
     if (attraction?.id) {
       try {
-        await createAttractionTicketListing({
-          ...values,
+        const newListingData = {
+          category: values.category,
+          nationality: values.nationality,
+          price: parseFloat(values.price),
           attractionId: attraction.id,
-          price: parseFloat(values.price), // Convert price to a number
-        });
-        message.success('Ticket listing created successfully');
-        setIsModalVisible(false);
-        form.resetFields();
-        // Refresh ticket listings
-        const response = await getAttractionTicketListingsByAttractionId(attraction.id);
-        setTicketListings(response.data);
-        onTicketListingCreated();
+          isActive: true
+        };
+  
+        // Check if an active ticket listing with the same category and nationality already exists
+        const existing = ticketListings.find(
+          (listing) => listing.category === values.category && listing.nationality === values.nationality && listing.isActive,
+        );
+  
+        if (existing) {
+          setExistingListing(existing);
+          setNewListingValues(newListingData);
+          setPromptModalVisible(true);
+          return;
+        }
+  
+        await createNewListing(newListingData);
       } catch (error) {
         console.error('Error creating ticket listing:', error);
         message.error('Failed to create ticket listing');
       }
     }
+  };
+  
+  const createNewListing = async (newListingData: any) => {
+    await createAttractionTicketListing(newListingData);
+    message.success('Ticket listing created successfully');
+    setIsModalVisible(false);
+    form.resetFields();
+    // Refresh ticket listings
+    const response = await getAttractionTicketListingsByAttractionId(attraction!.id);
+    setTicketListings(response.data);
+    setFilteredListings(response.data);
+    onTicketListingCreated();
+  };
+
+  const handleMakeInactiveAndCreate = async () => {
+    if (existingListing && newListingValues && attraction?.id) {
+      try {
+        // Make the existing listing inactive
+        await updateAttractionTicketListingDetails(existingListing.id, {
+          ...existingListing,
+          isActive: false
+        });
+  
+        // Create the new listing
+        await createAttractionTicketListing({
+          category: newListingValues.category,
+          nationality: newListingValues.nationality,
+          price: parseFloat(newListingValues.price),
+          attractionId: attraction.id,
+          isActive: true
+        });
+  
+        message.success('Existing listing deactivated and new listing created successfully');
+        setPromptModalVisible(false);
+        setIsModalVisible(false);
+        setExistingListing(null);
+        setNewListingValues(null);
+        form.resetFields();
+        
+        // Refresh ticket listings
+        const response = await getAttractionTicketListingsByAttractionId(attraction.id);
+        setTicketListings(response.data);
+        setFilteredListings(response.data);
+        onTicketListingCreated();
+      } catch (error) {
+        console.error('Error updating and creating ticket listings:', error);
+        message.error('Failed to update and create ticket listings');
+      }
+    }
+  };
+
+  const handleCancelPrompt = () => {
+    setPromptModalVisible(false);
+    setExistingListing(null);
+    setNewListingValues(null);
   };
 
   const showDeleteConfirm = (id: string) => {
@@ -169,7 +241,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
       render: (_, record) => (
         <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
-            <Button type="link" icon={<FiEye />} onClick={() => navigate(`ticketlisting/${record.id}/details`)} />
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`ticketlisting/${record.id}`)} />
           </Tooltip>
           {canAddOrDelete && (
             <Tooltip title="Delete">
@@ -184,7 +256,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
 
   return (
     <>
-      <TicketPurchaseChart ticketListings={ticketListings} />   
+      <TicketPurchaseChart ticketListings={ticketListings} />
       <Flex justify="space-between" align="center" className="mb-4">
         <Input
           suffix={<FiSearch />}
@@ -212,20 +284,20 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
 
       <Modal title="Add Ticket Listing" open={isModalVisible} onCancel={handleCancel} footer={null}>
         <Form form={form} onFinish={handleSubmit} layout="vertical">
-          <Form.Item name="category" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
-            <Select>
-              {Object.values(AttractionTicketCategoryEnum).map((category) => (
-                <Select.Option key={category} value={category}>
-                  {category}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
           <Form.Item name="nationality" label="Nationality" rules={[{ required: true, message: 'Please select a nationality' }]}>
             <Select>
               {Object.values(AttractionTicketNationalityEnum).map((nationality) => (
                 <Select.Option key={nationality} value={nationality}>
                   {nationality}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="category" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
+            <Select>
+              {Object.values(AttractionTicketCategoryEnum).map((category) => (
+                <Select.Option key={category} value={category}>
+                  {category}
                 </Select.Option>
               ))}
             </Select>
@@ -239,18 +311,16 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
                 const value = e.target.value;
                 const regex = /^\d+(\.\d{0,2})?$/;
                 if (regex.test(value) || value === '') {
-                  e.target.value = value;
+                  form.setFieldsValue({ price: value });
                 } else {
                   e.target.value = value.slice(0, -1);
+                  form.setFieldsValue({ price: e.target.value });
                 }
               }}
             />
           </Form.Item>
-          <Form.Item name="isActive" label="Status" rules={[{ required: true, message: 'Please select a status' }]}>
-            <Select>
-              <Select.Option value={true}>Active</Select.Option>
-              <Select.Option value={false}>Inactive</Select.Option>
-            </Select>
+          <Form.Item name="isActive" label="Status" initialValue={true} valuePropName="checked">
+            <Input value="Active" readOnly />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
@@ -270,6 +340,18 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         okButtonProps={{ danger: true }}
       >
         <p>Are you sure you want to delete this ticket listing? This action cannot be undone.</p>
+      </Modal>
+
+      <Modal
+        title="Duplicate Active Listing"
+        open={promptModalVisible}
+        onOk={handleMakeInactiveAndCreate}
+        onCancel={handleCancelPrompt}
+        okText="Make Inactive and Create New"
+        cancelText="Cancel"
+      >
+        <p>An active ticket listing with this category and nationality already exists.</p>
+        <p>Would you like to make the existing listing inactive and create a new one?</p>
       </Modal>
     </>
   );

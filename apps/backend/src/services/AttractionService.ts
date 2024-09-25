@@ -177,7 +177,11 @@ class AttractionService {
     return AttractionDao.getAttractionTicketListingsByAttractionId(attractionId);
   }
 
-  public async updateAttractionTicketListing(id: string, data: Partial<AttractionTicketListingSchemaType>): Promise<AttractionTicketListing> {
+  public async getAttractionTicketListingById(id: string): Promise<AttractionTicketListing> {
+    return AttractionDao.getAttractionTicketListingById(id);
+  }
+
+  public async updateAttractionTicketListingDetails(id: string, data: Partial<AttractionTicketListingSchemaType>): Promise<AttractionTicketListing> {
     try {
       const existingTicketListing = await AttractionDao.getAttractionTicketListingById(id);
       if (!existingTicketListing) {
@@ -185,7 +189,7 @@ class AttractionService {
       }
 
       AttractionTicketListingSchema.parse(data);
-      return AttractionDao.updateAttractionTicketListing(id, data);
+      return AttractionDao.updateAttractionTicketListingDetails(id, data);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);

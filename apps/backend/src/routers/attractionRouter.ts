@@ -116,11 +116,21 @@ router.get('/getAttractionTicketListingsByAttractionId/:attractionId', async (re
   }
 });
 
-router.put('/updateAttractionTicketListing/:id', async (req, res) => {
+router.get('/getAttractionTicketListingById/:id', async (req, res) => {
+  try {
+    const ticketListingId = req.params.id;
+    const ticketListing = await AttractionService.getAttractionTicketListingById(ticketListingId);
+    res.status(200).json(ticketListing);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/updateAttractionTicketListingDetails/:id', async (req, res) => {
   try {
     const ticketListingId = req.params.id;
     const updateData: Partial<AttractionTicketListingSchemaType> = req.body;
-    const updatedTicketListing = await AttractionService.updateAttractionTicketListing(ticketListingId, updateData);
+    const updatedTicketListing = await AttractionService.updateAttractionTicketListingDetails(ticketListingId, updateData);
     res.status(200).json(updatedTicketListing);
   } catch (error) {
     res.status(400).json({ error: error.message });

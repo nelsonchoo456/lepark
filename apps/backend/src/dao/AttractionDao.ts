@@ -47,7 +47,11 @@ class AttractionDao {
     return prisma.attractionTicketListing.findUnique({ where: { id } });
   }
 
-  async updateAttractionTicketListing(id: string, data: Prisma.AttractionTicketListingUpdateInput): Promise<AttractionTicketListing> {
+  async getAttractionTicketListingByAttractionId(attractionId: string): Promise<AttractionTicketListing | null> {
+    return prisma.attractionTicketListing.findFirst({ where: { attractionId } });
+  }
+
+  async updateAttractionTicketListingDetails(id: string, data: Prisma.AttractionTicketListingUpdateInput): Promise<AttractionTicketListing> {
     return prisma.attractionTicketListing.update({ where: { id }, data });
   }
 

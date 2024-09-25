@@ -11,8 +11,7 @@ import { FiExternalLink } from 'react-icons/fi';
 import LocationTab from './components/LocationTab';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 import TicketsTab from './components/TicketsTab';
-
-const { Text } = Typography;
+import { useLocation } from 'react-router-dom';
 
 const AttractionDetails = () => {
   const { user } = useAuth<StaffResponse>();
@@ -21,9 +20,19 @@ const AttractionDetails = () => {
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [, setRefreshToggle] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState('information');
+  const location = useLocation();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location]);
+
   const triggerFetch = useCallback(() => {
-    setRefreshToggle(prev => !prev);
+    setRefreshToggle((prev) => !prev);
   }, []);
 
   const descriptionsItems = [
@@ -120,11 +129,7 @@ const AttractionDetails = () => {
                 <AttractionStatusTag status={attraction?.status} />
               </Space>
               {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
-                <Button
-                  icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
-                  type="text"
-                  onClick={() => navigate(`edit`)}
-                />
+                <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`edit`)} />
               ) : null}
             </div>
             <Typography.Paragraph
@@ -140,7 +145,11 @@ const AttractionDetails = () => {
 
         <Tabs
           centered
-          defaultActiveKey="about"
+          activeKey={activeTab}
+          onChange={(key) => {
+            setActiveTab(key);
+            navigate(`/attraction/${id}?tab=${key}`, { replace: true });
+          }}
           items={tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"

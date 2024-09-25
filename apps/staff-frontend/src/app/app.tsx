@@ -62,6 +62,7 @@ import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
+import TicketListingDetails from './pages/AttractionDetails/components/TicketListingDetails';
 
 export function App() {
   return (
@@ -335,6 +336,7 @@ export function App() {
                     <Route path=":id/edit-map" element={<AttractionEditMap />} />
                   </Route>
                   <Route path=":id" element={<AttractionDetails />} />
+                  <Route path=":id/ticketlisting/:ticketListingId" element={<TicketListingDetails />} />
                 </Route>
               </Route>
 
