@@ -70,7 +70,7 @@ const MainLayout = () => {
     label: user?.role === 'superadmin' ? 'Parks' : 'Park',
     children: [
       {
-        key: 'park',
+        key: 'park/list',
         label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
         onClick: parkOnClick,
       },
@@ -182,12 +182,12 @@ const MainLayout = () => {
             {
               key: 'plant-task',
               label: 'Plant Tasks',
-              onClick: () => navigate('/plant-task'),
+              onClick: () => navigate('/plant-tasks'),
             },
             {
               key: 'maintenance-task',
               label: 'Maintenance Tasks',
-              onClick: () => navigate('/maintenance-task'),
+              onClick: () => navigate('/maintenance-tasks'),
             },
           ],
         }
@@ -205,9 +205,7 @@ const MainLayout = () => {
       label: 'Settings',
       onClick: () => navigate('/settings'),
     },
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'PARK_RANGER'
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
           key: 'attraction',
           icon: <TbTicket />,
@@ -215,16 +213,14 @@ const MainLayout = () => {
           onClick: () => navigate('/attraction'),
         }
       : null,
-      userRole === 'MANAGER' ||
-      userRole === 'SUPERADMIN' ||
-      userRole === 'PARK_RANGER'
-        ? {
-            key: 'event',
-            icon: <TbCalendarEvent />,
-            label: 'Events',
-            onClick: () => navigate('/event'),
-          }
-        : null,
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'event',
+          icon: <TbCalendarEvent />,
+          label: 'Events',
+          onClick: () => navigate('/event'),
+        }
+      : null,
   ];
 
   return (
