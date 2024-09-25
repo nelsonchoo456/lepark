@@ -99,8 +99,6 @@ const AssetEdit = () => {
         parkAssetStatus: values.parkAssetStatus,
         acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
         recurringMaintenanceDuration: values.recurringMaintenanceDuration,
-        lastMaintenanceDate: dayjs(values.lastMaintenanceDate).toISOString(),
-        nextMaintenanceDate: dayjs(values.nextMaintenanceDate).toISOString(),
         supplier: values.supplier,
         supplierContactNumber: values.supplierContactNumber,
         parkAssetCondition: values.parkAssetCondition,
@@ -269,22 +267,6 @@ if (assetLoading || facilitiesLoading) {
                   </Select.Option>
                 ))}
               </Select>
-            </Form.Item>
-
-            <Form.Item name="lastMaintenanceDate" label="Last Maintenance Date" rules={[{ required: true }]}>
-              <DatePicker
-                className="w-full"
-                disabledDate={disabledLastMaintenanceDate}
-                onChange={onLastMaintenanceDateChange}
-              />
-            </Form.Item>
-
-            <Form.Item name="nextMaintenanceDate" label="Next Maintenance Date" rules={[{ required: true }]}>
-              <DatePicker
-                className="w-full"
-                disabledDate={disabledNextMaintenanceDate}
-                onChange={onNextMaintenanceDateChange}
-              />
             </Form.Item>
 
             <Form.Item

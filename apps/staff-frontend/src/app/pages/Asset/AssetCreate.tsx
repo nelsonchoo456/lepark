@@ -11,7 +11,7 @@ import {
   FacilityResponse,
   getAllFacilities,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -69,6 +69,8 @@ const AssetCreate = () => {
   const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+  const [createMultiple, setCreateMultiple] = useState(false);
+const [assetQuantity, setAssetQuantity] = useState<number>(1);
 
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -102,47 +104,61 @@ const AssetCreate = () => {
     wrapperCol: { offset: 8, span: 16 },
   };
 
-  const onFinish = async (values: any) => {
-    setIsSubmitting(true);
-    try {
-       const assetData: ParkAssetData = {
-        parkAssetName: values.parkAssetName,
-        parkAssetType: values.parkAssetType,
-        parkAssetDescription: values.parkAssetDescription,
-        parkAssetStatus: values.parkAssetStatus,
-        acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
-        recurringMaintenanceDuration: values.recurringMaintenanceDuration,
-        //lastMaintenanceDate: null,
-        //nextMaintenanceDate: null,
-        supplier: values.supplier,
-        supplierContactNumber: values.supplierContactNumber,
-        parkAssetCondition: values.parkAssetCondition,
-        images: [],
-        remarks: values.remarks,
-        facilityId: values.facilityId,
-      };
+ const onFinish = async (values: any) => {
+  setIsSubmitting(true);
+  try {
+    const assetData: ParkAssetData = {
+      parkAssetName: values.parkAssetName,
+      parkAssetType: values.parkAssetType,
+      parkAssetDescription: values.parkAssetDescription,
+      parkAssetStatus: values.parkAssetStatus,
+      acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
+      recurringMaintenanceDuration: values.recurringMaintenanceDuration,
+      supplier: values.supplier,
+      supplierContactNumber: values.supplierContactNumber,
+      parkAssetCondition: values.parkAssetCondition,
+      images: [],
+      remarks: values.remarks,
+      facilityId: values.facilityId,
+    };
 
-      if (selectedFiles.length === 0) {
-        Modal.error({
-          title: 'Error',
-          content: 'Please upload at least one image.',
-        });
-        return;
-      }
-
-      const response = await createParkAsset(assetData, selectedFiles);
-      console.log('Asset created:', response.data);
-      setCreatedAssetName(values.parkAssetName);
-      setCreatedAsset(response.data);
-      setShowSuccessAlert(true);
-      form.resetFields();
-    } catch (error) {
-      message.error(String(error));
-    } finally {
-      setIsSubmitting(false);
+    if (!createMultiple && selectedFiles.length === 0) {
+      Modal.error({
+        title: 'Error',
+        content: 'Please upload at least one image.',
+      });
+      return;
     }
-  };
 
+    const createAsset = async (name: string) => {
+      const assetWithName = { ...assetData, parkAssetName: name };
+      const response = await createParkAsset(assetWithName, createMultiple ? [] : selectedFiles);
+      return response.data;
+    };
+
+    if (createMultiple) {
+      const createdAssets = [];
+      for (let i = 1; i <= assetQuantity; i++) {
+        const assetName = `${values.parkAssetName} ${i}`;
+        const asset = await createAsset(assetName);
+        createdAssets.push(asset);
+      }
+      setCreatedAssetName(`${values.parkAssetName} 1 - ${values.parkAssetName} ${assetQuantity}`);
+      setCreatedAsset(createdAssets);
+    } else {
+      const asset = await createAsset(values.parkAssetName);
+      setCreatedAssetName(values.parkAssetName);
+      setCreatedAsset(asset);
+    }
+
+    setShowSuccessAlert(true);
+    form.resetFields();
+  } catch (error) {
+    message.error(String(error));
+  } finally {
+    setIsSubmitting(false);
+  }
+};
    const disabledLastMaintenanceDate = (current: dayjs.Dayjs) => {
     return current && current > dayjs().endOf('day');
   };
@@ -260,13 +276,14 @@ const AssetCreate = () => {
 
                <Form.Item
               name="recurringMaintenanceDuration"
-              label="Recurring Maintenance (days)"
+              label="Recurring Maintenance"
               rules={[{ required: true, type: 'number', min: 1, message: 'Please enter a valid number of days' }]}
             >
               <InputNumber
                 className="w-full"
                 min={1}
                 onChange={onRecurringMaintenanceChange}
+                placeholder='Enter Recurring Maintenance in days'
               />
             </Form.Item>
 
@@ -313,10 +330,55 @@ const AssetCreate = () => {
               </Select>
             </Form.Item>
 
+            <Form.Item
+  name="createMultiple"
+  label="Create multiple assets?"
+  valuePropName="checked"
+  className="flex-row-reverse justify-end"
+>
+  <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
+</Form.Item>
 
-            <Form.Item label="Upload Images" required tooltip="At least one image is required">
-              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-            </Form.Item>
+{createMultiple && (
+  <Form.Item
+    name="assetQuantity"
+    label="Park Asset Quantity"
+    rules={[{ required: true, type: 'number', min: 1 , max:10}]}
+  >
+    <InputNumber onChange={(value) => setAssetQuantity(value as number)} />
+  </Form.Item>
+)}
+
+
+            {!createMultiple && (
+  <>
+    <Form.Item label="Upload Images" required tooltip="At least one image is required">
+      <ImageInput
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        accept="image/png, image/jpeg"
+        onClick={onInputClick}
+      />
+    </Form.Item>
+
+    {previewImages.length > 0 && (
+      <Form.Item label="Image Previews">
+        <div className="flex flex-wrap gap-2">
+          {previewImages.map((imgSrc, index) => (
+            <img
+              key={index}
+              src={imgSrc}
+              alt={`Preview ${index}`}
+              className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+              onClick={() => removeImage(index)}
+            />
+          ))}
+        </div>
+      </Form.Item>
+    )}
+  </>
+)}
 
             {previewImages.length > 0 && (
               <Form.Item label="Image Previews">

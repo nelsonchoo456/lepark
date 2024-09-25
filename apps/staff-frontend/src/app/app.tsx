@@ -50,7 +50,6 @@ import AssetCreate from './pages/Asset/AssetCreate';
 import AssetDetails from './pages/Asset/AssetDetails';
 import AssetEdit from './pages/Asset/AssetEdit';
 import SensorList from './pages/Sensor/SensorList';
-import SensorCreate from './pages/Sensor/SensorCreate';
 import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
@@ -63,7 +62,11 @@ import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
 import HubEdit from './pages/Hub/HubEdit';
 import SensorCreate2 from './pages/Sensor/SensorCreate2';
 import SensorMap from './pages/Sensor/SensorMap';
-
+import AssetListGrouped from './pages/Asset/AssetListGrouped';
+import AssetAvail from './pages/Asset/AssetAvail';
+import AssetInUse from './pages/Asset/AssetInUse';
+import AssetUnderMtnc from './pages/Asset/AssetUnderMtnc';
+import AssetDecomm from './pages/Asset/AssetDecomm';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -270,7 +273,12 @@ export function App() {
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>
                 <Route path="/parkasset">
-                  <Route index element={<AssetList />} />
+                  <Route index element={<AssetListGrouped />} />
+                  <Route path="viewall" element={<AssetList />}  />
+                  <Route path="available" element={<AssetAvail />}  />
+                  <Route path="inuse" element={<AssetInUse />}  />
+                  <Route path="undermaintenance" element={<AssetUnderMtnc />}  />
+                  <Route path="decommissioned" element={<AssetDecomm />}  />
                   <Route path="create" element={<AssetCreate />} />
                   <Route path=":assetId" element={<AssetDetails />} />
                   <Route path="edit/:assetId" element={<AssetEdit />} />
