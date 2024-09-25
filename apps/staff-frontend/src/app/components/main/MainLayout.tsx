@@ -70,7 +70,7 @@ const MainLayout = () => {
     label: user?.role === 'superadmin' ? 'Parks' : 'Park',
     children: [
       {
-        key: 'park',
+        key: 'park/list',
         label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
         onClick: parkOnClick,
       },
@@ -182,12 +182,12 @@ const MainLayout = () => {
             {
               key: 'plant-task',
               label: 'Plant Tasks',
-              onClick: () => navigate('/plant-task'),
+              onClick: () => navigate('/plant-tasks'),
             },
             {
               key: 'maintenance-task',
               label: 'Maintenance Tasks',
-              onClick: () => navigate('/maintenance-task'),
+              onClick: () => navigate('/maintenance-tasks'),
             },
           ],
         }

@@ -37,3 +37,5 @@ export * from './lib/types/facility';
 export * from './lib/api/event';
 export * from './lib/types/event';
 
+export * from './lib/api/planttask';
+export * from './lib/types/planttask';
