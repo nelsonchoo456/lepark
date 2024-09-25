@@ -64,7 +64,7 @@ const ViewFacilityDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: facility ? <LocationTab facility={facility} /> : <p>Loading facility data...</p>,
+      children: facility ? <LocationTab facility={facility} park={park}/> : <p>Loading facility data...</p>,
     }
   ];
 

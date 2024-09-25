@@ -60,6 +60,7 @@ import EventDetails from './pages/EventDetails/EventDetails';
 import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
 import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
+import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
 
 export function App() {
   return (
@@ -371,7 +372,7 @@ export function App() {
                 >
                   <Route path="create" element={<FacilityCreate />} />
                   <Route path=":facilityId/edit" element={<FacilityEdit />} />
-                  <Route path=":facilityId/edit-location" element={<FacilityEdit />} />
+                  <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
                 </Route>
                 <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>

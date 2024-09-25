@@ -11,7 +11,7 @@ import { FaHome, FaTicketAlt } from 'react-icons/fa';
 
 interface MapTabProps {
   facility: FacilityResponse;
-  park?: ParkResponse;
+  park?: ParkResponse | null;
 }
 const MapTab = ({ facility, park }: MapTabProps) => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const MapTab = ({ facility, park }: MapTabProps) => {
       className="rounded-xl overflow-hidden"
     >
       <Tooltip title="Edit Location">
-        <div className="absolute z-20 flex justify-end w-full mt-4 pr-4"><Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-map`)}>Edit </Button></div>
+        <div className="absolute z-20 flex justify-end w-full mt-4 pr-4"><Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-location`)}>Edit </Button></div>
       </Tooltip>
       <MapContainer
         center={[1.287953, 103.851784]}

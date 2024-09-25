@@ -5,20 +5,20 @@ import { AdjustLatLngInterface } from '../../pages/Occurrence/OccurrenceCreate';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CustomMarker, CustomMarkerInner } from '@lepark/common-ui';
 
-const center = {
+export const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
 };
 
 interface DraggableMarkerProps {
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
   adjustLatLng: (props: AdjustLatLngInterface) => void;
   circleWidth?: number;
   backgroundColor?: string;
 }
 
-function DraggableMarker({ lat, lng, adjustLatLng, circleWidth, backgroundColor }: DraggableMarkerProps) {
+function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, circleWidth, backgroundColor }: DraggableMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
   const eventHandlers = useMemo(
     () => ({
