@@ -114,7 +114,7 @@ const InformationTab = ({ event, facility, park }: InformationTabProps) => {
       />
       <Divider orientation="left">Event Time</Divider>
       <Descriptions
-        key="location"
+        key="time"
         items={timeItems}
         column={1}
         bordered

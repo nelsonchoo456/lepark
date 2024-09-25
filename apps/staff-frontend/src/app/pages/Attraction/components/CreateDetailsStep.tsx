@@ -70,7 +70,11 @@ const CreateDetailsStep = ({
       </Form.Item>
 
       <Form.Item name="title" label="Title" rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}>
-        <Input placeholder="Attraction Title" />
+        <Input placeholder="Attraction Title"
+         onBlur={(e) => {
+          const trimmedValue = e.target.value.trim();
+          form.setFieldsValue({ title: trimmedValue });
+        }} />
       </Form.Item>
 
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>

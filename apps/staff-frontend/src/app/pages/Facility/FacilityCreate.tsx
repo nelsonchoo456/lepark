@@ -89,8 +89,6 @@ const FacilityCreate = () => {
         closingHours,
         lat,
         long,
-        lastMaintenanceDate: formValues.lastMaintenanceDate ? dayjs(formValues.lastMaintenanceDate).toISOString() : null,
-        nextMaintenanceDate: formValues.nextMaintenanceDate ? dayjs(formValues.nextMaintenanceDate).toISOString() : null,
       };
 
       console.log(finalData);

@@ -58,6 +58,8 @@ import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
 import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
+import EventCreate from './pages/Event/EventCreate';
+import EventEdit from './pages/EventEdit/EventEdit';
 
 export function App() {
   return (
@@ -324,20 +326,19 @@ export function App() {
                 </Route>
               </Route>
 
-                  {/* Event Routes */}
-                  <Route
+              {/* Event Routes */}
+              <Route
                 element={
                   <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
                 }
               >
                 <Route path="/event">
                   <Route index element={<EventList />} />
-                  {/* <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/event" />}>
+                  <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/event" />}>
                     <Route path="create" element={<EventCreate />} />
                     <Route path=":id/edit" element={<EventEdit />} />
-                    <Route path=":id/edit-map" element={<EventEditMap />} />
-                  </Route> */}
-                  <Route path=":id" element={<EventDetails />} /> 
+                  </Route>
+                  <Route path=":id" element={<EventDetails />} />
                 </Route>
               </Route>
 
@@ -357,21 +358,22 @@ export function App() {
               </Route>
 
               {/* Facility Routes */}
-              <Route
-                element={
-                  <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
-                    redirectTo="/"
-                  />
-                }
-              >
-                <Route path="/facilities">
-                  <Route index element={<FacilityList />} />
+
+              <Route path="/facilities">
+                <Route index element={<FacilityList />} />
+                <Route
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                      redirectTo="/"
+                    />
+                  }
+                >
                   <Route path="create" element={<FacilityCreate />} />
-                  <Route path=":facilityId" element={<ViewFacilityDetails />} />
                   <Route path=":facilityId/edit" element={<FacilityEdit />} />
                   <Route path=":facilityId/edit-location" element={<FacilityEdit />} />
                 </Route>
+                <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
 
               {/* Catch-all for 404 */}
