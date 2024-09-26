@@ -54,6 +54,16 @@ function PictureMarker({
         </PictureMarkerInner>,
         // </HtmlPictureMarker>
       );
+      
+      if (entityType === "FACILITY") {
+        return L.divIcon({
+          html: iconHTML,
+          iconSize: [32, 40],
+          iconAnchor: [circleWidth / 2, circleWidth],
+          className: '',
+        });
+      } 
+
       return L.divIcon({
         html: iconHTML,
         iconSize: [32, 40],
@@ -61,7 +71,7 @@ function PictureMarker({
         className: '',
       });
     };
-    //
+
     return (
       <Marker
         position={[lat, lng]}
@@ -89,6 +99,7 @@ function PictureMarker({
         </PictureMarkerInner>
       </HtmlPictureMarker>,
     );
+
     return L.divIcon({
       html: iconHTML,
       iconSize: [32, 40],

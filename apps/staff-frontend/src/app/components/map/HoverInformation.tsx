@@ -1,5 +1,6 @@
-import { Empty } from 'antd';
+import { Button, Empty } from 'antd';
 import { BiSolidCalendarEvent } from 'react-icons/bi';
+import { IoMdClose } from 'react-icons/io';
 import { TbTicket } from 'react-icons/tb';
 
 export interface HoverItem {
@@ -25,33 +26,37 @@ const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
         boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
       }}
-      className="rounded-lg bg-white/90 p-4 border-lg box-shadow w-full bottom-0 m-2 md:left-0 md:w-72"
+      className="rounded-lg bg-white/90 p-4 border-lg box-shadow w-full bottom-0 shadow-lg md:m-2 md:left-0 md:w-[350px]"
     >
-      {entityType === 'EVENT' ? (
-        <div className="absolute z-20 h-10 -mt-8 rounded-full bg-sky-400 flex items-center px-4">
+      <div className="absolute z-20 -mt-8 flex justify-between w-full pr-8">
+        {entityType === 'EVENT' ? (
+          <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
+            <BiSolidCalendarEvent className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Event</div>
+          </div>
+        ) : entityType === 'FACILITY' ? (
+          <div className="h-10 rounded-full bg-gray-500 flex items-center px-4">
+            <div className="text-base text-white font-semibold">Facility</div>
+          </div>
+        ) : entityType === 'ATTRACTION' ? (
+          <div className="h-10 rounded-full bg-mustard-400 flex items-center px-4">
+            <TbTicket className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Attraction</div>
+          </div>
+        ) : entityType === 'OCCURRENCE' ? (
+          <div className="h-10 rounded-full bg-green-400 flex items-center px-4">
+            <TbTicket className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Occurrence</div>
+          </div>
+        ) : 
+        <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
           <BiSolidCalendarEvent className="text-lg text-white" />
-          <div className="text-base text-white font-semibold ml-2">Event</div>
+          <div className="text-base text-white font-semibold ml-2">Marker</div>
         </div>
-      ) : entityType === 'FACILITY' ? (
-        <div className="absolute z-20 h-10 -mt-8 rounded-full bg-gray-500 flex items-center px-4">
-          <div className="text-base text-white font-semibold">Facility</div>
-        </div>
-      ) : entityType === 'ATTRACTION' ? (
-        <div className="absolute z-20 h-10 -mt-8 rounded-full bg-mustard-400 flex items-center px-4">
-          <TbTicket className="text-lg text-white" />
-          <div className="text-base text-white font-semibold ml-2">Attraction</div>
-        </div>
-      ) : entityType === 'OCCURRENCE' ? (
-        <div className="absolute z-20 h-10 -mt-8 rounded-full bg-green-400 flex items-center px-4">
-          <TbTicket className="text-lg text-white" />
-          <div className="text-base text-white font-semibold ml-2">Occurrence</div>
-        </div>
-      ) : 
-      <div className="absolute z-20 h-10 -mt-8 rounded-full bg-sky-400 flex items-center px-4">
-        <BiSolidCalendarEvent className="text-lg text-white" />
-        <div className="text-base text-white font-semibold ml-2">Marker</div>
+        }
+
+        <Button shape="circle" icon={<IoMdClose />} onClick={() => setHovered(null)}></Button>
       </div>
-      }
 
       <div
         style={{
