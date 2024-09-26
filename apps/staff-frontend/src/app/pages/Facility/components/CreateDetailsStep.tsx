@@ -246,7 +246,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item name="fee" label="Fee" rules={[{ required: true, message: 'Please input the fee!' }]}>
-        <InputNumber />
+        <InputNumber min={0}/>
       </Form.Item>
 
       <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
