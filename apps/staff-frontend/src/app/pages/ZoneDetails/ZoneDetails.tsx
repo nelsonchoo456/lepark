@@ -51,16 +51,6 @@ const ZoneDetails = () => {
       children: zone ? <MapTab zone={zone} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
     {
-      key: 'attractions',
-      label: 'Attractions',
-      children: <Empty description={'Attractions Coming Soon'}></Empty>,
-    },
-    {
-      key: 'events',
-      label: 'Events',
-      children: <Empty description={'Events Coming Soon'}></Empty>,
-    },
-    {
       key: 'IoT',
       label: 'IoT',
       children: <Empty description={'IoT Coming Soon'}></Empty>,

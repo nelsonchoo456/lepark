@@ -11,6 +11,8 @@ import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
 import MapTab from './components/MapTab';
 import { SCREEN_LG } from '../../config/breakpoints';
+import AttractionsTab from './components/AttractionsTab';
+import EventsTab from './components/EventsTab';
 const { Text } = Typography;
 
 const ParkDetails = () => {
@@ -62,14 +64,12 @@ const ParkDetails = () => {
     {
       key: 'attractions',
       label: 'Attractions',
-      // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-      children: <Empty description={'Attractions Coming Soon'}></Empty>,
+      children: <AttractionsTab parkId={park.id} />,
     },
     {
       key: 'events',
       label: 'Events',
-      // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-      children: <Empty description={'Events Coming Soon'}></Empty>,
+      children: <EventsTab parkId={park.id} />,
     },
   ];
 
