@@ -233,41 +233,41 @@ const SensorEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item
+              <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"
               rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
             >
-              <DatePicker className="w-full" maxDate={dayjs()} />
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
             <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
               <DatePicker className="w-full" />
             </Form.Item>
-            <Form.Item name="calibrationFrequencyDays" label="Calibration Frequency" rules={[{ required: true }]}>
-              <InputNumber placeholder="Enter frequency in days" min={1} className="w-full" />
-            </Form.Item>
-            <Form.Item name="recurringMaintenanceDuration" label="Recurring Maintenance" rules={[{ required: true }]}>
-              <InputNumber placeholder="Enter duration in days" min={1} className="w-full" />
-            </Form.Item>
-
-            <Form.Item name="dataFrequencyMinutes" label="Data Frequency (Minutes)" rules={[{ required: true }]}>
-              <InputNumber min={1} className="w-full" />
-            </Form.Item>
-            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
-              <Select placeholder="Select sensor unit">
-                {Object.values(SensorUnitEnum).map((unit) => (
-                  <Select.Option key={unit} value={unit}>
-                    {formatEnumLabel(unit)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
+            <Form.Item
+              name="calibrationFrequencyDays"
+              label="Calibration Frequency"
+              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
+            >
+              <InputNumber placeholder="Enter frequency in days" min={1} max={500} className="w-full" />
             </Form.Item>
             <Form.Item
+              name="recurringMaintenanceDuration"
+              label="Recurring Maintenance"
+              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
+            >
+              <InputNumber placeholder="Enter duration in days" min={1} max={500} className="w-full" />
+            </Form.Item>
+            <Form.Item
+              name="dataFrequencyMinutes"
+              label="Data Frequency"
+              rules={[{ required: true, type: 'number', min: 1, max: 999, message: 'Please enter a number between 1 and 999' }]}
+            >
+              <InputNumber placeholder="Enter data frequency in minutes" min={1} max={999} className="w-full" />
+            </Form.Item>
+            {/* ... (other form items) */}
+            <Form.Item
               name="supplierContactNumber"
-              label="Supplier Contact Number"
+              label="Supplier Contact"
               rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
             >
               <Input />
