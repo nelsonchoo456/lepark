@@ -1,7 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ImageInput, useAuth } from '@lepark/common-ui';
-import { getSensorById, updateSensorDetails, StaffResponse, SensorResponse, SensorUpdateData, getAllHubs, HubResponse } from '@lepark/data-access';
+import {
+  getSensorById,
+  updateSensorDetails,
+  StaffResponse,
+  SensorResponse,
+  SensorUpdateData,
+  getAllHubs,
+  HubResponse,
+  getFacilityById,
+} from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
@@ -9,7 +18,8 @@ import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
-import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum} from '@prisma/client';
+import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
+import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
 const { TextArea } = Input;
 
@@ -23,11 +33,9 @@ const formatEnumLabel = (enumValue: string): string => {
 const SensorEdit = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
   const [form] = Form.useForm();
-  const [sensor, setSensor] = useState<SensorResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { sensor, loading } = useRestrictSensors(sensorId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [createdSensorName, setCreatedSensorName] = useState('');
   const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
   const [selectedHubId, setSelectedHubId] = useState<string | null>(null);
   const { user } = useAuth<StaffResponse>();
@@ -39,90 +47,101 @@ const SensorEdit = () => {
   const { facilities } = useFetchFacilities();
   const [selectedHubName, setSelectedHubName] = useState<string | null>(null);
   const [selectedFacilityName, setSelectedFacilityName] = useState<string | null>(null);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [hubs, setHubs] = useState<HubResponse[]>([]);
-
-useEffect(() => {
-  const fetchHubs = async () => {
-    try {
-      const response = await getAllHubs(); // You'll need to create this API function
-      setHubs(response.data);
-    } catch (error) {
-      console.error('Error fetching hubs:', error);
-    }
-  };
-  fetchHubs();
-}, []);
-
-
-useEffect(() => {
-    const fetchSensor = async () => {
-      setLoading(true);
-      try {
-        const response = await getSensorById(sensorId as string);
-        setSensor(response.data);
-        form.setFieldsValue({
-          ...response.data,
-          acquisitionDate: dayjs(response.data.acquisitionDate),
-          lastCalibratedDate: dayjs(response.data.lastCalibratedDate),
-          nextMaintenanceDate: dayjs(response.data.nextMaintenanceDate),
-          lastMaintenanceDate: dayjs(response.data.lastMaintenanceDate),
-          hubId: response.data.hub?.name, // Set hub name instead of ID
-          facilityId: response.data.facility?.facilityName, // Set facility name instead of ID
-        });
-        setSelectedHubId(response.data.hub?.id || null);
-        setSelectedFacilityId(response.data.facility?.id || null);
-        setSelectedHubName(response.data.hub?.name || null);
-        setSelectedFacilityName(response.data.facility?.facilityName || null);
-        if (response.data.image) {
-          setPreviewImages([response.data.image]);
-        }
-      } catch (error) {
-        console.error('Error fetching sensor data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSensor();
-  }, [sensorId, form]);
+  const [createdData, setCreatedData] = useState<SensorResponse>();
 
   useEffect(() => {
-    if (!['SUPERADMIN', 'MANAGER', 'LANDSCAPE_ARCHITECT', 'PARK_RANGER'].includes(user?.role as string)) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Sensor Edit page!',
-        });
-        notificationShown.current = true;
+    const fetchHubs = async () => {
+      try {
+        const response = await getAllHubs();
+        setHubs(response.data);
+      } catch (error) {
+        console.error('Error fetching hubs:', error);
       }
-      navigate('/');
-    }
-  }, [user, navigate]);
+    };
+    fetchHubs();
+  }, []);
 
-   const handleClearFacility = () => {
-    form.setFieldsValue({ facilityId: null });
-    setSelectedFacilityId(null);
+  useEffect(() => {
+    if (sensor) {
+      const acquisitionDate = dayjs(sensor.acquisitionDate);
+      const lastCalibratedDate = sensor.lastCalibratedDate ? dayjs(sensor.lastCalibratedDate) : null;
+      const finalData = { ...sensor, acquisitionDate, lastCalibratedDate };
+
+      if (sensor.image) {
+        setPreviewImages([sensor.image]);
+      }
+
+      form.setFieldsValue(finalData);
+
+      // Fetch facility details to get parkId
+      if (sensor.facilityId) {
+        fetchFacilityDetails(sensor.facilityId);
+      }
+    }
+  }, [sensor]);
+
+  const fetchFacilityDetails = async (facilityId: string) => {
+    try {
+      const facilityResponse = await getFacilityById(facilityId);
+      if (facilityResponse.status === 200) {
+        const facility = facilityResponse.data;
+        setSelectedParkId(facility.parkId);
+        form.setFieldsValue({ parkId: facility.parkId });
+      }
+    } catch (error) {
+      console.error('Error fetching facility details:', error);
+    }
   };
 
- const handleSubmit = async (values: any) => {
-  setIsSubmitting(true);
-  try {
-    const submissionData = {
-      ...values,
-      hubId: selectedHubId || null,
-      facilityId: selectedFacilityId || null,
-    };
+  const onFacilityChange = (value: string | undefined) => {
+    setSelectedFacilityId(value || null);
+  };
 
-    const response = await updateSensorDetails(sensorId as string, submissionData, selectedFiles);
-    if (response.status === 200) {
-      setShowSuccessAlert(true);
-      setCreatedSensorName(response.data.sensorName);
+  const handleSubmit = async (values: any) => {
+    if (!sensor) return;
+    setIsSubmitting(true);
+    try {
+      const formValues = await form.validateFields();
+
+      console.log('Form values:', formValues);
+
+      const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
+        const typedKey = key as keyof SensorResponse; // Cast key to the correct type
+        if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
+          acc[typedKey] = formValues[typedKey];
+        }
+        return acc;
+      }, {} as Partial<SensorResponse>);
+
+      if (changedData.acquisitionDate) {
+        changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
+      }
+      if (changedData.lastCalibratedDate) {
+        changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
+      }
+
+      console.log('Submitting data:', changedData);
+
+      const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
+      if (response.status === 200) {
+        console.log('Response:', response.data);
+        setCreatedData(response.data);
+        messageApi.open({
+          type: 'success',
+          content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
+        });
+        setTimeout(() => {
+          navigate(`/sensor/${sensor.id}`);
+        }, 1000);
+      }
+    } catch (error) {
+      message.error(String(error));
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    message.error(String(error));
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: dayjs.Dayjs) {
@@ -131,18 +150,6 @@ useEffect(() => {
       }
       if (value.isAfter(dayjs(), 'day')) {
         return Promise.reject(new Error('Date cannot be in the future'));
-      }
-      return Promise.resolve();
-    },
-  });
-
-  const validateFutureDate = (form: FormInstance) => ({
-    validator(_: any, value: dayjs.Dayjs) {
-      if (!value) {
-        return Promise.reject(new Error('Please select a date'));
-      }
-      if (value.isBefore(dayjs(), 'day')) {
-        return Promise.reject(new Error('Date cannot be in the past'));
       }
       return Promise.resolve();
     },
@@ -167,7 +174,7 @@ useEffect(() => {
       isMain: true,
     },
     {
-      title: sensor?.sensorName ? sensor?.sensorName : 'Details',
+      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
     },
     {
@@ -179,9 +186,9 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
-      </div>
+      </ContentWrapperDark>
     );
   }
 
@@ -202,11 +209,9 @@ useEffect(() => {
             <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-
             <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
-        <Input />
-      </Form.Item>
-
+              <Input />
+            </Form.Item>
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true }]}>
               <Select placeholder="Select sensor type">
                 {Object.values(SensorTypeEnum).map((type) => (
@@ -216,11 +221,9 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>
-
-            <Form.Item name="sensorDescription" label="Description">
-              <Input.TextArea />
+            <Form.Item name="sensorDescription" label="Sensor Description">
+              <TextArea />
             </Form.Item>
-
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true }]}>
               <Select placeholder="Select sensor status">
                 {Object.values(SensorStatusEnum).map((status) => (
@@ -230,46 +233,26 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"
               rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
             >
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+              <DatePicker className="w-full" maxDate={dayjs()} />
+            </Form.Item>
+            <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
+              <DatePicker className="w-full" />
+            </Form.Item>
+            <Form.Item name="calibrationFrequencyDays" label="Calibration Frequency" rules={[{ required: true }]}>
+              <InputNumber placeholder="Enter frequency in days" min={1} className="w-full" />
+            </Form.Item>
+            <Form.Item name="recurringMaintenanceDuration" label="Recurring Maintenance" rules={[{ required: true }]}>
+              <InputNumber placeholder="Enter duration in days" min={1} className="w-full" />
             </Form.Item>
 
-            <Form.Item
-              name="lastCalibratedDate"
-              label="Last Calibrated Date"
-              rules={[{ required: true, message: 'Please enter Last Calibrated Date' }, validateDates(form)]}
-            >
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+            <Form.Item name="dataFrequencyMinutes" label="Data Frequency (Minutes)" rules={[{ required: true }]}>
+              <InputNumber min={1} className="w-full" />
             </Form.Item>
-
-            <Form.Item
-              name="calibrationFrequencyDays"
-              label="Calibration Frequency"
-
-              rules={[{ required: true, type: 'number', min: 1 }]}
-            >
-              <InputNumber className="w-full" min={1} placeholder="Enter Calibration Frequency (days)" />
-            </Form.Item>
-
-            <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Maintenance Duration"
-              rules={[{ required: true, type: 'number', min: 1 }]}
-            >
-              <InputNumber className="w-full" min={1} placeholder="Enter Maintenance Duration" />
-            </Form.Item>
-
-
-
-            <Form.Item name="dataFrequencyMinutes" label="Data Frequency (minutes)" rules={[{ required: true, type: 'number', min: 1 }]}>
-              <InputNumber className="w-full" min={1} />
-            </Form.Item>
-
             <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
               <Select placeholder="Select sensor unit">
                 {Object.values(SensorUnitEnum).map((unit) => (
@@ -279,67 +262,44 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-
             <Form.Item
               name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[{ required: true, message: 'Please input the supplier contact number!' }, { validator: validatePhoneNumber }]}
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
             >
               <Input />
             </Form.Item>
-
-            <Form.Item name="latitude" label="Latitude" rules={[{ type: 'number', min: -90, max: 90 }]}>
-              <InputNumber className="w-full" />
-            </Form.Item>
-
-            <Form.Item name="longitude" label="Longitude" rules={[{ type: 'number', min: -180, max: 180 }]}>
-              <InputNumber className="w-full" />
-            </Form.Item>
-
             <Form.Item name="remarks" label="Remarks">
-              <Input.TextArea />
+              <TextArea />
             </Form.Item>
 
-
-
-<Form.Item label="Facility" name="facilityId">
-  <Select
-    placeholder="Select facility"
-    style={{ width: '100%' }}
-    onChange={(value, option) => {
-      setSelectedFacilityId(value);
-      setSelectedFacilityName(Array.isArray(option) ? null : option?.children?.toString() || null);
-    }}
-    allowClear
-    value={selectedFacilityName}
-  >
-    {facilities.map((facility) => (
-      <Select.Option key={facility.id} value={facility.id}>
-        {facility.facilityName}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
-
-
-
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
+              <Select placeholder="Select a facility" onChange={onFacilityChange}>
+                {facilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.facilityName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
             <Form.Item label="Upload Image" tooltip="One image is required">
               <ImageInput type="file" onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
-
-            {previewImages[0] && (
+            {previewImages.length > 0 && (
               <Form.Item label="Image Preview">
                 <div className="flex flex-wrap gap-2">
-                  <img
-                    src={previewImages[0]}
-                    alt="Preview"
-                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                    onClick={() => removeImage(0)}
-                  />
+                  {previewImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => removeImage(index)}
+                    />
+                  ))}
                 </div>
               </Form.Item>
             )}

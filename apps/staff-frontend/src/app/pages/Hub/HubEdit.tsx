@@ -2,7 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById } from '@lepark/data-access';
-import { Button, Card, Form, message, notification, Result, Input, Select, DatePicker, InputNumber, Divider, FormInstance } from 'antd';
+import {
+  Button,
+  Card,
+  Form,
+  message,
+  notification,
+  Result,
+  Input,
+  Select,
+  DatePicker,
+  InputNumber,
+  Divider,
+  FormInstance,
+  Spin,
+} from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
@@ -39,6 +53,7 @@ const HubEdit = () => {
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
 
   useEffect(() => {
+    // to populate edit fields with existing data
     if (hub) {
       const acquisitionDate = dayjs(hub.acquisitionDate);
       const nextMaintenanceDate = dayjs(hub.nextMaintenanceDate);
@@ -86,9 +101,6 @@ const HubEdit = () => {
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
-      }
-      if (changedData.nextMaintenanceDate) {
-        changedData.nextMaintenanceDate = dayjs(changedData.nextMaintenanceDate).toISOString();
       }
 
       changedData.images = currentImages;
@@ -144,7 +156,7 @@ const HubEdit = () => {
       isMain: true,
     },
     {
-      title: hub?.name ? hub?.name : 'Details',
+      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
     },
     {
@@ -177,6 +189,14 @@ const HubEdit = () => {
       return Promise.resolve();
     },
   });
+
+  if (loading) {
+    return (
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" />
+      </ContentWrapperDark>
+    );
+  }
 
   return (
     <ContentWrapperDark>

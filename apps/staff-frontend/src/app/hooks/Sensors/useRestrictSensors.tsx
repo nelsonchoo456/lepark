@@ -28,6 +28,7 @@ export const useRestrictSensors = (sensorId?: string) => {
 
       if (sensorResponse.status === 200) {
         const sensor = sensorResponse.data;
+        console.log('sensor:', sensor.facility);
         handleSensorRestrictions(sensor);
       } else {
         throw new Error('Unable to fetch Sensor');
@@ -44,20 +45,21 @@ export const useRestrictSensors = (sensorId?: string) => {
       const facilityResponse = await getFacilityById(sensor.facilityId);
       const facility = facilityResponse.data;
       const parkResponse = await getParkById(facility.parkId);
-      setPark(parkResponse.data);
-    }
+      const parkData = parkResponse.data;
+      //setPark(parkData);
 
-    if (user?.parkId === park?.id) {
-      setSensor(sensor);
-    } else {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You do not have permission to access this resource.',
-        });
-        notificationShown.current = true;
+      if (user?.parkId === parkData?.id || user?.role === StaffType.SUPERADMIN) {
+        setSensor(sensor);
+      } else {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       }
-      navigate('/');
     }
   };
 

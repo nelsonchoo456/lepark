@@ -49,6 +49,7 @@ export async function getAllSensors(facilityId?: string): Promise<AxiosResponse<
 export async function getSensorById(id: string): Promise<AxiosResponse<SensorResponse>> {
   try {
     const response: AxiosResponse<SensorResponse> = await client.get(`${URL}/getSensorById/${id}`);
+    console.log(response);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -58,12 +59,9 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
     }
   }
 }
-export async function updateSensorDetails(
-  id: string,
-  data: SensorUpdateData,
-  files?: File[],
-): Promise<AxiosResponse<SensorResponse>> {
+export async function updateSensorDetails(id: string, data: SensorUpdateData, files?: File[]): Promise<AxiosResponse<SensorResponse>> {
   try {
+    console.log('sensor update data:', data);
     if (files && files.length > 0) {
       const formData = new FormData();
 

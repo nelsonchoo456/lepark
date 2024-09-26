@@ -25,6 +25,7 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
     'nextMaintenanceDate',
     'zoneId',
     'facilityId',
+    'serialNumber',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(sensor)

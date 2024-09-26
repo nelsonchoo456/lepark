@@ -21,7 +21,7 @@ import {
   GiSiren,
   GiTombstone,
 } from 'react-icons/gi';
-import { IoMdHeart, IoMdHeartDislike } from 'react-icons/io';
+import { IoMdHeart, IoMdHeartDislike, IoMdHeartEmpty } from 'react-icons/io';
 import { useLocation, useParams } from 'react-router-dom';
 import InformationTab from './components/InformationTab';
 import OccurrenceTable from './components/OccurrenceTable';
@@ -248,7 +248,7 @@ const ViewSpeciesDetails = () => {
               user.isVerified &&
               (isFavorite ? (
                 <Button
-                  icon={<IoMdHeartDislike className="text-2xl text-pastelPink-500" />}
+                  icon={<IoMdHeart className="text-2xl text-pastelPink-500" />}
                   shape="circle"
                   type="primary"
                   size="large"
@@ -260,7 +260,7 @@ const ViewSpeciesDetails = () => {
                 />
               ) : (
                 <Button
-                  icon={<IoMdHeart className="text-2xl text-pastelPink-500" />}
+                  icon={<IoMdHeartEmpty className="text-2xl text-pastelPink-500" />}
                   shape="circle"
                   type="primary"
                   size="large"

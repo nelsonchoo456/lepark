@@ -205,6 +205,7 @@ CREATE TABLE "Hub" (
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
     "sensorName" TEXT NOT NULL,
+    "serialNumber" TEXT NOT NULL,
     "sensorType" "SensorTypeEnum" NOT NULL,
     "sensorDescription" TEXT,
     "sensorStatus" "SensorStatusEnum" NOT NULL,
@@ -237,8 +238,8 @@ CREATE TABLE "ParkAsset" (
     "parkAssetStatus" "ParkAssetStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
     "recurringMaintenanceDuration" INTEGER NOT NULL,
-    "lastMaintenanceDate" TIMESTAMP(3) NOT NULL,
-    "nextMaintenanceDate" TIMESTAMP(3) NOT NULL,
+    "lastMaintenanceDate" TIMESTAMP(3),
+    "nextMaintenanceDate" TIMESTAMP(3),
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
     "parkAssetCondition" "ParkAssetConditionEnum" NOT NULL,
@@ -270,19 +271,6 @@ CREATE TABLE "CalibrationHistory" (
     "description" TEXT NOT NULL,
 
     CONSTRAINT "CalibrationHistory_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "UsageMetrics" (
-    "id" UUID NOT NULL,
-    "hubId" UUID,
-    "sensorId" UUID,
-    "uptime" DOUBLE PRECISION NOT NULL,
-    "downtime" DOUBLE PRECISION NOT NULL,
-    "dataVolume" DOUBLE PRECISION NOT NULL,
-    "description" TEXT NOT NULL,
-
-    CONSTRAINT "UsageMetrics_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -340,6 +328,9 @@ CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
 CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_VisitorfavoriteSpecies_AB_unique" ON "_VisitorfavoriteSpecies"("A", "B");
 
 -- CreateIndex
@@ -376,16 +367,7 @@ ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_sensorId_fke
 ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "ParkAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UsageMetrics" ADD CONSTRAINT "UsageMetrics_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "UsageMetrics" ADD CONSTRAINT "UsageMetrics_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -247,7 +247,7 @@ const Discover = () => {
                     user.isVerified &&
                     (isFavoriteSpecies(species.id) ? (
                       <Button
-                        icon={<IoMdHeartDislike className="text-lg text-pastelPink-400" />}
+                        icon={<IoMdHeart className="text-lg text-pastelPink-400" />}
                         shape="circle"
                         type="text"
                         onClick={(e) => {
@@ -257,7 +257,7 @@ const Discover = () => {
                       />
                     ) : (
                       <Button
-                        icon={<IoMdHeart className="text-lg text-pastelPink-500" />}
+                        icon={<IoMdHeartEmpty className="text-lg text-pastelPink-500" />}
                         shape="circle"
                         type="text"
                         onClick={(e) => {

@@ -4,7 +4,6 @@ import { StaffType } from '@lepark/data-access';
 import { message, notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { set } from 'zod';
 
 export const useRestrictHub = (hubId?: string) => {
   const { user } = useAuth<StaffResponse>();
@@ -45,20 +44,21 @@ export const useRestrictHub = (hubId?: string) => {
       const facilityResponse = await getFacilityById(hub.facilityId);
       const facility = facilityResponse.data;
       const parkResponse = await getParkById(facility.parkId);
-      setPark(parkResponse.data);
-    }
+      const parkData = parkResponse.data;
+      //setPark(parkData);
 
-    if (user?.parkId === park?.id || user?.role === StaffType.SUPERADMIN) {
+      if (user?.parkId === parkData?.id || user?.role === StaffType.SUPERADMIN) {
         setHub(hub);
-    } else {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You do not have permission to access this resource.',
-        });
-        notificationShown.current = true;
+      } else {
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       }
-      navigate('/');
     }
   };
 

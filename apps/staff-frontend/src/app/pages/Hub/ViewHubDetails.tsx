@@ -25,7 +25,7 @@ const ViewHubDetails = () => {
             const facilityResponse = await getFacilityById(hub.facilityId);
             if (facilityResponse.status === 200) {
               setFacility(facilityResponse.data);
-              console.log(facilityResponse.data);
+              //console.log(facilityResponse.data);
               const parkResponse = await getParkById(facilityResponse.data.parkId);
               if (parkResponse.status === 200) {
                 setPark(parkResponse.data);
@@ -49,7 +49,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.name ? hub?.name : 'Details',
+      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -57,9 +57,9 @@ const ViewHubDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNumber',
-      label: 'Serial Number',
-      children: hub?.serialNumber,
+      key: 'name',
+      label: 'Name',
+      children: hub?.name,
     },
     {
       key: 'hubStatus',
@@ -78,11 +78,6 @@ const ViewHubDetails = () => {
             return <Tag>{hub?.hubStatus}</Tag>;
         }
       })(),
-    },
-    {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('D MMM YY') : null,
     },
     {
       key: 'ipAddress',
@@ -109,7 +104,15 @@ const ViewHubDetails = () => {
       label: 'Facility',
       children: facility?.facilityName,
     },
-  ];
+  ]
+
+  if (hub?.nextMaintenanceDate) {
+    descriptionsItems.push({
+      key: 'nextMaintenanceDate',
+      label: 'Next Maintenance Date',
+      children: moment(hub.nextMaintenanceDate).format('D MMM YY'),
+    });
+  }
 
   const descriptionsItemsForSuperAdmin = [
     ...descriptionsItems,
@@ -130,7 +133,7 @@ const ViewHubDetails = () => {
 
   if (loading) {
     return (
-      <ContentWrapperDark>
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
       </ContentWrapperDark>
     );
@@ -146,7 +149,7 @@ const ViewHubDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{hub?.serialNumber}</LogoText>
             <Descriptions
               items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
               column={1}
