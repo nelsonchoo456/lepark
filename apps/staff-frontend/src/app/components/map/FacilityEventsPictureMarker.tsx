@@ -1,24 +1,33 @@
 import { useRef, useState } from 'react';
 import L, { DivIcon } from 'leaflet';
+import { Tooltip as AntdTooltip, Button, Tag } from 'antd';
 import { Marker, Tooltip } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { EventResponse } from '@lepark/data-access';
+import { EventResponse, EventStatusEnum, FacilityResponse } from '@lepark/data-access';
 import { FaMale, FaFemale, FaCampground, FaCar } from 'react-icons/fa';
 import { FaPersonShelter } from 'react-icons/fa6';
 import { IoInformationSharp, IoAccessibilitySharp } from 'react-icons/io5';
 import { IoIosWater } from 'react-icons/io';
 import { GiFirstAidKit, GiFireplace, GiTheaterCurtains } from 'react-icons/gi';
-import { MdOutlineStorage } from 'react-icons/md';
-import { TbPlayFootball } from 'react-icons/tb';
+import { MdArrowOutward, MdOutlineStorage } from 'react-icons/md';
+import { TbLocation, TbPlayFootball } from 'react-icons/tb';
 import { PiPicnicTableBold } from 'react-icons/pi';
 import { GrAed } from 'react-icons/gr';
 import { PictureMarkerInner } from '@lepark/common-ui';
-import { BiSolidCalendarEvent } from 'react-icons/bi';
+import { BiSolidCalendar, BiSolidCalendarEvent } from 'react-icons/bi';
 import HoverInformation, { HoverItem } from './HoverInformation';
+import { Typography } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import ParkStatusTag from '../../pages/ParkDetails/components/ParkStatusTag';
+import { COLORS } from '../../config/colors';
+import dayjs from 'dayjs';
+import EventStatusTag from '../../pages/EventDetails/components/EventStatusTag';
+import { capitalizeFirstLetter } from '../textFormatters/textFormatters';
 
 interface FacilityEventsPictureMarkerProps {
   lat: number;
   lng: number;
+  facility: FacilityResponse;
   facilityType?: string;
   events?: EventResponse[];
   circleWidth?: number;
@@ -31,15 +40,17 @@ interface FacilityEventsPictureMarkerProps {
 function FacilityEventsPictureMarker({
   lat,
   lng,
+  facility,
   facilityType,
   circleWidth = 32,
   tooltipLabel,
   tooltipLabelPermanent,
   events = [],
   hovered,
-  setHovered
+  setHovered,
 }: FacilityEventsPictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
+  const navigate = useNavigate();
 
   const eventMarkerGap = 16;
 
@@ -137,7 +148,7 @@ function FacilityEventsPictureMarker({
   };
 
   const getCustomIcon = (event: EventResponse, index: number) => {
-    const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth
+    const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth;
     const iconHTML = renderToStaticMarkup(
       <PictureMarkerInner circleWidth={thisCircleWidth} innerBackgroundColor="transparent">
         <div
@@ -166,7 +177,160 @@ function FacilityEventsPictureMarker({
   return (
     <>
       {
-        <Marker position={[lat, lng]} ref={markerRef} icon={getFacilityCustomIcon()}>
+        <Marker
+          position={[lat, lng]}
+          ref={markerRef}
+          icon={getFacilityCustomIcon()}
+          eventHandlers={{
+            click: () =>
+              setHovered({
+                ...facility,
+                title: facility.facilityName,
+                image: facility.images ? facility.images[0] : null,
+                entityType: 'FACILITY',
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div className="flex justify-between flex-wrap mb-2">
+                      <p className="">{capitalizeFirstLetter(facility.facilityType)}</p>
+                      <ParkStatusTag>{facility.facilityStatus}</ParkStatusTag>
+                    </div>
+
+                    <div className="">
+                      <div className="flex w-full items-center mb-2">
+                        <div className="font-semibold text-sky-400 mr-2">Upcoming Events</div>
+                        <div className="flex-[1] h-[1px] bg-sky-400/30" />
+                      </div>
+                      <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
+                        {events.map((event) => (
+                          <div
+                            className="bg-gray-50/40 h-full w-36 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400"
+                          >
+                            <AntdTooltip title="View Event Details">
+                              <div onClick={() => navigate(`/event/${event.id}`)}>
+                                <div
+                                  style={{
+                                    backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                  }}
+                                  className="rounded-b-lg h-18 w-full shadow-md text-white flex-0 flex items-center justify-center  bg-sky-200 opacity-50 overflow-hidden"
+                                >
+                                  {(!event.images || event.images.length === 0) && (
+                                    <BiSolidCalendar className="opacity-75 text-lg" />
+                                  )}
+                                </div>
+                                <div className="font-semibold px-2 mt-1">{event.title}</div>
+                                <div className="text-xs px-2">
+                                  {dayjs(event?.startDate).format('D MMM') + ' - ' + dayjs(event?.endDate).format('D MMM')}
+                                </div>
+                              </div>
+                            </AntdTooltip>
+                            <div className="flex justify-end mb-2 px-2">
+                              <AntdTooltip title="View on Map">
+                                <Button
+                                  shape="circle"
+                                  icon={<TbLocation />}
+                                  onClick={() =>{
+                                    setHovered({
+                                      ...event,
+                                      title: (
+                                        <div className="flex justify-between items-center">
+                                          {event.title}
+                                          <EventStatusTag status={event?.status as EventStatusEnum} />
+                                        </div>
+                                      ),
+                                      image: event.images ? event.images[0] : null,
+                                      entityType: 'EVENT',
+                                      children: (
+                                        <div className="h-full w-full flex flex-col justify-between">
+                                          <div>
+                                            <Typography.Paragraph
+                                              ellipsis={{
+                                                rows: 3,
+                                              }}
+                                            >
+                                              {event.description}
+                                            </Typography.Paragraph>
+                                            <div className="-mt-2 ">
+                                              <span className="text-secondary">Date: </span>
+                                              {dayjs(event?.startDate).format('D MMM YYYY') +
+                                                ' - ' +
+                                                dayjs(event?.endDate).format('D MMM YYYY')}
+                                            </div>
+                                            <div>
+                                              <span className="text-secondary">Time:</span>
+                                              <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>-{' '}
+                                              <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
+                                            </div>
+                                            <AntdTooltip title="View Facility details" placement="topLeft">
+                                              <p
+                                                className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
+                                                onClick={() => navigate(`/facilities/${facility.id}`)}
+                                              >
+                                                @ {facility.facilityName}
+                                              </p>
+                                            </AntdTooltip>
+                                          </div>
+                                          <div className="flex justify-end">
+                                            <AntdTooltip title="View Event details">
+                                              <Button shape="circle" onClick={() => navigate(`/event/${event.id}`)}>
+                                                <MdArrowOutward />
+                                              </Button>
+                                            </AntdTooltip>
+                                          </div>
+                                        </div>
+                                      ),
+                                    })
+                                  }}
+                                />
+                              </AntdTooltip>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex w-full items-center mb-2">
+                        <div className="flex-[1] h-[1px] bg-sky-400/30" />
+                      </div>
+                    </div>
+                    {/* <Collapse
+                      bordered={false}
+                      defaultActiveKey={[]}
+                      size="small"
+                      expandIconPosition="end"
+                      className="mb-2"
+                      items={facility.events.map((event, index) => ({
+                        key: `${index}`,
+                        label: (
+                          <div className='flex items-center gap-2'>
+                            <div
+                              style={{
+                                backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                              }}
+                              className="rounded-full h-8 w-8 shadow-md text-white flex-0 flex items-center justify-center  bg-gray-400 overflow-hidden"
+                            >
+                              {(!event.images || event.images.length === 0) && <BiSolidCalendar className='opacity-75 text-lg'/>}
+                            </div>
+                            {event.title}
+                          </div>
+                        ),
+                        children: 'keke',
+                      }))}
+                    /> */}
+                    <div className="flex justify-end">
+                      <AntdTooltip title="View Facility details">
+                        <Button shape="circle" onClick={() => navigate(`/facility/${facility.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </AntdTooltip>
+                    </div>
+                  </div>
+                ),
+              })
+          }}
+          riseOnHover
+        >
           {tooltipLabel && (
             <Tooltip offset={[20, -10]} permanent={tooltipLabelPermanent}>
               {tooltipLabel}
@@ -180,23 +344,55 @@ function FacilityEventsPictureMarker({
           position={[lat, lng]}
           icon={getCustomIcon(event, index)}
           eventHandlers={{
-            click: () => setHovered({ ...event, image: event.images ? event.images[0] : null, entityType: "EVENT" }),
+            click: () =>
+              setHovered({
+                ...event,
+                title: <div className='flex justify-between items-center'>{event.title}<EventStatusTag status={event?.status as EventStatusEnum}/></div>,
+                image: event.images ? event.images[0] : null,
+                entityType: 'EVENT',
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div>
+                      <Typography.Paragraph
+                        ellipsis={{
+                          rows: 3,
+                        }}
+                      >
+                        {event.description}
+                      </Typography.Paragraph>
+                      <div className='-mt-2 '><span className='text-secondary'>Date: </span>{dayjs(event?.startDate).format('D MMM YYYY') + ' - ' + dayjs(event?.endDate).format('D MMM YYYY')}</div>
+                      <div>
+                        <span className='text-secondary'>Time:</span>
+                        <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>- {' '}
+                        <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
+                      </div>
+                      <AntdTooltip title="View Facility details" placement="topLeft">
+                        <p
+                          className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
+                          onClick={() => navigate(`/facilities/${facility.id}`)}
+                        >
+                          @ {facility.facilityName}
+                        </p>
+                      </AntdTooltip>
+                    </div>
+                    <div className="flex justify-end">
+                      <AntdTooltip title="View Event details">
+                        <Button shape="circle" onClick={() => navigate(`/event/${event.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </AntdTooltip>
+                    </div>
+                  </div>
+                ),
+              }),
           }}
           riseOnHover
         >
           <Tooltip offset={[(index + 1) * eventMarkerGap, -circleWidth / 2]} permanent={tooltipLabelPermanent}>
             {event.title}
-          </Tooltip> 
+          </Tooltip>
         </Marker>
       ))}
-      {/* {hovered && (
-        <HoverInformation
-          key={hovered.id}
-          title={hovered.title}
-          setHoveredItem={setHoveredEvent}
-          children={<></>}
-        />
-      )} */}
     </>
   );
 }

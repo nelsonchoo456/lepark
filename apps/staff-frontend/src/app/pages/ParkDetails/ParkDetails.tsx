@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography, Alert } from 'antd';
@@ -10,6 +10,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
 import MapTab from './components/MapTab';
+import { SCREEN_LG } from '../../config/breakpoints';
 const { Text } = Typography;
 
 const ParkDetails = () => {
@@ -17,7 +18,7 @@ const ParkDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { park, loading } = useRestrictPark(id);
-
+  
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -49,7 +50,8 @@ const ParkDetails = () => {
     {
       key: 'map',
       label: 'Map',
-      children: park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
+      children:
+        park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
     {
       key: 'zones',
