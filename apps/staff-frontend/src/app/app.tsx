@@ -263,34 +263,67 @@ export function App() {
               <Route path="/hubs">
                 <Route index element={<HubList />} />
                 <Route path=":hubId" element={<ViewHubDetails />} />
-                <Route path="create" element={<HubCreate />} />
-                <Route path=":hubId/edit" element={<HubEdit />} />
+                <Route
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[
+                        StaffType.SUPERADMIN,
+                        StaffType.MANAGER,
+                        StaffType.BOTANIST,
+                        StaffType.ARBORIST,
+                        StaffType.LANDSCAPE_ARCHITECT,
+                        StaffType.PARK_RANGER,
+                      ]}
+                      redirectTo="/hubs"
+                    />
+                  }
+                >
+                  <Route path="create" element={<HubCreate />} />
+                  <Route path=":hubId/edit" element={<HubEdit />} />
+                  <Route path="edit"/>
+                </Route>
               </Route>
 
-                <Route path="/facilities">
-                  <Route index element={<FacilityList />} />
-                  <Route path="create" element={<FacilityCreate />} />
-                  <Route path=":facilityId" element={<ViewFacilityDetails />} />
-                </Route>
-                <Route path="/parkasset">
-                  <Route index element={<AssetListGrouped />} />
-                  <Route path="viewall" element={<AssetList />}  />
-                  <Route path="available" element={<AssetAvail />}  />
-                  <Route path="inuse" element={<AssetInUse />}  />
-                  <Route path="undermaintenance" element={<AssetUnderMtnc />}  />
-                  <Route path="decommissioned" element={<AssetDecomm />}  />
-                  <Route path="create" element={<AssetCreate />} />
-                  <Route path=":assetId" element={<AssetDetails />} />
-                  <Route path="edit/:assetId" element={<AssetEdit />} />
-                </Route>
-                <Route path="/sensor">
+              <Route path="/facilities">
+                <Route index element={<FacilityList />} />
+                <Route path="create" element={<FacilityCreate />} />
+                <Route path=":facilityId" element={<ViewFacilityDetails />} />
+              </Route>
+              <Route path="/parkasset">
+                <Route index element={<AssetListGrouped />} />
+                <Route path="viewall" element={<AssetList />} />
+                <Route path="available" element={<AssetAvail />} />
+                <Route path="inuse" element={<AssetInUse />} />
+                <Route path="undermaintenance" element={<AssetUnderMtnc />} />
+                <Route path="decommissioned" element={<AssetDecomm />} />
+                <Route path="create" element={<AssetCreate />} />
+                <Route path=":assetId" element={<AssetDetails />} />
+                <Route path="edit/:assetId" element={<AssetEdit />} />
+              </Route>
+              <Route path="/sensor">
+                <Route index element={<SensorList />} />
+                <Route path=":sensorId" element={<ViewSensorDetails />} />
+                <Route
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[
+                        StaffType.SUPERADMIN,
+                        StaffType.MANAGER,
+                        StaffType.BOTANIST,
+                        StaffType.ARBORIST,
+                        StaffType.LANDSCAPE_ARCHITECT,
+                        StaffType.PARK_RANGER,
+                      ]}
+                      redirectTo="/sensor"
+                    />
+                  }
+                >
                   <Route path="create" element={<SensorCreate2 />} />
-                  <Route index element={<SensorList />} />
-                  <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="edit/:sensorId" element={<SensorEdit />} />
-                  <Route path="map" element={<SensorMap />} />
+                  <Route path="edit"/>
                 </Route>
-
+                <Route path="map" element={<SensorMap />} />
+              </Route>
 
               {/* Catch-all for 404 */}
               <Route path="*" element={<PageNotFound />} />
