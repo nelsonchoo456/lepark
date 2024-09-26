@@ -23,15 +23,6 @@ CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', '
 CREATE TYPE "AttractionStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
 
 -- CreateEnum
-CREATE TYPE "AttractionTicketCategoryEnum" AS ENUM ('ADULT', 'CHILD', 'SENIOR', 'STUDENT');
-
--- CreateEnum
-CREATE TYPE "AttractionTicketNationalityEnum" AS ENUM ('LOCAL', 'STANDARD');
-
--- CreateEnum
-CREATE TYPE "AttractionTicketStatusEnum" AS ENUM ('VALID', 'INVALID', 'USED');
-
--- CreateEnum
 CREATE TYPE "EventStatusEnum" AS ENUM ('ONGOING', 'UPCOMING', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
@@ -171,42 +162,6 @@ CREATE TABLE "Attraction" (
     "parkId" INTEGER NOT NULL,
 
     CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "AttractionTicketListing" (
-    "id" UUID NOT NULL,
-    "category" "AttractionTicketCategoryEnum" NOT NULL,
-    "nationality" "AttractionTicketNationalityEnum" NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
-    "isActive" BOOLEAN NOT NULL,
-    "attractionId" UUID NOT NULL,
-
-    CONSTRAINT "AttractionTicketListing_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "AttractionTicket" (
-    "id" UUID NOT NULL,
-    "attractionDate" TIMESTAMP(3) NOT NULL,
-    "status" "AttractionTicketStatusEnum" NOT NULL,
-    "attractionId" UUID NOT NULL,
-    "attractionTicketListingId" UUID NOT NULL,
-    "attractionTicketTransactionId" UUID NOT NULL,
-
-    CONSTRAINT "AttractionTicket_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "AttractionTicketTransaction" (
-    "id" UUID NOT NULL,
-    "attractionDate" TIMESTAMP(3) NOT NULL,
-    "purchaseDate" TIMESTAMP(3) NOT NULL,
-    "totalPrice" DOUBLE PRECISION NOT NULL,
-    "visitorId" UUID NOT NULL,
-    "attractionId" UUID NOT NULL,
-
-    CONSTRAINT "AttractionTicketTransaction_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -357,7 +312,6 @@ CREATE TABLE "PlantTask" (
     "taskUrgency" "PlantTaskUrgencyEnum" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "dueDate" TIMESTAMP(3) NOT NULL,
     "completedDate" TIMESTAMP(3),
     "images" TEXT[],
     "remarks" TEXT,
@@ -411,15 +365,6 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AttractionTicketListing" ADD CONSTRAINT "AttractionTicketListing_attractionId_fkey" FOREIGN KEY ("attractionId") REFERENCES "Attraction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AttractionTicket" ADD CONSTRAINT "AttractionTicket_attractionTicketTransactionId_fkey" FOREIGN KEY ("attractionTicketTransactionId") REFERENCES "AttractionTicketTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AttractionTicketTransaction" ADD CONSTRAINT "AttractionTicketTransaction_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;

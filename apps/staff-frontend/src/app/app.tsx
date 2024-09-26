@@ -60,6 +60,7 @@ import EventDetails from './pages/EventDetails/EventDetails';
 import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
 import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
+import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 import TicketListingDetails from './pages/AttractionDetails/components/TicketListingDetails';
@@ -352,7 +353,7 @@ export function App() {
                     <Route path="create" element={<EventCreate />} />
                     <Route path=":id/edit" element={<EventEdit />} />
                   </Route>
-                  <Route path=":id" element={<EventDetails />} /> 
+                  <Route path=":id" element={<EventDetails />} />
                 </Route>
               </Route>
 
@@ -372,20 +373,22 @@ export function App() {
               </Route>
 
               {/* Facility Routes */}
-              <Route
-                element={
-                  <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
-                    redirectTo="/"
-                  />
-                }
-              >
-                <Route path="/facilities">
-                  <Route index element={<FacilityList />} />
+
+              <Route path="/facilities">
+                <Route index element={<FacilityList />} />
+                <Route
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                      redirectTo="/"
+                    />
+                  }
+                >
                   <Route path="create" element={<FacilityCreate />} />
-                  <Route path=":facilityId" element={<ViewFacilityDetails />} />
                   <Route path=":facilityId/edit" element={<FacilityEdit />} />
+                  <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
                 </Route>
+                <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
 
               {/* Catch-all for 404 */}

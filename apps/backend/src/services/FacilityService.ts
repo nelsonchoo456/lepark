@@ -19,7 +19,7 @@ class FacilityService {
       // Validate input data using Zod
       FacilitySchema.parse(formattedData);
 
-      const facilityData = ensureAllFieldsPresent(data);
+      const facilityData = ensureAllFieldsPresent(formattedData);
 
       // Create the facility
       return FacilityDao.createFacility(facilityData);
@@ -116,7 +116,6 @@ function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreate
     !data.rulesAndRegulations ||
     !data.images ||
     !data.lastMaintenanceDate ||
-    !data.nextMaintenanceDate ||
     !data.openingHours ||
     !data.closingHours ||
     !data.facilityStatus ||
@@ -127,24 +126,17 @@ function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreate
     !data.fee === undefined ||
     !data.parkId
   ) {
-    throw new Error('Missing required fields for occurrence creation');
+    throw new Error('Missing required fields for facility creation');
   }
   return data as Prisma.FacilityCreateInput;
 }
 
 const dateFormatter = (data: any) => {
-  const { lastMaintenanceDate, nextMaintenanceDate, openingHours, closingHours, ...rest } = data;
+  const { openingHours, closingHours, ...rest } = data;
   const formattedData = { ...rest };
 
   // Format dateObserved and dateOfBirth into JavaScript Date objects
-  const lastMaintenanceDateFormat = lastMaintenanceDate ? new Date(lastMaintenanceDate) : undefined;
-  const nextMaintenanceDateFormat = nextMaintenanceDate ? new Date(nextMaintenanceDate) : undefined;
-  if (lastMaintenanceDate) {
-    formattedData.lastMaintenanceDate = lastMaintenanceDateFormat;
-  }
-  if (nextMaintenanceDate) {
-    formattedData.nextMaintenanceDate = nextMaintenanceDateFormat;
-  }
+  formattedData.lastMaintenanceDate = new Date();
 
   if (openingHours) {
     formattedData.openingHours = openingHours.map((time: string) => new Date(time));

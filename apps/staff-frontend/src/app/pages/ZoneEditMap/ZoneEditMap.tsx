@@ -11,7 +11,7 @@ import polygon_image from '../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../assets/mapFeatureManager/edit.png';
 import MapFeatureManagerEdit from '../../components/map/MapFeatureManagerEdit';
 import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../components/map/functions/functions';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
 import { TbTree } from 'react-icons/tb';
@@ -71,7 +71,25 @@ const ZoneEditMap = () => {
       } else {
         throw new Error('Please draw Zone boundaries on the map.');
       }
-      
+
+      const hasOverlap = polygonHasOverlap(editPolygon[0][0], parkZones?.map((z) => z?.geom?.coordinates?.[0]));
+      const isWithinPark = polygonIsWithin(editPolygon[0][0], park?.geom?.coordinates?.[0]);
+      if (hasOverlap) {
+        messageApi.open({
+          type: 'error',
+          content: 'The Zone boundaries overlaps with other Zone(s).',
+        });
+      }
+      if (!isWithinPark) {
+        messageApi.open({
+          type: 'error',
+          content: 'The Zone boundaries is not within the Park.',
+        });
+      }
+      if (hasOverlap || !isWithinPark) {
+        return;
+      }
+
       const response = await updateZone(zone.id, finalData);
       if (response.status === 200) {
         setCreatedData(response.data);
@@ -196,7 +214,7 @@ const ZoneEditMap = () => {
               key="park-create"
             >
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
               {showPark && (

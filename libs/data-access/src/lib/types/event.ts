@@ -1,3 +1,5 @@
+import { FacilityResponse } from "./facility";
+
 export enum EventStatusEnum {
   ONGOING = 'ONGOING',
   UPCOMING = 'UPCOMING',
@@ -39,6 +41,7 @@ export interface EventResponse {
   images?: string[];
   status: EventStatusEnum;
   facilityId: string;
+  facility?: FacilityResponse;
   //parkName: string;
 }
 

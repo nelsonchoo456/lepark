@@ -12,7 +12,6 @@ export const FacilitySchema = z.object({
   rulesAndRegulations: z.string().min(1, { message: 'Rules and regulations are required' }),
   images: z.array(z.string()),
   lastMaintenanceDate: z.date(),
-  nextMaintenanceDate: z.date(),
   openingHours: z.array(z.date()),
   closingHours: z.array(z.date()),
   facilityStatus: z.nativeEnum(FacilityStatusEnum),

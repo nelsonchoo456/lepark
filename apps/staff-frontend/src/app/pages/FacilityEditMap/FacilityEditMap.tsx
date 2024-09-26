@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
-import DraggableMarker from '../../components/map/DraggableMarker';
-import { ParkResponse, AttractionResponse, getAttractionById, getParkById, updateAttractionDetails } from '@lepark/data-access';
+import DraggableMarker, { center } from '../../components/map/DraggableMarker';
+import { ParkResponse, AttractionResponse, getAttractionById, getParkById, updateAttractionDetails, updateFacilityDetails } from '@lepark/data-access';
 import { useEffect, useState } from 'react';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import { COLORS } from '../../config/colors';
@@ -11,34 +11,40 @@ import { ContentWrapperDark } from '@lepark/common-ui';
 import { Button, Card, Flex, Input, message, Popconfirm } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
+import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
   lng?: number | null;
 }
 
-const AttractionEditMap = () => {
-  const { id } = useParams<{ id: string }>();
-  const { attraction, park, loading } = useRestrictAttractions(id);
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
+const FacilityEditMap = () => {
+  const { facilityId } = useParams<{ facilityId: string }>();
+  const { facility, park, loading } = useRestrictFacilities(facilityId);
+  const [lat, setLat] = useState<number | undefined>();
+  const [lng, setLng] = useState<number | undefined>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!attraction) return;
-      if (!park) return;
+      if (park) {
+        setPolygon(park.geom.coordinates);
+      }
 
-      setLat(attraction.lat);
-      setLng(attraction.lng);
-
-      setPolygon(park.geom.coordinates);
+      if (facility && facility.lat && facility.long) {
+        setLat(facility.lat);
+        setLng(facility.long);
+      } 
+      // else {
+      //   setLat(center.lat);
+      //   setLat(center.lng);
+      // }
     };
 
     fetchData();
-  }, [id, attraction, park]);
+  }, [facility, park]);
 
   const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
     if (lat) {
@@ -50,57 +56,53 @@ const AttractionEditMap = () => {
   };
 
   const handleSubmit = async () => {
-    if (!attraction) return;
+    if (!facility) return;
     try {
       const finalData: any = {};
       if (lat) {
         finalData.lat = lat;
       }
       if (lng) {
-        finalData.lng = lng;
+        finalData.long = lng;
       }
 
-      const attractionRes = await updateAttractionDetails(attraction.id, finalData);
-      if (attractionRes.status === 200) {
+      const facilityRes = await updateFacilityDetails(facility.id, finalData);
+      if (facilityRes.status === 200) {
         messageApi.open({
           type: 'success',
-          content: 'Saved changes to Attraction Location. Redirecting to Attraction details page...',
+          content: "Saved changes to Facility's Location. Redirecting to Facility details page...",
         });
         setTimeout(() => {
-          navigate(`/attraction/${attraction.id}`);
+          navigate(`/facilities/${facility.id}`);
         }, 1000);
       }
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.message || error.toString();
-      if (errorMessage.includes('An attraction with this title already exists in the park')) {
-        messageApi.error('An attraction with this title already exists in the park.');
-      } else {
-        messageApi.open({
-          type: 'error',
-          content: 'An unexpected error occurred while updating the attraction.',
-        });
-      }
+      messageApi.open({
+        type: 'error',
+        content: 'An unexpected error occurred while updating the Facility.',
+      });
     }
   };
 
-  if (!attraction || lat === null || lng === null) {
-    return <div>Loading Attraction map...</div>;
-  }
+  // if (!facility || lat === null || lng === null) {
+  //   return <div>Loading Attraction map...</div>;
+  // }
 
   const breadcrumbItems = [
     {
-      title: 'Attraction Management',
-      pathKey: '/attraction',
+      title: 'Facility Management',
+      pathKey: '/facilities',
       isMain: true,
     },
     {
-      title: attraction?.title ? attraction?.title : 'Details',
-      pathKey: `/attraction/${attraction?.id}`,
+      title: facility?.facilityName ? facility?.facilityName : 'Details',
+      pathKey: `/facilities/${facility?.id}`,
     },
     {
       title: 'Edit Location',
-      pathKey: `/attraction/${attraction?.id}/edit-location`,
+      pathKey: `/facilities/${facility?.id}/edit-location`,
       isCurrent: true,
     },
   ];
@@ -150,7 +152,7 @@ const AttractionEditMap = () => {
           </div>
         </Flex>
         <div className="flex justify-center gap-2">
-          <Popconfirm title="All changes will be lost." onConfirm={() => navigate(`/attraction/${attraction?.id}`)}>
+          <Popconfirm title="All changes will be lost." onConfirm={() => navigate(`/facilities/${facility?.id}`)}>
             <Button>Cancel</Button>
           </Popconfirm>
 
@@ -163,4 +165,4 @@ const AttractionEditMap = () => {
   );
 };
 
-export default AttractionEditMap;
+export default FacilityEditMap;

@@ -24,7 +24,6 @@ const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, f
   const centroid = getCentroidOfGeom(geom);
 
   useEffect(() => {
-    console.log(geom)
     if (geom?.coordinates && geom.coordinates.length > 0) {
       const bounds = geom.coordinates[0].map((item: number[]) => [item[1], item[0]] as [number, number]);
       map.fitBounds(bounds); // Fit/zoom the map to the geom bounds
