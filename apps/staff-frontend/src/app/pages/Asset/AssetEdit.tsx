@@ -17,7 +17,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+// import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 
 const formatEnumLabel = (enumValue: string): string => {
@@ -214,7 +214,9 @@ const AssetEdit = () => {
   }
 
   if (notFound) {
-    return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
+    // [ ENTITY NOT FOUND MERGE ISSUE ]
+    return <></>
+    // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
   if (!asset) {
