@@ -1,28 +1,37 @@
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
-import { getHubById, HubResponse } from '@lepark/data-access';
-import { Card, Descriptions, Tabs, Tag } from 'antd';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
+import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse } from '@lepark/data-access';
+import { Card, Descriptions, Spin, Tabs, Tag } from 'antd';
+import moment from 'moment';
 import { useEffect, useState } from 'react';
-import { FiCloud, FiSun } from 'react-icons/fi';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
-import moment from 'moment';
-import InformationTab from './components/InformationTab';
+import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import HubCarousel from './components/HubCarousel';
+import InformationTab from './components/InformationTab';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
-  const [hub, setHub] = useState<HubResponse | null>(null);
+  const { hub } = useRestrictHub(hubId); // Custom hook to fetch hub details
   const [loading, setLoading] = useState(true);
-  //const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const { user } = useAuth<StaffResponse>();
+  const [park, setPark] = useState<ParkResponse | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       if (hubId) {
         try {
-          const hubResponse = await getHubById(hubId);
-          setHub(hubResponse.data);
-          //const facilityResponse = await getFacilityById(hubResponse.data.facilityId);
-          //setFacility(facilityResponse.data);
+          if (hub && hub.facilityId) {
+            const facilityResponse = await getFacilityById(hub.facilityId);
+            if (facilityResponse.status === 200) {
+              setFacility(facilityResponse.data);
+              //console.log(facilityResponse.data);
+              const parkResponse = await getParkById(facilityResponse.data.parkId);
+              if (parkResponse.status === 200) {
+                setPark(parkResponse.data);
+              }
+            }
+          }
         } catch (error) {
           console.error('Error fetching hub data:', error);
         } finally {
@@ -31,7 +40,7 @@ const ViewHubDetails = () => {
       }
     };
     fetchData();
-  }, [hubId]);
+  }, [hubId, hub]);
 
   const breadcrumbItems = [
     {
@@ -40,7 +49,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.name ? hub?.name : 'Details',
+      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -48,32 +57,27 @@ const ViewHubDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNumber',
-      label: 'Serial Number',
-      children: hub?.serialNumber,
+      key: 'name',
+      label: 'Name',
+      children: hub?.name,
     },
     {
-        key: 'hubStatus',
-        label: 'Hub Status',
-        children: (() => {
-          switch (hub?.hubStatus) {
-            case 'ACTIVE':
-              return <Tag color="green">ACTIVE</Tag>;
-            case 'INACTIVE':
-              return <Tag color="silver">INACTIVE</Tag>;
-            case 'UNDER_MAINTENANCE':
-              return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
-            case 'DECOMMISSIONED':
-              return <Tag color="red">DECOMMISSIONED</Tag>;
-            default:
-              return <Tag>{hub?.hubStatus}</Tag>;
-          }
-        })(),
-      },
-    {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('D MMM YY') : null,
+      key: 'hubStatus',
+      label: 'Hub Status',
+      children: (() => {
+        switch (hub?.hubStatus) {
+          case 'ACTIVE':
+            return <Tag color="green">ACTIVE</Tag>;
+          case 'INACTIVE':
+            return <Tag color="silver">INACTIVE</Tag>;
+          case 'UNDER_MAINTENANCE':
+            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+          case 'DECOMMISSIONED':
+            return <Tag color="red">DECOMMISSIONED</Tag>;
+          default:
+            return <Tag>{hub?.hubStatus}</Tag>;
+        }
+      })(),
     },
     {
       key: 'ipAddress',
@@ -95,12 +99,28 @@ const ViewHubDetails = () => {
       label: 'Hub Secret',
       children: hub?.hubSecret,
     },
-    /*
     {
       key: 'facilityName',
       label: 'Facility',
       children: facility?.facilityName,
-      },*/
+    },
+  ]
+
+  if (hub?.nextMaintenanceDate) {
+    descriptionsItems.push({
+      key: 'nextMaintenanceDate',
+      label: 'Next Maintenance Date',
+      children: moment(hub.nextMaintenanceDate).format('D MMM YY'),
+    });
+  }
+
+  const descriptionsItemsForSuperAdmin = [
+    ...descriptionsItems,
+    {
+      key: 'parkName',
+      label: 'Park Name',
+      children: park?.name,
+    },
   ];
 
   const tabsItems = [
@@ -110,6 +130,14 @@ const ViewHubDetails = () => {
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
     },
   ];
+
+  if (loading) {
+    return (
+      <ContentWrapperDark style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" />
+      </ContentWrapperDark>
+    );
+  }
 
   return (
     <ContentWrapperDark>
@@ -121,8 +149,13 @@ const ViewHubDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
-            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
+            <LogoText className="text-2xl py-2 m-0">{hub?.serialNumber}</LogoText>
+            <Descriptions
+              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
+              column={1}
+              size="small"
+              className="mb-4"
+            />
           </div>
         </div>
 

@@ -33,6 +33,9 @@ class HubService {
   public async createHub(data: HubSchemaType): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
+      if (formattedData.serialNumber) {
+        formattedData.serialNumber = formattedData.serialNumber.trim();
+      }
       HubSchema.parse(formattedData);
 
       const existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
@@ -65,6 +68,9 @@ class HubService {
   public async updateHubDetails(id: string, data: Partial<HubSchemaType>): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
+      if (formattedData.serialNumber) {
+        formattedData.serialNumber = formattedData.serialNumber.trim();
+      }
       HubSchema.partial().parse(formattedData);
 
       if (formattedData.serialNumber) {

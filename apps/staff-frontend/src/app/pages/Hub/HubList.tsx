@@ -103,11 +103,11 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
+      title: 'Mac Address',
+      dataIndex: 'macAddress',
+      key: 'macAddress',
+      render: (text) => <div>{text}</div>,
+      sorter: (a, b) => a.macAddress.localeCompare(b.macAddress),
       width: '10%',
     },
     {
@@ -118,10 +118,10 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN && (
+          {user?.role !== StaffType.VENDOR_MAANGER && (
             <>
               <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
@@ -200,11 +200,11 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
+      title: 'Mac Address',
+      dataIndex: 'macAddress',
+      key: 'macAddress',
+      render: (text) => <div>{text}</div>,
+      sorter: (a, b) => a.macAddress.localeCompare(b.macAddress),
       width: '10%',
     },
     {
@@ -215,16 +215,12 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN && (
-            <>
-              <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/edit/${record.id}`)} />
-              </Tooltip>
-              <Tooltip title="Delete">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-              </Tooltip>
-            </>
-          )}
+          <Tooltip title="Edit">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
@@ -276,7 +272,9 @@ const HubList: React.FC = () => {
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Hubs..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        {user?.role === StaffType.SUPERADMIN && (
+        {[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(
+          user?.role as StaffType,
+        ) && (
           <Button type="primary" onClick={() => navigate('/hubs/create')}>
             Create Hub
           </Button>

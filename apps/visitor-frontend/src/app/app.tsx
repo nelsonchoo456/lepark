@@ -22,6 +22,8 @@ import { ParkProvider } from './park-context/ParkContext';
 import VerifyUser from './pages/VerifyUser/VerifyUser';
 import EditProfile from './pages/Profile/EditProfile';
 import DiscoverPerPark from './pages/Taxonomy/DiscoverPerPark';
+import AttractionsPerPark from './pages/Attractions/AttractionsPerPark';
+import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttractionDetails';
 
 export function App() {
   return (
@@ -89,6 +91,10 @@ export function App() {
                   <Route index element={<Discover />} />
                   <Route path=":speciesId" element={<ViewSpeciesDetails />} />
                   <Route path="park/:parkId" element={<DiscoverPerPark />} />
+                </Route>
+                <Route path="/attractions">
+                  <Route path="park/:parkId" element={<AttractionsPerPark />} />
+                  <Route path=":attractionId" element={<VisitorViewAttractionDetails />} />
                 </Route>
               </Route>
             </Routes>

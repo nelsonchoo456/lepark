@@ -4,13 +4,17 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
 import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
+import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
 import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
+import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
+import { MdSensors } from 'react-icons/md';
+
 type MenuItem = Required<MenuProps>['items'][number];
 
 const MainLayout = () => {
@@ -64,6 +68,31 @@ const MainLayout = () => {
     }
   }, [location.pathname, userRole, user?.parkId]);
 
+  const sensorNavItem: MenuItem = {
+    key: 'sensor',
+    icon: <MdSensors />,
+    label: 'Sensors',
+    children: [
+      {
+        key: 'sensor',
+        label: 'List View',
+        onClick: () => navigate('/sensor'),
+      },
+      {
+        key: 'sensor/map',
+        label: 'Map View',
+        onClick: () => navigate('/sensor/map'),
+      },
+    ],
+  };
+
+  const hubsNavItem: MenuItem = {
+    key: 'hubs',
+    icon: <FaNetworkWired />,
+    label: 'Hubs',
+    onClick: () => navigate('/hubs'),
+  };
+
   let parkNavItem: MenuItem = {
     key: 'park',
     icon: <TbTrees />,
@@ -81,6 +110,7 @@ const MainLayout = () => {
       },
     ],
   };
+
   if (userRole !== StaffType.SUPERADMIN) {
     parkNavItem = {
       key: 'park',
@@ -117,6 +147,7 @@ const MainLayout = () => {
     //     }
     //   ]
     // },
+
     {
       key: 'zone',
       icon: <TbTree />,
@@ -192,6 +223,14 @@ const MainLayout = () => {
           ],
         }
       : null,
+    sensorNavItem,
+    hubsNavItem,
+    {
+      key: 'parkasset',
+      icon: <PiToolboxBold />,
+      label: 'Park Assets (non-IoT)',
+      onClick: () => navigate('/parkasset'),
+    },
     {
       key: 'profile',
       icon: <FiUser />,
