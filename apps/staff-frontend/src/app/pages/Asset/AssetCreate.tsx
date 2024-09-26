@@ -275,17 +275,18 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
 
 
                <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Recurring Maintenance"
-              rules={[{ required: true, type: 'number', min: 1, message: 'Please enter a valid number of days' }]}
-            >
-              <InputNumber
-                className="w-full"
-                min={1}
-                onChange={onRecurringMaintenanceChange}
-                placeholder='Enter Recurring Maintenance in days'
-              />
-            </Form.Item>
+  name="recurringMaintenanceDuration"
+  label="Recurring Maintenance"
+  rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
+>
+  <InputNumber
+    className="w-full"
+    min={1}
+    max={500}
+    onChange={onRecurringMaintenanceChange}
+    placeholder='Enter Recurring Maintenance in days'
+  />
+</Form.Item>
 
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
