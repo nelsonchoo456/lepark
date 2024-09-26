@@ -88,8 +88,13 @@ class AttractionTicketService {
 
   public async createAttractionTicket(data: AttractionTicketSchemaType): Promise<AttractionTicket> {
     try {
+      const listing = await AttractionDao.getAttractionTicketListingById(data.attractionTicketListingId);
+      if (!listing) {
+        throw new Error('Listiing not found');
+      }
+
       // Check if the transaction exists
-      const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(data.attractionTicketListingTransactionId);
+      const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(data.attractionTicketTransactionId);
       if (!transaction) {
         throw new Error('Transaction not found');
       }
@@ -151,13 +156,7 @@ function ensureAllFieldsPresent(data: AttractionTicketTransactionSchemaType): Pr
 }
 
 function ensureAllTicketFieldsPresent(data: AttractionTicketSchemaType): Prisma.AttractionTicketCreateInput {
-  if (
-    !data.attractionDate ||
-    !data.status ||
-    !data.price ||
-    !data.attractionTicketListingId ||
-    !data.attractionTicketListingTransactionId
-  ) {
+  if (!data.attractionDate || !data.status || !data.price || !data.attractionTicketListingId || !data.attractionTicketTransactionId) {
     throw new Error('Missing required fields for attraction ticket transaction creation');
   }
 

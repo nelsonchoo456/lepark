@@ -3,9 +3,9 @@ import { z } from 'zod';
 export const AttractionTicketSchema = z.object({
   attractionDate: z.date(),
   status: z.enum(['VALID', 'INVALID', 'USED']),
-  price: z.number().int().positive(),
+  price: z.number().positive(),
   attractionTicketListingId: z.string().uuid(),
-  attractionTicketListingTransactionId: z.string().uuid(),
+  attractionTicketTransactionId: z.string().uuid(),
 });
 
 // Base schema for AttractionTicketTransaction
