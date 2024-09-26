@@ -165,7 +165,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
       {user?.role !== StaffType.SUPERADMIN && park ? (
-        <Form.Item label="Park">{park?.name}</Form.Item>
+        <Form.Item name="parkId"label="Park">{park?.name}</Form.Item>
       ) : (
         <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
@@ -245,8 +245,15 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         <InputNumber min={1} />
       </Form.Item>
 
-      <Form.Item name="fee" label="Fee" rules={[{ required: true, message: 'Please input the fee!' }]}>
-        <InputNumber />
+      <Form.Item 
+        name="fee" 
+        label="Fee" 
+        rules={[
+          { required: true, message: 'Please input the fee!' },
+          { type: 'number', min: 0, message: 'Fee cannot be negative!' }
+        ]}
+      >
+        <InputNumber min={0} step={0.01} />
       </Form.Item>
 
       <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
