@@ -190,7 +190,7 @@ CREATE TABLE "AttractionTicket" (
     "id" UUID NOT NULL,
     "attractionDate" TIMESTAMP(3) NOT NULL,
     "status" "AttractionTicketStatusEnum" NOT NULL,
-    "attractionId" UUID NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
     "attractionTicketListingId" UUID NOT NULL,
     "attractionTicketTransactionId" UUID NOT NULL,
 
@@ -202,7 +202,8 @@ CREATE TABLE "AttractionTicketTransaction" (
     "id" UUID NOT NULL,
     "attractionDate" TIMESTAMP(3) NOT NULL,
     "purchaseDate" TIMESTAMP(3) NOT NULL,
-    "totalPrice" DOUBLE PRECISION NOT NULL,
+    "quantity" DOUBLE PRECISION NOT NULL,
+    "totalAmount" DOUBLE PRECISION NOT NULL,
     "visitorId" UUID NOT NULL,
     "attractionId" UUID NOT NULL,
 

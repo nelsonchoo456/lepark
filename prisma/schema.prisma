@@ -237,7 +237,8 @@ model AttractionTicket {
   id              String    @id @default(uuid()) @db.Uuid
   attractionDate  DateTime
   status          AttractionTicketStatusEnum
-  attractionId    String    @db.Uuid
+  price           Float
+  // attractionId    String    @db.Uuid
   attractionTicketListingId String    @db.Uuid
   attractionTicketTransactionId String @db.Uuid
 
@@ -248,7 +249,8 @@ model AttractionTicketTransaction {
   id              String    @id @default(uuid()) @db.Uuid
   attractionDate  DateTime
   purchaseDate    DateTime
-  totalPrice      Float
+  quantity        Float
+  totalAmount     Float
   visitorId       String    @db.Uuid
   attractionId    String    @db.Uuid
 
