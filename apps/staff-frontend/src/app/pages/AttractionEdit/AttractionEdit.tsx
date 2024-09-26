@@ -38,24 +38,24 @@ const AttractionEdit = () => {
 
     const fetchData = async () => {
       if (!attraction) return;
-     
-          const initialValues = {
-            ...attraction,
-            sunday: [dayjs(attraction.openingHours[0]), dayjs(attraction.closingHours[0])],
-            monday: [dayjs(attraction.openingHours[1]), dayjs(attraction.closingHours[1])],
-            tuesday: [dayjs(attraction.openingHours[2]), dayjs(attraction.closingHours[2])],
-            wednesday: [dayjs(attraction.openingHours[3]), dayjs(attraction.closingHours[3])],
-            thursday: [dayjs(attraction.openingHours[4]), dayjs(attraction.closingHours[4])],
-            friday: [dayjs(attraction.openingHours[5]), dayjs(attraction.closingHours[5])],
-            saturday: [dayjs(attraction.openingHours[6]), dayjs(attraction.closingHours[6])],
-          };
-          if (attraction.images) {
-            setCurrentImages(attraction.images);
-          }
+
+      const initialValues = {
+        ...attraction,
+        sunday: [dayjs(attraction.openingHours[0]), dayjs(attraction.closingHours[0])],
+        monday: [dayjs(attraction.openingHours[1]), dayjs(attraction.closingHours[1])],
+        tuesday: [dayjs(attraction.openingHours[2]), dayjs(attraction.closingHours[2])],
+        wednesday: [dayjs(attraction.openingHours[3]), dayjs(attraction.closingHours[3])],
+        thursday: [dayjs(attraction.openingHours[4]), dayjs(attraction.closingHours[4])],
+        friday: [dayjs(attraction.openingHours[5]), dayjs(attraction.closingHours[5])],
+        saturday: [dayjs(attraction.openingHours[6]), dayjs(attraction.closingHours[6])],
+      };
+      if (attraction.images) {
+        setCurrentImages(attraction.images);
+      }
       form.setFieldsValue(initialValues);
     };
     fetchData();
-  }, [id,attraction]);
+  }, [id, attraction]);
 
   const attractionStatusOptions = [
     { value: AttractionStatusEnum.OPEN, label: 'Open' },
@@ -170,7 +170,13 @@ const AttractionEdit = () => {
           {contextHolder}
           <Divider orientation="left">Attraction Details</Divider>
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
-            <Input placeholder="Attraction Title" />
+            <Input
+              placeholder="Attraction Title"
+              onBlur={(e) => {
+                const trimmedValue = e.target.value.trim();
+                form.setFieldsValue({ title: trimmedValue });
+              }}
+            />
           </Form.Item>
           <Form.Item name="description" label="Description" rules={[{ required: true }]}>
             <TextArea placeholder="Attraction Description" />
