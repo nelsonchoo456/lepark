@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { ParkResponse, StaffResponse, StaffType, updatePark } from '@lepark/data-access';
+import { getZonesByParkId, ParkResponse, StaffResponse, StaffType, updatePark, ZoneResponse } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -34,7 +34,10 @@ const ParkEdit = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const [parkZones, setParkZones] = useState<ZoneResponse[]>();
   const [form] = Form.useForm();
+
+  const [showParkZones, setShowParkZones] = useState<boolean>(false);
 
   useEffect(() => {
     if (park) {
@@ -210,7 +213,6 @@ const ParkEdit = () => {
           <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={parkStatusOptions} />
           </Form.Item>
-
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>

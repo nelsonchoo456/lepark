@@ -20,7 +20,7 @@ interface PictureMarkerProps {
   tooltipLabelPermanent?: boolean;
   teardrop?: boolean;
   hovered?: HoverItem | null;
-  setHovered: (hovered: any) => void;
+  setHovered?: (hovered: any) => void;
 }
 
 function PictureMarker({
@@ -78,7 +78,7 @@ function PictureMarker({
         ref={markerRef}
         icon={getCustomIcon()}
         eventHandlers={{
-          click: () => setHovered({ id: id, image: icon, title: tooltipLabel, entityType: entityType }),
+          click: () => setHovered && setHovered({ id: id, image: icon, title: tooltipLabel, entityType: entityType }),
         }}
         riseOnHover
       >

@@ -191,6 +191,7 @@ const MapTab = ({ park }: MapTabProps) => {
         className="rounded-xl md:overflow-hidden"
       >
         <MapContainer
+          key="park-map-tab"
           center={[1.287953, 103.851784]}
           zoom={11}
           className="leaflet-mapview-container h-full w-full"
