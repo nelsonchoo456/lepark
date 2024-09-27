@@ -13,7 +13,7 @@ import {
 } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
+import { Divider,Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
@@ -100,48 +100,53 @@ const SensorEdit = () => {
   };
 
   const handleSubmit = async (values: any) => {
-    if (!sensor) return;
-    setIsSubmitting(true);
-    try {
-      const formValues = await form.validateFields();
+  if (!sensor) return;
+  setIsSubmitting(true);
+  try {
+    const formValues = await form.validateFields();
 
-      console.log('Form values:', formValues);
+    console.log('Form values:', formValues);
 
-      const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
-        const typedKey = key as keyof SensorResponse; // Cast key to the correct type
-        if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
-          acc[typedKey] = formValues[typedKey];
-        }
-        return acc;
-      }, {} as Partial<SensorResponse>);
-
-      if (changedData.acquisitionDate) {
-        changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
+    const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
+      const typedKey = key as keyof SensorResponse;
+      if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
+        acc[typedKey] = formValues[typedKey];
       }
-      if (changedData.lastCalibratedDate) {
-        changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
-      }
+      return acc;
+    }, {} as Partial<SensorResponse>);
 
-      console.log('Submitting data:', changedData);
-
-      const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
-      if (response.status === 200) {
-        console.log('Response:', response.data);
-        setCreatedData(response.data);
-        messageApi.open({
-          type: 'success',
-          content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
-        });
-        setTimeout(() => {
-          navigate(`/sensor/${sensor.id}`);
-        }, 1000);
-      }
-    } catch (error) {
-      message.error(String(error));
-    } finally {
-      setIsSubmitting(false);
+    // Remove parkId from the update data
+    if ('parkId' in changedData) {
+      delete changedData.parkId;
     }
-  };
+
+    if (changedData.acquisitionDate) {
+      changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
+    }
+    if (changedData.lastCalibratedDate) {
+      changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
+    }
+
+    console.log('Submitting data:', changedData);
+
+    const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
+    if (response.status === 200) {
+      console.log('Response:', response.data);
+      setCreatedData(response.data);
+      messageApi.open({
+        type: 'success',
+        content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
+      });
+      setTimeout(() => {
+        navigate(`/sensor/${sensor.id}`);
+      }, 1000);
+    }
+  } catch (error) {
+    message.error(String(error));
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: dayjs.Dayjs) {
@@ -206,6 +211,7 @@ const SensorEdit = () => {
             disabled={isSubmitting}
             className="max-w-[600px] mx-auto"
           >
+            <Divider orientation="left">Sensor Details</Divider>
             <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
@@ -233,7 +239,16 @@ const SensorEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-              <Form.Item
+            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
+              <Select placeholder="Select sensor unit">
+                {Object.values(SensorUnitEnum).map((unit) => (
+                  <Select.Option key={unit} value={unit}>
+                    {formatEnumLabel(unit)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"
               rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
@@ -241,7 +256,7 @@ const SensorEdit = () => {
               <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
             <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
-              <DatePicker className="w-full" />
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
             <Form.Item
               name="calibrationFrequencyDays"
@@ -264,7 +279,9 @@ const SensorEdit = () => {
             >
               <InputNumber placeholder="Enter data frequency in minutes" min={1} max={999} className="w-full" />
             </Form.Item>
-            {/* ... (other form items) */}
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
             <Form.Item
               name="supplierContactNumber"
               label="Supplier Contact"
@@ -275,7 +292,15 @@ const SensorEdit = () => {
             <Form.Item name="remarks" label="Remarks">
               <TextArea />
             </Form.Item>
-
+            <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
+              <Select placeholder="Select a park" disabled={user?.role !== 'SUPERADMIN'}>
+                {parks.map((park) => (
+                  <Select.Option key={park.id} value={park.id}>
+                    {park.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
             <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
               <Select placeholder="Select a facility" onChange={onFacilityChange}>
                 {facilities.map((facility) => (

@@ -101,6 +101,15 @@ const SensorCreateDetails = ({
           ))}
         </Select>
       </Form.Item>
+      <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
+              <Select placeholder="Select sensor unit">
+                {Object.values(SensorUnitEnum).map((unit) => (
+                  <Select.Option key={unit} value={unit}>
+                    {formatEnumLabel(unit)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
        <Form.Item
         name="acquisitionDate"
         label="Acquisition Date"
@@ -132,7 +141,9 @@ const SensorCreateDetails = ({
       >
         <InputNumber placeholder="Enter data frequency in minutes" min={1} max={999} className="w-full" />
       </Form.Item>
-      {/* ... (other form items remain unchanged) */}
+      <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
       <Form.Item
         name="supplierContactNumber"
         label="Supplier Contact"
