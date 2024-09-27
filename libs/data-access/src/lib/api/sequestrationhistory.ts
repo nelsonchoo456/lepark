@@ -43,6 +43,21 @@ export async function deleteSequestrationHistory(id: string): Promise<AxiosRespo
   }
 }
 
+export async function getSequestrationHistoryByAreaIdAndTimeFrame(
+  areaId: string,
+  startDate: string,
+  endDate: string,
+): Promise<AxiosResponse<SequestrationHistory[]>> {
+  try {
+    const response: AxiosResponse<SequestrationHistory[]> = await client.get(`${URL}/area/${areaId}/timeframe`, {
+      params: { startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
 function handleAxiosError(error: any): never {
   if (axios.isAxiosError(error)) {
     if (error.response) {

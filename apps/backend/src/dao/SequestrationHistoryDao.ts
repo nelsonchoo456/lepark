@@ -27,6 +27,18 @@ class SequestrationHistoryDao {
       where: { decarbonizationAreaId: areaId },
     });
   }
+
+  async getSequestrationHistoryByAreaIdAndTimeFrame(areaId: string, startDate: Date, endDate: Date): Promise<SequestrationHistory[]> {
+    return prisma.sequestrationHistory.findMany({
+      where: {
+        decarbonizationAreaId: areaId,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
 }
 
 export default new SequestrationHistoryDao();
