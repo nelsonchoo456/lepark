@@ -38,7 +38,7 @@ import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import dayjs, { Dayjs } from 'dayjs';
 import FacilityInfoCard from '../Event/components/FacilityInfoCard';
-import { useFetchOpenFacilitiesByPark } from '../../hooks/Facilities/useFetchFacilitiesByPark';
+import { useFetchPublicFacilitiesForEventsByPark } from '../../hooks/Facilities/useFetchPublicFacilitiesForEventsByPark';
 import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
 
 const { TextArea } = Input;
@@ -49,7 +49,7 @@ const EventEdit = () => {
   const { id } = useParams();
   const { event, loading, park, facility } = useRestrictEvents(id);
   const [selectedFacility, setSelectedFacility] = useState<FacilityResponse | null>(null);
-  const { facilities, isLoading: isFacilitiesLoading, error: facilitiesError } = useFetchOpenFacilitiesByPark(park?.id || null);
+  const { facilities, isLoading: isFacilitiesLoading, error: facilitiesError } = useFetchPublicFacilitiesForEventsByPark(park?.id || null);
   const {
     bookedDates,
     isLoading: isEventsLoading,
@@ -382,7 +382,13 @@ const EventEdit = () => {
                   label="Title"
                   rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}
                 >
-                  <Input placeholder="Event Title" />
+                  <Input
+                    placeholder="Event Title"
+                    onBlur={(e) => {
+                      const trimmedValue = e.target.value.trim();
+                      form.setFieldsValue({ title: trimmedValue });
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item name="description" label="Description" rules={[{ required: true }]}>
