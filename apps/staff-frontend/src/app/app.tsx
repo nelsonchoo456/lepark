@@ -347,7 +347,7 @@ export function App() {
                   <Route index element={<AttractionList />} />
                   <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/attraction" />}>
                     <Route path="create" element={<AttractionCreate />} />
-                    {/*<Route path=":id/edit" element={<AttractionEdit />} />*/}
+                    <Route path=":id/edit" element={<AttractionEdit />} />
                     <Route path=":id/edit-map" element={<AttractionEditMap />} />
                   </Route>
                   <Route path=":id" element={<AttractionDetails />} />
