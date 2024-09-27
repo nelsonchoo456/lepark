@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
+import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
@@ -60,7 +61,7 @@ const AssetCreate = () => {
     };
   }, []);
 
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+ const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick, clearAllImages } = useUploadImagesAssets();
 
   const [form] = Form.useForm();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -200,6 +201,9 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
 
   const onReset = () => {
     form.resetFields();
+    setCreateMultiple(false);
+    setAssetQuantity(1);
+    clearAllImages();
   };
 
    const onRecurringMaintenanceChange = (value: number | null) => {
@@ -381,21 +385,7 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
   </>
 )}
 
-            {previewImages.length > 0 && (
-              <Form.Item label="Image Previews">
-                <div className="flex flex-wrap gap-2">
-                  {previewImages.map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => removeImage(index)}
-                    />
-                  ))}
-                </div>
-              </Form.Item>
-            )}
+
 
             <Form.Item {...tailLayout}>
               <Space>
