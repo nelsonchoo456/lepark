@@ -206,7 +206,11 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
             ) : (
               <Select
                 key={facilities.length} // Force re-render when facilities change
-                placeholder="Select a Facility for this Event"
+                placeholder={
+                  form.getFieldValue('parkId') && facilities.length === 0
+                    ? "No facilities available at this park!"
+                    : "Select a Facility for this Event"
+                }
                 options={facilities.map((facility) => ({
                   key: facility.id,
                   value: facility.id,
@@ -214,7 +218,6 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
                 }))}
                 disabled={!form.getFieldValue('parkId') || facilities.length === 0}
                 onChange={onFacilityChange}
-                notFoundContent={facilities.length === 0 ? 'No facilities available' : undefined}
               />
             )}
           </Form.Item>
@@ -256,6 +259,7 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
                 },
               },
             ]}
+            extra="Max capacity is limited to facility capacity."
           >
             <InputNumber min={1} max={maxCapacity || undefined} placeholder="Capacity" />
           </Form.Item>
@@ -281,7 +285,12 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
 
           <Divider orientation="left">Event Timings</Divider>
 
-          <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
+          <Form.Item
+            name="dateRange"
+            label="Event Dates"
+            rules={[{ required: true }]}
+            extra="Date range is limited to facility availability."
+          >
             <RangePicker
               className="w-full"
               format="YYYY-MM-DD"
@@ -300,9 +309,7 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
             name="timeRange"
             label="Event Time"
             rules={[{ required: true }]}
-            tooltip={{
-              title: 'Time range is limited to facility operating hours across selected dates.',
-            }}
+            extra="Time range is limited to facility operating hours across selected dates."
           >
             <TimePicker.RangePicker
               className="w-full"

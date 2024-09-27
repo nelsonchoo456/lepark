@@ -412,6 +412,7 @@ const EventEdit = () => {
                       },
                     },
                   ]}
+                  extra="Max capacity is limited to facility capacity."
                 >
                   <InputNumber min={1} max={maxCapacity || undefined} placeholder="Capacity" />
                 </Form.Item>
@@ -449,7 +450,12 @@ const EventEdit = () => {
                 )}
 
                 <Divider orientation="left">Event Timings</Divider>
-                <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
+                <Form.Item
+                  name="dateRange"
+                  label="Event Dates"
+                  rules={[{ required: true }]}
+                  extra="Date range is limited to facility availability."
+                >
                   <RangePicker
                     className="w-full"
                     format="YYYY-MM-DD"
@@ -468,9 +474,7 @@ const EventEdit = () => {
                   name="timeRange"
                   label="Event Time"
                   rules={[{ required: true }]}
-                  tooltip={{
-                    title: 'Time range is limited to facility operating hours across selected dates.',
-                  }}
+                  extra="Time range is limited to facility operating hours across selected dates."
                 >
                   <TimePicker.RangePicker
                     className="w-full"
