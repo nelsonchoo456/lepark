@@ -1,9 +1,16 @@
 import { ImageInput } from '@lepark/common-ui';
-import { EventSuitabilityEnum, EventTypeEnum, FacilityResponse, getEventsByFacilityId, getFacilitiesByParkId, ParkResponse } from '@lepark/data-access';
+import {
+  EventSuitabilityEnum,
+  EventTypeEnum,
+  FacilityResponse,
+  getEventsByFacilityId,
+  getFacilitiesByParkId,
+  ParkResponse,
+} from '@lepark/data-access';
 import { Button, Divider, Form, FormInstance, Input, Select, DatePicker, Typography, TimePicker, InputNumber, Col, Row } from 'antd';
 import { Dayjs } from 'dayjs';
 import moment from 'moment';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import FacilityInfoCard from './FacilityInfoCard';
 import { useFetchOpenFacilitiesByPark } from '../../../hooks/Facilities/useFetchFacilitiesByPark';
 import { useFetchEventsByFacilityId } from '../../../hooks/Events/useFetchEventsByFacilityId';
@@ -24,8 +31,9 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
   const { facilities, isLoading: isLoadingFacilities, error: facilitiesError } = useFetchOpenFacilitiesByPark(selectedParkId);
   const [selectedFacility, setSelectedFacility] = useState<FacilityResponse | null>(null);
   const [maxCapacity, setMaxCapacity] = useState<number | null>(null);
-  const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment } | null>(null);
+  const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment }[]>([]);
   const { bookedDates, isLoading: isLoadingEvents, error: eventsError } = useFetchEventsByFacilityId(selectedFacility?.id || null);
+  const [selectedDateRange, setSelectedDateRange] = useState<[moment.Moment, moment.Moment] | null>(null);
 
   const onFacilityChange = (facilityId: string) => {
     const facility = facilities.find((f) => f.id === facilityId);
@@ -33,19 +41,17 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
     setMaxCapacity(facility?.capacity || null);
 
     if (facility) {
-      // Assuming the first element of openingHours and closingHours arrays is used
-      const openingTime = moment(facility.openingHours[0]);
-      const closingTime = moment(facility.closingHours[0]);
-      
-      setOperatingHours({
-        start: openingTime,
-        end: closingTime
-      });
+      const allOperatingHours = facility.openingHours.map((openTime, index) => ({
+        start: moment(openTime),
+        end: moment(facility.closingHours[index]),
+      }));
+
+      setOperatingHours(allOperatingHours);
     } else {
-      setOperatingHours(null);
+      setOperatingHours([]);
     }
-    
-    form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined });
+
+    form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined, dateRange: undefined });
   };
 
   const eventTypeOptions = [
@@ -78,23 +84,89 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
     if (current && current < moment().endOf('day')) {
       return true;
     }
-  
+
     // Check if the date is in the bookedDates array
-    return bookedDates.some(bookedDate => bookedDate.isSame(current, 'day'));
+    return bookedDates.some((bookedDate) => bookedDate.isSame(current, 'day'));
+  };
+
+  const selectedDayOperatingHours = useMemo(() => {
+    if (!operatingHours.length || !selectedDateRange) return null;
+    const [startDate, endDate] = selectedDateRange;
+
+    // Ensure we're working with the correct date objects
+    const start = moment(startDate.toDate());
+    const end = moment(endDate.toDate());
+
+    // Calculate the number of days in the range
+    const daysInRange = end.diff(start, 'days') + 1;
+
+    // Initialize latestStart with the start of the first day and earliestEnd with the end of the last day
+    let latestStart = moment(start).startOf('day');
+    let earliestEnd = moment(end).endOf('day');
+
+    // Loop through each day in the date range
+    for (let i = 0; i < daysInRange; i++) {
+      const currentDate = moment(start).add(i, 'days');
+
+      let dayOfWeek = currentDate.day() - 1;
+      if (dayOfWeek === -1) dayOfWeek = 6; // Sunday becomes 6
+
+      const dayHours = operatingHours[dayOfWeek];
+
+      if (dayHours) {
+        // Create moment objects for start and end times on the current date
+        const startTime = moment(currentDate).set({
+          hour: dayHours.start.hour(),
+          minute: dayHours.start.minute(),
+          second: 0,
+          millisecond: 0,
+        });
+        const endTime = moment(currentDate).set({
+          hour: dayHours.end.hour(),
+          minute: dayHours.end.minute(),
+          second: 0,
+          millisecond: 0,
+        });
+
+        // Update latest start time
+        if (startTime.format('HH:mm') > latestStart.format('HH:mm') || i === 0) {
+          latestStart = startTime;
+        }
+        // Update earliest end time
+        if (endTime.format('HH:mm') < earliestEnd.format('HH:mm') || i === 0) {
+          earliestEnd = endTime;
+        }
+      }
+    }
+
+    return {
+      start: latestStart,
+      end: earliestEnd,
+    };
+  }, [operatingHours, selectedDateRange]);
+
+  useEffect(() => {
+    const dateRange = form.getFieldValue('dateRange');
+    if (dateRange) {
+      setSelectedDateRange([moment(dateRange[0]), moment(dateRange[1])]);
+    }
+  }, [form]);
+
+  const onDateRangeChange = (dates: [moment.Moment, moment.Moment] | null) => {
+    setSelectedDateRange(dates);
+    // Clear the timeRange field when dates change
+    form.setFieldsValue({ timeRange: undefined });
   };
 
   const disabledTime = (current: moment.Moment, type: 'start' | 'end') => {
-    if (!operatingHours) return {};
-
-    const currentHour = current.hour();
-    const currentMinute = current.minute();
+    if (!selectedDayOperatingHours) return {};
 
     if (type === 'start') {
       return {
-        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h < operatingHours.start.hour()),
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h < selectedDayOperatingHours.start.hour()),
         disabledMinutes: (selectedHour: number) => {
-          if (selectedHour === operatingHours.start.hour()) {
-            return Array.from({ length: 60 }, (_, i) => i).filter(m => m < operatingHours.start.minute());
+          if (selectedHour === selectedDayOperatingHours.start.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m < selectedDayOperatingHours.start.minute());
           }
           return [];
         },
@@ -103,10 +175,10 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
 
     if (type === 'end') {
       return {
-        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h > operatingHours.end.hour()),
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h > selectedDayOperatingHours.end.hour()),
         disabledMinutes: (selectedHour: number) => {
-          if (selectedHour === operatingHours.end.hour()) {
-            return Array.from({ length: 60 }, (_, i) => i).filter(m => m > operatingHours.end.minute());
+          if (selectedHour === selectedDayOperatingHours.end.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m > selectedDayOperatingHours.end.minute());
           }
           return [];
         },
@@ -129,21 +201,21 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
           </Form.Item>
 
           <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
-          {isLoadingFacilities ? (
+            {isLoadingFacilities ? (
               <div>Loading...</div>
             ) : (
               <Select
-              key={facilities.length} // Force re-render when facilities change
-              placeholder="Select a Facility for this Event"
-              options={facilities.map((facility) => ({ 
-                key: facility.id, 
-                value: facility.id, 
-                label: facility.facilityName 
-              }))}
-              disabled={!form.getFieldValue('parkId') || facilities.length === 0}
-              onChange={onFacilityChange}
-              notFoundContent={facilities.length === 0 ? "No facilities available" : undefined}
-            />
+                key={facilities.length} // Force re-render when facilities change
+                placeholder="Select a Facility for this Event"
+                options={facilities.map((facility) => ({
+                  key: facility.id,
+                  value: facility.id,
+                  label: facility.facilityName,
+                }))}
+                disabled={!form.getFieldValue('parkId') || facilities.length === 0}
+                onChange={onFacilityChange}
+                notFoundContent={facilities.length === 0 ? 'No facilities available' : undefined}
+              />
             )}
           </Form.Item>
 
@@ -168,7 +240,7 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
           <Form.Item name="suitability" label="Suitability" rules={[{ required: true }]}>
             <Select placeholder="Select an Event Suitability" options={eventSuitabilityOptions} />
           </Form.Item>
-        
+
           <Form.Item
             name="maxCapacity"
             label="Max Capacity"
@@ -185,11 +257,7 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
               },
             ]}
           >
-            <InputNumber 
-              min={1} 
-              max={maxCapacity || undefined}
-              placeholder="Capacity" 
-            />
+            <InputNumber min={1} max={maxCapacity || undefined} placeholder="Capacity" />
           </Form.Item>
 
           <Form.Item label="Images">
@@ -214,14 +282,32 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
           <Divider orientation="left">Event Timings</Divider>
 
           <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
-            <RangePicker className="w-full" format="YYYY-MM-DD" disabledDate={(current) => disabledDate(moment(current.toDate()))} />
+            <RangePicker
+              className="w-full"
+              format="YYYY-MM-DD"
+              disabledDate={(current) => disabledDate(moment(current.toDate()))}
+              onChange={(dates, dateStrings) => {
+                if (dates && dates[0] && dates[1]) {
+                  onDateRangeChange([moment(dates[0].toDate()), moment(dates[1].toDate())]);
+                } else {
+                  onDateRangeChange(null);
+                }
+              }}
+            />
           </Form.Item>
 
-          <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
-            <TimePicker.RangePicker 
-              className="w-full" 
-              use12Hours 
-              format="h:mm a" 
+          <Form.Item
+            name="timeRange"
+            label="Event Time"
+            rules={[{ required: true }]}
+            tooltip={{
+              title: 'Time range is limited to facility operating hours across selected dates.',
+            }}
+          >
+            <TimePicker.RangePicker
+              className="w-full"
+              use12Hours
+              format="h:mm a"
               minuteStep={5}
               disabledTime={(time, type) => disabledTime(moment(time.valueOf()), type as 'start' | 'end')}
             />
@@ -229,15 +315,17 @@ const CreateDetailsStep = ({ form, parks, previewImages, handleFileChange, remov
         </Form>
       </Col>
       <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-        <div style={{ 
-          position: 'sticky', 
-          top: 20,
-          maxWidth: '600px',
-          width: '100%',
-          padding: '20px',
-          paddingRight: '24px',
-        }}>
-          <FacilityInfoCard facility={selectedFacility}/>
+        <div
+          style={{
+            position: 'sticky',
+            top: 20,
+            maxWidth: '600px',
+            width: '100%',
+            padding: '20px',
+            paddingRight: '24px',
+          }}
+        >
+          <FacilityInfoCard facility={selectedFacility} />
         </div>
       </Col>
     </Row>
