@@ -219,17 +219,15 @@ const DiscoverPerPark = () => {
         >
           {filteredSpecies.map((species, index) => (
             <div
+              key={species.id} // Add the key prop here
               onClick={() => navigateToSpecies(species.id)}
               className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
-                bg-white rounded-xl mb-2
-                md:border-[1px]
-                hover:bg-green-600/10"
+      bg-white rounded-xl mb-2
+      md:border-[1px]
+      hover:bg-green-600/10"
             >
               <div className="flex flex-row w-full">
-                <div
-                  className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
-                "
-                >
+                <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
                   <img src={species.images[0]} alt={species.commonName} className="w-full h-full object-cover" />
                 </div>
                 <div className="h-full flex-1">
@@ -243,12 +241,10 @@ const DiscoverPerPark = () => {
                 <div className="h-full flex-1 hidden lg:block">
                   <div className="-mt-[2px] ">{renderConservationStatus(species.conservationStatus)}</div>
                   <div className="-mt-[2px] text-green-700/80 italic flex items-center">
-                    {' '}
                     <IoEarth className="mr-1" />
                     {species.originCountry}
                   </div>
                 </div>
-
                 <div className="h-full">
                   {user &&
                     user.isVerified &&
