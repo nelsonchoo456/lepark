@@ -9,8 +9,10 @@ interface ForgotPasswordProps {
 const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
   const navigate = useNavigate();
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [email, setEmail] = useState('');
 
   const handleSubmit = async (values: any) => {
+    setEmail(values.email);
     try {
       await forgotStaffPassword(values);
       setIsEmailSent(true);
@@ -38,7 +40,9 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
     <div className="w-full">
       <Divider>Reset Password</Divider>
       {isEmailSent ? (
-        <div className="text-secondary text-center">An email has been sent to your address. Please check your inbox to reset your password.</div>
+        <><div className="text-secondary text-center">An email has been sent to <b>{email}</b>. If an account is registered with this email address, you will receive a password reset link. </div>
+        <br/>
+        <div className="text-secondary text-center"> Please check your inbox to reset your password.</div></> 
       ) : (
         <Form layout="vertical" onFinish={handleSubmit}>
           <div className="text-secondary">Please enter your email address. A link to reset your password will be sent to you.</div>
