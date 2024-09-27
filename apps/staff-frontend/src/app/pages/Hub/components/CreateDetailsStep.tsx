@@ -2,8 +2,8 @@ import { ImageInput } from '@lepark/common-ui';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
-import CustomIPInput from './CustomIPInput';
-import CustomMACInput from './CustomMACInput';
+import CustomIPInput from './IpAddressInput';
+import CustomMACInput from './MacAddressInput';
 import { FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 const { TextArea } = Input;
 
@@ -14,7 +14,7 @@ interface CreateDetailsStepProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
-  parks: ParkResponse[]; 
+  parks: ParkResponse[];
   selectedParkId: number | null; 
   setSelectedParkId: (id: number | null) => void; 
   facilities: FacilityResponse[]; 
