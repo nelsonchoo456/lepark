@@ -80,6 +80,7 @@ import AssetAvail from './pages/Asset/AssetAvail';
 import AssetInUse from './pages/Asset/AssetInUse';
 import AssetUnderMtnc from './pages/Asset/AssetUnderMtnc';
 import AssetDecomm from './pages/Asset/AssetDecomm';
+import AssetListSummary from './pages/Asset/AssetListSummary';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -421,6 +422,7 @@ export function App() {
               </Route>
 
               <Route path="/parkasset">
+                {/* <Route index element={<AssetListSummary />} /> */}
                 <Route index element={<AssetListGrouped />} />
                 <Route path="viewall" element={<AssetList />} />
                 <Route path="available" element={<AssetAvail />} />
