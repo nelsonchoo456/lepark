@@ -49,12 +49,13 @@ const SelectParkPage: React.FC = () => {
   useEffect(() => {
     let filteredParks = parks;
     if (searchValue && searchValue.length > 2) {
-      filteredParks = filteredParks.filter(
-        (park) => {
-          const val = searchValue.toLowerCase()
-          return park.name.toLowerCase().includes(val) ||
+      filteredParks = filteredParks.filter((park) => {
+        const val = searchValue.toLowerCase();
+        return (
+          park.name.toLowerCase().includes(val) ||
           park.description?.toLowerCase().includes(val) ||
           park.address?.toLowerCase().includes(val)
+        );
       });
     }
     if (checkedStatus.length > 0) {
@@ -218,12 +219,10 @@ const SelectParkPage: React.FC = () => {
             >
               <div
                 key={park.id}
-                // size="small"
                 style={{
                   backgroundImage: `url('${park.images && park.images.length > 0 ? park.images[0] : ''}')`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  // color: 'white',
                   overflow: 'hidden',
                 }}
                 className="w-full h-32 bg-sky-600"
@@ -234,8 +233,6 @@ const SelectParkPage: React.FC = () => {
                 <div className="w-full h-full text-white ">
                   <div className="bg-gradient-to-br from-green-400/90 via-green-600/40 to-transparent h-full p-4 flex w-full">
                     <div className="flex-[2] flex-col">
-                      {' '}
-                      {/* flex-1 */}
                       <p className="font-medium text-lg drop-shadow-md md:text-2xl">{park.name}</p>
                       <div className="flex gap-2 w-full">
                         <TbTrees className="shrink-0" />
@@ -271,7 +268,17 @@ const SelectParkPage: React.FC = () => {
                         >
                           Open
                         </div>
-                        <Button icon={<MdArrowOutward className="text-2xl" />} shape="circle" type="primary" size="large" />
+                        <Button
+                          icon={<MdArrowOutward className="text-2xl" />}
+                          shape="circle"
+                          type="primary"
+                          size="large"
+                          onClick={(e) => {
+                            setSelectedPark(park);
+                            navigate(`/park/${park.id}`);
+                            e.stopPropagation();
+                          }}
+                        />
                       </div>
                     ) : (
                       <div className="flex flex-col h-full justify-between items-end">
@@ -280,7 +287,17 @@ const SelectParkPage: React.FC = () => {
                         >
                           Closed
                         </div>
-                        <Button icon={<MdArrowOutward className="text-2xl" />} shape="circle" type="primary" size="large" />
+                        <Button
+                          icon={<MdArrowOutward className="text-2xl" />}
+                          shape="circle"
+                          type="primary"
+                          size="large"
+                          onClick={(e) => {
+                            setSelectedPark(park);
+                            navigate(`/park/${park.id}`);
+                            e.stopPropagation();
+                          }}
+                        />
                       </div>
                     )}
                   </div>
