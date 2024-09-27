@@ -175,7 +175,7 @@ class SensorDao {
   }
 
   async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
-    console.log('dao update data:', data);
+
     return prisma.sensor.update({
       where: { id },
       data,

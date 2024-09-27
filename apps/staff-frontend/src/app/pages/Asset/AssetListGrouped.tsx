@@ -8,6 +8,7 @@ import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { ColumnsType } from 'antd/es/table';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
@@ -26,6 +27,9 @@ interface GroupedAssetData {
   status: ParkAssetStatusEnum;
   count: number;
 }
+
+const NewXAxis = (props: any) => <XAxis {...props} />;
+const NewYAxis = (props: any) => <YAxis {...props} />;
 
 const AssetListGrouped: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
@@ -88,6 +92,24 @@ const AssetListGrouped: React.FC = () => {
       default:
         return '/parkasset/viewall';
     }
+  };
+
+    const renderTick = (props: any) => {
+    const { x, y, payload } = props;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={16}
+          textAnchor="middle"
+          fill="#666"
+          style={chartStyle}
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
   };
 
   const columns: ColumnsType<GroupedAssetData> = [
@@ -172,40 +194,60 @@ const AssetListGrouped: React.FC = () => {
         />
       </Card>
 
-<Flex justify="space-between" style={{ marginTop: '10px' }}>
-  <Card style={{ width: '48%' }} className="m-1 p-1">
-    <h3 style={chartTitleStyle as React.CSSProperties}>Asset Status Distribution</h3>
-    <ResponsiveContainer width="100%" height={230}>
-      <BarChart data={statusCounts}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" tick={chartStyle} />
-        <YAxis tick={chartStyle} />
-        <RechartsTooltip contentStyle={chartStyle as React.CSSProperties} />
-        <Legend wrapperStyle={chartStyle as React.CSSProperties} />
-        <Bar dataKey="count">
-          {statusCounts.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </Card>
-  <Card style={{ width: '48%' }} className="m-1 p-1">
-    <h3 style={chartTitleStyle as React.CSSProperties}>Asset Type Distribution</h3>
-    <ResponsiveContainer width="100%" height={230}>
-      <BarChart data={typeCounts}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" tick={chartStyle} />
-        <YAxis tick={chartStyle} />
-        <RechartsTooltip contentStyle={chartStyle as React.CSSProperties} />
-        <Legend wrapperStyle={chartStyle as React.CSSProperties} />
-        <Bar dataKey="count" fill="#82ca9d" />
-      </BarChart>
-    </ResponsiveContainer>
-  </Card>
-</Flex>
-
+   <Flex justify="space-between" style={{ marginTop: '10px' }}>
+        <Card style={{ width: '48%' }} className="m-1 p-1">
+          <h3 style={chartTitleStyle}>Asset Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={230}>
+            <BarChart data={statusCounts}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <NewXAxis
+                dataKey="name"
+                tick={renderTick}
+                axisLine={false}
+                tickLine={false}
+                interval={0}
+              />
+              <NewYAxis
+                tick={renderTick}
+                axisLine={false}
+                tickLine={false}
+              />
+              <RechartsTooltip contentStyle={chartStyle} />
+              <Legend wrapperStyle={chartStyle} />
+              <Bar dataKey="count">
+                {statusCounts.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+        <Card style={{ width: '48%' }} className="m-1 p-1">
+          <h3 style={chartTitleStyle}>Asset Type Distribution</h3>
+          <ResponsiveContainer width="100%" height={230}>
+            <BarChart data={typeCounts}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <NewXAxis
+                dataKey="name"
+                tick={renderTick}
+                axisLine={false}
+                tickLine={false}
+                interval={0}
+              />
+              <NewYAxis
+                tick={renderTick}
+                axisLine={false}
+                tickLine={false}
+              />
+              <RechartsTooltip contentStyle={chartStyle} />
+              <Legend wrapperStyle={chartStyle} />
+              <Bar dataKey="count" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </Flex>
     </ContentWrapperDark>
+
   );
 };
 

@@ -2,8 +2,8 @@ import { ImageInput } from '@lepark/common-ui';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
-import CustomIPInput from './CustomIPInput';
-import CustomMACInput from './CustomMACInput';
+import CustomIPInput from './IpAddressInput';
+import CustomMACInput from './MacAddressInput';
 import { FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 const { TextArea } = Input;
 
@@ -14,7 +14,7 @@ interface CreateDetailsStepProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
-  parks: ParkResponse[]; 
+  parks: ParkResponse[];
   selectedParkId: number | null; 
   setSelectedParkId: (id: number | null) => void; 
   facilities: FacilityResponse[]; 
@@ -59,9 +59,6 @@ const CreateDetailsStep = ({
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
-      if (!value) {
-        return Promise.reject(new Error('Please enter Acquisition Date'));
-      }
 
       if (value.isAfter(moment(), 'day')) {
         return Promise.reject(new Error('Date cannot be beyond today'));
@@ -103,15 +100,22 @@ const CreateDetailsStep = ({
       : facilities;
 
   return (
-    <Form form={form} labelCol={{ span: 12 }} className="max-w-[600px] mx-auto mt-8">
-      <Divider orientation="left">Hub Details</Divider>
+    <Form
+      form={form}
+      labelCol={{ span: 8 }}
+      className="max-w-[600px] mx-auto mt-8"
+    >
+      <Divider orientation="left">Select the Park and Facility</Divider>
 
       {user?.role === StaffType.SUPERADMIN && (
         <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
           <Select
             placeholder="Select a Park"
             options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
-            onChange={(value) => setSelectedParkId(value)}
+            onChange={(value) => {
+              setSelectedParkId(value);
+              form.setFieldsValue({ facilityId: undefined });
+            }}
           />
         </Form.Item>
       )}
@@ -123,6 +127,8 @@ const CreateDetailsStep = ({
           disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
         />
       </Form.Item>
+
+      <Divider orientation="left">Hub Details</Divider>
 
       <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
         <Input placeholder="Enter Serial Number" />
