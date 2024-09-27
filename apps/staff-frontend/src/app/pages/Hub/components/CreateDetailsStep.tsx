@@ -59,9 +59,6 @@ const CreateDetailsStep = ({
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
-      if (!value) {
-        return Promise.reject(new Error('Please enter Acquisition Date'));
-      }
 
       if (value.isAfter(moment(), 'day')) {
         return Promise.reject(new Error('Date cannot be beyond today'));
