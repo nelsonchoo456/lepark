@@ -74,7 +74,7 @@ const MainLayout = () => {
     label: 'Sensors',
     children: [
       {
-        key: 'sensor',
+        key: 'sensor/list',
         label: 'List View',
         onClick: () => navigate('/sensor'),
       },
