@@ -14,6 +14,8 @@ import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
+import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
+
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -147,7 +149,13 @@ const MainLayout = () => {
           onClick: () => navigate('/occurrences'),
           label: 'Occurrences',
         },
-      ]
+      ],
+    },
+    {
+      key: 'decarbonizationarea',
+      icon: <GiTreehouse />,
+      label: 'Decarbonization Area',
+      onClick: () => navigate('/decarbonization-area'),
     },
     {
       key: 'iot',

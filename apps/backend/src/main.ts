@@ -24,6 +24,7 @@ import eventRouter from './routers/eventRouter';
 import plantTaskRouter from './routers/plantTaskRouter';
 import { authenticateJWTStaff } from './middleware/authenticateJWT';
 import sensorRouter from './routers/sensorRouter';
+import decarbonizationAreaRouter from './routers/decarbonizationAreaRouter';
 
 dotenv.config();
 const app = express();
@@ -72,6 +73,7 @@ app.use('/api/facilities', facilityRouter);
 app.use('/api/events', eventRouter);
 app.use('/api/planttasks', plantTaskRouter);
 app.use('/api/sensors', sensorRouter);
+app.use('/api/decarbonizationarea', decarbonizationAreaRouter)
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

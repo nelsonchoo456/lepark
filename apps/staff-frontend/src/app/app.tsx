@@ -80,6 +80,11 @@ import AssetAvail from './pages/Asset/AssetAvail';
 import AssetInUse from './pages/Asset/AssetInUse';
 import AssetUnderMtnc from './pages/Asset/AssetUnderMtnc';
 import AssetDecomm from './pages/Asset/AssetDecomm';
+import DecarbonizationAreaDetails from './pages/DecarbonizationAreaDetails/DecarbonizationAreaDetails';
+import CreateDecarbonizationArea from './pages/DecarbonizationArea/CreateDecarbonizationArea';
+import DecarbonizationAreaEditMap from './pages/DecarbonizationAreaEditMap/DecarbonizationAreaEditMap';
+import DecarbonizationAreaEdit from './pages/DecarbonizationAreaEdit/DecarbonizationAreaEdit';
+import DecarbonizationAreaList from './pages/DecarbonizationArea/DecarbonizationAreaList';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -273,8 +278,6 @@ export function App() {
                 {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
               </Route>
 
-
-
               <Route path="/maintenance-tasks">
                 <Route index element={<MaintenanceTask />} />
               </Route>
@@ -421,7 +424,7 @@ export function App() {
                 </Route>
                 <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
-              
+
               <Route path="/parkasset">
                 <Route index element={<AssetListGrouped />} />
                 <Route path="viewall" element={<AssetList />} />
@@ -454,9 +457,40 @@ export function App() {
                 >
                   <Route path="create" element={<SensorCreate2 />} />
                   <Route path="edit/:sensorId" element={<SensorEdit />} />
-                  <Route path="edit"/>
+                  <Route path="edit" />
                 </Route>
                 <Route path="map" element={<SensorMap />} />
+              </Route>
+
+              <Route path="/decarbonization-area">
+                <Route index element={<DecarbonizationAreaList />} />
+                <Route path="create" element={<CreateDecarbonizationArea />} />
+
+                <Route path=":decarbonizationAreaId" element={<DecarbonizationAreaDetails />} />
+                <Route
+                  path=":id/edit-map"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <DecarbonizationAreaEditMap />
+                    </>
+                  }
+                />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <DecarbonizationAreaEdit />
+                    </>
+                  }
+                />
               </Route>
 
               {/* Catch-all for 404 */}
