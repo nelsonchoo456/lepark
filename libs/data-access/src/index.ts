@@ -47,3 +47,5 @@ export * from './lib/types/sensor';
 
 export * from './lib/api/decarbonizationarea';
 export * from './lib/types/decarbonizationarea';
+export * from './lib/api/sequestrationhistory';
+export * from './lib/types/sequestrationhistory';
