@@ -273,8 +273,6 @@ export function App() {
                 {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
               </Route>
 
-
-
               <Route path="/maintenance-tasks">
                 <Route index element={<MaintenanceTask />} />
               </Route>
@@ -421,7 +419,7 @@ export function App() {
                 </Route>
                 <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
-              
+
               <Route path="/parkasset">
                 <Route index element={<AssetListGrouped />} />
                 <Route path="viewall" element={<AssetList />} />
@@ -454,7 +452,7 @@ export function App() {
                 >
                   <Route path="create" element={<SensorCreate2 />} />
                   <Route path="edit/:sensorId" element={<SensorEdit />} />
-                  <Route path="edit"/>
+                  <Route path="edit" />
                 </Route>
                 <Route path="map" element={<SensorMap />} />
               </Route>

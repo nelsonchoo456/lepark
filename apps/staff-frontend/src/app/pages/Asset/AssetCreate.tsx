@@ -30,24 +30,7 @@ const AssetCreate = () => {
   const [createdAsset, setCreatedAsset] = useState<any | null>();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user && user.id !== '') {
-      if (!['MANAGER', 'SUPERADMIN', 'PARK_RANGER','LANDSCAPE_ARCHITECT'].includes(user.role)) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the Create Asset page!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [user, navigate]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
