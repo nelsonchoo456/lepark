@@ -103,15 +103,22 @@ const CreateDetailsStep = ({
       : facilities;
 
   return (
-    <Form form={form} labelCol={{ span: 12 }} className="max-w-[600px] mx-auto mt-8">
-      <Divider orientation="left">Hub Details</Divider>
+    <Form
+      form={form}
+      labelCol={{ span: 8 }}
+      className="max-w-[600px] mx-auto mt-8"
+    >
+      <Divider orientation="left">Select the Park and Facility</Divider>
 
       {user?.role === StaffType.SUPERADMIN && (
         <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
           <Select
             placeholder="Select a Park"
             options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
-            onChange={(value) => setSelectedParkId(value)}
+            onChange={(value) => {
+              setSelectedParkId(value);
+              form.setFieldsValue({ facilityId: undefined });
+            }}
           />
         </Form.Item>
       )}
@@ -123,6 +130,8 @@ const CreateDetailsStep = ({
           disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
         />
       </Form.Item>
+
+      <Divider orientation="left">Hub Details</Divider>
 
       <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
         <Input placeholder="Enter Serial Number" />
