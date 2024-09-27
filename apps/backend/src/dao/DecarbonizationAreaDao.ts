@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, DecarbonizationArea } from '@prisma/client';
+import { PrismaClient, Prisma, DecarbonizationArea, Occurrence } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -36,6 +36,22 @@ class DecarbonizationAreaDao {
     return await prisma.decarbonizationArea.findMany({
       where: { parkId },
     });
+  }
+
+  async getOccurrencesWithinDecarbonizationArea(areaId: string): Promise<Occurrence[]> {
+    const area = await this.getDecarbonizationAreaById(areaId);
+    if (!area) {
+      throw new Error('Decarbonization area not found');
+    }
+
+    const occurrences = await prisma.$queryRaw<Occurrence[]>`
+      SELECT * FROM "Occurrence"
+      WHERE ST_Contains(
+        ST_GeomFromText(${area.geom}),
+        ST_SetSRID(ST_MakePoint("lng", "lat"), 4326)
+      )
+    `;
+    return occurrences;
   }
 }
 

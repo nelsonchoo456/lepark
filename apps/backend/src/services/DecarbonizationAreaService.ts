@@ -65,6 +65,10 @@ class DecarbonizationAreaService {
   async getDecarbonizationAreasByParkId(parkId: number) {
     return await DecarbonizationAreaDao.getDecarbonizationAreasByParkId(parkId);
   }
+
+  async getOccurrencesWithinDecarbonizationArea(areaId: string) {
+    return await DecarbonizationAreaDao.getOccurrencesWithinDecarbonizationArea(areaId);
+  }
 }
 
 export default new DecarbonizationAreaService();

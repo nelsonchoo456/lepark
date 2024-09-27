@@ -61,6 +61,15 @@ export const getDecarbonizationAreasByParkId = async (parkId: number) => {
   }
 };
 
+export const getOccurrencesWithinDecarbonizationArea = async (areaId: string) => {
+  try {
+    const response: AxiosResponse<DecarbonizationAreaResponse[]> = await client.get(`${URL}/${areaId}/occurrences`);
+    return response;
+  } catch (error) {
+    throw new Error('Error fetching occurrences within decarbonization area');
+  }
+}
+
 function handleAxiosError(error: any): never {
   if (axios.isAxiosError(error)) {
     if (error.response) {

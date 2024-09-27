@@ -60,4 +60,13 @@ router.get('/:parkId', async (req, res) => {
   }
 });
 
+router.get('/:id/occurrences', async (req, res) => {
+  try {
+    const occurrences = await DecarbonizationAreaService.getOccurrencesWithinDecarbonizationArea(req.params.id);
+    res.status(200).json(occurrences);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
