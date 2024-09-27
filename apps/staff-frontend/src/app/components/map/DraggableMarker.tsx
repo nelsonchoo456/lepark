@@ -43,7 +43,7 @@ function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, cir
     return L.divIcon({
 			html: iconHTML,
 			iconSize: [32, 40],
-      iconAnchor: [16, 40],
+      iconAnchor: circleWidth ? [circleWidth / 2, circleWidth] : [16, 32],
       className: ''
 		});
   }
