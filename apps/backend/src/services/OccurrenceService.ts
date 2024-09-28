@@ -54,6 +54,10 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrences();
   }
 
+  public async getAllOccurrenceByZoneId(zoneId: number): Promise<Occurrence[]> {
+    return OccurrenceDao.getAllOccurrencesByZoneId(zoneId);
+  }
+
   public async getAllOccurrenceByParkId(parkId: number): Promise<Occurrence[]> {
     return OccurrenceDao.getAllOccurrencesByParkId(parkId);
   }

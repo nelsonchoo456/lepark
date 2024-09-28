@@ -28,6 +28,7 @@ const InformationTab = ({ hub }: { hub: HubResponse }) => {
     'radioGroup',
     'nextMaintenanceDate',
     'zoneId',
+    'facilityId',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(hub)

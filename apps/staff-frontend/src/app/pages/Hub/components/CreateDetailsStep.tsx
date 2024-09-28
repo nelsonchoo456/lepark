@@ -2,8 +2,9 @@ import { ImageInput } from '@lepark/common-ui';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
-import CustomIPInput from './CustomIPInput';
-import CustomMACInput from './CustomMACInput';
+import CustomIPInput from './IpAddressInput';
+import CustomMACInput from './MacAddressInput';
+import { FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 const { TextArea } = Input;
 
 interface CreateDetailsStepProps {
@@ -13,15 +14,29 @@ interface CreateDetailsStepProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
+  parks: ParkResponse[];
+  selectedParkId: number | null; 
+  setSelectedParkId: (id: number | null) => void; 
+  facilities: FacilityResponse[]; 
+  selectedFacilityId: number | null; 
+  setSelectedFacilityId: (id: number | null) => void; 
+  user: StaffResponse | null; 
 }
 
 const CreateDetailsStep = ({
   handleCurrStep,
   form,
-  previewImages = [], // Ensure previewImages is always defined
+  previewImages = [],
   handleFileChange,
   removeImage,
   onInputClick,
+  parks,
+  selectedParkId,
+  setSelectedParkId,
+  facilities,
+  selectedFacilityId,
+  setSelectedFacilityId,
+  user,
 }: CreateDetailsStepProps) => {
   const hubStatusOptions = [
     {
@@ -44,9 +59,6 @@ const CreateDetailsStep = ({
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
-      if (!value) {
-        return Promise.reject(new Error('Please enter Acquisition Date'));
-      }
 
       if (value.isAfter(moment(), 'day')) {
         return Promise.reject(new Error('Date cannot be beyond today'));
@@ -81,15 +93,41 @@ const CreateDetailsStep = ({
     return Promise.resolve();
   };
 
-  const validateImageUpload = (_: any, value: any) => {
-    if (!previewImages || previewImages.length === 0) {
-      return Promise.reject(new Error('Please upload at least one image'));
-    }
-    return Promise.resolve();
-  };
+  // Filter facilities based on selectedParkId for Superadmin, or use all facilities for other roles
+  const filteredFacilities =
+    user?.role === StaffType.SUPERADMIN && selectedParkId
+      ? facilities.filter((facility) => facility.parkId === selectedParkId)
+      : facilities;
 
   return (
-    <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+    <Form
+      form={form}
+      labelCol={{ span: 8 }}
+      className="max-w-[600px] mx-auto mt-8"
+    >
+      <Divider orientation="left">Select the Park and Facility</Divider>
+
+      {user?.role === StaffType.SUPERADMIN && (
+        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+          <Select
+            placeholder="Select a Park"
+            options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
+            onChange={(value) => {
+              setSelectedParkId(value);
+              form.setFieldsValue({ facilityId: undefined });
+            }}
+          />
+        </Form.Item>
+      )}
+
+      <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+        <Select
+          placeholder="Select a Facility"
+          options={filteredFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+          disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
+        />
+      </Form.Item>
+
       <Divider orientation="left">Hub Details</Divider>
 
       <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
@@ -116,24 +154,17 @@ const CreateDetailsStep = ({
       </Form.Item>
       <Form.Item
         name="recommendedCalibrationFrequencyDays"
-        label="Calibration Frequency (Days)"
+        label="Recommended Calibration Frequency (Days)"
         rules={[{ required: true, message: 'Please enter Calibration Frequency in Days' }]}
       >
         <InputNumber min={1} className="w-full" placeholder="Enter Calibration Frequency in Days" />
       </Form.Item>
       <Form.Item
         name="recommendedMaintenanceDuration"
-        label="Maintenance Duration (Days)"
+        label="Recommended Maintenance Duration (Days)"
         rules={[{ required: true, message: 'Please enter Maintenance Duration in Days' }]}
       >
         <InputNumber min={1} className="w-full" placeholder="Enter Maintenance Duration in Days" />
-      </Form.Item>
-      <Form.Item
-        name="nextMaintenanceDate"
-        label="Next Maintenance Date"
-        rules={[{ required: true, message: 'Please enter Next Maintenance Date' }, validateFutureDate(form)]}
-      >
-        <DatePicker className="w-full" minDate={dayjs()} />
       </Form.Item>
       <Form.Item
         name="dataTransmissionInterval"

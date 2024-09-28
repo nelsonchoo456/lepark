@@ -22,6 +22,9 @@ import { ParkProvider } from './park-context/ParkContext';
 import VerifyUser from './pages/VerifyUser/VerifyUser';
 import EditProfile from './pages/Profile/EditProfile';
 import DiscoverPerPark from './pages/Taxonomy/DiscoverPerPark';
+import AttractionsPerPark from './pages/Attractions/AttractionsPerPark';
+import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttractionDetails';
+import ParkDetails from './pages/ParkDetails/ParkDetails';
 
 export function App() {
   return (
@@ -80,6 +83,10 @@ export function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/park">
+                  <Route index element={<SelectParkPage />} />
+                  <Route path=":parkId" element={<ParkDetails />} />
+                </Route>
                 <Route path="/occurrence">
                   {/* <Route index element={<OccurrenceList />} /> */}
                   <Route path=":occurrenceId" element={<OccurrenceDetails />} />
@@ -89,6 +96,10 @@ export function App() {
                   <Route index element={<Discover />} />
                   <Route path=":speciesId" element={<ViewSpeciesDetails />} />
                   <Route path="park/:parkId" element={<DiscoverPerPark />} />
+                </Route>
+                <Route path="/attractions">
+                  <Route path="park/:parkId" element={<AttractionsPerPark />} />
+                  <Route path=":attractionId" element={<VisitorViewAttractionDetails />} />
                 </Route>
               </Route>
             </Routes>

@@ -6,11 +6,11 @@ export interface HubData {
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
-  lastCalibratedDate: string;
+  //lastCalibratedDate: string;
   calibrationFrequencyDays: number;
   recurringMaintenanceDuration: number;
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
+  //lastMaintenanceDate: string;
+  //nextMaintenanceDate: string;
   dataTransmissionInterval: number;
   ipAddress: string;
   macAddress: string;
@@ -31,10 +31,10 @@ export interface HubResponse {
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
-  lastCalibratedDate: string;
+  //lastCalibratedDate: string;
   calibrationFrequencyDays: number;
   recurringMaintenanceDuration: number;
-  lastMaintenanceDate: string;
+  //lastMaintenanceDate: string;
   nextMaintenanceDate: string;
   dataTransmissionInterval: number;
   ipAddress: string;

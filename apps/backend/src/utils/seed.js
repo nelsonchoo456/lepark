@@ -1,5 +1,5 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
-const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData } = require('./mockData');
+const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData, hubsData, attractionsData } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -207,11 +207,11 @@ async function seed() {
 
   const occurrenceList = [];
   for (let i = 0; i < speciesList.length; i++) {
-    let selectedStatusLogs = []
+    let selectedStatusLogs = [];
     try {
       selectedStatusLogs = getRandomItems(statusLogsData, 2);
     } catch (error) {
-      selectedStatusLogs = []
+      selectedStatusLogs = [];
     }
 
     const occurrenceCurrent = occurrenceData[i];
@@ -220,7 +220,7 @@ async function seed() {
     const species = speciesList[i];
 
     occurrenceCurrent.speciesId = species.id;
-    
+
     if (selectedStatusLogs && selectedStatusLogs.length > 1) {
       occurrenceCurrent.occurrenceStatus = selectedStatusLogs[1].statusLogType;
     }
@@ -234,20 +234,20 @@ async function seed() {
     // For every Occurrence, create 2 ActivityLogs
     try {
       const selectedActivityLogs = getRandomItems(activityLogsData, 2);
-      const activityLogs = selectedActivityLogs.map(log => ({
+      const activityLogs = selectedActivityLogs.map((log) => ({
         ...log,
         occurrenceId: occurrence.id,
       }));
       await prisma.activityLog.createMany({
         data: activityLogs,
-      })
+      });
     } catch (error) {
       //
     }
 
     // For every Occurrence, create 2 StatusLogs
     try {
-      const statusLogs = selectedStatusLogs.map(log => ({
+      const statusLogs = selectedStatusLogs.map((log) => ({
         ...log,
         occurrenceId: occurrence.id,
       }));
@@ -271,6 +271,26 @@ async function seed() {
     staffList.push(createdStaff);
   }
   console.log(`Total staff seeded: ${staffList.length}\n`);
+
+  /// put facility here
+  /*
+  const hubList = [];
+  for (const hub of hubsData) {
+    const createdHub = await prisma.hub.create({
+      data: hub,
+    });
+    hubList.push(createdHub);
+  }
+  console.log(`Total hubs seeded: ${hubList.length}\n`);*/
+  
+  const attractionList = [];
+  for (const attraction of attractionsData) {
+    const createdAttraction = await prisma.attraction.create({
+      data: attraction,
+    });
+    attractionList.push(createdAttraction);
+  }
+  console.log(`Total attractions seeded: ${attractionList.length}\n`);
 }
 
 // Utility function for Activity Logs and Status Logs

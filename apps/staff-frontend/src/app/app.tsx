@@ -40,6 +40,7 @@ import Settings from './pages/Settings/Settings';
 import AttractionList from './pages/Attraction/AttractionList';
 import AttractionCreate from './pages/Attraction/AttractionCreate';
 import AttractionDetails from './pages/AttractionDetails/AttractionDetails';
+//import AttractionEdit from './pages/Attraction/AttractionEdit';
 import HubList from './pages/Hub/HubList';
 import { StaffType } from '@lepark/data-access';
 import ViewHubDetails from './pages/Hub/ViewHubDetails';
@@ -48,12 +49,19 @@ import ZoneEdit from './pages/ZoneEdit/ZoneEdit';
 import AttractionEdit from './pages/AttractionEdit/AttractionEdit';
 import ParkEditMap from './pages/ParkEditMap/ParkEditMap';
 import ParksMap from './pages/ParksMap/ParksMap';
-import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
-import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
-import ZoneEditMap from './pages/ZoneEditMap/ZoneEditMap';
+import AssetList from './pages/Asset/AssetList';
+import AssetCreate from './pages/Asset/AssetCreate';
+import AssetDetails from './pages/Asset/AssetDetails';
+import AssetEdit from './pages/Asset/AssetEdit';
+import SensorList from './pages/Sensor/SensorList';
 import FacilityList from './pages/Facility/FacilityList';
 import FacilityCreate from './pages/Facility/FacilityCreate';
 import ViewFacilityDetails from './pages/Facility/ViewFacilityDetails';
+import ViewSensorDetails from './pages/Sensor/ViewSensorDetails';
+import SensorEdit from './pages/Sensor/SensorEdit';
+import OccurrenceEditMap from './pages/OccurrenceEditMap/OccurrenceEditMap';
+import AttractionEditMap from './pages/AttractionEditMap/AttractionEditMap';
+import ZoneEditMap from './pages/ZoneEditMap/ZoneEditMap';
 import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
@@ -65,6 +73,15 @@ import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 import TicketListingDetails from './pages/AttractionDetails/components/TicketListingDetails';
 
+import HubEdit from './pages/Hub/HubEdit';
+import SensorCreate2 from './pages/Sensor/SensorCreate2';
+import SensorMap from './pages/Sensor/SensorMap';
+import AssetListGrouped from './pages/Asset/AssetListGrouped';
+import AssetAvail from './pages/Asset/AssetAvail';
+import AssetInUse from './pages/Asset/AssetInUse';
+import AssetUnderMtnc from './pages/Asset/AssetUnderMtnc';
+import AssetDecomm from './pages/Asset/AssetDecomm';
+import AssetListSummary from './pages/Asset/AssetListSummary';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -258,8 +275,6 @@ export function App() {
                 {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
               </Route>
 
-
-
               <Route path="/maintenance-tasks">
                 <Route index element={<MaintenanceTask />} />
               </Route>
@@ -322,7 +337,6 @@ export function App() {
                   }
                 />
               </Route>
-
               {/* Attraction Routes */}
               <Route
                 element={
@@ -365,13 +379,31 @@ export function App() {
                   />
                 }
               >
+                {/* Hub Routes */}
                 <Route path="/hubs">
                   <Route index element={<HubList />} />
                   <Route path=":hubId" element={<ViewHubDetails />} />
-                  <Route path="create" element={<HubCreate />} />
+                  <Route
+                    element={
+                      <RoleProtectedRoute
+                        allowedRoles={[
+                          StaffType.SUPERADMIN,
+                          StaffType.MANAGER,
+                          StaffType.BOTANIST,
+                          StaffType.ARBORIST,
+                          StaffType.LANDSCAPE_ARCHITECT,
+                          StaffType.PARK_RANGER,
+                        ]}
+                        redirectTo="/hubs"
+                      />
+                    }
+                  >
+                    <Route path="create" element={<HubCreate />} />
+                    <Route path=":hubId/edit" element={<HubEdit />} />
+                    {/* <Route path="edit"/> */}
+                  </Route>
                 </Route>
               </Route>
-
               {/* Facility Routes */}
 
               <Route path="/facilities">
@@ -389,6 +421,44 @@ export function App() {
                   <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
                 </Route>
                 <Route path=":facilityId" element={<ViewFacilityDetails />} />
+              </Route>
+
+              <Route path="/parkasset">
+                {/* <Route index element={<AssetListSummary />} /> */}
+                <Route index element={<AssetListGrouped />} />
+                <Route path="viewall" element={<AssetList />} />
+                <Route path="available" element={<AssetAvail />} />
+                <Route path="inuse" element={<AssetInUse />} />
+                <Route path="undermaintenance" element={<AssetUnderMtnc />} />
+                <Route path="decommissioned" element={<AssetDecomm />} />
+                <Route path="create" element={<AssetCreate />} />
+                <Route path=":assetId" element={<AssetDetails />} />
+                <Route path="edit/:assetId" element={<AssetEdit />} />
+              </Route>
+
+              <Route path="/sensor">
+                <Route index element={<SensorList />} />
+                <Route path=":sensorId" element={<ViewSensorDetails />} />
+                <Route
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[
+                        StaffType.SUPERADMIN,
+                        StaffType.MANAGER,
+                        StaffType.BOTANIST,
+                        StaffType.ARBORIST,
+                        StaffType.LANDSCAPE_ARCHITECT,
+                        StaffType.PARK_RANGER,
+                      ]}
+                      redirectTo="/sensor"
+                    />
+                  }
+                >
+                  <Route path="create" element={<SensorCreate2 />} />
+                  <Route path="edit/:sensorId" element={<SensorEdit />} />
+                  <Route path="edit" />
+                </Route>
+                <Route path="map" element={<SensorMap />} />
               </Route>
 
               {/* Catch-all for 404 */}

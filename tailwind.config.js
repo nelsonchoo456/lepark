@@ -127,6 +127,12 @@ module.exports = {
         '18': '4.5rem',
       },
 
+      // -- [ Shadows ] --
+      boxShadow: {
+        'custom': '3px 3px 5px rgba(0, 0, 0, 0.3)',
+        'hoverCustom': '3px 3px 5px rgba(0, 0, 0, 0.35)',
+      },
+
       // -- [ Animations ] --
       animation: {
         slideIn: 'slideIn 200ms ease-out forwards',

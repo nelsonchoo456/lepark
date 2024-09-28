@@ -35,19 +35,6 @@ const FacilityCreate = () => {
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
 
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Facility Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
       setCurrStep(0);
@@ -101,7 +88,7 @@ const FacilityCreate = () => {
       console.log(error);
       messageApi.open({
         type: 'error',
-        content: 'Unable to create Facility. Please try again later.',
+        content: error instanceof Error ? error.message : 'Unable to create Facility. Please try again later.',
       });
     }
   };
@@ -124,7 +111,16 @@ const FacilityCreate = () => {
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} parks={parks} formValues={formValues} />,
+      children: (
+        <CreateMapStep
+          handleCurrStep={handleCurrStep}
+          adjustLatLng={adjustLatLng}
+          lat={lat}
+          lng={lng}
+          parks={parks}
+          formValues={formValues}
+        />
+      ),
     },
     {
       key: 'complete',
@@ -144,10 +140,6 @@ const FacilityCreate = () => {
       isCurrent: true,
     },
   ];
-
-  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-    return <></>;
-  }
 
   return (
     <ContentWrapperDark>

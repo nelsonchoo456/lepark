@@ -2,7 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createPark, getParkById, getZoneById, getZonesByParkId, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark, updateZone, ZoneResponse } from '@lepark/data-access';
+import {
+  createPark,
+  getOccurrencesByZoneId,
+  getParkById,
+  getZoneById,
+  getZonesByParkId,
+  OccurrenceResponse,
+  ParkResponse,
+  StaffResponse,
+  StaffType,
+  StringIdxSig,
+  updatePark,
+  updateZone,
+  ZoneResponse,
+} from '@lepark/data-access';
 import { Button, Card, Checkbox, Form, message, notification, Popconfirm, Space, Tooltip } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
@@ -11,13 +25,15 @@ import polygon_image from '../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../assets/mapFeatureManager/edit.png';
 import MapFeatureManagerEdit from '../../components/map/MapFeatureManagerEdit';
 import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../components/map/functions/functions';
+import { latLngArrayToPolygon, pointsAreWithinPolygon, polygonHasOverlap, polygonIsWithin } from '../../components/map/functions/functions';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
 import { TbTree } from 'react-icons/tb';
 import { COLORS } from '../../config/colors';
 import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
+import PictureMarker from '../../components/map/PictureMarker';
+import { PiPlantFill } from 'react-icons/pi';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -30,6 +46,7 @@ const ZoneEditMap = () => {
   const { park, loading: parkLoading } = useRestrictPark(zone?.parkId?.toString(), { disableNavigation: true });
   const [createdData, setCreatedData] = useState<ZoneResponse>();
   const [parkZones, setParkZones] = useState<ZoneResponse[]>();
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]); // original polygon
   const [editPolygon, setEditPolygon] = useState<any[]>([]);
   const [lines, setLines] = useState<any[]>([]);
@@ -39,12 +56,14 @@ const ZoneEditMap = () => {
 
   const [showPark, setShowPark] = useState<boolean>(true);
   const [showParkZones, setShowParkZones] = useState<boolean>(false);
+  const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
 
   useEffect(() => {
     if (!zone) return;
     fetchParkZonesData();
+    fetchZoneOccurrencesData();
     setPolygon(zone.geom.coordinates);
-  }, [zone])
+  }, [zone]);
 
   const fetchParkZonesData = async () => {
     if (!zone?.parkId) return;
@@ -52,8 +71,21 @@ const ZoneEditMap = () => {
       const parkZonesRes = await getZonesByParkId(zone.parkId);
       if (parkZonesRes.status === 200) {
         let parkZonesData = parkZonesRes.data;
-        parkZonesData = parkZonesData.filter((zone) => zone.id.toString() !== id)
-        setParkZones(parkZonesData)
+        parkZonesData = parkZonesData.filter((zone) => zone.id.toString() !== id);
+        setParkZones(parkZonesData);
+      }
+    } catch (error) {
+      // do nothing
+    }
+  };
+
+  const fetchZoneOccurrencesData = async () => {
+    if (!zone?.id) return;
+    try {
+      const occurrencesRes = await getOccurrencesByZoneId(zone.id);
+      if (occurrencesRes.status === 200) {
+        const occurrencesData = occurrencesRes.data;
+        setOccurrences(occurrencesData);
       }
     } catch (error) {
       // do nothing
@@ -72,8 +104,13 @@ const ZoneEditMap = () => {
         throw new Error('Please draw Zone boundaries on the map.');
       }
 
-      const hasOverlap = polygonHasOverlap(editPolygon[0][0], parkZones?.map((z) => z?.geom?.coordinates?.[0]));
+      // Boundary validation
+      const hasOverlap = polygonHasOverlap(
+        editPolygon[0][0],
+        parkZones?.map((z) => z?.geom?.coordinates?.[0]),
+      );
       const isWithinPark = polygonIsWithin(editPolygon[0][0], park?.geom?.coordinates?.[0]);
+      const allOccurrencesWithinZone = pointsAreWithinPolygon(editPolygon[0][0], occurrences?.map((occurrence) => ({lat: occurrence.lat, lng: occurrence.lng})));
       if (hasOverlap) {
         messageApi.open({
           type: 'error',
@@ -86,7 +123,13 @@ const ZoneEditMap = () => {
           content: 'The Zone boundaries is not within the Park.',
         });
       }
-      if (hasOverlap || !isWithinPark) {
+      if (!allOccurrencesWithinZone) {
+        messageApi.open({
+          type: 'error',
+          content: 'Some Occurrence(s) fall outside the boundaries.',
+        });
+      }
+      if (hasOverlap || !isWithinPark || !allOccurrencesWithinZone) {
         return;
       }
 
@@ -196,6 +239,11 @@ const ZoneEditMap = () => {
                   </Checkbox>
                 </Tooltip>
               )}
+              {occurrences && (
+                <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+                  Occurrences
+                </Checkbox>
+              )}
             </Space>
           </Card>
 
@@ -235,6 +283,20 @@ const ZoneEditMap = () => {
                     color={COLORS.green[500]}
                     fillColor={'transparent'}
                     labelFields={{ color: COLORS.green[600], textShadow: 'none' }}
+                  />
+                ))}
+              {showOccurrences &&
+                occurrences &&
+                occurrences.map((occurrence) => (
+                  <PictureMarker
+                    id={occurrence.id}
+                    entityType="OCCURRENCE"
+                    circleWidth={30}
+                    lat={occurrence.lat}
+                    lng={occurrence.lng}
+                    backgroundColor={COLORS.green[300]}
+                    icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                    tooltipLabel={occurrence.title}
                   />
                 ))}
               <MapFeatureManagerEdit

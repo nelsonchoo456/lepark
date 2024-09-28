@@ -62,7 +62,8 @@ const SidebarContainer = styled.div<{
   top: 0;
   left: 0;
 
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   z-index: 40;
 
   ${({ open }) =>

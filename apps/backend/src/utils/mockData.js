@@ -709,8 +709,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-11.jpg'],
   },
   {
-    lat: 1.3102,
-    lng: 103.8130,
+    lat: 1.31024150276,
+    lng: 103.81392359733,
     dateObserved: '2024-08-28T09:00:00Z',
     dateOfBirth: '2024-03-05T00:00:00Z',
     numberOfPlants: 9.0,
@@ -868,6 +868,17 @@ const staffData = [
     isFirstLogin: false,
     parkId: 2,
   },
+  {
+    firstName: 'Aaron',
+    lastName: 'Foo',
+    email: 'aaronfyr@outlook.com',
+    password: 'password',
+    contactNumber: '892345235',
+    role: 'MANAGER',
+    isActive: true,
+    isFirstLogin: false,
+    parkId: 2,
+  }
 ];
 
 const activityLogsData = [
@@ -1060,6 +1071,274 @@ const statusLogsData = [
   },
 ];
 
+const hubsData = [
+  {
+    serialNumber: 'HUB001',
+    name: 'Hub 1',
+    description: 'Hub for connecting temperature sensors later on',
+    hubStatus: 'INACTIVE',
+    acquisitionDate: new Date(),
+    recommendedCalibrationFrequencyDays: 30,
+    recommendedMaintenanceDuration: 60,
+    dataTransmissionInterval: 15,
+    ipAddress: '192.168.1.1',
+    macAddress: '00:14:22:01:23:45',
+    radioGroup: 1,
+    hubSecret: 'secret1',
+    images: ['https://upload.wikimedia.org/wikipedia/commons/d/d9/4_port_netgear_ethernet_hub.jpg'],
+    remarks: 'Checked and in working condition',
+    facilityId: '',
+  },
+  {
+    serialNumber: 'HUB002',
+    name: 'Hub 2',
+    description: 'Hub for connecting humidity sensors',
+    hubStatus: 'DECOMMISSIONED',
+    acquisitionDate: new Date(),
+    recommendedCalibrationFrequencyDays: 50,
+    recommendedMaintenanceDuration: 20,
+    dataTransmissionInterval: 10,
+    ipAddress: '192.168.1.2',
+    macAddress: '00:14:e4:21:23:45',
+    radioGroup: 1,
+    hubSecret: 'secret1',
+    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjKG4QykW0MUYIVPwpQ5tb1V6CTj8NopqMAQ&s'],
+    remarks: 'All data wiped',
+    facilityId: '',
+    },
+    {
+      serialNumber: 'HUB003',
+      name: 'Hub 3',
+      description: 'Hub for connecting humidity sensors',
+      hubStatus: 'UNDER_MAINTENANCE',
+      acquisitionDate: new Date(),
+      recommendedCalibrationFrequencyDays: 20,
+      recommendedMaintenanceDuration: 10,
+      dataTransmissionInterval: 150,
+      ipAddress: '192.168.1.3',
+      macAddress: '01:24:d4:21:23:45',
+      radioGroup: 2,
+      hubSecret: 'secret1',
+      images: [''],
+      remarks: 'Connector port damaged',
+      facilityId: '',
+      }
+
+
+];
+
+const attractionsData = [
+    {
+    title: "Butterfly Sanctuary",
+    description: "Step into a magical world of vibrant colors and delicate beauty. Our butterfly sanctuary houses over 50 species of butterflies from around the globe, allowing visitors to observe these enchanting creatures up close in their natural habitat.",
+    openingHours: [
+      "2024-09-28T02:00:00.000Z",
+      "2024-09-28T02:00:00.000Z",
+      "2024-09-28T02:00:00.000Z",
+      "2024-09-28T02:00:00.000Z",
+      "2024-09-28T02:00:00.000Z",
+      "2024-09-28T02:00:00.000Z",
+      "2024-09-28T02:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727501914699-butterfly%20sanctuary%201.jpg",
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727501914845-butterfly%20sanctuary%202.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.361387363945382,
+    lng: 103.84889960289,
+    parkId: 1
+  },
+  {
+    title: "Green Heritage Museum",
+    description: "This modern facility showcases the rich history and ecological significance of our park through interactive exhibits, rare artifacts, and stunning visual displays.",
+    openingHours: [
+      "2024-09-28T00:00:00.000Z",
+      "2024-09-28T00:00:00.000Z",
+      "2024-09-28T00:00:00.000Z",
+      "2024-09-28T00:00:00.000Z",
+      "2024-09-28T00:00:00.000Z",
+      "2024-09-28T00:00:00.000Z",
+      "2024-09-28T00:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T09:00:00.000Z",
+      "2024-09-28T09:00:00.000Z",
+      "2024-09-28T09:00:00.000Z",
+      "2024-09-28T09:00:00.000Z",
+      "2024-09-28T09:00:00.000Z",
+      "2024-09-28T09:00:00.000Z",
+      "2024-09-28T09:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727502147122-green%20heritage%20museum%201.jpg",
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727502147258-green%20heritage%20museum%202.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.359806129037598,
+    lng: 103.8503265380859,
+    parkId: 1
+  },
+  {
+    title: "Flower Dome",
+    description: "Get up-close with unusual plants native to a range of unique habitats; from the Mediterranean region, to South African savannahs and arid deserts!",
+    openingHours: [
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727461825512-flower-dome-05.jpg",
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727461825726-flower-dome-02.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.318784621302434,
+    lng: 103.8187140486642,
+    parkId: 2
+  },
+  {
+    title: "Centre for Ethnobotany",
+    description: "The Centre for Ethnobotany explores the relationship between plants and people. Through interactive displays spanning over two levels, visitors can learn how plants shaped our cultures and the world history.",
+    openingHours: [
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727461996128-Centre%20for%20ethnobotany%201.jpg",
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462129284-Centre%20for%20ethnobotany%202.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.319492692641653,
+    lng: 103.816557581536,
+    parkId: 2
+  },
+  {
+    title: "National Biodiversity Centre",
+    description: "The National Biodiversity Centre (NBC), established on 22 May 2006, serves as Singapore's one-stop hub for biodiversity-related information and activities.",
+    openingHours: [
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z",
+      "2024-09-28T13:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462391534-National_Biodiversity_Centre_Building.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.316473506270394,
+    lng: 103.8178771734238,
+    parkId: 2
+  },
+  {
+    title: "Botanical Art Gallery",
+    description: "The Botanical Art Gallery is housed within the second refurbished conserved building, Gallop House No. 7 (Inverturret), which was built in 1906. The gallery highlights the vital role that art plays in the scientific documentation of plants in Singapore and the region, as well as how art can inspire renewed appreciation of the natural world around us.",
+    openingHours: [
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462642798-Botanical%20art%20gallery%201.jpg",
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462642918-botanical%20art%20gallery%202.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.314601354444774,
+    lng: 103.80999147892,
+    parkId: 2
+  },
+  {
+    title: "Forest Discovery Centre",
+    description: "Through a series of interpretive and interactive displays, visitors can enjoy a bird's eye view of Singapore's diverse forests, and learn about the Gardens' historical role in conserving them.",
+    openingHours: [
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z",
+      "2024-09-28T01:00:00.000Z"
+    ],
+    closingHours: [
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z",
+      "2024-09-28T10:00:00.000Z"
+    ],
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462887607-Forest-Discovery-Centre%201.jpeg",
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462925669-Forest%20Discovery%20Centre%202.jpg"
+    ],
+    status: "OPEN",
+    lat: 1.313818486250098,
+    lng: 103.8106995820999,
+    parkId: 2
+  }
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -1067,5 +1346,7 @@ module.exports = {
   occurrenceData,
   staffData,
   activityLogsData,
-  statusLogsData
+  statusLogsData,
+  hubsData,
+  attractionsData
 };

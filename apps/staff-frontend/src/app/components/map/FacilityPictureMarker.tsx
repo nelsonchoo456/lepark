@@ -24,7 +24,7 @@ interface FacilityPictureMarkerProps {
   tooltipLabelPermanent?: boolean;
   facilityType: string;
   hovered?: HoverItem | null;
-  setHovered: (hovered: any) => void;
+  setHovered?: (hovered: any) => void;
 }
 
 function FacilityPictureMarker({ id, lat, lng, circleWidth, tooltipLabel, innerBackgroundColor, facilityType, hovered, setHovered }: FacilityPictureMarkerProps) {

@@ -21,7 +21,7 @@ export async function createFacility(data: FacilityData, files?: File[]): Promis
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
-      throw error.response.data.error;
+      throw new Error(error.response.data.error);
     } else {
       throw error;
     }

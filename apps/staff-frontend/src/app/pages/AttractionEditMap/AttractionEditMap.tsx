@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
 import DraggableMarker from '../../components/map/DraggableMarker';
-import { ParkResponse, AttractionResponse, getAttractionById, getParkById, updateAttractionDetails } from '@lepark/data-access';
+import { ParkResponse, AttractionResponse, getAttractionById, getParkById, updateAttractionDetails, getZonesByParkId, ZoneResponse } from '@lepark/data-access';
 import { useEffect, useState } from 'react';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import { COLORS } from '../../config/colors';
@@ -11,6 +11,8 @@ import { ContentWrapperDark } from '@lepark/common-ui';
 import { Button, Card, Flex, Input, message, Popconfirm } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
+import PolygonWithLabel from '../../components/map/PolygonWithLabel';
+import { TbTree } from 'react-icons/tb';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -23,6 +25,7 @@ const AttractionEditMap = () => {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
+  const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -35,6 +38,15 @@ const AttractionEditMap = () => {
       setLng(attraction.lng);
 
       setPolygon(park.geom.coordinates);
+
+      const fetchZones = async () => {
+        const zonesRes = await getZonesByParkId(park.id);
+        if (zonesRes.status === 200) {
+          const zonesData = zonesRes.data;
+          setSelectedParkZones(zonesData);
+        }
+      }
+      fetchZones();
     };
 
     fetchData();
@@ -134,6 +146,11 @@ const AttractionEditMap = () => {
               />
 
               <PolygonFitBounds geom={park?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={park?.name} />
+              {selectedParkZones && selectedParkZones?.length > 0 &&
+                selectedParkZones
+                  .map((zone) => (
+                    <PolygonWithLabel key={zone.id} entityId={zone.id} geom={zone.geom} polygonLabel={<div className='flex items-center gap-2'><TbTree className='text-xl'/>{zone.name}</div>} color={COLORS.green[600]} fillColor={"transparent"} labelFields={{ color: COLORS.green[800], textShadow: "none" }}/>
+                ))}
               <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} backgroundColor={COLORS.sky[400]} />
             </MapContainer>
           </div>

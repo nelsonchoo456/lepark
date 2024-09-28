@@ -71,6 +71,21 @@ export const HtmlPictureMarker = styled.div<CustomMarkerProps>`
   }
 `;
 
+export const HtmlPictureMarkerGlow = styled.div<CustomMarkerProps>`
+  width: ${({circleWidth}) => circleWidth ? circleWidth + "px" : "30px"};
+  height: ${({circleWidth}) => circleWidth ? circleWidth + "px" : "30px"};
+  border-radius: 100px;
+  box-shadow: 0px 0px 1rem 1rem #d4f4cc80};
+`;
+
+export const InnerPictureMarkerGlow = styled.div<CustomMarkerProps>`
+  width: ${({circleWidth}) => circleWidth ? Math.round(circleWidth * 22 / 30) + "px" : "30px"};
+  height: ${({circleWidth}) => circleWidth ? Math.round(circleWidth * 22 / 30) + "px" : "30px"};
+  border-radius: 100px;
+  box-shadow: 0px 0px 0.8rem 0.8rem #d4f4cc80};
+`;
+
+
 export const PictureMarkerInner = styled.div<CustomMarkerProps>`
   width: ${({circleWidth}) => circleWidth ?  Math.round(circleWidth * 22 / 30) + "px" : "22px"};
   height: ${({circleWidth}) => circleWidth ?  Math.round(circleWidth * 22 / 30) + "px" : "22px"};
