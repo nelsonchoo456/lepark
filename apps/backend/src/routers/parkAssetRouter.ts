@@ -62,7 +62,7 @@ router.delete('/deleteParkAsset/:id', async (req, res) => {
   try {
     const parkAssetId = req.params.id;
     await ParkAssetService.deleteParkAsset(parkAssetId);
-    res.status(204).send(); // 204 No Content
+    res.status(204).send();
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -98,8 +98,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
     const files = req.files as Express.Multer.File[];
 
     if (!files || files.length === 0) {
-      // Commented out to match occurrence router
-      // return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ error: 'No files uploaded' });
     }
 
     const uploadedUrls = [];

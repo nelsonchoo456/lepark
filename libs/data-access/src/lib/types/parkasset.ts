@@ -1,3 +1,4 @@
+import { MaintenanceHistoryResponse } from './maintenancehistory';
 import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedenums';
 
 export interface ParkAssetData {
@@ -6,13 +7,12 @@ export interface ParkAssetData {
   description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
-  images: string[];
+  images?: string[];
   remarks?: string;
   facilityId: string;
 }
@@ -24,18 +24,20 @@ export interface ParkAssetResponse {
   description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
-  images: string[];
+  images?: string[];
   remarks?: string;
   facilityId: string;
-  name: string;
-  parkId: number;
-  //maintenanceHistory?: MaintenanceHistoryResponse[];
+  facility?: {
+    id: string;
+    name: string;
+    parkId: number;
+  };
+  maintenanceHistory?: MaintenanceHistoryResponse[];
 }
 
 export interface ParkAssetUpdateData {
@@ -44,7 +46,6 @@ export interface ParkAssetUpdateData {
   description?: string;
   parkAssetStatus?: ParkAssetStatusEnum;
   acquisitionDate?: string;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier?: string;

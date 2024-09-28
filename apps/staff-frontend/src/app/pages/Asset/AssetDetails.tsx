@@ -14,6 +14,7 @@ import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
   const { asset, loading, notFound } = useRestrictAsset(assetId);
+  console.log(asset);
   const navigate = useNavigate();
 
   const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
@@ -81,18 +82,18 @@ const AssetDetails = () => {
     },
   ];
 
-  const getAssetTypeIcon = (assetType: ParkAssetTypeEnum) => {
-    switch (assetType) {
-      case ParkAssetTypeEnum.EQUIPMENT_RELATED:
-        return <FaTools className="text-3xl mt-2 text-blue-500" />;
-      case ParkAssetTypeEnum.PLANT_RELATED:
-        return <FaLeaf className="text-3xl mt-2 text-green-500" />;
-      case ParkAssetTypeEnum.PLANT_TOOL:
-        return <FaWrench className="text-3xl mt-2 text-orange-500" />;
-      default:
-        return <FaTools className="text-3xl mt-2 text-gray-500" />;
-    }
-  };
+  // const getAssetTypeIcon = (assetType: ParkAssetTypeEnum) => {
+  //   switch (assetType) {
+  //     case ParkAssetTypeEnum.PLANT_TOOL_AND_EQUIPMENT:
+  //       return <FaTools className="text-3xl mt-2 text-blue-500" />;
+  //     case ParkAssetTypeEnum.PLANT_RELATED:
+  //       return <FaLeaf className="text-3xl mt-2 text-green-500" />;
+  //     case ParkAssetTypeEnum.PLANT_TOOL:
+  //       return <FaWrench className="text-3xl mt-2 text-orange-500" />;
+  //     default:
+  //       return <FaTools className="text-3xl mt-2 text-gray-500" />;
+  //   }
+  // };
 
   const getAssetConditionInfo = (condition: ParkAssetConditionEnum) => {
     switch (condition) {

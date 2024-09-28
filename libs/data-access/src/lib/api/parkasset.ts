@@ -28,6 +28,7 @@ export async function createParkAsset(data: ParkAssetData, files?: File[]): Prom
     }
   }
 }
+
 export async function getAllParkAssets(parkId?: number): Promise<AxiosResponse<ParkAssetResponse[]>> {
   try {
     let url = `${URL}/getAllParkAssets`;
@@ -125,7 +126,6 @@ export async function updateParkAssetStatus(id: string, newStatus: string): Prom
     }
   }
 }
-
 export async function getMaintenanceHistoryByParkAssetId(parkAssetId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
   try {
     const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${parkAssetId}`);
@@ -138,3 +138,4 @@ export async function getMaintenanceHistoryByParkAssetId(parkAssetId: string): P
     }
   }
 }
+

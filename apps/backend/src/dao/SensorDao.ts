@@ -9,7 +9,7 @@ class SensorDao {
   }
 
   async getAllSensors(): Promise<Sensor[]> {
-    const sensors = await prisma.sensor.findMany({
+    return prisma.sensor.findMany({
       include: {
         hub: {
           select: {
@@ -33,27 +33,6 @@ class SensorDao {
           },
         },
       },
-    });
-
-    return sensors.map((sensor) => {
-      return {
-        ...sensor,
-        hub: sensor.hub
-          ? {
-              id: sensor.hub.id,
-              name: sensor.hub.name,
-              facilityId: sensor.hub.facilityId,
-              parkId: sensor.hub.facility?.parkId,
-            }
-          : null,
-        facility: sensor.facility
-          ? {
-              id: sensor.facility.id,
-              name: sensor.facility.name,
-              parkId: sensor.facility.parkId,
-            }
-          : null,
-      };
     });
   }
 
@@ -130,10 +109,8 @@ class SensorDao {
     });
   }
 
-  async getSensorById(
-    id: string,
-  ): Promise<(Sensor & { hub?: { id: string; name: string }; facility?: { id: string; name: string; parkId?: number } }) | null> {
-    const sensor = await prisma.sensor.findUnique({
+  async getSensorById(id: string): Promise<Sensor | null> {
+    return prisma.sensor.findUnique({
       where: { id },
       include: {
         hub: {
@@ -151,27 +128,6 @@ class SensorDao {
         },
       },
     });
-
-    if (sensor) {
-      return {
-        ...sensor,
-        hub: sensor.hub
-          ? {
-              id: sensor.hub.id,
-              name: sensor.hub.name,
-            }
-          : undefined,
-        facility: sensor.facility
-          ? {
-              id: sensor.facility.id,
-              name: sensor.facility.name,
-              parkId: sensor.facility.parkId,
-            }
-          : undefined,
-      };
-    }
-
-    return null;
   }
 
   async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {

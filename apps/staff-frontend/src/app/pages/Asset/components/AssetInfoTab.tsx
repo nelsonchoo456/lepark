@@ -41,13 +41,12 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
     { key: 'description', label: 'Description', children: asset.description || 'N/A' },
     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
+    { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabel(asset.parkAssetCondition, 'condition') },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
-    { key: 'recurringMaintenanceDuration', label: 'Maintenance Cycle (days)', children: asset.recurringMaintenanceDuration },
-    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') },
-    { key: 'nextMaintenanceDate', label: 'Next Maintenance Date', children: moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') },
+    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: asset.lastMaintenanceDate ? moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') : '-' },
+    { key: 'nextMaintenanceDate', label: 'Next Maintenance Date', children: asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-' },
     { key: 'supplier', label: 'Supplier', children: asset.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
-    { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabel(asset.parkAssetCondition, 'condition') },
     { key: 'remarks', label: 'Remarks', children: asset.remarks || 'N/A' },
   ];
 

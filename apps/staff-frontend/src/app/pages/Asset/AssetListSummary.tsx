@@ -10,6 +10,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { useFetchAssets } from '../../hooks/Asset/useFetchAssets';
 import styled from 'styled-components';
 import AssetsByTypeTable from './components/AssetsByTypeTable';
+import { ParkAssetTypeEnum } from '@lepark/data-access';
 
 const TabsNoBottomMargin = styled(Tabs)`
   .ant-tabs-nav {
@@ -17,11 +18,21 @@ const TabsNoBottomMargin = styled(Tabs)`
   }
 `;
 
-export const parkAssetTypes = ["PLANT_RELATED", "PLANT_TOOL", "EQUIPMENT_RELATED"];
+export const parkAssetTypes = [ParkAssetTypeEnum.PLANT_TOOL_AND_EQUIPMENT, ParkAssetTypeEnum.HOSES_AND_PIPES, ParkAssetTypeEnum.INFRASTRUCTURE,
+  ParkAssetTypeEnum.LANDSCAPING,
+  ParkAssetTypeEnum.GENERAL_TOOLS,
+  ParkAssetTypeEnum.SAFETY,
+  ParkAssetTypeEnum.DIGITAL,
+  ParkAssetTypeEnum.EVENT];
 export const parkAssetTypesLabels = [
-    { key: "PLANT_RELATED", label: "Plant Related" },
-    { key: "PLANT_TOOL", label: "Plant Tool" },
-    { key: "EQUIPMENT_RELATED", label: "Equipment Related" }
+    { key: ParkAssetTypeEnum.PLANT_TOOL_AND_EQUIPMENT, label: "Plant Tool and Equipment" },
+    { key: ParkAssetTypeEnum.HOSES_AND_PIPES, label: "Hoses and Pipes" },
+    { key: ParkAssetTypeEnum.INFRASTRUCTURE, label: "Infrastructure" },
+    { key: ParkAssetTypeEnum.LANDSCAPING, label: "Landscaping" },
+    { key: ParkAssetTypeEnum.GENERAL_TOOLS, label: "General Tools" },
+    { key: ParkAssetTypeEnum.SAFETY, label: "Safety" },
+    { key: ParkAssetTypeEnum.DIGITAL, label: "Digital" },
+    { key: ParkAssetTypeEnum.EVENT, label: "Event" }
   ];
 
 
@@ -30,7 +41,12 @@ type ParkAssetsByType = { [key in typeof parkAssetTypes[number]]: ParkAssetRespo
 const AssetListSummary: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
   const { assets: parkAssets, triggerFetch } = useFetchAssets();
-  const [assetsByType, setAssetsByType] = useState<ParkAssetsByType>({});
+  const [assetsByType, setAssetsByType] = useState<ParkAssetsByType>(() => {
+    return parkAssetTypes.reduce((acc, type) => {
+      acc[type] = [];
+      return acc;
+    }, {} as ParkAssetsByType);
+  });
 
   useEffect(() => {
     if (parkAssets && parkAssets.length > 0) {

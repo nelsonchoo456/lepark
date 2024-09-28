@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Button, Input, Table, Flex, Tag, message, Card, Statistic, Badge, Tooltip, Modal } from 'antd';
 import {
   deleteParkAsset,
@@ -236,9 +236,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
               title={
                 <div className="flex items-center">
                   <Badge status="default" text="Unavailable" />
-                  <Tooltip title="Assets Under Maintenance and Decommissioned">
-                    <AiOutlineQuestionCircle className="ml-1 opacity-90" />
-                  </Tooltip>
+                  <TooltipIcon title="Assets Under Maintenance and Decommissioned" />
                 </div>
               }
               value={unavailableCount}
@@ -267,6 +265,18 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
         scroll={{ x: SCREEN_LG }}
       />
     </Card>
+  );
+};
+
+const TooltipIcon: React.FC<{ title: string }> = ({ title }) => {
+  const iconRef = useRef(null);
+
+  return (
+    <Tooltip title={title}>
+      <span ref={iconRef}>
+        <AiOutlineQuestionCircle className="ml-1 opacity-90" />
+      </span>
+    </Tooltip>
   );
 };
 

@@ -8,7 +8,7 @@ class ParkAssetDao {
   }
 
   async getAllParkAssets(): Promise<ParkAsset[]> {
-    const parkAssets = await prisma.parkAsset.findMany({
+    return prisma.parkAsset.findMany({
       include: {
         maintenanceHistory: true,
         facility: {
@@ -20,17 +20,10 @@ class ParkAssetDao {
         },
       },
     });
-
-    return parkAssets.map((asset) => ({
-      ...asset,
-      facilityId: asset.facility.id,
-      name: asset.facility.name,
-      parkId: asset.facility.parkId,
-    }));
   }
 
-  async getParkAssetById(id: string): Promise<(ParkAsset & { name?: string; parkId?: number }) | null> {
-    const asset = await prisma.parkAsset.findUnique({
+  async getParkAssetById(id: string): Promise<ParkAsset | null> {
+    return prisma.parkAsset.findUnique({
       where: { id },
       include: {
         maintenanceHistory: true,
@@ -43,17 +36,6 @@ class ParkAssetDao {
         },
       },
     });
-
-    if (asset) {
-      return {
-        ...asset,
-        facilityId: asset.facility.id,
-        name: asset.facility.name,
-        parkId: asset.facility.parkId,
-      };
-    }
-
-    return null;
   }
 
   async updateParkAsset(id: string, data: Prisma.ParkAssetUpdateInput): Promise<ParkAsset> {

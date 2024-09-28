@@ -9,29 +9,11 @@ class HubDao {
   }
 
   public async getAllHubs(): Promise<Hub[]> {
-    // Fetch all hubs with their related facility information
-    const hubs = await prisma.hub.findMany({
+    return prisma.hub.findMany({
       include: {
         facility: true,
       },
     });
-
-    // Fetch park information for each facility
-    const parkPromises = hubs.map((hub) => {
-      if (hub.facility?.parkId) {
-        return ParkDao.getParkById(hub.facility.parkId);
-      }
-      return Promise.resolve(null);
-    });
-
-    const parks = await Promise.all(parkPromises);
-
-    // Map hubs to include facility name and park information
-    return hubs.map((hub, index) => ({
-      ...hub,
-      name: hub.facility?.name,
-      parkName: parks[index]?.name,
-    }));
   }
 
   public async getHubsByParkId(parkId: number): Promise<Hub[]> {
@@ -55,7 +37,12 @@ class HubDao {
   }
 
   public async getHubById(id: string): Promise<Hub | null> {
-    return prisma.hub.findUnique({ where: { id } });
+    return prisma.hub.findUnique({
+      where: { id },
+      include: {
+        facility: true,
+      },
+    });
   }
 
   public async getHubBySerialNumber(serialNumber: string): Promise<Hub | null> {

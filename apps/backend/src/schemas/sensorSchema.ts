@@ -4,18 +4,17 @@ import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client
 export const SensorSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(1, { message: 'Sensor name is required' }),
-  serialNumber: z.string().min(1, { message: 'Serial number is required' }), // Add serialNumber field
+  serialNumber: z.string().min(1, { message: 'Serial number is required' }),
   sensorType: z.nativeEnum(SensorTypeEnum),
   description: z.string().optional(),
   sensorStatus: z.nativeEnum(SensorStatusEnum),
   acquisitionDate: z.date(),
   lastCalibratedDate: z.date().optional(),
-  calibrationFrequencyDays: z.number().int().positive(),
-  recurringMaintenanceDuration: z.number().int().positive().optional(),
+  calibrationFrequencyDays: z.number().int().positive().optional(),
   lastMaintenanceDate: z.date().optional(),
   nextMaintenanceDate: z.date().optional(),
-  dataFrequencyMinutes: z.number().int().positive(),
-  sensorUnit: z.nativeEnum(SensorUnitEnum),
+  dataFrequencyMinutes: z.number().int().positive().optional(),
+  sensorUnit: z.nativeEnum(SensorUnitEnum).optional(),
   supplier: z.string().min(1, { message: 'Supplier is required' }),
   supplierContactNumber: z.string().min(1, { message: 'Supplier contact number is required' }),
   images: z.array(z.string()).optional(),
@@ -24,19 +23,6 @@ export const SensorSchema = z.object({
   remarks: z.string().optional(),
   hubId: z.string().uuid().optional(),
   facilityId: z.string().uuid().optional(),
-  hub: z
-    .object({
-      id: z.string().uuid(),
-      name: z.string(),
-    })
-    .optional(),
-  facility: z
-    .object({
-      id: z.string().uuid(),
-      name: z.string(),
-      parkId: z.number().optional(),
-    })
-    .optional(),
 });
 
 export type SensorSchemaType = z.infer<typeof SensorSchema>;
