@@ -154,7 +154,7 @@ const MainLayout = () => {
     {
       key: 'decarbonizationarea',
       icon: <GiTreehouse />,
-      label: 'Decarbonization Area',
+      label: 'Decarbonization Areas',
       onClick: () => navigate('/decarbonization-area'),
     },
     {
