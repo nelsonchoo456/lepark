@@ -1,8 +1,15 @@
 import express from 'express';
 import VisitorService from '../services/VisitorService';
-import { VisitorSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, VerifyUserSchema } from '../schemas/visitorSchema';
+import {
+  VisitorSchema,
+  LoginSchema,
+  VisitorPasswordResetRequestSchema,
+  VisitorPasswordResetSchema,
+  VerifyUserSchema,
+} from '../schemas/visitorSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
+import { authenticateJWTStaff, authenticateJWTVisitor } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 
@@ -16,7 +23,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.get('/getAllVisitors', async (_, res) => {
+router.get('/getAllVisitors', authenticateJWTStaff, async (_, res) => {
   try {
     const visitors = await VisitorService.getAllVisitors();
     res.status(200).json(visitors);
@@ -25,7 +32,7 @@ router.get('/getAllVisitors', async (_, res) => {
   }
 });
 
-router.get('/viewVisitorDetails/:id', async (req, res) => {
+router.get('/viewVisitorDetails/:id', authenticateJWTVisitor, async (req, res) => {
   try {
     const visitorId = req.params.id;
     const visitor = await VisitorService.getVisitorById(visitorId);
@@ -35,7 +42,7 @@ router.get('/viewVisitorDetails/:id', async (req, res) => {
   }
 });
 
-router.put('/updateVisitorDetails/:id', async (req, res) => {
+router.put('/updateVisitorDetails/:id', authenticateJWTVisitor, async (req, res) => {
   try {
     const visitorId = req.params.id;
     const updateData = VisitorSchema.partial()
@@ -72,7 +79,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/logout', (_, res) => {
+router.post('/logout', authenticateJWTVisitor, (_, res) => {
   res
     .clearCookie('jwtToken_Visitor', {
       httpOnly: true,
@@ -85,7 +92,7 @@ router.post('/logout', (_, res) => {
 
 router.post('/forgot-password', async (req, res) => {
   try {
-    const data = PasswordResetRequestSchema.parse(req.body);
+    const data = VisitorPasswordResetRequestSchema.parse(req.body);
     await VisitorService.requestPasswordReset(data);
     res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (error) {
@@ -95,9 +102,9 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
   try {
-    const data = PasswordResetSchema.parse(req.body);
+    const data = VisitorPasswordResetSchema.parse(req.body);
     await VisitorService.resetPassword(data);
-    res.status(200).json({ message: 'Password reset successfully' });
+    res.status(200).json({ message: 'Password reset successful' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -132,7 +139,7 @@ router.get('/check-auth', (req, res) => {
   }
 });
 
-router.post('/addFavoriteSpecies', async (req, res) => {
+router.post('/addFavoriteSpecies', authenticateJWTVisitor, async (req, res) => {
   try {
     const { visitorId, speciesId } = req.body;
 
@@ -143,7 +150,7 @@ router.post('/addFavoriteSpecies', async (req, res) => {
   }
 });
 
-router.get('/viewFavoriteSpecies/:visitorId', async (req, res) => {
+router.get('/viewFavoriteSpecies/:visitorId', authenticateJWTVisitor, async (req, res) => {
   try {
     const { visitorId } = req.params;
     const favoriteSpecies = await VisitorService.getFavoriteSpecies(visitorId);
@@ -153,7 +160,7 @@ router.get('/viewFavoriteSpecies/:visitorId', async (req, res) => {
   }
 });
 
-router.delete('/deleteSpeciesFromFavorites/:visitorId/:speciesId', async (req, res) => {
+router.delete('/deleteSpeciesFromFavorites/:visitorId/:speciesId', authenticateJWTVisitor, async (req, res) => {
   try {
     const { visitorId, speciesId } = req.params;
     const updatedVisitor = await VisitorService.deleteSpeciesFromFavorites(visitorId, speciesId);
@@ -163,7 +170,7 @@ router.delete('/deleteSpeciesFromFavorites/:visitorId/:speciesId', async (req, r
   }
 });
 
-router.get('/isSpeciesInFavorites/:visitorId/:speciesId', async (req, res) => {
+router.get('/isSpeciesInFavorites/:visitorId/:speciesId', authenticateJWTVisitor, async (req, res) => {
   try {
     const { visitorId, speciesId } = req.params;
     const isFavorite = await VisitorService.isSpeciesInFavorites(visitorId, speciesId);
@@ -193,7 +200,7 @@ router.post('/resend-verification-email', async (req, res) => {
   }
 });
 
-router.post('/send-verification-email-with-email', async (req, res) => {
+router.post('/send-verification-email-with-email', authenticateJWTVisitor, async (req, res) => {
   try {
     const { email, id } = req.body;
     await VisitorService.sendVerificationEmailWithEmail(email, id);
@@ -203,7 +210,7 @@ router.post('/send-verification-email-with-email', async (req, res) => {
   }
 });
 
-router.delete('/delete', async (req, res) => {
+router.delete('/delete', authenticateJWTVisitor, async (req, res) => {
   try {
     const result = await VisitorService.delete(req.body);
     res.status(200).send(result);

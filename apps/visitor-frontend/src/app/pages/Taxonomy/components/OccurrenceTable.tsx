@@ -54,67 +54,43 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
       },
       width: '25%',
     },
-    {
-      title: 'Zone',
-      dataIndex: 'zoneName',
-      key: 'zoneName',
-      render: (text, record) => (
-        <Flex justify="space-between" align="center">
-          {text}
-        </Flex>
-      ),
-      sorter: (a, b) => {
-        if (a.zoneName && b.zoneName) {
-          return a.zoneName.localeCompare(b.zoneName);
+    selectedPark
+      ? {
+          title: 'Zone',
+          dataIndex: 'zoneName',
+          key: 'zoneName',
+          render: (text, record) => (
+            <Flex justify="space-between" align="center">
+              {text}
+            </Flex>
+          ),
+          sorter: (a, b) => {
+            if (a.zoneName && b.zoneName) {
+              return a.zoneName.localeCompare(b.zoneName);
+            }
+            return a.zoneId - b.zoneId;
+          },
+          width: '25%',
         }
-        return a.zoneId - b.zoneId;
-      },
-      width: '25%',
-    } /*
-    {
-      title: 'Occurrence Status',
-      dataIndex: 'occurrenceStatus',
-      key: 'occurrenceStatus',
-      render: (text) => {
-        switch (text) {
-          case 'HEALTHY':
-            return (
-              <Tag color="green" bordered={false}>
-                HEALTHY
-              </Tag>
-            );
-          case 'MONITOR_AFTER_TREATMENT':
-            return (
-              <Tag color="yellow" bordered={false}>
-                MONITOR AFTER TREATMENT
-              </Tag>
-            );
-          case 'NEEDS_ATTENTION':
-            return (
-              <Tag color="orange" bordered={false}>
-                NEEDS ATTENTION
-              </Tag>
-            );
-          case 'URGENT_ACTION_REQUIRED':
-            return (
-              <Tag color="red" bordered={false}>
-                URGENT ACTION REQUIRED
-              </Tag>
-            );
-          case 'REMOVED':
-            return <Tag bordered={false}>REMOVED</Tag>;
-        }
-      },
-      filters: [
-        { text: 'Healthy', value: 'HEALTHY' },
-        { text: 'Monitor After Treatment', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'Needs Attention', value: 'NEEDS_ATTENTION' },
-        { text: 'Urgent Action Required', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'Removed', value: 'REMOVED' },
-      ],
-      onFilter: (value, record) => record.occurrenceStatus === value,
-      width: '25%',
-    },*/,
+      : {
+          title: 'Park, Zone',
+          render: (_, record) => (
+            <div>
+              <p className="font-semibold">{record.parkName}</p>
+              <div className="flex">
+                <p className="opacity-50 mr-2">Zone:</p>
+                {record.zoneName}
+              </div>
+            </div>
+          ),
+          sorter: (a, b) => {
+            if (a.parkName && b.parkName) {
+              return a.parkName.localeCompare(b.parkName);
+            }
+            return a.zoneId - b.zoneId;
+          },
+          // width: '33%',
+        },
     {
       title: 'Last Observed',
       dataIndex: 'dateObserved',

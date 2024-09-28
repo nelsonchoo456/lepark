@@ -91,13 +91,13 @@ const OccurrenceList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green">HEALTHY</Tag>;
+            return <Tag color="green" bordered={false}>HEALTHY</Tag>;
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow">MONITOR AFTER TREATMENT</Tag>;
+            return <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>;
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange">NEEDS ATTENTION</Tag>;
+            return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red">URGENT ACTION REQUIRED</Tag>;
+            return <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>;
           case 'REMOVED':
             return <Tag>REMOVED</Tag>;
         }
@@ -127,16 +127,16 @@ const OccurrenceList: React.FC = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Occurrence">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           {user?.role === StaffType.SUPERADMIN ||
             ((user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
               <>
-                <Tooltip title="Edit Details">
+                <Tooltip title="Edit Occurrence">
                   <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
                 </Tooltip>
-                <Tooltip title="Delete">
+                <Tooltip title="Delete Occurrence">
                   <Button
                     danger
                     type="link"
@@ -267,13 +267,13 @@ const OccurrenceList: React.FC = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Occurrence">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
+          <Tooltip title="Edit Occurrence">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete Occurrence">
             <Button
               danger
               type="link"

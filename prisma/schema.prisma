@@ -24,16 +24,19 @@ enum StaffRoleEnum {
 }
 
 model Staff {
-  id            String        @id @default(uuid()) @db.Uuid
-  firstName     String
-  lastName      String
-  email         String        @unique
-  password      String
-  contactNumber String
-  role          StaffRoleEnum
-  isActive      Boolean
-  parkId        Int?
-  isFirstLogin  Boolean
+  id             String        @id @default(uuid()) @db.Uuid
+  firstName      String
+  lastName       String
+  email          String        @unique
+  password       String
+  contactNumber  String
+  role           StaffRoleEnum
+  isActive       Boolean
+  parkId         Int?
+  isFirstLogin   Boolean
+  resetTokenUsed Boolean       @default(false)
+  resetToken     String?
+  plantTasks     PlantTask[]
 }
 
 enum ConservationStatusEnum {
@@ -120,6 +123,7 @@ model Occurrence {
   decarbonizationType DecarbonizationTypeEnum
   speciesId           String                  @db.Uuid
   zoneId              Int
+  plantTasks          PlantTask[]
 
   // decarbonizationAreaId String @db.Uuid
   images       String[]
@@ -139,7 +143,7 @@ enum ActivityLogTypeEnum {
   PRUNED
   REPLANTED
   CHECKED_HEALTH
-  TREATED_PESTS
+  PEST_MONITORING
   SOIL_REPLACED
   HARVESTED
   STAKED
@@ -147,6 +151,10 @@ enum ActivityLogTypeEnum {
   MOVED
   CHECKED
   ADDED_COMPOST
+  SHADE_ADJUSTMENT
+  PLANT_PROPAGATION
+  LIGHT_EXPOSURE_CHECK
+  WATERING_ADJUSTMENT
   OTHERS
 }
 
@@ -195,6 +203,54 @@ model Attraction {
   @@index([parkId])
 }
 
+enum EventStatusEnum {
+  ONGOING
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+enum EventTypeEnum {
+  WORKSHOP
+  EXHIBITION
+  GUIDED_TOUR
+  PERFORMANCE
+  TALK
+  COMPETITION
+  FESTIVAL
+  CONFERENCE
+}
+
+enum EventSuitabilityEnum {
+  ANYONE
+  FAMILIES_AND_FRIENDS
+  CHILDREN
+  NATURE_ENTHUSIASTS
+  PETS
+  FITNESS_ENTHUSIASTS
+}
+
+model Event {
+  id              String    @id @default(uuid()) @db.Uuid
+  title           String
+  description     String
+  type            EventTypeEnum
+  suitability     EventSuitabilityEnum
+  startDate       DateTime
+  endDate         DateTime
+  startTime       DateTime
+  endTime         DateTime
+  maxCapacity     Int
+  images          String[]
+  status          EventStatusEnum
+  facilityId      String    @db.Uuid
+
+  facility        Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+}
+
+
 // model DecarbonizationArea {
 //   id                  String   @id @default(uuid()) @db.Uuid
 //   carbonSeqValue      Float
@@ -235,6 +291,8 @@ model Visitor {
   contactNumber   String
   favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
   isVerified      Boolean
+  resetToken      String?
+  resetTokenUsed  Boolean   @default(false)
 }
 
 enum HubStatusEnum {
@@ -266,8 +324,8 @@ model Hub {
   long                                Float?
   remarks                             String?
   zoneId                              Int? // for when installed in a zone
-  facilityId                          String?  @db.Uuid
-  facility                            Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId                          String?       @db.Uuid
+  facility                            Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
@@ -404,7 +462,7 @@ model Facility {
   rulesAndRegulations   String
   images                String[]
   lastMaintenanceDate   DateTime
-  nextMaintenanceDate   DateTime
+  // nextMaintenanceDate   DateTime
   openingHours          DateTime[]
   closingHours          DateTime[]
   facilityStatus        FacilityStatusEnum
@@ -415,6 +473,7 @@ model Facility {
   fee                   Float
   parkId                Int
   hubs                  Hub[]
+  events                Event[]
   parkAssets            ParkAsset[]
   sensors               Sensor[]
 }
@@ -442,4 +501,49 @@ enum FacilityStatusEnum {
   OPEN
   CLOSED
   MAINTENANCE
+}
+
+enum PlantTaskStatusEnum {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PlantTaskTypeEnum {
+  INSPECTION
+  WATERING
+  PRUNING_TRIMMING
+  PEST_MANAGEMENT
+  SOIL_MAINTENANCE
+  STAKING_SUPPORTING
+  DEBRIS_REMOVAL
+  ENVIRONMENTAL_ADJUSTMENT
+  OTHERS
+}
+
+enum PlantTaskUrgencyEnum {
+  IMMEDIATE
+  HIGH
+  NORMAL
+  LOW
+}
+
+model PlantTask {
+  id              String               @id @default(uuid()) @db.Uuid
+  title           String
+  description     String
+  taskStatus      PlantTaskStatusEnum
+  taskType        PlantTaskTypeEnum
+  taskUrgency     PlantTaskUrgencyEnum
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  dueDate         DateTime
+  completedDate   DateTime?
+  images          String[]
+  remarks         String?
+  occurrenceId    String               @db.Uuid
+  occurrence      Occurrence           @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  assignedStaffId String?              @map("staffId") @db.Uuid
+  assignedStaff   Staff?               @relation(fields: [assignedStaffId], references: [id])
 }

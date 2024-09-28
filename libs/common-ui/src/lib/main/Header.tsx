@@ -58,7 +58,7 @@ const HeaderButton = styled.button`
 const TopCollapsible = styled.div<StyledHeaderProps>`
   position: absolute;
   width: 100vw;
-  z-index: 99;
+  z-index: 990;
 
   ${(props) => !props.$show && 'display: none;'}
 
@@ -101,9 +101,9 @@ export const Header = ({
 
         <TopCollapsible
           $show={showHeaderSidebar}
-          className="bg-white shadow-lg rounded-b-xl pb-2 pt-12"
+          className="bg-white shadow-lg rounded-b-xl pb-2 pt-12 "
         >
-          <Menu items={items} mode="vertical" defaultOpenKeys={['home']} style={{ backgroundColor: "transparent", border: "transparent" }}/>
+          <Menu items={items} mode="inline" defaultOpenKeys={['home']} style={{ backgroundColor: "transparent", border: "transparent" }}/>
         </TopCollapsible>
       </>
     )

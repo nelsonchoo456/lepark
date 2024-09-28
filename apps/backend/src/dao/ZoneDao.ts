@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { ZoneCreateData, ZoneResponseData } from "../schemas/zoneSchema";
+import { ZoneCreateData, ZoneResponseData, ZoneUpdateData } from "../schemas/zoneSchema";
 import ParkDao from "./ParkDao";
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ class ZoneDao {
     const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
 
     const zone = await prisma.$queryRaw`
-      INSERT INTO "Zone" (name, description, "openingHours", "closingHours", "geom", "paths", "zoneStatus", "parkId")
+      INSERT INTO "Zone" (name, description, "openingHours", "closingHours", "geom", "paths", "zoneStatus", "parkId", images)
       VALUES (
         ${data.name}, 
         ${data.description}, 
@@ -19,9 +19,10 @@ class ZoneDao {
         ST_GeomFromText(${data.geom}), 
         ST_LineFromText(${data.paths}, 4326),
         ${data.zoneStatus}::"ZONE_STATUS_ENUM",
-        ${data.parkId}
+        ${data.parkId},
+        ${data.images || []}::text[]
       ) 
-      RETURNING id, name, description, "openingHours", "closingHours", ST_AsGeoJSON(geom) as "geom", "zoneStatus", "parkId";
+      RETURNING id, name, description, "openingHours", "closingHours", ST_AsGeoJSON(geom) as "geom", "zoneStatus", "parkId", images;
     `;
     return zone[0];
   }
@@ -52,41 +53,43 @@ class ZoneDao {
         geom GEOMETRY,
         paths GEOMETRY,
         "zoneStatus" "ZONE_STATUS_ENUM",
-        "parkId" INT REFERENCES "Park"(id) ON DELETE CASCADE
+        "parkId" INT REFERENCES "Park"(id) ON DELETE CASCADE,
+        images TEXT[]
       );
+    `;
+
+    // Add the "images" column if it doesn't exist
+    await prisma.$queryRaw`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_name = 'Zone' AND column_name = 'images'
+        ) THEN
+          ALTER TABLE "Zone" ADD COLUMN images TEXT[];
+        END IF;
+      END $$;
     `;
   }
 
   async getAllZones(): Promise<any[]> {
     await this.initZonesDB();
 
-    // const zones = await prisma.$queryRaw`
-    //   SELECT 
-    //     id,
-    //     name,
-    //     description,
-    //     "openingHours",
-    //     "closingHours",
-    //     ST_AsGeoJSON("geom") as geom,
-    //     ST_AsGeoJSON("paths") as paths,
-    //     "zoneStatus",
-    //     "Park".id as "parkId", 
-    //   FROM "Zone";
-    // `;
-
     const zones = await prisma.$queryRaw`
-    SELECT 
-      "Zone".id, 
-      "Zone".name, 
-      "Zone".description, 
-      "Zone"."openingHours", 
-      "Zone"."closingHours", 
-      ST_AsGeoJSON("Zone".geom) as geom, 
-      ST_AsGeoJSON("Zone".paths) as paths, 
-      "Zone"."zoneStatus",
-      "Park".id as "parkId", 
-      "Park".name as "parkName", 
-      "Park".description as "parkDescription"
+      SELECT 
+        "Zone".id, 
+        "Zone".name, 
+        "Zone".description, 
+        "Zone"."openingHours", 
+        "Zone"."closingHours", 
+        ST_AsGeoJSON("Zone".geom) as geom, 
+        ST_AsGeoJSON("Zone".paths) as paths, 
+        "Zone"."zoneStatus",
+        "Zone".images,
+        "Park".id as "parkId", 
+        "Park".name as "parkName", 
+        "Park".description as "parkDescription"
       FROM "Zone"
       LEFT JOIN "Park" ON "Zone"."parkId" = "Park".id;
     `;
@@ -115,6 +118,7 @@ class ZoneDao {
         ST_AsGeoJSON("Zone".geom) as geom, 
         ST_AsGeoJSON("Zone".paths) as paths, 
         "Zone"."zoneStatus",
+        "Zone".images,
         "Park".id as "parkId", 
         "Park".name as "parkName", 
         "Park".description as "parkDescription"
@@ -147,7 +151,8 @@ class ZoneDao {
       "Zone"."closingHours", 
       ST_AsGeoJSON("Zone".geom) as geom, 
       ST_AsGeoJSON("Zone".paths) as paths, 
-      "Zone"."zoneStatus"
+      "Zone"."zoneStatus",
+      "Zone".images
     FROM "Zone"
     WHERE "Zone"."parkId" = ${parkId};
     `;
@@ -175,7 +180,91 @@ class ZoneDao {
       throw new Error(`Zone with ID ${id} not found`);
     }
   }
-}
 
+  async updateZone(id: number, data: Partial<ZoneUpdateData>): Promise<ZoneResponseData> {
+    await this.initZonesDB();
+
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    // Dynamically build the query for each field if it's provided
+    if (data.name) {
+      updates.push(`name = $${updates.length + 1}`);
+      values.push(data.name);
+    }
+
+    if (data.description) {
+      updates.push(`description = $${updates.length + 1}`);
+      values.push(data.description);
+    }
+
+    if (data.openingHours) {
+      updates.push(`"openingHours" = $${updates.length + 1}::timestamp[]`);
+      const openingHoursArray = data.openingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
+      values.push(openingHoursArray);
+    }
+
+    if (data.closingHours) {
+      updates.push(`"closingHours" = $${updates.length + 1}::timestamp[]`);
+      const closingHoursArray = data.closingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
+      values.push(closingHoursArray);
+    }
+
+    if (data.geom) {
+      updates.push(`geom = ST_GeomFromText($${updates.length + 1})`);
+      values.push(data.geom);
+    }
+
+    if (data.paths) {
+      updates.push(`paths = ST_LineFromText($${updates.length + 1}, 4326)`);
+      values.push(data.paths);
+    }
+
+    if (data.zoneStatus) {
+      updates.push(`"zoneStatus" = $${updates.length + 1}::"ZONE_STATUS_ENUM"`);
+      values.push(data.zoneStatus);
+    }
+
+    if (data.parkId) {
+      updates.push(`"parkId" = $${updates.length + 1}`);
+      values.push(data.parkId);
+    }
+
+    if (data.images) {
+      updates.push(`images = $${updates.length + 1}::text[]`);
+      values.push(data.images);
+    }
+
+    // Check if there are updates to be made
+    if (updates.length === 0) {
+      throw new Error('No attributes provided for update');
+    }
+
+    // Build the final SQL query
+    const query = `
+      UPDATE "Zone"
+      SET ${updates.join(', ')}
+      WHERE id = $${updates.length + 1}
+      RETURNING id, name, description, "openingHours", "closingHours", ST_AsGeoJSON(geom) as geom, ST_AsGeoJSON(paths) as paths, "zoneStatus", "parkId", images;
+    `;
+
+    // Add the id to the list of values
+    values.push(id);
+
+    // Execute the query with parameterized values
+    const updatedZone = await prisma.$queryRawUnsafe(query, ...values);
+
+    if (Array.isArray(updatedZone) && updatedZone.length > 0) {
+      const result = updatedZone[0];
+      return {
+        ...result,
+        geom: JSON.parse(result.geom),
+        paths: JSON.parse(result.paths)
+      };
+    } else {
+      throw new Error(`Unable to update zone with ID ${id}`);
+    }
+  }
+}
 
 export default new ZoneDao();

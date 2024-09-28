@@ -35,6 +35,25 @@ const FacilityList: React.FC = () => {
     navigate(`/facilities/${facilityId}`);
   };
 
+  const facilityTypes = [
+    { text: 'Toilet', value: 'TOILET' },
+    { text: 'Playground', value: 'PLAYGROUND' },
+    { text: 'Information', value: 'INFORMATION' },
+    { text: 'Carpark', value: 'CARPARK' },
+    { text: 'Accessibility', value: 'ACCESSIBILITY' },
+    { text: 'Stage', value: 'STAGE' },
+    { text: 'Water Fountain', value: 'WATER_FOUNTAIN' },
+    { text: 'Picnic Area', value: 'PICNIC_AREA' },
+    { text: 'BBQ Pit', value: 'BBQ_PIT' },
+    { text: 'Camping Area', value: 'CAMPING_AREA' },
+    { text: 'AED', value: 'AED' },
+    { text: 'First Aid', value: 'FIRST_AID' },
+    { text: 'Amphitheater', value: 'AMPHITHEATER' },
+    { text: 'Gazebo', value: 'GAZEBO' },
+    { text: 'Storeroom', value: 'STOREROOM' },
+    { text: 'Others', value: 'OTHERS' },
+  ];
+
   const columns: TableProps<FacilityResponse>['columns'] = [
     {
       title: 'Facility Name',
@@ -49,7 +68,8 @@ const FacilityList: React.FC = () => {
       dataIndex: 'facilityType',
       key: 'facilityType',
       render: (text) => <div>{text}</div>,
-      sorter: (a, b) => a.facilityType.localeCompare(b.facilityType),
+      filters: facilityTypes,
+      onFilter: (value, record) => record.facilityType === value,
       width: '15%',
     },
     {
@@ -69,19 +89,19 @@ const FacilityList: React.FC = () => {
         }
       },
       filters: [
-        { text: 'OPEN', value: 'OPEN' },
-        { text: 'CLOSED', value: 'CLOSED' },
-        { text: 'MAINTENANCE', value: 'MAINTENANCE' },
+        { text: 'Open', value: 'OPEN' },
+        { text: 'Closed', value: 'CLOSED' },
+        { text: 'Maintenance', value: 'MAINTENANCE' },
       ],
       onFilter: (value, record) => record.facilityStatus === value,
       width: '15%',
     },
     {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
+      title: 'Last Maintenance Date',
+      dataIndex: 'lastMaintenanceDate',
+      key: 'lastMaintenanceDate',
       render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
+      sorter: (a, b) => moment(a.lastMaintenanceDate).unix() - moment(b.lastMaintenanceDate).unix(),
       width: '15%',
     },
     {
@@ -92,11 +112,15 @@ const FacilityList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN && (
+          {user?.role !== StaffType.ARBORIST && user?.role !== StaffType.BOTANIST && (
             <>
               <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/${record.id}/edit`)} />
               </Tooltip>
+            </>
+          )}
+          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+            <>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
               </Tooltip>
@@ -159,7 +183,7 @@ const FacilityList: React.FC = () => {
           variant="filled"
           onChange={handleSearch}
         />
-        {user?.role === StaffType.SUPERADMIN && (
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
           <Button type="primary" onClick={() => navigate('/facilities/create')}>
             Create Facility
           </Button>

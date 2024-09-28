@@ -20,6 +20,9 @@ import attractionRouter from './routers/attractionRouter';
 import hubRouter from './routers/hubRouter';
 import parkAssetRouter from './routers/parkAssetRouter';
 import facilityRouter from './routers/facilityRouter';
+import eventRouter from './routers/eventRouter';
+import plantTaskRouter from './routers/plantTaskRouter';
+import { authenticateJWTStaff } from './middleware/authenticateJWT';
 import sensorRouter from './routers/sensorRouter';
 
 dotenv.config();
@@ -60,12 +63,14 @@ app.use('/api/visitors', visitorRouter);
 app.use('/api/parks', parkRouter);
 app.use('/api/zones', zoneRouter);
 app.use('/api/occurrences', occurrenceRouter);
-app.use('/api/activitylogs', activityLogRouter);
-app.use('/api/statuslogs', statusLogRouter);
+app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
+app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
 app.use('/api/hubs', hubRouter);
 app.use('/api/parkassets', parkAssetRouter);
 app.use('/api/facilities', facilityRouter);
+app.use('/api/events', eventRouter);
+app.use('/api/planttasks', plantTaskRouter);
 app.use('/api/sensors', sensorRouter);
 
 const port = process.env.PORT || 3333;

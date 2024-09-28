@@ -54,11 +54,15 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrences();
   }
 
+  public async getAllOccurrenceByZoneId(zoneId: number): Promise<Occurrence[]> {
+    return OccurrenceDao.getAllOccurrencesByZoneId(zoneId);
+  }
+
   public async getAllOccurrenceByParkId(parkId: number): Promise<Occurrence[]> {
     return OccurrenceDao.getAllOccurrencesByParkId(parkId);
   }
 
-  public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: string }> {
+  public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: number }> {
     try {
       const occurrence = await OccurrenceDao.getOccurrenceById(id);
       const zone = await ZoneDao.getZoneById(occurrence.zoneId);

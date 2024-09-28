@@ -20,7 +20,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 
 const { TextArea } = Input;
 
@@ -183,7 +183,9 @@ const AssetEdit = () => {
   };
 
   if (notFound) {
-    return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
+    // [ ENTITY NOT FOUND MERGE ISSUE ]
+    return <></>
+    // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
   return (

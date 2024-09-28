@@ -9,7 +9,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+// import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
@@ -121,7 +121,9 @@ const AssetDetails = () => {
   }
 
   if (notFound) {
-    return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
+    // [ ENTITY NOT FOUND MERGE ISSUE ]
+    return <></>
+    // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
   if (!asset) {

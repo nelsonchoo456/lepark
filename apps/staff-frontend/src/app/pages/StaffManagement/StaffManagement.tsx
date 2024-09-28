@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { SearchOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import type { InputRef, TableColumnsType, TableColumnType } from 'antd';
-import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification } from 'antd';
+import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification, Tooltip } from 'antd';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
@@ -155,7 +155,9 @@ const StaffManagementPage: React.FC = () => {
       width: '90px',
       render: (_, record) => (
         <Flex key={record.id} justify="center">
-          {record.id !== user?.id && <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)} />}
+          <Tooltip title="View Staff">
+            <Button type="link" icon={<FiEye />} onClick={() => handleViewDetailsClick(record)} />
+          </Tooltip>
         </Flex>
       ),
     },

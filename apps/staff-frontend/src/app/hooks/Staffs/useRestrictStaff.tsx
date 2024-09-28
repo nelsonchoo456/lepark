@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
 
-export const useRestrictStaff = (staffId?: string) => {
+export const useRestrictStaff = (staffId?: string, refreshKey?: number) => {
   const [staff, setStaff] = useState<StaffResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
@@ -20,7 +19,6 @@ export const useRestrictStaff = (staffId?: string) => {
 
     const fetchStaff = async (staffId: string) => {
       setLoading(true);
-      setNotFound(false);
       setStaff(null);
       try {
         const staffResponse = await viewStaffDetails(staffId);
@@ -35,25 +33,39 @@ export const useRestrictStaff = (staffId?: string) => {
             if (!notificationShown.current) {
               notification.error({
                 message: 'Access Denied',
-                description: 'You are not allowed to access this staff details!',
+                description: 'You do not have permission to access this resource.',
               });
               notificationShown.current = true;
             }
-            navigate(user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN ? '/staff-management' : '/');
+            navigate('/');
           }
         } else {
-          setNotFound(true);
+          if (!notificationShown.current) {
+            notification.error({
+              message: 'Access Denied',
+              description: 'You do not have permission to access this resource.',
+            });
+            notificationShown.current = true;
+          }
+          navigate('/');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        setNotFound(true);
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        navigate('/');
       } finally {
         setLoading(false);
       }
     };
 
     fetchStaff(staffId);
-  }, [staffId, navigate, user]);
+  }, [staffId, navigate, user, refreshKey]); // Add refreshKey to the dependency array
 
-  return { staff, loading, notFound };
+  return { staff, loading };
 };

@@ -41,24 +41,6 @@ const OccurrenceEditMap = () => {
   const [lat, setLat] = useState(occurrence?.lat);
   const [lng, setLng] = useState(occurrence?.lng);
 
-  useEffect(() => {
-    if (
-      user?.role !== StaffType.SUPERADMIN &&
-      user?.role !== StaffType.MANAGER &&
-      user?.role !== StaffType.BOTANIST &&
-      user?.role !== StaffType.ARBORIST
-    ) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Occurrence Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   // Set initial Zone, Lat Lng
   useEffect(() => {
     if (occurrence) {
@@ -129,16 +111,16 @@ const OccurrenceEditMap = () => {
   const breadcrumbItems = [
     {
       title: 'Occurrence Management',
-      pathKey: '/occurrence',
+      pathKey: '/occurrences',
       isMain: true,
     },
     {
       title: occurrence?.title ? occurrence?.title : 'Details',
-      pathKey: `/occurrence/${occurrence?.id}`,
+      pathKey: `/occurrences/${occurrence?.id}`,
     },
     {
       title: 'Edit Location',
-      pathKey: `/occurrence/${occurrence?.id}/edit-location`,
+      pathKey: `/occurrences/${occurrence?.id}/edit-location`,
       isCurrent: true,
     },
   ];
@@ -177,7 +159,7 @@ const OccurrenceEditMap = () => {
             style={{ height: '100%', width: '100%' }}
           >
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
 

@@ -171,13 +171,13 @@ const SpeciesPage = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Species">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/species/${record.id}`)} />
           </Tooltip>
           {user && !['LANDSCAPE_ARCHITECT', 'PARK_RANGER', 'VENDOR_MANAGER'].includes(user.role) && (
             <>
               <Tooltip title="Edit Species">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate('/species/edit', { state: { speciesId: record.id } })} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/species/${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete Species">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />

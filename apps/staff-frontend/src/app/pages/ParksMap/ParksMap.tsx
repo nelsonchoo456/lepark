@@ -20,6 +20,7 @@ import { FiEye } from 'react-icons/fi';
 import { TbEdit, TbTree } from 'react-icons/tb';
 import ParkStatusTag from '../ParkDetails/components/ParkStatusTag';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import React from 'react';
 
 const ParksMap = () => {
   const { user } = useAuth<StaffResponse>();
@@ -32,7 +33,7 @@ const ParksMap = () => {
   const [sortOrder, setSortOrder] = useState<'ascend' | 'descend' | null>(null);
 
   // Filters
-  const [selectedStatus, setSelectedStatus] = useState<string | null >();
+  const [selectedStatus, setSelectedStatus] = useState<string | null>();
   const [selectedParkId, setSelectedParkId] = useState<string | null>();
 
   // Map utilities
@@ -50,23 +51,10 @@ const ParksMap = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Park Management page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, []);
-
-  useEffect(() => {
     if (zoomLevel < SHOW_ZONES_ZOOM) {
-      setSelectedParkId(null)
+      setSelectedParkId(null);
     }
-  }, [zoomLevel])
+  }, [zoomLevel]);
 
   const MapZoomListener = () => {
     const map = useMapEvent('zoomend', () => {
@@ -76,9 +64,9 @@ const ParksMap = () => {
   };
 
   const handleParkPolygonClick = (map: L.Map, geom: [number, number][], entityId: string | number) => {
-    setSelectedParkId(entityId.toString())
+    setSelectedParkId(entityId.toString());
     map.fitBounds(geom);
-    // map.setZoom(SHOW_ZONES_ZOOM);     
+    // map.setZoom(SHOW_ZONES_ZOOM);
   };
 
   const breadcrumbItems = [
@@ -102,7 +90,7 @@ const ParksMap = () => {
         <PageHeader2 breadcrumbItems={breadcrumbItems} />
         {parks &&
           parks.map((park) => (
-            <>
+            <React.Fragment key={park.id}>
               <div className="border-b-[1px] border-black/10 py-4 px-2 hover:bg-green-400/10">
                 <div className="flex justify-between gap-2 ">
                   <div className="flex-auto">
@@ -169,7 +157,7 @@ const ParksMap = () => {
               </div>
               )
               */}
-            </>
+            </React.Fragment>
           ))}
       </Drawer>
       <MapContainer
@@ -179,7 +167,10 @@ const ParksMap = () => {
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          // url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+          // url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+          // url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <MapZoomListener />
@@ -199,9 +190,9 @@ const ParksMap = () => {
           ))}
 
         {/* SUPERADMIN */}
-        {user?.role === StaffType.SUPERADMIN 
-        // && zoomLevel >= SHOW_ZONES_ZOOM 
-        && zones?.length > 0 &&
+        {user?.role === StaffType.SUPERADMIN &&
+          // && zoomLevel >= SHOW_ZONES_ZOOM
+          zones?.length > 0 &&
           zones
             .filter((zone) => zone.parkId.toString() === selectedParkId)
             .map((zone) => (
@@ -256,19 +247,74 @@ const ParksMap = () => {
         zoom={11}
         className="leaflet-mapview-container"
         style={{ height: '100%', width: '100%' }}
+        zoomControl={false}
       >
-        {parks?.length > 0 &&
-          parks.map(
-            (park) =>
-              park.geom?.coordinates &&
-              park.geom.coordinates.length > 0 && (
-                <Polygon positions={park.geom.coordinates[0].map((item: number[]) => [item[1], item[0]])} />
-              ),
-          )}
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          // url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+          // url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+          // url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        <MapZoomListener />
+
+        {parks?.length > 0 &&
+          parks.map((park) => (
+            <PolygonWithLabel
+              key={park.id}
+              entityId={park.id}
+              geom={park.geom}
+              polygonLabel={park.name}
+              image={park.images && park.images.length > 0 ? park.images[0] : ''}
+              color="transparent"
+              fillOpacity={0.8}
+              handlePolygonClick={handleParkPolygonClick}
+            />
+          ))}
+
+        {/* SUPERADMIN */}
+        {user?.role === StaffType.SUPERADMIN &&
+          // && zoomLevel >= SHOW_ZONES_ZOOM
+          zones?.length > 0 &&
+          zones
+            .filter((zone) => zone.parkId.toString() === selectedParkId)
+            .map((zone) => (
+              <PolygonWithLabel
+                key={zone.id}
+                entityId={zone.id}
+                geom={zone.geom}
+                polygonLabel={
+                  <div className="flex items-center gap-2">
+                    <TbTree className="text-xl" />
+                    {zone.name}
+                  </div>
+                }
+                color={COLORS.green[600]}
+                fillColor={'transparent'}
+                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+              />
+            ))}
+
+        {/* NON-SUPERADMIN */}
+        {/* user?.role !== StaffType.SUPERADMIN && zoomLevel >= SHOW_ZONES_ZOOM &&
+          zones?.length > 0 &&
+          zones
+            .map((zone) => (
+              <PolygonWithLabel
+                key={zone.id}
+                entityId={zone.id}
+                geom={zone.geom}
+                polygonLabel={
+                  <div className="flex items-center gap-2">
+                    <TbTree className="text-xl" />
+                    {zone.name}
+                  </div>
+                }
+                color={COLORS.green[600]}
+                fillColor={'transparent'}
+                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+              />
+            )) */}
       </MapContainer>
     </div>
   );

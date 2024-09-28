@@ -85,11 +85,13 @@ const MapFeatureManager = ({ polygon, setPolygon, lines, setLines, color, fillCo
       {/* Render polygon if it exists */}
       {polygon.length > 0 && (
         <Polygon
+          key={Math.random()}
           positions={polygon[0]}
           pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
           fillOpacity={0.75}
         />
-      )}
+      )} 
+
       {/* {parks.length > 0 && <Polygon positions={parks} />} */}
       {/* {parks.length > 0 && <Polygon positions={tempPolygon2[0]} />} */}
       {/* Render multiple lines */}

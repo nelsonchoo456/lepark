@@ -105,13 +105,13 @@ const ParkList = () => {
       dataIndex: 'id',
       render: (id, record) => (
         <Flex justify="center">
-          <Tooltip title="View details">
+          <Tooltip title="View Park">
             <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
           </Tooltip>
-          <Tooltip title="Edit details">
+          <Tooltip title="Edit Park">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete Park">
             <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ParkResponse)}  />
           </Tooltip>
         </Flex>

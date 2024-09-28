@@ -21,7 +21,7 @@ export async function createFacility(data: FacilityData, files?: File[]): Promis
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
-      throw error.response.data.error;
+      throw new Error(error.response.data.error);
     } else {
       throw error;
     }
@@ -68,7 +68,7 @@ export async function updateFacilityDetails(
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images = uploadedUrls.data.uploadedUrls;
+      data.images?.push(...uploadedUrls.data.uploadedUrls);
     }
 
     const response: AxiosResponse<FacilityResponse> = await client.put(`${URL}/updateFacilityDetails/${id}`, data);

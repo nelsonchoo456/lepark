@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
-import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message, notification } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
-import moment from 'moment';
-import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import { getZonesByParkId, ParkResponse, StaffResponse, StaffType, updatePark, ZoneResponse } from '@lepark/data-access';
+import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
+
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -30,54 +28,35 @@ const attributes = ['name', 'description', 'address', 'contactNumber', 'openingH
 const ParkEdit = () => {
   const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { park, loading } = useRestrictPark(id);
   const [createdData, setCreatedData] = useState<ParkResponse>();
-  const [park, setPark] = useState<ParkResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const navigate = useNavigate();
-  const notificationShown = useRef(false);
+  const [parkZones, setParkZones] = useState<ZoneResponse[]>();
   const [form] = Form.useForm();
 
+  const [showParkZones, setShowParkZones] = useState<boolean>(false);
+
   useEffect(() => {
-    if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        const parkRes = await getParkById(parseInt(id));
-        if (parkRes.status === 200) {
-          const parkData = parkRes.data;
-          setPark(parkData);
-          const initialValues = {
-            ...parkData,
-            sunday: [dayjs(parkData.openingHours[0]), dayjs(parkData.closingHours[0])],
-            monday: [dayjs(parkData.openingHours[1]), dayjs(parkData.closingHours[1])],
-            tuesday: [dayjs(parkData.openingHours[2]), dayjs(parkData.closingHours[2])],
-            wednesday: [dayjs(parkData.openingHours[3]), dayjs(parkData.closingHours[3])],
-            thursday: [dayjs(parkData.openingHours[4]), dayjs(parkData.closingHours[4])],
-            friday: [dayjs(parkData.openingHours[5]), dayjs(parkData.closingHours[5])],
-            saturday: [dayjs(parkData.openingHours[6]), dayjs(parkData.closingHours[6])],
-          };
-          if (parkData.images) {
-            setCurrentImages(parkData.images);
-          }
-          
-
-          form.setFieldsValue(initialValues);
-        }
-      } catch (error) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Error',
-            description: 'An error occurred while fetching the park details.',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
+    if (park) {
+      const initialValues = {
+        ...park,
+        sunday: [dayjs(park.openingHours[0]), dayjs(park.closingHours[0])],
+        monday: [dayjs(park.openingHours[1]), dayjs(park.closingHours[1])],
+        tuesday: [dayjs(park.openingHours[2]), dayjs(park.closingHours[2])],
+        wednesday: [dayjs(park.openingHours[3]), dayjs(park.closingHours[3])],
+        thursday: [dayjs(park.openingHours[4]), dayjs(park.closingHours[4])],
+        friday: [dayjs(park.openingHours[5]), dayjs(park.closingHours[5])],
+        saturday: [dayjs(park.openingHours[6]), dayjs(park.closingHours[6])],
+      };
+      if (park.images) {
+        setCurrentImages(park.images);
       }
-    };
-    fetchData();
-  }, [id, user, form, navigate]);
+      form.setFieldsValue(initialValues);
+    }
+  }, [park, form]);
 
   const parkStatusOptions = [
     {
@@ -188,14 +167,19 @@ const ParkEdit = () => {
   };
 
   const breadcrumbItems = [
-    {
-      title: 'Park Management',
-      pathKey: '/park',
-      isMain: true,
-    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            title: 'Park Management',
+            pathKey: '/park',
+            isMain: true,
+          },
+        ]
+      : []),
     {
       title: park?.name ? park?.name : "Details",
       pathKey: `/park/${park?.id}`,
+      ...(user?.role !== StaffType.SUPERADMIN && { isMain: true }),
     },
     {
       title: "Edit",
@@ -203,6 +187,14 @@ const ParkEdit = () => {
       isCurrent: true,
     },
   ];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!park) {
+    return <div>Park not found</div>;
+  }
 
   return (
     <ContentWrapperDark>
@@ -221,7 +213,6 @@ const ParkEdit = () => {
           <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={parkStatusOptions} />
           </Form.Item>
-
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>

@@ -1,9 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createPark, getParkById, ParkResponse, StaffResponse, StaffType, StringIdxSig, updatePark } from '@lepark/data-access';
-import { Button, Card, Form, message, notification, Popconfirm, Space } from 'antd';
+import {
+  AttractionResponse,
+  FacilityResponse,
+  getAttractionsByParkId,
+  getFacilitiesByParkId,
+  getOccurrencesByParkId,
+  getZonesByParkId,
+  OccurrenceResponse,
+  ParkResponse,
+  StaffResponse,
+  StaffType,
+  updatePark,
+  ZoneResponse,
+} from '@lepark/data-access';
+import { Button, Card, Checkbox, message, Popconfirm, Space } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import node_image from '../../assets/mapFeatureManager/line.png';
@@ -11,7 +24,15 @@ import polygon_image from '../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../assets/mapFeatureManager/edit.png';
 import MapFeatureManagerEdit from '../../components/map/MapFeatureManagerEdit';
 import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import { latLngArrayToPolygon, pointsAreWithinPolygon, polygonIsWithin, polygonIsWithinPark } from '../../components/map/functions/functions';
+import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
+import PolygonWithLabel from '../../components/map/PolygonWithLabel';
+import { COLORS } from '../../config/colors';
+import { TbTicket, TbTree } from 'react-icons/tb';
+import PictureMarker from '../../components/map/PictureMarker';
+import { PiPlantFill } from 'react-icons/pi';
+import FacilityPictureMarker from '../../components/map/FacilityPictureMarker';
+import FitBounds from '../../components/map/FitBounds';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -19,59 +40,95 @@ export interface AdjustLatLngInterface {
 }
 
 const ParkEditMap = () => {
-  const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
+  const { park, loading } = useRestrictPark(id);
+  const { user } = useAuth<StaffResponse>();
   const [createdData, setCreatedData] = useState<ParkResponse>();
-  const [park, setPark] = useState<ParkResponse>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]); // original polygon
   const [editPolygon, setEditPolygon] = useState<any[]>([]);
   const [lines, setLines] = useState<any[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
+
+  const [submitLoading, setSubmitLoading] = useState<boolean>(false);
+
+  const [parkZones, setParkZones] = useState<ZoneResponse[]>();
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]);
+  const [attractions, setAttractions] = useState<AttractionResponse[]>([]);
+  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+
+  const [showParkZones, setShowParkZones] = useState<boolean>(false);
+  const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
+  const [showAttractions, setShowAttractions] = useState<boolean>(false);
+  const [showFacilities, setShowFacilities] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    if (!(user?.role === StaffType.MANAGER && user?.parkId === parseInt(id)) && user?.role !== StaffType.SUPERADMIN) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to edit the details of this park!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
+    if (park && park.geom && park.geom.coordinates) {
+      setPolygon(park.geom.coordinates);
     }
+    if (park) {
+      fetchParkZonesData();
+      fetchOccurrences();
+      fetchAttractions();
+      fetchFacilities();
+    }
+  }, [park]);
 
-    const fetchData = async () => {
-      try {
-        const parkRes = await getParkById(parseInt(id));
-        if (parkRes.status === 200) {
-          const parkData = parkRes.data;
-          setPark(parkData)
-          setPolygon(parkData.geom.coordinates); // AARON LOOK AT THIS CHANGE TO ZONE
-          // resetEditPolygon(parkData.geom.coordinates)
-        }
-      } catch (error) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Error',
-            description: 'An error occurred while fetching the park details.',
-          });
-          notificationShown.current = true;
-        }
-        setPolygon([]);
-        navigate('/');
+  const fetchParkZonesData = async () => {
+    if (!park?.id) return;
+    try {
+      const parkZonesRes = await getZonesByParkId(park.id);
+      if (parkZonesRes.status === 200) {
+        const parkZonesData = parkZonesRes.data;
+        setParkZones(parkZonesData);
       }
-    };
-    fetchData();
-  }, [id, user]);
+    } catch (error) {
+      // do nothing
+    }
+  };
 
-  // Form Values
+  const fetchOccurrences = async () => {
+    if (!park?.id) return;
+    try {
+      const occurrenceRes = await getOccurrencesByParkId(park.id);
+      if (occurrenceRes.status === 200) {
+        const occurrenceData = occurrenceRes.data;
+        setOccurrences(occurrenceData);
+      }
+    } catch (error) {
+      // do nothing
+    }
+  };
+
+  const fetchAttractions = async () => {
+    if (!park?.id) return;
+    try {
+      const attractionsRes = await getAttractionsByParkId(park.id);
+      if (attractionsRes.status === 200) {
+        const attractionsData = attractionsRes.data;
+        setAttractions(attractionsData);
+      }
+    } catch (error) {
+      // do nothing
+    }
+  };
+
+  const fetchFacilities = async () => {
+    if (!park?.id) return;
+    try {
+      const occurrenceRes = await getFacilitiesByParkId(park.id);
+      if (occurrenceRes.status === 200) {
+        const occurrenceData = occurrenceRes.data;
+        setFacilities(occurrenceData);
+      }
+    } catch (error) {
+      // do nothing
+    }
+  };
 
   const handleSubmit = async () => {
     if (!park) return;
+    setSubmitLoading(true);
     try {
       const finalData: any = {};
 
@@ -81,8 +138,43 @@ const ParkEditMap = () => {
       } else {
         throw new Error('Please draw Park boundaries on the map.');
       }
-      
+
+      // Boundary validation
+      const allZonesWithin = parkZones?.every((zone) => polygonIsWithinPark(zone.geom.coordinates?.[0], editPolygon[0][0]));
+      const allAttractionsWithin = pointsAreWithinPolygon(
+        editPolygon[0][0],
+        attractions?.map((attraction) => ({ lat: attraction.lat, lng: attraction.lng })),
+      );
+      const validFacilities = facilities
+        ?.filter((facility) => facility.lat && facility.long && facility.lat !== undefined && facility.long !== undefined)
+        .map((facility) => ({ lat: facility.lat as number, lng: facility.long as number }));
+      const allFacilitiesWithin = pointsAreWithinPolygon(editPolygon[0][0], validFacilities);
+
+      if (!allZonesWithin) {
+        messageApi.open({
+          type: 'error',
+          content: 'Some Zone(s) fall outside the Park boundaries.',
+        });
+      }
+      if (!allFacilitiesWithin) {
+        messageApi.open({
+          type: 'error',
+          content: 'Some Facility/Facilities fall outside the Park boundaries.',
+        });
+      }
+      if (!allAttractionsWithin) {
+        messageApi.open({
+          type: 'error',
+          content: 'Some Attraction(s) fall outside the Park boundaries.',
+        });
+      }
+      if (!allZonesWithin || !allFacilitiesWithin || !allAttractionsWithin) {
+        setSubmitLoading(false);
+        return;
+      }
+
       const response = await updatePark(park.id, finalData);
+      setSubmitLoading(false);
       if (response.status === 200) {
         setCreatedData(response.data);
         messageApi.open({
@@ -94,6 +186,7 @@ const ParkEditMap = () => {
         }, 1000);
       }
     } catch (error) {
+      setSubmitLoading(false);
       if (error instanceof Error) {
         if (error.message === 'A park with this name already exists') {
           messageApi.open({
@@ -116,14 +209,19 @@ const ParkEditMap = () => {
   };
 
   const breadcrumbItems = [
-    {
-      title: 'Park Management',
-      pathKey: '/park',
-      isMain: true,
-    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            title: 'Park Management',
+            pathKey: '/park',
+            isMain: true,
+          },
+        ]
+      : []),
     {
       title: park?.name ? park?.name : 'Details',
       pathKey: `/park/${park?.id}`,
+      ...(user?.role !== StaffType.SUPERADMIN && { isMain: true }),
     },
     {
       title: 'Edit Boundaries',
@@ -131,6 +229,14 @@ const ParkEditMap = () => {
       isCurrent: true,
     },
   ];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!park) {
+    return <div>Park not found or access denied.</div>;
+  }
 
   return (
     <ContentWrapperDark>
@@ -152,6 +258,33 @@ const ParkEditMap = () => {
               <img src={edit_image} alt="polygon-edit" height={'16px'} width={'16px'} /> - Edit Paths and Boundaries
             </Space>
           </div>
+
+          <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mt-4">
+            <Space size={30}>
+              <div className="font-semibold">Display:</div>
+              {parkZones && parkZones.length > 0 && (
+                <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones}>
+                  Zones
+                </Checkbox>
+              )}
+              {occurrences && occurrences.length > 0 && (
+                <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+                  Occurrences
+                </Checkbox>
+              )}
+              {attractions && attractions.length > 0 && (
+                <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions}>
+                  Attractions
+                </Checkbox>
+              )}
+              {facilities && facilities.length > 0 && (
+                <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities}>
+                  Facilities
+                </Checkbox>
+              )}
+            </Space>
+          </Card>
+
           <div
             style={{
               height: '60vh',
@@ -167,9 +300,77 @@ const ParkEditMap = () => {
               key="park-create"
             >
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
+              <FitBounds geom={park.geom}/>
+              
+              {showParkZones &&
+                parkZones?.map((zone) => (
+                  <PolygonWithLabel
+                    key={zone.id}
+                    entityId={zone.id}
+                    geom={zone.geom}
+                    polygonLabel={
+                      <div className="flex items-center gap-2">
+                        <TbTree className="text-xl" />
+                        {zone.name}
+                      </div>
+                    }
+                    color={COLORS.green[500]}
+                    fillColor={'transparent'}
+                    labelFields={{ color: COLORS.green[600], textShadow: 'none' }}
+                  />
+                ))}
+
+              {showOccurrences &&
+                occurrences &&
+                occurrences.map((occurrence) => (
+                  <PictureMarker
+                    id={occurrence.id}
+                    entityType="OCCURRENCE"
+                    circleWidth={30}
+                    lat={occurrence.lat}
+                    lng={occurrence.lng}
+                    backgroundColor={COLORS.green[300]}
+                    icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                    tooltipLabel={occurrence.title}
+                  />
+                ))}
+
+              {showAttractions &&
+                attractions &&
+                attractions.map((occurrence) => (
+                  <PictureMarker
+                    id={occurrence.id}
+                    entityType="ATTRACTION"
+                    circleWidth={30}
+                    lat={occurrence.lat}
+                    lng={occurrence.lng}
+                    backgroundColor={COLORS.mustard[300]}
+                    icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                    tooltipLabel={occurrence.title}
+                  />
+                ))}
+
+              {showFacilities &&
+                facilities &&
+                facilities.map(
+                  (facility) =>
+                    facility.lat &&
+                    facility.long && (
+                      <FacilityPictureMarker
+                        id={facility.id}
+                        circleWidth={38}
+                        lat={facility.lat}
+                        lng={facility.long}
+                        innerBackgroundColor={COLORS.sky[400]}
+                        tooltipLabel={facility.facilityName}
+                        facilityType={facility.facilityType}
+                      />
+                    ),
+                )}
+              
               <MapFeatureManagerEdit
                 polygon={polygon}
                 setPolygon={setPolygon}
@@ -181,14 +382,12 @@ const ParkEditMap = () => {
             </MapContainer>
           </div>
         </>
-        <div className='flex justify-center gap-2'>
+        <div className="flex justify-center gap-2">
           <Popconfirm title="All changes will be lost." onConfirm={() => navigate(`/park/${park?.id}`)}>
-            <Button>
-              Cancel
-            </Button>
+            <Button>Cancel</Button>
           </Popconfirm>
-          
-          <Button type="primary" onClick={handleSubmit}>
+
+          <Button type="primary" onClick={handleSubmit} disabled={submitLoading}>
             Save Changes
           </Button>
         </div>

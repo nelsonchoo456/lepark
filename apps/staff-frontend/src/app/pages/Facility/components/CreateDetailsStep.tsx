@@ -140,22 +140,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     },
   ];
 
-  const validateDates = (form: FormInstance) => ({
-    validator(_: any, value: moment.Moment) {
-      const lastMaintenanceDate = form.getFieldValue('lastMaintenanceDate') as moment.Moment;
-
-      // if (!value) {
-      //   return Promise.reject(new Error('This field is required'));
-      // }
-
-      if (lastMaintenanceDate && value.isBefore(lastMaintenanceDate, 'day')) {
-        return Promise.reject(new Error('Next Maintenance Date cannot be earlier than Last Maintenance Date'));
-      }
-
-      return Promise.resolve();
-    },
-  });
-
   const handleApplyToAllChange = (day: string) => {
     try {
       const dayTime = form.getFieldValue(day);
@@ -204,7 +188,12 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         <Input.TextArea rows={3} placeholder="Enter description" />
       </Form.Item>
 
-      <Form.Item name="isBookable" label="Is Bookable" rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}>
+      <Form.Item
+        name="isBookable"
+        label="Is Bookable"
+        rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}
+        tooltip="Please indicate if the facility is open to booking"
+      >
         <Select
           options={[
             { label: 'Yes', value: true },
@@ -214,7 +203,12 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         />
       </Form.Item>
 
-      <Form.Item name="isPublic" label="Is Public" rules={[{ required: true, message: 'Please select if the facility is public!' }]}>
+      <Form.Item
+        name="isPublic"
+        label="Is Public"
+        rules={[{ required: true, message: 'Please select if the facility is public!' }]}
+        tooltip="Please indicate if the facility is open to public"
+      >
         <Select
           options={[
             { label: 'Yes', value: true },
@@ -228,6 +222,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         name="isSheltered"
         label="Is Sheltered"
         rules={[{ required: true, message: 'Please select if the facility is sheltered!' }]}
+        tooltip="Please indicate if the facility is sheltered"
       >
         <Select
           options={[
@@ -253,36 +248,20 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         <Input.TextArea rows={3} placeholder="Enter rules and regulations" />
       </Form.Item>
 
-      <Form.Item name="size" label="Size" rules={[{ required: true, message: 'Please input the size!' }]}>
-        <InputNumber />
+      <Form.Item name="size" label="Size (m²)" rules={[{ required: true, message: 'Please input the size!' }]}>
+        <InputNumber min={1} />
       </Form.Item>
 
-      <Form.Item name="capacity" label="Capacity" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber />
+      <Form.Item name="capacity" label="Capacity (pax)" rules={[{ required: true, message: 'Please input the capacity!' }]}>
+        <InputNumber min={1} />
       </Form.Item>
 
-      <Form.Item name="fee" label="Fee" rules={[{ required: true, message: 'Please input the fee!' }]}>
-        <InputNumber />
+      <Form.Item name="fee" label="Fee ($)" rules={[{ required: true, message: 'Please input the fee!' }]}>
+        <InputNumber min={0} />
       </Form.Item>
 
       <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
         <Select options={facilityStatusOptions} placeholder="Enter facility status" />
-      </Form.Item>
-
-      <Form.Item
-        name="lastMaintenanceDate"
-        label="Last Maintenance Date"
-        rules={[{ required: true, message: 'Please select the last maintenance date!' }]}
-      >
-        <DatePicker style={{ width: '100%' }} />
-      </Form.Item>
-
-      <Form.Item
-        name="nextMaintenanceDate"
-        label="Next Maintenance Date"
-        rules={[{ required: true, message: 'Please select the next maintenance date!' }, validateDates(form)]}
-      >
-        <DatePicker style={{ width: '100%' }} />
       </Form.Item>
 
       <Divider orientation="left">
@@ -366,7 +345,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Flex>
       </Form.Item>
 
-      <Form.Item label={'Image'}>
+      <Form.Item label={'Image'} required tooltip="At least one image is required">
         <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
       {previewImages?.length > 0 && (

@@ -98,21 +98,3 @@ export async function deleteAttraction(id: string): Promise<AxiosResponse<void>>
     }
   }
 }
-
-export async function uploadImages(files: File[]): Promise<AxiosResponse<{ uploadedUrls: string[] }>> {
-  try {
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-
-    const response: AxiosResponse<{ uploadedUrls: string[] }> = await client.post(`${URL}/upload`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}

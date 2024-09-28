@@ -3,7 +3,7 @@ import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Select, Switc
 import { RiEdit2Line, RiArrowLeftLine, RiInformationLine } from 'react-icons/ri';
 import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Layout } from 'antd';
 import PageHeader from '../../components/main/PageHeader';
 import {
@@ -20,7 +20,6 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictStaff } from '../../hooks/Staffs/useRestrictStaff';
-import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const initialUser = {
   id: '',
@@ -37,7 +36,8 @@ const initialUser = {
 const ViewStaffDetails = () => {
   const { staffId = '' } = useParams();
   const { user, updateUser } = useAuth<StaffResponse>();
-  const { staff, loading, notFound } = useRestrictStaff(staffId);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { staff, loading } = useRestrictStaff(staffId, refreshKey);
   const [inEditMode, setInEditMode] = useState(false);
   const [editedUser, setEditedUser] = useState<StaffResponse>(initialUser);
   const [emailError, setEmailError] = useState('');
@@ -45,6 +45,10 @@ const ViewStaffDetails = () => {
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const notificationShown = useRef(false);
   const navigate = useNavigate();
+
+  const refreshData = useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+  }, []);
 
   useEffect(() => {
     if (!loading && staff) {
@@ -119,18 +123,22 @@ const ViewStaffDetails = () => {
       // console.log('Staff details updated successfully:', responseStaffDetails.data);
 
       message.success('Staff details updated successfully!');
-      await refreshUserData(); // Refresh user data to load the latest values
+      refreshData(); // Refresh the data after successful update
       setInEditMode(false); // Exit edit mode
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.message || error.toString();
       if (errorMessage.includes('Unique constraint failed on the fields: (`email`)')) {
         message.error('The email address is already in use. Please use a different email.');
+        // Remove this line to stay in edit mode
+        // setInEditMode(false);
       } else if (errorMessage.includes('Invalid email address')) {
         message.error('Invalid email format.');
       } else {
         message.error(errorMessage || 'Failed to update staff details.');
       }
+      // Add this line to ensure we stay in edit mode for all error cases
+      setInEditMode(true);
     }
   };
 
@@ -139,7 +147,8 @@ const ViewStaffDetails = () => {
     const isEmailValid = validateEmail(editedUser?.email ?? '');
     if (isContactNumberValid && isEmailValid && validateInputs()) {
       onFinish(editedUser);
-      setInEditMode(false);
+      // Remove this line to let onFinish handle the edit mode
+      // setInEditMode(false);
     } else {
       message.warning('All fields are required.');
     }
@@ -316,12 +325,8 @@ const ViewStaffDetails = () => {
     );
   }
 
-  if (notFound) {
-    return <EntityNotFound entityName="Staff" listPath="/staff-management" />;
-  }
-
   if (!staff) {
-    return null; // or you could return a loading state or error message
+    return null; // This will not be rendered as the hook will redirect unauthorized access
   }
 
   return (

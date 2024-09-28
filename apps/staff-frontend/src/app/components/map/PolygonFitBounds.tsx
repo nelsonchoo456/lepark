@@ -24,24 +24,27 @@ const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, f
   const centroid = getCentroidOfGeom(geom);
 
   useEffect(() => {
-    console.log(geom)
     if (geom?.coordinates && geom.coordinates.length > 0) {
       const bounds = geom.coordinates[0].map((item: number[]) => [item[1], item[0]] as [number, number]);
       map.fitBounds(bounds); // Fit/zoom the map to the geom bounds
 
-      if (adjustLatLng && lat && lng) { // You cannot drag outside the map, if u drag then it returns to centre
-        const point = turf.point([lng, lat]);
-        const polygon = turf.polygon([geom.coordinates[0]]);
+      
+    }
+  }, [geom, map]);
 
-        if (geom?.coordinates && !turf.booleanPointInPolygon(point, polygon)) {
-          const latLng = getCentroidOfGeom(geom);
-          if (latLng) {
-            adjustLatLng(latLng);
-          }
+  useEffect(() => {
+    if (geom?.coordinates && geom.coordinates.length > 0 && adjustLatLng && lat && lng) { // You cannot drag outside the map, if u drag then it returns to centre
+      const point = turf.point([lng, lat]);
+      const polygon = turf.polygon([geom.coordinates[0]]);
+
+      if (geom?.coordinates && !turf.booleanPointInPolygon(point, polygon)) {
+        const latLng = getCentroidOfGeom(geom);
+        if (latLng) {
+          adjustLatLng(latLng);
         }
       }
     }
-  }, [lat, lng, geom, map]);
+  }, [lat, lng, geom, map])
 
   const getLabelIcon = () => {
     const iconHTML = renderToStaticMarkup(

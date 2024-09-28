@@ -4,10 +4,11 @@ import { StaffRoleEnum } from '@prisma/client';
 import { StaffSchema, LoginSchema, PasswordResetRequestSchema, PasswordResetSchema, PasswordChangeSchema } from '../schemas/staffSchema';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET_KEY } from '../config/config';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+router.post('/register', authenticateJWTStaff, async (req, res) => {
   try {
     const staffData = StaffSchema.parse(req.body);
     const staff = await StaffService.register(staffData);
@@ -17,7 +18,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.get('/getAllStaffs', async (_, res) => {
+router.get('/getAllStaffs', authenticateJWTStaff, async (_, res) => {
   try {
     const staffs = await StaffService.getAllStaffs();
     res.status(200).json(staffs);
@@ -26,7 +27,7 @@ router.get('/getAllStaffs', async (_, res) => {
   }
 });
 
-router.get('/getAllStaffsByParkId/:parkId', async (req, res) => {
+router.get('/getAllStaffsByParkId/:parkId', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = parseInt(req.params.parkId);
     const staffList = await StaffService.getAllStaffsByParkId(parkId);
@@ -36,7 +37,7 @@ router.get('/getAllStaffsByParkId/:parkId', async (req, res) => {
   }
 });
 
-router.get('/viewStaffDetails/:id', async (req, res) => {
+router.get('/viewStaffDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const staffId = req.params.id;
     const staff = await StaffService.getStaffById(staffId);
@@ -46,7 +47,7 @@ router.get('/viewStaffDetails/:id', async (req, res) => {
   }
 });
 
-router.put('/updateStaffDetails/:id', async (req, res) => {
+router.put('/updateStaffDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const staffId = req.params.id;
     const updateData = StaffSchema.partial()
@@ -65,7 +66,7 @@ router.put('/updateStaffDetails/:id', async (req, res) => {
   }
 });
 
-router.put('/updateStaffRole/:id', async (req, res) => {
+router.put('/updateStaffRole/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const staffId = req.params.id;
     const { role, requesterId } = req.body; // Assuming requesterId is passed in the request body
@@ -84,7 +85,7 @@ router.put('/updateStaffRole/:id', async (req, res) => {
   }
 });
 
-router.put('/updateStaffIsActive/:id', async (req, res) => {
+router.put('/updateStaffIsActive/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const staffId = req.params.id;
     const { isActive, requesterId } = req.body; // Assuming requesterId is passed in the request body
@@ -118,7 +119,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/logout', (_, res) => {
+router.post('/logout', authenticateJWTStaff, (_, res) => {
   res
     .clearCookie('jwtToken_Staff', {
       httpOnly: true,
@@ -139,7 +140,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-router.put('/change-password', async (req, res) => {
+router.put('/change-password', authenticateJWTStaff, async (req, res) => {
   try {
     const data = PasswordChangeSchema.parse(req.body);
     await StaffService.changePassword(data);
@@ -192,7 +193,6 @@ router.get('/check-auth', (req, res) => {
 router.post('/token-for-reset-password-for-first-login', async (req, res) => {
   const { staffId } = req.body;
   try {
-
     const resetToken = await StaffService.getTokenForResetPasswordForFirstLogin(staffId);
     res.status(200).send({ message: 'Reset token generated', token: resetToken });
   } catch (error) {

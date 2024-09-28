@@ -24,6 +24,7 @@ import EditProfile from './pages/Profile/EditProfile';
 import DiscoverPerPark from './pages/Taxonomy/DiscoverPerPark';
 import AttractionsPerPark from './pages/Attractions/AttractionsPerPark';
 import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttractionDetails';
+import ParkDetails from './pages/ParkDetails/ParkDetails';
 
 export function App() {
   return (
@@ -52,7 +53,7 @@ export function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/visitor-reset-password" element={<ResetPassword />} />
               <Route path="/verify-user" element={<VerifyUser />} />
               <Route element={<MainLayout />}>
                 <Route path="/" element={<MainLanding />} />
@@ -82,6 +83,10 @@ export function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/park">
+                  <Route index element={<SelectParkPage />} />
+                  <Route path=":parkId" element={<ParkDetails />} />
+                </Route>
                 <Route path="/occurrence">
                   {/* <Route index element={<OccurrenceList />} /> */}
                   <Route path=":occurrenceId" element={<OccurrenceDetails />} />

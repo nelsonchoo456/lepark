@@ -4,24 +4,30 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
 
-export const useRestrictPark = (parkId?: string) => {
+
+// Added disableNavigation option to prevent navigation to home if the park is not found
+interface UseRestrictParkOptions {
+  disableNavigation?: boolean;
+}
+
+export const useRestrictPark = (parkId?: string, options: UseRestrictParkOptions = {}) => {
   const [park, setPark] = useState<ParkResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
 
   useEffect(() => {
     if (!parkId || parkId === undefined) {
-      navigate('/');
+      if (!options.disableNavigation) {
+        navigate('/');
+      }
       return;
     }
 
     const fetchPark = async (parkId: string) => {
       setLoading(true);
-      setNotFound(false); // Reset notFound state
-      setPark(null); // Reset park state
+      setPark(null);
       try {
         const parkResponse = await getParkById(parseInt(parkId));
 
@@ -32,28 +38,29 @@ export const useRestrictPark = (parkId?: string) => {
           if (user?.role === StaffType.SUPERADMIN || user?.parkId === fetchedPark.id) {
             setPark(fetchedPark);
           } else {
-            if (!notificationShown.current) {
-              notification.error({
-                message: 'Access Denied',
-                description: 'You are not allowed to access this park!',
-              });
-              notificationShown.current = true;
-            }
-            navigate('/');
+            throw new Error('Access denied');
           }
         } else {
-          setNotFound(true);
+          throw new Error('Park not found');
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setNotFound(true);
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        if (!options.disableNavigation) {
+          navigate('/');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchPark(parkId);
-  }, [parkId, navigate, user]);
+  }, [parkId, navigate, user, options.disableNavigation]);
 
-  return { park, loading, notFound };
+  return { park, loading };
 };

@@ -6,7 +6,7 @@ import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree, TbTicket } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -94,7 +94,7 @@ const MainLayout = () => {
   };
 
   let parkNavItem: MenuItem = {
-    key: 'park',
+    key: 'park-main',
     icon: <TbTrees />,
     label: user?.role === 'superadmin' ? 'Parks' : 'Park',
     children: [
@@ -130,74 +130,73 @@ const MainLayout = () => {
       onClick: () => navigate('/'),
     },
     parkNavItem,
-    // {
-    //   key: 'park',
-    //   icon: <TbTrees />,
-    //   label: user?.role === 'superadmin' ? 'Parks' : 'Park',
-    //   children: [
-    //     {
-    //       key: 'park',
-    //       label: userRole === StaffType.SUPERADMIN ? 'List View' : 'Details',
-    //       onClick: parkOnClick,
-    //     },
-    //     {
-    //       key: 'park/map',
-    //       label: 'Map View',
-    //       onClick: parkMapOnClick,
-    //     }
-    //   ]
-    // },
-
     {
       key: 'zone',
       icon: <TbTree />,
       label: 'Zones',
       onClick: () => navigate('/zone'),
     },
+    { key: 'facilities', icon: <TbBuildingEstate />, label: 'Facilities', onClick: () => navigate('/facilities') },
     {
-      key: 'species',
-      icon: <PiPottedPlant />,
-      // icon: <UserOutlined />,
-      label: 'Species',
-      onClick: () => navigate('/species'),
-    },
-    {
-      key: 'occurrences',
+      key: 'plants',
       icon: <IoLeafOutline />,
-      // icon: <UserOutlined />,
-      onClick: () => navigate('/occurrences'),
-      label: 'Occurrences',
-      // children: [
-      //   {
-      //     key: 'occurrence/create',
-      //     label: 'Create',
-      //     onClick: () => navigate('/occurrence/create'),
-      //   }
-      // ]
+      label: 'Plants',
+      children: [
+        {
+          key: 'species',
+          icon: <PiPottedPlant />,
+          label: 'Species',
+          onClick: () => navigate('/species'),
+        },
+        {
+          key: 'occurrences',
+          icon: <IoLeafOutline />,
+          onClick: () => navigate('/occurrences'),
+          label: 'Occurrences',
+        },
+      ]
     },
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
+    {
+      key: 'iot',
+      label: 'IoT',
+      icon: <MdSensors />,
+      children: [
+        {
+          key: 'sensor',
+          icon: <MdSensors />,
+          label: 'Sensors',
+          onClick: () => navigate('/sensor'),
+        },
+        {
+          key: 'hubs',
+          icon: <FaNetworkWired />,
+          label: 'Hubs',
+          onClick: () => navigate('/hubs'),
+        },
+      ],
+    },
+    {
+      key: 'parkasset',
+      icon: <PiToolboxBold />,
+      label: 'Park Assets (non-IoT)',
+      onClick: () => navigate('/parkasset'),
+    },
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
-          key: 'staff-management',
-          icon: <FiUsers />,
-          // icon: <UploadOutlined />,
-          label: 'Staff Management',
-          onClick: () => navigate('/staff-management'),
+          key: 'attraction',
+          icon: <TbTicket />,
+          label: 'Attractions',
+          onClick: () => navigate('/attraction'),
         }
       : null,
-    {
-      key: 'map',
-      icon: <GrMapLocation />,
-      // icon: <UserOutlined />,
-      label: 'Map',
-      onClick: () => navigate('/map'),
-    },
-    // {
-    //   key: 'account',
-    //   icon: <FiUser />,
-    //   // icon: <UserOutlined />,
-    //   label: 'Account',
-    //   onClick: () => navigate('/profile'),
-    // },
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'event',
+          icon: <TbCalendarEvent />,
+          label: 'Events',
+          onClick: () => navigate('/event'),
+        }
+      : null,
     userRole === 'MANAGER' ||
     userRole === 'SUPERADMIN' ||
     userRole === 'BOTANIST' ||
@@ -209,38 +208,35 @@ const MainLayout = () => {
           icon: <FiInbox />,
           // icon: <UploadOutlined />,
           label: 'Tasks',
-          onClick: () => navigate('/task'),
+          children: [
+            {
+              key: 'plant-tasks',
+              label: 'Plant Tasks',
+              onClick: () => navigate('/plant-tasks'),
+            },
+            {
+              key: 'maintenance-tasks',
+              label: 'Maintenance Tasks',
+              onClick: () => navigate('/maintenance-tasks'),
+            },
+          ],
         }
       : null,
-    sensorNavItem,
-    hubsNavItem,
-    {
-      key: 'parkasset',
-      icon: <PiToolboxBold />,
-      label: 'Park Assets (non-IoT)',
-      onClick: () => navigate('/parkasset'),
-    },
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
+      ? {
+          key: 'staff-management',
+          icon: <FiUsers />,
+          label: 'Staff Management',
+          onClick: () => navigate('/staff-management'),
+        }
+      : null,
+
     {
       key: 'profile',
       icon: <FiUser />,
       label: 'Account',
       onClick: () => navigate('/profile'),
     },
-    {
-      key: 'settings',
-      icon: <FiSettings />,
-      // icon: <UserOutlined />,
-      label: 'Settings',
-      onClick: () => navigate('/settings'),
-    },
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
-      ? {
-          key: 'attraction',
-          icon: <TbTicket />,
-          label: 'Attractions',
-          onClick: () => navigate('/attraction'),
-        }
-      : null,
   ];
 
   return (

@@ -40,19 +40,6 @@ const ZoneCreate = () => {
   const [lines, setLines] = useState<any[]>([]);  
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
-  useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Zone Creation page!',
-      });
-      notificationShown.current = true;
-    }
-      navigate('/');
-    }
-  }, [user, navigate]);
   
   const handleCurrStep = async (step: number) => {
     // console.log(formValues)
@@ -99,8 +86,7 @@ const ZoneCreate = () => {
         finalData.geom = polygonData;
       }
     
-      console.log(finalData)
-      const response = await createZone(finalData);
+      const response = await createZone(finalData, selectedFiles);
       if (response.status === 201) {
         setCreatedData(response.data)
         setCurrStep(2);
@@ -198,8 +184,8 @@ const ZoneCreate = () => {
               }
               extra={[
                 <Button key="back" onClick={() => navigate('/zone')}>Back to Zone Management</Button>,
-                <Tooltip title="Zone details coming soon.">
-                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)} disabled>
+                <Tooltip title="View Zone Details">
+                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)}>
                     View new Zone
                   </Button>
                 </Tooltip>

@@ -2,11 +2,12 @@ import express from 'express';
 import OccurrenceService from '../services/OccurrenceService';
 import { OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createOccurrence', async (req, res) => {
+router.post('/createOccurrence', authenticateJWTStaff, async (req, res) => {
   try {
     const occurrence = await OccurrenceService.createOccurrence(req.body);
     res.status(201).json(occurrence);
@@ -17,17 +18,22 @@ router.post('/createOccurrence', async (req, res) => {
 
 router.get('/getAllOccurrences', async (req, res) => {
   // http://localhost:3333/api/zones/getAllZones
-  // http://localhost:3333/api/zones/getAllZones?parkId=<enter_oarkId_here>
+  // http://localhost:3333/api/zones/getAllZones?parkId=<enter_parkId_here>
+  // http://localhost:3333/api/zones/getAllZones?zoneId=<enter_zoneId_here>
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
-    if (!parkId) {
-      const occurrenceList = await OccurrenceService.getAllOccurrence();
+    const zoneId = req.query.zoneId ? parseInt(req.query.zoneId as string) : null;
+
+    if (zoneId) {
+      const occurrenceList = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
       res.status(200).json(occurrenceList);
-    } else {
+    } else if (parkId) {
       const occurrenceList = await OccurrenceService.getAllOccurrenceByParkId(parkId);
       res.status(200).json(occurrenceList);
+    } else {
+      const occurrenceList = await OccurrenceService.getAllOccurrence();
+      res.status(200).json(occurrenceList);
     }
-    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -43,7 +49,7 @@ router.get('/viewOccurrenceDetails/:id', async (req, res) => {
   }
 });
 
-router.put('/updateOccurrenceDetails/:id', async (req, res) => {
+router.put('/updateOccurrenceDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const occurrenceId = req.params.id;
     const updateData: Partial<OccurrenceSchemaType> = req.body;
@@ -55,7 +61,7 @@ router.put('/updateOccurrenceDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteOccurrence/:id', async (req, res) => {
+router.delete('/deleteOccurrence/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const occurrenceId = req.params.id;
     const requesterId = req.body.requesterId; // Assuming requesterId is passed in the request body

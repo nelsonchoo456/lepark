@@ -22,7 +22,7 @@ const parksData = [
       '2024-09-08T20:00:00Z',
       '2024-09-08T20:00:00Z',
     ],
-    geom: 'POLYGON((103.854 1.292, 103.855 1.293, 103.856 1.292, 103.855 1.291, 103.854 1.292))',
+    geom: 'POLYGON((103.828825951 1.367710855, 103.831787109 1.367539243, 103.835477829 1.366295052, 103.839855194 1.364707635, 103.842387199 1.364192797, 103.845434189 1.363892475, 103.849081993 1.362605379, 103.850498199 1.361532798, 103.85191440582277 1.3600740881441666, 103.850069046 1.357113762, 103.847579956 1.359344733, 103.845906258 1.360717637, 103.844146729 1.362133443, 103.843202591 1.362519572, 103.842000961 1.362691185, 103.840112686 1.362948604, 103.836593628 1.363849572, 103.835220337 1.364621829, 103.833332062 1.365651505, 103.831143379 1.36668118, 103.829898834 1.367067308, 103.828482628 1.367067308, 103.828825951 1.367710855))',
     paths: 'LINESTRING(103.854 1.292, 103.855 1.293, 103.856 1.292)',
     parkStatus: 'OPEN',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/park/1726197675165-HD.Singapore_Bishan%2BPark_c%2BDreiseitl_109%2B.jpg'],
@@ -50,7 +50,7 @@ const parksData = [
       '2024-09-08T20:00:00Z',
       '2024-09-08T20:00:00Z',
     ],
-    geom: 'POLYGON((103.815 1.304, 103.816 1.305, 103.817 1.304, 103.816 1.303, 103.815 1.304))',
+    geom: 'POLYGON((103.818655014 1.3071309, 103.816766739 1.306873475, 103.813290596 1.30661605, 103.809642792 1.30867545, 103.80753994 1.31064904, 103.808569908 1.313094573, 103.809213638 1.315411392, 103.810114861 1.315883337, 103.811016083 1.314167175, 103.812646866 1.312708437, 103.815350533 1.316483993, 103.81436348 1.321117622, 103.814964294 1.322490548, 103.816423416 1.322233124, 103.81957769393921 1.322061508689393, 103.81972789764406 1.3213964978379424, 103.82080078125001 1.321010362423143, 103.819556236 1.318157249, 103.818869591 1.316526897, 103.817110062 1.315111064, 103.817110062 1.312236492, 103.817753792 1.31086356, 103.817753792 1.309319012, 103.818655014 1.3071309))',
     paths: 'LINESTRING(103.815 1.304, 103.816 1.305, 103.817 1.304)',
     parkStatus: 'OPEN',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/park/Botanic-gardens.jpg'],
@@ -59,6 +59,7 @@ const parksData = [
 
 const zonesData = [
   {
+    // zoneId 1
     name: 'Palm Valley',
     description: 'Palm leaves trees from Southeast Asia. A quiet reserve for relaxation and relaxing walks.',
     openingHours: [
@@ -79,12 +80,13 @@ const zonesData = [
       '2024-09-08T20:00:00Z',
       '2024-09-08T20:00:00Z',
     ],
-    geom: 'POLYGON((103.854 1.292, 103.855 1.293, 103.856 1.292, 103.855 1.291, 103.854 1.292))',
+    geom: 'POLYGON((103.83960843086244 1.364782715649657, 103.83994102478029 1.3646218287569876, 103.84026288986207 1.3645467482033933, 103.84114265441896 1.3643107807339876, 103.840970993042 1.3637744909446994, 103.84098172187807 1.3633561848261084, 103.840970993042 1.3632167494370877, 103.8395655155182 1.363313281630344, 103.83894324302675 1.3635492491975707, 103.83839607238771 1.3638602973190153, 103.83881449699402 1.3650186830727666, 103.83960843086244 1.364782715649657))',
     paths: 'LINESTRING(103.854 1.292, 103.855 1.293, 103.856 1.292)',
     zoneStatus: 'OPEN',
     parkId: 1,
   },
   {
+    // zoneId 2
     name: 'Swan Lake',
     description:
       'A serene lake surrounded by lush greenery, home to a pair of beautiful swans. Popular among visitors for peaceful walks and photography.',
@@ -106,12 +108,13 @@ const zonesData = [
       '2024-09-08T20:00:00Z',
       '2024-09-08T20:00:00Z',
     ],
-    geom: 'POLYGON((103.812 1.305, 103.813 1.306, 103.814 1.305, 103.813 1.304, 103.812 1.305))',
+    geom: "POLYGON((103.81491065025331 1.3094906283589842, 103.81498575210573 1.309115217137671, 103.81505012512207 1.3087505318974426, 103.81522178649904 1.3081605997789225, 103.8151788711548 1.3076350237746661, 103.8156294822693 1.3071523518370867, 103.81569385528566 1.3068842007205588, 103.81684184074402 1.3069700090809528, 103.81718516349792 1.3071094476603626, 103.81702423095705 1.3076135716905153, 103.81633758544923 1.3085145590666905, 103.81632685661317 1.3090830390303752, 103.81573677062988 1.309715875064763, 103.81459951400758 1.3101985465090003, 103.81491065025331 1.3094906283589842))",
     paths: 'LINESTRING(103.812 1.305, 103.813 1.306, 103.814 1.305)',
     zoneStatus: 'OPEN',
     parkId: 2,
   },
   {
+    // zoneId 3
     name: 'Healing Garden',
     description:
       'A tranquil area dedicated to medicinal plants from Southeast Asia, designed to promote wellness and relaxation. The Healing Garden showcases over 400 species of plants.',
@@ -133,7 +136,7 @@ const zonesData = [
       '2024-09-08T20:00:00Z',
       '2024-09-08T20:00:00Z',
     ],
-    geom: 'POLYGON((103.818 1.303, 103.819 1.304, 103.820 1.303, 103.819 1.302, 103.818 1.303))',
+    geom: "POLYGON((103.81296873092651 1.310295080786703, 103.81274342536928 1.3106704918312286, 103.8132691383362 1.3110029987093859, 103.8140630722046 1.3104881493309133, 103.81433129310608 1.3104988753607116, 103.81452441215517 1.3101020122276081, 103.81481409072877 1.3095764366302338, 103.81489992141725 1.3091902993864373, 103.81505012512207 1.3085038330283936, 103.8151252269745 1.3080318872982528, 103.81509304046631 1.3076672019005362, 103.8146960735321 1.3076779279423953, 103.81428837776186 1.3081820518583915, 103.81428837776186 1.3088685183044984, 103.81365537643433 1.3094799023248602, 103.81318330764772 1.3098982176212979, 103.81296873092651 1.310295080786703))",
     paths: 'LINESTRING(103.818 1.303, 103.819 1.304, 103.820 1.303)',
     zoneStatus: 'OPEN',
     parkId: 2,
@@ -292,7 +295,7 @@ const speciesData = [
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQONi83ZpXrEwR0-3vGsICljlgZY1r08vbWsw&s',
     ],
     waterRequirement: 45,
-    fertiliserRequirement: 0,
+    fertiliserRequirement: 1,
     idealHumidity: 90,
     minTemp: 1,
     maxTemp: 20,
@@ -391,7 +394,7 @@ const speciesData = [
       'https://inaturalist-open-data.s3.amazonaws.com/photos/19678/large.jpg',
     ],
     waterRequirement: 50,
-    fertiliserRequirement: 0,
+    fertiliserRequirement: 1,
     idealHumidity: 75,
     minTemp: 5,
     maxTemp: 20,
@@ -541,8 +544,8 @@ const speciesData = [
 
 const occurrenceData = [
   {
-    lat: 1.3521,
-    lng: 103.8198,
+    lat: 1.3643,
+    lng: 103.8397,
     dateObserved: '2024-09-08T10:00:00Z',
     dateOfBirth: '2024-01-01T00:00:00Z',
     numberOfPlants: 10.0,
@@ -556,8 +559,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-1.jpg'],
   },
   {
-    lat: 1.353,
-    lng: 103.8187,
+    lat: 1.3641,
+    lng: 103.8400,
     dateObserved: '2024-09-07T11:00:00Z',
     dateOfBirth: '2023-12-01T00:00:00Z',
     numberOfPlants: 8.0,
@@ -571,8 +574,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-2.jpg'],
   },
   {
-    lat: 1.3552,
-    lng: 103.8175,
+    lat: 1.3637,
+    lng: 103.8399,
     dateObserved: '2024-09-06T09:30:00Z',
     dateOfBirth: '2024-02-15T00:00:00Z',
     numberOfPlants: 5.0,
@@ -586,8 +589,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-3.jpg'],
   },
   {
-    lat: 1.3545,
-    lng: 103.819,
+    lat: 1.3640,
+    lng: 103.8395,
     dateObserved: '2024-09-05T08:45:00Z',
     dateOfBirth: '2024-03-01T00:00:00Z',
     numberOfPlants: 12.0,
@@ -601,8 +604,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-4.jpg'],
   },
   {
-    lat: 1.351,
-    lng: 103.8202,
+    lat: 1.3639,
+    lng: 103.8401,
     dateObserved: '2024-09-04T10:15:00Z',
     dateOfBirth: '2024-02-01T00:00:00Z',
     numberOfPlants: 9.0,
@@ -616,8 +619,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-5.jpg'],
   },
   {
-    lat: 1.3525,
-    lng: 103.821,
+    lat: 1.3642,
+    lng: 103.8398,
     dateObserved: '2024-09-03T09:00:00Z',
     dateOfBirth: '2023-11-25T00:00:00Z',
     numberOfPlants: 6.0,
@@ -631,8 +634,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-6.jpg'],
   },
   {
-    lat: 1.36,
-    lng: 103.829,
+    lat: 1.3087,
+    lng: 103.8151,
     dateObserved: '2024-09-02T12:30:00Z',
     dateOfBirth: '2024-01-15T00:00:00Z',
     numberOfPlants: 10.0,
@@ -646,8 +649,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-7.jpg'],
   },
   {
-    lat: 1.3615,
-    lng: 103.8275,
+    lat: 1.3083,
+    lng: 103.8150,
     dateObserved: '2024-09-01T11:00:00Z',
     dateOfBirth: '2023-10-10T00:00:00Z',
     numberOfPlants: 7.0,
@@ -661,8 +664,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-8.jpg'],
   },
   {
-    lat: 1.362,
-    lng: 103.825,
+    lat: 1.3091,
+    lng: 103.8147,
     dateObserved: '2024-08-31T14:00:00Z',
     dateOfBirth: '2024-02-10T00:00:00Z',
     numberOfPlants: 15.0,
@@ -676,8 +679,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-9.jpg'],
   },
   {
-    lat: 1.366,
-    lng: 103.831,
+    lat: 1.3100,
+    lng: 103.8135,
     dateObserved: '2024-08-30T13:45:00Z',
     dateOfBirth: '2023-12-20T00:00:00Z',
     numberOfPlants: 12.0,
@@ -691,8 +694,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-10.jpeg'],
   },
   {
-    lat: 1.3675,
-    lng: 103.8335,
+    lat: 1.3096,
+    lng: 103.8139,
     dateObserved: '2024-08-29T10:30:00Z',
     dateOfBirth: '2024-01-10T00:00:00Z',
     numberOfPlants: 6.0,
@@ -706,8 +709,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-11.jpg'],
   },
   {
-    lat: 1.365,
-    lng: 103.832,
+    lat: 1.3102,
+    lng: 103.8130,
     dateObserved: '2024-08-28T09:00:00Z',
     dateOfBirth: '2024-03-05T00:00:00Z',
     numberOfPlants: 9.0,
@@ -941,10 +944,10 @@ const activityLogsData = [
     occurrenceId: '',
   },
   {
-    name: "Pests Treated",
-    description: "Pesticide treatment was applied to eliminate pests found on the plants.",
+    name: "Pests Monitoring",
+    description: "Pests were monitored and treated as needed.",
     images: [],
-    activityLogType: "TREATED_PESTS",
+    activityLogType: "PEST_MONITORING",
     dateCreated: "2024-09-16T10:30:00Z",
     occurrenceId: '',
   },
@@ -1057,6 +1060,64 @@ const statusLogsData = [
   },
 ];
 
+const hubsData = [
+  {
+    serialNumber: 'HUB001',
+    name: 'Hub 1',
+    description: 'Hub for connecting temperature sensors later on',
+    hubStatus: 'INACTIVE',
+    acquisitionDate: new Date(),
+    recommendedCalibrationFrequencyDays: 30,
+    recommendedMaintenanceDuration: 60,
+    dataTransmissionInterval: 15,
+    ipAddress: '192.168.1.1',
+    macAddress: '00:14:22:01:23:45',
+    radioGroup: 1,
+    hubSecret: 'secret1',
+    images: ['https://upload.wikimedia.org/wikipedia/commons/d/d9/4_port_netgear_ethernet_hub.jpg'],
+    remarks: 'Checked and in working condition',
+    facilityId: '',
+  },
+  {
+    serialNumber: 'HUB002',
+    name: 'Hub 2',
+    description: 'Hub for connecting humidity sensors',
+    hubStatus: 'DECOMMISSIONED',
+    acquisitionDate: new Date(),
+    recommendedCalibrationFrequencyDays: 50,
+    recommendedMaintenanceDuration: 20,
+    dataTransmissionInterval: 10,
+    ipAddress: '192.168.1.2',
+    macAddress: '00:14:e4:21:23:45',
+    radioGroup: 1,
+    hubSecret: 'secret1',
+    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjKG4QykW0MUYIVPwpQ5tb1V6CTj8NopqMAQ&s'],
+    remarks: 'All data wiped',
+    facilityId: '',
+    },
+    {
+      serialNumber: 'HUB003',
+      name: 'Hub 3',
+      description: 'Hub for connecting humidity sensors',
+      hubStatus: 'UNDER_MAINTENANCE',
+      acquisitionDate: new Date(),
+      recommendedCalibrationFrequencyDays: 20,
+      recommendedMaintenanceDuration: 10,
+      dataTransmissionInterval: 150,
+      ipAddress: '192.168.1.3',
+      macAddress: '01:24:d4:21:23:45',
+      radioGroup: 2,
+      hubSecret: 'secret1',
+      images: [''],
+      remarks: 'Connector port damaged',
+      facilityId: '',
+      }
+
+
+];
+
+
+
 module.exports = {
   parksData,
   zonesData,
@@ -1064,5 +1125,6 @@ module.exports = {
   occurrenceData,
   staffData,
   activityLogsData,
-  statusLogsData
+  statusLogsData,
+  hubsData
 };

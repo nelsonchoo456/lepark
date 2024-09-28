@@ -49,7 +49,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
+      title: hub?.name ? hub?.name : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -57,9 +57,9 @@ const ViewHubDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'name',
-      label: 'Name',
-      children: hub?.name,
+      key: 'serialNo',
+      label: 'Serial Number',
+      children: hub?.serialNumber,
     },
     {
       key: 'hubStatus',
@@ -149,7 +149,7 @@ const ViewHubDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{hub?.serialNumber}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
             <Descriptions
               items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
               column={1}
