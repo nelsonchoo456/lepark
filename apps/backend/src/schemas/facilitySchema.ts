@@ -18,7 +18,7 @@ export const FacilitySchema = z.object({
   lat: z.number().min(-90).max(90).optional(),
   long: z.number().min(-180).max(180).optional(),
   size: z.number().positive({ message: 'Size must be a positive number' }),
-  capacity: z.number().int().positive({ message: 'Capacity must be a positive integer' }),
+  capacity: z.number().int().nonnegative({ message: 'Capacity must be a non-negative number' }),
   fee: z.number().nonnegative({ message: 'Fee must be a non-negative number' }),
   parkId: z.number(),
 });
