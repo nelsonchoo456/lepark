@@ -16,7 +16,7 @@ import {
   updatePark,
   ZoneResponse,
 } from '@lepark/data-access';
-import { Button, Card, Checkbox, message, Popconfirm, Space } from 'antd';
+import { Button, Card, Checkbox, message, Popconfirm, Space, Tooltip } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import node_image from '../../assets/mapFeatureManager/line.png';
@@ -260,28 +260,20 @@ const ParkEditMap = () => {
           </div>
 
           <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mt-4">
-            <Space size={30}>
+            <Space size={16}>
               <div className="font-semibold">Display:</div>
-              {parkZones && parkZones.length > 0 && (
-                <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones}>
-                  Zones
-                </Checkbox>
-              )}
-              {occurrences && occurrences.length > 0 && (
-                <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
-                  Occurrences
-                </Checkbox>
-              )}
-              {attractions && attractions.length > 0 && (
-                <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions}>
-                  Attractions
-                </Checkbox>
-              )}
-              {facilities && facilities.length > 0 && (
-                <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities}>
-                  Facilities
-                </Checkbox>
-              )}
+              <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones} disabled={!parkZones || parkZones.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                Zones
+              </Checkbox>
+              <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences} disabled={!occurrences || occurrences.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                Occurrences
+              </Checkbox>
+              <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions} disabled={!attractions || attractions.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                Attractions
+              </Checkbox>
+              <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities} disabled={!facilities || facilities.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                Facilities
+              </Checkbox>
             </Space>
           </Card>
 
