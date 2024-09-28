@@ -17,17 +17,13 @@ const MapTab = ({ attraction, park }: MapTabProps) => {
   const navigate = useNavigate();
 
   return (
-    // <>
     <div
       style={{
         height: '60vh',
-        zIndex: 1,
+        position: 'relative',
       }}
       className="rounded-xl overflow-hidden"
     >
-      <Tooltip title="Edit Location">
-        <div className="absolute z-20 flex justify-end w-full mt-4 pr-4"><Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-map`)}>Edit </Button></div>
-      </Tooltip>
       <MapContainer
         center={[1.287953, 103.851784]}
         zoom={11}
@@ -44,8 +40,15 @@ const MapTab = ({ attraction, park }: MapTabProps) => {
         } } />
     
       </MapContainer>
+      
+      <div className="absolute top-4 right-3 z-[1000]">
+        <Tooltip title="Edit Location">
+          <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-map`)}>
+            Edit Location
+          </Button>
+        </Tooltip>
+      </div>
     </div>
-    // </>
   );
 };
 
