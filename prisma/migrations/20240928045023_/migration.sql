@@ -260,7 +260,7 @@ CREATE TABLE "Sensor" (
     "sensorUnit" "SensorUnitEnum" NOT NULL,
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
-    "image" TEXT,
+    "images" TEXT[],
     "latitude" DOUBLE PRECISION,
     "longitude" DOUBLE PRECISION,
     "remarks" TEXT,

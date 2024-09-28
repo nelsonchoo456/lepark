@@ -91,10 +91,12 @@ router.get('/getSensorsNeedingMaintenance', async (_, res) => {
   }
 });
 
-router.post('/upload', upload.array('files', 1), async (req, res) => {
+router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
+    // Use a type assertion to tell TypeScript that req.file exists
     const files = req.files as Express.Multer.File[];
 
+    // Check if a file is provided
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
@@ -102,11 +104,12 @@ router.post('/upload', upload.array('files', 1), async (req, res) => {
     const uploadedUrls = [];
 
     for (const file of files) {
-      const fileName = `${Date.now()}-${file.originalname}`;
+      const fileName = `${Date.now()}-${file.originalname}`; // Create a unique file name
       const imageUrl = await SensorService.uploadImageToS3(file.buffer, fileName, file.mimetype);
       uploadedUrls.push(imageUrl);
     }
 
+    // Return the image URL
     res.status(200).json({ uploadedUrls });
   } catch (error) {
     console.error('Error uploading file:', error);

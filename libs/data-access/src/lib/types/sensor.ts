@@ -16,7 +16,7 @@ export interface SensorData {
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
-  image?: string;
+  images?: string[];
   latitude?: number;
   longitude?: number;
   remarks?: string;
@@ -41,7 +41,7 @@ export interface SensorResponse {
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
-  image?: string;
+  images?: string[];
   latitude?: number;
   longitude?: number;
   remarks?: string;
@@ -74,7 +74,7 @@ export interface SensorUpdateData {
   sensorUnit?: SensorUnitEnum;
   supplier?: string;
   supplierContactNumber?: string;
-  image?: string;
+  images?: string[];
   latitude?: number;
   longitude?: number;
   remarks?: string;
