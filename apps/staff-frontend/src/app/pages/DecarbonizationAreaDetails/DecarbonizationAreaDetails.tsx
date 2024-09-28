@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography } from 'antd';
-import { StaffResponse, StaffType } from '@lepark/data-access';
+import { Button, Card, Empty, message, Space, Tabs, Typography } from 'antd';
+import { generateSequestrationHistory, StaffResponse, StaffType } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
-import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
 import { useRestrictDecarbonizationArea } from '../../hooks/DecarbonizationArea/useRestrictDecarbonizationArea';
 import OccurrenceTable from './components/OccurrenceTable';
+import SequestrationHistoryTab from './components/SequestrationHistoryTab';
 
 const { Text } = Typography;
 
@@ -17,6 +17,8 @@ const DecarbonizationAreaDetails = () => {
   const navigate = useNavigate();
   const { decarbonizationAreaId } = useParams();
   const { decarbonizationArea, loading } = useRestrictDecarbonizationArea(decarbonizationAreaId);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [generating, setGenerating] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -26,12 +28,25 @@ const DecarbonizationAreaDetails = () => {
     return null; // This will handle cases where the decarbonization area is not found or user doesn't have access
   }
 
+  const handleGenerateSequestrationHistory = async () => {
+    setGenerating(true);
+    try {
+      await generateSequestrationHistory(decarbonizationArea.id);
+      messageApi.success('Sequestration report generated successfully.');
+      window.location.reload(); // Refresh the page
+    } catch (error) {
+      messageApi.error('Error generating sequestration report.');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const tabsItems = [
-    /*{
-      key: 'about',
-      label: 'Information',
-      children: <InformationTab decarbonizationArea={decarbonizationArea} />,
-    },*/
+    {
+      key: 'sequestration-history',
+      label: 'Sequestration History',
+      children: <SequestrationHistoryTab areaId={decarbonizationArea.id} />,
+    },
     {
       key: 'map',
       label: 'Map',
@@ -44,7 +59,7 @@ const DecarbonizationAreaDetails = () => {
     {
       key: 'occurrences',
       label: 'Occurrences',
-      children: <OccurrenceTable decarbonizationAreaId={decarbonizationArea.id} />
+      children: <OccurrenceTable decarbonizationAreaId={decarbonizationArea.id} />,
     },
   ];
 
@@ -63,6 +78,7 @@ const DecarbonizationAreaDetails = () => {
 
   return (
     <ContentWrapperDark>
+      {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <div className="md:flex w-full gap-4">
@@ -79,13 +95,18 @@ const DecarbonizationAreaDetails = () => {
                   {decarbonizationArea.description}
                 </Typography.Paragraph>
               </Space>
-              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
-                <Button
-                  icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
-                  type="text"
-                  onClick={() => navigate(`/decarbonization-area/${decarbonizationArea.id}/edit`)}
-                />
-              )}
+              <Space>
+                {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+                  <Button
+                    icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
+                    type="text"
+                    onClick={() => navigate(`/decarbonization-area/${decarbonizationArea.id}/edit`)}
+                  />
+                )}
+                <Button type="primary" loading={generating} onClick={handleGenerateSequestrationHistory}>
+                  Generate Sequestration Report
+                </Button>
+              </Space>
             </div>
             <Typography.Paragraph
               ellipsis={{

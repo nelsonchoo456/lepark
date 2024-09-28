@@ -41,11 +41,11 @@ router.get('/area/:areaId', async (req, res) => {
 
 router.get('/area/:areaId/timeframe', async (req, res) => {
   try {
-    const { startDate, endDate } = req.body;
+    const { startDate, endDate } = req.query;
     const history = await SequestrationHistoryService.getSequestrationHistoryByAreaIdAndTimeFrame(
       req.params.areaId,
-      new Date(startDate as string),
-      new Date(endDate as string),
+      startDate as string,
+      endDate as string,
     );
     res.status(200).json(history);
   } catch (error) {

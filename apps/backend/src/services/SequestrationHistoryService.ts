@@ -16,7 +16,8 @@ class SequestrationHistoryService {
 
   private calculateSequestration(numberOfPlants: number, biomass: number, decarbonizationType: string): number {
     const carbonFraction = this.sequestrationFactors[decarbonizationType];
-    return numberOfPlants * biomass * carbonFraction * this.CO2_SEQUESTRATION_FACTOR;
+    const annualSequestration = numberOfPlants * biomass * carbonFraction * this.CO2_SEQUESTRATION_FACTOR;
+    return annualSequestration / 365; // Convert annual sequestration to daily rate
   }
 
   public async createSequestrationHistory(data: SequestrationHistorySchemaType): Promise<SequestrationHistory> {
@@ -67,10 +68,17 @@ class SequestrationHistoryService {
 
   public async getSequestrationHistoryByAreaIdAndTimeFrame(
     areaId: string,
-    startDate: Date,
-    endDate: Date,
+    startDate: string,
+    endDate: string,
   ): Promise<SequestrationHistory[]> {
-    return await SequestrationHistoryDao.getSequestrationHistoryByAreaIdAndTimeFrame(areaId, startDate, endDate);
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+
+    if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+      throw new Error('Invalid date format');
+    }
+
+    return await SequestrationHistoryDao.getSequestrationHistoryByAreaIdAndTimeFrame(areaId, parsedStartDate, parsedEndDate);
   }
 
   public async generateSequestrationHistory() {

@@ -69,7 +69,15 @@ export const getOccurrencesWithinDecarbonizationArea = async (areaId: string) =>
   } catch (error) {
     throw new Error('Error fetching occurrences within decarbonization area');
   }
-}
+};
+
+export const generateSequestrationHistory = async (areaId: string): Promise<void> => {
+  try {
+    await client.post(`/sequestrationhistory/generateSequestrationHistory/${areaId}`);
+  } catch (error) {
+    throw new Error('Error generating sequestration history');
+  }
+};
 
 function handleAxiosError(error: any): never {
   if (axios.isAxiosError(error)) {
