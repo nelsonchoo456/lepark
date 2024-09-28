@@ -422,8 +422,8 @@ export function App() {
               </Route>
 
               <Route path="/parkasset">
-                {/* <Route index element={<AssetListSummary />} /> */}
-                <Route index element={<AssetListGrouped />} />
+                <Route index element={<AssetListSummary />} />
+                {/* <Route index element={<AssetListGrouped />} /> */}
                 <Route path="viewall" element={<AssetList />} />
                 <Route path="available" element={<AssetAvail />} />
                 <Route path="inuse" element={<AssetInUse />} />
