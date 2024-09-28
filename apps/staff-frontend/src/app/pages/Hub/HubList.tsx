@@ -45,19 +45,19 @@ const HubList: React.FC = () => {
 
   const columns: TableProps<HubResponse>['columns'] = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
-      render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '20%',
-    },
-    {
       title: 'Hub Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <div>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.name.localeCompare(b.name),
+      width: '15%',
+    },
+    {
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text) => <div>{text}</div>,
+      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '15%',
     },
     {
@@ -136,19 +136,19 @@ const HubList: React.FC = () => {
 
   const columnsForSuperadmin: TableProps<HubResponse>['columns'] = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
-      render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '20%',
-    },
-    {
       title: 'Hub Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <div>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.name.localeCompare(b.name),
+      width: '15%',
+    },
+    {
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text) => <div>{text}</div>,
+      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '15%',
     },
     {

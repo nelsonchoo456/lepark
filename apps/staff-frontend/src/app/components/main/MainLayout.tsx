@@ -70,23 +70,30 @@ const MainLayout = () => {
     }
   }, [location.pathname, userRole, user?.parkId]);
 
-  // const sensorNavItem: MenuItem = {
-  //   key: 'sensor',
-  //   icon: <MdSensors />,
-  //   label: 'Sensors',
-  //   children: [
-  //     {
-  //       key: 'sensor',
-  //       label: 'List View',
-  //       onClick: () => navigate('/sensor'),
-  //     },
-  //     {
-  //       key: 'sensor/map',
-  //       label: 'Map View',
-  //       onClick: () => navigate('/sensor/map'),
-  //     },
-  //   ],
-  // };
+  const sensorNavItem: MenuItem = {
+    key: 'sensor',
+    icon: <MdSensors />,
+    label: 'Sensors',
+    children: [
+      {
+        key: 'sensor/list',
+        label: 'List View',
+        onClick: () => navigate('/sensor'),
+      },
+      {
+        key: 'sensor/map',
+        label: 'Map View',
+        onClick: () => navigate('/sensor/map'),
+      },
+    ],
+  };
+
+  const hubsNavItem: MenuItem = {
+    key: 'hubs',
+    icon: <FaNetworkWired />,
+    label: 'Hubs',
+    onClick: () => navigate('/hubs'),
+  };
 
   let parkNavItem: MenuItem = {
     key: 'park-main',

@@ -85,6 +85,7 @@ import CreateDecarbonizationArea from './pages/DecarbonizationArea/CreateDecarbo
 import DecarbonizationAreaEditMap from './pages/DecarbonizationAreaEditMap/DecarbonizationAreaEditMap';
 import DecarbonizationAreaEdit from './pages/DecarbonizationAreaEdit/DecarbonizationAreaEdit';
 import DecarbonizationAreaList from './pages/DecarbonizationArea/DecarbonizationAreaList';
+import AssetListSummary from './pages/Asset/AssetListSummary';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -350,7 +351,7 @@ export function App() {
                   <Route index element={<AttractionList />} />
                   <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/attraction" />}>
                     <Route path="create" element={<AttractionCreate />} />
-                    {/*<Route path=":id/edit" element={<AttractionEdit />} />*/}
+                    <Route path=":id/edit" element={<AttractionEdit />} />
                     <Route path=":id/edit-map" element={<AttractionEditMap />} />
                   </Route>
                   <Route path=":id" element={<AttractionDetails />} />
@@ -426,6 +427,7 @@ export function App() {
               </Route>
 
               <Route path="/parkasset">
+                {/* <Route index element={<AssetListSummary />} /> */}
                 <Route index element={<AssetListGrouped />} />
                 <Route path="viewall" element={<AssetList />} />
                 <Route path="available" element={<AssetAvail />} />

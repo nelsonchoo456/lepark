@@ -1060,6 +1060,64 @@ const statusLogsData = [
   },
 ];
 
+const hubsData = [
+  {
+    serialNumber: 'HUB001',
+    name: 'Hub 1',
+    description: 'Hub for connecting temperature sensors later on',
+    hubStatus: 'INACTIVE',
+    acquisitionDate: new Date(),
+    recommendedCalibrationFrequencyDays: 30,
+    recommendedMaintenanceDuration: 60,
+    dataTransmissionInterval: 15,
+    ipAddress: '192.168.1.1',
+    macAddress: '00:14:22:01:23:45',
+    radioGroup: 1,
+    hubSecret: 'secret1',
+    images: ['https://upload.wikimedia.org/wikipedia/commons/d/d9/4_port_netgear_ethernet_hub.jpg'],
+    remarks: 'Checked and in working condition',
+    facilityId: '',
+  },
+  {
+    serialNumber: 'HUB002',
+    name: 'Hub 2',
+    description: 'Hub for connecting humidity sensors',
+    hubStatus: 'DECOMMISSIONED',
+    acquisitionDate: new Date(),
+    recommendedCalibrationFrequencyDays: 50,
+    recommendedMaintenanceDuration: 20,
+    dataTransmissionInterval: 10,
+    ipAddress: '192.168.1.2',
+    macAddress: '00:14:e4:21:23:45',
+    radioGroup: 1,
+    hubSecret: 'secret1',
+    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjKG4QykW0MUYIVPwpQ5tb1V6CTj8NopqMAQ&s'],
+    remarks: 'All data wiped',
+    facilityId: '',
+    },
+    {
+      serialNumber: 'HUB003',
+      name: 'Hub 3',
+      description: 'Hub for connecting humidity sensors',
+      hubStatus: 'UNDER_MAINTENANCE',
+      acquisitionDate: new Date(),
+      recommendedCalibrationFrequencyDays: 20,
+      recommendedMaintenanceDuration: 10,
+      dataTransmissionInterval: 150,
+      ipAddress: '192.168.1.3',
+      macAddress: '01:24:d4:21:23:45',
+      radioGroup: 2,
+      hubSecret: 'secret1',
+      images: [''],
+      remarks: 'Connector port damaged',
+      facilityId: '',
+      }
+
+
+];
+
+
+
 module.exports = {
   parksData,
   zonesData,
@@ -1067,5 +1125,6 @@ module.exports = {
   occurrenceData,
   staffData,
   activityLogsData,
-  statusLogsData
+  statusLogsData,
+  hubsData
 };

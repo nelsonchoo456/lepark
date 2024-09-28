@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 import {
@@ -10,12 +10,16 @@ import {
   StaffResponse,
   FacilityResponse,
   getAllFacilities,
+  ParkResponse,
+  getAllParks,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Modal, notification, Result, Select, Space, Spin } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Modal, Result, Select, Space, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
-import useUploadImages from '../../hooks/Images/useUploadImages';
+import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
+
+const { TextArea } = Input;
 
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
@@ -29,25 +33,19 @@ const AssetCreate = () => {
   const navigate = useNavigate();
   const [createdAsset, setCreatedAsset] = useState<any | null>();
   const { user } = useAuth<StaffResponse>();
-  const notificationShown = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [parks, setParks] = useState<ParkResponse[]>([]);
+  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+  const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
 
-  useEffect(() => {
-    if (user && user.id !== '') {
-      if (!['MANAGER', 'SUPERADMIN', 'PARK_RANGER','LANDSCAPE_ARCHITECT'].includes(user.role)) {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You are not allowed to access the Create Asset page!',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [user, navigate]);
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick, clearAllImages } = useUploadImagesAssets();
+
+  const [form] = Form.useForm();
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [createdAssetName, setCreatedAssetName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createMultiple, setCreateMultiple] = useState(false);
+  const [assetQuantity, setAssetQuantity] = useState<number>(1);
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,40 +58,35 @@ const AssetCreate = () => {
     };
   }, []);
 
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
-
-  const [form] = Form.useForm();
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [createdAssetName, setCreatedAssetName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastMaintenanceDate, setLastMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
-  const [nextMaintenanceDate, setNextMaintenanceDate] = useState<dayjs.Dayjs | null>(null);
-  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
-  const [createMultiple, setCreateMultiple] = useState(false);
-const [assetQuantity, setAssetQuantity] = useState<number>(1);
-
   useEffect(() => {
-    const fetchFacilities = async () => {
+    const fetchParksAndFacilities = async () => {
       try {
-        const response = await getAllFacilities();
-        let facilitiesList = response.data;
+        const [parksResponse, facilitiesResponse] = await Promise.all([
+          getAllParks(),
+          getAllFacilities()
+        ]);
+        setParks(parksResponse.data);
+        setFacilities(facilitiesResponse.data);
 
-        if (user && user.role !== 'SUPERADMIN') {
-          facilitiesList = facilitiesList.filter(facility => facility.parkId === user.parkId);
+        if (user?.role !== 'SUPERADMIN') {
+          const userFacilities = facilitiesResponse.data.filter(facility => facility.parkId === user?.parkId);
+          setFilteredFacilities(userFacilities);
         }
-
-        setFacilities(facilitiesList);
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching facilities:', error);
-        message.error('Failed to fetch facilities');
+        console.error('Error fetching parks and facilities:', error);
+        message.error('Failed to fetch parks and facilities');
+        setLoading(false);
       }
     };
 
-    if (user) {
-      fetchFacilities();
-    }
+    fetchParksAndFacilities();
   }, [user]);
-
+  const handleParkChange = (parkId: string) => {
+    const parkFacilities = facilities.filter(facility => facility.parkId === Number(parkId));
+    setFilteredFacilities(parkFacilities);
+    form.setFieldsValue({ facilityId: undefined });
+  };
 
   const layout = {
     labelCol: { span: 8 },
@@ -104,118 +97,75 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
     wrapperCol: { offset: 8, span: 16 },
   };
 
- const onFinish = async (values: any) => {
-  setIsSubmitting(true);
-  try {
-    const assetData: ParkAssetData = {
-      parkAssetName: values.parkAssetName,
-      parkAssetType: values.parkAssetType,
-      parkAssetDescription: values.parkAssetDescription,
-      parkAssetStatus: values.parkAssetStatus,
-      acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
-      recurringMaintenanceDuration: values.recurringMaintenanceDuration,
-      supplier: values.supplier,
-      supplierContactNumber: values.supplierContactNumber,
-      parkAssetCondition: values.parkAssetCondition,
-      images: [],
-      remarks: values.remarks,
-      facilityId: values.facilityId,
-    };
+  const onFinish = async (values: any) => {
+    setIsSubmitting(true);
+    try {
+      const assetData: ParkAssetData = {
+        parkAssetName: values.parkAssetName,
+        parkAssetType: values.parkAssetType,
+        parkAssetDescription: values.parkAssetDescription,
+        parkAssetStatus: values.parkAssetStatus,
+        acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
+        recurringMaintenanceDuration: values.recurringMaintenanceDuration,
+        supplier: values.supplier,
+        supplierContactNumber: values.supplierContactNumber,
+        parkAssetCondition: values.parkAssetCondition,
+        images: [],
+        remarks: values.remarks,
+        facilityId: values.facilityId,
+      };
 
-    if (!createMultiple && selectedFiles.length === 0) {
-      Modal.error({
-        title: 'Error',
-        content: 'Please upload at least one image.',
-      });
-      return;
-    }
-
-    const createAsset = async (name: string) => {
-      const assetWithName = { ...assetData, parkAssetName: name };
-      const response = await createParkAsset(assetWithName, createMultiple ? [] : selectedFiles);
-      return response.data;
-    };
-
-    if (createMultiple) {
-      const createdAssets = [];
-      for (let i = 1; i <= assetQuantity; i++) {
-        const assetName = `${values.parkAssetName} ${i}`;
-        const asset = await createAsset(assetName);
-        createdAssets.push(asset);
+      if (!createMultiple && selectedFiles.length === 0) {
+        Modal.error({
+          title: 'Error',
+          content: 'Please upload at least one image.',
+        });
+        return;
       }
-      setCreatedAssetName(`${values.parkAssetName} 1 - ${values.parkAssetName} ${assetQuantity}`);
-      setCreatedAsset(createdAssets);
-    } else {
-      const asset = await createAsset(values.parkAssetName);
-      setCreatedAssetName(values.parkAssetName);
-      setCreatedAsset(asset);
-    }
 
-    setShowSuccessAlert(true);
-    form.resetFields();
-  } catch (error) {
-    message.error(String(error));
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-   const disabledLastMaintenanceDate = (current: dayjs.Dayjs) => {
-    return current && current > dayjs().endOf('day');
-  };
+      const createAsset = async (name: string) => {
+        const assetWithName = { ...assetData, parkAssetName: name };
+        const response = await createParkAsset(assetWithName, createMultiple ? [] : selectedFiles);
+        return response.data;
+      };
 
-  const disabledNextMaintenanceDate = (current: dayjs.Dayjs) => {
-    if (!lastMaintenanceDate) return false;
-
-    const today = dayjs().startOf('day');
-    const lastMaintenanceIsBeforeToday = lastMaintenanceDate.isBefore(today, 'day');
-    const lastMaintenanceIsToday = lastMaintenanceDate.isSame(today, 'day');
-
-    if (lastMaintenanceIsBeforeToday) {
-      return current.isBefore(today, 'day');
-    } else if (lastMaintenanceIsToday) {
-      return current.isBefore(today.add(1, 'day'), 'day');
-    } else {
-      return current.isBefore(lastMaintenanceDate.add(1, 'day'), 'day');
-    }
-  };
-
-  const onLastMaintenanceDateChange = (date: dayjs.Dayjs | null) => {
-    setLastMaintenanceDate(date);
-    if (date) {
-      const today = dayjs().startOf('day');
-      const currentNextMaintenanceDate = form.getFieldValue('nextMaintenanceDate');
-
-      if (date.isSame(today, 'day') && currentNextMaintenanceDate && currentNextMaintenanceDate.isSame(today, 'day')) {
-        const tomorrow = today.add(1, 'day');
-        setNextMaintenanceDate(tomorrow);
-        form.setFieldsValue({ nextMaintenanceDate: tomorrow });
+      if (createMultiple) {
+        const createdAssets = [];
+        for (let i = 1; i <= assetQuantity; i++) {
+          const assetName = `${values.parkAssetName} ${i}`;
+          const asset = await createAsset(assetName);
+          createdAssets.push(asset);
+        }
+        setCreatedAssetName(`${values.parkAssetName} 1 - ${values.parkAssetName} ${assetQuantity}`);
+        setCreatedAsset(createdAssets);
+      } else {
+        const asset = await createAsset(values.parkAssetName);
+        setCreatedAssetName(values.parkAssetName);
+        setCreatedAsset(asset);
       }
+
+      setShowSuccessAlert(true);
+      form.resetFields();
+    } catch (error) {
+      message.error(String(error));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const onNextMaintenanceDateChange = (date: dayjs.Dayjs | null) => {
-    setNextMaintenanceDate(date);
-  };
-
-
-  const onReset = () => {
-    form.resetFields();
-  };
-
-   const onRecurringMaintenanceChange = (value: number | null) => {
-    if (value && lastMaintenanceDate) {
-      const newNextMaintenanceDate = lastMaintenanceDate.add(value, 'day');
-      setNextMaintenanceDate(newNextMaintenanceDate);
-      form.setFieldsValue({ nextMaintenanceDate: newNextMaintenanceDate });
-    }
-  };
-
-   const validatePhoneNumber = (_: any, value: string) => {
+  const validatePhoneNumber = (_: any, value: string) => {
     const phoneRegex = /^[689]\d{7}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
     return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
+  };
+
+  const onReset = () => {
+    form.resetFields();
+    setCreateMultiple(false);
+    setAssetQuantity(1);
+    clearAllImages();
   };
 
   const breadcrumbItems = [
@@ -249,7 +199,7 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
               <Input />
             </Form.Item>
 
-             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
+            <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
                   <Select.Option key={type} value={type}>
@@ -260,7 +210,7 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
             </Form.Item>
 
             <Form.Item name="parkAssetDescription" label="Description">
-              <Input.TextArea />
+              <TextArea />
             </Form.Item>
 
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
@@ -274,19 +224,23 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
             </Form.Item>
 
 
-               <Form.Item
-  name="recurringMaintenanceDuration"
-  label="Recurring Maintenance"
-  rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
->
-  <InputNumber
-    className="w-full"
-    min={1}
-    max={500}
-    onChange={onRecurringMaintenanceChange}
-    placeholder='Enter Recurring Maintenance in days'
-  />
-</Form.Item>
+
+            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+              <DatePicker className="w-full" />
+            </Form.Item>
+
+            <Form.Item
+              name="recurringMaintenanceDuration"
+              label="Recurring Maintenance"
+              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
+            >
+              <InputNumber
+                className="w-full"
+                min={1}
+                max={500}
+                placeholder='Enter Recurring Maintenance in days'
+              />
+            </Form.Item>
 
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
@@ -314,16 +268,28 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
             </Form.Item>
 
             <Form.Item name="remarks" label="Remarks">
-              <Input.TextArea />
+              <TextArea />
             </Form.Item>
 
-              <Form.Item
+            {user?.role === 'SUPERADMIN' && (
+              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
+                <Select placeholder="Select a park" onChange={handleParkChange}>
+                  {parks.map((park) => (
+                    <Select.Option key={park.id} value={park.id}>
+                      {park.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
+            <Form.Item
               name="facilityId"
               label="Facility"
               rules={[{ required: true, message: 'Please select a facility!' }]}
             >
               <Select placeholder="Select a facility">
-                {facilities.map((facility) => (
+                {filteredFacilities.map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
                     {facility.facilityName}
                   </Select.Option>
@@ -332,69 +298,52 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
             </Form.Item>
 
             <Form.Item
-  name="createMultiple"
-  label="Create multiple assets?"
-  valuePropName="checked"
-  className="flex-row-reverse justify-end"
->
-  <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
-</Form.Item>
+              name="createMultiple"
+              label="Create multiple assets?"
+              valuePropName="checked"
+              className="flex-row-reverse justify-end"
+            >
+              <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
+            </Form.Item>
 
-{createMultiple && (
-  <Form.Item
-    name="assetQuantity"
-    label="Park Asset Quantity"
-    rules={[{ required: true, type: 'number', min: 1 , max:10}]}
-  >
-    <InputNumber onChange={(value) => setAssetQuantity(value as number)} />
-  </Form.Item>
-)}
-
+            {createMultiple && (
+              <Form.Item
+                name="assetQuantity"
+                label="Park Asset Quantity"
+                rules={[{ required: true, type: 'number', min: 1 , max:10}]}
+              >
+                <InputNumber onChange={(value) => setAssetQuantity(value as number)} />
+              </Form.Item>
+            )}
 
             {!createMultiple && (
-  <>
-    <Form.Item label="Upload Images" required tooltip="At least one image is required">
-      <ImageInput
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        accept="image/png, image/jpeg"
-        onClick={onInputClick}
-      />
-    </Form.Item>
+              <>
+                <Form.Item label="Upload Images" required tooltip="At least one image is required">
+                  <ImageInput
+                    type="file"
+                    multiple
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpeg"
+                    onClick={onInputClick}
+                  />
+                </Form.Item>
 
-    {previewImages.length > 0 && (
-      <Form.Item label="Image Previews">
-        <div className="flex flex-wrap gap-2">
-          {previewImages.map((imgSrc, index) => (
-            <img
-              key={index}
-              src={imgSrc}
-              alt={`Preview ${index}`}
-              className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-              onClick={() => removeImage(index)}
-            />
-          ))}
-        </div>
-      </Form.Item>
-    )}
-  </>
-)}
-
-            {previewImages.length > 0 && (
-              <Form.Item label="Image Previews">
-                <div className="flex flex-wrap gap-2">
-                  {previewImages.map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => removeImage(index)}
-                    />
-                  ))}
-                </div>
-              </Form.Item>
+                {previewImages.length > 0 && (
+                  <Form.Item label="Image Previews">
+                    <div className="flex flex-wrap gap-2">
+                      {previewImages.map((imgSrc, index) => (
+                        <img
+                          key={index}
+                          src={imgSrc}
+                          alt={`Preview ${index}`}
+                          className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                          onClick={() => removeImage(index)}
+                        />
+                      ))}
+                    </div>
+                  </Form.Item>
+                )}
+              </>
             )}
 
             <Form.Item {...tailLayout}>
@@ -409,7 +358,7 @@ const [assetQuantity, setAssetQuantity] = useState<number>(1);
             </Form.Item>
           </Form>
         )}
-                {showSuccessAlert && (
+        {showSuccessAlert && (
           <Result
             status="success"
             title={createMultiple ? "Created new Assets" : "Created new Asset"}
