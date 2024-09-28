@@ -29,7 +29,7 @@ const HubCreate = () => {
   const [form] = Form.useForm();
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
-  
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields(); // Get form data
@@ -52,13 +52,19 @@ const HubCreate = () => {
         setCreatedData(response.data);
       }
     } catch (error) {
-      console.log(error);
-      messageApi.open({
-        type: 'error',
-        content: 'Unable to create Hub. Please try again later.',
-      });
+      if ((error as { errorFields?: any }).errorFields) {
+        // Handle validation errors
+        console.log('Validation failed:', (error as { errorFields?: any }).errorFields);
+      } else {
+        console.log(error);
+        messageApi.open({
+          type: 'error',
+          content: 'Unable to create Hub. Please try again later.',
+        });
+      }
     }
   };
+
   const breadcrumbItems = [
     {
       title: 'Hub Management',
@@ -71,7 +77,7 @@ const HubCreate = () => {
       isCurrent: true,
     },
   ];
-  
+
   return (
     <ContentWrapperDark>
       {contextHolder}
