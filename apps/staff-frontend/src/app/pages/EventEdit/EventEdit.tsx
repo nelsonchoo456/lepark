@@ -503,17 +503,8 @@ const EventEdit = () => {
                 </Form.Item>
               </Form>
             </Col>
-            <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-              <div
-                style={{
-                  position: 'sticky',
-                  top: 20,
-                  maxWidth: '600px',
-                  width: '100%',
-                  padding: '20px',
-                  paddingRight: '24px',
-                }}
-              >
+            <Col xs={24} lg={8}>
+              <div className="sticky top-5">
                 <FacilityInfoCard facility={selectedFacility} />
               </div>
             </Col>
