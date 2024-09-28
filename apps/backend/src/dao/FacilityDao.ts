@@ -37,6 +37,10 @@ class FacilityDao {
       where: { parkId },
     });
   }
+
+  async getFacilityByNameAndParkId(facilityName: string, parkId: number): Promise<Facility | null> {
+    return prisma.facility.findFirst({ where: { facilityName, parkId } });
+  }
 }
 
 export default new FacilityDao();

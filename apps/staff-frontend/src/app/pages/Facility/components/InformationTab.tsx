@@ -28,7 +28,11 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
 
   const descriptionsItems = [
     { key: 'description', label: 'Description', children: facility.facilityDescription },
-    { key: 'reservationPolicy', label: 'Reservation Policy', children: facility.reservationPolicy },
+    {
+      key: 'reservationPolicy',
+      label: 'Reservation Policy',
+      children: facility.reservationPolicy === 'NIL' ? '-' : facility.reservationPolicy,
+    },
     { key: 'rulesAndRegulations', label: 'Rules And Regulations', children: facility.rulesAndRegulations },
     { key: 'lastMaintenanceDate', label: 'Last Maintenance Date	', children: moment(facility.lastMaintenanceDate).format('MMMM D, YYYY') },
     { key: 'size', label: 'Size', children: facility?.size ? `${facility.size} m²` : '-' },
