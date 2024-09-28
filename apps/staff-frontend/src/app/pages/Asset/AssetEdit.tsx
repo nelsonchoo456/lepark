@@ -17,7 +17,7 @@ import {
 import { Button, Card, DatePicker, Form, Input, InputNumber, message, Modal, Result, Select, Space, Spin } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
-import useUploadImages from '../../hooks/Images/useUploadImages';
+import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
@@ -40,8 +40,7 @@ const AssetEdit = () => {
   const [form] = Form.useForm();
   const { assetId = '' } = useParams<{ assetId: string }>();
   const { asset, loading: assetLoading, notFound } = useRestrictAsset(assetId);
-  const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { selectedFiles, previewImages, existingImages, handleFileChange, removeImage, onInputClick, setPreviewImages, setExistingImages, setSelectedFiles } = useUploadImagesAssets();
 
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,7 +84,9 @@ const AssetEdit = () => {
 
   useEffect(() => {
     if (asset && facilities.length > 0) {
-      setCurrentImages(asset.images || []);
+      setExistingImages(asset.images || []);
+      setSelectedFiles([]);
+      setPreviewImages([]);
       const assetFacility = facilities.find(f => f.id === asset.facilityId);
       if (assetFacility) {
         handleParkChange(assetFacility.parkId, asset.facilityId);
@@ -107,6 +108,27 @@ const AssetEdit = () => {
     }
   };
 
+    const breadcrumbItems = [
+    {
+      title: 'Park Asset Management',
+      pathKey: '/parkasset',
+      isMain: true,
+    },
+    {
+      title: asset?.parkAssetName ? asset.parkAssetName : 'Details',
+      pathKey: `/parkasset/${assetId}`,
+    },
+    {
+      title: 'Edit',
+      pathKey: `/parkasset/${assetId}/edit`,
+      isCurrent: true,
+    },
+  ];
+
+  const handleImageClick = (index: number) => {
+    removeImage(index);
+  };
+
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
@@ -117,7 +139,7 @@ const AssetEdit = () => {
   };
 
   const onFinish = async (values: any) => {
-   setIsSubmitting(true);
+  setIsSubmitting(true);
   try {
     const assetData: ParkAssetUpdateData = {
       parkAssetName: values.parkAssetName,
@@ -129,84 +151,55 @@ const AssetEdit = () => {
       supplier: values.supplier,
       supplierContactNumber: values.supplierContactNumber,
       parkAssetCondition: values.parkAssetCondition,
-      images: currentImages,
+      images: [...existingImages],
       remarks: values.remarks,
       facilityId: values.facilityId,
     };
 
-      if (currentImages.length === 0 && selectedFiles.length === 0) {
-        Modal.error({
-          title: 'Error',
-          content: 'Please upload at least one image.',
-        });
-        return;
-      }
-
-      if (!assetId) {
-        throw new Error('Asset ID is missing');
-      }
-
-      const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);
-      setUpdatedAsset(response.data);
-      setShowSuccessAlert(true);
-    } catch (error) {
-      message.error(String(error));
-    } finally {
-      setIsSubmitting(false);
+    if (existingImages.length + selectedFiles.length === 0) {
+      Modal.error({
+        title: 'Error',
+        content: 'Please upload at least one image.',
+      });
+      return;
     }
-  };
+
+    if (!assetId) {
+      throw new Error('Asset ID is missing');
+    }
+
+    const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);
+    setUpdatedAsset(response.data);
+    setShowSuccessAlert(true);
+  } catch (error) {
+    message.error(String(error));
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const validatePhoneNumber = (_: any, value: string) => {
     const phoneRegex = /^[689]\d{7}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
+    return Promise.reject('Please enter a valid Singapore phone number');
   };
-
-  const breadcrumbItems = [
-    {
-      title: 'Park Asset Management',
-      pathKey: '/parkasset',
-      isMain: true,
-    },
-    {
-      title: 'Edit Asset',
-      pathKey: `/parkasset/edit/${assetId}`,
-      isCurrent: true,
-    },
-  ];
-
-  const handleCurrentImageClick = (index: number) => {
-    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  };
-
-  if (assetLoading || loading) {
-    return (
-      <ContentWrapperDark>
-        <Card>
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
-          </div>
-        </Card>
-      </ContentWrapperDark>
-    );
-  }
 
   if (notFound) {
-    return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
-  }
-
-  if (!asset) {
-    return null;
+    return <EntityNotFound entityName="Asset" listPath={''} />;
   }
 
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        {!showSuccessAlert && (
-          <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
+        {loading || assetLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        ) : !showSuccessAlert ? (
+          <Form {...layout} form={form} name="control-hooks" onFinish={onFinish}>
             <Form.Item name="parkAssetName" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
@@ -221,8 +214,8 @@ const AssetEdit = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item name="parkAssetDescription" label="Description">
-              <TextArea />
+            <Form.Item name="parkAssetDescription" label="Asset Description" rules={[{ required: true }]}>
+              <TextArea rows={4} />
             </Form.Item>
 
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
@@ -307,39 +300,25 @@ const AssetEdit = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item label="Upload Images" required tooltip="At least one image is required">
+            <Form.Item label="Upload Images" tooltip="At least one image is required">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
 
-            <Form.Item label="Current Images">
-              <div className="flex flex-wrap gap-2">
-                {currentImages?.length > 0 &&
-                  currentImages.map((imgSrc, index) => (
+            {(existingImages.length + previewImages.length) > 0 && (
+              <Form.Item label="Image Preview">
+                <div className="flex flex-wrap gap-2">
+                  {[...existingImages, ...previewImages].map((imgSrc, index) => (
                     <img
                       key={index}
                       src={imgSrc}
                       alt={`Preview ${index}`}
                       className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => handleCurrentImageClick(index)}
+                      onClick={() => handleImageClick(index)}
                     />
                   ))}
-              </div>
-            </Form.Item>
-
-            <Form.Item label="New Images">
-              <div className="flex flex-wrap gap-2">
-                {previewImages.length > 0 &&
-                  previewImages.map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => removeImage(index)}
-                    />
-                  ))}
-              </div>
-            </Form.Item>
+                </div>
+              </Form.Item>
+            )}
 
             <Form.Item {...tailLayout}>
               <Space>
@@ -349,8 +328,7 @@ const AssetEdit = () => {
               </Space>
             </Form.Item>
           </Form>
-        )}
-        {showSuccessAlert && (
+        ) : (
           <Result
             status="success"
             title="Updated Asset"
