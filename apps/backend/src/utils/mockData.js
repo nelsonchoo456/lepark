@@ -709,8 +709,8 @@ const occurrenceData = [
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-11.jpg'],
   },
   {
-    lat: 1.3102,
-    lng: 103.8130,
+    lat: 1.31024150276,
+    lng: 103.81392359733,
     dateObserved: '2024-08-28T09:00:00Z',
     dateOfBirth: '2024-03-05T00:00:00Z',
     numberOfPlants: 9.0,

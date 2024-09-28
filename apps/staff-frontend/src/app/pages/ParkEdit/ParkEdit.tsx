@@ -26,7 +26,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const attributes = ['name', 'description', 'address', 'contactNumber', 'openingHours', 'closingHours'];
 
 const ParkEdit = () => {
-  const { user } = useAuth<StaffResponse>();
+  const { user, updateUser } = useAuth<StaffResponse>();
   const { id } = useParams();
   const navigate = useNavigate();
   const { park, loading } = useRestrictPark(id);
@@ -204,7 +204,7 @@ const ParkEdit = () => {
         <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
           {contextHolder}
           <Divider orientation="left">Park Details</Divider>
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label="Name" rules={[{ required: true }, { min: 3, max: 40, message: 'Name must have between 3 and 40 characters' }]}>
             <Input placeholder="Park Name" />
           </Form.Item>
           <Form.Item name="description" label="Description" rules={[{ required: true }]}>

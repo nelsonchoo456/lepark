@@ -12,7 +12,7 @@ import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
 import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
-import { StaffResponse, StaffType } from '@lepark/data-access';
+import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -20,6 +20,7 @@ type MenuItem = Required<MenuProps>['items'][number];
 const MainLayout = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [park, setPark] = useState<ParkResponse>();
 
   const [showSidebar, setShowSidebar] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const [activeItems, setActiveItems] = useState('');
@@ -32,9 +33,25 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
+      console.log(user)
       setUserRole(role);
     }
   };
+
+  useEffect(() => {
+    if (user?.parkId && user?.parkId !== undefined) {
+      const fetchPark = async () => {
+        const parkRes = await getParkById(user.parkId as number);
+        if (parkRes.status === 200) {
+          const parkData = parkRes.data
+          setPark(parkData);
+        }
+      };
+      fetchPark();
+    }
+  
+  }, [user])
+  
 
   // Resizing
   useEffect(() => {
@@ -244,13 +261,25 @@ const MainLayout = () => {
       <Header items={navItems} showSidebar={showSidebar}>
         <div className="px-4 flex gap-2 items-center">
           <Logo />
-          <LogoText>Lepark Admin</LogoText>
+          {userRole === StaffType.SUPERADMIN ? (
+            <LogoText>Lepark Admin</LogoText>
+          ) : user?.parkId && park ? (
+            <LogoText>{park.name}</LogoText>
+          ) : (
+            <LogoText>Lepark Admin</LogoText>
+          )}
         </div>
       </Header>
       <Sidebar>
         <div className="pb-2 px-4 flex gap-2 items-center">
           <Logo />
-          <LogoText>Lepark Admin</LogoText>
+          {userRole === StaffType.SUPERADMIN ? (
+            <LogoText>Lepark Admin</LogoText>
+          ) : user?.parkId && park ? (
+            <LogoText>{park.name}</LogoText>
+          ) : (
+            <LogoText>Lepark Admin</LogoText>
+          )}
         </div>
         <Menu
           items={navItems}

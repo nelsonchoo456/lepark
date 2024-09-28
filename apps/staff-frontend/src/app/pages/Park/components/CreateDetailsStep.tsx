@@ -85,7 +85,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChan
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       {contextHolder}
       <Divider orientation="left">Park Details</Divider>
-      <Form.Item name="name" label="Name" rules={[{ required: true }, { min: 3, message: 'Valid name must be at least 3 characters long' }]}>
+      <Form.Item name="name" label="Name" rules={[{ required: true }, { min: 3, max: 40, message: 'Name must have between 3 and 40 characters' }]}>
         <Input placeholder="Park Name" />
       </Form.Item>
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>

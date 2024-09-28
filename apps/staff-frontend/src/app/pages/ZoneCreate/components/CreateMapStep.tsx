@@ -70,9 +70,9 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
           <MapFeatureManager polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines}/>
           <PolygonFitBounds geom={selectedPark?.geom} polygonLabel={selectedPark?.name}/>
           {selectedParkZones && selectedParkZones?.length > 0 &&
-          selectedParkZones
-            .map((zone) => (
-              <PolygonWithLabel key={zone.id} entityId={zone.id} geom={zone.geom} polygonLabel={<div className='flex items-center gap-2'><TbTree className='text-xl'/>{zone.name}</div>} color={COLORS.green[600]} fillColor={"transparent"} labelFields={{ color: COLORS.green[800], textShadow: "none" }}/>
+            selectedParkZones
+              .map((zone) => (
+                <PolygonWithLabel key={zone.id} entityId={zone.id} geom={zone.geom} polygonLabel={<div className='flex items-center gap-2'><TbTree className='text-xl'/>{zone.name}</div>} color={COLORS.green[600]} fillColor={"transparent"} labelFields={{ color: COLORS.green[800], textShadow: "none" }}/>
             ))}
         </MapContainer>
       </div>
