@@ -125,7 +125,7 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
         <Spin />
       ) : data.length > 0 ? (
         <>
-          <Row gutter={16}>
+          <Row gutter={16} style={{ marginTop: '10px' }}>
             <Col span={6}>
               <Statistic title="Total Sequestration" value={metrics.total} />
             </Col>

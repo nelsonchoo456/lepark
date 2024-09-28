@@ -86,6 +86,7 @@ import DecarbonizationAreaEditMap from './pages/DecarbonizationAreaEditMap/Decar
 import DecarbonizationAreaEdit from './pages/DecarbonizationAreaEdit/DecarbonizationAreaEdit';
 import DecarbonizationAreaList from './pages/DecarbonizationArea/DecarbonizationAreaList';
 import AssetListSummary from './pages/Asset/AssetListSummary';
+import DecarbonizationAreaChart from './pages/DecarbonizationArea/DecarbonizationAreaChart';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -467,7 +468,7 @@ export function App() {
               <Route path="/decarbonization-area">
                 <Route index element={<DecarbonizationAreaList />} />
                 <Route path="create" element={<CreateDecarbonizationArea />} />
-
+                <Route path="chart" element={<DecarbonizationAreaChart />} />
                 <Route path=":decarbonizationAreaId" element={<DecarbonizationAreaDetails />} />
                 <Route
                   path=":id/edit-map"

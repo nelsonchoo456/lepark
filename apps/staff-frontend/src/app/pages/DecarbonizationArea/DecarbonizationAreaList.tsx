@@ -156,6 +156,14 @@ const DecarbonizationAreaList: React.FC = () => {
           variant="filled" 
           onChange={handleSearch}
         />
+        <Button
+            type="primary"
+            onClick={() => {
+              navigate('/decarbonization-area/chart');
+            }}
+          >
+            Data Visualizations
+          </Button>
         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
           <Button
             type="primary"
