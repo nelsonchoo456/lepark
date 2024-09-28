@@ -34,9 +34,19 @@ router.get('/getSensorById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateSensor/:id', async (req, res) => {
+router.put('/updateSensor/:id', upload.array('images', 5), async (req, res) => {
   try {
-    const updatedSensor = await SensorService.updateSensor(req.params.id, req.body);
+    const sensorData = JSON.parse(req.body.sensorData);
+    const files = req.files as Express.Multer.File[];
+
+    if (files && files.length > 0) {
+      const uploadedUrls = await Promise.all(
+        files.map(file => SensorService.uploadImageToS3(file.buffer, file.originalname, file.mimetype))
+      );
+      sensorData.images = uploadedUrls;
+    }
+
+    const updatedSensor = await SensorService.updateSensor(req.params.id, sensorData);
     res.status(200).json(updatedSensor);
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -41,7 +41,7 @@ export interface SensorResponse {
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
-  image?: string;
+  images?: string[]; // Changed to array of strings
   latitude?: number;
   longitude?: number;
   remarks?: string;
@@ -74,13 +74,14 @@ export interface SensorUpdateData {
   sensorUnit?: SensorUnitEnum;
   supplier?: string;
   supplierContactNumber?: string;
-  image?: string;
+  images?: string[]; // Changed to array of strings
   latitude?: number;
   longitude?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;
 }
+
 
 export interface SensorMaintenanceHistoryResponse {
   id: string;

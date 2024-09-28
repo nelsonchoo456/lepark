@@ -70,7 +70,7 @@ export async function updateSensorDetails(id: string, data: SensorUpdateData, fi
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.image = uploadedUrls.data.uploadedUrls[0]; // Assuming only one image for sensors
+      data.images = uploadedUrls.data.uploadedUrls; // Now storing multiple image URLs
     }
 
     const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensor/${id}`, data);
