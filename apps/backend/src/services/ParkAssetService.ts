@@ -15,7 +15,7 @@ const s3 = new aws.S3({
 class ParkAssetService {
   public async createParkAsset(data: ParkAssetSchemaType): Promise<ParkAsset> {
     try {
-        if (data.facilityId) {
+      if (data.facilityId) {
         const facility = await FacilityDao.getFacilityById(data.facilityId);
         if (!facility) {
           throw new Error('Facility not found');
@@ -33,15 +33,15 @@ class ParkAssetService {
     }
   }
 
-public async getAllParkAssets(): Promise<ParkAsset[]> {
-  return ParkAssetDao.getAllParkAssets();
-}
+  public async getAllParkAssets(): Promise<ParkAsset[]> {
+    return ParkAssetDao.getAllParkAssets();
+  }
 
-public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
-  return ParkAssetDao.getAllParkAssetsByParkId(parkId);
-}
+  public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
+    return ParkAssetDao.getAllParkAssetsByParkId(parkId);
+  }
 
-  public async getParkAssetById(id: string): Promise<ParkAsset & { facilityName?: string; parkId?: number }> {
+  public async getParkAssetById(id: string): Promise<ParkAsset & { name?: string; parkId?: number }> {
     try {
       const parkAsset = await ParkAssetDao.getParkAssetById(id);
       if (!parkAsset) {
@@ -51,17 +51,14 @@ public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
       return {
         ...parkAsset,
         facilityId: facility?.id,
-        facilityName: facility?.facilityName
+        name: facility?.name,
       };
     } catch (error) {
       throw new Error(`Unable to fetch park asset details: ${error.message}`);
     }
   }
 
-  public async updateParkAsset(
-    id: string,
-    data: Partial<ParkAssetSchemaType>
-  ): Promise<ParkAsset> {
+  public async updateParkAsset(id: string, data: Partial<ParkAssetSchemaType>): Promise<ParkAsset> {
     try {
       const existingAsset = await ParkAssetDao.getParkAssetById(id);
       if (!existingAsset) throw new Error('Park asset not found');
@@ -103,8 +100,6 @@ public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
     return ParkAssetDao.getParkAssetsNeedingMaintenance();
   }
 
-
-
   public async updateParkAssetStatus(assetId: string, newStatus: ParkAssetStatusEnum): Promise<ParkAsset> {
     try {
       const updateData: Prisma.ParkAssetUpdateInput = {
@@ -117,9 +112,7 @@ public async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
     }
   }
 
-
-
-public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
     const params = {
       Bucket: 'lepark',
       Key: `parkasset/${fileName}`,
@@ -139,15 +132,16 @@ public async uploadImageToS3(fileBuffer, fileName, mimeType) {
 
 // Utility function to ensure all required fields are present
 function ensureAllFieldsPresent(data: ParkAssetSchemaType): Prisma.ParkAssetCreateInput {
-  if (!data.parkAssetName ||
-      !data.parkAssetType ||
-      !data.parkAssetStatus ||
-      !data.acquisitionDate ||
-      !data.supplier ||
-      !data.supplierContactNumber ||
-      !data.parkAssetCondition ||
-      !data.facilityId
-      ) {
+  if (
+    !data.name ||
+    !data.parkAssetType ||
+    !data.parkAssetStatus ||
+    !data.acquisitionDate ||
+    !data.supplier ||
+    !data.supplierContactNumber ||
+    !data.parkAssetCondition ||
+    !data.facilityId
+  ) {
     throw new Error('Missing required fields for park asset creation');
   }
   return data as Prisma.ParkAssetCreateInput;
@@ -168,7 +162,5 @@ const dateFormatter = (data: any) => {
   }
   return formattedData;
 };
-
-
 
 export default new ParkAssetService();

@@ -33,7 +33,7 @@ const SensorCreateDetails = ({
   const formatEnumLabel = (enumValue: string): string => {
     return enumValue
       .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   };
 
@@ -59,20 +59,19 @@ const SensorCreateDetails = ({
     wrapperCol: { offset: 8, span: 16 },
   };
 
-    const disabledDate = (current: dayjs.Dayjs) => {
+  const disabledDate = (current: dayjs.Dayjs) => {
     return current && current > dayjs().endOf('day');
   };
 
-
   return (
     <Form
-    form={form}
-    layout="horizontal"
-    onFinish={() => handleCurrStep(1)}
-    labelCol={{ span: 8 }}
-    wrapperCol={{ span: 16 }}
-    style={{ maxWidth: '600px', margin: '0 auto' }}
-  >
+      form={form}
+      layout="horizontal"
+      onFinish={() => handleCurrStep(1)}
+      labelCol={{ span: 8 }}
+      wrapperCol={{ span: 16 }}
+      style={{ maxWidth: '600px', margin: '0 auto' }}
+    >
       <Divider orientation="left">Sensor Details</Divider>
       <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
         <Input />
@@ -102,15 +101,15 @@ const SensorCreateDetails = ({
         </Select>
       </Form.Item>
       <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
-              <Select placeholder="Select sensor unit">
-                {Object.values(SensorUnitEnum).map((unit) => (
-                  <Select.Option key={unit} value={unit}>
-                    {formatEnumLabel(unit)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-       <Form.Item
+        <Select placeholder="Select sensor unit">
+          {Object.values(SensorUnitEnum).map((unit) => (
+            <Select.Option key={unit} value={unit}>
+              {formatEnumLabel(unit)}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+      <Form.Item
         name="acquisitionDate"
         label="Acquisition Date"
         rules={[{ required: true, message: 'Please select the acquisition date' }]}
@@ -142,15 +141,12 @@ const SensorCreateDetails = ({
         <InputNumber placeholder="Enter data frequency in minutes" min={1} max={999} className="w-full" />
       </Form.Item>
       <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
+        <Input />
+      </Form.Item>
       <Form.Item
         name="supplierContactNumber"
         label="Supplier Contact"
-        rules={[
-          { required: true, message: 'Please input the supplier contact number' },
-          { validator: validatePhoneNumber }
-        ]}
+        rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
       >
         <Input />
       </Form.Item>
@@ -158,25 +154,17 @@ const SensorCreateDetails = ({
         <TextArea />
       </Form.Item>
 
-<Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
-  <Select
-    placeholder="Select a facility"
-    onChange={onFacilityChange}
-  >
-    {facilities.map((facility) => (
-      <Select.Option key={facility.id} value={facility.id}>
-        {facility.facilityName}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
+      <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
+        <Select placeholder="Select a facility" onChange={onFacilityChange}>
+          {facilities.map((facility) => (
+            <Select.Option key={facility.id} value={facility.id}>
+              {facility.name}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
       <Form.Item label="Upload Image" tooltip="One image is required">
-        <ImageInput
-          type="file"
-          onChange={handleFileChange}
-          accept="image/png, image/jpeg"
-          onClick={onInputClick}
-        />
+        <ImageInput type="file" onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
       {previewImages.length > 0 && (
         <Form.Item label="Image Preview">
@@ -194,12 +182,11 @@ const SensorCreateDetails = ({
         </Form.Item>
       )}
 
-
-<Form.Item {...tailLayout}>
-  <Button type="primary" htmlType="submit" className="w-full">
-    Next
-  </Button>
-</Form.Item>
+      <Form.Item {...tailLayout}>
+        <Button type="primary" htmlType="submit" className="w-full">
+          Next
+        </Button>
+      </Form.Item>
     </Form>
   );
 };

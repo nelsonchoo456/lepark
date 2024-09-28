@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { FacilityTypeEnum, FacilityStatusEnum } from '@prisma/client';
 
 export const FacilitySchema = z.object({
-  facilityName: z.string().min(1, { message: 'Facility name is required' }),
-  facilityDescription: z.string().min(1, { message: 'Facility description is required' }),
+  name: z.string().min(1, { message: 'Facility name is required' }),
+  description: z.string().min(1, { message: 'Facility description is required' }),
   isBookable: z.boolean(),
   isPublic: z.boolean(),
   isSheltered: z.boolean(),

@@ -1,4 +1,4 @@
-import { useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 
@@ -20,9 +20,9 @@ const AssetDetails = () => {
     const words = enumValue.split('_');
 
     if (enumType === 'type' || enumType === 'condition') {
-      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+      return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     } else {
-      return words.map(word => word.toUpperCase()).join(' ');
+      return words.map((word) => word.toUpperCase()).join(' ');
     }
   };
 
@@ -35,27 +35,28 @@ const AssetDetails = () => {
     {
       key: 'assetStatus',
       label: 'Status',
-      children: asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-        <Tag color="green">AVAILABLE</Tag>
-      ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-        <Tag color="blue">IN USE</Tag>
-      ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-        <Tag color="orange">UNDER MAINTENANCE</Tag>
-      ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-        <Tag color="red">DECOMMISSIONED</Tag>
-      ) : (
-        <Tag>{asset?.parkAssetStatus}</Tag>
-      )
+      children:
+        asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
+          <Tag color="green">AVAILABLE</Tag>
+        ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
+          <Tag color="blue">IN USE</Tag>
+        ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
+          <Tag color="orange">UNDER MAINTENANCE</Tag>
+        ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
+          <Tag color="red">DECOMMISSIONED</Tag>
+        ) : (
+          <Tag>{asset?.parkAssetStatus}</Tag>
+        ),
     },
     {
       key: 'lastMaintenance',
       label: 'Last Maintenance',
       children: asset ? moment(asset.lastMaintenanceDate).fromNow() : 'Loading...',
     },
-     {
-      key: 'facilityName',
+    {
+      key: 'name',
       label: 'Facility',
-      children: asset ? asset.facilityName : 'Loading...',
+      children: asset ? asset.name : 'Loading...',
     },
   ];
 
@@ -74,7 +75,7 @@ const AssetDetails = () => {
       isMain: true,
     },
     {
-      title: asset?.parkAssetName ? asset.parkAssetName : 'Details',
+      title: asset?.name ? asset.name : 'Details',
       pathKey: `/assets/${asset?.id}`,
       isCurrent: true,
     },
@@ -122,7 +123,7 @@ const AssetDetails = () => {
 
   if (notFound) {
     // [ ENTITY NOT FOUND MERGE ISSUE ]
-    return <></>
+    return <></>;
     // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
@@ -160,7 +161,7 @@ const AssetDetails = () => {
             )}
           </div>
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{asset?.parkAssetName}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{asset?.name}</LogoText>
             <Descriptions items={descriptionsItems} column={1} size="small" />
 
             <div className="flex h-24 w-full gap-2 mt-auto">

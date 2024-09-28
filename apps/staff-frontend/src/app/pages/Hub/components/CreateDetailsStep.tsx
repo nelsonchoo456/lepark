@@ -15,12 +15,12 @@ interface CreateDetailsStepProps {
   removeImage: (index: number) => void;
   onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
   parks: ParkResponse[];
-  selectedParkId: number | null; 
-  setSelectedParkId: (id: number | null) => void; 
-  facilities: FacilityResponse[]; 
-  selectedFacilityId: number | null; 
-  setSelectedFacilityId: (id: number | null) => void; 
-  user: StaffResponse | null; 
+  selectedParkId: number | null;
+  setSelectedParkId: (id: number | null) => void;
+  facilities: FacilityResponse[];
+  selectedFacilityId: number | null;
+  setSelectedFacilityId: (id: number | null) => void;
+  user: StaffResponse | null;
 }
 
 const CreateDetailsStep = ({
@@ -59,7 +59,6 @@ const CreateDetailsStep = ({
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
-
       if (value.isAfter(moment(), 'day')) {
         return Promise.reject(new Error('Date cannot be beyond today'));
       }
@@ -100,11 +99,7 @@ const CreateDetailsStep = ({
       : facilities;
 
   return (
-    <Form
-      form={form}
-      labelCol={{ span: 8 }}
-      className="max-w-[600px] mx-auto mt-8"
-    >
+    <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park and Facility</Divider>
 
       {user?.role === StaffType.SUPERADMIN && (
@@ -123,7 +118,7 @@ const CreateDetailsStep = ({
       <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
         <Select
           placeholder="Select a Facility"
-          options={filteredFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+          options={filteredFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
           disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
         />
       </Form.Item>

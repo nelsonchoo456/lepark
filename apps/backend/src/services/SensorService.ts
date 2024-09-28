@@ -91,7 +91,7 @@ class SensorService {
 
   public async getSensorById(
     id: string,
-  ): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; facilityName: string; parkId?: number } }> {
+  ): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; name: string; parkId?: number } }> {
     const sensor = await SensorDao.getSensorById(id);
     if (!sensor) {
       throw new Error('Sensor not found');

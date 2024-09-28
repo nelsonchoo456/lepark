@@ -2,7 +2,16 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification, message, Tooltip, Card } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { deleteParkAsset, getAllParkAssets, ParkAssetResponse, StaffResponse, StaffType, ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '@lepark/data-access';
+import {
+  deleteParkAsset,
+  getAllParkAssets,
+  ParkAssetResponse,
+  StaffResponse,
+  StaffType,
+  ParkAssetTypeEnum,
+  ParkAssetStatusEnum,
+  ParkAssetConditionEnum,
+} from '@lepark/data-access';
 import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
@@ -15,38 +24,29 @@ const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condi
   const words = enumValue.split('_');
 
   if (enumType === 'type' || enumType === 'condition') {
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
   } else {
-    return words.map(word => word.toUpperCase()).join(' ');
+    return words.map((word) => word.toUpperCase()).join(' ');
   }
 };
 
 const ParkAssetManagementPage: React.FC = () => {
-const { user } = useAuth<StaffResponse>();
+  const { user } = useAuth<StaffResponse>();
   const { assets: parkAssets, loading, triggerFetch } = useFetchAssets();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // ... rest of the code remains the same
 
-
-
-
-
-
-// ... rest of the code remains the same
-
-const filteredParkAssets = useMemo(() => {
+  const filteredParkAssets = useMemo(() => {
     return parkAssets.filter((asset) => {
-      return Object.values(asset).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      return Object.values(asset).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()));
     });
   }, [parkAssets, searchQuery]);
 
   const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
-
 
   const handleDelete = async (id: string) => {
     try {
@@ -56,8 +56,8 @@ const filteredParkAssets = useMemo(() => {
           content: 'Deleting an Asset cannot be undone. Are you sure you want to proceed?',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
-          okText: "Confirm Delete",
-          okButtonProps: { danger: true }
+          okText: 'Confirm Delete',
+          okButtonProps: { danger: true },
         });
       });
 
@@ -75,9 +75,9 @@ const filteredParkAssets = useMemo(() => {
   const columns: ColumnsType<ParkAssetResponse> = [
     {
       title: 'Name',
-      dataIndex: 'parkAssetName',
-      key: 'parkAssetName',
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.parkAssetName.localeCompare(b.parkAssetName),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '20%',
     },
     {
@@ -106,7 +106,10 @@ const filteredParkAssets = useMemo(() => {
       title: 'Condition',
       dataIndex: 'parkAssetCondition',
       key: 'parkAssetCondition',
-      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({ text: formatEnumLabel(condition, 'condition'), value: condition })),
+      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({
+        text: formatEnumLabel(condition, 'condition'),
+        value: condition,
+      })),
       onFilter: (value, record) => record.parkAssetCondition === value,
       render: (condition: string) => formatEnumLabel(condition, 'condition'),
       width: '15%',
@@ -146,14 +149,13 @@ const filteredParkAssets = useMemo(() => {
           className="mb-4 bg-white"
           variant="filled"
         />
-          <Button type="primary" onClick={() => navigate('/parkasset')}>
-    View Assets By Status
-  </Button>
+        <Button type="primary" onClick={() => navigate('/parkasset')}>
+          View Assets By Status
+        </Button>
 
-          <Button type="primary" onClick={() => navigate('/parkasset/create')}>
-            Create Park Asset
-          </Button>
-
+        <Button type="primary" onClick={() => navigate('/parkasset/create')}>
+          Create Park Asset
+        </Button>
       </Flex>
       <Card>
         <Table

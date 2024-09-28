@@ -66,9 +66,9 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
   const columns = [
     {
       title: 'Name',
-      dataIndex: 'parkAssetName',
-      key: 'parkAssetName',
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.parkAssetName.localeCompare(b.parkAssetName),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '20%',
     },
     {
@@ -132,9 +132,9 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
   const columnsNoType = [
     {
       title: 'Name',
-      dataIndex: 'parkAssetName',
-      key: 'parkAssetName',
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.parkAssetName.localeCompare(b.parkAssetName),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '20%',
     },
     {
@@ -233,7 +233,14 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           </div>
           <div className="flex-auto">
             <Statistic
-              title={<div className='flex items-center'><Badge status="default" text="Unavailable" /><Tooltip title="Assets Under Maintenance and Decommissioned"><AiOutlineQuestionCircle className='ml-1 opacity-90'/></Tooltip></div>}
+              title={
+                <div className="flex items-center">
+                  <Badge status="default" text="Unavailable" />
+                  <Tooltip title="Assets Under Maintenance and Decommissioned">
+                    <AiOutlineQuestionCircle className="ml-1 opacity-90" />
+                  </Tooltip>
+                </div>
+              }
               value={unavailableCount}
               valueStyle={{ fontSize: '1.25rem' }}
             />

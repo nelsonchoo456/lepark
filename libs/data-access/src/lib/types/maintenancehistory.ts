@@ -26,7 +26,7 @@ export interface MaintenanceHistoryResponse {
   };
   parkAsset?: {
     id: string;
-    parkAssetName: string;
+    name: string;
     parkAssetType: ParkAssetTypeEnum;
     parkAssetStatus: ParkAssetStatusEnum;
     parkAssetCondition: ParkAssetConditionEnum;

@@ -224,14 +224,12 @@ CREATE TABLE "Hub" (
     "description" TEXT,
     "hubStatus" "HubStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "recommendedCalibrationFrequencyDays" INTEGER NOT NULL,
-    "recommendedMaintenanceDuration" INTEGER NOT NULL,
     "nextMaintenanceDate" TIMESTAMP(3),
-    "dataTransmissionInterval" DOUBLE PRECISION NOT NULL,
-    "ipAddress" TEXT NOT NULL,
-    "macAddress" TEXT NOT NULL,
-    "radioGroup" INTEGER NOT NULL,
-    "hubSecret" TEXT NOT NULL,
+    "dataTransmissionInterval" DOUBLE PRECISION,
+    "ipAddress" TEXT,
+    "macAddress" TEXT,
+    "radioGroup" INTEGER,
+    "hubSecret" TEXT,
     "images" TEXT[],
     "lat" DOUBLE PRECISION,
     "long" DOUBLE PRECISION,
@@ -273,9 +271,9 @@ CREATE TABLE "Sensor" (
 -- CreateTable
 CREATE TABLE "ParkAsset" (
     "id" UUID NOT NULL,
-    "parkAssetName" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "parkAssetType" "ParkAssetTypeEnum" NOT NULL,
-    "parkAssetDescription" TEXT,
+    "description" TEXT,
     "parkAssetStatus" "ParkAssetStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
     "recurringMaintenanceDuration" INTEGER,
@@ -317,8 +315,8 @@ CREATE TABLE "CalibrationHistory" (
 -- CreateTable
 CREATE TABLE "Facility" (
     "id" UUID NOT NULL,
-    "facilityName" TEXT NOT NULL,
-    "facilityDescription" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
     "isBookable" BOOLEAN NOT NULL,
     "isPublic" BOOLEAN NOT NULL,
     "isSheltered" BOOLEAN NOT NULL,
@@ -392,6 +390,9 @@ CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
+CREATE INDEX "Facility_parkId_idx" ON "Facility"("parkId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_VisitorfavoriteSpecies_AB_unique" ON "_VisitorfavoriteSpecies"("A", "B");

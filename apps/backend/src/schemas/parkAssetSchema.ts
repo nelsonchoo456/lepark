@@ -3,9 +3,9 @@ import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '
 
 export const ParkAssetSchema = z.object({
   id: z.string().uuid().optional(),
-  parkAssetName: z.string(),
+  name: z.string(),
   parkAssetType: z.nativeEnum(ParkAssetTypeEnum),
-  parkAssetDescription: z.string().optional(),
+  description: z.string().optional(),
   parkAssetStatus: z.nativeEnum(ParkAssetStatusEnum),
   acquisitionDate: z.date(),
   recurringMaintenanceDuration: z.number().int().positive().optional(),

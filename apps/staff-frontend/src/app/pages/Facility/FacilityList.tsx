@@ -65,10 +65,10 @@ const FacilityList: React.FC = () => {
   const columns: TableProps<FacilityResponse>['columns'] = [
     {
       title: 'Facility Name',
-      dataIndex: 'facilityName',
-      key: 'facilityName',
+      dataIndex: 'name',
+      key: 'name',
       render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.facilityName.localeCompare(b.facilityName),
+      sorter: (a, b) => a.name.localeCompare(b.name),
       width: '20%',
     },
     {
@@ -204,7 +204,7 @@ const FacilityList: React.FC = () => {
       <ConfirmDeleteModal
         onCancel={cancelDelete}
         onConfirm={deleteFacilityToBeDeleted}
-        description={`Are you sure you want to delete the facility "${facilityToBeDeleted?.facilityName}"?`}
+        description={`Are you sure you want to delete the facility "${facilityToBeDeleted?.name}"?`}
         open={deleteModalOpen}
       />
       <Flex justify="end" gap={10}>

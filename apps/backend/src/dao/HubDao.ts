@@ -29,7 +29,7 @@ class HubDao {
     // Map hubs to include facility name and park information
     return hubs.map((hub, index) => ({
       ...hub,
-      facilityName: hub.facility?.facilityName,
+      name: hub.facility?.name,
       parkName: parks[index]?.name,
     }));
   }
@@ -49,7 +49,7 @@ class HubDao {
     // Map hubs to include facility name and park information
     return hubs.map((hub) => ({
       ...hub,
-      facilityName: hub.facility?.facilityName,
+      name: hub.facility?.name,
       parkName: park?.name,
     }));
   }

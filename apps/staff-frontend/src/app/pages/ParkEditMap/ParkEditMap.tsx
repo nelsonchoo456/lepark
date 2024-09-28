@@ -24,7 +24,12 @@ import polygon_image from '../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../assets/mapFeatureManager/edit.png';
 import MapFeatureManagerEdit from '../../components/map/MapFeatureManagerEdit';
 import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon, pointsAreWithinPolygon, polygonIsWithin, polygonIsWithinPark } from '../../components/map/functions/functions';
+import {
+  latLngArrayToPolygon,
+  pointsAreWithinPolygon,
+  polygonIsWithin,
+  polygonIsWithinPark,
+} from '../../components/map/functions/functions';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
 import { COLORS } from '../../config/colors';
@@ -263,54 +268,66 @@ const ParkEditMap = () => {
             <Space size={16}>
               <div className="font-semibold">Display:</div>
 
-              {parkZones && parkZones.length > 0
-                ?
-                  <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+              {parkZones && parkZones.length > 0 ? (
+                <Checkbox
+                  onChange={(e) => setShowParkZones(e.target.checked)}
+                  checked={showParkZones}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
+                  Zones
+                </Checkbox>
+              ) : (
+                <Tooltip title="No Zones available">
+                  <Checkbox disabled={true} className="border-gray-200 border-[1px] px-4 py-1 rounded-full">
                     Zones
                   </Checkbox>
-                :
-                  <Tooltip title="No Zones available">
-                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                      Zones
-                    </Checkbox>
-                  </Tooltip>
-              }
-              {occurrences && occurrences.length > 0
-                ?
-                  <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                </Tooltip>
+              )}
+              {occurrences && occurrences.length > 0 ? (
+                <Checkbox
+                  onChange={(e) => setShowOccurrences(e.target.checked)}
+                  checked={showOccurrences}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
+                  Occurrences
+                </Checkbox>
+              ) : (
+                <Tooltip title="No Occurrences available">
+                  <Checkbox disabled={true} className="border-gray-200 border-[1px] px-4 py-1 rounded-full">
                     Occurrences
                   </Checkbox>
-                :
-                  <Tooltip title="No Occurrences available">
-                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                      Occurrences
-                    </Checkbox>
-                  </Tooltip>
-              }
-              {attractions && attractions.length > 0
-                ?
-                  <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                </Tooltip>
+              )}
+              {attractions && attractions.length > 0 ? (
+                <Checkbox
+                  onChange={(e) => setShowAttractions(e.target.checked)}
+                  checked={showAttractions}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
+                  Attractions
+                </Checkbox>
+              ) : (
+                <Tooltip title="No Attractions available">
+                  <Checkbox disabled={true} className="border-gray-200 border-[1px] px-4 py-1 rounded-full">
                     Attractions
                   </Checkbox>
-                :
-                  <Tooltip title="No Attractions available">
-                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                      Attractions
-                    </Checkbox>
-                  </Tooltip>
-              }
-              {facilities && facilities.length > 0
-                ?
-                  <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                </Tooltip>
+              )}
+              {facilities && facilities.length > 0 ? (
+                <Checkbox
+                  onChange={(e) => setShowFacilities(e.target.checked)}
+                  checked={showFacilities}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
+                  Facilities
+                </Checkbox>
+              ) : (
+                <Tooltip title="No Facilities available">
+                  <Checkbox disabled={true} className="border-gray-200 border-[1px] px-4 py-1 rounded-full">
                     Facilities
                   </Checkbox>
-                :
-                  <Tooltip title="No Facilities available">
-                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                      Facilities
-                    </Checkbox>
-                  </Tooltip>
-              }
+                </Tooltip>
+              )}
             </Space>
           </Card>
 
@@ -332,8 +349,8 @@ const ParkEditMap = () => {
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
-              <FitBounds geom={park.geom}/>
-              
+              <FitBounds geom={park.geom} />
+
               {showParkZones &&
                 parkZones?.map((zone) => (
                   <PolygonWithLabel
@@ -394,12 +411,12 @@ const ParkEditMap = () => {
                         lat={facility.lat}
                         lng={facility.long}
                         innerBackgroundColor={COLORS.sky[400]}
-                        tooltipLabel={facility.facilityName}
+                        tooltipLabel={facility.name}
                         facilityType={facility.facilityType}
                       />
                     ),
                 )}
-              
+
               <MapFeatureManagerEdit
                 polygon={polygon}
                 setPolygon={setPolygon}

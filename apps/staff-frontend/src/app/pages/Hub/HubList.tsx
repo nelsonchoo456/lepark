@@ -62,16 +62,16 @@ const HubList: React.FC = () => {
     },
     {
       title: 'Facility',
-      dataIndex: 'facilityName',
-      key: 'facilityName',
+      dataIndex: 'name',
+      key: 'name',
       render: (text, record) => (
         <Flex justify="space-between" align="center">
           {text}
         </Flex>
       ),
       sorter: (a, b) => {
-        if (a.facilityName && b.facilityName) {
-          return a.facilityName.localeCompare(b.facilityName);
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
         }
         return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
       },
@@ -158,7 +158,7 @@ const HubList: React.FC = () => {
           <p className="font-semibold">{record.parkName}</p>
           <div className="flex">
             <p className="opacity-50 mr-2">Facility:</p>
-            {record.facilityName}
+            {record.name}
           </div>
         </div>
       ),
@@ -166,8 +166,8 @@ const HubList: React.FC = () => {
         if (a.parkName && b.parkName) {
           return a.parkName.localeCompare(b.parkName);
         }
-        if (a.facilityName && b.facilityName) {
-          return a.facilityName.localeCompare(b.facilityName);
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
         }
         return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
       },

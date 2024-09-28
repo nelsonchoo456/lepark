@@ -53,7 +53,7 @@ export interface SensorResponse {
   };
   facility?: {
     id: string;
-    facilityName: string;
+    name: string;
     parkId?: number;
   };
 }

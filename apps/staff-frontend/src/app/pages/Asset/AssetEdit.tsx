@@ -12,7 +12,7 @@ import {
   getAllFacilities,
   ParkResponse,
   getAllParks,
-  ParkAssetUpdateData
+  ParkAssetUpdateData,
 } from '@lepark/data-access';
 import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,7 +27,7 @@ const { TextArea } = Input;
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
@@ -39,7 +39,17 @@ const AssetEdit = () => {
   const [form] = Form.useForm();
   const { assetId = '' } = useParams<{ assetId: string }>();
   const { asset, loading: assetLoading, notFound } = useRestrictAsset(assetId);
-  const { selectedFiles, previewImages, existingImages, handleFileChange, removeImage, onInputClick, setPreviewImages, setExistingImages, setSelectedFiles } = useUploadImagesAssets();
+  const {
+    selectedFiles,
+    previewImages,
+    existingImages,
+    handleFileChange,
+    removeImage,
+    onInputClick,
+    setPreviewImages,
+    setExistingImages,
+    setSelectedFiles,
+  } = useUploadImagesAssets();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [parks, setParks] = useState<ParkResponse[]>([]);
@@ -54,7 +64,7 @@ const AssetEdit = () => {
       isMain: true,
     },
     {
-      title: asset?.parkAssetName ? asset.parkAssetName : 'Details',
+      title: asset?.name ? asset.name : 'Details',
       pathKey: `/parkasset/${assetId}`,
     },
     {
@@ -78,12 +88,9 @@ const AssetEdit = () => {
   useEffect(() => {
     const fetchParksAndFacilities = async () => {
       try {
-        const [parksResponse, facilitiesResponse] = await Promise.all([
-          getAllParks(),
-          getAllFacilities()
-        ]);
-        const parksWithFacilities = parksResponse.data.filter(park =>
-          facilitiesResponse.data.some(facility => facility.parkId === park.id)
+        const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
+        const parksWithFacilities = parksResponse.data.filter((park) =>
+          facilitiesResponse.data.some((facility) => facility.parkId === park.id),
         );
         setParks(parksWithFacilities);
         setFacilities(facilitiesResponse.data);
@@ -103,7 +110,7 @@ const AssetEdit = () => {
       setExistingImages(asset.images || []);
       setSelectedFiles([]);
       setPreviewImages([]);
-      const assetFacility = facilities.find(f => f.id === asset.facilityId);
+      const assetFacility = facilities.find((f) => f.id === asset.facilityId);
       if (assetFacility) {
         handleParkChange(assetFacility.parkId, asset.facilityId);
       }
@@ -117,9 +124,9 @@ const AssetEdit = () => {
   }, [asset, form, facilities]);
 
   const handleParkChange = (parkId: number, initialFacilityId?: string) => {
-    const parkFacilities = facilities.filter(facility => facility.parkId === parkId);
+    const parkFacilities = facilities.filter((facility) => facility.parkId === parkId);
     setFilteredFacilities(parkFacilities);
-    if (initialFacilityId === undefined || !parkFacilities.some(f => f.id === initialFacilityId)) {
+    if (initialFacilityId === undefined || !parkFacilities.some((f) => f.id === initialFacilityId)) {
       form.setFieldsValue({ facilityId: undefined });
     }
   };
@@ -137,9 +144,9 @@ const AssetEdit = () => {
     setIsSubmitting(true);
     try {
       const assetData: ParkAssetUpdateData = {
-        parkAssetName: values.parkAssetName,
+        name: values.name,
         parkAssetType: values.parkAssetType,
-        parkAssetDescription: values.parkAssetDescription,
+        description: values.description,
         parkAssetStatus: values.parkAssetStatus,
         acquisitionDate: values.acquisitionDate ? dayjs(values.acquisitionDate).toISOString() : undefined,
         supplier: values.supplier,
@@ -183,151 +190,144 @@ const AssetEdit = () => {
 
   if (notFound) {
     // [ ENTITY NOT FOUND MERGE ISSUE ]
-    return <></>
+    return <></>;
     // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
   return (
-   <ContentWrapperDark>
-  {contextHolder}
-  <PageHeader2 breadcrumbItems={breadcrumbItems} />
-  <Card>
-    {loading || assetLoading ? (
-      <div className="flex justify-center items-center h-64">
-        <Spin size="large" />
-      </div>
-    ) : (
-      <Form
-        form={form}
-        name="control-hooks"
-        onFinish={onFinish}
-        layout="horizontal"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 16 }}
-        style={{ maxWidth: '600px', margin: '0 auto' }}
-      >
-        <Form.Item name="parkAssetName" label="Asset Name" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
+    <ContentWrapperDark>
+      {contextHolder}
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      <Card>
+        {loading || assetLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Form
+            form={form}
+            name="control-hooks"
+            onFinish={onFinish}
+            layout="horizontal"
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            style={{ maxWidth: '600px', margin: '0 auto' }}
+          >
+            <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
 
-        <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
-          <Select placeholder="Select asset type">
-            {Object.values(ParkAssetTypeEnum).map((type) => (
-              <Select.Option key={type} value={type}>
-                {formatEnumLabel(type)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
+              <Select placeholder="Select asset type">
+                {Object.values(ParkAssetTypeEnum).map((type) => (
+                  <Select.Option key={type} value={type}>
+                    {formatEnumLabel(type)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-        <Form.Item name="parkAssetDescription" label="Description">
-          <TextArea rows={4} />
-        </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea rows={4} />
+            </Form.Item>
 
-        <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
-          <Select placeholder="Select asset status">
-            {Object.values(ParkAssetStatusEnum).map((status) => (
-              <Select.Option key={status} value={status}>
-                {formatEnumLabel(status)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
+              <Select placeholder="Select asset status">
+                {Object.values(ParkAssetStatusEnum).map((status) => (
+                  <Select.Option key={status} value={status}>
+                    {formatEnumLabel(status)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-        <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-  <DatePicker
-    className="w-full"
-    disabledDate={(current) => {
-      const originalDate = asset?.acquisitionDate ? dayjs(asset.acquisitionDate) : dayjs();
-      return current && current > originalDate.endOf('day');
-    }}
-  />
-</Form.Item>
+            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+              <DatePicker
+                className="w-full"
+                disabledDate={(current) => {
+                  const originalDate = asset?.acquisitionDate ? dayjs(asset.acquisitionDate) : dayjs();
+                  return current && current > originalDate.endOf('day');
+                }}
+              />
+            </Form.Item>
 
-        <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
 
-        <Form.Item
-          name="supplierContactNumber"
-          label="Supplier Contact"
-          rules={[
-            { required: true, message: 'Please input the supplier contact number' },
-            { validator: validatePhoneNumber }
-          ]}
-        >
-          <Input />
-        </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input />
+            </Form.Item>
 
-        <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
-          <Select placeholder="Select asset condition">
-            {Object.values(ParkAssetConditionEnum).map((condition) => (
-              <Select.Option key={condition} value={condition}>
-                {formatEnumLabel(condition)}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
+              <Select placeholder="Select asset condition">
+                {Object.values(ParkAssetConditionEnum).map((condition) => (
+                  <Select.Option key={condition} value={condition}>
+                    {formatEnumLabel(condition)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-        <Form.Item name="remarks" label="Remarks">
-          <TextArea />
-        </Form.Item>
+            <Form.Item name="remarks" label="Remarks">
+              <TextArea />
+            </Form.Item>
 
-        {user?.role === 'SUPERADMIN' && (
-          <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
-            <Select placeholder="Select a park" onChange={(value) => handleParkChange(Number(value))}>
-              {parks.map((park) => (
-                <Select.Option key={park.id} value={park.id}>
-                  {park.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+            {user?.role === 'SUPERADMIN' && (
+              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
+                <Select placeholder="Select a park" onChange={(value) => handleParkChange(Number(value))}>
+                  {parks.map((park) => (
+                    <Select.Option key={park.id} value={park.id}>
+                      {park.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
+              <Select placeholder="Select a facility">
+                {filteredFacilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item label="Upload Images">
+              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            </Form.Item>
+
+            {existingImages.length + previewImages.length > 0 && (
+              <Form.Item label="Image Preview">
+                <div className="flex flex-wrap gap-2">
+                  {[...existingImages, ...previewImages].map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => handleImageClick(index)}
+                    />
+                  ))}
+                </div>
+              </Form.Item>
+            )}
+
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
+                Update
+              </Button>
+            </Form.Item>
+          </Form>
         )}
-
-        <Form.Item
-          name="facilityId"
-          label="Facility"
-          rules={[{ required: true, message: 'Please select a facility' }]}
-        >
-          <Select placeholder="Select a facility">
-            {filteredFacilities.map((facility) => (
-              <Select.Option key={facility.id} value={facility.id}>
-                {facility.facilityName}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item label="Upload Images">
-          <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-        </Form.Item>
-
-        {(existingImages.length + previewImages.length) > 0 && (
-          <Form.Item label="Image Preview">
-            <div className="flex flex-wrap gap-2">
-              {[...existingImages, ...previewImages].map((imgSrc, index) => (
-                <img
-                  key={index}
-                  src={imgSrc}
-                  alt={`Preview ${index}`}
-                  className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                  onClick={() => handleImageClick(index)}
-                />
-              ))}
-            </div>
-          </Form.Item>
-        )}
-
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit" loading={isSubmitting}>
-            Update
-          </Button>
-        </Form.Item>
-      </Form>
-    )}
-  </Card>
-</ContentWrapperDark>
+      </Card>
+    </ContentWrapperDark>
   );
 };
 

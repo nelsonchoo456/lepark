@@ -303,7 +303,7 @@ const EventCreate = () => {
                       options={facilities.map((facility) => ({
                         key: facility.id,
                         value: facility.id,
-                        label: facility.facilityName,
+                        label: facility.name,
                       }))}
                       disabled={!form.getFieldValue('parkId') || facilities.length === 0}
                       onChange={onFacilityChange}

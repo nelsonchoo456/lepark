@@ -110,7 +110,7 @@ const FacilityEdit = () => {
 
   const breadcrumbItems = [
     { title: 'Facility Management', pathKey: '/facilities', isMain: true },
-    { title: facility?.facilityName || 'Details', pathKey: `/facilities/${facility?.id}` },
+    { title: facility?.name || 'Details', pathKey: `/facilities/${facility?.id}` },
     { title: 'Edit', pathKey: `/facilities/${facility?.id}/edit`, isCurrent: true },
   ];
 
@@ -203,10 +203,10 @@ const FacilityEdit = () => {
       <Card>
         <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
           <Divider orientation="left">Facility Details</Divider>
-          <Form.Item name="facilityName" label="Facility Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label="Facility Name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="facilityDescription" label="Facility Description" rules={[{ required: true }]}>
+          <Form.Item name="description" label="Facility Description" rules={[{ required: true }]}>
             <TextArea />
           </Form.Item>
           <Form.Item name="facilityType" label="Facility Type" rules={[{ required: true }]}>

@@ -66,7 +66,6 @@ function FacilityEventsPictureMarker({
   const eventMarkerGap = 16;
 
   const getCustomIcon = (event: EventResponse, index: number) => {
-    
     if (hovered && hovered?.id === event?.id) {
       const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth;
       const iconHTML = renderToStaticMarkup(
@@ -87,7 +86,7 @@ function FacilityEventsPictureMarker({
           </PictureMarkerInner>
         </InnerPictureMarkerGlow>,
       );
-  
+
       return L.divIcon({
         html: iconHTML,
         iconSize: [thisCircleWidth, thisCircleWidth],
@@ -131,14 +130,14 @@ function FacilityEventsPictureMarker({
           lat={lat}
           lng={lng}
           innerBackgroundColor={COLORS.sky[400]}
-          tooltipLabel={facility.facilityName}
+          tooltipLabel={facility.name}
           facilityType={facility.facilityType}
           hovered={hovered}
           setHovered={() =>
             setHovered &&
             setHovered({
               ...facility,
-              title: facility.facilityName,
+              title: facility.name,
               image: facility.images ? facility.images[0] : null,
               entityType: 'FACILITY',
               children: (
@@ -212,7 +211,7 @@ function FacilityEventsPictureMarker({
                                               className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
                                               onClick={() => navigate(`/facilities/${facility.id}`)}
                                             >
-                                              @ {facility.facilityName}
+                                              @ {facility.name}
                                             </p>
                                           </AntdTooltip>
                                         </div>
@@ -293,7 +292,7 @@ function FacilityEventsPictureMarker({
                             className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
                             onClick={() => navigate(`/facilities/${facility.id}`)}
                           >
-                            @ {facility.facilityName}
+                            @ {facility.name}
                           </p>
                         </AntdTooltip>
                       </div>

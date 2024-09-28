@@ -24,7 +24,7 @@ const { TextArea } = Input;
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
@@ -61,15 +61,12 @@ const AssetCreate = () => {
   useEffect(() => {
     const fetchParksAndFacilities = async () => {
       try {
-        const [parksResponse, facilitiesResponse] = await Promise.all([
-          getAllParks(),
-          getAllFacilities()
-        ]);
+        const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
         setParks(parksResponse.data);
         setFacilities(facilitiesResponse.data);
 
         if (user?.role !== 'SUPERADMIN') {
-          const userFacilities = facilitiesResponse.data.filter(facility => facility.parkId === user?.parkId);
+          const userFacilities = facilitiesResponse.data.filter((facility) => facility.parkId === user?.parkId);
           setFilteredFacilities(userFacilities);
         }
         setLoading(false);
@@ -84,18 +81,18 @@ const AssetCreate = () => {
   }, [user]);
 
   const handleParkChange = (parkId: string) => {
-    const parkFacilities = facilities.filter(facility => facility.parkId === Number(parkId));
+    const parkFacilities = facilities.filter((facility) => facility.parkId === Number(parkId));
     setFilteredFacilities(parkFacilities);
     form.setFieldsValue({ facilityId: undefined });
   };
 
-   const onFinish = async (values: any) => {
+  const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
       const baseAssetData: ParkAssetData = {
-        parkAssetName: values.parkAssetName,
+        name: values.name,
         parkAssetType: values.parkAssetType,
-        parkAssetDescription: values.parkAssetDescription,
+        description: values.description,
         parkAssetStatus: values.parkAssetStatus,
         acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
         supplier: values.supplier,
@@ -112,7 +109,7 @@ const AssetCreate = () => {
         for (let i = 1; i <= assetQuantity; i++) {
           const assetData = {
             ...baseAssetData,
-            parkAssetName: `${values.parkAssetName} ${i}`
+            name: `${values.name} ${i}`,
           };
           const result = await createParkAsset(assetData, []);
           createdAssets.push(result.data);
@@ -124,7 +121,7 @@ const AssetCreate = () => {
       }
 
       setCreatedAsset(response.data);
-      setCreatedAssetName(createMultiple ? `${values.parkAssetName} 1-${assetQuantity}` : values.parkAssetName);
+      setCreatedAssetName(createMultiple ? `${values.name} 1-${assetQuantity}` : values.name);
       setShowSuccessAlert(true);
       form.resetFields();
       clearAllImages();
@@ -179,7 +176,7 @@ const AssetCreate = () => {
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
             <Divider orientation="left">Asset Details</Divider>
-            <Form.Item name="parkAssetName" label="Asset Name" rules={[{ required: true }]}>
+            <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
@@ -191,7 +188,7 @@ const AssetCreate = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="parkAssetDescription" label="Description">
+            <Form.Item name="description" label="Description">
               <TextArea />
             </Form.Item>
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
@@ -204,11 +201,8 @@ const AssetCreate = () => {
               </Select>
             </Form.Item>
             <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-  <DatePicker
-    className="w-full"
-    disabledDate={(current) => current && current > dayjs().endOf('day')}
-  />
-</Form.Item>
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+            </Form.Item>
 
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
@@ -216,10 +210,7 @@ const AssetCreate = () => {
             <Form.Item
               name="supplierContactNumber"
               label="Supplier Contact"
-              rules={[
-                { required: true, message: 'Please input the supplier contact number' },
-                { validator: validatePhoneNumber }
-              ]}
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
             >
               <Input />
             </Form.Item>
@@ -246,45 +237,27 @@ const AssetCreate = () => {
                 </Select>
               </Form.Item>
             )}
-            <Form.Item
-              name="facilityId"
-              label="Facility"
-              rules={[{ required: true, message: 'Please select a facility!' }]}
-            >
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
               <Select placeholder="Select a facility">
                 {filteredFacilities.map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
+                    {facility.name}
                   </Select.Option>
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item
-              name="createMultiple"
-              label="Create multiple assets?"
-              valuePropName="checked"
-            >
+            <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
               <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
             </Form.Item>
             {createMultiple && (
-              <Form.Item
-                name="assetQuantity"
-                label="Park Asset Quantity"
-                rules={[{ required: true, type: 'number', min: 1, max: 10 }]}
-              >
+              <Form.Item name="assetQuantity" label="Park Asset Quantity" rules={[{ required: true, type: 'number', min: 1, max: 10 }]}>
                 <InputNumber onChange={(value) => setAssetQuantity(value as number)} />
               </Form.Item>
             )}
             {!createMultiple && (
               <>
-                <Form.Item label="Upload Images" >
-                  <ImageInput
-                    type="file"
-                    multiple
-                    onChange={handleFileChange}
-                    accept="image/png, image/jpeg"
-                    onClick={onInputClick}
-                  />
+                <Form.Item label="Upload Images">
+                  <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
                 </Form.Item>
                 {previewImages.length > 0 && (
                   <Form.Item label="Image Previews">
@@ -317,18 +290,14 @@ const AssetCreate = () => {
         ) : (
           <Result
             status="success"
-            title={createMultiple ? "Created new Assets" : "Created new Asset"}
+            title={createMultiple ? 'Created new Assets' : 'Created new Asset'}
             subTitle={createdAssetName && <>Asset name(s): {createdAssetName}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/parkasset')}>
                 Back to Park Asset Management
               </Button>,
               !createMultiple && (
-                <Button
-                  type="primary"
-                  key="view"
-                  onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}
-                >
+                <Button type="primary" key="view" onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}>
                   View new Asset
                 </Button>
               ),

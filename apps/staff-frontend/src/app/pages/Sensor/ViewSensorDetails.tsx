@@ -97,9 +97,9 @@ const ViewSensorDetails = () => {
       })(),
     },
     {
-      key: 'facilityName',
+      key: 'name',
       label: 'Facility',
-      children: facility?.facilityName,
+      children: facility?.name,
     },
   ];
 
