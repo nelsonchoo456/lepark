@@ -263,24 +263,6 @@ model Event {
 //   occurrences Occurrence[]
 // }
 
-// enum PARK_STATUS_ENUM {
-//   OPEN
-//   CLOSED
-//   UNDER_CONSTRUCTION
-//   LIMITED_ACCESS
-// }
-
-// model Park {
-//   id           Int     @id @default(autoincrement())
-//   name         String
-//   description  String
-//   parkStatus   PARK_STATUS_ENUM
-//   openingHours DateTime[]
-//   closingHours DateTime[]
-//   geom         String
-//   paths        String
-// }
-
 model Visitor {
   id              String    @id @default(uuid()) @db.Uuid
   firstName       String
