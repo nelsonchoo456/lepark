@@ -1,5 +1,5 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
-const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData, hubsData } = require('./mockData');
+const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData, hubsData, attractionsData } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -282,6 +282,15 @@ async function seed() {
     hubList.push(createdHub);
   }
   console.log(`Total hubs seeded: ${hubList.length}\n`);*/
+  
+  const attractionList = [];
+  for (const attraction of attractionsData) {
+    const createdAttraction = await prisma.attraction.create({
+      data: attraction,
+    });
+    attractionList.push(createdAttraction);
+  }
+  console.log(`Total attractions seeded: ${attractionList.length}\n`);
 }
 
 // Utility function for Activity Logs and Status Logs
