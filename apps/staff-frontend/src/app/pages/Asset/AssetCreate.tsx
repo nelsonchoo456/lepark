@@ -89,9 +89,10 @@ const AssetCreate = () => {
     form.setFieldsValue({ facilityId: undefined });
   };
 
-  const onFinish = async (values: any) => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      const values = await form.validateFields();
       const baseAssetData: ParkAssetData = {
         name: values.name,
         parkAssetType: values.parkAssetType,
@@ -126,21 +127,11 @@ const AssetCreate = () => {
       setCreatedAsset(response.data);
       setCreatedAssetName(createMultiple ? `${values.name} 1-${assetQuantity}` : values.name);
       setShowSuccessAlert(true);
-      form.resetFields();
-      clearAllImages();
     } catch (error) {
       message.error(String(error));
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const onReset = () => {
-    form.resetFields();
-    setSelectedParkId(null);
-    clearAllImages();
-    setCreateMultiple(false); // Add this line
-    setAssetQuantity(1); // Add this line
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
@@ -176,7 +167,7 @@ const AssetCreate = () => {
           <Form
             form={form}
             layout="horizontal"
-            onFinish={onFinish}
+            onFinish={handleSubmit}
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: '600px', margin: '0 auto' }}
@@ -289,14 +280,9 @@ const AssetCreate = () => {
               </>
             )}
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                  Submit
-                </Button>
-                <Button htmlType="button" onClick={onReset}>
-                  Reset
-                </Button>
-              </Space>
+              <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">
+                Submit
+              </Button>
             </Form.Item>
           </Form>
         ) : (
