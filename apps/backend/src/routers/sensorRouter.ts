@@ -34,7 +34,7 @@ router.get('/getSensorById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateSensor/:id', async (req, res) => {
+router.put('/updateSensorDetails/:id', async (req, res) => {
   try {
     const updatedSensor = await SensorService.updateSensor(req.params.id, req.body);
     res.status(200).json(updatedSensor);

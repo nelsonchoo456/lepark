@@ -13,7 +13,7 @@ import {
 } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Divider,Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin, FormInstance } from 'antd';
+import { Divider, Form, Input, Button, message, notification, Select, DatePicker, Card, InputNumber, Space, Spin } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
@@ -50,6 +50,7 @@ const SensorEdit = () => {
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [hubs, setHubs] = useState<HubResponse[]>([]);
   const [createdData, setCreatedData] = useState<SensorResponse>();
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchHubs = async () => {
@@ -69,13 +70,12 @@ const SensorEdit = () => {
       const lastCalibratedDate = sensor.lastCalibratedDate ? dayjs(sensor.lastCalibratedDate) : null;
       const finalData = { ...sensor, acquisitionDate, lastCalibratedDate };
 
-      if (sensor.image) {
-        setPreviewImages([sensor.image]);
+      if (sensor.images) {
+        setExistingImages(sensor.images);
       }
 
       form.setFieldsValue(finalData);
 
-      // Fetch facility details to get parkId
       if (sensor.facilityId) {
         fetchFacilityDetails(sensor.facilityId);
       }
@@ -100,65 +100,65 @@ const SensorEdit = () => {
   };
 
   const handleSubmit = async (values: any) => {
-  if (!sensor) return;
-  setIsSubmitting(true);
-  try {
-    const formValues = await form.validateFields();
+    if (!sensor) return;
+    setIsSubmitting(true);
+    try {
+      const formValues = await form.validateFields();
 
-    console.log('Form values:', formValues);
+      console.log('Form values:', formValues);
 
-    const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
-      const typedKey = key as keyof SensorResponse;
-      if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
-        acc[typedKey] = formValues[typedKey];
+      const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
+        const typedKey = key as keyof SensorResponse;
+        if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
+          acc[typedKey] = formValues[typedKey];
+        }
+        return acc;
+      }, {} as Partial<SensorResponse>);
+
+      if ('parkId' in changedData) {
+        delete changedData.parkId;
       }
-      return acc;
-    }, {} as Partial<SensorResponse>);
 
-    // Remove parkId from the update data
-    if ('parkId' in changedData) {
-      delete changedData.parkId;
-    }
-
-    if (changedData.acquisitionDate) {
-      changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
-    }
-    if (changedData.lastCalibratedDate) {
-      changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
-    }
-
-    console.log('Submitting data:', changedData);
-
-    const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
-    if (response.status === 200) {
-      console.log('Response:', response.data);
-      setCreatedData(response.data);
-      messageApi.open({
-        type: 'success',
-        content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
-      });
-      setTimeout(() => {
-        navigate(`/sensor/${sensor.id}`);
-      }, 1000);
-    }
-  } catch (error) {
-    message.error(String(error));
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-  const validateDates = (form: FormInstance) => ({
-    validator(_: any, value: dayjs.Dayjs) {
-      if (!value) {
-        return Promise.reject(new Error('Please select a date'));
+      if (changedData.acquisitionDate) {
+        changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
       }
-      if (value.isAfter(dayjs(), 'day')) {
-        return Promise.reject(new Error('Date cannot be in the future'));
+      if (changedData.lastCalibratedDate) {
+        changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
       }
-      return Promise.resolve();
-    },
-  });
+
+      // Preserve existing images and add new ones
+      changedData.images = [...existingImages];
+
+      console.log('Submitting data:', changedData);
+
+      const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
+      if (response.status === 200) {
+        console.log('Response:', response.data);
+        setCreatedData(response.data);
+        messageApi.open({
+          type: 'success',
+          content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
+        });
+        setTimeout(() => {
+          navigate(`/sensor/${sensor.id}`);
+        }, 1000);
+      }
+    } catch (error) {
+      message.error(String(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const validateDates = (_: any, value: dayjs.Dayjs) => {
+    if (!value) {
+      return Promise.reject(new Error('Please select a date'));
+    }
+    if (value.isAfter(dayjs(), 'day')) {
+      return Promise.reject(new Error('Date cannot be in the future'));
+    }
+    return Promise.resolve();
+  };
 
   const onReset = () => {
     form.resetFields();
@@ -170,6 +170,23 @@ const SensorEdit = () => {
       return Promise.resolve();
     }
     return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const totalImages = existingImages.length + selectedFiles.length;
+    if (totalImages + e.target.files!.length > 5) {
+      message.error('You can only have up to 5 images in total');
+      return;
+    }
+    handleFileChange(e);
+  };
+
+  const handleImageRemove = (index: number) => {
+    setExistingImages(prevImages => prevImages.filter((_, i) => i !== index));
+  };
+
+  const handleNewImageRemove = (index: number) => {
+    removeImage(index);
   };
 
   const breadcrumbItems = [
@@ -251,7 +268,10 @@ const SensorEdit = () => {
             <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"
-              rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
+              rules={[
+                { required: true, message: 'Please enter Acquisition Date' },
+                { validator: validateDates }
+              ]}
             >
               <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
@@ -310,19 +330,34 @@ const SensorEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item label="Upload Image" tooltip="One image is required">
-              <ImageInput type="file" onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            <Form.Item label="Upload Image" tooltip="Up to 5 images allowed">
+              <ImageInput
+                type="file"
+                multiple
+                onChange={handleImageUpload}
+                accept="image/png, image/jpeg"
+                onClick={onInputClick}
+              />
             </Form.Item>
-            {previewImages.length > 0 && (
+            {(existingImages.length > 0 || previewImages.length > 0) && (
               <Form.Item label="Image Preview">
                 <div className="flex flex-wrap gap-2">
+                  {existingImages.map((imgSrc, index) => (
+                    <img
+                      key={`existing-${index}`}
+                      src={imgSrc}
+                      alt={`Existing ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => handleImageRemove(index)}
+                    />
+                  ))}
                   {previewImages.map((imgSrc, index) => (
                     <img
-                      key={index}
+                      key={`new-${index}`}
                       src={imgSrc}
-                      alt={`Preview ${index}`}
+                      alt={`New ${index}`}
                       className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => removeImage(index)}
+                      onClick={() => handleNewImageRemove(index)}
                     />
                   ))}
                 </div>
