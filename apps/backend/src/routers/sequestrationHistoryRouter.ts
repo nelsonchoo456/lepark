@@ -53,4 +53,13 @@ router.get('/area/:areaId/timeframe', async (req, res) => {
   }
 });
 
+router.post('/generateSequestrationHistory/:areaId', async (req, res) => {
+  try {
+    await SequestrationHistoryService.generateSequestrationHistoryForArea(req.params.areaId);
+    res.status(200).json({ message: 'Sequestration history report generated successfully.' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

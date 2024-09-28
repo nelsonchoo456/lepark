@@ -39,6 +39,21 @@ class SequestrationHistoryDao {
       },
     });
   }
+
+  async deleteSequestrationHistoryForDate(decarbonizationAreaId: string, date: Date): Promise<void> {
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+    await prisma.sequestrationHistory.deleteMany({
+      where: {
+        decarbonizationAreaId,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
+  }
 }
 
 export default new SequestrationHistoryDao();
