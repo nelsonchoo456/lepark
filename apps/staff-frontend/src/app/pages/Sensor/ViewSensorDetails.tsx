@@ -12,16 +12,14 @@ import {
 } from '@lepark/data-access';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Card, Descriptions, Tabs, Tag, Spin } from 'antd';
+import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 import moment from 'moment';
-import SensorCarousel from './components/SensorCarousel';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
 const ViewSensorDetails = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
-  const { sensor } = useRestrictSensors(sensorId);
-  const [loading, setLoading] = useState(true);
+  const { sensor, loading } = useRestrictSensors(sensorId);
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [park, setPark] = useState<ParkResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
@@ -37,23 +35,18 @@ const ViewSensorDetails = () => {
             const facilityResponse = await getFacilityById(sensor.facilityId);
             if (facilityResponse.status === 200) {
               setFacility(facilityResponse.data);
-              //console.log(facilityResponse.data);
               const parkResponse = await getParkById(facilityResponse.data.parkId);
               if (parkResponse.status === 200) {
-                //console.log(parkResponse.data);
                 setPark(parkResponse.data);
               }
             }
           }
-          // Destructure sensor to remove facility and set sensorWithoutFacility
           if (sensor) {
             const { facility, ...sensorWithoutFacility } = sensor;
             setSensorWithoutFacility(sensorWithoutFacility);
           }
         } catch (error) {
           console.error('Error fetching sensor data:', error);
-        } finally {
-          setLoading(false);
         }
       }
     };
@@ -147,8 +140,29 @@ const ViewSensorDetails = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <div className="md:flex w-full gap-4">
-          <div className="w-full md:w-1/2 lg:w-1/2 ">
-            <SensorCarousel image={sensor?.image ?? ''} />
+          <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {sensor?.images && sensor.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {sensor.images.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
 
           <div className="flex-1 flex-col flex">

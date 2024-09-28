@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth, ImageInput } from '@lepark/common-ui';
 import { createSensor, StaffResponse, HubResponse, FacilityResponse, getAllParks, ParkResponse } from '@lepark/data-access';
-import { Button, Card, Form, Input, Result, message, notification, DatePicker, Divider, InputNumber, Select, Space } from 'antd';
+import { Button, Card, Form, Input, Result, message, notification, DatePicker, Divider, InputNumber, Select, Space, Modal } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { SensorResponse } from '@lepark/data-access';
-import useUploadImages from '../../hooks/Images/useUploadImages';
+import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import { useFetchHubs } from '../../hooks/Hubs/useFetchHubs';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
@@ -18,7 +18,7 @@ const SensorCreate2 = () => {
   const { hubs } = useFetchHubs();
   const { facilities } = useFetchFacilities();
   const [createdData, setCreatedData] = useState<SensorResponse | null>();
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImagesAssets();
 
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -83,20 +83,32 @@ const SensorCreate2 = () => {
   ];
 
   const onFinish = async (values: any) => {
+
+
     try {
       const sensorData = {
         ...values,
         latitude: 0,
         longitude: 0,
       };
-          delete sensorData.parkId;
-      const response = await createSensor(sensorData, selectedFiles);
+      delete sensorData.parkId;
+      const imagesToUpload = selectedFiles.length > 0 ? selectedFiles : [];
+      const response = await createSensor(sensorData, imagesToUpload);
       setCreatedData(response.data);
       message.success('Sensor created successfully');
     } catch (error) {
       message.error(String(error));
     }
   };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectedFiles.length + (e.target.files?.length || 0) > 5) {
+      message.error('You can only upload up to 5 images');
+      return;
+    }
+    handleFileChange(e);
+  };
+
 
   return (
     <ContentWrapperDark>
@@ -220,10 +232,11 @@ const SensorCreate2 = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item label="Upload Image" tooltip="One image is required">
+           <Form.Item label="Upload Images" tooltip="Optional. You can upload up to 5 images.">
               <ImageInput
                 type="file"
-                onChange={handleFileChange}
+                multiple
+                onChange={handleImageUpload}
                 accept="image/png, image/jpeg"
                 onClick={onInputClick}
               />
