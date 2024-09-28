@@ -274,8 +274,6 @@ export function App() {
                 {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
               </Route>
 
-
-
               <Route path="/maintenance-tasks">
                 <Route index element={<MaintenanceTask />} />
               </Route>
@@ -348,7 +346,7 @@ export function App() {
                   <Route index element={<AttractionList />} />
                   <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/attraction" />}>
                     <Route path="create" element={<AttractionCreate />} />
-                    {/*<Route path=":id/edit" element={<AttractionEdit />} />*/}
+                    <Route path=":id/edit" element={<AttractionEdit />} />
                     <Route path=":id/edit-map" element={<AttractionEditMap />} />
                   </Route>
                   <Route path=":id" element={<AttractionDetails />} />
@@ -422,7 +420,7 @@ export function App() {
                 </Route>
                 <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
-              
+
               <Route path="/parkasset">
                 {/* <Route index element={<AssetListSummary />} /> */}
                 <Route index element={<AssetListGrouped />} />
@@ -456,7 +454,7 @@ export function App() {
                 >
                   <Route path="create" element={<SensorCreate2 />} />
                   <Route path="edit/:sensorId" element={<SensorEdit />} />
-                  <Route path="edit"/>
+                  <Route path="edit" />
                 </Route>
                 <Route path="map" element={<SensorMap />} />
               </Route>

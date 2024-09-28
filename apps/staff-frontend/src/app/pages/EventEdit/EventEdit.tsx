@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
@@ -38,7 +38,7 @@ import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import dayjs, { Dayjs } from 'dayjs';
 import FacilityInfoCard from '../Event/components/FacilityInfoCard';
-import { useFetchOpenFacilitiesByPark } from '../../hooks/Facilities/useFetchFacilitiesByPark';
+import { useFetchPublicFacilitiesForEventsByPark } from '../../hooks/Facilities/useFetchPublicFacilitiesForEventsByPark';
 import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
 
 const { TextArea } = Input;
@@ -49,8 +49,12 @@ const EventEdit = () => {
   const { id } = useParams();
   const { event, loading, park, facility } = useRestrictEvents(id);
   const [selectedFacility, setSelectedFacility] = useState<FacilityResponse | null>(null);
-  const { facilities, isLoading: isFacilitiesLoading, error: facilitiesError } = useFetchOpenFacilitiesByPark(park?.id || null);
-  const { bookedDates, isLoading: isEventsLoading, error: eventsError } = useFetchEventsByFacilityId(selectedFacility?.id || null, event?.id);
+  const { facilities, isLoading: isFacilitiesLoading, error: facilitiesError } = useFetchPublicFacilitiesForEventsByPark(park?.id || null);
+  const {
+    bookedDates,
+    isLoading: isEventsLoading,
+    error: eventsError,
+  } = useFetchEventsByFacilityId(selectedFacility?.id || null, event?.id);
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
@@ -59,9 +63,10 @@ const EventEdit = () => {
   const [form] = Form.useForm();
   const [isCancelled, setIsCancelled] = useState(event?.status === EventStatusEnum.CANCELLED);
   const [maxCapacity, setMaxCapacity] = useState<number | null>(null);
-  const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment } | null>(null);
+  const [operatingHours, setOperatingHours] = useState<{ start: moment.Moment; end: moment.Moment }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [initialValues, setInitialValues] = useState<any>(null);
+  const [selectedDateRange, setSelectedDateRange] = useState<[moment.Moment, moment.Moment] | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -77,10 +82,12 @@ const EventEdit = () => {
         if (currentFacility) {
           setSelectedFacility(currentFacility);
           setMaxCapacity(currentFacility.capacity);
-          setOperatingHours({
-            start: moment(currentFacility.openingHours[0]),
-            end: moment(currentFacility.closingHours[0]),
-          });
+          const allOperatingHours = currentFacility.openingHours.map((openTime, index) => ({
+            start: moment(openTime),
+            end: moment(currentFacility.closingHours[index]),
+          }));
+
+          setOperatingHours(allOperatingHours);
         }
 
         const initialValues = {
@@ -94,6 +101,7 @@ const EventEdit = () => {
 
         setInitialValues(initialValues);
         setCurrentImages(event.images || []);
+        setSelectedDateRange([moment(event.startDate), moment(event.endDate)]);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -137,17 +145,19 @@ const EventEdit = () => {
     if (facility) {
       setSelectedFacility(facility);
       setMaxCapacity(facility.capacity);
-      setOperatingHours({
-        start: moment(facility.openingHours[0]),
-        end: moment(facility.closingHours[0]),
-      });
+      const allOperatingHours = facility.openingHours.map((openTime, index) => ({
+        start: moment(openTime),
+        end: moment(facility.closingHours[index]),
+      }));
+
+      setOperatingHours(allOperatingHours);
     } else {
       setSelectedFacility(null);
       setMaxCapacity(null);
-      setOperatingHours(null);
+      setOperatingHours([]);
     }
 
-    form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined });
+    form.setFieldsValue({ maxCapacity: undefined, timeRange: undefined, dateRange: undefined });
   };
 
   const handleSubmit = async () => {
@@ -215,18 +225,84 @@ const EventEdit = () => {
     return bookedDates.some((bookedDate) => bookedDate.isSame(current, 'day'));
   };
 
-  const disabledTime = (current: moment.Moment, type: 'start' | 'end') => {
-    if (!operatingHours) return {};
+  const selectedDayOperatingHours = useMemo(() => {
+    if (!operatingHours.length || !selectedDateRange) return null;
+    const [startDate, endDate] = selectedDateRange;
 
-    const currentHour = current.hour();
-    const currentMinute = current.minute();
+    // Ensure we're working with the correct date objects
+    const start = moment(startDate.toDate());
+    const end = moment(endDate.toDate());
+
+    // Calculate the number of days in the range
+    const daysInRange = end.diff(start, 'days') + 1;
+
+    // Initialize latestStart with the start of the first day and earliestEnd with the end of the last day
+    let latestStart = moment(start).startOf('day');
+    let earliestEnd = moment(end).endOf('day');
+
+    // Loop through each day in the date range
+    for (let i = 0; i < daysInRange; i++) {
+      const currentDate = moment(start).add(i, 'days');
+
+      let dayOfWeek = currentDate.day() - 1;
+      if (dayOfWeek === -1) dayOfWeek = 6; // Sunday becomes 6
+
+      const dayHours = operatingHours[dayOfWeek];
+
+      if (dayHours) {
+        // Create moment objects for start and end times on the current date
+        const startTime = moment(currentDate).set({
+          hour: dayHours.start.hour(),
+          minute: dayHours.start.minute(),
+          second: 0,
+          millisecond: 0,
+        });
+        const endTime = moment(currentDate).set({
+          hour: dayHours.end.hour(),
+          minute: dayHours.end.minute(),
+          second: 0,
+          millisecond: 0,
+        });
+
+        // Update latest start time
+        if (startTime.format('HH:mm') > latestStart.format('HH:mm') || i === 0) {
+          latestStart = startTime;
+        }
+        // Update earliest end time
+        if (endTime.format('HH:mm') < earliestEnd.format('HH:mm') || i === 0) {
+          earliestEnd = endTime;
+        }
+      }
+    }
+
+    return {
+      start: latestStart,
+      end: earliestEnd,
+    };
+  }, [operatingHours, selectedDateRange]);
+
+  useEffect(() => {
+    const dateRange = form.getFieldValue('dateRange');
+    if (dateRange) {
+      setSelectedDateRange([moment(dateRange[0]), moment(dateRange[1])]);
+    }
+  }, [form]);
+
+  const onDateRangeChange = (dates: [moment.Moment, moment.Moment] | null) => {
+    setSelectedDateRange(dates);
+    // Clear the timeRange field when dates change
+    form.setFieldsValue({ timeRange: undefined });
+  };
+
+  const disabledTime = (current: moment.Moment, type: 'start' | 'end') => {
+    if (!selectedDayOperatingHours) return {};
 
     if (type === 'start') {
       return {
-        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h < operatingHours.start.hour()),
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h < selectedDayOperatingHours.start.hour()),
         disabledMinutes: (selectedHour: number) => {
-          if (selectedHour === operatingHours.start.hour()) {
-            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m < operatingHours.start.minute());
+          if (selectedHour === selectedDayOperatingHours.start.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m < selectedDayOperatingHours.start.minute());
           }
           return [];
         },
@@ -235,10 +311,10 @@ const EventEdit = () => {
 
     if (type === 'end') {
       return {
-        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h > operatingHours.end.hour()),
+        disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter((h) => h > selectedDayOperatingHours.end.hour()),
         disabledMinutes: (selectedHour: number) => {
-          if (selectedHour === operatingHours.end.hour()) {
-            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m > operatingHours.end.minute());
+          if (selectedHour === selectedDayOperatingHours.end.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter((m) => m > selectedDayOperatingHours.end.minute());
           }
           return [];
         },
@@ -247,6 +323,7 @@ const EventEdit = () => {
 
     return {};
   };
+
   const cancelOptions = [
     { value: true, label: 'Yes' },
     { value: false, label: 'No' },
@@ -305,7 +382,13 @@ const EventEdit = () => {
                   label="Title"
                   rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}
                 >
-                  <Input placeholder="Event Title" />
+                  <Input
+                    placeholder="Event Title"
+                    onBlur={(e) => {
+                      const trimmedValue = e.target.value.trim();
+                      form.setFieldsValue({ title: trimmedValue });
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item name="description" label="Description" rules={[{ required: true }]}>
@@ -335,6 +418,7 @@ const EventEdit = () => {
                       },
                     },
                   ]}
+                  extra="Max capacity is limited to facility capacity."
                 >
                   <InputNumber min={1} max={maxCapacity || undefined} placeholder="Capacity" />
                 </Form.Item>
@@ -372,24 +456,32 @@ const EventEdit = () => {
                 )}
 
                 <Divider orientation="left">Event Timings</Divider>
-                <Form.Item name="dateRange" label="Event Dates" rules={[{ required: true }]}>
+                <Form.Item
+                  name="dateRange"
+                  label="Event Dates"
+                  rules={[{ required: true }]}
+                  extra="Date range is limited to facility availability."
+                >
                   <RangePicker
                     className="w-full"
                     format="YYYY-MM-DD"
                     disabledDate={(current) => disabledDate(moment(current.toDate()))}
                     onChange={(dates, dateStrings) => {
-                      if (dates) {
-                        form.setFieldsValue({
-                          dateRange: dates,
-                        });
+                      if (dates && dates[0] && dates[1]) {
+                        onDateRangeChange([moment(dates[0].toDate()), moment(dates[1].toDate())]);
                       } else {
-                        form.setFieldsValue({ dateRange: null });
+                        onDateRangeChange(null);
                       }
                     }}
                   />
                 </Form.Item>
 
-                <Form.Item name="timeRange" label="Event Time" rules={[{ required: true }]}>
+                <Form.Item
+                  name="timeRange"
+                  label="Event Time"
+                  rules={[{ required: true }]}
+                  extra="Time range is limited to facility operating hours across selected dates."
+                >
                   <TimePicker.RangePicker
                     className="w-full"
                     use12Hours

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import EventStatusTag from '../../EventDetails/components/EventStatusTag';
 import { FiExternalLink } from 'react-icons/fi';
 import dayjs from 'dayjs';
-import { useFetchOpenFacilitiesByPark } from '../../../hooks/Facilities/useFetchFacilitiesByPark';
+import { useFetchPublicFacilitiesForEventsByPark } from '../../../hooks/Facilities/useFetchPublicFacilitiesForEventsByPark';
 
 const { Text, Title } = Typography;
 
@@ -17,7 +17,7 @@ const EventsTab: React.FC<EventsTabProps> = ({ parkId }) => {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { facilities } = useFetchOpenFacilitiesByPark(parkId);
+  const { facilities } = useFetchPublicFacilitiesForEventsByPark(parkId);
 
   useEffect(() => {
     const fetchEvents = async () => {

@@ -25,7 +25,7 @@ import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilit
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 
-const daysOfTheWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const FacilityEdit = () => {
   const { facilityId } = useParams();

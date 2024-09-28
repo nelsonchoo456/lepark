@@ -38,7 +38,7 @@ const MainLanding = () => {
             navigate(`/discover/park/${selectedPark?.id}`);
           }}
         >
-          Taxonomy
+          Species
         </NavButton>
         <NavButton
           key="attractions"

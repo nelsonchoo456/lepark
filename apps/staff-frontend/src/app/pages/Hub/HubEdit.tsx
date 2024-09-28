@@ -156,7 +156,7 @@ const HubEdit = () => {
       isMain: true,
     },
     {
-      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
+      title: hub?.name ? hub?.name : 'Details',
       pathKey: `/hubs/${hub?.id}`,
     },
     {
