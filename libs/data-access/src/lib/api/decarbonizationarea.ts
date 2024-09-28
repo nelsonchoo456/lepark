@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { DecarbonizationAreaData, DecarbonizationAreaResponse } from '../types/decarbonizationarea';
 import client from './client';
+import { OccurrenceResponse } from '../types/occurrence';
 
 const URL = '/decarbonizationarea';
 
@@ -63,7 +64,7 @@ export const getDecarbonizationAreasByParkId = async (parkId: number) => {
 
 export const getOccurrencesWithinDecarbonizationArea = async (areaId: string) => {
   try {
-    const response: AxiosResponse<DecarbonizationAreaResponse[]> = await client.get(`${URL}/${areaId}/occurrences`);
+    const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/${areaId}/occurrences`);
     return response;
   } catch (error) {
     throw new Error('Error fetching occurrences within decarbonization area');

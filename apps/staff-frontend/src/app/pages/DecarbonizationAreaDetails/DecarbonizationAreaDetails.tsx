@@ -8,6 +8,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
 import { useRestrictDecarbonizationArea } from '../../hooks/DecarbonizationArea/useRestrictDecarbonizationArea';
+import OccurrenceTable from './components/OccurrenceTable';
 
 const { Text } = Typography;
 
@@ -39,6 +40,11 @@ const DecarbonizationAreaDetails = () => {
       ) : (
         <Empty description={'No Map data for this Area'}></Empty>
       ),
+    },
+    {
+      key: 'occurrences',
+      label: 'Occurrences',
+      children: <OccurrenceTable decarbonizationAreaId={decarbonizationArea.id} />
     },
   ];
 
