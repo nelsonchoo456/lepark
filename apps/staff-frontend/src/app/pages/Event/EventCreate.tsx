@@ -28,6 +28,7 @@ import {
   Divider,
   notification,
   message,
+  Tooltip,
 } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { EventResponse } from '@lepark/data-access';
@@ -37,18 +38,19 @@ import { useFetchPublicFacilitiesForEventsByPark } from '../../hooks/Facilities/
 import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
 import moment from 'moment';
 import FacilityInfoCard from './components/FacilityInfoCard';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
 
 const EventCreate = () => {
+  const [form] = Form.useForm();
   const { user } = useAuth<StaffResponse>();
   const { parks, loading: parksLoading } = useFetchParks();
   const [createdData, setCreatedData] = useState<EventResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const navigate = useNavigate();
   const notificationShown = useRef(false);
-  const [form] = Form.useForm();
 
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const { facilities, isLoading: isLoadingFacilities, error: facilitiesError } = useFetchPublicFacilitiesForEventsByPark(selectedParkId);
@@ -289,7 +291,9 @@ const EventCreate = () => {
                   />
                 </Form.Item>
 
-                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}
+                tooltip="Only public facilities of these types are available: Playground, Carpark, Stage, Picnic Area, BBQ Pit, Camping Area, Amphitheater, Gazebo."
+              >
                   {isLoadingFacilities ? (
                     <div>Loading...</div>
                   ) : (
