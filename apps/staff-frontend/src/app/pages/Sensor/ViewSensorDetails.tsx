@@ -73,9 +73,9 @@ const ViewSensorDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'name',
-      label: 'Name',
-      children: sensor?.sensorName,
+      key: 'serialNumber',
+      label: 'Serial Number',
+      children: sensor?.serialNumber,
     },
     { key: 'sensorType', label: 'Sensor Type', children: capitalize(sensor?.sensorType ?? '') },
     {
@@ -166,7 +166,7 @@ const ViewSensorDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{sensor?.serialNumber}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{sensor?.sensorName}</LogoText>
             <Descriptions
               items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
               column={1}

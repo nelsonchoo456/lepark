@@ -197,8 +197,6 @@ const AssetEdit = () => {
       <div className="flex justify-center items-center h-64">
         <Spin size="large" />
       </div>
-    ) : notFound ? (
-      <EntityNotFound entityName="Asset" listPath="/parkasset" />
     ) : (
       <Form
         form={form}
