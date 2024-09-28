@@ -9,7 +9,7 @@ export interface SensorData {
   acquisitionDate: string;
   lastCalibratedDate?: string;
   calibrationFrequencyDays: number;
-  recurringMaintenanceDuration: number;
+  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes: number;
@@ -34,7 +34,7 @@ export interface SensorResponse {
   acquisitionDate: string;
   lastCalibratedDate?: string;
   calibrationFrequencyDays: number;
-  recurringMaintenanceDuration: number;
+  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes: number;

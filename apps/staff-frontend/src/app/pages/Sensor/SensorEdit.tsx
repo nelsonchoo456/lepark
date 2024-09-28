@@ -285,13 +285,7 @@ const SensorEdit = () => {
             >
               <InputNumber placeholder="Enter frequency in days" min={1} max={500} className="w-full" />
             </Form.Item>
-            <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Recurring Maintenance"
-              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
-            >
-              <InputNumber placeholder="Enter duration in days" min={1} max={500} className="w-full" />
-            </Form.Item>
+
             <Form.Item
               name="dataFrequencyMinutes"
               label="Data Frequency"

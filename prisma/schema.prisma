@@ -369,7 +369,7 @@ model Sensor {
   acquisitionDate               DateTime
   lastCalibratedDate            DateTime?
   calibrationFrequencyDays      Int
-  recurringMaintenanceDuration  Int
+  recurringMaintenanceDuration  Int?
   lastMaintenanceDate           DateTime?
   nextMaintenanceDate           DateTime?
   dataFrequencyMinutes          Int
@@ -415,7 +415,7 @@ model ParkAsset {
   parkAssetDescription          String?
   parkAssetStatus               ParkAssetStatusEnum
   acquisitionDate               DateTime
-  recurringMaintenanceDuration  Int
+  recurringMaintenanceDuration  Int?
   lastMaintenanceDate           DateTime?              // Keep this field
   nextMaintenanceDate           DateTime?              // Keep this field
   supplier                      String

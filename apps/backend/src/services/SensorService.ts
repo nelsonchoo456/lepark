@@ -37,7 +37,6 @@ function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInpu
     !data.sensorUnit ||
     !data.supplier ||
     data.calibrationFrequencyDays === undefined ||
-    data.recurringMaintenanceDuration === undefined ||
     !data.supplierContactNumber ||
     !data.serialNumber
   ) {
@@ -141,7 +140,7 @@ class SensorService {
       const updateData = formattedData as Prisma.SensorUpdateInput;
 
       const updatedSensor = await SensorDao.updateSensor(id, updateData);
-      console.log('updated sensor:', updatedSensor);
+
       return updatedSensor;
     } catch (error) {
       if (error instanceof z.ZodError) {

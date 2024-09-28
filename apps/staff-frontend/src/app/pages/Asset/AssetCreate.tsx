@@ -89,16 +89,15 @@ const AssetCreate = () => {
     form.setFieldsValue({ facilityId: undefined });
   };
 
-  const onFinish = async (values: any) => {
+   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
-      const assetData: ParkAssetData = {
+      const baseAssetData: ParkAssetData = {
         parkAssetName: values.parkAssetName,
         parkAssetType: values.parkAssetType,
         parkAssetDescription: values.parkAssetDescription,
         parkAssetStatus: values.parkAssetStatus,
         acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
-        recurringMaintenanceDuration: values.recurringMaintenanceDuration,
         supplier: values.supplier,
         supplierContactNumber: values.supplierContactNumber,
         parkAssetCondition: values.parkAssetCondition,
@@ -109,17 +108,23 @@ const AssetCreate = () => {
 
       let response;
       if (createMultiple) {
-        for (let i = 0; i < assetQuantity; i++) {
-          await createParkAsset(assetData, []);
+        const createdAssets = [];
+        for (let i = 1; i <= assetQuantity; i++) {
+          const assetData = {
+            ...baseAssetData,
+            parkAssetName: `${values.parkAssetName} ${i}`
+          };
+          const result = await createParkAsset(assetData, []);
+          createdAssets.push(result.data);
         }
         // Use the last created asset as the response
-        response = await createParkAsset(assetData, []);
+        response = { data: createdAssets[createdAssets.length - 1] };
       } else {
-        response = await createParkAsset(assetData, selectedFiles);
+        response = await createParkAsset(baseAssetData, selectedFiles);
       }
 
       setCreatedAsset(response.data);
-      setCreatedAssetName(createMultiple ? `${values.parkAssetName} (x${assetQuantity})` : values.parkAssetName);
+      setCreatedAssetName(createMultiple ? `${values.parkAssetName} 1-${assetQuantity}` : values.parkAssetName);
       setShowSuccessAlert(true);
       form.resetFields();
       clearAllImages();
@@ -204,13 +209,7 @@ const AssetCreate = () => {
     disabledDate={(current) => current && current > dayjs().endOf('day')}
   />
 </Form.Item>
-            <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Recurring Maintenance"
-              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
-            >
-              <InputNumber placeholder="Enter duration in days" min={1} max={500} className="w-full" />
-            </Form.Item>
+
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>

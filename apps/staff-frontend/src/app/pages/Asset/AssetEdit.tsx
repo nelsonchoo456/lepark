@@ -142,7 +142,6 @@ const AssetEdit = () => {
         parkAssetDescription: values.parkAssetDescription,
         parkAssetStatus: values.parkAssetStatus,
         acquisitionDate: values.acquisitionDate ? dayjs(values.acquisitionDate).toISOString() : undefined,
-        recurringMaintenanceDuration: values.recurringMaintenanceDuration,
         supplier: values.supplier,
         supplierContactNumber: values.supplierContactNumber,
         parkAssetCondition: values.parkAssetCondition,
@@ -244,14 +243,6 @@ const AssetEdit = () => {
     }}
   />
 </Form.Item>
-
-        <Form.Item
-          name="recurringMaintenanceDuration"
-          label="Recurring Maintenance"
-          rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
-        >
-          <InputNumber placeholder="Enter duration in days" min={1} max={500} className="w-full" />
-        </Form.Item>
 
         <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
           <Input />

@@ -8,7 +8,7 @@ export const ParkAssetSchema = z.object({
   parkAssetDescription: z.string().optional(),
   parkAssetStatus: z.nativeEnum(ParkAssetStatusEnum),
   acquisitionDate: z.date(),
-  recurringMaintenanceDuration: z.number().int().positive(),
+  recurringMaintenanceDuration: z.number().int().positive().optional(),
   lastMaintenanceDate: z.date().optional(),
   nextMaintenanceDate: z.date().optional(),
   supplier: z.string(),

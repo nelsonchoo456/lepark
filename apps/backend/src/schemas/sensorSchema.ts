@@ -11,7 +11,7 @@ export const SensorSchema = z.object({
   acquisitionDate: z.date(),
   lastCalibratedDate: z.date().optional(),
   calibrationFrequencyDays: z.number().int().positive(),
-  recurringMaintenanceDuration: z.number().int().positive(),
+  recurringMaintenanceDuration: z.number().int().positive().optional(),
   lastMaintenanceDate: z.date().optional(),
   nextMaintenanceDate: z.date().optional(),
   dataFrequencyMinutes: z.number().int().positive(),
