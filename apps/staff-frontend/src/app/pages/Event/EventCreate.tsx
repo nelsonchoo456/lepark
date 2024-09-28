@@ -27,6 +27,7 @@ import {
   InputNumber,
   Divider,
   notification,
+  message,
 } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { EventResponse } from '@lepark/data-access';
@@ -243,10 +244,6 @@ const EventCreate = () => {
       const response = await createEvent(finalData, selectedFiles);
       if (response?.status === 201) {
         setCreatedData(response.data);
-        notification.success({
-          message: 'Success',
-          description: 'Event created successfully',
-        });
       }
     } catch (error: any) {
       console.error(error);
@@ -254,10 +251,7 @@ const EventCreate = () => {
         form.scrollToField(error.errorFields[0].name);
       } else {
         const errorMessage = error.message || error.toString();
-        notification.error({
-          message: 'Error',
-          description: errorMessage || 'An error occurred while creating the event.',
-        });
+        message.error(errorMessage || 'An error occurred while creating the event.');
       }
     }
   };
@@ -447,6 +441,7 @@ const EventCreate = () => {
             <Result
               status="success"
               title="Created new Event"
+              subTitle={createdData && <>Event title: {createdData.title}</>}
               extra={[
                 <Button key="back" onClick={() => navigate('/event')}>
                   Back to Event Management
