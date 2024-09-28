@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, List, Typography, Button, Empty, Space } from 'antd';
+import { Card, List, Typography, Button, Empty, Space, Col, Row } from 'antd';
 import { EventResponse, EventStatusEnum, getEventsByParkId } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import EventStatusTag from '../../EventDetails/components/EventStatusTag';
@@ -58,14 +58,12 @@ const EventsTab: React.FC<EventsTabProps> = ({ parkId }) => {
           View All Events
         </Button>
       </div>
-      <List
-        grid={{ gutter: 16, column: 3 }}
-        dataSource={events}
-        renderItem={(event) => (
-          <List.Item>
+      <Row gutter={[16, 16]}>
+        {events.map((event) => (
+          <Col xs={24} sm={12} md={8} key={event.id}>
             <Card
               hoverable
-              className="w-full"
+              className="w-full h-full"
               cover={
                 event.images && event.images.length > 0 ? (
                   <img alt={event.title} src={event.images[0]} className="h-[150px] object-cover" />
@@ -78,8 +76,10 @@ const EventsTab: React.FC<EventsTabProps> = ({ parkId }) => {
             >
               <Card.Meta
                 title={
-                  <div className="flex justify-between items-center">
-                    <Title level={5} className="m-0">{event.title}</Title>
+                  <div className="flex flex-wrap items-start justify-between">
+                    <Title level={5} className="m-0 mr-2 mb-2 break-words" style={{ maxWidth: 'calc(100% - 70px)' }}>
+                      {event.title}
+                    </Title>
                     <EventStatusTag status={event.status as EventStatusEnum} />
                   </div>
                 }
@@ -100,9 +100,9 @@ const EventsTab: React.FC<EventsTabProps> = ({ parkId }) => {
                 }
               />
             </Card>
-          </List.Item>
-        )}
-      />
+          </Col>
+        ))}
+      </Row>
     </>
   );
 };
