@@ -187,142 +187,156 @@ const AssetEdit = () => {
   }
 
   return (
-    <ContentWrapperDark>
-      {contextHolder}
-      <PageHeader2 breadcrumbItems={breadcrumbItems} />
-      <Card>
-        {loading || assetLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
-          </div>
-        ) : (
-          <Form {...layout} form={form} name="control-hooks" onFinish={onFinish}>
-            <Form.Item name="parkAssetName" label="Asset Name" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
+   <ContentWrapperDark>
+  {contextHolder}
+  <PageHeader2 breadcrumbItems={breadcrumbItems} />
+  <Card>
+    {loading || assetLoading ? (
+      <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+      </div>
+    ) : notFound ? (
+      <EntityNotFound entityName="Asset" listPath="/parkasset" />
+    ) : (
+      <Form
+        form={form}
+        name="control-hooks"
+        onFinish={onFinish}
+        layout="horizontal"
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 16 }}
+        style={{ maxWidth: '600px', margin: '0 auto' }}
+      >
+        <Form.Item name="parkAssetName" label="Asset Name" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
 
-            <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
-              <Select placeholder="Select asset type">
-                {Object.values(ParkAssetTypeEnum).map((type) => (
-                  <Select.Option key={type} value={type}>
-                    {formatEnumLabel(type)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+        <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
+          <Select placeholder="Select asset type">
+            {Object.values(ParkAssetTypeEnum).map((type) => (
+              <Select.Option key={type} value={type}>
+                {formatEnumLabel(type)}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-            <Form.Item name="parkAssetDescription" label="Asset Description">
-              <TextArea rows={4} />
-            </Form.Item>
+        <Form.Item name="parkAssetDescription" label="Description">
+          <TextArea rows={4} />
+        </Form.Item>
 
-            <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
-              <Select placeholder="Select asset status">
-                {Object.values(ParkAssetStatusEnum).map((status) => (
-                  <Select.Option key={status} value={status}>
-                    {formatEnumLabel(status)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+        <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
+          <Select placeholder="Select asset status">
+            {Object.values(ParkAssetStatusEnum).map((status) => (
+              <Select.Option key={status} value={status}>
+                {formatEnumLabel(status)}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" />
-            </Form.Item>
+        <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+  <DatePicker
+    className="w-full"
+    disabledDate={(current) => {
+      const originalDate = asset?.acquisitionDate ? dayjs(asset.acquisitionDate) : dayjs();
+      return current && current > originalDate.endOf('day');
+    }}
+  />
+</Form.Item>
 
-            <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Recurring Maintenance"
-              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
-            >
-              <InputNumber placeholder="Enter duration in days" min={1} max={500} className="w-full" />
-            </Form.Item>
+        <Form.Item
+          name="recurringMaintenanceDuration"
+          label="Recurring Maintenance"
+          rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
+        >
+          <InputNumber placeholder="Enter duration in days" min={1} max={500} className="w-full" />
+        </Form.Item>
 
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
+        <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
 
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[
-                { required: true, message: 'Please input the supplier contact number' },
-                { validator: validatePhoneNumber }
-              ]}
-            >
-              <Input />
-            </Form.Item>
+        <Form.Item
+          name="supplierContactNumber"
+          label="Supplier Contact"
+          rules={[
+            { required: true, message: 'Please input the supplier contact number' },
+            { validator: validatePhoneNumber }
+          ]}
+        >
+          <Input />
+        </Form.Item>
 
-            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
-              <Select placeholder="Select asset condition">
-                {Object.values(ParkAssetConditionEnum).map((condition) => (
-                  <Select.Option key={condition} value={condition}>
-                    {formatEnumLabel(condition)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+        <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
+          <Select placeholder="Select asset condition">
+            {Object.values(ParkAssetConditionEnum).map((condition) => (
+              <Select.Option key={condition} value={condition}>
+                {formatEnumLabel(condition)}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-            <Form.Item name="remarks" label="Remarks">
-              <TextArea />
-            </Form.Item>
+        <Form.Item name="remarks" label="Remarks">
+          <TextArea />
+        </Form.Item>
 
-            {user?.role === 'SUPERADMIN' && (
-              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
-                <Select placeholder="Select a park" onChange={(value) => handleParkChange(Number(value))}>
-                  {parks.map((park) => (
-                    <Select.Option key={park.id} value={park.id}>
-                      {park.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            )}
-
-            <Form.Item
-              name="facilityId"
-              label="Facility"
-              rules={[{ required: true, message: 'Please select a facility' }]}
-            >
-              <Select placeholder="Select a facility">
-                {filteredFacilities.map((facility) => (
-                  <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item label="Upload Images">
-              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-            </Form.Item>
-
-            {(existingImages.length + previewImages.length) > 0 && (
-              <Form.Item label="Image Preview">
-                <div className="flex flex-wrap gap-2">
-                  {[...existingImages, ...previewImages].map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => handleImageClick(index)}
-                    />
-                  ))}
-                </div>
-              </Form.Item>
-            )}
-
-            <Form.Item {...tailLayout}>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                  Update
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
+        {user?.role === 'SUPERADMIN' && (
+          <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
+            <Select placeholder="Select a park" onChange={(value) => handleParkChange(Number(value))}>
+              {parks.map((park) => (
+                <Select.Option key={park.id} value={park.id}>
+                  {park.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
         )}
-      </Card>
-    </ContentWrapperDark>
+
+        <Form.Item
+          name="facilityId"
+          label="Facility"
+          rules={[{ required: true, message: 'Please select a facility' }]}
+        >
+          <Select placeholder="Select a facility">
+            {filteredFacilities.map((facility) => (
+              <Select.Option key={facility.id} value={facility.id}>
+                {facility.facilityName}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item label="Upload Images">
+          <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+        </Form.Item>
+
+        {(existingImages.length + previewImages.length) > 0 && (
+          <Form.Item label="Image Preview">
+            <div className="flex flex-wrap gap-2">
+              {[...existingImages, ...previewImages].map((imgSrc, index) => (
+                <img
+                  key={index}
+                  src={imgSrc}
+                  alt={`Preview ${index}`}
+                  className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                  onClick={() => handleImageClick(index)}
+                />
+              ))}
+            </div>
+          </Form.Item>
+        )}
+
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+            Update
+          </Button>
+        </Form.Item>
+      </Form>
+    )}
+  </Card>
+</ContentWrapperDark>
   );
 };
 
