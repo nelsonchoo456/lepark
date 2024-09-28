@@ -1,8 +1,15 @@
-import { Button, Input, Space, message } from 'antd';
+import { Button, Card, Checkbox, Input, Space, message } from 'antd';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import MapFeatureManager from '../../../components/map/MapFeatureManager';
 import { useEffect, useState } from 'react';
-import { getDecarbonizationAreasByParkId, ParkResponse, DecarbonizationAreaResponse, createDecarbonizationArea } from '@lepark/data-access';
+import {
+  getDecarbonizationAreasByParkId,
+  ParkResponse,
+  DecarbonizationAreaResponse,
+  createDecarbonizationArea,
+  OccurrenceResponse,
+  getOccurrencesByParkId,
+} from '@lepark/data-access';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { COLORS } from '../../../config/colors';
 import node_image from '../../../assets/mapFeatureManager/line.png';
@@ -13,6 +20,8 @@ import { TbTree } from 'react-icons/tb';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../../components/map/functions/functions';
 import { useNavigate } from 'react-router-dom';
+import PictureMarker from '../../../components/map/PictureMarker';
+import { PiPlantFill } from 'react-icons/pi';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
@@ -63,6 +72,10 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
 
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
+  const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
   useEffect(() => {
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((z) => z.id === formValues.parkId);
@@ -75,9 +88,34 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
           setParkDecarbAreas(decarbAreasData);
         }
       };
+
       fetchDecarbAreas();
     }
   }, [parks, formValues.parkId]);
+
+  useEffect(() => {
+    if (selectedPark?.id) {
+      fetchOccurrencesData();
+    }
+  }, [selectedPark]);
+
+  const fetchOccurrencesData = async () => {
+    if (!selectedPark?.id) {
+      return;
+    }
+    try {
+      const occurrencesRes = await getOccurrencesByParkId(selectedPark.id);
+      if (occurrencesRes.status === 200) {
+        const occurrencesData = occurrencesRes.data;
+        setOccurrences(occurrencesData);
+        console.log('Occurrences:', occurrencesData);
+      }
+    } catch (error) {
+      // do nothing
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -157,6 +195,16 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
           <img src={edit_image} alt="polygon-edit" height={'16px'} width={'16px'} /> - Edit Paths and Boundaries
         </Space>
       </div>
+      <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4 mt-2">
+        <Space size={20}>
+          <div className="font-semibold">Display:</div>
+          {!loading && occurrences && (
+            <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+              Occurrences
+            </Checkbox>
+          )}
+        </Space>
+      </Card>
       <div
         style={{
           height: '60vh',
@@ -193,6 +241,21 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
                 color={COLORS.green[600]}
                 fillColor={'transparent'}
                 labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+              />
+            ))}
+          {showOccurrences &&
+            occurrences &&
+            occurrences.map((occurrence) => (
+              <PictureMarker
+                key={occurrence.id}
+                id={occurrence.id}
+                entityType="OCCURRENCE"
+                circleWidth={30}
+                lat={occurrence.lat}
+                lng={occurrence.lng}
+                backgroundColor={COLORS.green[300]}
+                icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                tooltipLabel={occurrence.title}
               />
             ))}
         </MapContainer>

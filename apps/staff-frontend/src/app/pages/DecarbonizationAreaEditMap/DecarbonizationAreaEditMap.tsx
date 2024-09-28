@@ -289,6 +289,7 @@ const DecarbonizationAreaEditMap = () => {
                 occurrences &&
                 occurrences.map((occurrence) => (
                   <PictureMarker
+                    key={occurrence.id}
                     id={occurrence.id}
                     entityType="OCCURRENCE"
                     circleWidth={30}

@@ -3,9 +3,22 @@ import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { useAuth } from '@lepark/common-ui';
-import { DecarbonizationAreaResponse, getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import {
+  DecarbonizationAreaResponse,
+  getDecarbonizationAreasByParkId,
+  getOccurrencesByParkId,
+  getParkById,
+  OccurrenceResponse,
+  ParkResponse,
+  StaffResponse,
+  StaffType,
+} from '@lepark/data-access';
 import { TbEdit } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
+import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
+import PictureMarker from '../../../components/map/PictureMarker';
+import { PiPlantFill } from 'react-icons/pi';
+import { COLORS } from '../../../config/colors';
 
 interface MapTabProps {
   decarbonizationArea: DecarbonizationAreaResponse;
@@ -48,6 +61,11 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
   const { user } = useAuth<StaffResponse>();
   const [park, setPark] = useState<ParkResponse>();
   const [showPark, setShowPark] = useState<boolean>(true);
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
+  const [parkDecarbAreas, setParkDecarbAreas] = useState<DecarbonizationAreaResponse[]>();
+  const [showParkDecarbAreas, setShowParkDecarbAreas] = useState<boolean>(false);
+  const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -66,6 +84,40 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
   // Parse the geom string to GeoJSON object
   const decarbonizationAreaGeom = parseGeom(decarbonizationArea.geom);
 
+  useEffect(() => {
+    if (!decarbonizationArea) return;
+    fetchParkDecarbAreasData();
+    fetchOccurrencesData();
+  }, [decarbonizationArea]);
+
+  const fetchParkDecarbAreasData = async () => {
+    if (!decarbonizationArea?.parkId) return;
+    try {
+      const parkDecarbAreasRes = await getDecarbonizationAreasByParkId(decarbonizationArea.parkId);
+      if (parkDecarbAreasRes.status === 200) {
+        let parkDecarbAreasData = parkDecarbAreasRes.data;
+        parkDecarbAreasData = parkDecarbAreasData.filter((area) => area.id !== decarbonizationArea.id);
+        setParkDecarbAreas(parkDecarbAreasData);
+      }
+    } catch (error) {
+      // do nothing
+    }
+  };
+
+  const fetchOccurrencesData = async () => {
+    if (!decarbonizationArea?.parkId) return;
+    try {
+      const occurrencesRes = await getOccurrencesByParkId(decarbonizationArea.parkId);
+      if (occurrencesRes.status === 200) {
+        const occurrencesData = occurrencesRes.data;
+        setOccurrences(occurrencesData);
+        console.log('Occurrences:', occurrencesData);
+      }
+    } catch (error) {
+      // do nothing
+    }
+  };
+
   return (
     <>
       <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
@@ -76,10 +128,16 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
               {park.name} (Park)
             </Checkbox>
           )}
-          {/* <Checkbox onChange={(e) => setShowZones(e.target.checked)}>Zones</Checkbox> */}
-          {/* <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)}>Occurrences</Checkbox>
-        <Checkbox onChange={(e) => setShowAttractions(e.target.checked)}>Attractions</Checkbox>
-        <Checkbox onChange={(e) => setShowFacilities(e.target.checked)}>Facilities</Checkbox> */}
+          {parkDecarbAreas && parkDecarbAreas.length > 0 && (
+            <Checkbox onChange={(e) => setShowParkDecarbAreas(e.target.checked)} checked={showParkDecarbAreas}>
+              Other Decarbonization Areas
+            </Checkbox>
+          )}
+          {occurrences && (
+            <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+              Occurrences
+            </Checkbox>
+          )}
         </Space>
       </Card>
       <div
@@ -108,32 +166,33 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
           )}
           <PolygonFitBounds geom={decarbonizationAreaGeom} polygonFields={{ fillOpacity: 0.9 }} polygonLabel={decarbonizationArea?.name} />
 
-          {/* {showZones && zones &&
-            zones.map((zone) => (
+          {showParkDecarbAreas &&
+            parkDecarbAreas?.map((area) => (
               <PolygonWithLabel
-                key={zone.id}
-                entityId={zone.id}
-                geom={zone.geom}
-                polygonLabel={
-                  <div className="flex items-center gap-2">
-                    <TbTree className="text-xl" />
-                    {zone.name}
-                  </div>
-                }
-                color={COLORS.green[600]}
+                key={area.id}
+                entityId={area.id}
+                geom={parseGeom(area.geom)}
+                polygonLabel={area.name}
+                color="green"
                 fillColor={'transparent'}
-                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+                labelFields={{ color: 'green', textShadow: 'none' }}
               />
             ))}
-          {showOccurrences && occurrences &&
+          {showOccurrences &&
+            occurrences &&
             occurrences.map((occurrence) => (
-              <PictureMarker circleWidth={30} lat={occurrence.lat} lng={occurrence.lng} backgroundColor={COLORS.green[300]} icon={<PiPlantFill className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={occurrence.title} />
+              <PictureMarker
+                key={occurrence.id}
+                id={occurrence.id}
+                entityType="OCCURRENCE"
+                circleWidth={30}
+                lat={occurrence.lat}
+                lng={occurrence.lng}
+                backgroundColor={COLORS.green[300]}
+                icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                tooltipLabel={occurrence.title}
+              />
             ))}
-
-          {showAttractions && attractions &&
-            attractions.map((attraction) => (
-              <PictureMarker circleWidth={30} lat={attraction.lat} lng={attraction.lng} backgroundColor={COLORS.sky[300]} icon={<TbTicket className='text-sky-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} tooltipLabel={attraction.title} />
-            ))} */}
         </MapContainer>
 
         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
