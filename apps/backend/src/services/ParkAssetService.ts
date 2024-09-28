@@ -141,18 +141,12 @@ public async uploadImageToS3(fileBuffer, fileName, mimeType) {
 function ensureAllFieldsPresent(data: ParkAssetSchemaType): Prisma.ParkAssetCreateInput {
   if (!data.parkAssetName ||
       !data.parkAssetType ||
-      //!data.parkAssetDescription ||
       !data.parkAssetStatus ||
       !data.acquisitionDate ||
-      !data.recurringMaintenanceDuration ||
-      //!data.lastMaintenanceDate ||
-      //!data.nextMaintenanceDate ||
       !data.supplier ||
       !data.supplierContactNumber ||
       !data.parkAssetCondition ||
-     // !data.image ||
       !data.facilityId
-      //!data.remarks
       ) {
     throw new Error('Missing required fields for park asset creation');
   }

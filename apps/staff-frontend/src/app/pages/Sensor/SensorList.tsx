@@ -11,6 +11,7 @@ import { MdDeleteOutline } from 'react-icons/md';
 import { ColumnsType } from 'antd/es/table';
 import { SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
 import { useFetchSensors } from '../../hooks/Sensors/useFetchSensors';
+import moment from 'moment';
 
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
@@ -77,25 +78,20 @@ const SensorManagementPage: React.FC = () => {
       width: '15%',
 
     },
-    {
-      title: 'Status',
-      dataIndex: 'sensorStatus',
-      key: 'sensorStatus',
-      filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabel(status), value: status })),
-      onFilter: (value, record) => record.sensorStatus === value,
-      render: (status: string) => (
-        <Tag color={status === 'ACTIVE' ? 'green' : status === 'INACTIVE' ? 'orange' : 'red'} bordered={false}>
-          {formatEnumLabel(status)}
-        </Tag>
-      ),
-      width: '15%',
-    },
-    {
+     {
       title: 'Last Calibrated',
       dataIndex: 'lastCalibratedDate',
       key: 'lastCalibratedDate',
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
-      sorter: (a, b) => new Date(a.lastCalibratedDate || '').getTime() - new Date(b.lastCalibratedDate || '').getTime(),
+      render: (date: string) => date ? moment(date).format('D MMM YY') : 'N/A',
+      sorter: (a, b) => moment(a.lastCalibratedDate || '').valueOf() - moment(b.lastCalibratedDate || '').valueOf(),
+      width: '15%',
+    },
+    {
+      title: 'Next Maintenance',
+      dataIndex: 'nextMaintenanceDate',
+      key: 'nextMaintenanceDate',
+      render: (date: string) => date ? moment(date).format('D MMM YY') : 'N/A',
+      sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
       width: '15%',
     },
     {

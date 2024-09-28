@@ -37,7 +37,6 @@ function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInpu
     !data.sensorUnit ||
     !data.supplier ||
     data.calibrationFrequencyDays === undefined ||
-    data.recurringMaintenanceDuration === undefined ||
     !data.supplierContactNumber ||
     !data.serialNumber
   ) {
@@ -138,10 +137,10 @@ class SensorService {
         }
       }
 
-      const updateData = formattedData as Prisma.HubUpdateInput;
+      const updateData = formattedData as Prisma.SensorUpdateInput;
 
       const updatedSensor = await SensorDao.updateSensor(id, updateData);
-      console.log('updated sensor:', updatedSensor);
+
       return updatedSensor;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -180,7 +179,7 @@ class SensorService {
     return SensorDao.getSensorsNeedingMaintenance();
   }
 
-  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
     const params = {
       Bucket: 'lepark',
       Key: `sensor/${fileName}`,

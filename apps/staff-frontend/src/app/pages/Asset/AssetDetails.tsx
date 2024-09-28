@@ -36,15 +36,15 @@ const AssetDetails = () => {
       key: 'assetStatus',
       label: 'Status',
       children: asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-        <Tag color="green" bordered={false}>AVAILABLE</Tag>
+        <Tag color="green">AVAILABLE</Tag>
       ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-        <Tag color="blue" bordered={false}>IN USE</Tag>
+        <Tag color="blue">IN USE</Tag>
       ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-        <Tag color="orange" bordered={false}>UNDER MAINTENANCE</Tag>
+        <Tag color="orange">UNDER MAINTENANCE</Tag>
       ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-        <Tag color="red" bordered={false}>DECOMMISSIONED</Tag>
+        <Tag color="red">DECOMMISSIONED</Tag>
       ) : (
-        <Tag bordered={false}>{asset?.parkAssetStatus}</Tag>
+        <Tag>{asset?.parkAssetStatus}</Tag>
       )
     },
     {
