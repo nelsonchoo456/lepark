@@ -13,11 +13,12 @@ import {
   ParkResponse,
   getAllParks,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
+import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 
 const { TextArea } = Input;
 
@@ -36,6 +37,7 @@ const AssetCreate = () => {
   const [loading, setLoading] = useState(true);
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
 
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick, clearAllImages } = useUploadImagesAssets();
@@ -64,11 +66,6 @@ const AssetCreate = () => {
         const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
         setParks(parksResponse.data);
         setFacilities(facilitiesResponse.data);
-
-        if (user?.role !== 'SUPERADMIN') {
-          const userFacilities = facilitiesResponse.data.filter((facility) => facility.parkId === user?.parkId);
-          setFilteredFacilities(userFacilities);
-        }
         setLoading(false);
       } catch (error) {
         console.error('Error fetching parks and facilities:', error);
@@ -78,10 +75,16 @@ const AssetCreate = () => {
     };
 
     fetchParksAndFacilities();
-  }, [user]);
+  }, []);
 
-  const handleParkChange = (parkId: string) => {
-    const parkFacilities = facilities.filter((facility) => facility.parkId === Number(parkId));
+  const handleParkChange = (parkId: number) => {
+    setSelectedParkId(parkId);
+    const parkFacilities = facilities.filter(
+      (facility) =>
+        facility.parkId === parkId &&
+        facility.facilityStatus === FacilityStatusEnum.OPEN &&
+        facility.facilityType === FacilityTypeEnum.STOREROOM,
+    );
     setFilteredFacilities(parkFacilities);
     form.setFieldsValue({ facilityId: undefined });
   };
@@ -134,7 +137,10 @@ const AssetCreate = () => {
 
   const onReset = () => {
     form.resetFields();
+    setSelectedParkId(null);
     clearAllImages();
+    setCreateMultiple(false); // Add this line
+    setAssetQuantity(1); // Add this line
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
@@ -176,6 +182,26 @@ const AssetCreate = () => {
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
             <Divider orientation="left">Asset Details</Divider>
+            {user?.role === 'SUPERADMIN' && (
+              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
+                <Select placeholder="Select a park" onChange={handleParkChange}>
+                  {parks.map((park) => (
+                    <Select.Option key={park.id} value={park.id}>
+                      {park.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
+              <Select placeholder={selectedParkId ? 'Select a facility' : 'Please select a park first'} disabled={!selectedParkId}>
+                {filteredFacilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
             <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
@@ -226,32 +252,18 @@ const AssetCreate = () => {
             <Form.Item name="remarks" label="Remarks">
               <TextArea />
             </Form.Item>
-            {user?.role === 'SUPERADMIN' && (
-              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
-                <Select placeholder="Select a park" onChange={handleParkChange}>
-                  {parks.map((park) => (
-                    <Select.Option key={park.id} value={park.id}>
-                      {park.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            )}
-            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
-              <Select placeholder="Select a facility">
-                {filteredFacilities.map((facility) => (
-                  <Select.Option key={facility.id} value={facility.id}>
-                    {facility.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
             <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
               <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
             </Form.Item>
             {createMultiple && (
-              <Form.Item name="assetQuantity" label="Park Asset Quantity" rules={[{ required: true, type: 'number', min: 1, max: 10 }]}>
-                <InputNumber onChange={(value) => setAssetQuantity(value as number)} />
+              <Form.Item
+                name="assetQuantity"
+                label="Park Asset Quantity"
+                required
+                tooltip="Maximum of 10 assets can be created at a time"
+                rules={[{ required: true, type: 'number', min: 1, max: 10 }]}
+              >
+                <InputNumber onChange={(value) => setAssetQuantity(value as number)} min={1} max={10} />
               </Form.Item>
             )}
             {!createMultiple && (
