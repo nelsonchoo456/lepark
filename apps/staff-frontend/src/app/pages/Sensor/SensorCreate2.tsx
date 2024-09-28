@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth, ImageInput } from '@lepark/common-ui';
-import { createSensor, StaffResponse, HubResponse, FacilityResponse } from '@lepark/data-access';
+import { createSensor, StaffResponse, HubResponse, FacilityResponse, getAllParks, ParkResponse } from '@lepark/data-access';
 import { Button, Card, Form, Input, Result, message, notification, DatePicker, Divider, InputNumber, Select, Space } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { SensorResponse } from '@lepark/data-access';
@@ -25,6 +25,30 @@ const SensorCreate2 = () => {
   const notificationShown = useRef(false);
 
   const [form] = Form.useForm();
+  const [parks, setParks] = useState<ParkResponse[]>([]);
+  const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
+
+  useEffect(() => {
+    const fetchParks = async () => {
+      if (user?.role === 'SUPERADMIN') {
+        try {
+          const parksResponse = await getAllParks();
+          setParks(parksResponse.data);
+        } catch (error) {
+          console.error('Error fetching parks:', error);
+          message.error('Failed to fetch parks');
+        }
+      }
+    };
+
+    fetchParks();
+  }, [user]);
+
+  const handleParkChange = (parkId: string) => {
+    const parkFacilities = facilities.filter(facility => facility.parkId === Number(parkId));
+    setFilteredFacilities(parkFacilities);
+    form.setFieldsValue({ facilityId: undefined });
+  };
 
   const formatEnumLabel = (enumValue: string): string => {
     return enumValue
@@ -171,9 +195,24 @@ const SensorCreate2 = () => {
             <Form.Item name="remarks" label="Remarks">
               <TextArea />
             </Form.Item>
-            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
+            {user?.role === 'SUPERADMIN' && (
+              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
+                <Select placeholder="Select a park" onChange={handleParkChange}>
+                  {parks.map((park) => (
+                    <Select.Option key={park.id} value={park.id}>
+                      {park.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+            <Form.Item
+              name="facilityId"
+              label="Facility"
+              rules={[{ required: true, message: 'Please select a facility' }]}
+            >
               <Select placeholder="Select a facility">
-                {facilities.map((facility) => (
+                {(user?.role === 'SUPERADMIN' ? filteredFacilities : facilities).map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
                     {facility.facilityName}
                   </Select.Option>
