@@ -10,6 +10,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
+import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import moment from 'moment';
 
 const FacilityList: React.FC = () => {
@@ -20,12 +21,19 @@ const FacilityList: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [facilityToBeDeleted, setFacilityToBeDeleted] = useState<FacilityResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { parks } = useFetchParks();
 
   const filteredFacilities = useMemo(() => {
-    return facilities.filter((facility) =>
-      Object.values(facility).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
-    );
-  }, [searchQuery, facilities]);
+    let filtered = facilities;
+
+    return filtered.filter((facility) => {
+      const park = parks.find((p) => p.id === facility.parkId);
+      return (
+        Object.values(facility).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
+        park?.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [searchQuery, facilities, parks]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -131,6 +139,30 @@ const FacilityList: React.FC = () => {
       width: '15%',
     },
   ];
+
+  if (user?.role === StaffType.SUPERADMIN) {
+    columns.splice(2, 0, {
+      title: 'Park',
+      dataIndex: 'parkId',
+      key: 'parkId',
+      render: (parkId) => {
+        const park = parks.find((p) => p.id === parkId);
+        return <div>{park ? park.name : parkId}</div>;
+      },
+      filters:
+        user?.role === StaffType.SUPERADMIN
+          ? useMemo(() => {
+              const uniqueParkIds = [...new Set(facilities.map((a) => a.parkId))];
+              return uniqueParkIds.map((parkId) => {
+                const park = parks.find((p) => p.id === parkId);
+                return { text: park ? park.name : `Park ${parkId}`, value: parkId };
+              });
+            }, [facilities, parks])
+          : undefined,
+      onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => record.parkId === value : undefined,
+      // width: '25%',
+    });
+  }
 
   const showDeleteModal = (facility: FacilityResponse) => {
     setDeleteModalOpen(true);

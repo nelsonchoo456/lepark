@@ -80,8 +80,17 @@ const FacilityEdit = () => {
         messageApi.success('Saved changes to Facility. Redirecting to Facility details page...');
         setTimeout(() => navigate(`/facilities/${facility.id}`), 1000);
       }
-    } catch (error) {
-      messageApi.error('Unable to save changes to Facility. Please try again later.');
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('A facility with this name already exists in the park.')) {
+        messageApi.error('A facility with this name already exists in the park.');
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: 'An unexpected error occurred while updating the facility.',
+        });
+      }
     }
   };
 

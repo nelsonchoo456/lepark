@@ -49,6 +49,8 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
   user,
 }) => {
   const [park, setPark] = useState<ParkResponse>();
+  const [isPublic, setIsPublic] = useState(true);
+  const [isBookable, setIsBookable] = useState(true);
 
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN && user?.parkId) {
@@ -161,6 +163,44 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   };
 
+  const handleIsPublicChange = (value: boolean) => {
+    setIsPublic(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        isBookable: false,
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+      setIsBookable(false);
+    } else {
+      form.setFieldsValue({
+        isBookable: null,
+        reservationPolicy: '',
+        fee: null,
+      });
+      setIsBookable(true);
+    }
+  };
+
+  const handleIsBookableChange = (value: boolean) => {
+    setIsBookable(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+    } else {
+      form.setFieldsValue({
+        reservationPolicy: '',
+        fee: null,
+      });
+    }
+  };
+
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
@@ -189,36 +229,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item
-        name="isBookable"
-        label="Is Bookable"
-        rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}
-        tooltip="Please indicate if the facility is open to booking"
-      >
-        <Select
-          options={[
-            { label: 'Yes', value: true },
-            { label: 'No', value: false },
-          ]}
-          placeholder="Select if the facility is bookable"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="isPublic"
-        label="Is Public"
-        rules={[{ required: true, message: 'Please select if the facility is public!' }]}
-        tooltip="Please indicate if the facility is open to public"
-      >
-        <Select
-          options={[
-            { label: 'Yes', value: true },
-            { label: 'No', value: false },
-          ]}
-          placeholder="Select if the facility is open to public"
-        />
-      </Form.Item>
-
-      <Form.Item
         name="isSheltered"
         label="Is Sheltered"
         rules={[{ required: true, message: 'Please select if the facility is sheltered!' }]}
@@ -234,12 +244,47 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item
+        name="isPublic"
+        label="Is Public"
+        rules={[{ required: true, message: 'Please select if the facility is public!' }]}
+        tooltip="Please indicate if the facility is open to public"
+      >
+        <Select
+          options={[
+            { label: 'Yes', value: true },
+            { label: 'No', value: false },
+          ]}
+          placeholder="Select if the facility is open to public"
+          onChange={handleIsPublicChange}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="isBookable"
+        label="Is Bookable"
+        rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}
+        tooltip="Please indicate if the facility is open to booking"
+        hidden={!isPublic}
+      >
+        <Select
+          options={[
+            { label: 'Yes', value: true },
+            { label: 'No', value: false },
+          ]}
+          placeholder="Select if the facility is bookable"
+          onChange={handleIsBookableChange}
+        />
+      </Form.Item>
+
+      <Form.Item
         name="reservationPolicy"
         label="Reservation Policy"
         rules={[{ required: true, message: 'Please input the reservation policy!' }]}
+        hidden={!isPublic || !isBookable}
       >
         <Input.TextArea rows={3} placeholder="Enter reservation policy" />
       </Form.Item>
+
       <Form.Item
         name="rulesAndRegulations"
         label="Rules and Regulations"
@@ -253,10 +298,15 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item name="capacity" label="Capacity (pax)" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber min={1} />
+        <InputNumber min={0} />
       </Form.Item>
 
-      <Form.Item name="fee" label="Fee ($)" rules={[{ required: true, message: 'Please input the fee!' }]}>
+      <Form.Item
+        name="fee"
+        label="Fee ($)"
+        rules={[{ required: true, message: 'Please input the fee!' }]}
+        hidden={!isPublic || !isBookable}
+      >
         <InputNumber min={0} />
       </Form.Item>
 
