@@ -262,18 +262,55 @@ const ParkEditMap = () => {
           <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mt-4">
             <Space size={16}>
               <div className="font-semibold">Display:</div>
-              <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones} disabled={!parkZones || parkZones.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                Zones
-              </Checkbox>
-              <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences} disabled={!occurrences || occurrences.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                Occurrences
-              </Checkbox>
-              <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions} disabled={!attractions || attractions.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                Attractions
-              </Checkbox>
-              <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities} disabled={!facilities || facilities.length === 0} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
-                Facilities
-              </Checkbox>
+
+              {parkZones && parkZones.length > 0
+                ?
+                  <Checkbox onChange={(e) => setShowParkZones(e.target.checked)} checked={showParkZones} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                    Zones
+                  </Checkbox>
+                :
+                  <Tooltip title="No Zones available">
+                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                      Zones
+                    </Checkbox>
+                  </Tooltip>
+              }
+              {occurrences && occurrences.length > 0
+                ?
+                  <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                    Occurrences
+                  </Checkbox>
+                :
+                  <Tooltip title="No Occurrences available">
+                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                      Occurrences
+                    </Checkbox>
+                  </Tooltip>
+              }
+              {attractions && attractions.length > 0
+                ?
+                  <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                    Attractions
+                  </Checkbox>
+                :
+                  <Tooltip title="No Attractions available">
+                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                      Attractions
+                    </Checkbox>
+                  </Tooltip>
+              }
+              {facilities && facilities.length > 0
+                ?
+                  <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                    Facilities
+                  </Checkbox>
+                :
+                  <Tooltip title="No Facilities available">
+                    <Checkbox disabled={true} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+                      Facilities
+                    </Checkbox>
+                  </Tooltip>
+              }
             </Space>
           </Card>
 

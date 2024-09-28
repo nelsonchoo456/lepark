@@ -39,7 +39,7 @@ const MapTab = ({ attraction, park }: MapTabProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }}/>
-        <PictureMarker circleWidth={37} lat={attraction.lat} lng={attraction.lng} tooltipLabel={attraction.title} backgroundColor={COLORS.green[300]} icon={<TbTicket className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }} />} id={''} entityType={''} setHovered={function (hovered: any): void {
+        <PictureMarker circleWidth={37} lat={attraction.lat} lng={attraction.lng} tooltipLabel={attraction.title} backgroundColor={COLORS.mustard[300]} icon={<TbTicket className='text-mustard-600 drop-shadow-lg' style={{ fontSize: "3rem" }} />} id={''} entityType={''} setHovered={function (hovered: any): void {
           throw new Error('Function not implemented.');
         } } />
     
