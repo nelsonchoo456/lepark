@@ -89,6 +89,7 @@ const SensorCreate2 = () => {
         latitude: 0,
         longitude: 0,
       };
+          delete sensorData.parkId;
       const response = await createSensor(sensorData, selectedFiles);
       setCreatedData(response.data);
       message.success('Sensor created successfully');
