@@ -101,61 +101,56 @@ class SensorService {
     return sensor;
   }
   public async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
-  try {
-    const formattedData = dateFormatter(data);
-    if (formattedData.serialNumber) {
-      formattedData.serialNumber = formattedData.serialNumber.trim();
-    }
-    SensorSchema.partial().parse(formattedData);
-
-    if (formattedData.serialNumber) {
-      const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(formattedData.serialNumber);
-      if (checkForExistingSensor && checkForExistingSensor.id !== id) {
-        throw new Error(`Sensor with serial number ${formattedData.serialNumber} already exists.`);
+    try {
+      const formattedData = dateFormatter(data);
+      if (formattedData.serialNumber) {
+        formattedData.serialNumber = formattedData.serialNumber.trim();
       }
-    }
+      SensorSchema.partial().parse(formattedData);
 
-    const existingSensor = await SensorDao.getSensorById(id);
-    if (!existingSensor) {
-      throw new Error('Sensor not found');
-    }
-
-    if (formattedData.facilityId !== undefined) {
-      if (formattedData.facilityId) {
-        const facility = await FacilityDao.getFacilityById(formattedData.facilityId);
-        if (!facility) {
-          throw new Error('Facility not found');
+      if (formattedData.serialNumber) {
+        const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(formattedData.serialNumber);
+        if (checkForExistingSensor && checkForExistingSensor.id !== id) {
+          throw new Error(`Sensor with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
-    }
 
-    if (formattedData.hubId !== undefined) {
-      if (formattedData.hubId) {
-        const hub = await HubDao.getHubById(formattedData.hubId);
-        if (!hub) {
-          throw new Error('Hub not found');
+      const existingSensor = await SensorDao.getSensorById(id);
+      if (!existingSensor) {
+        throw new Error('Sensor not found');
+      }
+
+      if (formattedData.facilityId !== undefined) {
+        if (formattedData.facilityId) {
+          const facility = await FacilityDao.getFacilityById(formattedData.facilityId);
+          if (!facility) {
+            throw new Error('Facility not found');
+          }
         }
       }
-    }
 
-    const updateData = formattedData as Prisma.SensorUpdateInput;
+      if (formattedData.hubId !== undefined) {
+        if (formattedData.hubId) {
+          const hub = await HubDao.getHubById(formattedData.hubId);
+          if (!hub) {
+            throw new Error('Hub not found');
+          }
+        }
+      }
 
-    // Handle image updates
-    if (Array.isArray(updateData.images)) {
-      updateData.images = updateData.images.length > 0 ? updateData.images : [];
-    }
+      const updateData = formattedData as Prisma.HubUpdateInput;
 
-    const updatedSensor = await SensorDao.updateSensor(id, updateData);
-    console.log('updated sensor:', updatedSensor);
-    return updatedSensor;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const validationError = fromZodError(error);
-      throw new Error(`${validationError.message}`);
+      const updatedSensor = await SensorDao.updateSensor(id, updateData);
+      console.log('updated sensor:', updatedSensor);
+      return updatedSensor;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
     }
-    throw error;
   }
-}
 
   public async deleteSensor(id: string): Promise<void> {
     await SensorDao.deleteSensor(id);

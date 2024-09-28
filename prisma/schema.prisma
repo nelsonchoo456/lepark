@@ -376,7 +376,7 @@ model Sensor {
   sensorUnit                    SensorUnitEnum
   supplier                      String
   supplierContactNumber         String
-  images                        String[]
+  image                         String?
   latitude                      Float?
   longitude                     Float?
   remarks                       String?

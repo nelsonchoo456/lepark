@@ -18,7 +18,7 @@ export const SensorSchema = z.object({
   sensorUnit: z.nativeEnum(SensorUnitEnum),
   supplier: z.string().min(1, { message: 'Supplier is required' }),
   supplierContactNumber: z.string().min(1, { message: 'Supplier contact number is required' }),
-  images: z.array(z.string()).optional(),
+  image: z.string().optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   remarks: z.string().optional(),
