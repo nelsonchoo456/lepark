@@ -20,8 +20,8 @@ import SensorStatusTag from './components/SensorStatusTag';
 
 const SensorMap = () => {
   const { user } = useAuth<StaffResponse>();
- const { sensors, loading, triggerFetch } = useFetchSensors();
-const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && sensor.longitude);
+  const { sensors, loading, triggerFetch } = useFetchSensors();
+  const sensorsWithCoordinates = sensors.filter((sensor) => sensor.latitude && sensor.longitude);
   const navigate = useNavigate();
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const notificationShown = useRef(false);
@@ -81,7 +81,7 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
             <div key={sensor.id} className="border-b-[1px] border-black/10 py-4 px-2 hover:bg-green-400/10">
               <div className="flex justify-between gap-2 ">
                 <div className="flex-auto">
-                  <span className="font-semibold text-wrap">{sensor.sensorName}</span>
+                  <span className="font-semibold text-wrap">{sensor.name}</span>
                 </div>
               </div>
               <div className="flex mt-2 justify-between">
@@ -89,12 +89,7 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
                 <div className="flex gap-2">
                   <Tooltip title="Edit Sensor">
                     <div className="">
-                      <Button
-                        icon={<TbEdit />}
-                        shape="circle"
-                        size="small"
-                        onClick={() => navigate(`/sensor/edit/${sensor.id}`)}
-                      ></Button>
+                      <Button icon={<TbEdit />} shape="circle" size="small" onClick={() => navigate(`/sensor/edit/${sensor.id}`)}></Button>
                     </div>
                   </Tooltip>
                   <Tooltip title="View Details">
@@ -143,13 +138,13 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
                     }}
                   >
                     <MdSensors />
-                  </div>
+                  </div>,
                 ),
               })}
             >
               <Popup>
                 <div>
-                  <h3>{sensor.sensorName}</h3>
+                  <h3>{sensor.name}</h3>
                   <p>Type: {sensor.sensorType}</p>
                   <p>Status: {sensor.sensorStatus}</p>
                 </div>
@@ -176,18 +171,18 @@ const sensorsWithCoordinates = sensors.filter(sensor => sensor.latitude && senso
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-       {sensorsWithCoordinates.length > 0 &&
-  sensorsWithCoordinates.map((sensor) => (
-    <Marker key={sensor.id} position={[sensor.latitude ?? 0, sensor.longitude ?? 0]}>
-      <Popup>
-        <div>
-          <h3>{sensor.sensorName}</h3>
-          <p>Type: {sensor.sensorType}</p>
-          <p>Status: {sensor.sensorStatus}</p>
-        </div>
-      </Popup>
-    </Marker>
-  ))}
+        {sensorsWithCoordinates.length > 0 &&
+          sensorsWithCoordinates.map((sensor) => (
+            <Marker key={sensor.id} position={[sensor.latitude ?? 0, sensor.longitude ?? 0]}>
+              <Popup>
+                <div>
+                  <h3>{sensor.name}</h3>
+                  <p>Type: {sensor.sensorType}</p>
+                  <p>Status: {sensor.sensorStatus}</p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
       </MapContainer>
     </div>
   );

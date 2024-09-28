@@ -229,7 +229,7 @@ const SensorEdit = () => {
             className="max-w-[600px] mx-auto"
           >
             <Divider orientation="left">Sensor Details</Divider>
-            <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
+            <Form.Item name="name" label="Sensor Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
             <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
@@ -244,7 +244,7 @@ const SensorEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="sensorDescription" label="Sensor Description">
+            <Form.Item name="description" label="Sensor Description">
               <TextArea />
             </Form.Item>
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true }]}>

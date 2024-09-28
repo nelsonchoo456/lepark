@@ -14,7 +14,10 @@ import { useFetchSensors } from '../../hooks/Sensors/useFetchSensors';
 import moment from 'moment';
 
 const formatEnumLabel = (enumValue: string): string => {
-  return enumValue.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  return enumValue
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 const SensorManagementPage: React.FC = () => {
@@ -32,8 +35,8 @@ const SensorManagementPage: React.FC = () => {
           content: 'Deleting a Sensor cannot be undone. Are you sure you want to proceed?',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
-          okText: "Confirm Delete",
-          okButtonProps: { danger: true }
+          okText: 'Confirm Delete',
+          okButtonProps: { danger: true },
         });
       });
 
@@ -50,9 +53,7 @@ const SensorManagementPage: React.FC = () => {
 
   const filteredSensors = useMemo(() => {
     return sensors.filter((sensor) => {
-      return Object.values(sensor).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      return Object.values(sensor).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()));
     });
   }, [sensors, searchQuery]);
 
@@ -63,9 +64,9 @@ const SensorManagementPage: React.FC = () => {
   const columns: ColumnsType<SensorResponse> = [
     {
       title: 'Name',
-      dataIndex: 'sensorName',
-      key: 'sensorName',
-      sorter: (a, b) => a.sensorName.localeCompare(b.sensorName),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
       width: '20%',
     },
     {
@@ -76,13 +77,12 @@ const SensorManagementPage: React.FC = () => {
       onFilter: (value, record) => record.sensorType === value,
       render: (type: string) => formatEnumLabel(type),
       width: '15%',
-
     },
-     {
+    {
       title: 'Last Calibrated',
       dataIndex: 'lastCalibratedDate',
       key: 'lastCalibratedDate',
-      render: (date: string) => date ? moment(date).format('D MMM YY') : 'N/A',
+      render: (date: string) => (date ? moment(date).format('D MMM YY') : 'N/A'),
       sorter: (a, b) => moment(a.lastCalibratedDate || '').valueOf() - moment(b.lastCalibratedDate || '').valueOf(),
       width: '15%',
     },
@@ -90,7 +90,7 @@ const SensorManagementPage: React.FC = () => {
       title: 'Next Maintenance',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
-      render: (date: string) => date ? moment(date).format('D MMM YY') : 'N/A',
+      render: (date: string) => (date ? moment(date).format('D MMM YY') : 'N/A'),
       sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
       width: '15%',
     },
@@ -98,7 +98,7 @@ const SensorManagementPage: React.FC = () => {
       title: 'Next Maintenance',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
+      render: (date: string) => (date ? new Date(date).toLocaleDateString() : 'N/A'),
       sorter: (a, b) => new Date(a.nextMaintenanceDate || '').getTime() - new Date(b.nextMaintenanceDate || '').getTime(),
       width: '15%',
     },
@@ -127,7 +127,7 @@ const SensorManagementPage: React.FC = () => {
   ];
 
   return (
-     <ContentWrapperDark>
+    <ContentWrapperDark>
       <PageHeader>Sensor Management</PageHeader>
       <Flex justify="end" gap={10}>
         <Input

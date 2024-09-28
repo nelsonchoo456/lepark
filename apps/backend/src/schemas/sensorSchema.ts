@@ -3,10 +3,10 @@ import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client
 
 export const SensorSchema = z.object({
   id: z.string().uuid().optional(),
-  sensorName: z.string().min(1, { message: 'Sensor name is required' }),
+  name: z.string().min(1, { message: 'Sensor name is required' }),
   serialNumber: z.string().min(1, { message: 'Serial number is required' }), // Add serialNumber field
   sensorType: z.nativeEnum(SensorTypeEnum),
-  sensorDescription: z.string().optional(),
+  description: z.string().optional(),
   sensorStatus: z.nativeEnum(SensorStatusEnum),
   acquisitionDate: z.date(),
   lastCalibratedDate: z.date().optional(),

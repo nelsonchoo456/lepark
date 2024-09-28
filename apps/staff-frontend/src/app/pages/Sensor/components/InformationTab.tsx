@@ -31,17 +31,7 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
     }
   };
 
-  const excludeKeys = [
-    'id',
-    'image',
-    'latitude',
-    'longitude',
-    'nextMaintenanceDate',
-    'zoneId',
-    'facilityId',
-    'sensorName',
-    'images',
-  ];
+  const excludeKeys = ['id', 'image', 'latitude', 'longitude', 'nextMaintenanceDate', 'zoneId', 'facilityId', 'name', 'images'];
 
   const descriptionsItems = Object.entries(sensor)
     .filter(([key, value]) => !excludeKeys.includes(key) && value !== null && value !== undefined)

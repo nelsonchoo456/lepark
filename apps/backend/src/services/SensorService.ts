@@ -29,7 +29,7 @@ const dateFormatter = (data: any) => {
 function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
   // Add checks for all required fields
   if (
-    !data.sensorName ||
+    !data.name ||
     !data.sensorType ||
     !data.sensorStatus ||
     !data.acquisitionDate ||

@@ -1,10 +1,10 @@
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
 
 export interface SensorData {
-  sensorName: string;
+  name: string;
   serialNumber: string;
   sensorType: SensorTypeEnum;
-  sensorDescription?: string;
+  description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
   lastCalibratedDate?: string;
@@ -26,10 +26,10 @@ export interface SensorData {
 
 export interface SensorResponse {
   id: string;
-  sensorName: string;
+  name: string;
   serialNumber: string;
   sensorType: SensorTypeEnum;
-  sensorDescription?: string;
+  description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
   lastCalibratedDate?: string;
@@ -59,10 +59,10 @@ export interface SensorResponse {
 }
 
 export interface SensorUpdateData {
-  sensorName?: string;
+  name?: string;
   serialNumber?: string;
   sensorType?: SensorTypeEnum;
-  sensorDescription?: string;
+  description?: string;
   sensorStatus?: SensorStatusEnum;
   acquisitionDate?: string;
   lastCalibratedDate?: string;
@@ -87,7 +87,7 @@ export interface SensorMaintenanceHistoryResponse {
   maintenanceDate: string;
   description: string;
   sensorId: string;
-  sensorName: string;
+  name: string;
 }
 
 export interface SensorCalibrationHistoryResponse {
@@ -95,7 +95,7 @@ export interface SensorCalibrationHistoryResponse {
   calibrationDate: string;
   description: string;
   sensorId: string;
-  sensorName: string;
+  name: string;
 }
 
 export interface SensorUsageMetricsResponse {
@@ -105,5 +105,5 @@ export interface SensorUsageMetricsResponse {
   dataVolume: number;
   description: string;
   sensorId: string;
-  sensorName: string;
+  name: string;
 }

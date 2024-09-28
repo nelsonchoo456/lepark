@@ -122,7 +122,7 @@ const SensorCreate2 = () => {
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
             <Divider orientation="left">Sensor Details</Divider>
-            <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
+            <Form.Item name="name" label="Sensor Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
             <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
@@ -137,7 +137,7 @@ const SensorCreate2 = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="sensorDescription" label="Sensor Description">
+            <Form.Item name="description" label="Sensor Description">
               <TextArea />
             </Form.Item>
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true }]}>
@@ -244,7 +244,7 @@ const SensorCreate2 = () => {
           <Result
             status="success"
             title="Created new Sensor"
-            subTitle={createdData && <>Sensor name: {createdData.sensorName}</>}
+            subTitle={createdData && <>Sensor name: {createdData.name}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/sensor')}>
                 Back to Sensor Management

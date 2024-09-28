@@ -243,10 +243,10 @@ CREATE TABLE "Hub" (
 -- CreateTable
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
-    "sensorName" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "sensorType" "SensorTypeEnum" NOT NULL,
-    "sensorDescription" TEXT,
+    "description" TEXT,
     "sensorStatus" "SensorStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
     "lastCalibratedDate" TIMESTAMP(3),

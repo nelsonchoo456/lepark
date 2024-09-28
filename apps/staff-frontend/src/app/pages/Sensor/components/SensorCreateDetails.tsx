@@ -73,7 +73,7 @@ const SensorCreateDetails = ({
       style={{ maxWidth: '600px', margin: '0 auto' }}
     >
       <Divider orientation="left">Sensor Details</Divider>
-      <Form.Item name="sensorName" label="Sensor Name" rules={[{ required: true }]}>
+      <Form.Item name="name" label="Sensor Name" rules={[{ required: true }]}>
         <Input />
       </Form.Item>
       <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
@@ -88,7 +88,7 @@ const SensorCreateDetails = ({
           ))}
         </Select>
       </Form.Item>
-      <Form.Item name="sensorDescription" label="Sensor Description">
+      <Form.Item name="description" label="Sensor Description">
         <TextArea />
       </Form.Item>
       <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true }]}>

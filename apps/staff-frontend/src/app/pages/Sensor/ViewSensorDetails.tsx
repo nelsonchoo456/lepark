@@ -166,7 +166,7 @@ const ViewSensorDetails = () => {
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{sensor?.sensorName}</LogoText>
+            <LogoText className="text-2xl py-2 m-0">{sensor?.name}</LogoText>
             <Descriptions
               items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
               column={1}
