@@ -1,5 +1,5 @@
-import { Descriptions, Spin } from 'antd';
-import { ParkAssetResponse } from '@lepark/data-access';
+import { Descriptions, Spin, Tag } from 'antd';
+import { ParkAssetResponse, ParkAssetStatusEnum } from '@lepark/data-access';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -21,11 +21,26 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   }
 };
 
+ const getStatusTag = (status: string) => {
+    switch (status) {
+      case ParkAssetStatusEnum.AVAILABLE:
+        return <Tag color="green">AVAILABLE</Tag>;
+      case ParkAssetStatusEnum.IN_USE:
+        return <Tag color="blue">IN USE</Tag>;
+      case ParkAssetStatusEnum.UNDER_MAINTENANCE:
+        return <Tag color="orange">UNDER MAINTENANCE</Tag>;
+      case ParkAssetStatusEnum.DECOMMISSIONED:
+        return <Tag color="red">DECOMMISSIONED</Tag>;
+      default:
+        return <Tag>{status}</Tag>;
+    }
+  };
+
   const descriptionsItems = [
     { key: 'parkAssetName', label: 'Asset Name', children: asset.parkAssetName },
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
     { key: 'parkAssetDescription', label: 'Description', children: asset.parkAssetDescription || 'N/A' },
-    { key: 'parkAssetStatus', label: 'Status', children: formatEnumLabel(asset.parkAssetStatus, 'status') },
+     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
     { key: 'recurringMaintenanceDuration', label: 'Maintenance Cycle (days)', children: asset.recurringMaintenanceDuration },
     { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') },

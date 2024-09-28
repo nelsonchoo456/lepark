@@ -5,19 +5,17 @@ import { MaintenanceHistoryResponse } from '../types/maintenancehistory';
 
 const URL = '/sensors';
 
-export async function createSensor(data: SensorData, files?: File[]): Promise<AxiosResponse<SensorResponse>> {
+export async function createSensor(data: SensorData, files: File[]): Promise<AxiosResponse<SensorResponse>> {
   try {
-    if (files && files.length > 0) {
-      const formData = new FormData();
+    const formData = new FormData();
 
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
+    // Append files to FormData (using the key 'files' to match Multer)
+    files.forEach((file) => {
+      formData.append('files', file); // The key 'files' matches what Multer expects
+    });
 
-      const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.image = uploadedUrls.data.uploadedUrls[0]; // Assuming only one image for sensors
-    }
-
+    const uploadedUrls = await client.post(`${URL}/upload`, formData);
+    data.images = uploadedUrls.data.uploadedUrls;
     const response: AxiosResponse<SensorResponse> = await client.post(`${URL}/createSensor`, data);
     return response;
   } catch (error) {
@@ -59,9 +57,13 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
     }
   }
 }
-export async function updateSensorDetails(id: string, data: SensorUpdateData, files?: File[]): Promise<AxiosResponse<SensorResponse>> {
+export async function updateSensorDetails(
+  id: string,
+  data: Partial<SensorResponse>,
+  files?: File[]
+): Promise<AxiosResponse<SensorResponse>> {
+  console.log('id', id);
   try {
-    console.log('sensor update data:', data);
     if (files && files.length > 0) {
       const formData = new FormData();
 
@@ -70,10 +72,11 @@ export async function updateSensorDetails(id: string, data: SensorUpdateData, fi
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.image = uploadedUrls.data.uploadedUrls[0]; // Assuming only one image for sensors
+      data.images = data.images || [];
+      data.images.push(...uploadedUrls.data.uploadedUrls);
     }
-
-    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensor/${id}`, data);
+    console.log('data', data);
+    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensorDetails/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -83,6 +86,7 @@ export async function updateSensorDetails(id: string, data: SensorUpdateData, fi
     }
   }
 }
+
 
 export async function deleteSensor(id: string): Promise<AxiosResponse<void>> {
   try {

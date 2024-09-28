@@ -6,7 +6,7 @@ export interface ParkAssetData {
   parkAssetDescription?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  recurringMaintenanceDuration: number;
+  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier: string;
@@ -24,7 +24,7 @@ export interface ParkAssetResponse {
   parkAssetDescription?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  recurringMaintenanceDuration: number;
+  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier: string;
