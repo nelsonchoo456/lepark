@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Input, Table, Flex, Tag, message, Card, Statistic, Badge, Collapse, Tabs, Tooltip, Modal } from 'antd';
+import { Button, Input, Table, Flex, Tag, message, Card, Statistic, Badge, Tooltip, Modal } from 'antd';
 import {
   deleteParkAsset,
   ParkAssetConditionEnum,
@@ -14,8 +14,8 @@ import { RiEdit2Line } from 'react-icons/ri';
 import { useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { SCREEN_LG } from '../../../config/breakpoints';
-import { LiaQuestionCircle } from 'react-icons/lia';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
+import { parkAssetTypesLabels } from '../AssetListSummary';
 
 interface AssetsByTypeTableProps {
   parkAssets: ParkAssetResponse[];
@@ -43,9 +43,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
   const navigate = useNavigate();
 
   const filteredParkAssets = useMemo(() => {
-    return parkAssets.filter((asset) =>
-      Object.values(asset).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())),
-    );
+    if (parkAssets && parkAssets.length > 0) {
+      return parkAssets.filter((asset) =>
+        Object.values(asset).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())),
+      );
+    } else {
+      return [];
+    }
   }, [parkAssets, searchQuery]);
 
   useEffect(() => {
@@ -71,8 +75,8 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       title: 'Type',
       dataIndex: 'parkAssetType',
       key: 'parkAssetType',
-      // filters: Object.values(ParkAssetTypeEnum).map((type) => ({ text: formatEnumLabel(type, 'type'), value: type })),
-      // onFilter: (value, record) => record.parkAssetType === value,
+      filters: parkAssetTypesLabels.map((a) => ({ value: a.key, text: a.label })),
+      onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetType === value,
       render: (type: string) => formatEnumLabel(type, 'type'),
       width: '15%',
     },
@@ -246,7 +250,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
-          placeholder="Search in Available Assets..."
+          placeholder="Search for a Park Asset..."
           onChange={handleSearchBar}
           className="mb-4"
           variant="filled"
