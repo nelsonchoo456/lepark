@@ -119,7 +119,7 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
           value={[dayjs(startDate), dayjs(endDate)]}
         />
       ) : (
-        <Spin />
+        loading && <Spin />
       )}
       {loading ? (
         <Spin />
