@@ -46,7 +46,7 @@ const SensorEdit = () => {
   const { parks } = useFetchParks();
   const { facilities } = useFetchFacilities();
   const [selectedHubName, setSelectedHubName] = useState<string | null>(null);
-  const [selectedFacilityName, setSelectedFacilityName] = useState<string | null>(null);
+  const [selectedname, setSelectedname] = useState<string | null>(null);
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [hubs, setHubs] = useState<HubResponse[]>([]);
   const [createdData, setCreatedData] = useState<SensorResponse>();
@@ -182,7 +182,7 @@ const SensorEdit = () => {
   };
 
   const handleImageRemove = (index: number) => {
-    setExistingImages(prevImages => prevImages.filter((_, i) => i !== index));
+    setExistingImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const handleNewImageRemove = (index: number) => {
@@ -268,10 +268,7 @@ const SensorEdit = () => {
             <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"
-              rules={[
-                { required: true, message: 'Please enter Acquisition Date' },
-                { validator: validateDates }
-              ]}
+              rules={[{ required: true, message: 'Please enter Acquisition Date' }, { validator: validateDates }]}
             >
               <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
@@ -319,19 +316,13 @@ const SensorEdit = () => {
               <Select placeholder="Select a facility" onChange={onFacilityChange}>
                 {facilities.map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
+                    {facility.name}
                   </Select.Option>
                 ))}
               </Select>
             </Form.Item>
             <Form.Item label="Upload Image" tooltip="Up to 5 images allowed">
-              <ImageInput
-                type="file"
-                multiple
-                onChange={handleImageUpload}
-                accept="image/png, image/jpeg"
-                onClick={onInputClick}
-              />
+              <ImageInput type="file" multiple onChange={handleImageUpload} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
             {(existingImages.length > 0 || previewImages.length > 0) && (
               <Form.Item label="Image Preview">

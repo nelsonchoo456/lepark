@@ -219,7 +219,7 @@ const HubEdit = () => {
           <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
             <Select
               placeholder="Select a Facility"
-              options={facilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+              options={facilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
               disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
             />
           </Form.Item>

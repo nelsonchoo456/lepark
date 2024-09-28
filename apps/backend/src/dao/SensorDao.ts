@@ -19,7 +19,7 @@ class SensorDao {
             facility: {
               select: {
                 id: true,
-                facilityName: true,
+                name: true,
                 parkId: true,
               },
             },
@@ -28,7 +28,7 @@ class SensorDao {
         facility: {
           select: {
             id: true,
-            facilityName: true,
+            name: true,
             parkId: true,
           },
         },
@@ -49,7 +49,7 @@ class SensorDao {
         facility: sensor.facility
           ? {
               id: sensor.facility.id,
-              facilityName: sensor.facility.facilityName,
+              name: sensor.facility.name,
               parkId: sensor.facility.parkId,
             }
           : null,
@@ -66,7 +66,7 @@ class SensorDao {
         facility: {
           select: {
             id: true,
-            facilityName: true,
+            name: true,
             parkId: true,
           },
         },
@@ -78,7 +78,7 @@ class SensorDao {
             facility: {
               select: {
                 id: true,
-                facilityName: true,
+                name: true,
                 parkId: true,
               },
             },
@@ -103,7 +103,7 @@ class SensorDao {
         facility: {
           select: {
             id: true,
-            facilityName: true,
+            name: true,
             parkId: true,
           },
         },
@@ -122,7 +122,7 @@ class SensorDao {
         facility: sensor.facility
           ? {
               id: sensor.facility.id,
-              facilityName: sensor.facility.facilityName,
+              name: sensor.facility.name,
               parkId: sensor.facility.parkId,
             }
           : null,
@@ -132,7 +132,7 @@ class SensorDao {
 
   async getSensorById(
     id: string,
-  ): Promise<(Sensor & { hub?: { id: string; name: string }; facility?: { id: string; facilityName: string; parkId?: number } }) | null> {
+  ): Promise<(Sensor & { hub?: { id: string; name: string }; facility?: { id: string; name: string; parkId?: number } }) | null> {
     const sensor = await prisma.sensor.findUnique({
       where: { id },
       include: {
@@ -145,7 +145,7 @@ class SensorDao {
         facility: {
           select: {
             id: true,
-            facilityName: true,
+            name: true,
             parkId: true,
           },
         },
@@ -164,7 +164,7 @@ class SensorDao {
         facility: sensor.facility
           ? {
               id: sensor.facility.id,
-              facilityName: sensor.facility.facilityName,
+              name: sensor.facility.name,
               parkId: sensor.facility.parkId,
             }
           : undefined,
@@ -175,7 +175,6 @@ class SensorDao {
   }
 
   async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
-
     return prisma.sensor.update({
       where: { id },
       data,
@@ -208,7 +207,7 @@ class SensorDao {
         facility: {
           select: {
             id: true,
-            facilityName: true,
+            name: true,
             parkId: true,
           },
         },
@@ -234,7 +233,7 @@ class SensorDao {
         facility: {
           select: {
             id: true,
-            facilityName: true,
+            name: true,
             parkId: true,
           },
         },

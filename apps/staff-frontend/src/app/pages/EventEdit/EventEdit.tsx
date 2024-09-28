@@ -370,7 +370,7 @@ const EventEdit = () => {
                 <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
                   <Select
                     placeholder="Select a Facility for this Event"
-                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
                     onChange={onFacilityChange}
                   />
                 </Form.Item>

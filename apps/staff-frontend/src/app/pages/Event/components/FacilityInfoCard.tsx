@@ -32,15 +32,12 @@ const FacilityInfoCard: React.FC<FacilityInfoCardProps> = ({ facility }) => {
     <Card title="Facility Information" className="mt-5">
       <Descriptions column={1} className="mb-4">
         <Descriptions.Item label="Name">
-          {facility.facilityName}
-          <Tag 
-            color={facility.facilityStatus === 'OPEN' ? 'green' : 'red'} 
-            className="ml-2"
-          >
+          {facility.name}
+          <Tag color={facility.facilityStatus === 'OPEN' ? 'green' : 'red'} className="ml-2">
             {facility.facilityStatus}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Description">{facility.facilityDescription}</Descriptions.Item>
+        <Descriptions.Item label="Description">{facility.description}</Descriptions.Item>
       </Descriptions>
       <Descriptions column={2} className="mb-4">
         <Descriptions.Item label="Capacity">{facility.capacity}</Descriptions.Item>

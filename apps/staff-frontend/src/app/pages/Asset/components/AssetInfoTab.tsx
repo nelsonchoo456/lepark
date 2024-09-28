@@ -12,16 +12,16 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   }, [asset]);
 
   const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
-  const words = enumValue.split('_');
+    const words = enumValue.split('_');
 
-  if (enumType === 'type' || enumType === 'condition') {
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-  } else {
-    return words.map(word => word.toUpperCase()).join(' ');
-  }
-};
+    if (enumType === 'type' || enumType === 'condition') {
+      return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    } else {
+      return words.map((word) => word.toUpperCase()).join(' ');
+    }
+  };
 
- const getStatusTag = (status: string) => {
+  const getStatusTag = (status: string) => {
     switch (status) {
       case ParkAssetStatusEnum.AVAILABLE:
         return <Tag color="green">AVAILABLE</Tag>;
@@ -37,10 +37,10 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   };
 
   const descriptionsItems = [
-    { key: 'parkAssetName', label: 'Asset Name', children: asset.parkAssetName },
+    { key: 'name', label: 'Asset Name', children: asset.name },
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
-    { key: 'parkAssetDescription', label: 'Description', children: asset.parkAssetDescription || 'N/A' },
-     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
+    { key: 'description', label: 'Description', children: asset.description || 'N/A' },
+    { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
     { key: 'recurringMaintenanceDuration', label: 'Maintenance Cycle (days)', children: asset.recurringMaintenanceDuration },
     { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') },

@@ -2,7 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { Button, Input, Table, Flex, Tag, message, Tooltip, Card, Modal, Spin } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { deleteParkAsset, ParkAssetResponse, StaffResponse, StaffType, ParkAssetStatusEnum, ParkAssetTypeEnum, ParkAssetConditionEnum } from '@lepark/data-access';
+import {
+  deleteParkAsset,
+  ParkAssetResponse,
+  StaffResponse,
+  StaffType,
+  ParkAssetStatusEnum,
+  ParkAssetTypeEnum,
+  ParkAssetConditionEnum,
+} from '@lepark/data-access';
 import { useFetchAssets } from '../../hooks/Asset/useFetchAssets';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
@@ -14,9 +22,9 @@ import { MdDeleteOutline } from 'react-icons/md';
 const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
   const words = enumValue.split('_');
   if (enumType === 'type' || enumType === 'condition') {
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
   } else {
-    return words.map(word => word.toUpperCase()).join(' ');
+    return words.map((word) => word.toUpperCase()).join(' ');
   }
 };
 
@@ -27,14 +35,12 @@ const AssetAvail: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const availableAssets = useMemo(() => {
-    return assets.filter(asset => asset.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE);
+    return assets.filter((asset) => asset.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE);
   }, [assets]);
 
   const filteredAvailableAssets = useMemo(() => {
     return availableAssets.filter((asset) =>
-      Object.values(asset).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      Object.values(asset).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())),
     );
   }, [availableAssets, searchQuery]);
 
@@ -51,8 +57,8 @@ const AssetAvail: React.FC = () => {
           content: 'Deleting an Asset cannot be undone. Are you sure you want to proceed?',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
-          okText: "Confirm Delete",
-          okButtonProps: { danger: true }
+          okText: 'Confirm Delete',
+          okButtonProps: { danger: true },
         });
       });
 
@@ -74,9 +80,9 @@ const AssetAvail: React.FC = () => {
   const columns: ColumnsType<ParkAssetResponse> = [
     {
       title: 'Name',
-      dataIndex: 'parkAssetName',
-      key: 'parkAssetName',
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.parkAssetName.localeCompare(b.parkAssetName),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '25%',
     },
     {
@@ -92,24 +98,30 @@ const AssetAvail: React.FC = () => {
       title: 'Condition',
       dataIndex: 'parkAssetCondition',
       key: 'parkAssetCondition',
-      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({ text: formatEnumLabel(condition, 'condition'), value: condition })),
+      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({
+        text: formatEnumLabel(condition, 'condition'),
+        value: condition,
+      })),
       onFilter: (value, record) => record.parkAssetCondition === value,
       render: (condition: string) => formatEnumLabel(condition, 'condition'),
       width: '20%',
     },
-       {
-     title: 'Status',
-     dataIndex: 'parkAssetStatus',
-     key: 'parkAssetStatus',
-     filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
-     onFilter: (value, record) => record.parkAssetStatus === value,
-     render: (status: string) => (
-       <Tag color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : 'red'} bordered={false}>
-  {formatEnumLabel(status, 'status')}
-</Tag>
-     ),
-     width: '15%',
-   },
+    {
+      title: 'Status',
+      dataIndex: 'parkAssetStatus',
+      key: 'parkAssetStatus',
+      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
+      onFilter: (value, record) => record.parkAssetStatus === value,
+      render: (status: string) => (
+        <Tag
+          color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : 'red'}
+          bordered={false}
+        >
+          {formatEnumLabel(status, 'status')}
+        </Tag>
+      ),
+      width: '15%',
+    },
     {
       title: 'Actions',
       key: 'actions',
@@ -118,20 +130,19 @@ const AssetAvail: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-            <Tooltip title="Edit Asset">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
-            </Tooltip>
-              <Tooltip title="Delete Asset">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
-
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '20%',
     },
   ];
 
- return (
+  return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Flex justify="end" gap={10}>
@@ -142,10 +153,9 @@ const AssetAvail: React.FC = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
-          <Button type="primary" onClick={() => navigate('/parkasset/create')}>
-            Create Park Asset
-          </Button>
-
+        <Button type="primary" onClick={() => navigate('/parkasset/create')}>
+          Create Park Asset
+        </Button>
       </Flex>
       <Card>
         <Table

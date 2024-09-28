@@ -100,11 +100,11 @@ const ViewHubDetails = () => {
       children: hub?.hubSecret,
     },
     {
-      key: 'facilityName',
+      key: 'name',
       label: 'Facility',
-      children: facility?.facilityName,
+      children: facility?.name,
     },
-  ]
+  ];
 
   if (hub?.nextMaintenanceDate) {
     descriptionsItems.push({

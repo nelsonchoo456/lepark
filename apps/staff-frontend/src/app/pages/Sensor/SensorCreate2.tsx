@@ -45,7 +45,7 @@ const SensorCreate2 = () => {
   }, [user]);
 
   const handleParkChange = (parkId: string) => {
-    const parkFacilities = facilities.filter(facility => facility.parkId === Number(parkId));
+    const parkFacilities = facilities.filter((facility) => facility.parkId === Number(parkId));
     setFilteredFacilities(parkFacilities);
     form.setFieldsValue({ facilityId: undefined });
   };
@@ -53,7 +53,7 @@ const SensorCreate2 = () => {
   const formatEnumLabel = (enumValue: string): string => {
     return enumValue
       .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   };
 
@@ -83,8 +83,6 @@ const SensorCreate2 = () => {
   ];
 
   const onFinish = async (values: any) => {
-
-
     try {
       const sensorData = {
         ...values,
@@ -108,7 +106,6 @@ const SensorCreate2 = () => {
     }
     handleFileChange(e);
   };
-
 
   return (
     <ContentWrapperDark>
@@ -192,10 +189,7 @@ const SensorCreate2 = () => {
             <Form.Item
               name="supplierContactNumber"
               label="Supplier Contact"
-              rules={[
-                { required: true, message: 'Please input the supplier contact number' },
-                { validator: validatePhoneNumber }
-              ]}
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
             >
               <Input />
             </Form.Item>
@@ -213,27 +207,17 @@ const SensorCreate2 = () => {
                 </Select>
               </Form.Item>
             )}
-            <Form.Item
-              name="facilityId"
-              label="Facility"
-              rules={[{ required: true, message: 'Please select a facility' }]}
-            >
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
               <Select placeholder="Select a facility">
                 {(user?.role === 'SUPERADMIN' ? filteredFacilities : facilities).map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
+                    {facility.name}
                   </Select.Option>
                 ))}
               </Select>
             </Form.Item>
-           <Form.Item label="Upload Images" tooltip="Optional. You can upload up to 5 images.">
-              <ImageInput
-                type="file"
-                multiple
-                onChange={handleImageUpload}
-                accept="image/png, image/jpeg"
-                onClick={onInputClick}
-              />
+            <Form.Item label="Upload Images" tooltip="Optional. You can upload up to 5 images.">
+              <ImageInput type="file" multiple onChange={handleImageUpload} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
             {previewImages.length > 0 && (
               <Form.Item label="Image Preview">

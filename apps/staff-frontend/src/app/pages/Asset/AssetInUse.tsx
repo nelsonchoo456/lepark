@@ -2,7 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { Button, Input, Table, Flex, Tag, message, Tooltip, Card, Modal } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { deleteParkAsset, ParkAssetResponse, StaffResponse, StaffType, ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '@lepark/data-access';
+import {
+  deleteParkAsset,
+  ParkAssetResponse,
+  StaffResponse,
+  StaffType,
+  ParkAssetTypeEnum,
+  ParkAssetStatusEnum,
+  ParkAssetConditionEnum,
+} from '@lepark/data-access';
 import { useFetchAssets } from '../../hooks/Asset/useFetchAssets';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
@@ -14,9 +22,9 @@ import { MdDeleteOutline } from 'react-icons/md';
 const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
   const words = enumValue.split('_');
   if (enumType === 'type' || enumType === 'condition') {
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
   } else {
-    return words.map(word => word.toUpperCase()).join(' ');
+    return words.map((word) => word.toUpperCase()).join(' ');
   }
 };
 
@@ -27,14 +35,12 @@ const AssetInUse: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const inUseAssets = useMemo(() => {
-    return assets.filter(asset => asset.parkAssetStatus === ParkAssetStatusEnum.IN_USE);
+    return assets.filter((asset) => asset.parkAssetStatus === ParkAssetStatusEnum.IN_USE);
   }, [assets]);
 
   const filteredInUseAssets = useMemo(() => {
     return inUseAssets.filter((asset) =>
-      Object.values(asset).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      Object.values(asset).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())),
     );
   }, [inUseAssets, searchQuery]);
 
@@ -59,8 +65,8 @@ const AssetInUse: React.FC = () => {
           content: 'Deleting an Asset cannot be undone. Are you sure you want to proceed?',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
-          okText: "Confirm Delete",
-          okButtonProps: { danger: true }
+          okText: 'Confirm Delete',
+          okButtonProps: { danger: true },
         });
       });
 
@@ -79,13 +85,12 @@ const AssetInUse: React.FC = () => {
     setSearchQuery(e.target.value);
   };
 
-
   const columns: ColumnsType<ParkAssetResponse> = [
     {
       title: 'Name',
-      dataIndex: 'parkAssetName',
-      key: 'parkAssetName',
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.parkAssetName.localeCompare(b.parkAssetName),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '25%',
     },
     {
@@ -101,7 +106,10 @@ const AssetInUse: React.FC = () => {
       title: 'Condition',
       dataIndex: 'parkAssetCondition',
       key: 'parkAssetCondition',
-      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({ text: formatEnumLabel(condition, 'condition'), value: condition })),
+      filters: Object.values(ParkAssetConditionEnum).map((condition) => ({
+        text: formatEnumLabel(condition, 'condition'),
+        value: condition,
+      })),
       onFilter: (value, record) => record.parkAssetCondition === value,
       render: (condition: string) => formatEnumLabel(condition, 'condition'),
       width: '20%',
@@ -113,9 +121,12 @@ const AssetInUse: React.FC = () => {
       filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
       onFilter: (value, record) => record.parkAssetStatus === value,
       render: (status: string) => (
-        <Tag color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : 'red'} bordered={false}>
-  {formatEnumLabel(status, 'status')}
-</Tag>
+        <Tag
+          color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : 'red'}
+          bordered={false}
+        >
+          {formatEnumLabel(status, 'status')}
+        </Tag>
       ),
       width: '15%',
     },
@@ -127,12 +138,12 @@ const AssetInUse: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-            <Tooltip title="Edit Asset">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
-            </Tooltip>
-  <Tooltip title="Delete Asset">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '20%',

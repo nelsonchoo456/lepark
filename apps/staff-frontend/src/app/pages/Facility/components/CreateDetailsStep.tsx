@@ -214,14 +214,14 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
 
       <Divider orientation="left">Facility Details</Divider>
 
-      <Form.Item name="facilityName" label="Facility Name" rules={[{ required: true, message: 'Please input the facility name!' }]}>
+      <Form.Item name="name" label="Facility Name" rules={[{ required: true, message: 'Please input the facility name!' }]}>
         <Input placeholder="Enter Facility Name" />
       </Form.Item>
       <Form.Item name="facilityType" label="Facility Type" rules={[{ required: true, message: 'Please select the facility type!' }]}>
         <Select options={facilityTypeOptions} placeholder="Select a Facility Type" />
       </Form.Item>
       <Form.Item
-        name="facilityDescription"
+        name="description"
         label="Facility Description"
         rules={[{ required: true, message: 'Please input the facility description!' }]}
       >

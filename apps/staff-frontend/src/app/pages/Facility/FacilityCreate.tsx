@@ -191,7 +191,7 @@ const FacilityCreate = () => {
             <Result
               status="success"
               title="Created new Facility"
-              subTitle={createdData && <>Facility name: {createdData.facilityName}</>}
+              subTitle={createdData && <>Facility name: {createdData.name}</>}
               extra={[
                 <Button key="back" onClick={() => navigate('/facilities')}>
                   Back to Facility Management

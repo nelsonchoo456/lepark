@@ -50,10 +50,14 @@ const LocationTab = ({ event, facility, park }: LocationTabProps) => {
           tooltipLabel={
             <div className="text-center">
               <div className="font-semibold">{event.title}</div>
-              <div className="text-sm text-gray-500">@ { } {facility.facilityName}</div>
+              <div className="text-sm text-gray-500">
+                @ {} {facility.name}
+              </div>
             </div>
           }
-          backgroundColor={COLORS.green[300]} icon={<TbStar className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
+          backgroundColor={COLORS.green[300]}
+          icon={<TbStar className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+        />
       </MapContainer>
     </div>
   );

@@ -26,7 +26,11 @@ const MapTab = ({ facility, park }: MapTabProps) => {
       className="rounded-xl overflow-hidden"
     >
       <Tooltip title="Edit Location">
-        <div className="absolute z-20 flex justify-end w-full mt-4 pr-4"><Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-location`)}>Edit </Button></div>
+        <div className="absolute z-20 flex justify-end w-full mt-4 pr-4">
+          <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-location`)}>
+            Edit{' '}
+          </Button>
+        </div>
       </Tooltip>
       <MapContainer
         center={[1.287953, 103.851784]}
@@ -38,10 +42,19 @@ const MapTab = ({ facility, park }: MapTabProps) => {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }}/>
-        {facility && facility.lat && facility.long && <PictureMarker id={facility.id} entityType="FACILITY" circleWidth={37} lat={facility.lat} lng={facility.long} tooltipLabel={facility.facilityName} backgroundColor={COLORS.sky[300]} icon={<TbBuildingEstate className='text-sky-600 drop-shadow-lg' style={{ fontSize: "2rem" }}/>} /> }
-        
-    
+        <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }} />
+        {facility && facility.lat && facility.long && (
+          <PictureMarker
+            id={facility.id}
+            entityType="FACILITY"
+            circleWidth={37}
+            lat={facility.lat}
+            lng={facility.long}
+            tooltipLabel={facility.name}
+            backgroundColor={COLORS.sky[300]}
+            icon={<TbBuildingEstate className="text-sky-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
+          />
+        )}
       </MapContainer>
     </div>
     // </>

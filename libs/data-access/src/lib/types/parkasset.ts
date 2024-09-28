@@ -1,9 +1,9 @@
 import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedenums';
 
 export interface ParkAssetData {
-  parkAssetName: string;
+  name: string;
   parkAssetType: ParkAssetTypeEnum;
-  parkAssetDescription?: string;
+  description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
   recurringMaintenanceDuration?: number;
@@ -19,9 +19,9 @@ export interface ParkAssetData {
 
 export interface ParkAssetResponse {
   id: string;
-  parkAssetName: string;
+  name: string;
   parkAssetType: ParkAssetTypeEnum;
-  parkAssetDescription?: string;
+  description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
   recurringMaintenanceDuration?: number;
@@ -33,15 +33,15 @@ export interface ParkAssetResponse {
   images: string[];
   remarks?: string;
   facilityId: string;
-  facilityName: string;
+  name: string;
   parkId: number;
   //maintenanceHistory?: MaintenanceHistoryResponse[];
 }
 
 export interface ParkAssetUpdateData {
-  parkAssetName?: string;
+  name?: string;
   parkAssetType?: ParkAssetTypeEnum;
-  parkAssetDescription?: string;
+  description?: string;
   parkAssetStatus?: ParkAssetStatusEnum;
   acquisitionDate?: string;
   recurringMaintenanceDuration?: number;

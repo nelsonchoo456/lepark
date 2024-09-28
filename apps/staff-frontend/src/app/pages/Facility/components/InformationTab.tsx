@@ -27,7 +27,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   const descriptionsItems = [
-    { key: 'description', label: 'Description', children: facility.facilityDescription },
+    { key: 'description', label: 'Description', children: facility.description },
     {
       key: 'reservationPolicy',
       label: 'Reservation Policy',

@@ -14,7 +14,7 @@ const s3 = new aws.S3({
 class FacilityService {
   public async createFacility(data: FacilitySchemaType): Promise<Facility> {
     try {
-      const existingFacility = await FacilityDao.getFacilityByNameAndParkId(data.facilityName, data.parkId);
+      const existingFacility = await FacilityDao.getFacilityByNameAndParkId(data.name, data.parkId);
       if (existingFacility) {
         throw new Error('A facility with this name already exists in the park.');
       }
@@ -64,7 +64,7 @@ class FacilityService {
       // Validate merged data using Zod
       FacilitySchema.parse(mergedData);
 
-      const existingFacilityInNewPark = await FacilityDao.getFacilityByNameAndParkId(mergedData.facilityName, data.parkId);
+      const existingFacilityInNewPark = await FacilityDao.getFacilityByNameAndParkId(mergedData.name, data.parkId);
       if (existingFacilityInNewPark && existingFacilityInNewPark.id !== id) {
         throw new Error('A facility with this name already exists in the park.');
       }
@@ -116,8 +116,8 @@ class FacilityService {
 function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreateInput {
   // Add checks for all required fields
   if (
-    !data.facilityName ||
-    !data.facilityDescription ||
+    !data.name ||
+    !data.description ||
     !data.isBookable === undefined ||
     !data.isPublic === undefined ||
     !data.isSheltered === undefined ||
