@@ -22,6 +22,8 @@ import dayjs from 'dayjs';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 
+const { TextArea } = Input;
+
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
     .split('_')
