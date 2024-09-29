@@ -150,8 +150,8 @@ const FacilityEdit = () => {
       });
     } else {
       form.setFieldsValue({
-        reservationPolicy: facility?.reservationPolicy,
-        fee: facility?.fee,
+        reservationPolicy: facility?.reservationPolicy === 'NIL' ? '' : facility?.reservationPolicy,
+        fee: facility?.fee === 0 ? '' : facility?.fee,
       });
     }
   };
@@ -306,7 +306,7 @@ const FacilityEdit = () => {
             />
           </Form.Item>
           <Form.Item name="reservationPolicy" label="Reservation Policy" rules={[{ required: true }]} hidden={!isPublic || !isBookable}>
-            <TextArea />
+            <TextArea placeholder="Enter reservation policy" />
           </Form.Item>
           <Form.Item name="rulesAndRegulations" label="Rules and Regulations" rules={[{ required: true }]}>
             <TextArea />
