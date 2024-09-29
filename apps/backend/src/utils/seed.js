@@ -10,6 +10,7 @@ const {
   hubsData,
   attractionsData,
   facilitiesData,
+  eventsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -303,6 +304,29 @@ async function seed() {
     hubList.push(createdHub);
   }
   console.log(`Total hubs seeded: ${hubList.length}\n`);
+
+  const amphitheaterId = facilityList[3].id;
+  const dragonPlaygroundId = facilityList[6].id;
+  const flowerPlaygroundId = facilityList[0].id;
+
+  const eventList = [];
+  for (let i = 0; i < eventsData.length; i++) {
+    const event = eventsData[i];
+    
+    if (i < 3) {
+      event.facilityId = amphitheaterId;
+    } else if (i < 5) {
+      event.facilityId = dragonPlaygroundId;
+    } else {
+      event.facilityId = flowerPlaygroundId;
+    }
+  
+    const createdEvent = await prisma.event.create({
+      data: event,
+    });
+    eventList.push(createdEvent);
+  }
+  console.log(`Total events seeded: ${eventList.length}\n`);
 
   const attractionList = [];
   for (const attraction of attractionsData) {

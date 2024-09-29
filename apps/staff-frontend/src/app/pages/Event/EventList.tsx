@@ -128,7 +128,7 @@ const EventList: React.FC = () => {
             <div>
               <div className="font-semibold">{park ? park.name : 'Unknown Park'}</div>
               <div className="flex">
-                <p className="opacity-50 mr-2">Zone:</p>
+                <p className="opacity-50 mr-2">Facility:</p>
                 {facility ? facility.name : 'Unknown Facility'}
               </div>
             </div>

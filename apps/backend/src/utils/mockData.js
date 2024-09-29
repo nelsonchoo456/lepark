@@ -1661,6 +1661,45 @@ const facilitiesData = [
     parkId: 2,
   },
   {
+    name: 'Dragon Playground',
+    description:
+      'A vibrant and spacious dragon playground equipped with swings, slides, and climbing structures, offering an engaging and fun environment for children of all ages. Surrounded by soft grass and benches for parents to relax.',
+    isBookable: false,
+    isPublic: true,
+    isSheltered: false,
+    facilityType: 'PLAYGROUND',
+    reservationPolicy: 'NIL',
+    rulesAndRegulations:
+      '1. Children under 12 must be supervised by an adult at all times. 2. No food or drinks allowed on the play equipment. 3. Maintain cleanliness and dispose of litter in provided bins. 4. Please share equipment with others. 5. Pets are not allowed in the playground area.',
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/1727629465513-dragon%20playground%20facility.png'],
+    lastMaintenanceDate: '2024-01-20T01:09:38.773Z',
+    openingHours: [
+      '2024-09-07T23:00:00.000Z',
+      '2024-09-07T23:00:00.000Z',
+      '2024-09-07T23:00:00.000Z',
+      '2024-09-07T23:00:00.000Z',
+      '2024-09-07T23:00:00.000Z',
+      '2024-09-07T23:00:00.000Z',
+      '2024-09-07T23:00:00.000Z',
+    ],
+    closingHours: [
+      '2024-09-09T14:00:00.000Z',
+      '2024-09-09T14:00:00.000Z',
+      '2024-09-09T14:00:00.000Z',
+      '2024-09-09T14:00:00.000Z',
+      '2024-09-09T14:00:00.000Z',
+      '2024-09-09T14:00:00.000Z',
+      '2024-09-09T14:00:00.000Z',
+    ],
+    facilityStatus: 'OPEN',
+    lat: 1.3611050479304856,
+    long: 103.84856700897217,
+    size: 200,
+    capacity: 50,
+    fee: 0,
+    parkId: 2,
+  },
+  {
     name: 'Storeroom',
     description:
       'A secure and spacious storeroom designed to house park equipment, tools, and supplies. Access is limited to authorized personnel to ensure safety and proper management of inventory.',
@@ -1701,6 +1740,105 @@ const facilitiesData = [
   },
 ];
 
+const eventsData = [
+  {
+    title: "Wildlife Protection Talk",
+    description: "The Wildlife Protection Talk is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!",
+    type: "TALK",
+    suitability: "NATURE_ENTHUSIASTS",
+    startDate: "2024-10-07T00:00:00.000Z",
+    endDate: "2024-10-11T09:00:00.000Z",
+    startTime: "2024-10-07T00:00:00.000Z",
+    endTime: "2024-10-11T09:00:00.000Z",
+    maxCapacity: 300,
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727628906708-wildlife%20protection%20seminar%20event.jpg"
+    ],
+    status: "UPCOMING",
+    facilityId: ""
+  },
+  {
+    title: "Stand Up Comedy",
+    description: "Get ready for an evening filled with laughter as talented comedians take the stage to entertain you with hilarious stand-up routines. A perfect way to unwind and enjoy some light-hearted humor in a beautiful park setting.",
+    type: "PERFORMANCE",
+    suitability: "FAMILIES_AND_FRIENDS",
+    startDate: "2024-11-08T02:00:00.000Z",
+    endDate: "2024-11-12T11:00:00.000Z",
+    startTime: "2024-11-08T02:00:00.000Z",
+    endTime: "2024-11-12T11:00:00.000Z",
+    maxCapacity: 200,
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629019586-stand%20up%20comedy.jpg"
+    ],
+    status: "UPCOMING",
+    facilityId: ""
+  },
+  {
+    title: "Jazz Festival",
+    description: "Immerse yourself in the soothing sounds of live jazz as talented musicians bring the park to life with soulful melodies. Whether you're a jazz enthusiast or simply looking for a relaxing evening, this event offers a perfect blend of music and nature.",
+    type: "FESTIVAL",
+    suitability: "FAMILIES_AND_FRIENDS",
+    startDate: "2024-10-18T02:00:00.000Z",
+    endDate: "2024-10-21T12:00:00.000Z",
+    startTime: "2024-10-18T02:00:00.000Z",
+    endTime: "2024-10-21T12:00:00.000Z",
+    maxCapacity: 300,
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629125264-jazz%20festival%20event.jpg"
+    ],
+    status: "UPCOMING",
+    facilityId: ""
+  },
+  {
+    title: "Eco-Friendly Craft Workshop",
+    description: "The Eco-Friendly Craft Workshop is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!",
+    type: "WORKSHOP",
+    suitability: "FAMILIES_AND_FRIENDS",
+    startDate: "2024-10-10T01:00:00.000Z",
+    endDate: "2024-10-12T09:00:00.000Z",
+    startTime: "2024-10-10T01:00:00.000Z",
+    endTime: "2024-10-12T09:00:00.000Z",
+    maxCapacity: 30,
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629271719-eco%20friendly%20craft%20workshop%201.jpg"
+    ],
+    status: "UPCOMING",
+    facilityId: ""
+  },
+  {
+    title: "Treasure Hunt",
+    description: "Treasure Hunt is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
+    type: "COMPETITION",
+    suitability: "CHILDREN",
+    startDate: "2024-10-01T01:00:00.000Z",
+    endDate: "2024-10-01T11:00:00.000Z",
+    startTime: "2024-10-01T01:00:00.000Z",
+    endTime: "2024-10-01T11:00:00.000Z",
+    maxCapacity: 25,
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629353517-treasure%20hunt%20event.jpg"
+    ],
+    status: "UPCOMING",
+    facilityId: ""
+  },
+  {
+    title: "Obstacle Course Challenge",
+    description: "Obstacle Course Challenge is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
+    type: "COMPETITION",
+    suitability: "CHILDREN",
+    startDate: "2024-10-01T02:00:00.000Z",
+    endDate: "2024-10-04T09:00:00.000Z",
+    startTime: "2024-10-01T02:00:00.000Z",
+    endTime: "2024-10-04T09:00:00.000Z",
+    maxCapacity: 30,
+    images: [
+      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629448629-obstacle%20course%20challenge%201.jpg"
+    ],
+    status: "UPCOMING",
+    facilityId: ""
+  }
+]
+
 module.exports = {
   parksData,
   zonesData,
@@ -1712,4 +1850,5 @@ module.exports = {
   hubsData,
   attractionsData,
   facilitiesData,
+  eventsData,
 };
