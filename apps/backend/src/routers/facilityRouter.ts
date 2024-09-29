@@ -1,11 +1,12 @@
 import express from 'express';
 import FacilityService from '../services/FacilityService';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createFacility', async (req, res) => {
+router.post('/createFacility', authenticateJWTStaff, async (req, res) => {
   try {
     const facility = await FacilityService.createFacility(req.body);
     res.status(201).json(facility);
@@ -42,7 +43,7 @@ router.get('/getFacilityById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateFacilityDetails/:id', async (req, res) => {
+router.put('/updateFacilityDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const facility = await FacilityService.updateFacilityDetails(req.params.id, req.body);
     res.status(200).json(facility);
@@ -51,7 +52,7 @@ router.put('/updateFacilityDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteFacility/:id', async (req, res) => {
+router.delete('/deleteFacility/:id', authenticateJWTStaff, async (req, res) => {
   try {
     await FacilityService.deleteFacility(req.params.id);
     res.status(204).send();
