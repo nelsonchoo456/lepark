@@ -1,4 +1,4 @@
-import { Prisma, ParkAsset, ParkAssetStatusEnum } from '@prisma/client';
+import { Prisma, ParkAsset, ParkAssetStatusEnum, ParkAssetTypeEnum } from '@prisma/client';
 import { z } from 'zod';
 import { ParkAssetSchema, ParkAssetSchemaType } from '../schemas/parkAssetSchema';
 import ParkAssetDao from '../dao/ParkAssetDao';
@@ -8,6 +8,7 @@ import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
 import { ParkResponse } from '@lepark/data-access';
 import { ParkResponseData } from '../schemas/parkSchema';
+import { v4 as uuidv4 } from 'uuid';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -27,6 +28,17 @@ class ParkAssetService {
       const formattedData = dateFormatter(data);
       ParkAssetSchema.parse(formattedData);
       const parkAssetData = ensureAllFieldsPresent(formattedData);
+      
+      // Generate a unique serialNumber based on the asset type
+      parkAssetData.serialNumber = this.generateSerialNumber(parkAssetData.parkAssetType);
+
+      let existingAsset = await ParkAssetDao.getParkAssetBySerialNumber(parkAssetData.serialNumber);
+
+      while (existingAsset) {
+        parkAssetData.serialNumber = this.generateSerialNumber(parkAssetData.parkAssetType);
+        existingAsset = await ParkAssetDao.getParkAssetBySerialNumber(parkAssetData.serialNumber);
+      }
+
       return ParkAssetDao.createParkAsset(parkAssetData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -125,6 +137,38 @@ class ParkAssetService {
     } catch (error) {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
+    }
+  }
+
+  public async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
+    return ParkAssetDao.getParkAssetBySerialNumber(serialNumber);
+  }
+
+  private generateSerialNumber(assetType: ParkAssetTypeEnum): string {
+    const prefix = this.getAssetTypePrefix(assetType);
+    return `${prefix}-${uuidv4().substr(0, 8).toUpperCase()}`;
+  }
+
+  private getAssetTypePrefix(assetType: ParkAssetTypeEnum): string {
+    switch (assetType) {
+      case ParkAssetTypeEnum.PLANT_TOOL_AND_EQUIPMENT:
+        return 'PT';
+      case ParkAssetTypeEnum.HOSES_AND_PIPES:
+        return 'HP';
+      case ParkAssetTypeEnum.INFRASTRUCTURE:
+        return 'IN';
+      case ParkAssetTypeEnum.LANDSCAPING:
+        return 'LS';
+      case ParkAssetTypeEnum.GENERAL_TOOLS:
+        return 'GT';
+      case ParkAssetTypeEnum.SAFETY:
+        return 'SF';
+      case ParkAssetTypeEnum.DIGITAL:
+        return 'DG';
+      case ParkAssetTypeEnum.EVENT:
+        return 'EV';
+      default:
+        return 'PA'; // Default prefix for unknown types
     }
   }
 }

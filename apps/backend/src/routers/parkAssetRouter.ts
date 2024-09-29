@@ -116,4 +116,14 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   }
 });
 
+router.get('/getBySerialNumber/:serialNumber', async (req, res) => {
+  try {
+    const serialNumber = req.params.serialNumber;
+    const parkAsset = await ParkAssetService.getParkAssetBySerialNumber(serialNumber);
+    res.status(200).json(parkAsset);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

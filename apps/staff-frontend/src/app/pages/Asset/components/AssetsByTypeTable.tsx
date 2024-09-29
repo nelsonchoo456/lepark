@@ -65,7 +65,15 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columns = [
     {
-      title: 'Name',
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
+      width: '20%',
+    },
+    {
+      title: 'Asset Name',
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => <div className="font-semibold">{name}</div>,
@@ -73,7 +81,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       width: '20%',
     },
     {
-      title: 'Type',
+      title: 'Asset Type',
       dataIndex: 'parkAssetType',
       key: 'parkAssetType',
       filters: parkAssetTypesLabels.map((a) => ({ value: a.key, text: a.label })),

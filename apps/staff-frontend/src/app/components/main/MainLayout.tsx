@@ -266,7 +266,7 @@ const MainLayout = () => {
           ) : user?.parkId && park ? (
             <LogoText>{park.name}</LogoText>
           ) : (
-            <LogoText>Lepark Admin</LogoText>
+            <LogoText>Lepark Staff</LogoText>
           )}
         </div>
       </Header>
@@ -278,7 +278,7 @@ const MainLayout = () => {
           ) : user?.parkId && park ? (
             <LogoText>{park.name}</LogoText>
           ) : (
-            <LogoText>Lepark Admin</LogoText>
+            <LogoText>Lepark Staff</LogoText>
           )}
         </div>
         <Menu

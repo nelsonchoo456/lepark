@@ -30,6 +30,11 @@ const AssetDetails = () => {
 
   const descriptionsItems = [
     {
+      key: 'serialNumber',
+      label: 'Serial Number',
+      children: asset ? asset.serialNumber : 'Loading...',
+    },
+    {
       key: 'assetType',
       label: 'Asset Type',
       children: asset ? formatEnumLabel(asset.parkAssetType, 'type') : 'Loading...',
@@ -51,19 +56,9 @@ const AssetDetails = () => {
         ),
     },
     {
-      key: 'lastMaintenance',
-      label: 'Last Maintenance',
-      children: asset ? moment(asset.lastMaintenanceDate).fromNow() : 'Loading...',
-    },
-    {
-      key: 'name',
-      label: 'Facility',
-      children: asset ? asset.name : 'Loading...',
-    },
-    {
-      key: 'facility',
-      label: 'Facility',
-      children: asset ? asset.facility?.name : 'Loading...',
+      key: 'nextMaintenance',
+      label: 'Next Maintenance',
+      children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
     },
     // Add park name for Superadmin only
     ...(user?.role === StaffType.SUPERADMIN ? [
@@ -73,6 +68,11 @@ const AssetDetails = () => {
         children: asset ? asset.parkName : 'Loading...',
       },
     ] : []),
+    {
+      key: 'facility',
+      label: 'Facility',
+      children: asset ? asset.facility?.name : 'Loading...',
+    },
   ];
 
   const tabsItems = [
@@ -134,12 +134,6 @@ const AssetDetails = () => {
         </Card>
       </ContentWrapperDark>
     );
-  }
-
-  if (notFound) {
-    // [ ENTITY NOT FOUND MERGE ISSUE ]
-    return <></>;
-    // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
   if (!asset) {

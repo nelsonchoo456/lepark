@@ -135,12 +135,8 @@ const AssetCreate = () => {
       let response;
       if (createMultiple) {
         const createdAssets = [];
-        for (let i = 1; i <= assetQuantity; i++) {
-          const assetData = {
-            ...baseAssetData,
-            name: `${values.name} ${i}`,
-          };
-          const result = await createParkAsset(assetData, []);
+        for (let i = 0; i < assetQuantity; i++) {
+          const result = await createParkAsset(baseAssetData, selectedFiles);
           createdAssets.push(result.data);
         }
         // Use the last created asset as the response
@@ -150,7 +146,7 @@ const AssetCreate = () => {
       }
 
       setCreatedAsset(response.data);
-      setCreatedAssetName(createMultiple ? `${values.name} 1-${assetQuantity}` : values.name);
+      setCreatedAssetName(values.name);
       setShowSuccessAlert(true);
     } catch (error) {
       message.error(String(error));
@@ -287,27 +283,23 @@ const AssetCreate = () => {
                 <InputNumber onChange={(value) => setAssetQuantity(value as number)} min={1} max={10} />
               </Form.Item>
             )}
-            {!createMultiple && (
-              <>
-                <Form.Item label="Upload Images">
-                  <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-                </Form.Item>
-                {previewImages.length > 0 && (
-                  <Form.Item label="Image Previews">
-                    <div className="flex flex-wrap gap-2">
-                      {previewImages.map((imgSrc, index) => (
-                        <img
-                          key={index}
-                          src={imgSrc}
-                          alt={`Preview ${index}`}
-                          className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                          onClick={() => removeImage(index)}
-                        />
-                      ))}
-                    </div>
-                  </Form.Item>
-                )}
-              </>
+            <Form.Item label="Upload Images">
+              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            </Form.Item>
+            {previewImages.length > 0 && (
+              <Form.Item label="Image Previews">
+                <div className="flex flex-wrap gap-2">
+                  {previewImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => removeImage(index)}
+                    />
+                  ))}
+                </div>
+              </Form.Item>
             )}
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">
@@ -318,8 +310,8 @@ const AssetCreate = () => {
         ) : (
           <Result
             status="success"
-            title={createMultiple ? 'Created new Assets' : 'Created new Asset'}
-            subTitle={createdAssetName && <>Asset name(s): {createdAssetName}</>}
+            title={createMultiple ? `Created ${assetQuantity} new Assets` : 'Created new Asset'}
+            subTitle={createdAssetName && <>Asset name: {createdAssetName}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/parkasset')}>
                 Back to Park Asset Management

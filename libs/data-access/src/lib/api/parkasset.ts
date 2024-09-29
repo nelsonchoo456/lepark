@@ -126,9 +126,23 @@ export async function updateParkAssetStatus(id: string, newStatus: string): Prom
     }
   }
 }
+
 export async function getMaintenanceHistoryByParkAssetId(parkAssetId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
   try {
     const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${parkAssetId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkAssetBySerialNumber(serialNumber: string): Promise<AxiosResponse<ParkAssetResponse>> {
+  try {
+    const response: AxiosResponse<ParkAssetResponse> = await client.get(`${URL}/getBySerialNumber/${serialNumber}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

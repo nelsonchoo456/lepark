@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, ParkAsset, ParkAssetConditionEnum, ParkAssetStatusEnum, ParkAssetTypeEnum } from '@prisma/client';
+import { PrismaClient, Prisma, ParkAsset } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -111,6 +111,22 @@ class ParkAssetDao {
         parkId: asset.facility?.parkId,
       }))
       .filter((asset) => asset.parkId === parkId);
+  }
+
+  async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
+    return prisma.parkAsset.findUnique({
+      where: { serialNumber },
+      include: {
+        maintenanceHistory: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            parkId: true,
+          },
+        },
+      },
+    });
   }
 }
 

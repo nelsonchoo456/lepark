@@ -19,6 +19,7 @@ export interface ParkAssetData {
 
 export interface ParkAssetResponse {
   id: string;
+  serialNumber: string; // Add this line
   name: string;
   parkAssetType: ParkAssetTypeEnum;
   description?: string;
