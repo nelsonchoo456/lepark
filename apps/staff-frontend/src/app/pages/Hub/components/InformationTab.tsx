@@ -11,8 +11,8 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
   const getStatusTag = (status: HubStatusEnum) => {
     const statusColors = {
       ACTIVE: 'green',
-      INACTIVE: 'orange',
-      UNDER_MAINTENANCE: 'gold',
+      INACTIVE: 'gray',
+      UNDER_MAINTENANCE: 'yellow',
       DECOMMISSIONED: 'red',
     };
     return <Tag color={statusColors[status]}>{status}</Tag>;
@@ -46,9 +46,9 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
     { key: 'lat', label: 'Latitude', children: hub.lat || '-' },
     { key: 'long', label: 'Longitude', children: hub.long || '-' },
     { key: 'remarks', label: 'Remarks', children: hub.remarks || '-' },
-    { key: 'zoneName', label: 'Zone Name', children: hub.zoneName || '-' },
-    { key: 'facilityName', label: 'Facility Name', children: hub.facilityName || '-' },
-    { key: 'parkName', label: 'Park Name', children: hub.parkName || '-' },
+    { key: 'zoneName', label: 'Zone Name', children: hub.zone?.name || '-' },
+    { key: 'facilityName', label: 'Facility Name', children: hub.facility?.name || '-' },
+    { key: 'parkName', label: 'Park Name', children: hub.park?.name || '-' },
   ];
 
   return (

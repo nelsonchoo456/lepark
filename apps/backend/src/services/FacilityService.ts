@@ -59,7 +59,7 @@ class FacilityService {
       const formattedData = dateFormatter(data);
 
       // Merge existing data with update data
-      let mergedData = { ...existingFacility, ...formattedData };
+      const mergedData = { ...existingFacility, ...formattedData };
 
       // Validate merged data using Zod
       FacilitySchema.parse(mergedData);

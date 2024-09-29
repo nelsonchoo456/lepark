@@ -24,7 +24,7 @@ const FacilityList: React.FC = () => {
   const { parks } = useFetchParks();
 
   const filteredFacilities = useMemo(() => {
-    let filtered = facilities;
+    const filtered = facilities;
 
     return filtered.filter((facility) => {
       const park = parks.find((p) => p.id === facility.parkId);

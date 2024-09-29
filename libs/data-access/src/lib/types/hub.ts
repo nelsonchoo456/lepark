@@ -1,3 +1,6 @@
+import { FacilityResponse } from './facility';
+import { ParkResponse } from './park';
+import { ZoneResponse } from './zone';
 import { HubStatusEnum } from './sharedenums';
 
 export interface HubData {
@@ -45,7 +48,7 @@ export interface HubResponse {
   remarks?: string;
   zoneId?: number;
   facilityId?: string;
-  parkName?: string;
-  facilityName?: string;
-  zoneName?: string;
+  park: ParkResponse;
+  facility: FacilityResponse;
+  zone?: ZoneResponse;
 }

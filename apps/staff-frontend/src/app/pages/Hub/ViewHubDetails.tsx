@@ -40,7 +40,7 @@ const ViewHubDetails = () => {
           case 'ACTIVE':
             return <Tag color="green">ACTIVE</Tag>;
           case 'INACTIVE':
-            return <Tag color="silver">INACTIVE</Tag>;
+            return <Tag color="gray">INACTIVE</Tag>;
           case 'UNDER_MAINTENANCE':
             return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
           case 'DECOMMISSIONED':
@@ -73,7 +73,7 @@ const ViewHubDetails = () => {
     {
       key: 'name',
       label: 'Facility',
-      children: hub?.facilityName,
+      children: hub?.facility?.name,
     },
   ];
 
@@ -90,7 +90,7 @@ const ViewHubDetails = () => {
     {
       key: 'parkName',
       label: 'Park Name',
-      children: hub?.parkName,
+      children: hub?.park?.name,
     },
   ];
 

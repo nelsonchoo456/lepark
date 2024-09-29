@@ -1,11 +1,13 @@
 import aws from 'aws-sdk';
 import { HubSchemaType, HubSchema } from '../schemas/hubSchema';
 import HubDao from '../dao/HubDao';
-import { Prisma, Hub } from '@prisma/client';
+import { Prisma, Hub, Facility } from '@prisma/client';
 import { z } from 'zod';
 import FacilityDao from '../dao/FacilityDao';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
+import { ZoneResponseData } from '../schemas/zoneSchema';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -56,7 +58,7 @@ class HubService {
     }
   }
 
-  public async getAllHubs(): Promise<Hub[]> {
+  public async getAllHubs(): Promise<(Hub & { facilityName?: string; parkName?: string; zoneName?: string })[]> {
     return HubDao.getAllHubs();
   }
 
@@ -64,7 +66,7 @@ class HubService {
     return HubDao.getHubsByParkId(parkId);
   }
 
-  public async getHubById(id: string): Promise<(Hub & { facilityName: string; zoneName?: string; parkName: string }) | null> {
+  public async getHubById(id: string): Promise<(Hub & { facility: Facility; zone?: ZoneResponseData; park: ParkResponseData }) | null> {
     const hub = await HubDao.getHubById(id);
     if (!hub) {
       throw new Error('Hub not found');
@@ -85,9 +87,9 @@ class HubService {
       if (!zone) {
         throw new Error('Zone not found');
       }
-      return { ...hub, facilityName: facility.name, zoneName: zone.name, parkName: park.name };
+      return { ...hub, facility: facility, zone: zone, park: park };
     } else {
-      return { ...hub, facilityName: facility.name, parkName: park.name };
+      return { ...hub, facility: facility, park: park };
     }
   }
 
