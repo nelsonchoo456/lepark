@@ -228,7 +228,7 @@ const SensorCreate = () => {
               title="Created new Sensor"
               subTitle={createdData && <>Sensor name: {createdData.name}</>}
               extra={[
-                <Button key="back" onClick={() => navigate('/sensors')}>
+                <Button key="back" onClick={() => navigate('/sensor')}>
                   Back to Sensor Management
                 </Button>,
                 <Button type="primary" key="view" onClick={() => navigate(`/sensor/${createdData?.id}`)}>

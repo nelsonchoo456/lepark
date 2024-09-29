@@ -66,7 +66,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     { key: 'supplier', label: 'Supplier', children: asset.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
     { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
-    {key: 'park', label: 'Park', children: asset.parkName},
+    {key: 'park', label: 'Park', children: asset.park?.name},
     {key: 'facility', label: 'Facility', children: asset.facility?.name},
   ];
 

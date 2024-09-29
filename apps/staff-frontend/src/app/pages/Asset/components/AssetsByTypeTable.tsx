@@ -64,6 +64,29 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
     }
   }, [parkAssets]);
 
+  const parkFacilityColumn = {
+    title: user?.role === StaffType.SUPERADMIN ? 'Park, Facility' : 'Facility',
+    key: 'parkFacility',
+    render: (_: React.ReactNode, record: ParkAssetResponse) => (
+      <div>
+        {user?.role === StaffType.SUPERADMIN && (
+          <p className="font-semibold">{record.park?.name}</p>
+        )}
+        <div className="flex">
+          <p className="opacity-50 mr-2">Facility:</p>
+          {record.facility?.name}
+        </div>
+      </div>
+    ),
+    sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => {
+      if (user?.role === StaffType.SUPERADMIN) {
+        return (a.park?.name || '').localeCompare(b.park?.name || '');
+      }
+      return (a.facility?.name || '').localeCompare(b.facility?.name || '');
+    },
+    width: '20%',
+  };
+
   const columns = [
     {
       title: 'Serial Number',
@@ -81,6 +104,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '20%',
     },
+    parkFacilityColumn,
     {
       title: 'Asset Type',
       dataIndex: 'parkAssetType',
@@ -163,6 +187,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '15%',
     },
+    parkFacilityColumn,
     {
       title: 'Status',
       dataIndex: 'parkAssetStatus',
