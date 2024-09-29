@@ -1149,7 +1149,7 @@ const statusLogsData = [
 
 const hubsData = [
   {
-    serialNumber: 'HUB001',
+    serialNumber: 'HUB-6BB2LDKD',
     name: 'Hub 1',
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
@@ -1168,7 +1168,7 @@ const hubsData = [
     facilityId: '',
   },
   {
-    serialNumber: 'HUB002',
+    serialNumber: 'HUB-6BB3LDKD',
     name: 'Hub 2',
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'DECOMMISSIONED',
@@ -1187,7 +1187,7 @@ const hubsData = [
     facilityId: '',
   },
   {
-    serialNumber: 'HUB003',
+    serialNumber: 'HUB-6BB4LDKD',
     name: 'Hub 3',
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'UNDER_MAINTENANCE',

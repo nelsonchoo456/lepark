@@ -56,13 +56,13 @@ const HubCreate = () => {
           (facility) =>
             facility.parkId === selectedParkId &&
             facility.facilityStatus === FacilityStatusEnum.OPEN &&
-            facility.facilityType === FacilityTypeEnum.STOREROOM
+            facility.facilityType === FacilityTypeEnum.STOREROOM,
         )
       : facilities.filter(
           (facility) =>
             facility.parkId === user?.parkId &&
             facility.facilityStatus === FacilityStatusEnum.OPEN &&
-            facility.facilityType === FacilityTypeEnum.STOREROOM
+            facility.facilityType === FacilityTypeEnum.STOREROOM,
         );
 
   const handleSubmit = async () => {
@@ -76,13 +76,13 @@ const HubCreate = () => {
       const finalData = {
         ...filteredValues,
         acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
-        nextMaintenanceDate: filteredValues.nextMaintenanceDate ? dayjs(filteredValues.nextMaintenanceDate).toISOString() : null,
         images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [], // Ensure images are sent as an array of strings
-        lat: filteredValues.lat !== undefined ? parseFloat(filteredValues.lat) : undefined,
-        long: filteredValues.long !== undefined ? parseFloat(filteredValues.long) : undefined,
       };
 
+      console.log('finalData', finalData);
+
       const response = await createHub(finalData, selectedFiles.length > 0 ? selectedFiles : undefined);
+      console.log('response', response);
       if (response?.status && response.status === 201) {
         setCreatedData(response.data);
       }
@@ -145,9 +145,6 @@ const HubCreate = () => {
 
             <Divider orientation="left">Hub Details</Divider>
 
-            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
-              <Input placeholder="Enter Serial Number" />
-            </Form.Item>
             <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Hub Name' }]}>
               <Input placeholder="Enter Name" />
             </Form.Item>
@@ -167,7 +164,11 @@ const HubCreate = () => {
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
               <Input placeholder="Enter Supplier" />
             </Form.Item>
-            <Form.Item name="supplierContactNumber" label="Supplier Contact Number" rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}
+            >
               <Input placeholder="Enter Supplier Contact Number" />
             </Form.Item>
             <Form.Item name="remarks" label="Remarks">

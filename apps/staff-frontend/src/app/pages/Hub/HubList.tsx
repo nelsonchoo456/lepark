@@ -37,20 +37,20 @@ const HubList: React.FC = () => {
 
   const columns: TableProps<HubResponse>['columns'] = [
     {
-      title: 'Hub Name',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      width: '19%',
-    },
-    {
       title: 'Serial Number',
       dataIndex: 'serialNumber',
       key: 'serialNumber',
       render: (text) => <div>{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '30%',
+      width: '15%',
+    },
+    {
+      title: 'Hub Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      width: '15%',
     },
     {
       title: 'Facility',
@@ -67,7 +67,7 @@ const HubList: React.FC = () => {
         }
         return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
       },
-      width: '20%',
+      width: '15%',
     },
     {
       title: 'Hub Status',
@@ -146,19 +146,19 @@ const HubList: React.FC = () => {
 
   const columnsForSuperadmin: TableProps<HubResponse>['columns'] = [
     {
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
+      width: '15%',
+    },
+    {
       title: 'Hub Name',
       dataIndex: 'name',
       key: 'name',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      width: '15%',
-    },
-    {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
-      render: (text) => <div>{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '15%',
     },
     {
@@ -233,6 +233,7 @@ const HubList: React.FC = () => {
       sorter: (a, b) => {
         return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
       },
+      width: '15%',
     },
     {
       title: 'Actions',

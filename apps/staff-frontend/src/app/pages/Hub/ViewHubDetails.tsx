@@ -1,5 +1,5 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse } from '@lepark/data-access';
+import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty } from 'antd';
 import moment from 'moment';
 import { useParams } from 'react-router';
@@ -53,46 +53,21 @@ const ViewHubDetails = () => {
       })(),
     },
     {
-      key: 'ipAddress',
-      label: 'IP Address',
-      children: hub?.ipAddress,
+      key: 'nextMaintenanceDate',
+      label: 'Next Maintenance Date',
+      children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
     },
-    {
-      key: 'macAddress',
-      label: 'MAC Address',
-      children: hub?.macAddress,
-    },
-    {
-      key: 'radioGroup',
-      label: 'Radio Group',
-      children: hub?.radioGroup,
-    },
-    {
-      key: 'hubSecret',
-      label: 'Hub Secret',
-      children: hub?.hubSecret,
-    },
+    ...(user?.role === StaffType.SUPERADMIN ? [
+      {
+        key: 'parkName',
+        label: 'Park Name',
+        children: hub?.park?.name,
+      },
+    ] : []),
     {
       key: 'name',
       label: 'Facility',
       children: hub?.facility?.name,
-    },
-  ];
-
-  if (hub?.nextMaintenanceDate) {
-    descriptionsItems.push({
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: moment(hub.nextMaintenanceDate).format('D MMM YY'),
-    });
-  }
-
-  const descriptionsItemsForSuperAdmin = [
-    ...descriptionsItems,
-    {
-      key: 'parkName',
-      label: 'Park Name',
-      children: hub?.park?.name,
     },
   ];
 
@@ -150,7 +125,7 @@ const ViewHubDetails = () => {
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
             <Descriptions
-              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
+              items={descriptionsItems}
               column={1}
               size="small"
               className="mb-4"

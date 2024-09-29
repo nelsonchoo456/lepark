@@ -7,7 +7,9 @@ const upload = multer();
 
 router.post('/createHub', async (req, res) => {
   try {
+    console.log("HELLO!")
     const hub = await HubService.createHub(req.body);
+    console.log('SUCCESSFULLY CREATED HUB!');
     res.status(201).json(hub);
   } catch (error) {
     res.status(400).json({ error: error.message });

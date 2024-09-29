@@ -50,8 +50,24 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     { key: 'supplier', label: 'Supplier', children: asset.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
     { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
-    user?.role=== StaffType.SUPERADMIN ? { key: 'park', label: 'Park', children: asset.parkName } : null,
-    { key: 'facility', label: 'Facility', children: asset.facility?.name },
+    {key: 'facility', label: 'Facility', children: asset.facility?.name},
+  ];
+
+  const superAdminDescriptionsItems = [
+    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
+    { key: 'name', label: 'Asset Name', children: asset.name },
+    { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
+    { key: 'description', label: 'Description', children: asset.description || '-' },
+    { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
+    { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabel(asset.parkAssetCondition, 'condition') },
+    { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
+    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: asset.lastMaintenanceDate ? moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') : '-' },
+    { key: 'nextMaintenanceDate', label: 'Next Maintenance Date', children: asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-' },
+    { key: 'supplier', label: 'Supplier', children: asset.supplier },
+    { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
+    { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
+    {key: 'park', label: 'Park', children: asset.parkName},
+    {key: 'facility', label: 'Facility', children: asset.facility?.name},
   ];
 
   if (loading) {
@@ -60,7 +76,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
 
   return (
     <div>
-      <Descriptions items={descriptionsItems} bordered column={1} size="middle" />
+      <Descriptions items={user?.role === StaffType.SUPERADMIN ? superAdminDescriptionsItems : descriptionsItems} bordered column={1} size="middle" />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
 import { ZoneResponseData } from '../schemas/zoneSchema';
 import { ParkResponseData } from '../schemas/parkSchema';
+import { v4 as uuidv4 } from 'uuid';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -38,14 +39,17 @@ class HubService {
   public async createHub(data: HubSchemaType): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
-      if (formattedData.serialNumber) {
-        formattedData.serialNumber = formattedData.serialNumber.trim();
-      }
-      HubSchema.parse(formattedData);
 
-      const existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
-      if (existingHub) {
-        throw new Error(`Hub with serial number ${formattedData.serialNumber} already exists.`);
+      HubSchema.parse(formattedData);
+      console.log('formattedData', formattedData);
+
+      formattedData.serialNumber = this.generateSerialNumber();
+
+      let existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
+
+      while (existingHub) {
+        formattedData.serialNumber = this.generateSerialNumber();
+        existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
       }
 
       const hubData = formattedData as Prisma.HubCreateInput;
@@ -137,6 +141,10 @@ class HubService {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
     }
+  }
+
+  private generateSerialNumber(): string {
+    return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
   }
 }
 

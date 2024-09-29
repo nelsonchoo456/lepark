@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { SCREEN_LG } from '../../../config/breakpoints';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { parkAssetTypesLabels } from '../AssetListSummary';
+import moment from 'moment';
 
 interface AssetsByTypeTableProps {
   parkAssets: ParkAssetResponse[];
@@ -115,6 +116,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       width: '15%',
     },
     {
+      title: 'Next Maintenance Date',
+      dataIndex: 'nextMaintenanceDate',
+      key: 'nextMaintenanceDate',
+      render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
+      width: '12%',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_: React.ReactNode, record: ParkAssetResponse) => (
@@ -140,12 +148,20 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columnsNoType = [
     {
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
+      width: '16%',
+    },
+    {
       title: 'Asset Name',
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => <div className="font-semibold">{name}</div>,
       sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
-      width: '20%',
+      width: '15%',
     },
     {
       title: 'Status',
@@ -173,6 +189,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       width: '15%',
     },
     {
+      title: 'Next Maintenance Date',
+      dataIndex: 'nextMaintenanceDate',
+      key: 'nextMaintenanceDate',
+      render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
+      width: '12%',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_: React.ReactNode, record: ParkAssetResponse) => (
@@ -192,7 +215,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           )}
         </Flex>
       ),
-      width: '20%',
+      width: '8%',
     },
   ];
 

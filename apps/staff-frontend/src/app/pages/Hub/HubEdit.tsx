@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse } from '@lepark/data-access';
+import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData } from '@lepark/data-access';
 import {
   Button,
   Card,
@@ -89,21 +89,17 @@ const HubEdit = () => {
     if (!hub) return;
     try {
       const values = await form.validateFields();
-      const { parkId, ...filteredValues } = values;
 
-      const changedData: Partial<HubResponse> = Object.keys(filteredValues).reduce((acc, key) => {
-        const typedKey = key as keyof HubResponse;
-        if (JSON.stringify(filteredValues[typedKey]) !== JSON.stringify(hub?.[typedKey])) {
-          acc[typedKey] = filteredValues[typedKey];
+      const changedData: Partial<HubUpdateData> = Object.keys(values).reduce((acc, key) => {
+        const typedKey = key as keyof HubUpdateData;
+        if (JSON.stringify(values[typedKey]) !== JSON.stringify(hub?.[typedKey])) {
+          acc[typedKey] = values[typedKey];
         }
         return acc;
-      }, {} as Partial<HubResponse>);
+      }, {} as Partial<HubUpdateData>);
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
-      }
-      if (changedData.nextMaintenanceDate) {
-        changedData.nextMaintenanceDate = dayjs(changedData.nextMaintenanceDate).toISOString();
       }
 
       changedData.images = currentImages;
@@ -115,7 +111,7 @@ const HubEdit = () => {
           type: 'success',
           content: 'Saved changes to Hub. Redirecting to Hub details page...',
         });
-        // Add a 3-second delay before navigating
+        // Add a 1-second delay before navigating
         setTimeout(() => {
           navigate(`/hubs/${hub.id}`);
         }, 1000);
@@ -206,7 +202,7 @@ const HubEdit = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+        <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" onFinish={handleSubmit}>
           <Divider orientation="left">Select Facility</Divider>
 
           <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
@@ -218,9 +214,6 @@ const HubEdit = () => {
 
           <Divider orientation="left">Hub Details</Divider>
 
-          <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
-            <Input placeholder="Enter Serial Number" />
-          </Form.Item>
           <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Hub Name' }]}>
             <Input placeholder="Enter Name" />
           </Form.Item>

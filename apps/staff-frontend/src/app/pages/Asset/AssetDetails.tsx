@@ -171,7 +171,7 @@ const AssetDetails = () => {
           </div>
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{asset?.name}</LogoText>
-            <Descriptions items={descriptionsItems} column={1} size="small" />
+            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4"/>
 
             <div className="flex h-24 w-full gap-2 mt-auto">
               {/* Asset type, maintenance, and condition info can be added here if needed */}

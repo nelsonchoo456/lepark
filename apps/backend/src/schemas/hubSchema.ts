@@ -3,7 +3,7 @@ import { HubStatusEnum } from '@prisma/client';
 
 export const HubSchema = z.object({
   id: z.string().uuid().optional(),
-  serialNumber: z.string().min(1, { message: 'Serial number is required' }),
+  serialNumber: z.string().optional(), // Make it optional as it will be auto-generated
   name: z.string().min(1, { message: 'Hub name is required' }),
   description: z.string().optional(),
   hubStatus: z.nativeEnum(HubStatusEnum),
