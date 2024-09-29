@@ -244,26 +244,25 @@ const HubEdit = () => {
             <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
 
-          <Form.Item label={'Images'}>
+          <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>
-          <Form.Item label={'Current Images'}>
+
+          <Form.Item label={'Images'}>
             <div className="flex flex-wrap gap-2">
-              {currentImages?.map((imgSrc, index) => (
-                <img
-                  key={index}
-                  src={imgSrc}
-                  alt={`Current ${index}`}
-                  className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                  onClick={() => handleCurrentImageClick(index)}
-                />
-              ))}
-            </div>
-          </Form.Item>
-          {previewImages?.length > 0 && (
-            <Form.Item label={'New Images'}>
-              <div className="flex flex-wrap gap-2">
-                {previewImages.map((imgSrc, index) => (
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Current ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
                   <img
                     key={index}
                     src={imgSrc}
@@ -272,9 +271,9 @@ const HubEdit = () => {
                     onClick={() => removeImage(index)}
                   />
                 ))}
-              </div>
-            </Form.Item>
-          )}
+            </div>
+          </Form.Item>
+
           <Form.Item wrapperCol={{ offset: 8 }}>
             <Button type="primary" htmlType="submit" className="w-full">
               Update

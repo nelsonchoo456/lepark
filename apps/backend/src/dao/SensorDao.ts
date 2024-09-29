@@ -1,5 +1,7 @@
-import { PrismaClient, Prisma, Sensor } from '@prisma/client';
+import { PrismaClient, Prisma, Sensor, Hub, Facility } from '@prisma/client';
 import HubDao from './HubDao';
+import ParkDao from './ParkDao';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 const prisma = new PrismaClient();
 
@@ -8,8 +10,14 @@ class SensorDao {
     return prisma.sensor.create({ data });
   }
 
-  async getAllSensors(): Promise<Sensor[]> {
-    return prisma.sensor.findMany({
+  async getAllSensors(): Promise<
+    (Sensor & {
+      hub?: { id: string; name: string; facilityId: string };
+      facility?: { id: string; name: string; parkId: number };
+      park?: ParkResponseData;
+    })[]
+  > {
+    const sensors = await prisma.sensor.findMany({
       include: {
         hub: {
           select: {
@@ -34,6 +42,18 @@ class SensorDao {
         },
       },
     });
+
+    const sensorsWithDetails = await Promise.all(
+      sensors.map(async (sensor) => {
+        let park;
+        if (sensor.facility.parkId) {
+          park = await ParkDao.getParkById(sensor.facility.parkId);
+        }
+        return { ...sensor, park: park || null };
+      }),
+    );
+
+    return sensorsWithDetails;
   }
 
   async getSensorsByParkId(parkId: number): Promise<Sensor[]> {
@@ -194,6 +214,20 @@ class SensorDao {
           },
         },
       },
+    });
+  }
+
+  async linkSensorToHub(sensorId: string, hubId: string): Promise<Sensor> {
+    return prisma.sensor.update({
+      where: { id: sensorId },
+      data: { hubId },
+    });
+  }
+
+  async unlinkSensorToHub(sensorId: string): Promise<Sensor> {
+    return prisma.sensor.update({
+      where: { id: sensorId },
+      data: { hubId: null },
     });
   }
 }

@@ -1,7 +1,9 @@
-import { PrismaClient, Hub, Prisma } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility } from '@prisma/client';
 import ParkDao from './ParkDao';
 import FacilityDao from './FacilityDao';
 import ZoneDao from './ZoneDao';
+import { ParkResponseData } from '../schemas/parkSchema';
+import { ZoneResponseData } from '../schemas/zoneSchema';
 
 const prisma = new PrismaClient();
 
@@ -10,7 +12,7 @@ class HubDao {
     return prisma.hub.create({ data });
   }
 
-  public async getAllHubs(): Promise<(Hub & { facilityName?: string; parkName?: string; zoneName?: string })[]> {
+  public async getAllHubs(): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
     const hubs = await prisma.hub.findMany({
       include: {
         facility: true,

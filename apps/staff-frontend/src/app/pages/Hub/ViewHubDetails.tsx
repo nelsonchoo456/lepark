@@ -42,7 +42,7 @@ const ViewHubDetails = () => {
           case 'ACTIVE':
             return <Tag color="green">ACTIVE</Tag>;
           case 'INACTIVE':
-            return <Tag color="gray">INACTIVE</Tag>;
+            return <Tag color="blue">INACTIVE</Tag>;
           case 'UNDER_MAINTENANCE':
             return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
           case 'DECOMMISSIONED':

@@ -1,24 +1,22 @@
-import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
+import { ParkResponse } from "./park";
+import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from "./sharedenums";
 
 export interface SensorData {
   name: string;
-  serialNumber: string;
   sensorType: SensorTypeEnum;
   description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  lastCalibratedDate?: string;
   calibrationFrequencyDays: number;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes: number;
+  dataFrequencyMinutes?: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
   images?: string[];
-  latitude?: number;
-  longitude?: number;
+  lat?: number;
+  long?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;
@@ -34,7 +32,6 @@ export interface SensorResponse {
   acquisitionDate: string;
   lastCalibratedDate?: string;
   calibrationFrequencyDays: number;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes: number;
@@ -42,32 +39,32 @@ export interface SensorResponse {
   supplier: string;
   supplierContactNumber: string;
   images?: string[];
-  latitude?: number;
-  longitude?: number;
+  lat?: number;
+  long?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;
   hub?: {
     id: string;
     name: string;
+    zoneId: string;
   };
   facility?: {
     id: string;
     name: string;
     parkId?: number;
   };
+  park: ParkResponse;
 }
 
 export interface SensorUpdateData {
   name?: string;
-  serialNumber?: string;
   sensorType?: SensorTypeEnum;
   description?: string;
   sensorStatus?: SensorStatusEnum;
   acquisitionDate?: string;
   lastCalibratedDate?: string;
   calibrationFrequencyDays?: number;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes?: number;
@@ -75,8 +72,8 @@ export interface SensorUpdateData {
   supplier?: string;
   supplierContactNumber?: string;
   images?: string[];
-  latitude?: number;
-  longitude?: number;
+  lat?: number;
+  long?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;

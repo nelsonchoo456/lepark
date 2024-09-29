@@ -62,7 +62,7 @@ class HubService {
     }
   }
 
-  public async getAllHubs(): Promise<(Hub & { facilityName?: string; parkName?: string; zoneName?: string })[]> {
+  public async getAllHubs(): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
     return HubDao.getAllHubs();
   }
 

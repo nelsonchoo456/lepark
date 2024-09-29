@@ -5,17 +5,20 @@ import { MaintenanceHistoryResponse } from '../types/maintenancehistory';
 
 const URL = '/sensors';
 
-export async function createSensor(data: SensorData, files: File[]): Promise<AxiosResponse<SensorResponse>> {
+export async function createSensor(data: SensorData, files?: File[]): Promise<AxiosResponse<SensorResponse>> {
   try {
-    const formData = new FormData();
+    if (files && files.length > 0) {
+      const formData = new FormData();
 
-    // Append files to FormData (using the key 'files' to match Multer)
-    files.forEach((file) => {
-      formData.append('files', file); // The key 'files' matches what Multer expects
-    });
+      // Append files to FormData (using the key 'files' to match Multer)
+      files.forEach((file) => {
+        formData.append('files', file); // The key 'files' matches what Multer expects
+      });
 
-    const uploadedUrls = await client.post(`${URL}/upload`, formData);
-    data.images = uploadedUrls.data.uploadedUrls;
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images = uploadedUrls.data.uploadedUrls;
+    }
+
     const response: AxiosResponse<SensorResponse> = await client.post(`${URL}/createSensor`, data);
     return response;
   } catch (error) {
@@ -60,7 +63,7 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
 export async function updateSensorDetails(
   id: string,
   data: Partial<SensorResponse>,
-  files?: File[]
+  files?: File[],
 ): Promise<AxiosResponse<SensorResponse>> {
   console.log('id', id);
   try {
@@ -86,7 +89,6 @@ export async function updateSensorDetails(
     }
   }
 }
-
 
 export async function deleteSensor(id: string): Promise<AxiosResponse<void>> {
   try {

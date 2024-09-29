@@ -16,7 +16,7 @@ export const ParkAssetSchema = z.object({
   parkAssetCondition: z.nativeEnum(ParkAssetConditionEnum),
   images: z.array(z.string()).optional(),
   remarks: z.string().optional(),
-  facilityId: z.string().uuid(),
+  facilityId: z.string().uuid().optional(),
 });
 
 export type ParkAssetSchemaType = z.infer<typeof ParkAssetSchema>;

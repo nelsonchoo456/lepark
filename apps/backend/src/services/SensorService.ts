@@ -7,6 +7,9 @@ import HubDao from '../dao/HubDao';
 
 import FacilityDao from '../dao/FacilityDao';
 import aws from 'aws-sdk';
+import { v4 as uuidv4 } from 'uuid';
+import ParkDao from '../dao/ParkDao';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -14,52 +17,9 @@ const s3 = new aws.S3({
   region: 'ap-southeast-1',
 });
 
-const dateFormatter = (data: any) => {
-  const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
-  const formattedData = { ...rest };
-
-  // Format dates into JavaScript Date objects
-  if (acquisitionDate) formattedData.acquisitionDate = new Date(acquisitionDate);
-  if (lastCalibratedDate) formattedData.lastCalibratedDate = new Date(lastCalibratedDate);
-  if (lastMaintenanceDate) formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
-  if (nextMaintenanceDate) formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);
-
-  return formattedData;
-};
-function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
-  // Add checks for all required fields
-  if (
-    !data.name ||
-    !data.sensorType ||
-    !data.sensorStatus ||
-    !data.acquisitionDate ||
-    !data.dataFrequencyMinutes ||
-    !data.sensorUnit ||
-    !data.supplier ||
-    data.calibrationFrequencyDays === undefined ||
-    !data.supplierContactNumber ||
-    !data.serialNumber
-  ) {
-    throw new Error('Missing required fields for sensor creation');
-  }
-  return data as Prisma.SensorCreateInput;
-}
-
 class SensorService {
   public async createSensor(data: SensorSchemaType): Promise<Sensor> {
     try {
-      data.serialNumber = data.serialNumber.trim();
-      const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(data.serialNumber);
-      if (checkForExistingSensor) {
-        throw new Error('Identical sensor serial number already exists.');
-      }
-      if (data.hubId) {
-        const hub = await HubDao.getHubById(data.hubId);
-        if (!hub) {
-          throw new Error('Hub not found');
-        }
-      }
-
       if (data.facilityId) {
         const facility = await FacilityDao.getFacilityById(data.facilityId);
         if (!facility) {
@@ -75,6 +35,15 @@ class SensorService {
       // Convert validated data to Prisma input type
       const sensorData = ensureAllFieldsPresent(formattedData);
 
+      sensorData.serialNumber = this.generateSerialNumber();
+
+      let existingSensor = await SensorDao.getSensorBySerialNumber(sensorData.serialNumber);
+
+      while (existingSensor) {
+        sensorData.serialNumber = this.generateSerialNumber();
+        existingSensor = await SensorDao.getSensorBySerialNumber(sensorData.serialNumber);
+      }
+
       // Create the sensor, remember to pass in Prisma.SensorCreateInput type
       return SensorDao.createSensor(sensorData);
     } catch (error) {
@@ -85,19 +54,27 @@ class SensorService {
       throw error;
     }
   }
-  public async getAllSensors(): Promise<Sensor[]> {
+  public async getAllSensors(): Promise<
+    (Sensor & {
+      hub?: { id: string; name: string; facilityId: string };
+      facility?: { id: string; name: string; parkId: number };
+      park?: ParkResponseData;
+    })[]
+  > {
     return SensorDao.getAllSensors();
   }
 
   public async getSensorById(
     id: string,
-  ): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; name: string; parkId?: number } }> {
+  ): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; name: string; parkId?: number }; parkName?: string }> {
     const sensor = await SensorDao.getSensorById(id);
     if (!sensor) {
       throw new Error('Sensor not found');
     }
+    const facility = await FacilityDao.getFacilityById(sensor.facilityId);
+    const parkName = await ParkDao.getParkById(facility.parkId);
 
-    return sensor;
+    return { ...sensor, parkName: parkName.name };
   }
   public async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
     try {
@@ -195,6 +172,69 @@ class SensorService {
       throw new Error('Error uploading image to S3');
     }
   }
+
+  public async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
+    return SensorDao.getSensorBySerialNumber(serialNumber);
+  }
+
+  public async linkSensorToHub(sensorId: string, hubId: string): Promise<Sensor> {
+    // Check if the sensor and hub exist
+    const sensor = await SensorDao.getSensorById(sensorId);
+    const hub = await HubDao.getHubById(hubId);
+    if (!sensor) {
+      throw new Error('Sensor not found');
+    }
+    if (!hub) {
+      throw new Error('Hub not found');
+    }
+
+    // Link the sensor to the hub
+    return SensorDao.linkSensorToHub(sensorId, hubId);
+  }
+
+  public async unlinkSensorToHub(sensorId: string): Promise<Sensor> {
+    const sensor = await SensorDao.getSensorById(sensorId);
+    const hub = await HubDao.getHubById(sensor.hubId);
+    if (!sensor) {
+      throw new Error('Sensor not found');
+    }
+    if (!hub) {
+      throw new Error('Hub not found');
+    }
+    return SensorDao.unlinkSensorToHub(sensorId);
+  }
+
+  private generateSerialNumber(): string {
+    return `SENS-${uuidv4().substr(0, 8).toUpperCase()}`;
+  }
+}
+
+const dateFormatter = (data: any) => {
+  const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const formattedData = { ...rest };
+
+  // Format dates into JavaScript Date objects
+  if (acquisitionDate) formattedData.acquisitionDate = new Date(acquisitionDate);
+  if (lastCalibratedDate) formattedData.lastCalibratedDate = new Date(lastCalibratedDate);
+  if (lastMaintenanceDate) formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
+  if (nextMaintenanceDate) formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);
+
+  return formattedData;
+};
+function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInput {
+  // Add checks for all required fields
+  if (
+    !data.name ||
+    !data.sensorType ||
+    !data.sensorStatus ||
+    !data.acquisitionDate ||
+    !data.sensorUnit ||
+    !data.supplier ||
+    !data.supplierContactNumber
+  ) {
+    throw new Error('Missing required fields for sensor creation');
+  }
+  return data as Prisma.SensorCreateInput;
 }
 
 export default new SensorService();
