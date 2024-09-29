@@ -10,6 +10,7 @@ import {
   getAllHubs,
   HubResponse,
   getFacilityById,
+  FacilityResponse,
 } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -18,7 +19,7 @@ import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
-import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
+import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum, FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
 const { TextArea } = Input;
@@ -31,48 +32,23 @@ const formatEnumLabel = (enumValue: string): string => {
 };
 
 const SensorEdit = () => {
-  const { sensorId } = useParams<{ sensorId: string }>();
-  const [form] = Form.useForm();
-  const { sensor, loading } = useRestrictSensors(sensorId);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null);
-  const [selectedHubId, setSelectedHubId] = useState<string | null>(null);
   const { user } = useAuth<StaffResponse>();
-  const navigate = useNavigate();
+  const { sensorId } = useParams();
+  const { sensor, loading } = useRestrictSensors(sensorId);
+  const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  const notificationShown = useRef(false);
-  const { handleFileChange, selectedFiles, previewImages, setPreviewImages, removeImage, onInputClick } = useUploadImages();
-  const { parks } = useFetchParks();
+  const navigate = useNavigate();
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { facilities } = useFetchFacilities();
-  const [selectedHubName, setSelectedHubName] = useState<string | null>(null);
-  const [selectedname, setSelectedname] = useState<string | null>(null);
-  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
-  const [hubs, setHubs] = useState<HubResponse[]>([]);
-  const [createdData, setCreatedData] = useState<SensorResponse>();
-  const [existingImages, setExistingImages] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchHubs = async () => {
-      try {
-        const response = await getAllHubs();
-        setHubs(response.data);
-      } catch (error) {
-        console.error('Error fetching hubs:', error);
-      }
-    };
-    fetchHubs();
-  }, []);
+  const [parkFacilities, setParkFacilities] = useState<FacilityResponse[]>([]);
 
   useEffect(() => {
     if (sensor) {
       const acquisitionDate = dayjs(sensor.acquisitionDate);
-      const lastCalibratedDate = sensor.lastCalibratedDate ? dayjs(sensor.lastCalibratedDate) : null;
-      const finalData = { ...sensor, acquisitionDate, lastCalibratedDate };
+      const finalData = { ...sensor, acquisitionDate };
 
-      if (sensor.images) {
-        setExistingImages(sensor.images);
-      }
+      setCurrentImages(sensor.images || []);
 
       form.setFieldsValue(finalData);
 
@@ -87,54 +63,41 @@ const SensorEdit = () => {
       const facilityResponse = await getFacilityById(facilityId);
       if (facilityResponse.status === 200) {
         const facility = facilityResponse.data;
-        setSelectedParkId(facility.parkId);
-        form.setFieldsValue({ parkId: facility.parkId });
+        const parkId = facility.parkId;
+        form.setFieldsValue({ facilityId: facility.id });
+
+        // Filter facilities based on the current facility's parkId
+        const filtered = facilities.filter(
+          (f) => f.parkId === parkId && f.facilityStatus === FacilityStatusEnum.OPEN && f.facilityType === FacilityTypeEnum.STOREROOM
+        );
+        setParkFacilities(filtered);
       }
     } catch (error) {
       console.error('Error fetching facility details:', error);
     }
   };
 
-  const onFacilityChange = (value: string | undefined) => {
-    setSelectedFacilityId(value || null);
-  };
-
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async () => {
     if (!sensor) return;
-    setIsSubmitting(true);
     try {
-      const formValues = await form.validateFields();
+      const values = await form.validateFields();
 
-      console.log('Form values:', formValues);
-
-      const changedData: Partial<SensorResponse> = Object.keys(formValues).reduce((acc, key) => {
-        const typedKey = key as keyof SensorResponse;
-        if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
-          acc[typedKey] = formValues[typedKey];
+      const changedData: Partial<SensorUpdateData> = Object.keys(values).reduce((acc, key) => {
+        const typedKey = key as keyof SensorUpdateData;
+        if (JSON.stringify(values[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
+          acc[typedKey] = values[typedKey];
         }
         return acc;
-      }, {} as Partial<SensorResponse>);
-
-      if ('parkId' in changedData) {
-        delete changedData.parkId;
-      }
+      }, {} as Partial<SensorUpdateData>);
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
       }
-      if (changedData.lastCalibratedDate) {
-        changedData.lastCalibratedDate = dayjs(changedData.lastCalibratedDate).toISOString();
-      }
 
-      // Preserve existing images and add new ones
-      changedData.images = [...existingImages];
-
-      console.log('Submitting data:', changedData);
-
-      const response = await updateSensorDetails(sensor.id, changedData, selectedFiles);
-      if (response.status === 200) {
-        console.log('Response:', response.data);
-        setCreatedData(response.data);
+      changedData.images = currentImages;
+      const sensorRes = await updateSensorDetails(sensor.id, changedData, selectedFiles);
+      setPreviewImages([]);
+      if (sensorRes.status === 200) {
         messageApi.open({
           type: 'success',
           content: 'Saved changes to Sensor. Redirecting to Sensor details page...',
@@ -144,49 +107,16 @@ const SensorEdit = () => {
         }, 1000);
       }
     } catch (error) {
-      message.error(String(error));
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error updating Sensor', error);
+      messageApi.open({
+        type: 'error',
+        content: 'Unable to update Sensor. Please try again later.',
+      });
     }
   };
 
-  const validateDates = (_: any, value: dayjs.Dayjs) => {
-    if (!value) {
-      return Promise.reject(new Error('Please select a date'));
-    }
-    if (value.isAfter(dayjs(), 'day')) {
-      return Promise.reject(new Error('Date cannot be in the future'));
-    }
-    return Promise.resolve();
-  };
-
-  const onReset = () => {
-    form.resetFields();
-  };
-
-  const validatePhoneNumber = (_: any, value: string) => {
-    const phoneRegex = /^[689]\d{7}$/;
-    if (!value || phoneRegex.test(value)) {
-      return Promise.resolve();
-    }
-    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const totalImages = existingImages.length + selectedFiles.length;
-    if (totalImages + e.target.files!.length > 5) {
-      message.error('You can only have up to 5 images in total');
-      return;
-    }
-    handleFileChange(e);
-  };
-
-  const handleImageRemove = (index: number) => {
-    setExistingImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  };
-
-  const handleNewImageRemove = (index: number) => {
-    removeImage(index);
+  const handleCurrentImageClick = (index: number) => {
+    setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const breadcrumbItems = [
@@ -196,12 +126,12 @@ const SensorEdit = () => {
       isMain: true,
     },
     {
-      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
+      title: sensor?.name ? sensor?.name : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
     },
     {
       title: 'Edit',
-      pathKey: `/sensor/edit/${sensor?.id}`,
+      pathKey: `/sensor/${sensor?.id}/edit`,
       isCurrent: true,
     },
   ];
@@ -219,148 +149,115 @@ const SensorEdit = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        {!showSuccessAlert && (
-          <Form
-            form={form}
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 16 }}
-            onFinish={handleSubmit}
-            disabled={isSubmitting}
-            className="max-w-[600px] mx-auto"
+        <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" onFinish={handleSubmit}>
+          <Divider orientation="left">Select Facility</Divider>
+
+          <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+            <Select
+              placeholder="Select a Facility"
+              options={parkFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
+            />
+          </Form.Item>
+
+          <Divider orientation="left">Sensor Details</Divider>
+
+          <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
+            <Input placeholder="Enter Name" />
+          </Form.Item>
+          <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
+            <Select placeholder="Select Sensor Type">
+              {Object.values(SensorTypeEnum).map((type) => (
+                <Select.Option key={type} value={type}>
+                  {type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+          </Form.Item>
+          <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
+            <Select placeholder="Select Sensor Status">
+              {Object.values(SensorStatusEnum).map((status) => (
+                <Select.Option key={status} value={status}>
+                  {status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="acquisitionDate"
+            label="Acquisition Date"
+            rules={[{ required: true, message: 'Please enter Acquisition Date' }]}
           >
-            <Divider orientation="left">Sensor Details</Divider>
-            <Form.Item name="name" label="Sensor Name" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true }]}>
-              <Select placeholder="Select sensor type">
-                {Object.values(SensorTypeEnum).map((type) => (
-                  <Select.Option key={type} value={type}>
-                    {formatEnumLabel(type)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="description" label="Sensor Description">
-              <TextArea />
-            </Form.Item>
-            <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true }]}>
-              <Select placeholder="Select sensor status">
-                {Object.values(SensorStatusEnum).map((status) => (
-                  <Select.Option key={status} value={status}>
-                    {formatEnumLabel(status)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true }]}>
-              <Select placeholder="Select sensor unit">
-                {Object.values(SensorUnitEnum).map((unit) => (
-                  <Select.Option key={unit} value={unit}>
-                    {formatEnumLabel(unit)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="acquisitionDate"
-              label="Acquisition Date"
-              rules={[{ required: true, message: 'Please enter Acquisition Date' }, { validator: validateDates }]}
-            >
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
-            </Form.Item>
-            <Form.Item name="lastCalibratedDate" label="Last Calibrated Date">
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
-            </Form.Item>
-            <Form.Item
-              name="calibrationFrequencyDays"
-              label="Calibration Frequency"
-              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
-            >
-              <InputNumber placeholder="Enter frequency in days" min={1} max={500} className="w-full" />
-            </Form.Item>
+            <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+          </Form.Item>
+          <Form.Item
+            name="calibrationFrequencyDays"
+            label="Calibration Frequency"
+            rules={[{ required: true, type: 'number', min: 0, max: 90, message: 'Please enter a number between 0 and 90' }]}
+          >
+            <InputNumber min={0} max={90} className="w-full" />
+          </Form.Item>
+          <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
+            <Select placeholder="Select Sensor Unit">
+              {Object.values(SensorUnitEnum).map((unit) => (
+                <Select.Option key={unit} value={unit}>
+                  {unit.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+            <Input placeholder="Enter Supplier" />
+          </Form.Item>
+          <Form.Item
+            name="supplierContactNumber"
+            label="Supplier Contact Number"
+            rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}
+          >
+            <Input placeholder="Enter Supplier Contact Number" />
+          </Form.Item>
+          <Form.Item name="remarks" label="Remarks">
+            <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
+          </Form.Item>
 
-            <Form.Item
-              name="dataFrequencyMinutes"
-              label="Data Frequency"
-              rules={[{ required: true, type: 'number', min: 1, max: 999, message: 'Please enter a number between 1 and 999' }]}
-            >
-              <InputNumber placeholder="Enter data frequency in minutes" min={1} max={999} className="w-full" />
-            </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name="remarks" label="Remarks">
-              <TextArea />
-            </Form.Item>
-            <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
-              <Select placeholder="Select a park" disabled={user?.role !== 'SUPERADMIN'}>
-                {parks.map((park) => (
-                  <Select.Option key={park.id} value={park.id}>
-                    {park.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
-              <Select placeholder="Select a facility" onChange={onFacilityChange}>
-                {facilities.map((facility) => (
-                  <Select.Option key={facility.id} value={facility.id}>
-                    {facility.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item label="Upload Image" tooltip="Up to 5 images allowed">
-              <ImageInput type="file" multiple onChange={handleImageUpload} accept="image/png, image/jpeg" onClick={onInputClick} />
-            </Form.Item>
-            {(existingImages.length > 0 || previewImages.length > 0) && (
-              <Form.Item label="Image Preview">
-                <div className="flex flex-wrap gap-2">
-                  {existingImages.map((imgSrc, index) => (
-                    <img
-                      key={`existing-${index}`}
-                      src={imgSrc}
-                      alt={`Existing ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => handleImageRemove(index)}
-                    />
-                  ))}
-                  {previewImages.map((imgSrc, index) => (
-                    <img
-                      key={`new-${index}`}
-                      src={imgSrc}
-                      alt={`New ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => handleNewImageRemove(index)}
-                    />
-                  ))}
-                </div>
-              </Form.Item>
-            )}
+          <Form.Item label={'Image'}>
+            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
 
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                  Save
-                </Button>
-                <Button htmlType="button" onClick={onReset}>
-                  Reset
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        )}
+          <Form.Item label={'Images'}>
+            <div className="flex flex-wrap gap-2">
+              {currentImages?.length > 0 &&
+                currentImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Current ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleCurrentImageClick(index)}
+                  />
+                ))}
+
+              {previewImages?.length > 0 &&
+                previewImages.map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => removeImage(index)}
+                  />
+                ))}
+            </div>
+          </Form.Item>
+
+          <Form.Item wrapperCol={{ offset: 8 }}>
+            <Button type="primary" htmlType="submit" className="w-full">
+              Update
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
     </ContentWrapperDark>
   );

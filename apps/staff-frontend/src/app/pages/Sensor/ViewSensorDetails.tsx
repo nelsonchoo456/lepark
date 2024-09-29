@@ -17,6 +17,13 @@ import moment from 'moment';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
+const formatSensorType = (type: string): string => {
+  return type
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const ViewSensorDetails = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
   const { sensor, loading } = useRestrictSensors(sensorId);
@@ -66,18 +73,13 @@ const ViewSensorDetails = () => {
     },
   ];
 
-  const capitalize = (str: string) => {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
   const descriptionsItems = [
     {
       key: 'serialNumber',
       label: 'Serial Number',
       children: sensor?.serialNumber,
     },
-    { key: 'sensorType', label: 'Sensor Type', children: capitalize(sensor?.sensorType ?? '') },
+    { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
     {
       key: 'sensorStatus',
       label: 'Sensor Status',

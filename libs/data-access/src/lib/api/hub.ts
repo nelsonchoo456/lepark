@@ -78,7 +78,8 @@ export async function updateHubDetails(id: string, data: Partial<HubResponse>, f
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images = uploadedUrls.data.uploadedUrls;
+      data.images = data.images || [];
+      data.images.push(...uploadedUrls.data.uploadedUrls);
     }
 
     const response: AxiosResponse<HubResponse> = await client.put(`${URL}/updateHubDetails/${id}`, data);

@@ -40,7 +40,7 @@ const HubList: React.FC = () => {
       title: 'Serial Number',
       dataIndex: 'serialNumber',
       key: 'serialNumber',
-      render: (text) => <div>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '15%',
     },
@@ -83,7 +83,7 @@ const HubList: React.FC = () => {
             );
           case 'INACTIVE':
             return (
-              <Tag color="gray" bordered={false}>
+              <Tag color="blue" bordered={false}>
                 INACTIVE
               </Tag>
             );
@@ -114,7 +114,7 @@ const HubList: React.FC = () => {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
+      render: (text) => (text ? moment(text).format('D MMM YY') : '-'),
       sorter: (a, b) => {
         return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
       },
@@ -198,7 +198,7 @@ const HubList: React.FC = () => {
             );
           case 'INACTIVE':
             return (
-              <Tag color="gray" bordered={false}>
+              <Tag color="blue" bordered={false}>
                 INACTIVE
               </Tag>
             );
@@ -229,7 +229,7 @@ const HubList: React.FC = () => {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
+      render: (text) => (text ? moment(text).format('D MMM YY') : '-'),
       sorter: (a, b) => {
         return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
       },

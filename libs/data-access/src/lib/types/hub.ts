@@ -22,7 +22,7 @@ export interface HubData {
   long?: number;
   remarks?: string;
   zoneId?: number;
-  facilityId: string;
+  facilityId?: string;
 }
 
 export interface HubResponse {

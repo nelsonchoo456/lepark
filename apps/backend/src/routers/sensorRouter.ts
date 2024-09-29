@@ -125,6 +125,16 @@ router.get('/getSensorsByParkId/:parkId', async (req, res) => {
   }
 });
 
+router.get('/getSensorsBySerialNumber/:serialNumber', async (req, res) => {
+  try {
+    const serialNumber = req.params.serialNumber;
+    const sensor = await SensorService.getSensorBySerialNumber(serialNumber);
+    res.status(200).json(sensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 
 
 export default router;

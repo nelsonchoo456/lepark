@@ -72,7 +72,7 @@ import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
 import HubEdit from './pages/Hub/HubEdit';
-import SensorCreate2 from './pages/Sensor/SensorCreate2';
+import SensorCreate from './pages/Sensor/SensorCreate';
 import SensorMap from './pages/Sensor/SensorMap';
 import AssetListSummary from './pages/Asset/AssetListSummary';
 export function App() {
@@ -440,7 +440,7 @@ export function App() {
                     />
                   }
                 >
-                  <Route path="create" element={<SensorCreate2 />} />
+                  <Route path="create" element={<SensorCreate />} />
                   <Route path="edit/:sensorId" element={<SensorEdit />} />
                   <Route path="edit" />
                 </Route>

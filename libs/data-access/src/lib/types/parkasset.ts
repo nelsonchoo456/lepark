@@ -1,4 +1,6 @@
+import { FacilityResponse } from './facility';
 import { MaintenanceHistoryResponse } from './maintenancehistory';
+import { ParkResponse } from './park';
 import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedenums';
 
 export interface ParkAssetData {
@@ -14,7 +16,7 @@ export interface ParkAssetData {
   parkAssetCondition: ParkAssetConditionEnum;
   images?: string[];
   remarks?: string;
-  facilityId: string;
+  facilityId?: string;
 }
 
 export interface ParkAssetResponse {
@@ -33,12 +35,8 @@ export interface ParkAssetResponse {
   images?: string[];
   remarks?: string;
   facilityId: string;
-  facility?: {
-    id: string;
-    name: string;
-    parkId: number;
-  };
-  parkName: string;
+  facility?: FacilityResponse;
+  park?: ParkResponse;
   maintenanceHistory?: MaintenanceHistoryResponse[];
 }
 

@@ -1,4 +1,7 @@
-import { PrismaClient, Prisma, ParkAsset } from '@prisma/client';
+import { PrismaClient, Prisma, ParkAsset, Facility } from '@prisma/client';
+import ParkDao from './ParkDao';
+import FacilityDao from './FacilityDao';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 const prisma = new PrismaClient();
 
@@ -7,19 +10,36 @@ class ParkAssetDao {
     return prisma.parkAsset.create({ data });
   }
 
-  async getAllParkAssets(): Promise<ParkAsset[]> {
-    return prisma.parkAsset.findMany({
+  async getAllParkAssets(): Promise<(ParkAsset & { facility?: Facility; park?: ParkResponseData })[]> {
+    const parkAssets = await prisma.parkAsset.findMany({
       include: {
         maintenanceHistory: true,
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
+        facility: true,
       },
     });
+
+    const parkAssetsWithDetails = await Promise.all(
+      parkAssets.map(async (asset) => {
+        let facility, park;
+
+        if (asset.facilityId) {
+          const fetchedFacility = await FacilityDao.getFacilityById(asset.facilityId);
+          facility = fetchedFacility;
+
+          if (facility?.parkId) {
+            const fetchedPark = await ParkDao.getParkById(facility.parkId);
+            park = fetchedPark;
+          }
+        }
+        return {
+          ...asset,
+          facility: facility || null,
+          park: park || null,
+        };
+      }),
+    );
+
+    return parkAssetsWithDetails;
   }
 
   async getParkAssetById(id: string): Promise<ParkAsset | null> {
@@ -93,24 +113,16 @@ class ParkAssetDao {
   async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
     const parkAssets = await prisma.parkAsset.findMany({
       include: {
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
+        facility: true,
       },
     });
 
-    return parkAssets
-      .map((asset) => ({
-        ...asset,
-        facilityId: asset.facility?.id,
-        name: asset.facility?.name,
-        parkId: asset.facility?.parkId,
-      }))
-      .filter((asset) => asset.parkId === parkId);
+    const park = await ParkDao.getParkById(parkId);
+    return parkAssets.map((asset) => ({
+      ...asset,
+      facilityName: asset.facility?.name,
+      parkName: park?.name,
+    }));
   }
 
   async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {

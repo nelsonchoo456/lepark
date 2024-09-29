@@ -54,7 +54,7 @@ const AssetListSummary: React.FC = () => {
           acc[type] = parkAssets.filter(asset => asset.parkAssetType === type) || [];
           return acc;
       }, {} as ParkAssetsByType);
-
+      console.log(parkAssetsByType);
       setAssetsByType(parkAssetsByType);
     }
   }, [parkAssets])

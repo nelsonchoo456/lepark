@@ -352,12 +352,12 @@ model Sensor {
   lastMaintenanceDate      DateTime?
   nextMaintenanceDate      DateTime?
   dataFrequencyMinutes     Int?
-  sensorUnit               SensorUnitEnum?
+  sensorUnit               SensorUnitEnum
   supplier                 String
   supplierContactNumber    String
   images                   String[]
-  latitude                 Float?
-  longitude                Float?
+  lat                      Float?
+  long                     Float?
   remarks                  String?
   hubId                    String?              @db.Uuid
   hub                      Hub?                 @relation(fields: [hubId], references: [id])
