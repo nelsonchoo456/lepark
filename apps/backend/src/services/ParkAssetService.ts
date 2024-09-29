@@ -5,6 +5,9 @@ import ParkAssetDao from '../dao/ParkAssetDao';
 import FacilityDao from '../dao/FacilityDao';
 import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
+import ParkDao from '../dao/ParkDao';
+import { ParkResponse } from '@lepark/data-access';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -41,8 +44,17 @@ class ParkAssetService {
     return ParkAssetDao.getAllParkAssetsByParkId(parkId);
   }
 
-  public async getParkAssetById(id: string): Promise<ParkAsset | null> {
-    return ParkAssetDao.getParkAssetById(id);
+  public async getParkAssetById(id: string): Promise<(ParkAsset & { parkName: string }) | null> {
+    const parkAsset = await ParkAssetDao.getParkAssetById(id);
+    if (!parkAsset) return null;
+
+    const facility = await FacilityDao.getFacilityById(parkAsset.facilityId);
+    if (!facility) return null;
+
+    const park = await ParkDao.getParkById(facility.parkId);
+    if (!park) return null;
+
+    return { ...parkAsset, parkName: park.name };
   }
 
   public async updateParkAsset(id: string, data: Partial<ParkAssetSchemaType>): Promise<ParkAsset> {

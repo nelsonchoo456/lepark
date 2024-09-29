@@ -48,5 +48,5 @@ export interface HubResponse {
   zoneId?: number;
   facilityId?: string;
   parkName?: string;
-  name?: string;
+  facilityName?: string;
 }

@@ -4,15 +4,17 @@ import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 
 import { FaTools, FaLeaf, FaWrench } from 'react-icons/fa';
 import moment from 'moment';
-import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById } from '@lepark/data-access';
+import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
+import { useAuth } from '@lepark/common-ui'; // Add this import
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
   const { asset, loading, notFound } = useRestrictAsset(assetId);
+  const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
   console.log(asset);
   const navigate = useNavigate();
 
@@ -58,6 +60,19 @@ const AssetDetails = () => {
       label: 'Facility',
       children: asset ? asset.name : 'Loading...',
     },
+    {
+      key: 'facility',
+      label: 'Facility',
+      children: asset ? asset.facility?.name : 'Loading...',
+    },
+    // Add park name for Superadmin only
+    ...(user?.role === StaffType.SUPERADMIN ? [
+      {
+        key: 'park',
+        label: 'Park',
+        children: asset ? asset.parkName : 'Loading...',
+      },
+    ] : []),
   ];
 
   const tabsItems = [

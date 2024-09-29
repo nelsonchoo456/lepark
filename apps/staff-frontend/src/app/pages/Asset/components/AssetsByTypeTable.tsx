@@ -68,6 +68,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      render: (name: string) => <div className="font-semibold">{name}</div>,
       sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '20%',
     },
@@ -131,9 +132,10 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columnsNoType = [
     {
-      title: 'Name',
+      title: 'Asset Name',
       dataIndex: 'name',
       key: 'name',
+      render: (name: string) => <div className="font-semibold">{name}</div>,
       sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.name.localeCompare(b.name),
       width: '20%',
     },

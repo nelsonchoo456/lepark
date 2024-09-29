@@ -41,7 +41,7 @@ const OccurrenceList: React.FC = () => {
 
   const columns: TableProps<OccurrenceResponse>['columns'] = [
     {
-      title: 'Label',
+      title: 'Occurrence Name',
       dataIndex: 'title',
       key: 'title',
       render: (text) => <div className="font-semibold">{text}</div>,
@@ -162,7 +162,7 @@ const OccurrenceList: React.FC = () => {
 
   const columnsForSuperadmin: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
-      title: 'Label',
+      title: 'Occurrence Name',
       dataIndex: 'title',
       key: 'title',
       render: (text) => <div className="font-semibold">{text}</div>,

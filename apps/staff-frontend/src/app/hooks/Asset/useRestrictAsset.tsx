@@ -27,18 +27,20 @@ export const useRestrictAsset = (assetId?: string) => {
 
         if (assetResponse.status === 200) {
           const fetchedAsset = assetResponse.data;
-          console.log("fetched user is" + user);
-          console.log("fetchedAsset park id is" + fetchedAsset.parkId);
+          console.log('fetched user is' + user);
+          console.log('fetchedAsset park id is' + fetchedAsset.facility?.parkId);
           // Check if user has permission to view this asset
-          if (user?.role === StaffType.SUPERADMIN ||
-    (user?.role !== StaffType.SUPERADMIN && user?.parkId === fetchedAsset.parkId)) {
-  setAsset(fetchedAsset);
+          if (
+            user?.role === StaffType.SUPERADMIN ||
+            (user?.role !== StaffType.SUPERADMIN && user?.parkId === fetchedAsset.facility?.parkId)
+          ) {
+            setAsset(fetchedAsset);
           } else {
-            console.log(user?.parkId, fetchedAsset.parkId);
+            console.log(user?.parkId, fetchedAsset.facility?.parkId);
             if (!notificationShown.current) {
               notification.error({
                 message: 'Access Denied',
-                description: 'You are not allowed to access this asset details!',
+                description: 'You do not have permission to access this resource.',
               });
               notificationShown.current = true;
             }
