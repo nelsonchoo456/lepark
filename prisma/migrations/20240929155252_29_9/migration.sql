@@ -44,7 +44,7 @@ CREATE TYPE "SensorStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE
 CREATE TYPE "SensorUnitEnum" AS ENUM ('PERCENT', 'DEGREES_CELSIUS', 'VOLUMETRIC_WATER_CONTENT', 'LUX', 'PAX');
 
 -- CreateEnum
-CREATE TYPE "ParkAssetTypeEnum" AS ENUM ('EQUIPMENT_RELATED', 'PLANT_RELATED', 'PLANT_TOOL');
+CREATE TYPE "ParkAssetTypeEnum" AS ENUM ('PLANT_TOOL_AND_EQUIPMENT', 'HOSES_AND_PIPES', 'INFRASTRUCTURE', 'LANDSCAPING', 'GENERAL_TOOLS', 'SAFETY', 'DIGITAL', 'EVENT');
 
 -- CreateEnum
 CREATE TYPE "ParkAssetStatusEnum" AS ENUM ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
@@ -224,8 +224,11 @@ CREATE TABLE "Hub" (
     "description" TEXT,
     "hubStatus" "HubStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
+    "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
     "dataTransmissionInterval" DOUBLE PRECISION,
+    "supplier" TEXT NOT NULL,
+    "supplierContactNumber" TEXT NOT NULL,
     "ipAddress" TEXT,
     "macAddress" TEXT,
     "radioGroup" INTEGER,
@@ -235,7 +238,7 @@ CREATE TABLE "Hub" (
     "long" DOUBLE PRECISION,
     "remarks" TEXT,
     "zoneId" INTEGER,
-    "facilityId" UUID,
+    "facilityId" UUID NOT NULL,
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
 );
@@ -250,12 +253,11 @@ CREATE TABLE "Sensor" (
     "sensorStatus" "SensorStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
     "lastCalibratedDate" TIMESTAMP(3),
-    "calibrationFrequencyDays" INTEGER NOT NULL,
-    "recurringMaintenanceDuration" INTEGER,
+    "calibrationFrequencyDays" INTEGER,
     "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
-    "dataFrequencyMinutes" INTEGER NOT NULL,
-    "sensorUnit" "SensorUnitEnum" NOT NULL,
+    "dataFrequencyMinutes" INTEGER,
+    "sensorUnit" "SensorUnitEnum",
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
     "images" TEXT[],
@@ -271,12 +273,12 @@ CREATE TABLE "Sensor" (
 -- CreateTable
 CREATE TABLE "ParkAsset" (
     "id" UUID NOT NULL,
+    "serialNumber" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "parkAssetType" "ParkAssetTypeEnum" NOT NULL,
     "description" TEXT,
     "parkAssetStatus" "ParkAssetStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "recurringMaintenanceDuration" INTEGER,
     "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
     "supplier" TEXT NOT NULL,
@@ -390,6 +392,9 @@ CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ParkAsset_serialNumber_key" ON "ParkAsset"("serialNumber");
 
 -- CreateIndex
 CREATE INDEX "Facility_parkId_idx" ON "Facility"("parkId");
