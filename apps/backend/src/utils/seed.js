@@ -1,5 +1,16 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
-const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData, hubsData, attractionsData } = require('./mockData');
+const {
+  parksData,
+  zonesData,
+  speciesData,
+  occurrenceData,
+  staffData,
+  activityLogsData,
+  statusLogsData,
+  hubsData,
+  attractionsData,
+  facilitiesData,
+} = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -272,17 +283,27 @@ async function seed() {
   }
   console.log(`Total staff seeded: ${staffList.length}\n`);
 
-  /// put facility here
-  /*
+  const facilityList = [];
+  for (const facility of facilitiesData) {
+    const createdFacility = await prisma.facility.create({
+      data: facility,
+    });
+    facilityList.push(createdFacility);
+  }
+  console.log(`Total facilities seeded: ${facilityList.length}\n`);
+
+  const storeroomId = facilityList[facilityList.length - 1].id;
+
   const hubList = [];
   for (const hub of hubsData) {
+    hub.facilityId = storeroomId;
     const createdHub = await prisma.hub.create({
       data: hub,
     });
     hubList.push(createdHub);
   }
-  console.log(`Total hubs seeded: ${hubList.length}\n`);*/
-  
+  console.log(`Total hubs seeded: ${hubList.length}\n`);
+
   const attractionList = [];
   for (const attraction of attractionsData) {
     const createdAttraction = await prisma.attraction.create({

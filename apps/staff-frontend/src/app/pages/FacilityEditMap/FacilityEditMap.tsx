@@ -136,7 +136,7 @@ const FacilityEditMap = () => {
         <>
           <div className="">
             <div className="font-semibold">Instructions: </div>
-            Drag the Marker to adjust the location of the attraction within the park boundaries.
+            Drag the Marker to adjust the location of the facility within the park boundaries.
           </div>
           <div
             style={{
