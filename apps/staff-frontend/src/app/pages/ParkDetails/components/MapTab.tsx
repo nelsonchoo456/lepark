@@ -312,8 +312,8 @@ const MapTab = ({ park }: MapTabProps) => {
             ))}
 
           {(showFacilities || showEvents) &&
-            facilityEvents &&
-            facilityEvents.map(
+            facilities &&
+            facilities.map(
               (facility) =>
                 facility.lat &&
                 facility.long && (

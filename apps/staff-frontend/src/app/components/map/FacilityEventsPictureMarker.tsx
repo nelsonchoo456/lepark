@@ -70,7 +70,7 @@ function FacilityEventsPictureMarker({
       const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth;
       const iconHTML = renderToStaticMarkup(
         <InnerPictureMarkerGlow>
-          <PictureMarkerInner circleWidth={thisCircleWidth} innerBackgroundColor="transparent">
+          <PictureMarkerInner $circleWidth={thisCircleWidth} innerBackgroundColor="transparent">
             <div
               style={{
                 width: '100%',
@@ -90,13 +90,13 @@ function FacilityEventsPictureMarker({
       return L.divIcon({
         html: iconHTML,
         iconSize: [thisCircleWidth, thisCircleWidth],
-        iconAnchor: [thisCircleWidth / 2 - (index + 1) * eventMarkerGap, thisCircleWidth],
+        iconAnchor: [thisCircleWidth / 2 - (index + 1) * eventMarkerGap, thisCircleWidth / 2],
         className: '',
       });
     }
 
     const iconHTML = renderToStaticMarkup(
-      <PictureMarkerInner circleWidth={circleWidth} innerBackgroundColor="transparent">
+      <PictureMarkerInner $circleWidth={circleWidth} innerBackgroundColor="transparent">
         <div
           style={{
             width: '100%',
@@ -115,7 +115,7 @@ function FacilityEventsPictureMarker({
     return L.divIcon({
       html: iconHTML,
       iconSize: [circleWidth, circleWidth],
-      iconAnchor: [circleWidth / 2 - (index + 1) * eventMarkerGap, circleWidth],
+      iconAnchor: [circleWidth / 2 - (index + 1) * eventMarkerGap, circleWidth / 2],
       className: '',
     });
   };

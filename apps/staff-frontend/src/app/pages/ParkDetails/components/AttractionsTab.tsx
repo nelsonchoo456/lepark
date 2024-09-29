@@ -71,22 +71,22 @@ const AttractionsTab: React.FC<AttractionsTabProps> = ({ parkId }) => {
               }
             >
               <Card.Meta
-              title={
-                <div className="flex flex-col">
-                  <div className="flex items-start justify-between flex-wrap gap-2">
-                    <Title level={5} className="m-0 break-words" style={{ maxWidth: '100%' }}>
-                      {attraction.title}
-                    </Title>
-                    <AttractionStatusTag status={attraction.status as AttractionStatusEnum} />
+                title={
+                  <div className="flex flex-col">
+                    <div className="flex items-start justify-between flex-wrap gap-2">
+                      <Title level={5} className="m-0 break-words" style={{ maxWidth: '100%' }}>
+                        {attraction.title}
+                      </Title>
+                      <AttractionStatusTag status={attraction.status as AttractionStatusEnum} />
+                    </div>
                   </div>
-                </div>
-              }
+                }
                 description={
                   <>
                     <Text ellipsis className="mt-2 block text-sm">
                       {attraction.description}
                     </Text>
-                    <div className="mt-2"/>
+                    <div className="mt-2" />
                     <Button type="link" onClick={() => handleViewDetails(attraction.id)} className="p-0 mt-2 text-sm">
                       View Details
                     </Button>
