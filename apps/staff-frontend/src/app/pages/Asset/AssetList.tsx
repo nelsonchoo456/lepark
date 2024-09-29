@@ -12,7 +12,7 @@ import {
   ParkAssetStatusEnum,
   ParkAssetConditionEnum,
 } from '@lepark/data-access';
-import PageHeader from '../../components/main/PageHeader';
+import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -138,9 +138,18 @@ const ParkAssetManagementPage: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Park Asset Management',
+      pathKey: '/parkasset',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Park Asset Management (View All)</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}

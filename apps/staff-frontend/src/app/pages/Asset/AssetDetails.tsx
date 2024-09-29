@@ -9,7 +9,6 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
-// import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
