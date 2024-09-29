@@ -144,7 +144,7 @@ const MarkersGroup = ({
           />
         ))}
 
-      {showEvents &&
+      {(showFacilities || showEvents) &&
         facilities &&
         facilities.map(
           (facility) =>
@@ -158,7 +158,7 @@ const MarkersGroup = ({
                 lng={facility.long}
                 facilityType={facility.facilityType}
                 showFacilities={showFacilities || false}
-                showEvents={showEvents}
+                showEvents={showEvents || false}
                 hovered={hovered}
                 setHovered={setHovered}
               />
