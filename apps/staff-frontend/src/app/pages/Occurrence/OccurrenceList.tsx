@@ -170,7 +170,6 @@ const OccurrenceList: React.FC = () => {
         return a.title.localeCompare(b.title);
       },
       // width: '33%',
-      fixed: 'left',
     },
     {
       title: 'Species Name',
