@@ -228,6 +228,10 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         <Input.TextArea rows={3} placeholder="Enter description" />
       </Form.Item>
 
+      <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
+        <Select options={facilityStatusOptions} placeholder="Enter facility status" />
+      </Form.Item>
+
       <Form.Item
         name="isSheltered"
         label="Is Sheltered"
@@ -308,10 +312,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         hidden={!isPublic || !isBookable}
       >
         <InputNumber min={0} />
-      </Form.Item>
-
-      <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
-        <Select options={facilityStatusOptions} placeholder="Enter facility status" />
       </Form.Item>
 
       <Divider orientation="left">

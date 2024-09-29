@@ -35,6 +35,8 @@ const FacilityEdit = () => {
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const { facility, park, loading } = useRestrictFacilities(facilityId);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isBookable, setIsBookable] = useState(true);
 
   useEffect(() => {
     if (!facilityId) return;
@@ -54,6 +56,14 @@ const FacilityEdit = () => {
         setCurrentImages(facility.images);
       }
       form.setFieldsValue(initialValues);
+
+      if (!facility.isPublic) {
+        setIsPublic(false);
+      }
+
+      if (!facility.isBookable) {
+        setIsBookable(false);
+      }
     };
     fetchData();
   }, [facilityId, facility]);
@@ -106,6 +116,44 @@ const FacilityEdit = () => {
 
   const handleCurrentImageClick = (index: number) => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+  const handleIsPublicChange = (value: boolean) => {
+    setIsPublic(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        isBookable: false,
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+      setIsBookable(false);
+    } else {
+      form.setFieldsValue({
+        isBookable: facility?.isBookable,
+        reservationPolicy: facility?.reservationPolicy,
+        fee: facility?.fee,
+      });
+      setIsBookable(facility?.isBookable ?? true);
+    }
+  };
+
+  const handleIsBookableChange = (value: boolean) => {
+    setIsBookable(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+    } else {
+      form.setFieldsValue({
+        reservationPolicy: facility?.reservationPolicy,
+        fee: facility?.fee,
+      });
+    }
   };
 
   const breadcrumbItems = [
@@ -206,16 +254,21 @@ const FacilityEdit = () => {
           <Form.Item name="facilityName" label="Facility Name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="facilityDescription" label="Facility Description" rules={[{ required: true }]}>
-            <TextArea />
-          </Form.Item>
           <Form.Item name="facilityType" label="Facility Type" rules={[{ required: true }]}>
             <Select options={facilityTypeOptions} />
+          </Form.Item>
+          <Form.Item name="facilityDescription" label="Facility Description" rules={[{ required: true }]}>
+            <TextArea />
           </Form.Item>
           <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true }]}>
             <Select options={facilityStatusOptions} />
           </Form.Item>
-          <Form.Item name="isBookable" label="Is Bookable" rules={[{ required: true }]}>
+          <Form.Item
+            name="isSheltered"
+            label="Is Sheltered"
+            rules={[{ required: true }]}
+            tooltip="Please indicate if the facility is sheltered"
+          >
             <Select
               options={[
                 { label: 'Yes', value: true },
@@ -223,23 +276,36 @@ const FacilityEdit = () => {
               ]}
             />
           </Form.Item>
-          <Form.Item name="isPublic" label="Is Public" rules={[{ required: true }]}>
+          <Form.Item
+            name="isPublic"
+            label="Is Public"
+            rules={[{ required: true }]}
+            tooltip="Please indicate if the facility is open to public"
+          >
             <Select
               options={[
                 { label: 'Yes', value: true },
                 { label: 'No', value: false },
               ]}
+              onChange={handleIsPublicChange}
             />
           </Form.Item>
-          <Form.Item name="isSheltered" label="Is Sheltered" rules={[{ required: true }]}>
+          <Form.Item
+            name="isBookable"
+            label="Is Bookable"
+            rules={[{ required: true }]}
+            tooltip="Please indicate if the facility is open to booking"
+            hidden={!isPublic}
+          >
             <Select
               options={[
                 { label: 'Yes', value: true },
                 { label: 'No', value: false },
               ]}
+              onChange={handleIsBookableChange}
             />
           </Form.Item>
-          <Form.Item name="reservationPolicy" label="Reservation Policy" rules={[{ required: true }]}>
+          <Form.Item name="reservationPolicy" label="Reservation Policy" rules={[{ required: true }]} hidden={!isPublic || !isBookable}>
             <TextArea />
           </Form.Item>
           <Form.Item name="rulesAndRegulations" label="Rules and Regulations" rules={[{ required: true }]}>
@@ -251,7 +317,7 @@ const FacilityEdit = () => {
           <Form.Item name="capacity" label="Capacity" rules={[{ required: true }]}>
             <InputNumber min={1} />
           </Form.Item>
-          <Form.Item name="fee" label="Fee" rules={[{ required: true }]}>
+          <Form.Item name="fee" label="Fee" rules={[{ required: true }]} hidden={!isPublic || !isBookable}>
             <InputNumber min={0} />
           </Form.Item>
 
