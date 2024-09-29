@@ -1078,9 +1078,11 @@ const hubsData = [
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
     acquisitionDate: new Date(),
-    recommendedCalibrationFrequencyDays: 30,
-    recommendedMaintenanceDuration: 60,
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
     dataTransmissionInterval: 15,
+    supplier: 'Supplier 1',
+    supplierContactNumber: '892345235',
     ipAddress: '192.168.1.1',
     macAddress: '00:14:22:01:23:45',
     radioGroup: 1,
@@ -1095,13 +1097,15 @@ const hubsData = [
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'DECOMMISSIONED',
     acquisitionDate: new Date(),
-    recommendedCalibrationFrequencyDays: 50,
-    recommendedMaintenanceDuration: 20,
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
     dataTransmissionInterval: 10,
+    supplier: 'Supplier 2',
+    supplierContactNumber: '123456789',
     ipAddress: '192.168.1.2',
     macAddress: '00:14:e4:21:23:45',
     radioGroup: 1,
-    hubSecret: 'secret1',
+    hubSecret: 'secret2',
     images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjKG4QykW0MUYIVPwpQ5tb1V6CTj8NopqMAQ&s'],
     remarks: 'All data wiped',
     facilityId: '',
@@ -1112,13 +1116,15 @@ const hubsData = [
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'UNDER_MAINTENANCE',
     acquisitionDate: new Date(),
-    recommendedCalibrationFrequencyDays: 20,
-    recommendedMaintenanceDuration: 10,
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
     dataTransmissionInterval: 150,
+    supplier: 'Supplier 3',
+    supplierContactNumber: '987654321',
     ipAddress: '192.168.1.3',
     macAddress: '01:24:d4:21:23:45',
     radioGroup: 2,
-    hubSecret: 'secret1',
+    hubSecret: 'secret3',
     images: [''],
     remarks: 'Connector port damaged',
     facilityId: '',
@@ -1344,8 +1350,8 @@ const attractionsData = [
 
 const facilitiesData = [
   {
-    facilityName: 'Flower Playground',
-    facilityDescription:
+    name: 'Flower Playground',
+    description:
       'A vibrant and spacious playground equipped with swings, slides, and climbing structures, offering an engaging and fun environment for children of all ages. Surrounded by soft grass and benches for parents to relax.',
     isBookable: false,
     isPublic: true,
@@ -1383,8 +1389,8 @@ const facilitiesData = [
     parkId: 1,
   },
   {
-    facilityName: 'Gazebo',
-    facilityDescription:
+    name: 'Gazebo',
+    description:
       'A charming gazebo with seating, offering shelter and shade for park visitors. Ideal for small gatherings, reading, or enjoying the tranquil surroundings of the park.',
     isBookable: true,
     isPublic: true,
@@ -1422,8 +1428,8 @@ const facilitiesData = [
     parkId: 1,
   },
   {
-    facilityName: 'Carpark',
-    facilityDescription:
+    name: 'Carpark',
+    description:
       'A spacious carpark with well-marked parking spaces for vehicles. Conveniently located close to park entrances for easy access. Features lighting for safety during evening hours.',
     isBookable: false,
     isPublic: true,
@@ -1461,8 +1467,8 @@ const facilitiesData = [
     parkId: 1,
   },
   {
-    facilityName: 'Amphitheater',
-    facilityDescription:
+    name: 'Amphitheater',
+    description:
       'An open-air amphitheater designed for performances, events, and gatherings. The amphitheater features tiered seating and a stage area, perfect for outdoor concerts, plays, and community events.',
     isBookable: true,
     isPublic: true,
@@ -1500,8 +1506,8 @@ const facilitiesData = [
     parkId: 2,
   },
   {
-    facilityName: 'Camping Area',
-    facilityDescription:
+    name: 'Camping Area',
+    description:
       'A serene camping area surrounded by nature, offering a chance to experience the great outdoors. It provides ample space for tents and has basic amenities like water points and a shared fire pit, perfect for family gatherings or an adventurous retreat.',
     isBookable: true,
     isPublic: true,
@@ -1540,8 +1546,8 @@ const facilitiesData = [
     parkId: 2,
   },
   {
-    facilityName: 'First Aid',
-    facilityDescription:
+    name: 'First Aid',
+    description:
       'A first aid station equipped to handle minor injuries and health emergencies. Staffed by trained personnel, it provides essential medical supplies and services for visitors in need.',
     isBookable: false,
     isPublic: false,
@@ -1579,8 +1585,8 @@ const facilitiesData = [
     parkId: 2,
   },
   {
-    facilityName: 'Storeroom',
-    facilityDescription:
+    name: 'Storeroom',
+    description:
       'A secure and spacious storeroom designed to house park equipment, tools, and supplies. Access is limited to authorized personnel to ensure safety and proper management of inventory.',
     isBookable: false,
     isPublic: false,

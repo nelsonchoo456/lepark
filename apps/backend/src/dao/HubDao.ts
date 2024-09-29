@@ -31,7 +31,7 @@ class HubDao {
     // Map hubs to include facility name and park information
     return hubs.map((hub) => ({
       ...hub,
-      name: hub.facility?.name,
+      facilityName: hub.facility?.name,
       parkName: park?.name,
     }));
   }

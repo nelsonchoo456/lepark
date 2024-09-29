@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
-import { HubResponse } from '../types/hub';
+import { HubData, HubResponse } from '../types/hub';
 import client from './client';
 
 const URL = '/hubs';
 
-export async function createHub(data: HubResponse, files?: File[]): Promise<AxiosResponse<HubResponse>> {
+export async function createHub(data: HubData, files?: File[]): Promise<AxiosResponse<HubResponse>> {
   try {
     if (files && files.length > 0) {
       const formData = new FormData();

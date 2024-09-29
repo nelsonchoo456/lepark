@@ -304,8 +304,8 @@ model Hub {
   long                     Float?
   remarks                  String?
   zoneId                   Int? // for when installed in a zone
-  facilityId               String?       @db.Uuid
-  facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId               String        @db.Uuid
+  facility                 Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]

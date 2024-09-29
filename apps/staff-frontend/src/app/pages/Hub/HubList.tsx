@@ -20,16 +20,6 @@ const HubList: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [hubToBeDeleted, setHubToBeDeleted] = useState<HubResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [radioGroupFilters, setRadioGroupFilters] = useState<{ text: string; value: string }[]>([]);
-  const [hubSecretFilters, setHubSecretFilters] = useState<{ text: string; value: string }[]>([]);
-
-  useEffect(() => {
-    const uniqueRadioGroups = Array.from(new Set(hubs.map((item) => item.radioGroup)));
-    const uniqueSecretFilters = Array.from(new Set(hubs.map((item) => item.hubSecret)));
-
-    setRadioGroupFilters(uniqueRadioGroups.map((group) => ({ text: group.toString(), value: group.toString() })));
-    setHubSecretFilters(uniqueSecretFilters.map((secret) => ({ text: secret.toString(), value: secret.toString() })));
-  }, [hubs]);
 
   const filteredHubs = useMemo(() => {
     return hubs.filter((hub) => Object.values(hub).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
@@ -101,14 +91,6 @@ const HubList: React.FC = () => {
       ],
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
-    },
-    {
-      title: 'Mac Address',
-      dataIndex: 'macAddress',
-      key: 'macAddress',
-      render: (text) => <div>{text}</div>,
-      sorter: (a, b) => a.macAddress.localeCompare(b.macAddress),
-      width: '10%',
     },
     {
       title: 'Actions',
@@ -198,14 +180,6 @@ const HubList: React.FC = () => {
       ],
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
-    },
-    {
-      title: 'Mac Address',
-      dataIndex: 'macAddress',
-      key: 'macAddress',
-      render: (text) => <div>{text}</div>,
-      sorter: (a, b) => a.macAddress.localeCompare(b.macAddress),
-      width: '10%',
     },
     {
       title: 'Actions',

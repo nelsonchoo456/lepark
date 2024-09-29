@@ -2,7 +2,6 @@ import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse } from '@lepark/data-access';
 import { Card, Descriptions, Spin, Tabs, Tag } from 'antd';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
@@ -11,36 +10,8 @@ import InformationTab from './components/InformationTab';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
-  const { hub } = useRestrictHub(hubId); // Custom hook to fetch hub details
-  const [loading, setLoading] = useState(true);
-  const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const { hub, loading } = useRestrictHub(hubId);
   const { user } = useAuth<StaffResponse>();
-  const [park, setPark] = useState<ParkResponse | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (hubId) {
-        try {
-          if (hub && hub.facilityId) {
-            const facilityResponse = await getFacilityById(hub.facilityId);
-            if (facilityResponse.status === 200) {
-              setFacility(facilityResponse.data);
-              //console.log(facilityResponse.data);
-              const parkResponse = await getParkById(facilityResponse.data.parkId);
-              if (parkResponse.status === 200) {
-                setPark(parkResponse.data);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching hub data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [hubId, hub]);
 
   const breadcrumbItems = [
     {
@@ -102,7 +73,7 @@ const ViewHubDetails = () => {
     {
       key: 'name',
       label: 'Facility',
-      children: facility?.name,
+      children: hub?.facilityName,
     },
   ];
 
@@ -119,7 +90,7 @@ const ViewHubDetails = () => {
     {
       key: 'parkName',
       label: 'Park Name',
-      children: park?.name,
+      children: hub?.parkName,
     },
   ];
 

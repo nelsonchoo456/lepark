@@ -1,4 +1,4 @@
-import { HubStatusEnum } from '@prisma/client';
+import { HubStatusEnum } from './sharedenums';
 
 export interface HubData {
   serialNumber: string;
@@ -6,22 +6,21 @@ export interface HubData {
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
-  //lastCalibratedDate: string;
-  calibrationFrequencyDays: number;
-  recurringMaintenanceDuration: number;
-  //lastMaintenanceDate: string;
-  //nextMaintenanceDate: string;
-  dataTransmissionInterval: number;
-  ipAddress: string;
-  macAddress: string;
-  radioGroup: number;
-  hubSecret: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
+  dataTransmissionInterval?: number;
+  supplier: string;
+  supplierContactNumber: string;
+  ipAddress?: string;
+  macAddress?: string;
+  radioGroup?: number;
+  hubSecret?: string;
   images?: string[];
   lat?: number;
   long?: number;
   remarks?: string;
   zoneId?: number;
-  facilityId?: string;
+  facilityId: string;
 }
 
 export interface HubResponse {
@@ -31,16 +30,15 @@ export interface HubResponse {
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
-  //lastCalibratedDate: string;
-  calibrationFrequencyDays: number;
-  recurringMaintenanceDuration: number;
-  //lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
-  dataTransmissionInterval: number;
-  ipAddress: string;
-  macAddress: string;
-  radioGroup: number;
-  hubSecret: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
+  dataTransmissionInterval?: number;
+  supplier: string;
+  supplierContactNumber: string;
+  ipAddress?: string;
+  macAddress?: string;
+  radioGroup?: number;
+  hubSecret?: string;
   images?: string[];
   lat?: number;
   long?: number;
@@ -49,4 +47,5 @@ export interface HubResponse {
   facilityId?: string;
   parkName?: string;
   facilityName?: string;
+  zoneName?: string;
 }

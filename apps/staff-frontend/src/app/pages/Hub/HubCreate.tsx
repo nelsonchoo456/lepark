@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { createHub, StaffResponse, StaffType } from '@lepark/data-access';
-import { Button, Card, Form, message, notification, Result } from 'antd';
+import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
+import { createHub, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { Button, Card, DatePicker, Divider, Form, Input, InputNumber, Select, message, notification, Result, FormInstance } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
-import CreateDetailsStep from './components/CreateDetailsStep';
 import dayjs from 'dayjs';
+import moment from 'moment';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
+
+const { TextArea } = Input;
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -29,6 +31,28 @@ const HubCreate = () => {
   const [form] = Form.useForm();
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
+
+  const hubStatusOptions = [
+    { value: 'ACTIVE', label: 'Active' },
+    { value: 'INACTIVE', label: 'Inactive' },
+    { value: 'UNDER_MAINTENANCE', label: 'Under Maintenance' },
+    { value: 'DECOMMISSIONED', label: 'Decommissioned' },
+  ];
+
+  const validateDates = (form: FormInstance) => ({
+    validator(_: any, value: moment.Moment) {
+      if (value.isAfter(moment(), 'day')) {
+        return Promise.reject(new Error('Date cannot be beyond today'));
+      }
+      return Promise.resolve();
+    },
+  });
+
+  // Filter facilities based on selectedParkId for Superadmin, or use all facilities for other roles
+  const filteredFacilities =
+    user?.role === StaffType.SUPERADMIN && selectedParkId
+      ? facilities.filter((facility) => facility.parkId === selectedParkId)
+      : facilities;
 
   const handleSubmit = async () => {
     try {
@@ -84,21 +108,86 @@ const HubCreate = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {!createdData ? (
-          <CreateDetailsStep
-            handleCurrStep={handleSubmit}
-            form={form}
-            previewImages={previewImages}
-            handleFileChange={handleFileChange}
-            removeImage={removeImage}
-            onInputClick={onInputClick}
-            parks={parks}
-            selectedParkId={selectedParkId}
-            setSelectedParkId={setSelectedParkId}
-            facilities={facilities}
-            selectedFacilityId={selectedFacilityId}
-            setSelectedFacilityId={setSelectedFacilityId}
-            user={user}
-          />
+          <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+            <Divider orientation="left">Select the Park and Facility</Divider>
+
+            {user?.role === StaffType.SUPERADMIN && (
+              <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+                <Select
+                  placeholder="Select a Park"
+                  options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
+                  onChange={(value) => {
+                    setSelectedParkId(value);
+                    form.setFieldsValue({ facilityId: undefined });
+                  }}
+                />
+              </Form.Item>
+            )}
+
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+              <Select
+                placeholder="Select a Facility"
+                options={filteredFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
+                disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
+              />
+            </Form.Item>
+
+            <Divider orientation="left">Hub Details</Divider>
+
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
+            </Form.Item>
+            <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Hub Name' }]}>
+              <Input placeholder="Enter Name" />
+            </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
+            <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
+              <Select placeholder="Select Hub Status" options={hubStatusOptions} />
+            </Form.Item>
+            <Form.Item
+              name="acquisitionDate"
+              label="Acquisition Date"
+              rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
+            >
+              <DatePicker className="w-full" maxDate={dayjs()} />
+            </Form.Item>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+              <Input placeholder="Enter Supplier" />
+            </Form.Item>
+            <Form.Item name="supplierContactNumber" label="Supplier Contact Number" rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}>
+              <Input placeholder="Enter Supplier Contact Number" />
+            </Form.Item>
+            <Form.Item name="remarks" label="Remarks">
+              <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
+
+            <Form.Item label={'Images'}>
+              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            </Form.Item>
+            {previewImages?.length > 0 && (
+              <Form.Item label={'Image Previews'}>
+                <div className="flex flex-wrap gap-2">
+                  {previewImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => removeImage(index)}
+                    />
+                  ))}
+                </div>
+              </Form.Item>
+            )}
+
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Button type="primary" className="w-full" onClick={handleSubmit}>
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
         ) : (
           <div className="py-4">
             <Result
