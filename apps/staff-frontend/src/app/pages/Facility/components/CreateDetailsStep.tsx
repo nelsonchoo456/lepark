@@ -205,7 +205,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
       {user?.role !== StaffType.SUPERADMIN && park ? (
-        <Form.Item label="Park">{park?.name}</Form.Item>
+        <Form.Item name="parkId" label="Park">{park?.name}</Form.Item>
       ) : (
         <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
