@@ -29,8 +29,10 @@ const FacilityList: React.FC = () => {
     return filtered.filter((facility) => {
       const park = parks.find((p) => p.id === facility.parkId);
       return (
-        Object.values(facility).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
-        park?.name.toLowerCase().includes(searchQuery.toLowerCase())
+        facility.facilityName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        facility.facilityType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        park?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        facility.facilityStatus.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
   }, [searchQuery, facilities, parks]);
