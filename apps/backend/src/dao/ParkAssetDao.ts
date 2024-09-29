@@ -112,6 +112,11 @@ class ParkAssetDao {
 
   async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
     const parkAssets = await prisma.parkAsset.findMany({
+      where: {
+        facility: {
+          parkId: parkId,
+        },
+      },
       include: {
         facility: true,
       },
