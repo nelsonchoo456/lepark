@@ -7,11 +7,14 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import HubCarousel from './components/HubCarousel';
 import InformationTab from './components/InformationTab';
+import LocationTab from './components/LocationTab';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
   const { hub, loading } = useRestrictHub(hubId);
   const { user } = useAuth<StaffResponse>();
+  const { zones } = useFetchZones();
 
   const breadcrumbItems = [
     {
@@ -99,6 +102,11 @@ const ViewHubDetails = () => {
       key: 'information',
       label: 'Information',
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
+    },
+    {
+      key: 'location',
+      label: 'Storeroom Location',
+      children: hub ? <LocationTab facility={hub.facility} park={hub.park} zones={zones} /> : <p>Loading hub data...</p>,
     },
   ];
 
