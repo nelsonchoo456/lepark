@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById } from '@lepark/data-access';
+import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse } from '@lepark/data-access';
 import {
   Button,
   Card,
@@ -24,11 +24,8 @@ import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import dayjs from 'dayjs';
 import moment from 'moment';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
+import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 
-const center = {
-  lat: 1.3503881629328163,
-  lng: 103.85132690751749,
-};
 const { TextArea } = Input;
 
 export interface AdjustLatLngInterface {
@@ -49,8 +46,7 @@ const HubEdit = () => {
   const notificationShown = useRef(false);
   const { parks } = useFetchParks();
   const { facilities } = useFetchFacilities();
-  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
-  const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
+  const [parkFacilities, setParkFacilities] = useState<FacilityResponse[]>([]);
 
   useEffect(() => {
     // to populate edit fields with existing data
@@ -63,7 +59,7 @@ const HubEdit = () => {
 
       form.setFieldsValue(finalData);
 
-      // Fetch facility details to get parkId
+      // Fetch facility details to get parkId and filter facilities
       if (hub.facilityId) {
         fetchFacilityDetails(hub.facilityId);
       }
@@ -75,8 +71,14 @@ const HubEdit = () => {
       const facilityResponse = await getFacilityById(facilityId);
       if (facilityResponse.status === 200) {
         const facility = facilityResponse.data;
-        setSelectedParkId(facility.parkId);
-        form.setFieldsValue({ parkId: facility.parkId });
+        const parkId = facility.parkId;
+        form.setFieldsValue({ facilityId: facility.id });
+
+        // Filter facilities based on the current facility's parkId
+        const filtered = facilities.filter(
+          (f) => f.parkId === parkId && f.facilityStatus === FacilityStatusEnum.OPEN && f.facilityType === FacilityTypeEnum.STOREROOM,
+        );
+        setParkFacilities(filtered);
       }
     } catch (error) {
       console.error('Error fetching facility details:', error);
@@ -86,13 +88,11 @@ const HubEdit = () => {
   const handleSubmit = async () => {
     if (!hub) return;
     try {
-      const formValues = await form.validateFields();
-
-      // Remove parkId from form values
-      const { parkId, ...filteredValues } = formValues;
+      const values = await form.validateFields();
+      const { parkId, ...filteredValues } = values;
 
       const changedData: Partial<HubResponse> = Object.keys(filteredValues).reduce((acc, key) => {
-        const typedKey = key as keyof HubResponse; // Cast key to the correct type
+        const typedKey = key as keyof HubResponse;
         if (JSON.stringify(filteredValues[typedKey]) !== JSON.stringify(hub?.[typedKey])) {
           acc[typedKey] = filteredValues[typedKey];
         }
@@ -101,6 +101,9 @@ const HubEdit = () => {
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
+      }
+      if (changedData.nextMaintenanceDate) {
+        changedData.nextMaintenanceDate = dayjs(changedData.nextMaintenanceDate).toISOString();
       }
 
       changedData.images = currentImages;
@@ -203,26 +206,17 @@ const HubEdit = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Form form={form} labelCol={{ span: 12 }} className="max-w-[600px] mx-auto mt-8">
-          <Divider orientation="left">Hub Details</Divider>
-
-          {user?.role === StaffType.SUPERADMIN && (
-            <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
-              <Select
-                placeholder="Select a Park"
-                options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
-                onChange={(value) => setSelectedParkId(value)}
-              />
-            </Form.Item>
-          )}
+        <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
+          <Divider orientation="left">Select Facility</Divider>
 
           <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
             <Select
               placeholder="Select a Facility"
-              options={facilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
-              disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
+              options={parkFacilities?.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
             />
           </Form.Item>
+
+          <Divider orientation="left">Hub Details</Divider>
 
           <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
             <Input placeholder="Enter Serial Number" />
@@ -232,9 +226,6 @@ const HubEdit = () => {
           </Form.Item>
           <Form.Item name="description" label="Description">
             <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
-          </Form.Item>
-          <Form.Item name="remarks" label="Remarks">
-            <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
           <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
             <Select placeholder="Select Hub Status" options={hubStatusOptions} />
@@ -246,38 +237,40 @@ const HubEdit = () => {
           >
             <DatePicker className="w-full" maxDate={dayjs()} />
           </Form.Item>
-          <Form.Item
-            name="recommendedCalibrationFrequencyDays"
-            label="Recommended Calibration Frequency (Days)"
-            rules={[{ required: true, message: 'Please enter Calibration Frequency in Days' }]}
-          >
-            <InputNumber min={1} className="w-full" placeholder="Enter Calibration Frequency in Days" />
+          <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+            <Input placeholder="Enter Supplier" />
           </Form.Item>
           <Form.Item
-            name="recommendedMaintenanceDuration"
-            label="Recommended Maintenance Duration (Days)"
-            rules={[{ required: true, message: 'Please enter Maintenance Duration in Days' }]}
+            name="supplierContactNumber"
+            label="Supplier Contact Number"
+            rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}
           >
-            <InputNumber min={1} className="w-full" placeholder="Enter Maintenance Duration in Days" />
+            <Input placeholder="Enter Supplier Contact Number" />
           </Form.Item>
-          <Form.Item label={'Image'}>
+          <Form.Item name="remarks" label="Remarks">
+            <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
+          </Form.Item>
+
+          <Form.Item label={'Images'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>
-          <Form.Item label={'Images'}>
+          <Form.Item label={'Current Images'}>
             <div className="flex flex-wrap gap-2">
-              {currentImages?.length > 0 &&
-                currentImages.map((imgSrc, index) => (
-                  <img
-                    key={index}
-                    src={imgSrc}
-                    alt={`Preview ${index}`}
-                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                    onClick={() => handleCurrentImageClick(index)}
-                  />
-                ))}
-
-              {previewImages?.length > 0 &&
-                previewImages.map((imgSrc, index) => (
+              {currentImages?.map((imgSrc, index) => (
+                <img
+                  key={index}
+                  src={imgSrc}
+                  alt={`Current ${index}`}
+                  className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                  onClick={() => handleCurrentImageClick(index)}
+                />
+              ))}
+            </div>
+          </Form.Item>
+          {previewImages?.length > 0 && (
+            <Form.Item label={'New Images'}>
+              <div className="flex flex-wrap gap-2">
+                {previewImages.map((imgSrc, index) => (
                   <img
                     key={index}
                     src={imgSrc}
@@ -286,11 +279,12 @@ const HubEdit = () => {
                     onClick={() => removeImage(index)}
                   />
                 ))}
-            </div>
-          </Form.Item>
+              </div>
+            </Form.Item>
+          )}
           <Form.Item wrapperCol={{ offset: 8 }}>
-            <Button type="primary" onClick={handleSubmit}>
-              Submit
+            <Button type="primary" htmlType="submit" className="w-full">
+              Update
             </Button>
           </Form.Item>
         </Form>

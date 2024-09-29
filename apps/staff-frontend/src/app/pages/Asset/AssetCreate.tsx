@@ -12,6 +12,9 @@ import {
   getAllFacilities,
   ParkResponse,
   getAllParks,
+  StaffType,
+  getParkById,
+  getFacilitiesByParkId,
 } from '@lepark/data-access';
 import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +39,7 @@ const AssetCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(true);
   const [parks, setParks] = useState<ParkResponse[]>([]);
+  const [park, setPark] = useState<ParkResponse | null>(null);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
@@ -63,9 +67,16 @@ const AssetCreate = () => {
   useEffect(() => {
     const fetchParksAndFacilities = async () => {
       try {
-        const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
-        setParks(parksResponse.data);
-        setFacilities(facilitiesResponse.data);
+        if (user?.role === StaffType.SUPERADMIN) {
+          const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
+          setParks(parksResponse.data);
+          setFacilities(facilitiesResponse.data);
+        } else {
+          const park = await getParkById(user?.parkId as number);
+          setPark(park.data);
+          const facilities = await getFacilitiesByParkId(user?.parkId as number);
+          setFacilities(facilities.data);
+        }
         setLoading(false);
       } catch (error) {
         console.error('Error fetching parks and facilities:', error);
@@ -77,15 +88,29 @@ const AssetCreate = () => {
     fetchParksAndFacilities();
   }, []);
 
+  useEffect(() => {
+    if (selectedParkId) {
+      const filtered = facilities.filter(
+        (facility) =>
+          facility.parkId === selectedParkId &&
+          facility.facilityStatus === FacilityStatusEnum.OPEN &&
+          facility.facilityType === FacilityTypeEnum.STOREROOM
+      );
+      setFilteredFacilities(filtered);
+    } else {
+      setFilteredFacilities(
+        facilities.filter(
+          (facility) =>
+            facility.parkId === user?.parkId &&
+            facility.facilityStatus === FacilityStatusEnum.OPEN &&
+            facility.facilityType === FacilityTypeEnum.STOREROOM
+        )
+      );
+    }
+  }, [selectedParkId, facilities]);
+
   const handleParkChange = (parkId: number) => {
     setSelectedParkId(parkId);
-    const parkFacilities = facilities.filter(
-      (facility) =>
-        facility.parkId === parkId &&
-        facility.facilityStatus === FacilityStatusEnum.OPEN &&
-        facility.facilityType === FacilityTypeEnum.STOREROOM,
-    );
-    setFilteredFacilities(parkFacilities);
     form.setFieldsValue({ facilityId: undefined });
   };
 
@@ -173,7 +198,9 @@ const AssetCreate = () => {
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
             <Divider orientation="left">Asset Details</Divider>
-            {user?.role === 'SUPERADMIN' && (
+            {user?.role !== StaffType.SUPERADMIN && park ? (
+              <Form.Item label="Park">{park.name}</Form.Item>
+            ) : (
               <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
                 <Select placeholder="Select a park" onChange={handleParkChange}>
                   {parks.map((park) => (
@@ -185,7 +212,10 @@ const AssetCreate = () => {
               </Form.Item>
             )}
             <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
-              <Select placeholder={selectedParkId ? 'Select a facility' : 'Please select a park first'} disabled={!selectedParkId}>
+              <Select 
+                placeholder={selectedParkId || user?.role !== StaffType.SUPERADMIN ? 'Select a facility' : 'Please select a park first'} 
+                disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
+              >
                 {filteredFacilities.map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
                     {facility.name}

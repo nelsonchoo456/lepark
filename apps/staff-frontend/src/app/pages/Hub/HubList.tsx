@@ -42,7 +42,7 @@ const HubList: React.FC = () => {
       key: 'name',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      width: '15%',
+      width: '19%',
     },
     {
       title: 'Serial Number',
@@ -50,7 +50,7 @@ const HubList: React.FC = () => {
       key: 'serialNumber',
       render: (text) => <div>{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '15%',
+      width: '30%',
     },
     {
       title: 'Facility',
@@ -67,7 +67,7 @@ const HubList: React.FC = () => {
         }
         return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
       },
-      width: '33%',
+      width: '20%',
     },
     {
       title: 'Hub Status',
@@ -76,13 +76,29 @@ const HubList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'ACTIVE':
-            return <Tag color="green" bordered={false}>ACTIVE</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                ACTIVE
+              </Tag>
+            );
           case 'INACTIVE':
-            return <Tag color="gray" bordered={false}>INACTIVE</Tag>;
+            return (
+              <Tag color="gray" bordered={false}>
+                INACTIVE
+              </Tag>
+            );
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow" bordered={false}>UNDER MAINTENANCE</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                UNDER MAINTENANCE
+              </Tag>
+            );
           case 'DECOMMISSIONED':
-            return <Tag color="red" bordered={false}>DECOMMISSIONED</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                DECOMMISSIONED
+              </Tag>
+            );
         }
       },
       filters: [
@@ -92,6 +108,16 @@ const HubList: React.FC = () => {
         { text: 'DECOMMISSIONED', value: 'DECOMMISSIONED' },
       ],
       onFilter: (value, record) => record.hubStatus === value,
+      width: '15%',
+    },
+    {
+      title: 'Next Maintenance Date',
+      dataIndex: 'nextMaintenanceDate',
+      key: 'nextMaintenanceDate',
+      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => {
+        return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
+      },
       width: '15%',
     },
     {
@@ -165,13 +191,29 @@ const HubList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'ACTIVE':
-            return <Tag color="green" bordered={false}>ACTIVE</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                ACTIVE
+              </Tag>
+            );
           case 'INACTIVE':
-            return <Tag color="gray" bordered={false}>INACTIVE</Tag>;
+            return (
+              <Tag color="gray" bordered={false}>
+                INACTIVE
+              </Tag>
+            );
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow" bordered={false}>UNDER MAINTENANCE</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                UNDER MAINTENANCE
+              </Tag>
+            );
           case 'DECOMMISSIONED':
-            return <Tag color="red" bordered={false}>DECOMMISSIONED</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                DECOMMISSIONED
+              </Tag>
+            );
         }
       },
       filters: [
@@ -182,6 +224,15 @@ const HubList: React.FC = () => {
       ],
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
+    },
+    {
+      title: 'Next Maintenance Date',
+      dataIndex: 'nextMaintenanceDate',
+      key: 'nextMaintenanceDate',
+      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => {
+        return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
+      },
     },
     {
       title: 'Actions',

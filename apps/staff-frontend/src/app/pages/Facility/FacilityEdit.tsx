@@ -335,8 +335,10 @@ const FacilityEdit = () => {
             </Form.Item>
           ))}
 
-          <Form.Item label="Images">
+          <Form.Item label="Image">
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          </Form.Item>
+          <Form.Item label="Images">
             <div className="flex flex-wrap gap-2 mt-2">
               {currentImages?.map((imgSrc, index) => (
                 <img

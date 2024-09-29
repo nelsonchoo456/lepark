@@ -29,7 +29,7 @@ const FacilityList: React.FC = () => {
     return filtered.filter((facility) => {
       const park = parks.find((p) => p.id === facility.parkId);
       return (
-        facility.facilityName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        facility.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         facility.facilityType.toLowerCase().includes(searchQuery.toLowerCase()) ||
         park?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         facility.facilityStatus.toLowerCase().includes(searchQuery.toLowerCase())
@@ -142,6 +142,13 @@ const FacilityList: React.FC = () => {
     },
   ];
 
+  const uniqueParkIds = useMemo(() => {
+    if (user?.role === StaffType.SUPERADMIN) {
+      return [...new Set(facilities.map((a) => a.parkId))];
+    }
+    return [];
+  }, [user?.role, facilities]);
+
   if (user?.role === StaffType.SUPERADMIN) {
     columns.splice(2, 0, {
       title: 'Park',
@@ -153,13 +160,10 @@ const FacilityList: React.FC = () => {
       },
       filters:
         user?.role === StaffType.SUPERADMIN
-          ? useMemo(() => {
-              const uniqueParkIds = [...new Set(facilities.map((a) => a.parkId))];
-              return uniqueParkIds.map((parkId) => {
-                const park = parks.find((p) => p.id === parkId);
-                return { text: park ? park.name : `Park ${parkId}`, value: parkId };
-              });
-            }, [facilities, parks])
+          ? uniqueParkIds.map((parkId) => {
+              const park = parks.find((p) => p.id === parkId);
+              return { text: park ? park.name : `Park ${parkId}`, value: parkId };
+            })
           : undefined,
       onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => record.parkId === value : undefined,
       // width: '25%',

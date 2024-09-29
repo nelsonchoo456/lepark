@@ -13,14 +13,19 @@ import {
   ParkResponse,
   getAllParks,
   ParkAssetUpdateData,
+  StaffType,
+  getParkById,
+  getFacilitiesByParkId,
+  getFacilityById,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage, Divider } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
+import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 
 const { TextArea } = Input;
 
@@ -52,7 +57,6 @@ const AssetEdit = () => {
   } = useUploadImagesAssets();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [parks, setParks] = useState<ParkResponse[]>([]);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
   const [messageApi, contextHolder] = antMessage.useMessage();
@@ -86,24 +90,40 @@ const AssetEdit = () => {
   }, []);
 
   useEffect(() => {
-    const fetchParksAndFacilities = async () => {
+    const fetchFacilities = async () => {
       try {
-        const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
-        const parksWithFacilities = parksResponse.data.filter((park) =>
-          facilitiesResponse.data.some((facility) => facility.parkId === park.id),
-        );
-        setParks(parksWithFacilities);
-        setFacilities(facilitiesResponse.data);
+        if (user?.role === StaffType.SUPERADMIN) {
+          const facilitiesResponse = await getAllFacilities();
+          setFacilities(facilitiesResponse.data);
+        } else {
+          const facilities = await getFacilitiesByParkId(user?.parkId as number);
+          setFacilities(facilities.data);
+        }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching parks and facilities:', error);
-        messageApi.error('Failed to fetch parks and facilities');
+        console.error('Error fetching facilities:', error);
+        messageApi.error('Failed to fetch facilities');
         setLoading(false);
       }
     };
 
-    fetchParksAndFacilities();
-  }, [messageApi]);
+    fetchFacilities();
+  }, [messageApi, user]);
+
+  useEffect(() => {
+    if (asset && asset.facilityId) {
+      const assetFacility = facilities.find((f) => f.id === asset.facilityId);
+      if (assetFacility) {
+        const filtered = facilities.filter(
+          (facility) =>
+            facility.parkId === assetFacility.parkId &&
+            facility.facilityStatus === FacilityStatusEnum.OPEN &&
+            facility.facilityType === FacilityTypeEnum.STOREROOM,
+        );
+        setFilteredFacilities(filtered);
+      }
+    }
+  }, [asset, facilities]);
 
   useEffect(() => {
     if (asset && facilities.length > 0) {
@@ -112,24 +132,14 @@ const AssetEdit = () => {
       setPreviewImages([]);
       const assetFacility = facilities.find((f) => f.id === asset.facilityId);
       if (assetFacility) {
-        handleParkChange(assetFacility.parkId, asset.facilityId);
+        form.setFieldsValue({
+          ...asset,
+          acquisitionDate: asset.acquisitionDate ? dayjs(asset.acquisitionDate) : undefined,
+          facilityId: asset.facilityId,
+        });
       }
-      form.setFieldsValue({
-        ...asset,
-        acquisitionDate: asset.acquisitionDate ? dayjs(asset.acquisitionDate) : undefined,
-        parkId: assetFacility?.parkId,
-        facilityId: asset.facilityId,
-      });
     }
   }, [asset, form, facilities]);
-
-  const handleParkChange = (parkId: number, initialFacilityId?: string) => {
-    const parkFacilities = facilities.filter((facility) => facility.parkId === parkId);
-    setFilteredFacilities(parkFacilities);
-    if (initialFacilityId === undefined || !parkFacilities.some((f) => f.id === initialFacilityId)) {
-      form.setFieldsValue({ facilityId: undefined });
-    }
-  };
 
   const layout = {
     labelCol: { span: 8 },
@@ -188,12 +198,6 @@ const AssetEdit = () => {
     removeImage(index);
   };
 
-  if (notFound) {
-    // [ ENTITY NOT FOUND MERGE ISSUE ]
-    return <></>;
-    // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
-  }
-
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -213,10 +217,20 @@ const AssetEdit = () => {
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
+            <Divider orientation="left">Select the Facility</Divider>
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
+              <Select placeholder="Select a facility">
+                {filteredFacilities.map((facility) => (
+                  <Select.Option key={facility.id} value={facility.id}>
+                    {facility.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Divider orientation="left">Asset Details</Divider>
             <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
@@ -226,11 +240,9 @@ const AssetEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item name="description" label="Description">
-              <TextArea rows={4} />
+              <TextArea />
             </Form.Item>
-
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
               <Select placeholder="Select asset status">
                 {Object.values(ParkAssetStatusEnum).map((status) => (
@@ -240,21 +252,17 @@ const AssetEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
               <DatePicker
                 className="w-full"
                 disabledDate={(current) => {
-                  const originalDate = asset?.acquisitionDate ? dayjs(asset.acquisitionDate) : dayjs();
-                  return current && current > originalDate.endOf('day');
+                  return current && current > dayjs().endOf('day');
                 }}
               />
             </Form.Item>
-
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-
             <Form.Item
               name="supplierContactNumber"
               label="Supplier Contact"
@@ -262,7 +270,6 @@ const AssetEdit = () => {
             >
               <Input />
             </Form.Item>
-
             <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
               <Select placeholder="Select asset condition">
                 {Object.values(ParkAssetConditionEnum).map((condition) => (
@@ -272,55 +279,29 @@ const AssetEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item name="remarks" label="Remarks">
               <TextArea />
             </Form.Item>
-
-            {user?.role === 'SUPERADMIN' && (
-              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
-                <Select placeholder="Select a park" onChange={(value) => handleParkChange(Number(value))}>
-                  {parks.map((park) => (
-                    <Select.Option key={park.id} value={park.id}>
-                      {park.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            )}
-
-            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility' }]}>
-              <Select placeholder="Select a facility">
-                {filteredFacilities.map((facility) => (
-                  <Select.Option key={facility.id} value={facility.id}>
-                    {facility.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item label="Upload Images">
+            <Form.Item label="Image">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
 
-            {existingImages.length + previewImages.length > 0 && (
-              <Form.Item label="Image Preview">
-                <div className="flex flex-wrap gap-2">
-                  {[...existingImages, ...previewImages].map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => handleImageClick(index)}
-                    />
-                  ))}
-                </div>
-              </Form.Item>
-            )}
+            <Form.Item label="Images">
+              <div className="flex flex-wrap gap-2">
+                {[...existingImages, ...previewImages].map((imgSrc, index) => (
+                  <img
+                    key={index}
+                    src={imgSrc}
+                    alt={`Preview ${index}`}
+                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                    onClick={() => handleImageClick(index)}
+                  />
+                ))}
+              </div>
+            </Form.Item>
 
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Button type="primary" htmlType="submit" loading={isSubmitting}>
+              <Button type="primary" htmlType="submit" className="w-full">
                 Update
               </Button>
             </Form.Item>

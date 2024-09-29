@@ -9,6 +9,7 @@ import moment from 'moment';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
+import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 
 const { TextArea } = Input;
 
@@ -51,8 +52,18 @@ const HubCreate = () => {
   // Filter facilities based on selectedParkId for Superadmin, or use all facilities for other roles
   const filteredFacilities =
     user?.role === StaffType.SUPERADMIN && selectedParkId
-      ? facilities.filter((facility) => facility.parkId === selectedParkId)
-      : facilities;
+      ? facilities.filter(
+          (facility) =>
+            facility.parkId === selectedParkId &&
+            facility.facilityStatus === FacilityStatusEnum.OPEN &&
+            facility.facilityType === FacilityTypeEnum.STOREROOM
+        )
+      : facilities.filter(
+          (facility) =>
+            facility.parkId === user?.parkId &&
+            facility.facilityStatus === FacilityStatusEnum.OPEN &&
+            facility.facilityType === FacilityTypeEnum.STOREROOM
+        );
 
   const handleSubmit = async () => {
     try {

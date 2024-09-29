@@ -1,11 +1,10 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse } from '@lepark/data-access';
-import { Card, Descriptions, Spin, Tabs, Tag } from 'antd';
+import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty } from 'antd';
 import moment from 'moment';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
-import HubCarousel from './components/HubCarousel';
 import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
@@ -123,8 +122,29 @@ const ViewHubDetails = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <div className="md:flex w-full gap-4">
-          <div className="w-full md:w-1/2 lg:w-1/2 ">
-            <HubCarousel images={hub?.images || []} />
+          <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {hub?.images && hub.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {hub.images.map((url, index) => (
+                  <div key={index}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
 
           <div className="flex-1 flex-col flex">
