@@ -13,7 +13,7 @@ import { useAuth } from '@lepark/common-ui'; // Add this import
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
-  const { asset, loading, notFound } = useRestrictAsset(assetId);
+  const { asset, loading } = useRestrictAsset(assetId);
   const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
   console.log(asset);
   const navigate = useNavigate();
@@ -91,7 +91,7 @@ const AssetDetails = () => {
     },
     {
       title: asset?.name ? asset.name : 'Details',
-      pathKey: `/assets/${asset?.id}`,
+      pathKey: `/parkasset/${asset?.id}`,
       isCurrent: true,
     },
   ];
@@ -172,10 +172,6 @@ const AssetDetails = () => {
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{asset?.name}</LogoText>
             <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4"/>
-
-            <div className="flex h-24 w-full gap-2 mt-auto">
-              {/* Asset type, maintenance, and condition info can be added here if needed */}
-            </div>
           </div>
         </div>
 

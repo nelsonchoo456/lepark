@@ -69,9 +69,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
     key: 'parkFacility',
     render: (_: React.ReactNode, record: ParkAssetResponse) => (
       <div>
-        {user?.role === StaffType.SUPERADMIN && (
-          <p className="font-semibold">{record.park?.name}</p>
-        )}
+        {user?.role === StaffType.SUPERADMIN && <p className="font-semibold">{record.park?.name}</p>}
         <div className="flex">
           <p className="opacity-50 mr-2">Facility:</p>
           {record.facility?.name}
@@ -94,7 +92,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       key: 'serialNumber',
       render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
       sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '20%',
+      width: '15%',
     },
     {
       title: 'Asset Name',
@@ -154,16 +152,14 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-            <>
-              <Tooltip title="Edit Asset">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
-              </Tooltip>
-              <Tooltip title="Delete Asset">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
-            </>
-          )}
+          <>
+            <Tooltip title="Edit Asset">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
+            </Tooltip>
+            <Tooltip title="Delete Asset">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+            </Tooltip>
+          </>
         </Flex>
       ),
       width: '20%',
@@ -231,7 +227,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
             <>
               <Tooltip title="Edit Asset">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete Asset">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />

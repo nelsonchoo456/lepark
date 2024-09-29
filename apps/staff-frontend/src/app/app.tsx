@@ -73,7 +73,6 @@ import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
 import HubEdit from './pages/Hub/HubEdit';
 import SensorCreate from './pages/Sensor/SensorCreate';
-import SensorMap from './pages/Sensor/SensorMap';
 import AssetListSummary from './pages/Asset/AssetListSummary';
 export function App() {
   return (
@@ -366,7 +365,7 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
                     redirectTo="/"
                   />
                 }
@@ -375,29 +374,14 @@ export function App() {
                 <Route path="/hubs">
                   <Route index element={<HubList />} />
                   <Route path=":hubId" element={<ViewHubDetails />} />
-                  <Route
-                    element={
-                      <RoleProtectedRoute
-                        allowedRoles={[
-                          StaffType.SUPERADMIN,
-                          StaffType.MANAGER,
-                          StaffType.BOTANIST,
-                          StaffType.ARBORIST,
-                          StaffType.LANDSCAPE_ARCHITECT,
-                          StaffType.PARK_RANGER,
-                        ]}
-                        redirectTo="/hubs"
-                      />
-                    }
-                  >
-                    <Route path="create" element={<HubCreate />} />
-                    <Route path=":hubId/edit" element={<HubEdit />} />
-                    {/* <Route path="edit"/> */}
-                  </Route>
+
+                  <Route path="create" element={<HubCreate />} />
+                  <Route path=":hubId/edit" element={<HubEdit />} />
+                  {/* <Route path="edit"/> */}
                 </Route>
               </Route>
-              {/* Facility Routes */}
 
+              {/* Facility Routes */}
               <Route path="/facilities">
                 <Route index element={<FacilityList />} />
                 <Route
@@ -415,36 +399,29 @@ export function App() {
                 <Route path=":facilityId" element={<ViewFacilityDetails />} />
               </Route>
 
+              {/* Park Asset Routes */}
               <Route path="/parkasset">
                 <Route index element={<AssetListSummary />} />
                 <Route path="create" element={<AssetCreate />} />
                 <Route path=":assetId" element={<AssetDetails />} />
-                <Route path="edit/:assetId" element={<AssetEdit />} />
+                <Route path=":assetId/edit" element={<AssetEdit />} />
               </Route>
 
-              <Route path="/sensor">
-                <Route index element={<SensorList />} />
-                <Route path=":sensorId" element={<ViewSensorDetails />} />
-                <Route
-                  element={
-                    <RoleProtectedRoute
-                      allowedRoles={[
-                        StaffType.SUPERADMIN,
-                        StaffType.MANAGER,
-                        StaffType.BOTANIST,
-                        StaffType.ARBORIST,
-                        StaffType.LANDSCAPE_ARCHITECT,
-                        StaffType.PARK_RANGER,
-                      ]}
-                      redirectTo="/sensor"
-                    />
-                  }
-                >
+              {/* Sensor Routes */}
+              <Route
+                element={
+                  <RoleProtectedRoute
+                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
+                    redirectTo="/"
+                  />
+                }
+              >
+                <Route path="/sensor">
+                  <Route index element={<SensorList />} />
+                  <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="create" element={<SensorCreate />} />
-                  <Route path="edit/:sensorId" element={<SensorEdit />} />
-                  <Route path="edit" />
+                  <Route path=":sensorId/edit" element={<SensorEdit />} />
                 </Route>
-                <Route path="map" element={<SensorMap />} />
               </Route>
 
               {/* Catch-all for 404 */}

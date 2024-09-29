@@ -133,19 +133,8 @@ class SensorDao {
     return prisma.sensor.findUnique({
       where: { id },
       include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
+        hub: true,
+        facility: true,
       },
     });
   }

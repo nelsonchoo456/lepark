@@ -86,7 +86,7 @@ const SensorManagementPage: React.FC = () => {
         </Flex>
       ),
       sorter: (a, b) => {
-        if (a.park.name && b.park.name) {
+        if (a.park?.name && b.park?.name) {
           return a.park.name.localeCompare(b.park.name);
         }
         if (a.name && b.name) {
@@ -164,16 +164,14 @@ const SensorManagementPage: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
           </Tooltip>
-          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
             <>
               <Tooltip title="Edit Sensor">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete Sensor">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
               </Tooltip>
             </>
-          )}
         </Flex>
       ),
       width: '20%',
@@ -201,7 +199,7 @@ const SensorManagementPage: React.FC = () => {
       title: 'Park, Facility',
       render: (_, record) => (
         <div>
-          <p className="font-semibold">{record.park.name}</p>
+          <p className="font-semibold">{record.park?.name}</p>
           <div className="flex">
             <p className="opacity-50 mr-2">Facility:</p>
             {record.facility?.name}
@@ -209,7 +207,7 @@ const SensorManagementPage: React.FC = () => {
         </div>
       ),
       sorter: (a, b) => {
-        if (a.park.name && b.park.name) {
+        if (a.park?.name && b.park?.name) {
           return a.park.name.localeCompare(b.park.name);
         }
         if (a.name && b.name) {
@@ -290,7 +288,7 @@ const SensorManagementPage: React.FC = () => {
           {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
             <>
               <Tooltip title="Edit Sensor">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete Sensor">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />

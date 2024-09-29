@@ -1,5 +1,7 @@
-import { ParkResponse } from "./park";
-import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from "./sharedenums";
+import { FacilityResponse } from './facility';
+import { HubResponse } from './hub';
+import { ParkResponse } from './park';
+import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums';
 
 export interface SensorData {
   name: string;
@@ -44,17 +46,10 @@ export interface SensorResponse {
   remarks?: string;
   hubId?: string;
   facilityId?: string;
-  hub?: {
-    id: string;
-    name: string;
-    zoneId: string;
-  };
-  facility?: {
-    id: string;
-    name: string;
-    parkId?: number;
-  };
-  park: ParkResponse;
+  hub?: HubResponse;
+  facility?: FacilityResponse;
+  park?: ParkResponse;
+  parkName?: string;
 }
 
 export interface SensorUpdateData {

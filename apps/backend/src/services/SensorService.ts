@@ -1,4 +1,4 @@
-import { Prisma, Sensor } from '@prisma/client';
+import { Facility, Hub, Prisma, Sensor } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
@@ -64,18 +64,32 @@ class SensorService {
     return SensorDao.getAllSensors();
   }
 
-  public async getSensorById(
-    id: string,
-  ): Promise<Sensor & { hub?: { id: string; name: string }; facility?: { id: string; name: string; parkId?: number }; parkName?: string }> {
+  public async getSensorById(id: string): Promise<Sensor & { hub?: Hub; facility?: Facility; park?: ParkResponseData }> {
     const sensor = await SensorDao.getSensorById(id);
     if (!sensor) {
       throw new Error('Sensor not found');
     }
-    const facility = await FacilityDao.getFacilityById(sensor.facilityId);
-    const parkName = await ParkDao.getParkById(facility.parkId);
 
-    return { ...sensor, parkName: parkName.name };
+    const facility = await FacilityDao.getFacilityById(sensor.facilityId);
+    if (!facility) {
+      throw new Error('Facility not found');
+    }
+    const park = await ParkDao.getParkById(facility.parkId);
+    if (!park) {
+      throw new Error('Park not found');
+    }
+
+    if (sensor.hubId) {
+      const hub = await HubDao.getHubById(sensor.hubId);
+      if (!hub) {
+        throw new Error('Hub not found');
+      }
+      return { ...sensor, hub: hub, facility: facility, park: park };
+    }
+
+    return { ...sensor, facility: facility, park: park };
   }
+
   public async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
     try {
       const formattedData = dateFormatter(data);

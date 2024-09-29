@@ -36,10 +36,11 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
         return <Tag>{status}</Tag>;
     }
   };
+  console.log(asset);
 
   const descriptionsItems = [
-    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
     { key: 'name', label: 'Asset Name', children: asset.name },
+    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
     { key: 'description', label: 'Description', children: asset.description || '-' },
     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
@@ -54,8 +55,8 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   ];
 
   const superAdminDescriptionsItems = [
-    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
     { key: 'name', label: 'Asset Name', children: asset.name },
+    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
     { key: 'description', label: 'Description', children: asset.description || '-' },
     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
@@ -66,7 +67,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     { key: 'supplier', label: 'Supplier', children: asset.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
     { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
-    {key: 'park', label: 'Park', children: asset.park?.name},
+    {key: 'park', label: 'Park', children: asset.parkName},
     {key: 'facility', label: 'Facility', children: asset.facility?.name},
   ];
 

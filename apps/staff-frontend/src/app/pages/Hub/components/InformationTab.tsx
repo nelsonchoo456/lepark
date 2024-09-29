@@ -22,8 +22,8 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
   };
 
   const descriptionsItems = [
-    { key: 'serialNumber', label: 'Serial Number', children: hub.serialNumber || '-' },
     { key: 'name', label: 'Hub Name', children: hub.name || '-' },
+    { key: 'serialNumber', label: 'Serial Number', children: hub.serialNumber || '-' },
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(hub.acquisitionDate).format('MMMM D, YYYY') },
@@ -54,8 +54,8 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
   ];
 
   const superAdminDescriptionsItems = [
-    { key: 'serialNumber', label: 'Serial Number', children: hub.serialNumber || '-' },
     { key: 'name', label: 'Hub Name', children: hub.name || '-' },
+    { key: 'serialNumber', label: 'Serial Number', children: hub.serialNumber || '-' },
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(hub.acquisitionDate).format('MMMM D, YYYY') },

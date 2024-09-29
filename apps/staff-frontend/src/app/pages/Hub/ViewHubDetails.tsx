@@ -22,7 +22,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.name ? hub?.name : 'Details',
+      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -61,7 +61,7 @@ const ViewHubDetails = () => {
       {
         key: 'parkName',
         label: 'Park Name',
-        children: hub?.park?.name,
+        children: hub?.park?.name ?? '-',
       },
     ] : []),
     {

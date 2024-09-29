@@ -6,6 +6,7 @@ import {
   ParkResponse,
   SensorResponse,
   StaffResponse,
+  StaffType,
   getFacilityById,
   getParkById,
   getSensorById,
@@ -20,7 +21,7 @@ import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 const formatSensorType = (type: string): string => {
   return type
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
@@ -30,35 +31,6 @@ const ViewSensorDetails = () => {
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [park, setPark] = useState<ParkResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
-  const [sensorWithoutFacility, setSensorWithoutFacility] = useState<SensorResponse>();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (sensorId) {
-        console.log('viewdetails sensor', sensor);
-        try {
-          if (sensor && sensor.facilityId) {
-            console.log('sensor:', sensor);
-            const facilityResponse = await getFacilityById(sensor.facilityId);
-            if (facilityResponse.status === 200) {
-              setFacility(facilityResponse.data);
-              const parkResponse = await getParkById(facilityResponse.data.parkId);
-              if (parkResponse.status === 200) {
-                setPark(parkResponse.data);
-              }
-            }
-          }
-          if (sensor) {
-            const { facility, ...sensorWithoutFacility } = sensor;
-            setSensorWithoutFacility(sensorWithoutFacility);
-          }
-        } catch (error) {
-          console.error('Error fetching sensor data:', error);
-        }
-      }
-    };
-    fetchData();
-  }, [sensorId, sensor]);
 
   const breadcrumbItems = [
     {
@@ -79,7 +51,6 @@ const ViewSensorDetails = () => {
       label: 'Serial Number',
       children: sensor?.serialNumber,
     },
-    { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
     {
       key: 'sensorStatus',
       label: 'Sensor Status',
@@ -98,34 +69,35 @@ const ViewSensorDetails = () => {
         }
       })(),
     },
+    { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
+    {
+      key: 'nextMaintenanceDate',
+      label: 'Next Maintenance Date',
+      children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            key: 'parkName',
+            label: 'Park Name',
+            children: sensor?.parkName ?? '-',
+          },
+        ]
+      : []),
     {
       key: 'name',
       label: 'Facility',
-      children: facility?.name,
+      children: sensor?.facility?.name,
     },
   ];
 
-  if (sensor?.nextMaintenanceDate) {
-    descriptionsItems.push({
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: moment(sensor.nextMaintenanceDate).format('D MMM YY'),
-    });
-  }
-  const descriptionsItemsForSuperAdmin = [
-    ...descriptionsItems,
-    {
-      key: 'parkName',
-      label: 'Park Name',
-      children: park?.name,
-    },
-  ];
+  console.log('sensor', sensor);
 
   const tabsItems = [
     {
       key: 'information',
       label: 'Information',
-      children: sensorWithoutFacility ? <InformationTab sensor={sensorWithoutFacility} /> : <p>Loading sensor data...</p>,
+      children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
   ];
 
@@ -169,12 +141,7 @@ const ViewSensorDetails = () => {
 
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{sensor?.name}</LogoText>
-            <Descriptions
-              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
-              column={1}
-              size="small"
-              className="mb-4"
-            />
+            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
           </div>
         </div>
 

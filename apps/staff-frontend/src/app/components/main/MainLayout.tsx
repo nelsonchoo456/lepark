@@ -173,9 +173,10 @@ const MainLayout = () => {
         },
       ]
     },
-    {
-      key: 'iot',
-      label: 'IoT',
+    userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.ARBORIST || userRole === StaffType.BOTANIST
+      ? {
+          key: 'iot',
+          label: 'IoT Assets',
       icon: <MdSensors />,
       children: [
         {
@@ -191,7 +192,8 @@ const MainLayout = () => {
           onClick: () => navigate('/hubs'),
         },
       ],
-    },
+    }
+    : null,
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
@@ -214,31 +216,30 @@ const MainLayout = () => {
           onClick: () => navigate('/event'),
         }
       : null,
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'BOTANIST' ||
-    userRole === 'ARBORIST' ||
-    userRole === 'PARK_RANGER' ||
-    userRole === 'VENDOR_MANAGER'
-      ? {
-          key: 'task',
-          icon: <FiInbox />,
-          // icon: <UploadOutlined />,
-          label: 'Tasks',
-          children: [
-            {
-              key: 'plant-tasks',
-              label: 'Plant Tasks',
-              onClick: () => navigate('/plant-tasks'),
-            },
-            {
-              key: 'maintenance-tasks',
-              label: 'Maintenance Tasks',
-              onClick: () => navigate('/maintenance-tasks'),
-            },
-          ],
-        }
-      : null,
+    // userRole === 'MANAGER' ||
+    // userRole === 'SUPERADMIN' ||
+    // userRole === 'BOTANIST' ||
+    // userRole === 'ARBORIST' ||
+    // userRole === 'PARK_RANGER' ||
+    // userRole === 'VENDOR_MANAGER'
+    //   ? {
+    //       key: 'task',
+    //       icon: <FiInbox />,
+    //       label: 'Tasks',
+    //       children: [
+    //         {
+    //           key: 'plant-tasks',
+    //           label: 'Plant Tasks',
+    //           onClick: () => navigate('/plant-tasks'),
+    //         },
+    //         {
+    //           key: 'maintenance-tasks',
+    //           label: 'Maintenance Tasks',
+    //           onClick: () => navigate('/maintenance-tasks'),
+    //         },
+    //       ],
+    //     }
+    //   : null,
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',

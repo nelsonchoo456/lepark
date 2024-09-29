@@ -126,7 +126,7 @@ const SensorEdit = () => {
       isMain: true,
     },
     {
-      title: sensor?.name ? sensor?.name : 'Details',
+      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
     },
     {
