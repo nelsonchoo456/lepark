@@ -201,6 +201,22 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   };
 
+  const handleNext = async () => {
+    try {
+      await form.validateFields();
+      
+      if (previewImages.length === 0) {
+        message.error('Please upload at least one image.');
+        return;
+      }
+
+      handleCurrStep(1);
+    } catch (error) {
+      console.error('Validation failed:', error);
+      message.error('Please fill in all required fields correctly.');
+    }
+  };
+
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
@@ -414,7 +430,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Form.Item>
       )}
       <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+        <Button type="primary" className="w-full" onClick={handleNext}>
           Next
         </Button>
       </Form.Item>
