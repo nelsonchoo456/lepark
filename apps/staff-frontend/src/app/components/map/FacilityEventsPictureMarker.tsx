@@ -1,21 +1,14 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import L, { DivIcon } from 'leaflet';
 import { Tooltip as AntdTooltip, Button, Tag } from 'antd';
 import { Marker, Tooltip } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EventResponse, EventStatusEnum, FacilityResponse } from '@lepark/data-access';
-import { FaMale, FaFemale, FaCampground, FaCar } from 'react-icons/fa';
-import { FaPersonShelter } from 'react-icons/fa6';
-import { IoInformationSharp, IoAccessibilitySharp } from 'react-icons/io5';
-import { IoIosWater } from 'react-icons/io';
-import { GiFirstAidKit, GiFireplace, GiTheaterCurtains } from 'react-icons/gi';
-import { MdArrowOutward, MdOutlineStorage } from 'react-icons/md';
-import { TbLocation, TbPlayFootball } from 'react-icons/tb';
-import { PiPicnicTableBold } from 'react-icons/pi';
-import { GrAed } from 'react-icons/gr';
+import { MdArrowOutward } from 'react-icons/md';
+import { TbLocation } from 'react-icons/tb';
 import { InnerPictureMarkerGlow, PictureMarkerInner } from '@lepark/common-ui';
 import { BiSolidCalendar, BiSolidCalendarEvent } from 'react-icons/bi';
-import HoverInformation, { HoverItem } from './HoverInformation';
+import { HoverItem } from './HoverInformation';
 import { Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import ParkStatusTag from '../../pages/ParkDetails/components/ParkStatusTag';
@@ -70,7 +63,7 @@ function FacilityEventsPictureMarker({
       const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth;
       const iconHTML = renderToStaticMarkup(
         <InnerPictureMarkerGlow>
-          <PictureMarkerInner $circleWidth={thisCircleWidth} innerBackgroundColor="transparent">
+          <PictureMarkerInner $circleWidth={thisCircleWidth} $innerBackgroundColor="transparent">
             <div
               style={{
                 width: '100%',
@@ -96,7 +89,7 @@ function FacilityEventsPictureMarker({
     }
 
     const iconHTML = renderToStaticMarkup(
-      <PictureMarkerInner $circleWidth={circleWidth} innerBackgroundColor="transparent">
+      <PictureMarkerInner $circleWidth={circleWidth} $innerBackgroundColor="transparent">
         <div
           style={{
             width: '100%',
