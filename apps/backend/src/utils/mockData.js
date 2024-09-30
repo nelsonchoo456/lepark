@@ -1247,7 +1247,7 @@ const parkAssetsData = [
 
 const sensorsData = [
   {
-    name: 'Temperature 02',
+    name: 'Temperature Sensor 1',
     serialNumber: 'TS1234567890',
     sensorType: 'TEMPERATURE',
     description: 'Main temperature sensor for greenhouse',
@@ -1260,8 +1260,8 @@ const sensorsData = [
     supplier: 'TechSense Inc.',
     supplierContactNumber: '98765431',
     images: [
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7pnz61IgUXH2MdF61E_gqkLRFT6Kam40q8g&s',
-      'https://example.com/image2.jpg',
+      'https://sensorpartners.com/wp-content/uploads/2020/03/sensor-partners-i-tec-cube-serie-400x400.jpg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToJEs0uCYzWz7AEz8vj9cqNwU-QIiMGhz9Tw&s',
     ],
     remarks: 'Installed near the north wall',
     facilityId: '',
@@ -1279,7 +1279,7 @@ const sensorsData = [
     sensorUnit: 'PERCENT',
     supplier: 'HumidTech Solutions',
     supplierContactNumber: '63456789',
-    images: ['https://m.media-amazon.com/images/I/61O7HMrdkbL._AC_UF1000,1000_QL80_.jpg'],
+    images: ['https://res.cloudinary.com/rsc/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.625,f_auto,h_214,q_auto,w_380/c_pad,h_214,w_380/Y2163753-01?pgw=1'],
     remarks: 'Temporarily inactive for maintenance',
     facilityId: '',
   },
@@ -1296,7 +1296,7 @@ const sensorsData = [
     sensorUnit: 'VOLUMETRIC_WATER_CONTENT',
     supplier: 'EcoSense Technologies',
     supplierContactNumber: '98761234',
-    images: ['https://m.media-amazon.com/images/I/61twmBwTS7L._AC_UF1000,1000_QL80_.jpg'],
+    images: ['https://m.media-amazon.com/images/I/71rBE3r88DL._AC_UF894,1000_QL80_.jpg'],
     remarks: 'Undergoing calibration and sensitivity adjustments',
     facilityId: '',
   },
@@ -1871,8 +1871,8 @@ const facilitiesData = [
     fee: 0,
     parkId: 2,
   },
-  {
-    name: 'Storeroom',
+  { //index 7
+    name: 'Storeroom - SBG',
     description:
       'A secure and spacious storeroom designed to house park equipment, tools, and supplies. Access is limited to authorized personnel to ensure safety and proper management of inventory.',
     isBookable: false,
@@ -1910,8 +1910,8 @@ const facilitiesData = [
     fee: 0,
     parkId: 2,
   },
-  {
-    name: 'Mini Storeroom',
+  { //index 8
+    name: 'Mini Storeroom - SBG',
     description:
       'A dedicated storage area for park maintenance equipment and tools. Access is restricted to authorized personnel only, ensuring the safety and security of all items.',
     isBookable: false,
@@ -1948,6 +1948,45 @@ const facilitiesData = [
     capacity: 40,
     fee: 0,
     parkId: 2,
+  },
+  {
+    name: 'Mini Storeroom - BAMKP',
+    description:
+      'A dedicated storage area for park maintenance equipment and tools. Access is restricted to authorized personnel only, ensuring the safety and security of all items.',
+    isBookable: false,
+    isPublic: false,
+    isSheltered: true,
+    facilityType: 'STOREROOM',
+    reservationPolicy: 'NIL',
+    rulesAndRegulations:
+      '1. Only authorized park staff may access this storage. 2. All equipment must be returned to its designated location. 3. Keep the storage area locked when not in use. 4. Conduct regular inventory checks to ensure all items are accounted for. 5. Report any issues with equipment to the park supervisor immediately.',
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/mini-storeroom.jpg'],
+    lastMaintenanceDate: '2024-04-15T01:09:38.773Z',
+    openingHours: [
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+    ],
+    closingHours: [
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+    ],
+    facilityStatus: 'OPEN',
+    lat: 1.3198945733866270,
+    long: 103.8193202018730,
+    size: 100.5,
+    capacity: 40,
+    fee: 0,
+    parkId: 1,
   },
 ];
 

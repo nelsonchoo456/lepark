@@ -125,7 +125,7 @@ const SensorCreate = () => {
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-            <Divider orientation="left">Select the Park and Facility</Divider>
+            <Divider orientation="left">Park & Facility Details</Divider>
 
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -182,16 +182,7 @@ const SensorCreate = () => {
             <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
               <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
             </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
-              <Input placeholder="Enter Supplier" />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact Number"
-              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input placeholder="Enter Supplier Contact Number" />
-            </Form.Item>
+
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
@@ -214,6 +205,17 @@ const SensorCreate = () => {
                 </div>
               </Form.Item>
             )}
+            <Divider orientation="left">Supplier Details</Divider>
+              <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+              <Input placeholder="Enter Supplier" />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input placeholder="Enter Supplier Contact Number" />
+            </Form.Item>
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
