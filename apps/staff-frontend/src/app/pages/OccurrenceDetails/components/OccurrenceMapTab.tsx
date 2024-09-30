@@ -43,7 +43,7 @@ const OccurrenceMapTab = ({ occurrence, zone }: MapTabProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.9 }} polygonLabel={zone?.name}/>
-        <PictureMarker circleWidth={37} lat={occurrence.lat} lng={occurrence.lng} tooltipLabel={occurrence.title} backgroundColor={COLORS.green[300]} icon={<PiPlantFill className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
+        <PictureMarker id={occurrence.id} entityType="OCCURRENCE" circleWidth={37} lat={occurrence.lat} lng={occurrence.lng} tooltipLabel={occurrence.title} backgroundColor={COLORS.green[300]} icon={<PiPlantFill className='text-green-600 drop-shadow-lg' style={{ fontSize: "3rem" }}/>} />
       </MapContainer>
       
       {canEditLocation && (
