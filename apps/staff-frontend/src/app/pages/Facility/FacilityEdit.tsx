@@ -16,6 +16,7 @@ import {
   InputNumber,
   DatePicker,
   FormInstance,
+  Typography,
 } from 'antd';
 import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -24,6 +25,7 @@ import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilit
 
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
+const { Text } = Typography;
 
 const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
@@ -321,7 +323,9 @@ const FacilityEdit = () => {
             <InputNumber min={0} />
           </Form.Item>
 
-          <Divider orientation="left">Facility Hours</Divider>
+          <Divider orientation="left">
+            Facility Hours<Text type="danger">{' *'}</Text>
+          </Divider>
           {daysOfTheWeek.map((day) => (
             <Form.Item label={day.charAt(0).toUpperCase() + day.slice(1)} key={day}>
               <Flex>
