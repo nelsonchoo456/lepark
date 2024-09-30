@@ -799,6 +799,21 @@ const occurrenceData = [
     zoneId: 3,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-1.jpg'],
   },
+  {
+    lat: 1.364,
+    lng: 103.839,
+    dateObserved: '2024-09-09T10:00:00Z',
+    dateOfBirth: '2024-02-01T00:00:00Z',
+    numberOfPlants: 5.0,
+    biomass: 200,
+    title: 'New Rosa Observation',
+    description: 'Observation of recently planted Rosa Gallica in the area',
+    decarbonizationType: 'TREE_TROPICAL',
+    speciesId: '',
+    occurrenceStatus: 'HEALTHY',
+    zoneId: 1,
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-1.jpg'],
+  },
 ];
 
 const staffData = [
@@ -1148,71 +1163,91 @@ const statusLogsData = [
 ];
 
 const parkAssetsData = [
- {
-  name: 'Honda Lawnmower HRJ 196',
-  serialNumber: 'HJ196',
-  parkAssetType: 'PLANT_TOOL_AND_EQUIPMENT',
-  description: 'The Honda HRJ196 Lawn Mower is your ultimate solution for maintaining a pristine lawn with minimal effort. This high-performance gardening tool boasts a cutting width of 470mm, ensuring wide coverage with each pass. With a large grass bag capacity of 60 liters, you\'ll spend less time emptying and more time mowing.',
-  parkAssetStatus: 'AVAILABLE',
-  acquisitionDate: new Date(),
-  lastMaintenanceDate: new Date(),
-  nextMaintenanceDate: new Date(),
-  supplier: 'Honda',
-  supplierContactNumber: '67891234',
-  parkAssetCondition: 'FAIR',
-  images: ['https://cdn.honda.co.za/main-03/banners/_1200x630_fit_center-center_82_none/Honda_HRJ196_SEO_2020.jpg?mtime=1676570619', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3T_-5n9qy2hdyIzq9O6cAu-Qx3nG65H07Aw&s', 'https://5.imimg.com/data5/SELLER/Default/2022/10/BV/EE/PQ/162196412/honda-hrj196-lawn-mower-500x500.jpg'],
-  facilityId: ''
-},
-{
-  name: 'Karcher HR 25 15m Aluminum Coated Water Hose Reel',
-  serialNumber: 'HR2515',
-  parkAssetType: 'HOSES_AND_PIPES',
-  description: 'The HR 25 hose reel for mobile or stationary use is perfect for watering small to medium-sized areas and gardens. The practical hose storage is characterised by its robust, non-corrosive aluminium frame. The compact dimensions save space and simplify the work. So nothing can now get in the way of your gardening. For the innovative Karcher hose storage systems set new standards with regard to function, design and quality. Ideal for quick winding and unwinding of the hose, without manual guide - with minimum space requirement.',
-  parkAssetStatus: 'UNDER_MAINTENANCE',
-  acquisitionDate: new Date(),
-  lastMaintenanceDate: new Date(),
-  nextMaintenanceDate: new Date(),
-  supplier: 'Karcher',
-  supplierContactNumber: '67778888',
-  parkAssetCondition: 'EXCELLENT',
-  images: ['https://www.hardwarespecialist.com.sg/23043-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg', 'https://www.hardwarespecialist.com.sg/23044-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg', 'https://www.hardwarespecialist.com.sg/22809-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg'],
-  facilityId: ''
-},
-{
-  name: 'Aiko 70cm Safety (Traffic) Cone',
-  serialNumber: 'CONE-7093',
-  parkAssetType: 'SAFETY',
-  description: 'These reflective cones are ideal for roadworks, civil engineering, schools and carparks etc. Features soft PVC material. One piece design means no seams to split or tear. Superior flexibility in heat and cold. Bounce back to shape when crushed',
-  parkAssetStatus: 'IN_USE',
-  acquisitionDate: new Date(),
-  lastMaintenanceDate: new Date(),
-  nextMaintenanceDate: new Date(),
-  supplier: 'Aik Chin Hin Hardware and Machinery',
-  supplierContactNumber: '67778088',
-  parkAssetCondition: 'POOR',
-  images: ['https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-963380_317x.jpg?v=1664280890', 'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-690568_800x.jpg?v=1664273558', 'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-385821_800x.jpg?v=1664233697'],
-  facilityId: ''
-},
-{
-  name: 'Ingco Var. Speed Reciprocating SAW 1200W',
-  serialNumber: 'RS12001',
-  parkAssetType: 'GENERAL_TOOLS',
-  description: 'This saw operates on a voltage range of 220-240V at 50/60Hz, with an input power of 1200W. It features a no-load speed ranging from 1000 to 2800 rpm, offering a maximum cutting depth of 210mm for wood, 20mm for steel, and 10mm for aluminum. Equipped with variable speed control, it also includes an integrated work light and a 4-step pendulum action. The SDS blade change chuck ensures easy blade replacement, and the saw comes with one metal saw blade and one saw blade for wood.',
-  parkAssetStatus: 'DECOMMISSIONED',
-  acquisitionDate: new Date(),
-  lastMaintenanceDate: new Date(),
-  nextMaintenanceDate: new Date(),
-  supplier: 'Horme Hardware',
-  supplierContactNumber: '67777777',
-  parkAssetCondition: 'DAMAGED',
-  images: ['https://cdn.horme.com.sg/images/product/2023081712561882CPO726886924_700.jpg', 'https://cdn.horme.com.sg/images/product/20240721195300MVAIEV66506686_700.jpg', 'https://cdn.horme.com.sg/images/product/20230818125006FZEQUM37120899_700.jpg'],
-  facilityId: ''
-},
+  {
+    name: 'Honda Lawnmower HRJ 196',
+    serialNumber: 'HJ196',
+    parkAssetType: 'PLANT_TOOL_AND_EQUIPMENT',
+    description:
+      "The Honda HRJ196 Lawn Mower is your ultimate solution for maintaining a pristine lawn with minimal effort. This high-performance gardening tool boasts a cutting width of 470mm, ensuring wide coverage with each pass. With a large grass bag capacity of 60 liters, you'll spend less time emptying and more time mowing.",
+    parkAssetStatus: 'AVAILABLE',
+    acquisitionDate: new Date(),
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
+    supplier: 'Honda',
+    supplierContactNumber: '67891234',
+    parkAssetCondition: 'FAIR',
+    images: [
+      'https://cdn.honda.co.za/main-03/banners/_1200x630_fit_center-center_82_none/Honda_HRJ196_SEO_2020.jpg?mtime=1676570619',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3T_-5n9qy2hdyIzq9O6cAu-Qx3nG65H07Aw&s',
+      'https://5.imimg.com/data5/SELLER/Default/2022/10/BV/EE/PQ/162196412/honda-hrj196-lawn-mower-500x500.jpg',
+    ],
+    facilityId: '',
+  },
+  {
+    name: 'Karcher HR 25 15m Aluminum Coated Water Hose Reel',
+    serialNumber: 'HR2515',
+    parkAssetType: 'HOSES_AND_PIPES',
+    description:
+      'The HR 25 hose reel for mobile or stationary use is perfect for watering small to medium-sized areas and gardens. The practical hose storage is characterised by its robust, non-corrosive aluminium frame. The compact dimensions save space and simplify the work. So nothing can now get in the way of your gardening. For the innovative Karcher hose storage systems set new standards with regard to function, design and quality. Ideal for quick winding and unwinding of the hose, without manual guide - with minimum space requirement.',
+    parkAssetStatus: 'UNDER_MAINTENANCE',
+    acquisitionDate: new Date(),
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
+    supplier: 'Karcher',
+    supplierContactNumber: '67778888',
+    parkAssetCondition: 'EXCELLENT',
+    images: [
+      'https://www.hardwarespecialist.com.sg/23043-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg',
+      'https://www.hardwarespecialist.com.sg/23044-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg',
+      'https://www.hardwarespecialist.com.sg/22809-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg',
+    ],
+    facilityId: '',
+  },
+  {
+    name: 'Aiko 70cm Safety (Traffic) Cone',
+    serialNumber: 'CONE-7093',
+    parkAssetType: 'SAFETY',
+    description:
+      'These reflective cones are ideal for roadworks, civil engineering, schools and carparks etc. Features soft PVC material. One piece design means no seams to split or tear. Superior flexibility in heat and cold. Bounce back to shape when crushed',
+    parkAssetStatus: 'IN_USE',
+    acquisitionDate: new Date(),
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
+    supplier: 'Aik Chin Hin Hardware and Machinery',
+    supplierContactNumber: '67778088',
+    parkAssetCondition: 'POOR',
+    images: [
+      'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-963380_317x.jpg?v=1664280890',
+      'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-690568_800x.jpg?v=1664273558',
+      'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-385821_800x.jpg?v=1664233697',
+    ],
+    facilityId: '',
+  },
+  {
+    name: 'Ingco Var. Speed Reciprocating SAW 1200W',
+    serialNumber: 'RS12001',
+    parkAssetType: 'GENERAL_TOOLS',
+    description:
+      'This saw operates on a voltage range of 220-240V at 50/60Hz, with an input power of 1200W. It features a no-load speed ranging from 1000 to 2800 rpm, offering a maximum cutting depth of 210mm for wood, 20mm for steel, and 10mm for aluminum. Equipped with variable speed control, it also includes an integrated work light and a 4-step pendulum action. The SDS blade change chuck ensures easy blade replacement, and the saw comes with one metal saw blade and one saw blade for wood.',
+    parkAssetStatus: 'DECOMMISSIONED',
+    acquisitionDate: new Date(),
+    lastMaintenanceDate: new Date(),
+    nextMaintenanceDate: new Date(),
+    supplier: 'Horme Hardware',
+    supplierContactNumber: '67777777',
+    parkAssetCondition: 'DAMAGED',
+    images: [
+      'https://cdn.horme.com.sg/images/product/2023081712561882CPO726886924_700.jpg',
+      'https://cdn.horme.com.sg/images/product/20240721195300MVAIEV66506686_700.jpg',
+      'https://cdn.horme.com.sg/images/product/20230818125006FZEQUM37120899_700.jpg',
+    ],
+    facilityId: '',
+  },
 ];
 
 const sensorsData = [
   {
-    name: 'Temperature 02',
+    name: 'Temperature Sensor 1',
     serialNumber: 'TS1234567890',
     sensorType: 'TEMPERATURE',
     description: 'Main temperature sensor for greenhouse',
@@ -1225,11 +1260,11 @@ const sensorsData = [
     supplier: 'TechSense Inc.',
     supplierContactNumber: '98765431',
     images: [
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7pnz61IgUXH2MdF61E_gqkLRFT6Kam40q8g&s',
-      'https://example.com/image2.jpg'
+      'https://sensorpartners.com/wp-content/uploads/2020/03/sensor-partners-i-tec-cube-serie-400x400.jpg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToJEs0uCYzWz7AEz8vj9cqNwU-QIiMGhz9Tw&s',
     ],
     remarks: 'Installed near the north wall',
-    facilityId: ''
+    facilityId: '',
   },
   {
     name: 'Humidity Sensor 01',
@@ -1244,11 +1279,9 @@ const sensorsData = [
     sensorUnit: 'PERCENT',
     supplier: 'HumidTech Solutions',
     supplierContactNumber: '63456789',
-    images: [
-      'https://m.media-amazon.com/images/I/61O7HMrdkbL._AC_UF1000,1000_QL80_.jpg'
-    ],
+    images: ['https://res.cloudinary.com/rsc/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.625,f_auto,h_214,q_auto,w_380/c_pad,h_214,w_380/Y2163753-01?pgw=1'],
     remarks: 'Temporarily inactive for maintenance',
-    facilityId: ''
+    facilityId: '',
   },
   {
     name: 'Soil Moisture Probe 03',
@@ -1263,11 +1296,9 @@ const sensorsData = [
     sensorUnit: 'VOLUMETRIC_WATER_CONTENT',
     supplier: 'EcoSense Technologies',
     supplierContactNumber: '98761234',
-    images: [
-      'https://m.media-amazon.com/images/I/61twmBwTS7L._AC_UF1000,1000_QL80_.jpg'
-    ],
+    images: ['https://m.media-amazon.com/images/I/71rBE3r88DL._AC_UF894,1000_QL80_.jpg'],
     remarks: 'Undergoing calibration and sensitivity adjustments',
-    facilityId: ''
+    facilityId: '',
   },
   {
     name: 'Light Sensor Datalogger 02',
@@ -1282,15 +1313,11 @@ const sensorsData = [
     sensorUnit: 'LUX',
     supplier: 'BrightTech Innovations',
     supplierContactNumber: '89004577',
-    images: [
-      'https://dataloggerinc.com/wp-content/uploads/2018/12/2121-71.jpg',
-
-    ],
+    images: ['https://dataloggerinc.com/wp-content/uploads/2018/12/2121-71.jpg'],
     remarks: 'Installed in the fern garden',
-    facilityId: ''
-  }
+    facilityId: '',
+  },
 ];
-
 
 const hubsData = [
   {
@@ -1299,8 +1326,8 @@ const hubsData = [
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
     acquisitionDate: new Date(),
-    lastMaintenanceDate: new Date(),
-    nextMaintenanceDate: new Date(),
+    //lastMaintenanceDate: new Date(),
+    //nextMaintenanceDate: new Date(),
     dataTransmissionInterval: 15,
     supplier: 'Supplier 1',
     supplierContactNumber: '892345235',
@@ -1318,8 +1345,8 @@ const hubsData = [
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'DECOMMISSIONED',
     acquisitionDate: new Date(),
-    lastMaintenanceDate: new Date(),
-    nextMaintenanceDate: new Date(),
+    //lastMaintenanceDate: new Date(),
+    //nextMaintenanceDate: new Date(),
     dataTransmissionInterval: 10,
     supplier: 'Supplier 2',
     supplierContactNumber: '123456789',
@@ -1337,8 +1364,8 @@ const hubsData = [
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'UNDER_MAINTENANCE',
     acquisitionDate: new Date(),
-    lastMaintenanceDate: new Date(),
-    nextMaintenanceDate: new Date(),
+    //lastMaintenanceDate: new Date(),
+   // nextMaintenanceDate: new Date(),
     dataTransmissionInterval: 150,
     supplier: 'Supplier 3',
     supplierContactNumber: '987654321',
@@ -1844,8 +1871,8 @@ const facilitiesData = [
     fee: 0,
     parkId: 2,
   },
-  {
-    name: 'Storeroom',
+  { //index 7
+    name: 'Storeroom - SBG',
     description:
       'A secure and spacious storeroom designed to house park equipment, tools, and supplies. Access is limited to authorized personnel to ensure safety and proper management of inventory.',
     isBookable: false,
@@ -1883,106 +1910,178 @@ const facilitiesData = [
     fee: 0,
     parkId: 2,
   },
+  { //index 8
+    name: 'Mini Storeroom - SBG',
+    description:
+      'A dedicated storage area for park maintenance equipment and tools. Access is restricted to authorized personnel only, ensuring the safety and security of all items.',
+    isBookable: false,
+    isPublic: false,
+    isSheltered: true,
+    facilityType: 'STOREROOM',
+    reservationPolicy: 'NIL',
+    rulesAndRegulations:
+      '1. Only authorized park staff may access this storage. 2. All equipment must be returned to its designated location. 3. Keep the storage area locked when not in use. 4. Conduct regular inventory checks to ensure all items are accounted for. 5. Report any issues with equipment to the park supervisor immediately.',
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/mini-storeroom.jpg'],
+    lastMaintenanceDate: '2024-04-15T01:09:38.773Z',
+    openingHours: [
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+    ],
+    closingHours: [
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+    ],
+    facilityStatus: 'OPEN',
+    lat: 1.3198945733866272,
+    long: 103.8193202018738,
+    size: 100.5,
+    capacity: 40,
+    fee: 0,
+    parkId: 2,
+  },
+  {
+    name: 'Mini Storeroom - BAMKP',
+    description:
+      'A dedicated storage area for park maintenance equipment and tools. Access is restricted to authorized personnel only, ensuring the safety and security of all items.',
+    isBookable: false,
+    isPublic: false,
+    isSheltered: true,
+    facilityType: 'STOREROOM',
+    reservationPolicy: 'NIL',
+    rulesAndRegulations:
+      '1. Only authorized park staff may access this storage. 2. All equipment must be returned to its designated location. 3. Keep the storage area locked when not in use. 4. Conduct regular inventory checks to ensure all items are accounted for. 5. Report any issues with equipment to the park supervisor immediately.',
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/mini-storeroom.jpg'],
+    lastMaintenanceDate: '2024-04-15T01:09:38.773Z',
+    openingHours: [
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+      '2024-09-08T02:00:00.000Z',
+    ],
+    closingHours: [
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+      '2024-09-09T13:00:00.000Z',
+    ],
+    facilityStatus: 'OPEN',
+    lat: 1.3198945733866270,
+    long: 103.8193202018730,
+    size: 100.5,
+    capacity: 40,
+    fee: 0,
+    parkId: 1,
+  },
 ];
 
 const eventsData = [
   {
-    title: "Wildlife Protection Talk",
-    description: "The Wildlife Protection Talk is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!",
-    type: "TALK",
-    suitability: "NATURE_ENTHUSIASTS",
-    startDate: "2024-10-07T00:00:00.000Z",
-    endDate: "2024-10-11T09:00:00.000Z",
-    startTime: "2024-10-07T00:00:00.000Z",
-    endTime: "2024-10-11T09:00:00.000Z",
+    title: 'Wildlife Protection Talk',
+    description:
+      'The Wildlife Protection Talk is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!',
+    type: 'TALK',
+    suitability: 'NATURE_ENTHUSIASTS',
+    startDate: '2024-10-07T00:00:00.000Z',
+    endDate: '2024-10-11T09:00:00.000Z',
+    startTime: '2024-10-07T00:00:00.000Z',
+    endTime: '2024-10-11T09:00:00.000Z',
     maxCapacity: 300,
-    images: [
-      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727628906708-wildlife%20protection%20seminar%20event.jpg"
-    ],
-    status: "UPCOMING",
-    facilityId: ""
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727628906708-wildlife%20protection%20seminar%20event.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
   },
   {
-    title: "Stand Up Comedy",
-    description: "Get ready for an evening filled with laughter as talented comedians take the stage to entertain you with hilarious stand-up routines. A perfect way to unwind and enjoy some light-hearted humor in a beautiful park setting.",
-    type: "PERFORMANCE",
-    suitability: "FAMILIES_AND_FRIENDS",
-    startDate: "2024-11-08T02:00:00.000Z",
-    endDate: "2024-11-12T11:00:00.000Z",
-    startTime: "2024-11-08T02:00:00.000Z",
-    endTime: "2024-11-12T11:00:00.000Z",
+    title: 'Stand Up Comedy',
+    description:
+      'Get ready for an evening filled with laughter as talented comedians take the stage to entertain you with hilarious stand-up routines. A perfect way to unwind and enjoy some light-hearted humor in a beautiful park setting.',
+    type: 'PERFORMANCE',
+    suitability: 'FAMILIES_AND_FRIENDS',
+    startDate: '2024-11-08T02:00:00.000Z',
+    endDate: '2024-11-12T11:00:00.000Z',
+    startTime: '2024-11-08T02:00:00.000Z',
+    endTime: '2024-11-12T11:00:00.000Z',
     maxCapacity: 200,
-    images: [
-      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629019586-stand%20up%20comedy.jpg"
-    ],
-    status: "UPCOMING",
-    facilityId: ""
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629019586-stand%20up%20comedy.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
   },
   {
-    title: "Jazz Festival",
-    description: "Immerse yourself in the soothing sounds of live jazz as talented musicians bring the park to life with soulful melodies. Whether you're a jazz enthusiast or simply looking for a relaxing evening, this event offers a perfect blend of music and nature.",
-    type: "FESTIVAL",
-    suitability: "FAMILIES_AND_FRIENDS",
-    startDate: "2024-10-18T02:00:00.000Z",
-    endDate: "2024-10-21T12:00:00.000Z",
-    startTime: "2024-10-18T02:00:00.000Z",
-    endTime: "2024-10-21T12:00:00.000Z",
+    title: 'Jazz Festival',
+    description:
+      "Immerse yourself in the soothing sounds of live jazz as talented musicians bring the park to life with soulful melodies. Whether you're a jazz enthusiast or simply looking for a relaxing evening, this event offers a perfect blend of music and nature.",
+    type: 'FESTIVAL',
+    suitability: 'FAMILIES_AND_FRIENDS',
+    startDate: '2024-10-18T02:00:00.000Z',
+    endDate: '2024-10-21T12:00:00.000Z',
+    startTime: '2024-10-18T02:00:00.000Z',
+    endTime: '2024-10-21T12:00:00.000Z',
     maxCapacity: 300,
-    images: [
-      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629125264-jazz%20festival%20event.jpg"
-    ],
-    status: "UPCOMING",
-    facilityId: ""
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629125264-jazz%20festival%20event.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
   },
   {
-    title: "Eco-Friendly Craft Workshop",
-    description: "The Eco-Friendly Craft Workshop is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!",
-    type: "WORKSHOP",
-    suitability: "FAMILIES_AND_FRIENDS",
-    startDate: "2024-10-10T01:00:00.000Z",
-    endDate: "2024-10-12T09:00:00.000Z",
-    startTime: "2024-10-10T01:00:00.000Z",
-    endTime: "2024-10-12T09:00:00.000Z",
+    title: 'Eco-Friendly Craft Workshop',
+    description:
+      'The Eco-Friendly Craft Workshop is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!',
+    type: 'WORKSHOP',
+    suitability: 'FAMILIES_AND_FRIENDS',
+    startDate: '2024-10-10T01:00:00.000Z',
+    endDate: '2024-10-12T09:00:00.000Z',
+    startTime: '2024-10-10T01:00:00.000Z',
+    endTime: '2024-10-12T09:00:00.000Z',
     maxCapacity: 30,
-    images: [
-      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629271719-eco%20friendly%20craft%20workshop%201.jpg"
-    ],
-    status: "UPCOMING",
-    facilityId: ""
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629271719-eco%20friendly%20craft%20workshop%201.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
   },
   {
-    title: "Treasure Hunt",
-    description: "Treasure Hunt is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
-    type: "COMPETITION",
-    suitability: "CHILDREN",
-    startDate: "2024-10-01T01:00:00.000Z",
-    endDate: "2024-10-01T11:00:00.000Z",
-    startTime: "2024-10-01T01:00:00.000Z",
-    endTime: "2024-10-01T11:00:00.000Z",
+    title: 'Treasure Hunt',
+    description:
+      "Treasure Hunt is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
+    type: 'COMPETITION',
+    suitability: 'CHILDREN',
+    startDate: '2024-10-01T01:00:00.000Z',
+    endDate: '2024-10-01T11:00:00.000Z',
+    startTime: '2024-10-01T01:00:00.000Z',
+    endTime: '2024-10-01T11:00:00.000Z',
     maxCapacity: 25,
-    images: [
-      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629353517-treasure%20hunt%20event.jpg"
-    ],
-    status: "UPCOMING",
-    facilityId: ""
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629353517-treasure%20hunt%20event.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
   },
   {
-    title: "Obstacle Course Challenge",
-    description: "Obstacle Course Challenge is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
-    type: "COMPETITION",
-    suitability: "CHILDREN",
-    startDate: "2024-10-01T02:00:00.000Z",
-    endDate: "2024-10-04T09:00:00.000Z",
-    startTime: "2024-10-01T02:00:00.000Z",
-    endTime: "2024-10-04T09:00:00.000Z",
+    title: 'Obstacle Course Challenge',
+    description:
+      "Obstacle Course Challenge is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
+    type: 'COMPETITION',
+    suitability: 'CHILDREN',
+    startDate: '2024-10-01T02:00:00.000Z',
+    endDate: '2024-10-04T09:00:00.000Z',
+    startTime: '2024-10-01T02:00:00.000Z',
+    endTime: '2024-10-04T09:00:00.000Z',
     maxCapacity: 30,
-    images: [
-      "https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629448629-obstacle%20course%20challenge%201.jpg"
-    ],
-    status: "UPCOMING",
-    facilityId: ""
-  }
-]
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629448629-obstacle%20course%20challenge%201.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
+  },
+];
 
 module.exports = {
   parksData,
@@ -1997,5 +2096,5 @@ module.exports = {
   facilitiesData,
   eventsData,
   parkAssetsData,
-  sensorsData
+  sensorsData,
 };

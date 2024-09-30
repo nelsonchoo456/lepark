@@ -80,7 +80,7 @@ const FacilityList: React.FC = () => {
       render: (text) => <div>{text}</div>,
       filters: facilityTypes,
       onFilter: (value, record) => record.facilityType === value,
-      width: '15%',
+      width: '20%',
     },
     {
       title: 'Facility Status',
@@ -104,7 +104,7 @@ const FacilityList: React.FC = () => {
         { text: 'Maintenance', value: 'MAINTENANCE' },
       ],
       onFilter: (value, record) => record.facilityStatus === value,
-      width: '15%',
+      width: '20%',
     },
     {
       title: 'Last Maintenance Date',
@@ -112,7 +112,7 @@ const FacilityList: React.FC = () => {
       key: 'lastMaintenanceDate',
       render: (text) => moment(text).format('D MMM YY'),
       sorter: (a, b) => moment(a.lastMaintenanceDate).unix() - moment(b.lastMaintenanceDate).unix(),
-      width: '15%',
+      width: '20%',
     },
     {
       title: 'Actions',
@@ -138,7 +138,7 @@ const FacilityList: React.FC = () => {
           )}
         </Flex>
       ),
-      width: '15%',
+      width: '1%',
     },
   ];
 
@@ -166,7 +166,7 @@ const FacilityList: React.FC = () => {
             })
           : undefined,
       onFilter: user?.role === StaffType.SUPERADMIN ? (value, record) => record.parkId === value : undefined,
-      // width: '25%',
+      width: '20%',
     });
   }
 
@@ -210,7 +210,7 @@ const FacilityList: React.FC = () => {
       <ConfirmDeleteModal
         onCancel={cancelDelete}
         onConfirm={deleteFacilityToBeDeleted}
-        description={`Are you sure you want to delete the facility "${facilityToBeDeleted?.name}"?`}
+        description={'Deleting a Facility will delete its Events. This cannot be undone.'}
         open={deleteModalOpen}
       />
       <Flex justify="end" gap={10}>

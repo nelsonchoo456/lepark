@@ -80,4 +80,16 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   }
 });
 
+router.get('/check-existing', async (req, res) => {
+  const { name, parkId } = req.query;
+
+  try {
+    const exists = await FacilityService.checkExistingFacility(name as string, Number(parkId));
+    return res.status(200).json({ exists });
+  } catch (error) {
+    console.error('Error checking existing facility:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 export default router;

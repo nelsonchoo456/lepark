@@ -1,4 +1,4 @@
-import { FacilityResponse, ParkResponse } from '@lepark/data-access';
+import { FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Tooltip } from 'antd';
@@ -8,6 +8,7 @@ import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
 import { PiPlantFill } from 'react-icons/pi';
 import { FaHome, FaTicketAlt } from 'react-icons/fa';
+import { useAuth } from '@lepark/common-ui';
 
 interface MapTabProps {
   facility: FacilityResponse;
@@ -15,6 +16,7 @@ interface MapTabProps {
 }
 const MapTab = ({ facility, park }: MapTabProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth<StaffResponse>();
 
   return (
     <div
@@ -48,13 +50,16 @@ const MapTab = ({ facility, park }: MapTabProps) => {
           />
         )}
       </MapContainer>
-      
+
       <div className="absolute top-4 right-3 z-[1000]">
-        <Tooltip title="Edit Location">
-          <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-location`)}>
-            Edit Location
-          </Button>
-        </Tooltip>
+        {user?.role !== StaffType.ARBORIST &&
+          user?.role !== StaffType.BOTANIST && ( // Check if the user is not an Arborist or Botanist
+            <Tooltip title="Edit Location">
+              <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-location`)}>
+                Edit Location
+              </Button>
+            </Tooltip>
+          )}
       </div>
     </div>
   );

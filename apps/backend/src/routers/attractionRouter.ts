@@ -16,6 +16,16 @@ router.post('/createAttraction', authenticateJWTStaff, async (req, res) => {
   }
 });
 
+router.get('/checkAttractionNameExists', async (req, res) => {
+  try {
+    const { parkId, title } = req.query;
+    const exists = await AttractionService.checkAttractionNameExists(Number(parkId), String(title));
+    res.status(200).json({ exists });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getAllAttractions', async (req, res) => {
   try {
     const attractions = await AttractionService.getAllAttractions();

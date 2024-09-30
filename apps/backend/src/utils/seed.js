@@ -220,7 +220,7 @@ async function seed() {
   console.log(`Total species seeded: ${speciesList.length}\n`);
 
   const occurrenceList = [];
-  for (let i = 0; i < speciesList.length; i++) {
+  for (let i = 0; i < occurrenceData.length; i++) {
     let selectedStatusLogs = [];
     try {
       selectedStatusLogs = getRandomItems(statusLogsData, 2);
@@ -230,10 +230,13 @@ async function seed() {
 
     const occurrenceCurrent = occurrenceData[i];
 
-    // Get the species based on index
-    const species = speciesList[i];
-
-    occurrenceCurrent.speciesId = species.id;
+    if (i === occurrenceData.length - 1) {
+      occurrenceCurrent.speciesId = speciesList[0].id;
+    } else {
+      // Get the species based on index
+      const species = speciesList[i % speciesList.length];
+      occurrenceCurrent.speciesId = species.id;
+    }
 
     if (selectedStatusLogs && selectedStatusLogs.length > 1) {
       occurrenceCurrent.occurrenceStatus = selectedStatusLogs[1].statusLogType;
@@ -295,7 +298,7 @@ async function seed() {
   }
   console.log(`Total facilities seeded: ${facilityList.length}\n`);
 
-  const storeroomId = facilityList[facilityList.length - 1].id;
+  const storeroomId = facilityList[7].id;
 
   const hubList = [];
   for (const hub of hubsData) {
@@ -308,30 +311,32 @@ async function seed() {
   console.log(`Total hubs seeded: ${hubList.length}\n`);
 
   const parkAssetList = [];
-  const carparkId = facilityList[2].id;
-for (const parkAsset of parkAssetsData) {
-  if (parkAsset.parkAssetType === 'HOSES_AND_PIPES' || parkAsset.name.toLowerCase().includes('cone')) {
-    parkAsset.facilityId = carparkId;
-  } else if (parkAsset.name.toLowerCase().includes('saw') || parkAsset.name.toLowerCase().includes('lawnmower')) {
-    parkAsset.facilityId = storeroomId;
-  }
-  const createdParkAsset = await prisma.parkAsset.create({
-    data: parkAsset,
-  });
-  parkAssetList.push(createdParkAsset);
-}
-console.log(`Total park assets seeded: ${parkAssetList.length}\n`);
+  const miniStoreSBG = facilityList[8].id;
+  const miniStoreBAMKP = facilityList[9].id;
 
-// Seeding Sensors
-const sensorList = [];
-for (const sensor of sensorsData) {
-  sensor.facilityId = storeroomId;
-  const createdSensor = await prisma.sensor.create({
-    data: sensor,
-  });
-  sensorList.push(createdSensor);
-}
-console.log(`Total sensors seeded: ${sensorList.length}\n`);
+  for (const parkAsset of parkAssetsData) {
+    if (parkAsset.parkAssetType === 'HOSES_AND_PIPES' || parkAsset.name.toLowerCase().includes('cone')) {
+      parkAsset.facilityId = miniStoreSBG;
+    } else if (parkAsset.name.toLowerCase().includes('saw') || parkAsset.name.toLowerCase().includes('lawnmower')) {
+      parkAsset.facilityId = miniStoreBAMKP;
+    }
+    const createdParkAsset = await prisma.parkAsset.create({
+      data: parkAsset,
+    });
+    parkAssetList.push(createdParkAsset);
+  }
+  console.log(`Total park assets seeded: ${parkAssetList.length}\n`);
+
+  // Seeding Sensors
+  const sensorList = [];
+  for (const sensor of sensorsData) {
+    sensor.facilityId = storeroomId;
+    const createdSensor = await prisma.sensor.create({
+      data: sensor,
+    });
+    sensorList.push(createdSensor);
+  }
+  console.log(`Total sensors seeded: ${sensorList.length}\n`);
 
   const amphitheaterId = facilityList[3].id;
   const dragonPlaygroundId = facilityList[6].id;
