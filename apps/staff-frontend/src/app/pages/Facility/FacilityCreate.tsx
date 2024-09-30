@@ -84,12 +84,14 @@ const FacilityCreate = () => {
         setCurrStep(2);
         setCreatedData(response.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      messageApi.open({
-        type: 'error',
-        content: error instanceof Error ? error.message : 'Unable to create Facility. Please try again later.',
-      });
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('A facility with this name already exists in the park.')) {
+        messageApi.error('A facility with this name already exists in the park.');
+      } else {
+        messageApi.error(errorMessage || 'An error occurred while creating the facility.');
+      }
     }
   };
 
@@ -189,7 +191,7 @@ const FacilityCreate = () => {
             <Result
               status="success"
               title="Created new Facility"
-              subTitle={createdData && <>Facility name: {createdData.facilityName}</>}
+              subTitle={createdData && <>Facility name: {createdData.name}</>}
               extra={[
                 <Button key="back" onClick={() => navigate('/facilities')}>
                   Back to Facility Management

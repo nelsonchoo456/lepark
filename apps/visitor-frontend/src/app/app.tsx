@@ -25,6 +25,7 @@ import DiscoverPerPark from './pages/Taxonomy/DiscoverPerPark';
 import AttractionsPerPark from './pages/Attractions/AttractionsPerPark';
 import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttractionDetails';
 import ParkDetails from './pages/ParkDetails/ParkDetails';
+import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 
 export function App() {
   return (
@@ -85,7 +86,7 @@ export function App() {
                 />
                 <Route path="/park">
                   <Route index element={<SelectParkPage />} />
-                  <Route path=":parkId" element={<ParkDetails />} />
+                  <Route path=":parkId" element={<VisitorParkViewDetails />} />
                 </Route>
                 <Route path="/occurrence">
                   {/* <Route index element={<OccurrenceList />} /> */}

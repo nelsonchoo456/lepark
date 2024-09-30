@@ -217,7 +217,7 @@ const AttractionCreate = () => {
             <Result
               status="success"
               title="Created new Attraction"
-            //   subTitle={createdData && <>Attraction name: {createdData.name}</>}
+              subTitle={createdData && <>Attraction title: {createdData.title}</>}
               extra={[
                 <Button key="back" onClick={() => navigate('/attraction')}>
                   Back to Attraction Management

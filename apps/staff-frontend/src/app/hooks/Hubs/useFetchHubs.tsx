@@ -24,6 +24,7 @@ export const useFetchHubs = () => {
       const hubsRes = await getAllHubs();
       if (hubsRes.status === 200) {
         const hubsData = hubsRes.data;
+        console.log(hubsData);
         setHubs(Array.isArray(hubsData) ? hubsData : []); // Ensure hubsData is an array
         setLoading(false);
       }

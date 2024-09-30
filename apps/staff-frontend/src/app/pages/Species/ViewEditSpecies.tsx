@@ -509,7 +509,7 @@ const ViewEditSpecies = () => {
               </Space>
             </Form.Item>
 
-            <Form.Item label="Upload Images">
+            <Form.Item label="Image">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
 

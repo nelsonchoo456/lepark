@@ -3,20 +3,20 @@ import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '
 
 export const ParkAssetSchema = z.object({
   id: z.string().uuid().optional(),
-  parkAssetName: z.string(),
+  serialNumber: z.string().optional(), // Make it optional as it will be auto-generated
+  name: z.string().min(1, { message: 'Asset name is required' }),
   parkAssetType: z.nativeEnum(ParkAssetTypeEnum),
-  parkAssetDescription: z.string().optional(),
+  description: z.string().optional(),
   parkAssetStatus: z.nativeEnum(ParkAssetStatusEnum),
   acquisitionDate: z.date(),
-  recurringMaintenanceDuration: z.number().int().positive(),
   lastMaintenanceDate: z.date().optional(),
   nextMaintenanceDate: z.date().optional(),
-  supplier: z.string(),
-  supplierContactNumber: z.string(),
+  supplier: z.string().min(1, { message: 'Supplier is required' }),
+  supplierContactNumber: z.string().min(1, { message: 'Supplier contact number is required' }),
   parkAssetCondition: z.nativeEnum(ParkAssetConditionEnum),
-  images: z.array(z.string()).optional(), // Array of image URLs
+  images: z.array(z.string()).optional(),
   remarks: z.string().optional(),
-  facilityId: z.string().uuid(),
+  facilityId: z.string().uuid().optional(),
 });
 
 export type ParkAssetSchemaType = z.infer<typeof ParkAssetSchema>;

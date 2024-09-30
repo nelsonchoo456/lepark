@@ -27,6 +27,8 @@ import {
   InputNumber,
   Divider,
   notification,
+  message,
+  Tooltip,
 } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { EventResponse } from '@lepark/data-access';
@@ -36,18 +38,19 @@ import { useFetchPublicFacilitiesForEventsByPark } from '../../hooks/Facilities/
 import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
 import moment from 'moment';
 import FacilityInfoCard from './components/FacilityInfoCard';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
 
 const EventCreate = () => {
+  const [form] = Form.useForm();
   const { user } = useAuth<StaffResponse>();
   const { parks, loading: parksLoading } = useFetchParks();
   const [createdData, setCreatedData] = useState<EventResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const navigate = useNavigate();
   const notificationShown = useRef(false);
-  const [form] = Form.useForm();
 
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const { facilities, isLoading: isLoadingFacilities, error: facilitiesError } = useFetchPublicFacilitiesForEventsByPark(selectedParkId);
@@ -243,10 +246,6 @@ const EventCreate = () => {
       const response = await createEvent(finalData, selectedFiles);
       if (response?.status === 201) {
         setCreatedData(response.data);
-        notification.success({
-          message: 'Success',
-          description: 'Event created successfully',
-        });
       }
     } catch (error: any) {
       console.error(error);
@@ -254,10 +253,7 @@ const EventCreate = () => {
         form.scrollToField(error.errorFields[0].name);
       } else {
         const errorMessage = error.message || error.toString();
-        notification.error({
-          message: 'Error',
-          description: errorMessage || 'An error occurred while creating the event.',
-        });
+        message.error(errorMessage || 'An error occurred while creating the event.');
       }
     }
   };
@@ -295,7 +291,9 @@ const EventCreate = () => {
                   />
                 </Form.Item>
 
-                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}
+                tooltip="Only public facilities of these types are available: Playground, Carpark, Stage, Picnic Area, BBQ Pit, Camping Area, Amphitheater, Gazebo."
+              >
                   {isLoadingFacilities ? (
                     <div>Loading...</div>
                   ) : (
@@ -309,7 +307,7 @@ const EventCreate = () => {
                       options={facilities.map((facility) => ({
                         key: facility.id,
                         value: facility.id,
-                        label: facility.facilityName,
+                        label: facility.name,
                       }))}
                       disabled={!form.getFieldValue('parkId') || facilities.length === 0}
                       onChange={onFacilityChange}
@@ -427,17 +425,8 @@ const EventCreate = () => {
                 </Form.Item>
               </Form>
             </Col>
-            <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-              <div
-                style={{
-                  position: 'sticky',
-                  top: 20,
-                  maxWidth: '600px',
-                  width: '100%',
-                  padding: '20px',
-                  paddingRight: '24px',
-                }}
-              >
+            <Col xs={24} lg={8}>
+              <div className="sticky top-5">
                 <FacilityInfoCard facility={selectedFacility} />
               </div>
             </Col>
@@ -447,6 +436,7 @@ const EventCreate = () => {
             <Result
               status="success"
               title="Created new Event"
+              subTitle={createdData && <>Event title: {createdData.title}</>}
               extra={[
                 <Button key="back" onClick={() => navigate('/event')}>
                   Back to Event Management

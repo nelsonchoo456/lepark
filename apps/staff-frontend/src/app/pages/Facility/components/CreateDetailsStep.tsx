@@ -1,4 +1,4 @@
-import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { ParkResponse, StaffResponse, StaffType, checkExistingFacility } from '@lepark/data-access';
 import {
   Button,
   Col,
@@ -49,6 +49,8 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
   user,
 }) => {
   const [park, setPark] = useState<ParkResponse>();
+  const [isPublic, setIsPublic] = useState(true);
+  const [isBookable, setIsBookable] = useState(true);
 
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN && user?.parkId) {
@@ -161,11 +163,69 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   };
 
+  const handleIsPublicChange = (value: boolean) => {
+    setIsPublic(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        isBookable: false,
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+      setIsBookable(false);
+    } else {
+      form.setFieldsValue({
+        isBookable: null,
+        reservationPolicy: '',
+        fee: null,
+      });
+      setIsBookable(true);
+    }
+  };
+
+  const handleIsBookableChange = (value: boolean) => {
+    setIsBookable(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+    } else {
+      form.setFieldsValue({
+        reservationPolicy: '',
+        fee: null,
+      });
+    }
+  };
+
+  const handleClick = async () => {
+    try {
+      const facilityName = form.getFieldValue('name'); // Assuming 'name' is the field name for facility name
+      const parkId = form.getFieldValue('parkId'); // Assuming 'parkId' is the field name for park ID
+
+      // Check if the facility already exists
+      const response = await checkExistingFacility(facilityName, parkId);
+      if (response.data.exists) {
+        message.error('A facility with this name already exists in the park.');
+        return; // Prevent moving to the next step
+      }
+      await handleCurrStep(1);
+    } catch (error) {
+      console.error('Error checking existing facility:', error);
+      message.error('An error occurred while checking for existing facilities.');
+    }
+  };
+
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
       {user?.role !== StaffType.SUPERADMIN && park ? (
-        <Form.Item label="Park">{park?.name}</Form.Item>
+        <Form.Item name="parkId" label="Park">
+          {park?.name}
+        </Form.Item>
       ) : (
         <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
@@ -174,48 +234,22 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
 
       <Divider orientation="left">Facility Details</Divider>
 
-      <Form.Item name="facilityName" label="Facility Name" rules={[{ required: true, message: 'Please input the facility name!' }]}>
+      <Form.Item name="name" label="Facility Name" rules={[{ required: true, message: 'Please input the facility name!' }]}>
         <Input placeholder="Enter Facility Name" />
       </Form.Item>
       <Form.Item name="facilityType" label="Facility Type" rules={[{ required: true, message: 'Please select the facility type!' }]}>
         <Select options={facilityTypeOptions} placeholder="Select a Facility Type" />
       </Form.Item>
       <Form.Item
-        name="facilityDescription"
+        name="description"
         label="Facility Description"
         rules={[{ required: true, message: 'Please input the facility description!' }]}
       >
         <Input.TextArea rows={3} placeholder="Enter description" />
       </Form.Item>
 
-      <Form.Item
-        name="isBookable"
-        label="Is Bookable"
-        rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}
-        tooltip="Please indicate if the facility is open to booking"
-      >
-        <Select
-          options={[
-            { label: 'Yes', value: true },
-            { label: 'No', value: false },
-          ]}
-          placeholder="Select if the facility is bookable"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="isPublic"
-        label="Is Public"
-        rules={[{ required: true, message: 'Please select if the facility is public!' }]}
-        tooltip="Please indicate if the facility is open to public"
-      >
-        <Select
-          options={[
-            { label: 'Yes', value: true },
-            { label: 'No', value: false },
-          ]}
-          placeholder="Select if the facility is open to public"
-        />
+      <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
+        <Select options={facilityStatusOptions} placeholder="Enter facility status" />
       </Form.Item>
 
       <Form.Item
@@ -234,12 +268,47 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item
+        name="isPublic"
+        label="Is Public"
+        rules={[{ required: true, message: 'Please select if the facility is public!' }]}
+        tooltip="Please indicate if the facility is open to public"
+      >
+        <Select
+          options={[
+            { label: 'Yes', value: true },
+            { label: 'No', value: false },
+          ]}
+          placeholder="Select if the facility is open to public"
+          onChange={handleIsPublicChange}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="isBookable"
+        label="Is Bookable"
+        rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}
+        tooltip="Please indicate if the facility is open to booking"
+        hidden={!isPublic}
+      >
+        <Select
+          options={[
+            { label: 'Yes', value: true },
+            { label: 'No', value: false },
+          ]}
+          placeholder="Select if the facility is bookable"
+          onChange={handleIsBookableChange}
+        />
+      </Form.Item>
+
+      <Form.Item
         name="reservationPolicy"
         label="Reservation Policy"
         rules={[{ required: true, message: 'Please input the reservation policy!' }]}
+        hidden={!isPublic || !isBookable}
       >
         <Input.TextArea rows={3} placeholder="Enter reservation policy" />
       </Form.Item>
+
       <Form.Item
         name="rulesAndRegulations"
         label="Rules and Regulations"
@@ -253,15 +322,16 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item name="capacity" label="Capacity (pax)" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber min={1} />
-      </Form.Item>
-
-      <Form.Item name="fee" label="Fee ($)" rules={[{ required: true, message: 'Please input the fee!' }]}>
         <InputNumber min={0} />
       </Form.Item>
 
-      <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
-        <Select options={facilityStatusOptions} placeholder="Enter facility status" />
+      <Form.Item
+        name="fee"
+        label="Fee ($)"
+        rules={[{ required: true, message: 'Please input the fee!' }]}
+        hidden={!isPublic || !isBookable}
+      >
+        <InputNumber min={0} />
       </Form.Item>
 
       <Divider orientation="left">
@@ -345,7 +415,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Flex>
       </Form.Item>
 
-      <Form.Item label={'Image'} required tooltip="At least one image is required">
+      <Form.Item label={'Image'}>
         <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
       {previewImages?.length > 0 && (
@@ -364,7 +434,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Form.Item>
       )}
       <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+        <Button type="primary" className="w-full" onClick={handleClick}>
           Next
         </Button>
       </Form.Item>

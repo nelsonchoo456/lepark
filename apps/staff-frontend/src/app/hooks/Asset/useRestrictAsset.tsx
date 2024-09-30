@@ -7,7 +7,6 @@ import { notification } from 'antd';
 export const useRestrictAsset = (assetId?: string) => {
   const [asset, setAsset] = useState<ParkAssetResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
@@ -20,36 +19,32 @@ export const useRestrictAsset = (assetId?: string) => {
 
     const fetchAsset = async (assetId: string) => {
       setLoading(true);
-      setNotFound(false);
       setAsset(null);
       try {
         const assetResponse = await getParkAssetById(assetId);
 
         if (assetResponse.status === 200) {
           const fetchedAsset = assetResponse.data;
-          console.log("fetched user is" + user);
-          console.log("fetchedAsset park id is" + fetchedAsset.parkId);
+          console.log('fetched user is' + user);
+          console.log('fetchedAsset park id is' + fetchedAsset.facility?.parkId);
           // Check if user has permission to view this asset
-          if (user?.role === StaffType.SUPERADMIN ||
-    (user?.role !== StaffType.SUPERADMIN && user?.parkId === fetchedAsset.parkId)) {
-  setAsset(fetchedAsset);
+          if (user?.role === StaffType.SUPERADMIN || user?.parkId === fetchedAsset.facility?.parkId) {
+            setAsset(fetchedAsset);
           } else {
-            console.log(user?.parkId, fetchedAsset.parkId);
-            if (!notificationShown.current) {
-              notification.error({
-                message: 'Access Denied',
-                description: 'You are not allowed to access this asset details!',
-              });
-              notificationShown.current = true;
-            }
-            navigate(user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN ? '/parkasset' : '/');
+            throw new Error('Access denied');
           }
         } else {
-          setNotFound(true);
+          throw new Error('Asset not found');
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setNotFound(true);
+        if (!notificationShown.current) {
+          notification.error({
+            message: 'Access Denied',
+            description: 'You do not have permission to access this resource.',
+          });
+          notificationShown.current = true;
+        }
+        navigate(user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN ? '/parkasset' : '/');
       } finally {
         setLoading(false);
       }
@@ -58,5 +53,5 @@ export const useRestrictAsset = (assetId?: string) => {
     fetchAsset(assetId);
   }, [assetId, navigate, user]);
 
-  return { asset, loading, notFound };
+  return { asset, loading };
 };

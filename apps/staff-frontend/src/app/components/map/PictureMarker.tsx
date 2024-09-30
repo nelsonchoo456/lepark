@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { MapContainer, Marker, Popup, Tooltip } from 'react-leaflet';
 import { AdjustLatLngInterface } from '../../pages/Occurrence/OccurrenceCreate';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { HtmlPictureMarker, HtmlPictureMarkerGlow, PictureMarkerInner } from '@lepark/common-ui';
+import { HtmlPictureMarker, HtmlPictureMarkerGlow, InnerPictureMarkerGlow, PictureMarkerInner } from '@lepark/common-ui';
 import { COLORS } from '../../config/colors';
 import { HoverItem } from './HoverInformation';
 
@@ -43,26 +43,30 @@ function PictureMarker({
 
   if (!teardrop) {
     const getCustomIcon = (offsetY = 0) => {
-      // if (hovered?.id === id) {
-      //   const iconHTML2 = renderToStaticMarkup(
-      //     <PictureMarkerInner
-      //       circleWidth={circleWidth}
-      //       innerBackgroundColor={innerBackgroundColor ? innerBackgroundColor : COLORS.sky[400]}
-      //     >
-      //       KKEKEK
-      //     </PictureMarkerInner>
-      //   );
+      if (hovered && hovered?.id === id) {
+        const thisCircleWidth = circleWidth * 1.3
+        const iconHTML2 = renderToStaticMarkup(
+          <InnerPictureMarkerGlow $circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
+            <PictureMarkerInner
+              $circleWidth={thisCircleWidth}
+              innerBackgroundColor={innerBackgroundColor ? innerBackgroundColor : COLORS.sky[400]}
+            >
+              {icon}
+            </PictureMarkerInner>
+          </InnerPictureMarkerGlow>
+        );
 
-      //   return L.divIcon({
-      //     html: iconHTML2,
-      //     iconSize: [32, 40],
-      //     iconAnchor: [16, 40 - offsetY],
-      //     className: '',
-      //   });
-      // }
+        return L.divIcon({
+          html: iconHTML2,
+          iconSize: [32, 40],
+          iconAnchor: [thisCircleWidth / 2, thisCircleWidth / 2 - offsetY],
+          className: '',
+        });
+      }
+
       const iconHTML = renderToStaticMarkup(
         <PictureMarkerInner
-          circleWidth={circleWidth}
+          $circleWidth={circleWidth}
           innerBackgroundColor={innerBackgroundColor ? innerBackgroundColor : COLORS.sky[400]}
         >
           {icon}
@@ -73,7 +77,7 @@ function PictureMarker({
         return L.divIcon({
           html: iconHTML,
           iconSize: [32, 40],
-          iconAnchor: [circleWidth / 2, circleWidth],
+          iconAnchor: [circleWidth / 2, circleWidth / 2],
           className: '',
         });
       } 
@@ -81,7 +85,7 @@ function PictureMarker({
       return L.divIcon({
         html: iconHTML,
         iconSize: [32, 40],
-        iconAnchor: [16, 40 - offsetY],
+        iconAnchor: [circleWidth / 2, circleWidth / 2 - offsetY],
         className: '',
       });
     };
@@ -107,13 +111,13 @@ function PictureMarker({
   
   const getCustomIcon = () => {
     let thisCircleWidth = circleWidth;
-    if (hovered?.id === id) {
+    if (hovered && hovered?.id === id) {
       thisCircleWidth = thisCircleWidth * 1.3
 
       const iconHTML = renderToStaticMarkup(
-        <HtmlPictureMarkerGlow circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
-          <HtmlPictureMarker circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
-            <PictureMarkerInner circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
+        <HtmlPictureMarkerGlow $circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
+          <HtmlPictureMarker $circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
+            <PictureMarkerInner $circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
               {icon}
             </PictureMarkerInner>
           </HtmlPictureMarker>
@@ -129,8 +133,8 @@ function PictureMarker({
     }
 
     const iconHTML = renderToStaticMarkup(
-      <HtmlPictureMarker circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
-        <PictureMarkerInner circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
+      <HtmlPictureMarker $circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
+        <PictureMarkerInner $circleWidth={thisCircleWidth} backgroundColor={backgroundColor}>
           {icon}
         </PictureMarkerInner>
       </HtmlPictureMarker>,

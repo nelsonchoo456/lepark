@@ -10,12 +10,13 @@ export async function createSensor(data: SensorData, files?: File[]): Promise<Ax
     if (files && files.length > 0) {
       const formData = new FormData();
 
+      // Append files to FormData (using the key 'files' to match Multer)
       files.forEach((file) => {
-        formData.append('files', file);
+        formData.append('files', file); // The key 'files' matches what Multer expects
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.image = uploadedUrls.data.uploadedUrls[0]; // Assuming only one image for sensors
+      data.images = uploadedUrls.data.uploadedUrls;
     }
 
     const response: AxiosResponse<SensorResponse> = await client.post(`${URL}/createSensor`, data);
@@ -59,9 +60,13 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
     }
   }
 }
-export async function updateSensorDetails(id: string, data: SensorUpdateData, files?: File[]): Promise<AxiosResponse<SensorResponse>> {
+export async function updateSensorDetails(
+  id: string,
+  data: Partial<SensorResponse>,
+  files?: File[],
+): Promise<AxiosResponse<SensorResponse>> {
+  console.log('id', id);
   try {
-    console.log('sensor update data:', data);
     if (files && files.length > 0) {
       const formData = new FormData();
 
@@ -70,10 +75,11 @@ export async function updateSensorDetails(id: string, data: SensorUpdateData, fi
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.image = uploadedUrls.data.uploadedUrls[0]; // Assuming only one image for sensors
+      data.images = data.images || [];
+      data.images.push(...uploadedUrls.data.uploadedUrls);
     }
-
-    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensor/${id}`, data);
+    console.log('data', data);
+    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/updateSensorDetails/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

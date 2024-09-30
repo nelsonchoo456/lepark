@@ -12,19 +12,23 @@ import {
   getAllFacilities,
   ParkResponse,
   getAllParks,
+  StaffType,
+  getParkById,
+  getFacilitiesByParkId,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Modal, Result, Select, Space, Spin } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
+import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 
 const { TextArea } = Input;
 
 const formatEnumLabel = (enumValue: string): string => {
   return enumValue
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
@@ -35,7 +39,9 @@ const AssetCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(true);
   const [parks, setParks] = useState<ParkResponse[]>([]);
+  const [park, setPark] = useState<ParkResponse | null>(null);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
 
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick, clearAllImages } = useUploadImagesAssets();
@@ -61,16 +67,15 @@ const AssetCreate = () => {
   useEffect(() => {
     const fetchParksAndFacilities = async () => {
       try {
-        const [parksResponse, facilitiesResponse] = await Promise.all([
-          getAllParks(),
-          getAllFacilities()
-        ]);
-        setParks(parksResponse.data);
-        setFacilities(facilitiesResponse.data);
-
-        if (user?.role !== 'SUPERADMIN') {
-          const userFacilities = facilitiesResponse.data.filter(facility => facility.parkId === user?.parkId);
-          setFilteredFacilities(userFacilities);
+        if (user?.role === StaffType.SUPERADMIN) {
+          const [parksResponse, facilitiesResponse] = await Promise.all([getAllParks(), getAllFacilities()]);
+          setParks(parksResponse.data);
+          setFacilities(facilitiesResponse.data);
+        } else {
+          const park = await getParkById(user?.parkId as number);
+          setPark(park.data);
+          const facilities = await getFacilitiesByParkId(user?.parkId as number);
+          setFacilities(facilities.data);
         }
         setLoading(false);
       } catch (error) {
@@ -81,32 +86,44 @@ const AssetCreate = () => {
     };
 
     fetchParksAndFacilities();
-  }, [user]);
-  const handleParkChange = (parkId: string) => {
-    const parkFacilities = facilities.filter(facility => facility.parkId === Number(parkId));
-    setFilteredFacilities(parkFacilities);
+  }, []);
+
+  useEffect(() => {
+    if (selectedParkId) {
+      const filtered = facilities.filter(
+        (facility) =>
+          facility.parkId === selectedParkId &&
+          facility.facilityStatus === FacilityStatusEnum.OPEN &&
+          facility.facilityType === FacilityTypeEnum.STOREROOM
+      );
+      setFilteredFacilities(filtered);
+    } else {
+      setFilteredFacilities(
+        facilities.filter(
+          (facility) =>
+            facility.parkId === user?.parkId &&
+            facility.facilityStatus === FacilityStatusEnum.OPEN &&
+            facility.facilityType === FacilityTypeEnum.STOREROOM
+        )
+      );
+    }
+  }, [selectedParkId, facilities]);
+
+  const handleParkChange = (parkId: number) => {
+    setSelectedParkId(parkId);
     form.setFieldsValue({ facilityId: undefined });
   };
 
-  const layout = {
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 },
-  };
-
-  const tailLayout = {
-    wrapperCol: { offset: 8, span: 16 },
-  };
-
-  const onFinish = async (values: any) => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const assetData: ParkAssetData = {
-        parkAssetName: values.parkAssetName,
+      const values = await form.validateFields();
+      const baseAssetData: ParkAssetData = {
+        name: values.name,
         parkAssetType: values.parkAssetType,
-        parkAssetDescription: values.parkAssetDescription,
+        description: values.description,
         parkAssetStatus: values.parkAssetStatus,
         acquisitionDate: dayjs(values.acquisitionDate).toISOString(),
-        recurringMaintenanceDuration: values.recurringMaintenanceDuration,
         supplier: values.supplier,
         supplierContactNumber: values.supplierContactNumber,
         parkAssetCondition: values.parkAssetCondition,
@@ -115,37 +132,22 @@ const AssetCreate = () => {
         facilityId: values.facilityId,
       };
 
-      if (!createMultiple && selectedFiles.length === 0) {
-        Modal.error({
-          title: 'Error',
-          content: 'Please upload at least one image.',
-        });
-        return;
-      }
-
-      const createAsset = async (name: string) => {
-        const assetWithName = { ...assetData, parkAssetName: name };
-        const response = await createParkAsset(assetWithName, createMultiple ? [] : selectedFiles);
-        return response.data;
-      };
-
+      let response;
       if (createMultiple) {
         const createdAssets = [];
-        for (let i = 1; i <= assetQuantity; i++) {
-          const assetName = `${values.parkAssetName} ${i}`;
-          const asset = await createAsset(assetName);
-          createdAssets.push(asset);
+        for (let i = 0; i < assetQuantity; i++) {
+          const result = await createParkAsset(baseAssetData, selectedFiles);
+          createdAssets.push(result.data);
         }
-        setCreatedAssetName(`${values.parkAssetName} 1 - ${values.parkAssetName} ${assetQuantity}`);
-        setCreatedAsset(createdAssets);
+        // Use the last created asset as the response
+        response = { data: createdAssets[createdAssets.length - 1] };
       } else {
-        const asset = await createAsset(values.parkAssetName);
-        setCreatedAssetName(values.parkAssetName);
-        setCreatedAsset(asset);
+        response = await createParkAsset(baseAssetData, selectedFiles);
       }
 
+      setCreatedAsset(response.data);
+      setCreatedAssetName(values.name);
       setShowSuccessAlert(true);
-      form.resetFields();
     } catch (error) {
       message.error(String(error));
     } finally {
@@ -154,18 +156,11 @@ const AssetCreate = () => {
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-    const phoneRegex = /^[689]\d{7}$/;
+    const phoneRegex = /^[89]\d{7}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
-  };
-
-  const onReset = () => {
-    form.resetFields();
-    setCreateMultiple(false);
-    setAssetQuantity(1);
-    clearAllImages();
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 8 or 9');
   };
 
   const breadcrumbItems = [
@@ -175,104 +170,34 @@ const AssetCreate = () => {
       isMain: true,
     },
     {
-      title: 'Create Asset',
-      pathKey: `/parkasset/create`,
+      title: 'Create',
+      pathKey: '/parkasset/create',
       isCurrent: true,
     },
   ];
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        {!showSuccessAlert && (
-          <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
-            <Form.Item name="parkAssetName" label="Asset Name" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-
-            <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
-              <Select placeholder="Select asset type">
-                {Object.values(ParkAssetTypeEnum).map((type) => (
-                  <Select.Option key={type} value={type}>
-                    {formatEnumLabel(type)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="parkAssetDescription" label="Description">
-              <TextArea />
-            </Form.Item>
-
-            <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
-              <Select placeholder="Select asset status">
-                {Object.values(ParkAssetStatusEnum).map((status) => (
-                  <Select.Option key={status} value={status}>
-                    {formatEnumLabel(status)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-
-
-            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" />
-            </Form.Item>
-
-            <Form.Item
-              name="recurringMaintenanceDuration"
-              label="Recurring Maintenance"
-              rules={[{ required: true, type: 'number', min: 1, max: 500, message: 'Please enter a number between 1 and 500' }]}
-            >
-              <InputNumber
-                className="w-full"
-                min={1}
-                max={500}
-                placeholder='Enter Recurring Maintenance in days'
-              />
-            </Form.Item>
-
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[
-                { required: true, message: 'Please input the supplier contact number!' },
-                { validator: validatePhoneNumber }
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
-              <Select placeholder="Select asset condition">
-                {Object.values(ParkAssetConditionEnum).map((condition) => (
-                  <Select.Option key={condition} value={condition}>
-                    {formatEnumLabel(condition)}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="remarks" label="Remarks">
-              <TextArea />
-            </Form.Item>
-
-            {user?.role === 'SUPERADMIN' && (
-              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park' }]}>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        ) : !showSuccessAlert ? (
+          <Form
+            form={form}
+            layout="horizontal"
+            onFinish={handleSubmit}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            style={{ maxWidth: '600px', margin: '0 auto' }}
+          >
+            <Divider orientation="left">Asset Details</Divider>
+            {user?.role !== StaffType.SUPERADMIN && park ? (
+              <Form.Item label="Park">{park.name}</Form.Item>
+            ) : (
+              <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
                 <Select placeholder="Select a park" onChange={handleParkChange}>
                   {parks.map((park) => (
                     <Select.Option key={park.id} value={park.id}>
@@ -282,97 +207,117 @@ const AssetCreate = () => {
                 </Select>
               </Form.Item>
             )}
-
-            <Form.Item
-              name="facilityId"
-              label="Facility"
-              rules={[{ required: true, message: 'Please select a facility!' }]}
-            >
-              <Select placeholder="Select a facility">
+            <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
+              <Select 
+                placeholder={selectedParkId || user?.role !== StaffType.SUPERADMIN ? 'Select a facility' : 'Please select a park first'} 
+                disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
+              >
                 {filteredFacilities.map((facility) => (
                   <Select.Option key={facility.id} value={facility.id}>
-                    {facility.facilityName}
+                    {facility.name}
                   </Select.Option>
                 ))}
               </Select>
             </Form.Item>
-
-            <Form.Item
-              name="createMultiple"
-              label="Create multiple assets?"
-              valuePropName="checked"
-              className="flex-row-reverse justify-end"
-            >
-              <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
+            <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
+              <Select placeholder="Select asset type">
+                {Object.values(ParkAssetTypeEnum).map((type) => (
+                  <Select.Option key={type} value={type}>
+                    {formatEnumLabel(type)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea />
+            </Form.Item>
+            <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
+              <Select placeholder="Select asset status">
+                {Object.values(ParkAssetStatusEnum).map((status) => (
+                  <Select.Option key={status} value={status}>
+                    {formatEnumLabel(status)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
             </Form.Item>
 
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
+              <Select placeholder="Select asset condition">
+                {Object.values(ParkAssetConditionEnum).map((condition) => (
+                  <Select.Option key={condition} value={condition}>
+                    {formatEnumLabel(condition)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="remarks" label="Remarks">
+              <TextArea />
+            </Form.Item>
+            <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
+              <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
+            </Form.Item>
             {createMultiple && (
               <Form.Item
                 name="assetQuantity"
                 label="Park Asset Quantity"
-                rules={[{ required: true, type: 'number', min: 1 , max:10}]}
+                required
+                tooltip="Maximum of 10 assets can be created at a time"
+                rules={[{ required: true, type: 'number', min: 1, max: 10 }]}
               >
-                <InputNumber onChange={(value) => setAssetQuantity(value as number)} />
+                <InputNumber onChange={(value) => setAssetQuantity(value as number)} min={1} max={10} />
               </Form.Item>
             )}
-
-            {!createMultiple && (
-              <>
-                <Form.Item label="Upload Images" required tooltip="At least one image is required">
-                  <ImageInput
-                    type="file"
-                    multiple
-                    onChange={handleFileChange}
-                    accept="image/png, image/jpeg"
-                    onClick={onInputClick}
-                  />
-                </Form.Item>
-
-                {previewImages.length > 0 && (
-                  <Form.Item label="Image Previews">
-                    <div className="flex flex-wrap gap-2">
-                      {previewImages.map((imgSrc, index) => (
-                        <img
-                          key={index}
-                          src={imgSrc}
-                          alt={`Preview ${index}`}
-                          className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                          onClick={() => removeImage(index)}
-                        />
-                      ))}
-                    </div>
-                  </Form.Item>
-                )}
-              </>
+            <Form.Item label="Upload Images">
+              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            </Form.Item>
+            {previewImages.length > 0 && (
+              <Form.Item label="Image Previews">
+                <div className="flex flex-wrap gap-2">
+                  {previewImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => removeImage(index)}
+                    />
+                  ))}
+                </div>
+              </Form.Item>
             )}
-
-            <Form.Item {...tailLayout}>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                  Submit
-                </Button>
-                <Button htmlType="button" onClick={onReset}>
-                  Reset
-                </Button>
-              </Space>
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">
+                Submit
+              </Button>
             </Form.Item>
           </Form>
-        )}
-        {showSuccessAlert && (
+        ) : (
           <Result
             status="success"
-            title={createMultiple ? "Created new Assets" : "Created new Asset"}
-            subTitle={createdAssetName && <>Asset name(s): {createdAssetName}</>}
+            title={createMultiple ? `Created ${assetQuantity} new Assets` : 'Created new Asset'}
+            subTitle={createdAssetName && <>Asset name: {createdAssetName}</>}
             extra={[
               <Button key="back" onClick={() => navigate('/parkasset')}>
                 Back to Park Asset Management
               </Button>,
               !createMultiple && (
-                <Button
-                  type="primary"
-                  key="view"
-                  onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}
-                >
+                <Button type="primary" key="view" onClick={() => navigate(`/parkasset/${createdAsset?.id}`)}>
                   View new Asset
                 </Button>
               ),

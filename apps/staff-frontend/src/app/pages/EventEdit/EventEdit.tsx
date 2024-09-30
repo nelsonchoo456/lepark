@@ -367,10 +367,15 @@ const EventEdit = () => {
                   <Select placeholder={park?.name} disabled />
                 </Form.Item>
 
-                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+                <Form.Item
+                  name="facilityId"
+                  label="Facility"
+                  rules={[{ required: true }]}
+                  tooltip="Only public facilities of these types are available: Playground, Carpark, Stage, Picnic Area, BBQ Pit, Camping Area, Amphitheater, Gazebo."
+                >
                   <Select
                     placeholder="Select a Facility for this Event"
-                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
                     onChange={onFacilityChange}
                   />
                 </Form.Item>
@@ -503,17 +508,8 @@ const EventEdit = () => {
                 </Form.Item>
               </Form>
             </Col>
-            <Col xs={24} sm={24} md={24} lg={8} xl={8}>
-              <div
-                style={{
-                  position: 'sticky',
-                  top: 20,
-                  maxWidth: '600px',
-                  width: '100%',
-                  padding: '20px',
-                  paddingRight: '24px',
-                }}
-              >
+            <Col xs={24} lg={8}>
+              <div className="sticky top-5">
                 <FacilityInfoCard facility={selectedFacility} />
               </div>
             </Col>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, List, Typography, Button, Empty } from 'antd';
+import { Card, List, Typography, Button, Empty, Col, Row } from 'antd';
 import { AttractionResponse, AttractionStatusEnum, getAttractionsByParkId } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import AttractionStatusTag from '../../AttractionDetails/components/AttractionStatusTag';
@@ -50,22 +50,16 @@ const AttractionsTab: React.FC<AttractionsTabProps> = ({ parkId }) => {
   return (
     <>
       <div className="mb-4 flex justify-end">
-        <Button 
-          type="link" 
-          icon={<FiExternalLink />} 
-          onClick={handleViewAllAttractions}
-        >
+        <Button type="link" icon={<FiExternalLink />} onClick={handleViewAllAttractions}>
           View All Attractions
         </Button>
       </div>
-      <List
-        grid={{ gutter: 16, column: 3 }}
-        dataSource={attractions}
-        renderItem={(attraction) => (
-          <List.Item>
+      <Row gutter={[16, 16]}>
+        {attractions.map((attraction) => (
+          <Col xs={24} sm={12} md={8} key={attraction.id}>
             <Card
               hoverable
-              className="w-full"
+              className="w-full h-full"
               cover={
                 attraction.images && attraction.images.length > 0 ? (
                   <img alt={attraction.title} src={attraction.images[0]} className="h-[150px] object-cover" />
@@ -78,9 +72,13 @@ const AttractionsTab: React.FC<AttractionsTabProps> = ({ parkId }) => {
             >
               <Card.Meta
                 title={
-                  <div className="flex justify-between items-center">
-                    <Title level={5} className="m-0">{attraction.title}</Title>
-                    <AttractionStatusTag status={attraction.status as AttractionStatusEnum} />
+                  <div className="flex flex-col">
+                    <div className="flex items-start justify-between flex-wrap gap-2">
+                      <Title level={5} className="m-0 break-words" style={{ maxWidth: '100%' }}>
+                        {attraction.title}
+                      </Title>
+                      <AttractionStatusTag status={attraction.status as AttractionStatusEnum} />
+                    </div>
                   </div>
                 }
                 description={
@@ -88,21 +86,17 @@ const AttractionsTab: React.FC<AttractionsTabProps> = ({ parkId }) => {
                     <Text ellipsis className="mt-2 block text-sm">
                       {attraction.description}
                     </Text>
-                    <div></div>
-                    <Button 
-                      type="link" 
-                      onClick={() => handleViewDetails(attraction.id)} 
-                      className="p-0 mt-2 text-sm self-start"
-                    >
+                    <div className="mt-2" />
+                    <Button type="link" onClick={() => handleViewDetails(attraction.id)} className="p-0 mt-2 text-sm">
                       View Details
                     </Button>
                   </>
                 }
               />
             </Card>
-          </List.Item>
-        )}
-      />
+          </Col>
+        ))}
+      </Row>
     </>
   );
 };

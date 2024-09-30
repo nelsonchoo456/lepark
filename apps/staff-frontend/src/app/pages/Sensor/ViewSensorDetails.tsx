@@ -6,59 +6,31 @@ import {
   ParkResponse,
   SensorResponse,
   StaffResponse,
+  StaffType,
   getFacilityById,
   getParkById,
   getSensorById,
 } from '@lepark/data-access';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Card, Descriptions, Tabs, Tag, Spin } from 'antd';
+import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 import moment from 'moment';
-import SensorCarousel from './components/SensorCarousel';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 
+const formatSensorType = (type: string): string => {
+  return type
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const ViewSensorDetails = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
-  const { sensor } = useRestrictSensors(sensorId);
-  const [loading, setLoading] = useState(true);
+  const { sensor, loading } = useRestrictSensors(sensorId);
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [park, setPark] = useState<ParkResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
-  const [sensorWithoutFacility, setSensorWithoutFacility] = useState<SensorResponse>();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (sensorId) {
-        console.log('viewdetails sensor', sensor);
-        try {
-          if (sensor && sensor.facilityId) {
-            console.log('sensor:', sensor);
-            const facilityResponse = await getFacilityById(sensor.facilityId);
-            if (facilityResponse.status === 200) {
-              setFacility(facilityResponse.data);
-              //console.log(facilityResponse.data);
-              const parkResponse = await getParkById(facilityResponse.data.parkId);
-              if (parkResponse.status === 200) {
-                //console.log(parkResponse.data);
-                setPark(parkResponse.data);
-              }
-            }
-          }
-          // Destructure sensor to remove facility and set sensorWithoutFacility
-          if (sensor) {
-            const { facility, ...sensorWithoutFacility } = sensor;
-            setSensorWithoutFacility(sensorWithoutFacility);
-          }
-        } catch (error) {
-          console.error('Error fetching sensor data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [sensorId, sensor]);
 
   const breadcrumbItems = [
     {
@@ -73,18 +45,12 @@ const ViewSensorDetails = () => {
     },
   ];
 
-  const capitalize = (str: string) => {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
   const descriptionsItems = [
     {
-      key: 'name',
-      label: 'Name',
-      children: sensor?.sensorName,
+      key: 'serialNumber',
+      label: 'Serial Number',
+      children: sensor?.serialNumber,
     },
-    { key: 'sensorType', label: 'Sensor Type', children: capitalize(sensor?.sensorType ?? '') },
     {
       key: 'sensorStatus',
       label: 'Sensor Status',
@@ -93,9 +59,9 @@ const ViewSensorDetails = () => {
           case 'ACTIVE':
             return <Tag color="green">ACTIVE</Tag>;
           case 'INACTIVE':
-            return <Tag color="silver">INACTIVE</Tag>;
+            return <Tag color="blue">INACTIVE</Tag>;
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+            return <Tag color="orange">UNDER MAINTENANCE</Tag>;
           case 'DECOMMISSIONED':
             return <Tag color="red">DECOMMISSIONED</Tag>;
           default:
@@ -103,34 +69,35 @@ const ViewSensorDetails = () => {
         }
       })(),
     },
+    { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
     {
-      key: 'facilityName',
+      key: 'nextMaintenanceDate',
+      label: 'Next Maintenance Date',
+      children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            key: 'parkName',
+            label: 'Park Name',
+            children: sensor?.parkName ?? '-',
+          },
+        ]
+      : []),
+    {
+      key: 'name',
       label: 'Facility',
-      children: facility?.facilityName,
+      children: sensor?.facility?.name,
     },
   ];
 
-  if (sensor?.nextMaintenanceDate) {
-    descriptionsItems.push({
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: moment(sensor.nextMaintenanceDate).format('D MMM YY'),
-    });
-  }
-  const descriptionsItemsForSuperAdmin = [
-    ...descriptionsItems,
-    {
-      key: 'parkName',
-      label: 'Park Name',
-      children: park?.name,
-    },
-  ];
+  console.log('sensor', sensor);
 
   const tabsItems = [
     {
       key: 'information',
       label: 'Information',
-      children: sensorWithoutFacility ? <InformationTab sensor={sensorWithoutFacility} /> : <p>Loading sensor data...</p>,
+      children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
   ];
 
@@ -147,18 +114,34 @@ const ViewSensorDetails = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <div className="md:flex w-full gap-4">
-          <div className="w-full md:w-1/2 lg:w-1/2 ">
-            <SensorCarousel image={sensor?.image ?? ''} />
+          <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {sensor?.images && sensor.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {sensor.images.map((url) => (
+                  <div key={url}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
 
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{sensor?.serialNumber}</LogoText>
-            <Descriptions
-              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
-              column={1}
-              size="small"
-              className="mb-4"
-            />
+            <LogoText className="text-2xl py-2 m-0">{sensor?.name}</LogoText>
+            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
           </div>
         </div>
 

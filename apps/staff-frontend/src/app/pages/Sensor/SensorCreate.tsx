@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createHub, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { Button, Card, DatePicker, Divider, Form, Input, InputNumber, Select, message, notification, Result, FormInstance } from 'antd';
+import { createSensor, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { Button, Card, DatePicker, Divider, Form, Input, InputNumber, Select, message, Result, FormInstance } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import dayjs from 'dayjs';
 import moment from 'moment';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
-import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { FacilityStatusEnum, FacilityTypeEnum, SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from '@prisma/client';
 
 const { TextArea } = Input;
 
-const HubCreate = () => {
+const SensorCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const { parks } = useFetchParks();
   const { facilities } = useFetchFacilities();
@@ -21,19 +21,33 @@ const HubCreate = () => {
   const [createdData, setCreatedData] = useState<any | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
 
-  // Form Values
   const [form] = Form.useForm();
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
-  const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
 
-  const hubStatusOptions = [
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' },
-    { value: 'UNDER_MAINTENANCE', label: 'Under Maintenance' },
-    { value: 'DECOMMISSIONED', label: 'Decommissioned' },
-  ];
+  const sensorTypeOptions = Object.values(SensorTypeEnum).map((type) => ({
+    value: type,
+    label: type
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase()),
+  }));
+
+  const sensorStatusOptions = Object.values(SensorStatusEnum).map((status) => ({
+    value: status,
+    label: status
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase()),
+  }));
+
+  const sensorUnitOptions = Object.values(SensorUnitEnum).map((unit) => ({
+    value: unit,
+    label: unit
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase()),
+  }));
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
@@ -55,49 +69,37 @@ const HubCreate = () => {
   // Filter facilities based on selectedParkId for Superadmin, or use all facilities for other roles
   const filteredFacilities =
     user?.role === StaffType.SUPERADMIN && selectedParkId
-      ? facilities.filter(
-          (facility) =>
-            facility.parkId === selectedParkId &&
-            facility.facilityStatus === FacilityStatusEnum.OPEN &&
-            facility.facilityType === FacilityTypeEnum.STOREROOM,
-        )
-      : facilities.filter(
-          (facility) =>
-            facility.parkId === user?.parkId &&
-            facility.facilityStatus === FacilityStatusEnum.OPEN &&
-            facility.facilityType === FacilityTypeEnum.STOREROOM,
-        );
+      ? facilities.filter((facility) => facility.parkId === selectedParkId && facility.facilityStatus === FacilityStatusEnum.OPEN && facility.facilityType === FacilityTypeEnum.STOREROOM)
+      : facilities.filter((facility) => facility.parkId === user?.parkId && facility.facilityStatus === FacilityStatusEnum.OPEN && facility.facilityType === FacilityTypeEnum.STOREROOM);
 
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields(); // Get form data
+      const values = await form.validateFields();
       console.log(values);
 
-      // Remove parkId from values
       const { parkId, ...filteredValues } = values;
 
       const finalData = {
         ...filteredValues,
         acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
-        images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [], // Ensure images are sent as an array of strings
+        images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [],
       };
 
       console.log('finalData', finalData);
 
-      const response = await createHub(finalData, selectedFiles.length > 0 ? selectedFiles : undefined);
+      const response = await createSensor(finalData, selectedFiles.length > 0 ? selectedFiles : undefined);
       console.log('response', response);
       if (response?.status && response.status === 201) {
         setCreatedData(response.data);
       }
     } catch (error) {
       if ((error as { errorFields?: any }).errorFields) {
-        // Handle validation errors
         console.log('Validation failed:', (error as { errorFields?: any }).errorFields);
       } else {
         console.log(error);
         messageApi.open({
           type: 'error',
-          content: 'Unable to create Hub. Please try again later.',
+          content: 'Unable to create Sensor. Please try again later.',
         });
       }
     }
@@ -105,13 +107,13 @@ const HubCreate = () => {
 
   const breadcrumbItems = [
     {
-      title: 'Hub Management',
-      pathKey: '/hubs',
+      title: 'Sensor Management',
+      pathKey: '/sensor',
       isMain: true,
     },
     {
       title: 'Create',
-      pathKey: `/hubs/create`,
+      pathKey: `/sensor/create`,
       isCurrent: true,
     },
   ];
@@ -146,16 +148,19 @@ const HubCreate = () => {
               />
             </Form.Item>
 
-            <Divider orientation="left">Hub Details</Divider>
+            <Divider orientation="left">Sensor Details</Divider>
 
-            <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Hub Name' }]}>
+            <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
               <Input placeholder="Enter Name" />
+            </Form.Item>
+            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
+              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
             </Form.Item>
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-            <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
-              <Select placeholder="Select Hub Status" options={hubStatusOptions} />
+            <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
+              <Select placeholder="Select Sensor Status" options={sensorStatusOptions} />
             </Form.Item>
             <Form.Item
               name="acquisitionDate"
@@ -163,6 +168,19 @@ const HubCreate = () => {
               rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
             >
               <DatePicker className="w-full" maxDate={dayjs()} />
+            </Form.Item>
+            <Form.Item
+              name="calibrationFrequencyDays"
+              label="Calibration Frequency"
+              tooltip={{
+                title: 'Calibration Frequency is the number of days between each calibration of the sensor.',
+              }}
+              rules={[{ required: true, type: 'number', min: 0, max: 90, message: 'Please enter a number between 0 and 90' }]}
+            >
+              <InputNumber min={0} max={90} className="w-full" />
+            </Form.Item>
+            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
+              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
             </Form.Item>
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
               <Input placeholder="Enter Supplier" />
@@ -207,14 +225,14 @@ const HubCreate = () => {
           <div className="py-4">
             <Result
               status="success"
-              title="Created new Hub"
-              subTitle={createdData && <>Hub name: {createdData.name}</>}
+              title="Created new Sensor"
+              subTitle={createdData && <>Sensor name: {createdData.name}</>}
               extra={[
-                <Button key="back" onClick={() => navigate('/hubs')}>
-                  Back to Hub Management
+                <Button key="back" onClick={() => navigate('/sensor')}>
+                  Back to Sensor Management
                 </Button>,
-                <Button type="primary" key="view" onClick={() => navigate(`/hubs/${createdData?.id}`)}>
-                  View new Hub
+                <Button type="primary" key="view" onClick={() => navigate(`/sensor/${createdData?.id}`)}>
+                  View new Sensor
                 </Button>,
               ]}
             />
@@ -225,4 +243,4 @@ const HubCreate = () => {
   );
 };
 
-export default HubCreate;
+export default SensorCreate;

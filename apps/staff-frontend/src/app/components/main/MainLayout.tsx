@@ -12,7 +12,7 @@ import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
 import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
-import { StaffResponse, StaffType } from '@lepark/data-access';
+import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
 
@@ -22,6 +22,7 @@ type MenuItem = Required<MenuProps>['items'][number];
 const MainLayout = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [park, setPark] = useState<ParkResponse>();
 
   const [showSidebar, setShowSidebar] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const [activeItems, setActiveItems] = useState('');
@@ -34,9 +35,25 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
+      console.log(user)
       setUserRole(role);
     }
   };
+
+  useEffect(() => {
+    if (user?.parkId && user?.parkId !== undefined) {
+      const fetchPark = async () => {
+        const parkRes = await getParkById(user.parkId as number);
+        if (parkRes.status === 200) {
+          const parkData = parkRes.data
+          setPark(parkData);
+        }
+      };
+      fetchPark();
+    }
+  
+  }, [user])
+  
 
   // Resizing
   useEffect(() => {
@@ -164,9 +181,10 @@ const MainLayout = () => {
       label: 'Decarbonization Areas',
       onClick: () => navigate('/decarbonization-area'),
     },
-    {
-      key: 'iot',
-      label: 'IoT',
+    userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.ARBORIST || userRole === StaffType.BOTANIST
+      ? {
+          key: 'iot',
+          label: 'IoT Assets',
       icon: <MdSensors />,
       children: [
         {
@@ -182,7 +200,8 @@ const MainLayout = () => {
           onClick: () => navigate('/hubs'),
         },
       ],
-    },
+    }
+    : null,
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
@@ -205,31 +224,30 @@ const MainLayout = () => {
           onClick: () => navigate('/event'),
         }
       : null,
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'BOTANIST' ||
-    userRole === 'ARBORIST' ||
-    userRole === 'PARK_RANGER' ||
-    userRole === 'VENDOR_MANAGER'
-      ? {
-          key: 'task',
-          icon: <FiInbox />,
-          // icon: <UploadOutlined />,
-          label: 'Tasks',
-          children: [
-            {
-              key: 'plant-tasks',
-              label: 'Plant Tasks',
-              onClick: () => navigate('/plant-tasks'),
-            },
-            {
-              key: 'maintenance-tasks',
-              label: 'Maintenance Tasks',
-              onClick: () => navigate('/maintenance-tasks'),
-            },
-          ],
-        }
-      : null,
+    // userRole === 'MANAGER' ||
+    // userRole === 'SUPERADMIN' ||
+    // userRole === 'BOTANIST' ||
+    // userRole === 'ARBORIST' ||
+    // userRole === 'PARK_RANGER' ||
+    // userRole === 'VENDOR_MANAGER'
+    //   ? {
+    //       key: 'task',
+    //       icon: <FiInbox />,
+    //       label: 'Tasks',
+    //       children: [
+    //         {
+    //           key: 'plant-tasks',
+    //           label: 'Plant Tasks',
+    //           onClick: () => navigate('/plant-tasks'),
+    //         },
+    //         {
+    //           key: 'maintenance-tasks',
+    //           label: 'Maintenance Tasks',
+    //           onClick: () => navigate('/maintenance-tasks'),
+    //         },
+    //       ],
+    //     }
+    //   : null,
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',
@@ -252,13 +270,25 @@ const MainLayout = () => {
       <Header items={navItems} showSidebar={showSidebar}>
         <div className="px-4 flex gap-2 items-center">
           <Logo />
-          <LogoText>Lepark Admin</LogoText>
+          {userRole === StaffType.SUPERADMIN ? (
+            <LogoText>Lepark Admin</LogoText>
+          ) : user?.parkId && park ? (
+            <LogoText>{park.name}</LogoText>
+          ) : (
+            <LogoText>Lepark Staff</LogoText>
+          )}
         </div>
       </Header>
       <Sidebar>
         <div className="pb-2 px-4 flex gap-2 items-center">
           <Logo />
-          <LogoText>Lepark Admin</LogoText>
+          {userRole === StaffType.SUPERADMIN ? (
+            <LogoText>Lepark Admin</LogoText>
+          ) : user?.parkId && park ? (
+            <LogoText>{park.name}</LogoText>
+          ) : (
+            <LogoText>Lepark Staff</LogoText>
+          )}
         </div>
         <Menu
           items={navItems}

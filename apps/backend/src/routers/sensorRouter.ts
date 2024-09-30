@@ -34,7 +34,7 @@ router.get('/getSensorById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateSensor/:id', async (req, res) => {
+router.put('/updateSensorDetails/:id', async (req, res) => {
   try {
     const updatedSensor = await SensorService.updateSensor(req.params.id, req.body);
     res.status(200).json(updatedSensor);
@@ -91,26 +91,27 @@ router.get('/getSensorsNeedingMaintenance', async (_, res) => {
   }
 });
 
-router.post('/upload', upload.array('files', 1), async (req, res) => {
+router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
+    // Use a type assertion to tell TypeScript that req.files exists
     const files = req.files as Express.Multer.File[];
 
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    const uploadedUrls: string[] = [];
+
+    // Only process files if they exist
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const fileName = `${Date.now()}-${file.originalname}`; // Create a unique file name
+        const imageUrl = await SensorService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+        uploadedUrls.push(imageUrl);
+      }
     }
 
-    const uploadedUrls = [];
-
-    for (const file of files) {
-      const fileName = `${Date.now()}-${file.originalname}`;
-      const imageUrl = await SensorService.uploadImageToS3(file.buffer, fileName, file.mimetype);
-      uploadedUrls.push(imageUrl);
-    }
-
+    // Return the image URLs (empty array if no files were uploaded)
     res.status(200).json({ uploadedUrls });
   } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).json({ error: 'Failed to upload image' });
+    console.error('Error processing upload:', error);
+    res.status(500).json({ error: 'Failed to process upload' });
   }
 });
 
@@ -119,6 +120,16 @@ router.get('/getSensorsByParkId/:parkId', async (req, res) => {
     const parkId = parseInt(req.params.parkId);
     const sensors = await SensorService.getSensorsByParkId(parkId);
     res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getSensorsBySerialNumber/:serialNumber', async (req, res) => {
+  try {
+    const serialNumber = req.params.serialNumber;
+    const sensor = await SensorService.getSensorBySerialNumber(serialNumber);
+    res.status(200).json(sensor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

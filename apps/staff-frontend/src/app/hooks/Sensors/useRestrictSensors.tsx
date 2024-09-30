@@ -1,5 +1,13 @@
 import { useAuth } from '@lepark/common-ui';
-import { getFacilityById, getSensorById, getParkById, SensorResponse, ParkResponse, StaffResponse } from '@lepark/data-access';
+import {
+  getFacilityById,
+  getSensorById,
+  getParkById,
+  SensorResponse,
+  ParkResponse,
+  StaffResponse,
+  FacilityResponse,
+} from '@lepark/data-access';
 import { StaffType } from '@lepark/data-access';
 import { message, notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -7,11 +15,11 @@ import { useNavigate } from 'react-router-dom';
 
 export const useRestrictSensors = (sensorId?: string) => {
   const { user } = useAuth<StaffResponse>();
-  const [sensor, setSensor] = useState<SensorResponse>();
+  const [sensor, setSensor] = useState<SensorResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
-  const [park, setPark] = useState<ParkResponse>();
+  const [facility, setFacility] = useState<FacilityResponse | null>(null);
 
   useEffect(() => {
     if (!sensorId || sensorId === undefined) {
@@ -23,45 +31,42 @@ export const useRestrictSensors = (sensorId?: string) => {
 
   const fetchSensor = async (sensorId: string) => {
     setLoading(true);
+    setSensor(null);
     try {
       const sensorResponse = await getSensorById(sensorId);
 
       if (sensorResponse.status === 200) {
-        const sensor = sensorResponse.data;
-        console.log('sensor:', sensor.facility);
-        handleSensorRestrictions(sensor);
+        const fetchedSensor = sensorResponse.data;
+
+        if (fetchedSensor.facilityId) {
+          const facilityResponse = await getFacilityById(fetchedSensor.facilityId);
+          const facility = facilityResponse.data;
+          setFacility(facility);
+
+          if (user?.parkId === facility?.parkId || user?.role === StaffType.SUPERADMIN) {
+            setSensor(fetchedSensor);
+          } else {
+            throw new Error('Access denied');
+          }
+        } else {
+          throw new Error('Facility not found for this sensor');
+        }
       } else {
         throw new Error('Unable to fetch Sensor');
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You do not have permission to access this resource.',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSensorRestrictions = async (sensor: SensorResponse) => {
-    if (sensor.facilityId) {
-      const facilityResponse = await getFacilityById(sensor.facilityId);
-      const facility = facilityResponse.data;
-      const parkResponse = await getParkById(facility.parkId);
-      const parkData = parkResponse.data;
-      //setPark(parkData);
-
-      if (user?.parkId === parkData?.id || user?.role === StaffType.SUPERADMIN) {
-        setSensor(sensor);
-      } else {
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You do not have permission to access this resource.',
-          });
-          notificationShown.current = true;
-        }
-        navigate('/');
-      }
-    }
-  };
-
-  return { sensor, loading };
+  return { sensor, loading, facility };
 };

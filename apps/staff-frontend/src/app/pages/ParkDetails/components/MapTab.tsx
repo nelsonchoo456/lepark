@@ -131,8 +131,6 @@ const MapTab = ({ park }: MapTabProps) => {
           facilityMap[facilityId].events.push(restEvent);
         }
       });
-
-      console.log(Object.values(facilityMap));
       setFacilityEvents(Object.values(facilityMap));
     }
   };
@@ -313,176 +311,9 @@ const MapTab = ({ park }: MapTabProps) => {
               />
             ))}
 
-          {showFacilities &&
+          {(showFacilities || showEvents) &&
             facilities &&
             facilities.map(
-              (facility) =>
-                facility.lat &&
-                facility.long && (
-                  <FacilityPictureMarker
-                    id={facility.id}
-                    circleWidth={38}
-                    lat={facility.lat}
-                    lng={facility.long}
-                    innerBackgroundColor={COLORS.sky[400]}
-                    tooltipLabel={facility.facilityName}
-                    facilityType={facility.facilityType}
-                    hovered={hovered}
-                    setHovered={() =>
-                      setHovered({
-                        ...facility,
-                        title: facility.facilityName,
-                        image: facility.images ? facility.images[0] : null,
-                        entityType: 'FACILITY',
-                        children: (
-                          <div className="h-full w-full flex flex-col justify-between">
-                            <div className="flex justify-between flex-wrap mb-2">
-                              <p className="">{capitalizeFirstLetter(facility.facilityType)}</p>
-                              <ParkStatusTag>{facility.facilityStatus}</ParkStatusTag>
-                            </div>
-
-                            <div className="">
-                              <div className="flex w-full items-center mb-2">
-                                <div className="font-semibold text-sky-400 mr-2">Upcoming Events</div>
-                                <div className="flex-[1] h-[1px] bg-sky-400/30" />
-                              </div>
-                              <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
-                                {facility.events.map((event) => (
-                                  <div
-                                    className="bg-gray-50/40 h-full w-36 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400"
-                                  >
-                                    <Tooltip title="View Event Details">
-                                      <div onClick={() => navigate(`/event/${event.id}`)}>
-                                        <div
-                                          style={{
-                                            backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                          }}
-                                          className="rounded-b-lg h-18 w-full shadow-md text-white flex-0 flex items-center justify-center  bg-sky-200 opacity-50 overflow-hidden"
-                                        >
-                                          {(!event.images || event.images.length === 0) && (
-                                            <BiSolidCalendar className="opacity-75 text-lg" />
-                                          )}
-                                        </div>
-                                        <div className="font-semibold px-2 mt-1">{event.title}</div>
-                                        <div className="text-xs px-2">
-                                          {dayjs(event?.startDate).format('D MMM') + ' - ' + dayjs(event?.endDate).format('D MMM')}
-                                        </div>
-                                      </div>
-                                    </Tooltip>
-                                    <div className="flex justify-end mb-2 px-2">
-                                      <Tooltip title="View on Map">
-                                        <Button
-                                          shape="circle"
-                                          icon={<TbLocation />}
-                                          onClick={() =>{
-                                            setShowEvents(true);
-                                            setHovered({
-                                              ...event,
-                                              title: (
-                                                <div className="flex justify-between items-center">
-                                                  {event.title}
-                                                  <EventStatusTag status={event?.status as EventStatusEnum} />
-                                                </div>
-                                              ),
-                                              image: event.images ? event.images[0] : null,
-                                              entityType: 'EVENT',
-                                              children: (
-                                                <div className="h-full w-full flex flex-col justify-between">
-                                                  <div>
-                                                    <Typography.Paragraph
-                                                      ellipsis={{
-                                                        rows: 3,
-                                                      }}
-                                                    >
-                                                      {event.description}
-                                                    </Typography.Paragraph>
-                                                    <div className="-mt-2 ">
-                                                      <span className="text-secondary">Date: </span>
-                                                      {dayjs(event?.startDate).format('D MMM YYYY') +
-                                                        ' - ' +
-                                                        dayjs(event?.endDate).format('D MMM YYYY')}
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-secondary">Time:</span>
-                                                      <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>-{' '}
-                                                      <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
-                                                    </div>
-                                                    <Tooltip title="View Facility details" placement="topLeft">
-                                                      <p
-                                                        className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
-                                                        onClick={() => navigate(`/facilities/${facility.id}`)}
-                                                      >
-                                                        @ {facility.facilityName}
-                                                      </p>
-                                                    </Tooltip>
-                                                  </div>
-                                                  <div className="flex justify-end">
-                                                    <Tooltip title="View Event details">
-                                                      <Button shape="circle" onClick={() => navigate(`/event/${event.id}`)}>
-                                                        <MdArrowOutward />
-                                                      </Button>
-                                                    </Tooltip>
-                                                  </div>
-                                                </div>
-                                              ),
-                                            })
-                                          }}
-                                        />
-                                      </Tooltip>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="flex w-full items-center mb-2">
-                                <div className="flex-[1] h-[1px] bg-sky-400/30" />
-                              </div>
-                            </div>
-                            {/* <Collapse
-                              bordered={false}
-                              defaultActiveKey={[]}
-                              size="small"
-                              expandIconPosition="end"
-                              className="mb-2"
-                              items={facility.events.map((event, index) => ({
-                                key: `${index}`,
-                                label: (
-                                  <div className='flex items-center gap-2'>
-                                    <div
-                                      style={{
-                                        backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                      }}
-                                      className="rounded-full h-8 w-8 shadow-md text-white flex-0 flex items-center justify-center  bg-gray-400 overflow-hidden"
-                                    >
-                                      {(!event.images || event.images.length === 0) && <BiSolidCalendar className='opacity-75 text-lg'/>}
-                                    </div>
-                                    {event.title}
-                                  </div>
-                                ),
-                                children: 'keke',
-                              }))}
-                            /> */}
-                            <div className="flex justify-end">
-                              <Tooltip title="View Facility details">
-                                <Button shape="circle" onClick={() => navigate(`/facility/${facility.id}`)}>
-                                  <MdArrowOutward />
-                                </Button>
-                              </Tooltip>
-                            </div>
-                          </div>
-                        ),
-                      })
-                    }
-                  />
-                ),
-            )}
-
-          {showEvents &&
-            facilityEvents &&
-            facilityEvents.map(
               (facility) =>
                 facility.lat &&
                 facility.long && (
@@ -493,6 +324,9 @@ const MapTab = ({ park }: MapTabProps) => {
                     lat={facility.lat}
                     lng={facility.long}
                     facilityType={facility.facilityType}
+                    showEvents={showEvents}
+                    showFacilities={showFacilities}
+                    setShowEvents={setShowEvents}
                     hovered={hovered}
                     setHovered={setHovered}
                   />

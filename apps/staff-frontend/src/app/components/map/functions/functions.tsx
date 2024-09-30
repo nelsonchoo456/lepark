@@ -171,3 +171,15 @@ export const pointsAreWithinPolygon = (newPolygon: any[], points?: {lat: number,
     throw new Error("Unable to check if the boundaries are valid.");
   }
 };
+
+export const pointInsidePolygonGeom = (point: { lat: number, lng: number }, geom: number[][]): boolean => {
+  if (!point.lat || !point.lng) return false;
+
+  try {
+    const checkingPolygonGeoJSON = turf.polygon([geom]);
+    return turf.booleanPointInPolygon(turf.point([point.lng, point.lat]), checkingPolygonGeoJSON);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
