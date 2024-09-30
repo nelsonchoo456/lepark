@@ -315,7 +315,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
         columns={tableShowTypeColumn ? columns : columnsNoType}
         dataSource={filteredParkAssets}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 6 }}
         scroll={{ x: SCREEN_LG }}
       />
     </Card>

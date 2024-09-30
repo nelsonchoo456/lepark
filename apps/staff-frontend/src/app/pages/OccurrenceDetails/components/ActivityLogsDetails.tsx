@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select, Empty } from 'antd';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
 import { getActivityLogById, updateActivityLog, getOccurrenceById } from '@lepark/data-access';
 import { ActivityLogResponse, ActivityLogTypeEnum, ActivityLogUpdateData, OccurrenceResponse } from '@lepark/data-access';

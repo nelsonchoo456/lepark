@@ -5,7 +5,6 @@ import type { DescriptionsProps } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Layout } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import {
   getAllParks,
   ParkResponse,
