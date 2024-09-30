@@ -1,4 +1,4 @@
-import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { ParkResponse, StaffResponse, StaffType, checkExistingFacility } from '@lepark/data-access';
 import {
   Button,
   Col,
@@ -201,19 +201,21 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   };
 
-  const handleNext = async () => {
+  const handleClick = async () => {
     try {
-      await form.validateFields();
-      
-      if (previewImages.length === 0) {
-        message.error('Please upload at least one image.');
-        return;
-      }
+      const facilityName = form.getFieldValue('name'); // Assuming 'name' is the field name for facility name
+      const parkId = form.getFieldValue('parkId'); // Assuming 'parkId' is the field name for park ID
 
-      handleCurrStep(1);
+      // Check if the facility already exists
+      const response = await checkExistingFacility(facilityName, parkId);
+      if (response.data.exists) {
+        message.error('A facility with this name already exists in the park.');
+        return; // Prevent moving to the next step
+      }
+      await handleCurrStep(1);
     } catch (error) {
-      console.error('Validation failed:', error);
-      message.error('Please fill in all required fields correctly.');
+      console.error('Error checking existing facility:', error);
+      message.error('An error occurred while checking for existing facilities.');
     }
   };
 
@@ -221,7 +223,9 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
       {user?.role !== StaffType.SUPERADMIN && park ? (
-        <Form.Item name="parkId" label="Park">{park?.name}</Form.Item>
+        <Form.Item name="parkId" label="Park">
+          {park?.name}
+        </Form.Item>
       ) : (
         <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
@@ -411,7 +415,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Flex>
       </Form.Item>
 
-      <Form.Item label={'Image'} required tooltip="At least one image is required">
+      <Form.Item label={'Image'}>
         <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
       {previewImages?.length > 0 && (
@@ -430,7 +434,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Form.Item>
       )}
       <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={handleNext}>
+        <Button type="primary" className="w-full" onClick={handleClick}>
           Next
         </Button>
       </Form.Item>
