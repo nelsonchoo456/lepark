@@ -11,6 +11,8 @@ const {
   attractionsData,
   facilitiesData,
   eventsData,
+  parkAssetsData,
+  sensorsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -305,6 +307,32 @@ async function seed() {
   }
   console.log(`Total hubs seeded: ${hubList.length}\n`);
 
+  const parkAssetList = [];
+  const carparkId = facilityList[2].id;
+for (const parkAsset of parkAssetsData) {
+  if (parkAsset.parkAssetType === 'HOSES_AND_PIPES' || parkAsset.name.toLowerCase().includes('cone')) {
+    parkAsset.facilityId = carparkId;
+  } else if (parkAsset.name.toLowerCase().includes('saw') || parkAsset.name.toLowerCase().includes('lawnmower')) {
+    parkAsset.facilityId = storeroomId;
+  }
+  const createdParkAsset = await prisma.parkAsset.create({
+    data: parkAsset,
+  });
+  parkAssetList.push(createdParkAsset);
+}
+console.log(`Total park assets seeded: ${parkAssetList.length}\n`);
+
+// Seeding Sensors
+const sensorList = [];
+for (const sensor of sensorsData) {
+  sensor.facilityId = storeroomId;
+  const createdSensor = await prisma.sensor.create({
+    data: sensor,
+  });
+  sensorList.push(createdSensor);
+}
+console.log(`Total sensors seeded: ${sensorList.length}\n`);
+
   const amphitheaterId = facilityList[3].id;
   const dragonPlaygroundId = facilityList[6].id;
   const flowerPlaygroundId = facilityList[0].id;
@@ -312,7 +340,7 @@ async function seed() {
   const eventList = [];
   for (let i = 0; i < eventsData.length; i++) {
     const event = eventsData[i];
-    
+
     if (i < 3) {
       event.facilityId = amphitheaterId;
     } else if (i < 5) {
@@ -320,7 +348,7 @@ async function seed() {
     } else {
       event.facilityId = flowerPlaygroundId;
     }
-  
+
     const createdEvent = await prisma.event.create({
       data: event,
     });

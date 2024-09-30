@@ -1147,6 +1147,151 @@ const statusLogsData = [
   },
 ];
 
+const parkAssetsData = [
+ {
+  name: 'Honda Lawnmower HRJ 196',
+  serialNumber: 'HJ196',
+  parkAssetType: 'PLANT_TOOL_AND_EQUIPMENT',
+  description: 'The Honda HRJ196 Lawn Mower is your ultimate solution for maintaining a pristine lawn with minimal effort. This high-performance gardening tool boasts a cutting width of 470mm, ensuring wide coverage with each pass. With a large grass bag capacity of 60 liters, you\'ll spend less time emptying and more time mowing.',
+  parkAssetStatus: 'AVAILABLE',
+  acquisitionDate: new Date(),
+  lastMaintenanceDate: new Date(),
+  nextMaintenanceDate: new Date(),
+  supplier: 'Honda',
+  supplierContactNumber: '67891234',
+  parkAssetCondition: 'FAIR',
+  images: ['https://cdn.honda.co.za/main-03/banners/_1200x630_fit_center-center_82_none/Honda_HRJ196_SEO_2020.jpg?mtime=1676570619', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3T_-5n9qy2hdyIzq9O6cAu-Qx3nG65H07Aw&s', 'https://5.imimg.com/data5/SELLER/Default/2022/10/BV/EE/PQ/162196412/honda-hrj196-lawn-mower-500x500.jpg'],
+  facilityId: ''
+},
+{
+  name: 'Karcher HR 25 15m Aluminum Coated Water Hose Reel',
+  serialNumber: 'HR2515',
+  parkAssetType: 'HOSES_AND_PIPES',
+  description: 'The HR 25 hose reel for mobile or stationary use is perfect for watering small to medium-sized areas and gardens. The practical hose storage is characterised by its robust, non-corrosive aluminium frame. The compact dimensions save space and simplify the work. So nothing can now get in the way of your gardening. For the innovative Karcher hose storage systems set new standards with regard to function, design and quality. Ideal for quick winding and unwinding of the hose, without manual guide - with minimum space requirement.',
+  parkAssetStatus: 'UNDER_MAINTENANCE',
+  acquisitionDate: new Date(),
+  lastMaintenanceDate: new Date(),
+  nextMaintenanceDate: new Date(),
+  supplier: 'Karcher',
+  supplierContactNumber: '67778888',
+  parkAssetCondition: 'EXCELLENT',
+  images: ['https://www.hardwarespecialist.com.sg/23043-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg', 'https://www.hardwarespecialist.com.sg/23044-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg', 'https://www.hardwarespecialist.com.sg/22809-superlarge_default/karcher-hr-25-15m-water-hose-reel.jpg'],
+  facilityId: ''
+},
+{
+  name: 'Aiko 70cm Safety (Traffic) Cone',
+  serialNumber: 'CONE-7093',
+  parkAssetType: 'SAFETY',
+  description: 'These reflective cones are ideal for roadworks, civil engineering, schools and carparks etc. Features soft PVC material. One piece design means no seams to split or tear. Superior flexibility in heat and cold. Bounce back to shape when crushed',
+  parkAssetStatus: 'IN_USE',
+  acquisitionDate: new Date(),
+  lastMaintenanceDate: new Date(),
+  nextMaintenanceDate: new Date(),
+  supplier: 'Aik Chin Hin Hardware and Machinery',
+  supplierContactNumber: '67778088',
+  parkAssetCondition: 'POOR',
+  images: ['https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-963380_317x.jpg?v=1664280890', 'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-690568_800x.jpg?v=1664273558', 'https://aikchinhin.sg/cdn/shop/products/aiko-70cm-safety-traffic-cone-soft-unbreakable-model-cone-7093-safety-cone-aiko-385821_800x.jpg?v=1664233697'],
+  facilityId: ''
+},
+{
+  name: 'Ingco Var. Speed Reciprocating SAW 1200W',
+  serialNumber: 'RS12001',
+  parkAssetType: 'GENERAL_TOOLS',
+  description: 'This saw operates on a voltage range of 220-240V at 50/60Hz, with an input power of 1200W. It features a no-load speed ranging from 1000 to 2800 rpm, offering a maximum cutting depth of 210mm for wood, 20mm for steel, and 10mm for aluminum. Equipped with variable speed control, it also includes an integrated work light and a 4-step pendulum action. The SDS blade change chuck ensures easy blade replacement, and the saw comes with one metal saw blade and one saw blade for wood.',
+  parkAssetStatus: 'DECOMMISSIONED',
+  acquisitionDate: new Date(),
+  lastMaintenanceDate: new Date(),
+  nextMaintenanceDate: new Date(),
+  supplier: 'Horme Hardware',
+  supplierContactNumber: '67777777',
+  parkAssetCondition: 'DAMAGED',
+  images: ['https://cdn.horme.com.sg/images/product/2023081712561882CPO726886924_700.jpg', 'https://cdn.horme.com.sg/images/product/20240721195300MVAIEV66506686_700.jpg', 'https://cdn.horme.com.sg/images/product/20230818125006FZEQUM37120899_700.jpg'],
+  facilityId: ''
+},
+];
+
+const sensorsData = [
+  {
+    name: 'Temperature 02',
+    serialNumber: 'TS1234567890',
+    sensorType: 'TEMPERATURE',
+    description: 'Main temperature sensor for greenhouse',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    lastCalibratedDate: new Date(),
+    calibrationFrequencyDays: 90,
+    dataFrequencyMinutes: 15,
+    sensorUnit: 'DEGREES_CELSIUS',
+    supplier: 'TechSense Inc.',
+    supplierContactNumber: '98765431',
+    images: [
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7pnz61IgUXH2MdF61E_gqkLRFT6Kam40q8g&s',
+      'https://example.com/image2.jpg'
+    ],
+    remarks: 'Installed near the north wall',
+    facilityId: ''
+  },
+  {
+    name: 'Humidity Sensor 01',
+    serialNumber: 'HS9876543210',
+    sensorType: 'HUMIDITY',
+    description: 'Primary humidity sensor for tropical plants section',
+    sensorStatus: 'INACTIVE',
+    acquisitionDate: new Date(),
+    lastCalibratedDate: new Date(),
+    calibrationFrequencyDays: 60,
+    dataFrequencyMinutes: 10,
+    sensorUnit: 'PERCENT',
+    supplier: 'HumidTech Solutions',
+    supplierContactNumber: '63456789',
+    images: [
+      'https://m.media-amazon.com/images/I/61O7HMrdkbL._AC_UF1000,1000_QL80_.jpg'
+    ],
+    remarks: 'Temporarily inactive for maintenance',
+    facilityId: ''
+  },
+  {
+    name: 'Soil Moisture Probe 03',
+    serialNumber: 'SM5678901234',
+    sensorType: 'SOIL_MOISTURE',
+    description: 'Soil moisture sensor for drought-resistant plants',
+    sensorStatus: 'UNDER_MAINTENANCE',
+    acquisitionDate: new Date(),
+    lastCalibratedDate: new Date(),
+    calibrationFrequencyDays: 30,
+    dataFrequencyMinutes: 30,
+    sensorUnit: 'VOLUMETRIC_WATER_CONTENT',
+    supplier: 'EcoSense Technologies',
+    supplierContactNumber: '98761234',
+    images: [
+      'https://m.media-amazon.com/images/I/61twmBwTS7L._AC_UF1000,1000_QL80_.jpg'
+    ],
+    remarks: 'Undergoing calibration and sensitivity adjustments',
+    facilityId: ''
+  },
+  {
+    name: 'Light Sensor Datalogger 02',
+    serialNumber: 'LS2468013579',
+    sensorType: 'LIGHT',
+    description: 'Light intensity sensor for shade-loving plants',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    lastCalibratedDate: new Date(),
+    calibrationFrequencyDays: 45,
+    dataFrequencyMinutes: 5,
+    sensorUnit: 'LUX',
+    supplier: 'BrightTech Innovations',
+    supplierContactNumber: '89004577',
+    images: [
+      'https://dataloggerinc.com/wp-content/uploads/2018/12/2121-71.jpg',
+
+    ],
+    remarks: 'Installed in the fern garden',
+    facilityId: ''
+  }
+];
+
+
 const hubsData = [
   {
     serialNumber: 'HUB-6BB2LDKD',
@@ -1851,4 +1996,6 @@ module.exports = {
   attractionsData,
   facilitiesData,
   eventsData,
+  parkAssetsData,
+  sensorsData
 };
