@@ -799,6 +799,21 @@ const occurrenceData = [
     zoneId: 3,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-1.jpg'],
   },
+  {
+    lat: 1.364,
+    lng: 103.839,
+    dateObserved: '2024-09-09T10:00:00Z',
+    dateOfBirth: '2024-02-01T00:00:00Z',
+    numberOfPlants: 5.0,
+    biomass: 200,
+    title: 'New Rosa Observation',
+    description: 'Observation of recently planted Rosa Gallica in the area',
+    decarbonizationType: 'TREE_TROPICAL',
+    speciesId: '',
+    occurrenceStatus: 'HEALTHY',
+    zoneId: 1,
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-1.jpg'],
+  },
 ];
 
 const staffData = [
