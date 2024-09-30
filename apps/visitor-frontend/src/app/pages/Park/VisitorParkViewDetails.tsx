@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Tabs, Typography, Tag } from 'antd';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Tabs, Typography, Tag, Button } from 'antd';
 import moment from 'moment';
 import { LogoText } from '@lepark/common-ui';
-import { getParkById, ParkResponse } from '@lepark/data-access';
+import { getParkById } from '@lepark/data-access';
+import { ParkResponse } from '@lepark/data-access';
 import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
@@ -19,9 +21,10 @@ const formatHours = (openingHours: Date[], closingHours: Date[]) => {
 };
 
 const VisitorViewParkDetails = () => {
-  const { parkId } = useParams<{ parkId: string }>();
-  const [park, setPark] = useState<ParkResponse | null>(null);
+    const { parkId } = useParams<{ parkId: string }>();
+    const [park, setPark] = useState<ParkResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPark = async () => {
@@ -50,6 +53,10 @@ const VisitorViewParkDetails = () => {
     // Add other tabs if necessary
   ];
 
+  const handleBackClick = () => {
+    navigate('/select-park');
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -60,6 +67,13 @@ const VisitorViewParkDetails = () => {
 
   return (
     <div className="md:p-4 md:h-screen md:overflow-hidden">
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={handleBackClick}
+        className="mb-4"
+      >
+
+      </Button>
       <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
         <div className="md:w-2/5 h-96">
           <div className="z-20 absolute w-full flex justify-between p-4">
