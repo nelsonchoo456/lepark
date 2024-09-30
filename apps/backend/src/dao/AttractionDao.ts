@@ -7,6 +7,19 @@ class AttractionDao {
     return prisma.attraction.create({ data });
   }
 
+  async checkAttractionNameExists(parkId: number, title: string): Promise<boolean> {
+    const count = await prisma.attraction.count({
+      where: {
+        parkId,
+        title: {
+          equals: title,
+          mode: 'insensitive', // This makes the search case-insensitive
+        },
+      },
+    });
+    return count > 0;
+  }
+
   async getAllAttractions(): Promise<Attraction[]> {
     return prisma.attraction.findMany();
   }
