@@ -1,17 +1,5 @@
 import { ParkResponse, StaffResponse, StaffType, checkExistingFacility } from '@lepark/data-access';
-import {
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  TimePicker,
-  Flex,
-  Popconfirm,
-  FormInstance,
-  Divider,
-  Typography,
-} from 'antd';
+import { Button, Form, Input, InputNumber, Select, TimePicker, Flex, Popconfirm, FormInstance, Divider, Typography } from 'antd';
 import { ImageInput } from '@lepark/common-ui';
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
@@ -49,6 +37,17 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       form.setFieldsValue({ parkId: user?.parkId });
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
+    }
+
+    const isPublicValue = form.getFieldValue('isPublic');
+    if (isPublicValue !== undefined && !isPublicValue) {
+      setIsPublic(isPublicValue);
+      setIsBookable(isPublicValue);
+    }
+
+    const isBookableValue = form.getFieldValue('isBookable');
+    if (isBookableValue !== undefined && !isBookableValue) {
+      setIsBookable(isPublicValue);
     }
   }, [user, parks]);
 
@@ -195,6 +194,8 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
 
   const handleClick = async () => {
     try {
+      await form.validateFields();
+
       const facilityName = form.getFieldValue('name'); // Assuming 'name' is the field name for facility name
       const parkId = form.getFieldValue('parkId'); // Assuming 'parkId' is the field name for park ID
 
@@ -207,7 +208,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       await handleCurrStep(1);
     } catch (error) {
       console.error('Error checking existing facility:', error);
-      message.error('An error occurred while checking for existing facilities.');
     }
   };
 
@@ -219,7 +219,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
           {park?.name}
         </Form.Item>
       ) : (
-        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+        <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
         </Form.Item>
       )}
