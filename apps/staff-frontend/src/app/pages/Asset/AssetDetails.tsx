@@ -11,10 +11,13 @@ import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useAuth } from '@lepark/common-ui'; // Add this import
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import LocationTab from './components/LocationTab';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
-  const { asset, loading } = useRestrictAsset(assetId);
+  const { asset, park, loading } = useRestrictAsset(assetId);
+  const { zones } = useFetchZones();
   const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
   console.log(asset);
   const navigate = useNavigate();
@@ -71,6 +74,11 @@ const AssetDetails = () => {
       key: 'information',
       label: 'Information',
       children: asset ? <AssetInfoTab asset={asset} /> : <p>Loading asset data...</p>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: asset ? <LocationTab asset={asset} zones={zones} park={park}/> : <p>Loading asset data...</p>,
     },
   ];
 

@@ -1,11 +1,12 @@
 import { useAuth } from '@lepark/common-ui';
-import { getParkAssetById, ParkAssetResponse, StaffType, StaffResponse } from '@lepark/data-access';
+import { getParkAssetById, ParkAssetResponse, StaffType, StaffResponse, getParkById, ParkResponse } from '@lepark/data-access';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
 
 export const useRestrictAsset = (assetId?: string) => {
   const [asset, setAsset] = useState<ParkAssetResponse | null>(null);
+  const [park, setPark] = useState<ParkResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
@@ -53,5 +54,23 @@ export const useRestrictAsset = (assetId?: string) => {
     fetchAsset(assetId);
   }, [assetId, navigate, user]);
 
-  return { asset, loading };
+  useEffect(() => {
+    //
+    if (asset) {
+      const fetchPark = async () => {
+        try {
+          if (asset.facility?.parkId) {
+            const parkResponse = await getParkById(asset.facility.parkId);
+            setPark(parkResponse.data);
+          }
+        } catch (error) {
+          //do nothing
+        }
+      };
+
+      fetchPark();
+    }
+  }, [asset]);
+
+  return { asset, park, loading };
 };
