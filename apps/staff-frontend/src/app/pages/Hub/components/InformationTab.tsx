@@ -24,6 +24,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
 
   const descriptionsItems = [
     { key: 'name', label: 'Hub Name', children: hub.name || '-' },
+    { key: 'identifierNumber', label: 'Identifier Number', children: hub.identifierNumber || '-' },
     { key: 'serialNumber', label: 'Serial Number', children: hub.serialNumber || '-' },
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },
@@ -56,6 +57,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
 
   const superAdminDescriptionsItems = [
     { key: 'name', label: 'Hub Name', children: hub.name || '-' },
+    { key: 'identifierNumber', label: 'Identifier Number', children: hub.identifierNumber || '-' },
     { key: 'serialNumber', label: 'Serial Number', children: hub.serialNumber || '-' },
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },

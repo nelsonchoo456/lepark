@@ -21,9 +21,9 @@ const AssetDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNumber',
-      label: 'Serial Number',
-      children: asset ? asset.serialNumber : 'Loading...',
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: asset ? asset.identifierNumber : 'Loading...',
     },
     {
       key: 'assetType',

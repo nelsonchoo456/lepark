@@ -31,9 +31,9 @@ const ViewHubDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNo',
-      label: 'Serial Number',
-      children: hub?.serialNumber,
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: hub?.identifierNumber,
     },
     {
       key: 'hubStatus',

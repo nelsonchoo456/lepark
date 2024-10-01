@@ -30,8 +30,9 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   };
   console.log(asset);
 
-  const baseDescriptionsItems = [
+  const descriptionItems = [
     { key: 'name', label: 'Asset Name', children: asset.name },
+    { key: 'identifierNumber', label: 'Identifier Number', children: asset.identifierNumber },
     { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabelToRemoveUnderscores(asset.parkAssetType) },
     { key: 'description', label: 'Description', children: asset.description || '-' },
@@ -66,7 +67,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     }
   ].filter(Boolean);
 
-  const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
+  const descriptionsItems = [...descriptionItems, ...conditionalItems];
 
   if (loading) {
     return <Spin />;

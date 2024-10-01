@@ -79,11 +79,11 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columns = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '15%',
     },
     {
@@ -158,11 +158,11 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columnsNoType = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '16%',
     },
     {

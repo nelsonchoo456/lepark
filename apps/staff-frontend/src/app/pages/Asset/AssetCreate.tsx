@@ -116,6 +116,7 @@ const AssetCreate = () => {
       const values = await form.validateFields();
       const baseAssetData: ParkAssetData = {
         name: values.name,
+        serialNumber: values.serialNumber,
         parkAssetType: values.parkAssetType,
         description: values.description,
         parkAssetStatus: values.parkAssetStatus,
@@ -222,6 +223,9 @@ const AssetCreate = () => {
             </Form.Item>
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
             </Form.Item>
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">

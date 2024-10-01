@@ -5,6 +5,7 @@ import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums'
 
 export interface SensorData {
   name: string;
+  serialNumber: string;
   sensorType: SensorTypeEnum;
   description?: string;
   sensorStatus: SensorStatusEnum;
@@ -28,6 +29,7 @@ export interface SensorResponse {
   id: string;
   name: string;
   serialNumber: string;
+  identifierNumber: string;
   sensorType: SensorTypeEnum;
   description?: string;
   sensorStatus: SensorStatusEnum;
@@ -54,6 +56,7 @@ export interface SensorResponse {
 
 export interface SensorUpdateData {
   name?: string;
+  serialNumber?: string;
   sensorType?: SensorTypeEnum;
   description?: string;
   sensorStatus?: SensorStatusEnum;

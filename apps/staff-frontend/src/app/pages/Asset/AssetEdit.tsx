@@ -227,6 +227,12 @@ const AssetEdit = () => {
             <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea />
+            </Form.Item>
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
+            </Form.Item>
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
@@ -236,14 +242,20 @@ const AssetEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="description" label="Description">
-              <TextArea />
-            </Form.Item>
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
               <Select placeholder="Select asset status">
                 {Object.values(ParkAssetStatusEnum).map((status) => (
                   <Select.Option key={status} value={status}>
                     {formatEnumLabel(status)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
+              <Select placeholder="Select asset condition">
+                {Object.values(ParkAssetConditionEnum).map((condition) => (
+                  <Select.Option key={condition} value={condition}>
+                    {formatEnumLabel(condition)}
                   </Select.Option>
                 ))}
               </Select>
@@ -255,25 +267,6 @@ const AssetEdit = () => {
                   return current && current > dayjs().endOf('day');
                 }}
               />
-            </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
-              <Select placeholder="Select asset condition">
-                {Object.values(ParkAssetConditionEnum).map((condition) => (
-                  <Select.Option key={condition} value={condition}>
-                    {formatEnumLabel(condition)}
-                  </Select.Option>
-                ))}
-              </Select>
             </Form.Item>
             <Form.Item name="remarks" label="Remarks">
               <TextArea />
@@ -294,6 +287,17 @@ const AssetEdit = () => {
                   />
                 ))}
               </div>
+            </Form.Item>
+            <Divider orientation="left">Select the Facility</Divider>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input />
             </Form.Item>
 
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

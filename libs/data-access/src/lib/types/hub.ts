@@ -5,6 +5,7 @@ import { HubStatusEnum } from './sharedenums';
 
 export interface HubData {
   name: string;
+  serialNumber: string;
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
@@ -28,6 +29,7 @@ export interface HubData {
 export interface HubResponse {
   id: string;
   serialNumber: string;
+  identifierNumber: string;
   name: string;
   description?: string;
   hubStatus: HubStatusEnum;
@@ -54,6 +56,7 @@ export interface HubResponse {
 
 export interface HubUpdateData {
   name?: string;
+  serialNumber?: string;
   description?: string;
   hubStatus?: HubStatusEnum;
   acquisitionDate?: string;
