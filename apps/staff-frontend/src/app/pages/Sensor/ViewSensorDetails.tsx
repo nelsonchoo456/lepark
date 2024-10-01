@@ -70,17 +70,17 @@ const ViewSensorDetails = () => {
       })(),
     },
     { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
-    {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
+    // {
+    //   key: 'nextMaintenanceDate',
+    //   label: 'Next Maintenance Date',
+    //   children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+    // },
     ...(user?.role === StaffType.SUPERADMIN
       ? [
           {
             key: 'parkName',
             label: 'Park Name',
-            children: sensor?.parkName ?? '-',
+            children: sensor?.park?.name ?? '-',
           },
         ]
       : []),
@@ -90,8 +90,6 @@ const ViewSensorDetails = () => {
       children: sensor?.facility?.name,
     },
   ];
-
-  console.log('sensor', sensor);
 
   const tabsItems = [
     {

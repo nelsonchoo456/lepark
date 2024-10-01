@@ -16,6 +16,7 @@ export const PlantTaskSchema = z.object({
   remarks: z.string().optional().nullable(),
   occurrenceId: z.string().uuid(),
   assignedStaffId: z.string().uuid().optional().nullable(),
+  submittingStaffId: z.string().uuid()
 });
 
 export type PlantTaskSchemaType = z.infer<typeof PlantTaskSchema>;

@@ -224,6 +224,9 @@ const AssetCreate = () => {
             <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
@@ -232,9 +235,6 @@ const AssetCreate = () => {
                   </Select.Option>
                 ))}
               </Select>
-            </Form.Item>
-            <Form.Item name="description" label="Description">
-              <TextArea />
             </Form.Item>
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
               <Select placeholder="Select asset status">
@@ -245,11 +245,6 @@ const AssetCreate = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
-            </Form.Item>
-
-
             <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
               <Select placeholder="Select asset condition">
                 {Object.values(ParkAssetConditionEnum).map((condition) => (
@@ -259,8 +254,11 @@ const AssetCreate = () => {
                 ))}
               </Select>
             </Form.Item>
+            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+            </Form.Item>
             <Form.Item name="remarks" label="Remarks">
-              <TextArea />
+              <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
             <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
               <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />

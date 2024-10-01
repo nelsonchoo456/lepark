@@ -53,29 +53,29 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   ];
 
   const conditionalItems = [
-    asset.lastMaintenanceDate && {
-      key: 'lastMaintenanceDate',
-      label: 'Last Maintenance Date',
-      children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY'),
-    },
-    asset.nextMaintenanceDate && {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: moment(asset.nextMaintenanceDate).format('MMMM D, YYYY'),
+    // asset.lastMaintenanceDate && {
+    //   key: 'lastMaintenanceDate',
+    //   label: 'Last Maintenance Date',
+    //   children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY'),
+    // },
+    // asset.nextMaintenanceDate && {
+    //   key: 'nextMaintenanceDate',
+    //   label: 'Next Maintenance Date',
+    //   children: moment(asset.nextMaintenanceDate).format('MMMM D, YYYY'),
+    // },
+    user?.role === StaffType.SUPERADMIN && {
+      key: 'park',
+      label: 'Park',
+      children: asset.parkName,
     },
     asset.facility?.name && {
       key: 'facility',
       label: 'Facility',
       children: asset.facility.name,
-    },
+    }
   ].filter(Boolean);
 
   const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
-
-  const superAdminDescriptionsItems = [
-    ...descriptionsItems,
-    { key: 'park', label: 'Park', children: asset.parkName },
-  ];
 
   if (loading) {
     return <Spin />;
@@ -84,7 +84,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   return (
     <div>
       <Descriptions
-        items={(user?.role === StaffType.SUPERADMIN ? superAdminDescriptionsItems : descriptionsItems) as DescriptionsItemType[]}
+        items={(descriptionsItems) as DescriptionsItemType[]}
         bordered
         column={1}
         size="middle"

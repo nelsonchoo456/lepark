@@ -146,7 +146,11 @@ class SensorDao {
     });
   }
 
-  async getSensorBySerialNumber(serialNumber: string): Promise<Sensor> {
+  async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
+    return prisma.sensor.findUnique({ where: { identifierNumber } });
+  }
+
+  async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
     return prisma.sensor.findUnique({ where: { serialNumber } });
   }
 
