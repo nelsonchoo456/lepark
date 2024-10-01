@@ -35,16 +35,21 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
     { key: 'description', label: 'Description', children: sensor.description || '-' },
     { key: 'sensorStatus', label: 'Sensor Status', children: getStatusTag(sensor.sensorStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(sensor.acquisitionDate).format('MMMM D, YYYY') },
-    { key: 'calibrationFrequencyDays', label: 'Calibration Frequency (days)', children: sensor.calibrationFrequencyDays ? `${sensor.calibrationFrequencyDays} days` : '-' },
     { key: 'sensorUnit', label: 'Sensor Unit', children: formatEnum(sensor.sensorUnit) || '-' },
     { key: 'supplier', label: 'Supplier', children: sensor.supplier || '-' },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: sensor.supplierContactNumber || '-' },
     { key: 'remarks', label: 'Remarks', children: sensor.remarks || '-' },
     { key: 'hubName', label: 'Connected Hub', children: sensor.hub?.name || '-' },
-    { key: 'facilityName', label: 'Facility', children: sensor.facility?.name || '-' },
+    user?.role === StaffType.SUPERADMIN && { key: 'parkName', label: 'Park', children: sensor.park?.name || '-' },
+    user?.role === StaffType.SUPERADMIN && { key: 'facilityName', label: 'Facility', children: sensor.facility?.name || '-' },
   ];
 
   const conditionalItems = [
+    sensor.calibrationFrequencyDays && {
+      key: 'calibrationFrequencyDays',
+      label: 'Calibration Frequency (days)',
+      children: `${sensor.calibrationFrequencyDays} days`,
+    },
     sensor.lastCalibratedDate && {
       key: 'lastCalibratedDate',
       label: 'Last Calibrated Date',
@@ -71,10 +76,7 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
 
   const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
 
-  const superAdminDescriptionsItems = [
-    ...descriptionsItems,
-    { key: 'parkName', label: 'Park Name', children: sensor.park?.name || '-' },
-  ];
+  const superAdminDescriptionsItems = [...descriptionsItems, { key: 'parkName', label: 'Park Name', children: sensor.park?.name || '-' }];
 
   return (
     <div>

@@ -153,14 +153,17 @@ const SensorCreate = () => {
             <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
               <Input placeholder="Enter Name" />
             </Form.Item>
-            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
-              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
-            </Form.Item>
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
+            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
+              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
+            </Form.Item>
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
               <Select placeholder="Select Sensor Status" options={sensorStatusOptions} />
+            </Form.Item>
+            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
+              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
             </Form.Item>
             <Form.Item
               name="acquisitionDate"
@@ -169,7 +172,7 @@ const SensorCreate = () => {
             >
               <DatePicker className="w-full" maxDate={dayjs()} />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               name="calibrationFrequencyDays"
               label="Calibration Frequency"
               tooltip={{
@@ -178,10 +181,7 @@ const SensorCreate = () => {
               rules={[{ required: true, type: 'number', min: 0, max: 90, message: 'Please enter a number between 0 and 90' }]}
             >
               <InputNumber min={0} max={90} className="w-full" />
-            </Form.Item>
-            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
-              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
-            </Form.Item>
+            </Form.Item> */}
 
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />

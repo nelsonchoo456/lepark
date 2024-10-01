@@ -137,13 +137,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       render: (condition: string) => formatEnumLabel(condition, 'condition'),
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
-      width: '12%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
+    //   width: '12%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -207,13 +207,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       render: (condition: string) => formatEnumLabel(condition, 'condition'),
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
-      width: '12%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
+    //   width: '12%',
+    // },
     {
       title: 'Actions',
       key: 'actions',

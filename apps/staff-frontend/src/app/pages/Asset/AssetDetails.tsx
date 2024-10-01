@@ -55,11 +55,11 @@ const AssetDetails = () => {
           <Tag>{asset?.parkAssetStatus}</Tag>
         ),
     },
-    {
-      key: 'nextMaintenance',
-      label: 'Next Maintenance',
-      children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
-    },
+    // {
+    //   key: 'nextMaintenance',
+    //   label: 'Next Maintenance',
+    //   children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
+    // },
     // Add park name for Superadmin only
     ...(user?.role === StaffType.SUPERADMIN ? [
       {

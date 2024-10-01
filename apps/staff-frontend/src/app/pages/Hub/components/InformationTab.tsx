@@ -37,15 +37,15 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       label: 'Next Maintenance Date',
       children: hub.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
     },*/
-    {
-      key: 'dataTransmissionInterval',
-      label: 'Data Transmission Interval',
-      children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
-    },
+    // {
+    //   key: 'dataTransmissionInterval',
+    //   label: 'Data Transmission Interval',
+    //   children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
+    // },
     { key: 'supplier', label: 'Supplier', children: hub.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: hub.supplierContactNumber },
-    { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress || '-' },
-    { key: 'macAddress', label: 'MAC Address', children: hub.macAddress || '-' },
+    // { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress || '-' },
+    // { key: 'macAddress', label: 'MAC Address', children: hub.macAddress || '-' },
   /*  { key: 'lat', label: 'Latitude', children: hub.lat || '-' },
     { key: 'long', label: 'Longitude', children: hub.long || '-' },*/
     { key: 'remarks', label: 'Remarks', children: hub.remarks || '-' },
@@ -69,15 +69,15 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       label: 'Next Maintenance Date',
       children: hub.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
     },*/
-    {
-      key: 'dataTransmissionInterval',
-      label: 'Data Transmission Interval',
-      children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
-    },
+    // {
+    //   key: 'dataTransmissionInterval',
+    //   label: 'Data Transmission Interval',
+    //   children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
+    // },
     { key: 'supplier', label: 'Supplier', children: hub.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: hub.supplierContactNumber },
-    { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress || '-' },
-    { key: 'macAddress', label: 'MAC Address', children: hub.macAddress || '-' },
+    // { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress || '-' },
+    // { key: 'macAddress', label: 'MAC Address', children: hub.macAddress || '-' },
   /*  { key: 'lat', label: 'Latitude', children: hub.lat || '-' },
     { key: 'long', label: 'Longitude', children: hub.long || '-' },*/
     { key: 'remarks', label: 'Remarks', children: hub.remarks || '-' },
