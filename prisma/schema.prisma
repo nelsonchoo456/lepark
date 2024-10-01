@@ -398,7 +398,7 @@ enum ParkAssetConditionEnum {
 model ParkAsset {
   id                    String                 @id @default(uuid()) @db.Uuid
   identifierNumber      String                 @unique
-  serialNumber          String                 @unique
+  serialNumber          String?                @unique
   name                  String
   parkAssetType         ParkAssetTypeEnum
   description           String?

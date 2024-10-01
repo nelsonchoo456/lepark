@@ -19,7 +19,7 @@ import {
   getFacilityById,
   checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage, Divider } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage, Divider, Switch } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
@@ -58,6 +58,7 @@ const AssetEdit = () => {
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
   const [messageApi, contextHolder] = antMessage.useMessage();
+  const [hasSerialNumber, setHasSerialNumber] = useState(false);
 
   const breadcrumbItems = [
     {
@@ -130,8 +131,10 @@ const AssetEdit = () => {
       setPreviewImages([]);
       const assetFacility = facilities.find((f) => f.id === asset.facilityId);
       if (assetFacility) {
+        setHasSerialNumber(!!asset.serialNumber);
         form.setFieldsValue({
           ...asset,
+          hasSerialNumber: !!asset.serialNumber,
           acquisitionDate: asset.acquisitionDate ? dayjs(asset.acquisitionDate) : undefined,
           facilityId: asset.facilityId,
         });
@@ -148,11 +151,19 @@ const AssetEdit = () => {
     wrapperCol: { offset: 8, span: 16 },
   };
 
+  const handleSerialNumberChange = (checked: boolean) => {
+    setHasSerialNumber(checked);
+    if (!checked) {
+      form.setFieldsValue({ serialNumber: undefined });
+    }
+  };
+
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
       const assetData: ParkAssetUpdateData = {
         name: values.name,
+        serialNumber: hasSerialNumber ? values.serialNumber : null, // Set to null if hasSerialNumber is false
         parkAssetType: values.parkAssetType,
         description: values.description,
         parkAssetStatus: values.parkAssetStatus,
@@ -169,10 +180,13 @@ const AssetEdit = () => {
         throw new Error('Asset ID is missing');
       }
 
-      const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber, assetId);
-      if (isDuplicate) {
-        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
-        return;
+      if (hasSerialNumber && values.serialNumber) {
+        const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber, assetId);
+        if (isDuplicate) {
+          messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);
@@ -238,9 +252,14 @@ const AssetEdit = () => {
             <Form.Item name="description" label="Description">
               <TextArea />
             </Form.Item>
-            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
-              <Input placeholder="Enter Serial Number" />
+            <Form.Item name="hasSerialNumber" label="Has Serial Number" valuePropName="checked">
+              <Switch onChange={handleSerialNumberChange} />
             </Form.Item>
+            {hasSerialNumber && (
+              <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+                <Input placeholder="Enter Serial Number" />
+              </Form.Item>
+            )}
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (

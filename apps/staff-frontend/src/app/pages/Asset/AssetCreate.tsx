@@ -17,7 +17,7 @@ import {
   getFacilitiesByParkId,
   checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip, Switch } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
@@ -50,6 +50,16 @@ const AssetCreate = () => {
   const [createMultiple, setCreateMultiple] = useState(false);
   const [assetQuantity, setAssetQuantity] = useState<number>(1);
   const [messageApi, contextHolder] = message.useMessage();
+  const [hasSerialNumber, setHasSerialNumber] = useState(false);
+
+  const handleSerialNumberChange = (checked: boolean) => {
+    setHasSerialNumber(checked);
+    if (checked) {
+      setCreateMultiple(false);
+      setAssetQuantity(1);
+      form.setFieldsValue({ createMultiple: false, assetQuantity: undefined });
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -117,16 +127,19 @@ const AssetCreate = () => {
     try {
       const values = await form.validateFields();
 
-      // Check for duplicate serial number
-      const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber);
-      if (isDuplicate) {
-        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
-        return;
+      // Check for duplicate serial number only if hasSerialNumber is true
+      if (hasSerialNumber && values.serialNumber) {
+        const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber);
+        if (isDuplicate) {
+          messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       const baseAssetData: ParkAssetData = {
         name: values.name,
-        serialNumber: values.serialNumber,
+        serialNumber: hasSerialNumber ? values.serialNumber : undefined,
         parkAssetType: values.parkAssetType,
         description: values.description,
         parkAssetStatus: values.parkAssetStatus,
@@ -240,9 +253,14 @@ const AssetCreate = () => {
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
-              <Input placeholder="Enter Serial Number" />
+            <Form.Item name="hasSerialNumber" label="Has Serial Number" valuePropName="checked">
+              <Switch onChange={handleSerialNumberChange} />
             </Form.Item>
+            {hasSerialNumber && (
+              <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+                <Input placeholder="Enter Serial Number" />
+              </Form.Item>
+            )}
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
@@ -276,10 +294,12 @@ const AssetCreate = () => {
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-            <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
-              <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
-            </Form.Item>
-            {createMultiple && (
+            {!hasSerialNumber && (
+              <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
+                <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
+              </Form.Item>
+            )}
+            {!hasSerialNumber && createMultiple && (
               <Form.Item
                 name="assetQuantity"
                 label="Park Asset Quantity"

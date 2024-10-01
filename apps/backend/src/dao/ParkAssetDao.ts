@@ -143,7 +143,7 @@ class ParkAssetDao {
   }
 
   async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
-    return prisma.parkAsset.findUnique({
+    return prisma.parkAsset.findFirst({
       where: { serialNumber },
       include: {
         maintenanceHistory: true,
@@ -158,11 +158,12 @@ class ParkAssetDao {
     });
   }
 
-  public async isSerialNumberDuplicate(serialNumber: string, excludeParkAssetId?: string): Promise<boolean> {
+  public async isSerialNumberDuplicate(serialNumber: string | null, excludeParkAssetId?: string): Promise<boolean> {
+    if (!serialNumber) return false;
     const parkAsset = await prisma.parkAsset.findFirst({
       where: {
         serialNumber,
-        id: { not: excludeParkAssetId }, // Exclude the current park asset when updating
+        id: { not: excludeParkAssetId },
       },
     });
     return !!parkAsset;

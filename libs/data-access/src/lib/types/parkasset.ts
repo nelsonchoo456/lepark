@@ -5,7 +5,7 @@ import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '
 
 export interface ParkAssetData {
   name: string;
-  serialNumber: string;
+  serialNumber?: string;
   parkAssetType: ParkAssetTypeEnum;
   description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
