@@ -1,4 +1,4 @@
-import { Prisma, ParkAsset, ParkAssetStatusEnum, ParkAssetTypeEnum } from '@prisma/client';
+import { Prisma, ParkAsset, ParkAssetStatusEnum, ParkAssetTypeEnum, Facility } from '@prisma/client';
 import { z } from 'zod';
 import { ParkAssetSchema, ParkAssetSchemaType } from '../schemas/parkAssetSchema';
 import ParkAssetDao from '../dao/ParkAssetDao';
@@ -64,7 +64,7 @@ class ParkAssetService {
     return ParkAssetDao.getAllParkAssetsByParkId(parkId);
   }
 
-  public async getParkAssetById(id: string): Promise<(ParkAsset & { parkName: string }) | null> {
+  public async getParkAssetById(id: string): Promise<(ParkAsset & { park: ParkResponseData, facility: Facility }) | null> {
     const parkAsset = await ParkAssetDao.getParkAssetById(id);
     if (!parkAsset) return null;
 
@@ -74,7 +74,7 @@ class ParkAssetService {
     const park = await ParkDao.getParkById(facility.parkId);
     if (!park) return null;
 
-    return { ...parkAsset, parkName: park.name };
+    return { ...parkAsset, park, facility };
   }
 
   public async updateParkAsset(id: string, data: Partial<ParkAssetSchemaType>): Promise<ParkAsset> {

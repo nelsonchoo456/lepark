@@ -4,7 +4,7 @@ import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 
 import { FaTools, FaLeaf, FaWrench } from 'react-icons/fa';
 import moment from 'moment';
-import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType } from '@lepark/data-access';
+import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType, FacilityResponse } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
-  const { asset, park, loading } = useRestrictAsset(assetId);
+  const { asset, park, facility, loading } = useRestrictAsset(assetId);
   const { zones } = useFetchZones();
   const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
   console.log(asset);
@@ -59,7 +59,7 @@ const AssetDetails = () => {
       {
         key: 'park',
         label: 'Park',
-        children: asset ? asset.parkName : 'Loading...',
+        children: asset ? asset.park?.name : 'Loading...',
       },
     ] : []),
     {
@@ -78,7 +78,7 @@ const AssetDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: asset ? <LocationTab asset={asset} zones={zones} park={park}/> : <p>Loading asset data...</p>,
+      children: facility ? <LocationTab facility={facility} zones={zones} park={park}/> : <p>Loading asset data...</p>,
     },
   ];
 

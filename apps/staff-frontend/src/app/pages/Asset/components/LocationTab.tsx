@@ -7,12 +7,12 @@ import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
 
 interface MapTabProps {
-  asset: ParkAssetResponse;
+  facility: FacilityResponse;
   park: ParkResponse | null;
   zones: ZoneResponse[];
 }
 
-const LocationTab = ({ asset, park, zones }: MapTabProps) => {
+const LocationTab = ({ facility, park, zones }: MapTabProps) => {
   const selectedParkId = park?.id;
 
   return (
@@ -34,14 +34,14 @@ const LocationTab = ({ asset, park, zones }: MapTabProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }} />
-        {asset.facility && asset.facility.lat && asset.facility.long && (
+        {facility && facility.lat && facility.long && (
           <PictureMarker
-            id={asset.id}
+            id={facility.id}
             entityType="FACILITY"
             circleWidth={37}
-            lat={asset.facility.lat}
-            lng={asset.facility.long}
-            tooltipLabel={asset.facility.name}
+            lat={facility.lat}
+            lng={facility.long}
+            tooltipLabel={facility.name}
             backgroundColor={COLORS.sky[300]}
             icon={<TbBuildingEstate className="text-sky-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
           />

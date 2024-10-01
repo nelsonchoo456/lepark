@@ -58,7 +58,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     user?.role === StaffType.SUPERADMIN && {
       key: 'park',
       label: 'Park',
-      children: asset.parkName,
+      children: asset.park?.name,
     },
     asset.facility?.name && {
       key: 'facility',
