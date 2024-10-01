@@ -36,7 +36,8 @@ model Staff {
   isFirstLogin   Boolean
   resetTokenUsed Boolean       @default(false)
   resetToken     String?
-  plantTasks     PlantTask[]
+  assignedPlantTasks     PlantTask[] @relation("assignedStaff")
+  submittedPlantTasks     PlantTask[] @relation("submittingStaff")
 }
 
 enum ConservationStatusEnum {
@@ -189,6 +190,16 @@ enum AttractionStatusEnum {
 }
 
 model Attraction {
+  id           String               @id @default(uuid()) @db.Uuid
+  title        String
+  description  String
+  openingHours DateTime[]
+  closingHours DateTime[]
+  images       String[]
+  status       AttractionStatusEnum
+  lat          Float?
+  lng          Float?
+  parkId       Int
   id           String               @id @default(uuid()) @db.Uuid
   title        String
   description  String
@@ -491,7 +502,7 @@ enum FacilityStatusEnum {
 }
 
 enum PlantTaskStatusEnum {
-  PENDING
+  OPEN
   IN_PROGRESS
   COMPLETED
   CANCELLED
@@ -517,20 +528,22 @@ enum PlantTaskUrgencyEnum {
 }
 
 model PlantTask {
-  id              String               @id @default(uuid()) @db.Uuid
-  title           String
-  description     String
-  taskStatus      PlantTaskStatusEnum
-  taskType        PlantTaskTypeEnum
-  taskUrgency     PlantTaskUrgencyEnum
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  dueDate         DateTime
-  completedDate   DateTime?
-  images          String[]
-  remarks         String?
-  occurrenceId    String               @db.Uuid
-  occurrence      Occurrence           @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
-  assignedStaffId String?              @map("staffId") @db.Uuid
-  assignedStaff   Staff?               @relation(fields: [assignedStaffId], references: [id])
+  id                String               @id @default(uuid()) @db.Uuid
+  title             String
+  description       String
+  taskStatus        PlantTaskStatusEnum
+  taskType          PlantTaskTypeEnum
+  taskUrgency       PlantTaskUrgencyEnum
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  dueDate           DateTime
+  completedDate     DateTime?
+  images            String[]
+  remarks           String?
+  occurrenceId      String               @db.Uuid
+  occurrence        Occurrence           @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  assignedStaffId   String?              @map("assignedStaffId") @db.Uuid
+  assignedStaff     Staff?               @relation(name: "assignedStaff", fields: [assignedStaffId], references: [id])
+  submittingStaffId String              @map("submittingStaffId") @db.Uuid
+  submittingStaff   Staff               @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
 }

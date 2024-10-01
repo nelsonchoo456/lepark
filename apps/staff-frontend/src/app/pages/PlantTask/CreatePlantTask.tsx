@@ -45,6 +45,7 @@ const CreatePlantTask = () => {
       fetchParks();
     } else if (user?.parkId) {
       fetchZones(user.parkId);
+      setIsZoneDisabled(false); // Enable Zone field for other staff roles
     }
   }, [user]);
 
@@ -55,8 +56,10 @@ const CreatePlantTask = () => {
   }, [selectedParkId]);
 
   useEffect(() => {
-    if (selectedParkId) {
+    if (user?.role === StaffType.SUPERADMIN && selectedParkId) {
       fetchOccurrences(selectedParkId);
+    } else if (user?.parkId) {
+      fetchOccurrences(user.parkId);
     }
   }, [selectedParkId, selectedZoneId]);
 
@@ -82,6 +85,7 @@ const CreatePlantTask = () => {
 
   const fetchOccurrences = async (parkId: number) => {
     try {
+      console.log('fetchOccurrences', parkId, selectedZoneId);
       const response = await getOccurrencesByParkId(parkId);
       setOccurrences(response.data.filter((occurrence) => !selectedZoneId || occurrence.zoneId === selectedZoneId));
     } catch (error) {
@@ -122,6 +126,7 @@ const CreatePlantTask = () => {
       const { parkId, zoneId, ...plantTaskData } = values;
       const taskData = {
         ...plantTaskData,
+        submittingStaffId: user.id,
       };
       console.log('plantTaskData', taskData);
 
@@ -197,7 +202,7 @@ const CreatePlantTask = () => {
                 filterOption={filterOption}
                 options={zones.map((zone) => ({ value: zone.id.toString(), label: zone.name }))}
                 onChange={handleZoneChange}
-                disabled={isZoneDisabled} // Disable Zone field initially
+                disabled={isZoneDisabled && user?.role === StaffType.SUPERADMIN} // Disable Zone field initially only for SUPERADMIN
               />
             </Form.Item>
             <Form.Item name="occurrenceId" label="Occurrence" rules={[{ required: true }]}>
