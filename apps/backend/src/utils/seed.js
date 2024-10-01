@@ -1,5 +1,19 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
-const { parksData, zonesData, speciesData, occurrenceData, staffData, activityLogsData, statusLogsData, hubsData, attractionsData } = require('./mockData');
+const {
+  parksData,
+  zonesData,
+  speciesData,
+  occurrenceData,
+  staffData,
+  activityLogsData,
+  statusLogsData,
+  hubsData,
+  attractionsData,
+  facilitiesData,
+  eventsData,
+  parkAssetsData,
+  sensorsData,
+} = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -206,7 +220,7 @@ async function seed() {
   console.log(`Total species seeded: ${speciesList.length}\n`);
 
   const occurrenceList = [];
-  for (let i = 0; i < speciesList.length; i++) {
+  for (let i = 0; i < occurrenceData.length; i++) {
     let selectedStatusLogs = [];
     try {
       selectedStatusLogs = getRandomItems(statusLogsData, 2);
@@ -216,10 +230,13 @@ async function seed() {
 
     const occurrenceCurrent = occurrenceData[i];
 
-    // Get the species based on index
-    const species = speciesList[i];
-
-    occurrenceCurrent.speciesId = species.id;
+    if (i === occurrenceData.length - 1) {
+      occurrenceCurrent.speciesId = speciesList[0].id;
+    } else {
+      // Get the species based on index
+      const species = speciesList[i % speciesList.length];
+      occurrenceCurrent.speciesId = species.id;
+    }
 
     if (selectedStatusLogs && selectedStatusLogs.length > 1) {
       occurrenceCurrent.occurrenceStatus = selectedStatusLogs[1].statusLogType;
@@ -272,17 +289,78 @@ async function seed() {
   }
   console.log(`Total staff seeded: ${staffList.length}\n`);
 
-  /// put facility here
-  /*
+  const facilityList = [];
+  for (const facility of facilitiesData) {
+    const createdFacility = await prisma.facility.create({
+      data: facility,
+    });
+    facilityList.push(createdFacility);
+  }
+  console.log(`Total facilities seeded: ${facilityList.length}\n`);
+
+  const storeroomId = facilityList[7].id;
+
   const hubList = [];
   for (const hub of hubsData) {
+    hub.facilityId = storeroomId;
     const createdHub = await prisma.hub.create({
       data: hub,
     });
     hubList.push(createdHub);
   }
-  console.log(`Total hubs seeded: ${hubList.length}\n`);*/
-  
+  console.log(`Total hubs seeded: ${hubList.length}\n`);
+
+  const parkAssetList = [];
+  const miniStoreSBG = facilityList[8].id;
+  const miniStoreBAMKP = facilityList[9].id;
+
+  for (const parkAsset of parkAssetsData) {
+    if (parkAsset.parkAssetType === 'HOSES_AND_PIPES' || parkAsset.name.toLowerCase().includes('cone')) {
+      parkAsset.facilityId = miniStoreSBG;
+    } else if (parkAsset.name.toLowerCase().includes('saw') || parkAsset.name.toLowerCase().includes('lawnmower')) {
+      parkAsset.facilityId = miniStoreBAMKP;
+    }
+    const createdParkAsset = await prisma.parkAsset.create({
+      data: parkAsset,
+    });
+    parkAssetList.push(createdParkAsset);
+  }
+  console.log(`Total park assets seeded: ${parkAssetList.length}\n`);
+
+  // Seeding Sensors
+  const sensorList = [];
+  for (const sensor of sensorsData) {
+    sensor.facilityId = storeroomId;
+    const createdSensor = await prisma.sensor.create({
+      data: sensor,
+    });
+    sensorList.push(createdSensor);
+  }
+  console.log(`Total sensors seeded: ${sensorList.length}\n`);
+
+  const amphitheaterId = facilityList[3].id;
+  const dragonPlaygroundId = facilityList[6].id;
+  const flowerPlaygroundId = facilityList[0].id;
+
+  const eventList = [];
+  for (let i = 0; i < eventsData.length; i++) {
+    const event = eventsData[i];
+
+    if (i < 3) {
+      event.facilityId = amphitheaterId;
+    } else if (i < 5) {
+      event.facilityId = dragonPlaygroundId;
+    } else {
+      event.facilityId = flowerPlaygroundId;
+    }
+
+    const createdEvent = await prisma.event.create({
+      data: event,
+    });
+    eventList.push(createdEvent);
+  }
+  console.log(`Total events seeded: ${eventList.length}\n`);
+
   const attractionList = [];
   for (const attraction of attractionsData) {
     const createdAttraction = await prisma.attraction.create({

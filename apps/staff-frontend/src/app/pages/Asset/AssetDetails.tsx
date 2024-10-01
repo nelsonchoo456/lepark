@@ -1,32 +1,39 @@
-import { useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 
 import { FaTools, FaLeaf, FaWrench } from 'react-icons/fa';
 import moment from 'moment';
-import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById } from '@lepark/data-access';
+import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
-// import EntityNotFound from '../EntityNotFound.tsx/EntityNotFound';
+import { useAuth } from '@lepark/common-ui'; // Add this import
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
-  const { asset, loading, notFound } = useRestrictAsset(assetId);
+  const { asset, loading } = useRestrictAsset(assetId);
+  const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
+  console.log(asset);
   const navigate = useNavigate();
 
   const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
     const words = enumValue.split('_');
 
     if (enumType === 'type' || enumType === 'condition') {
-      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+      return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     } else {
-      return words.map(word => word.toUpperCase()).join(' ');
+      return words.map((word) => word.toUpperCase()).join(' ');
     }
   };
 
   const descriptionsItems = [
+    {
+      key: 'serialNumber',
+      label: 'Serial Number',
+      children: asset ? asset.serialNumber : 'Loading...',
+    },
     {
       key: 'assetType',
       label: 'Asset Type',
@@ -35,27 +42,36 @@ const AssetDetails = () => {
     {
       key: 'assetStatus',
       label: 'Status',
-      children: asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-        <Tag color="green" bordered={false}>AVAILABLE</Tag>
-      ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-        <Tag color="blue" bordered={false}>IN USE</Tag>
-      ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-        <Tag color="orange" bordered={false}>UNDER MAINTENANCE</Tag>
-      ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-        <Tag color="red" bordered={false}>DECOMMISSIONED</Tag>
-      ) : (
-        <Tag bordered={false}>{asset?.parkAssetStatus}</Tag>
-      )
+      children:
+        asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
+          <Tag color="green">AVAILABLE</Tag>
+        ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
+          <Tag color="blue">IN USE</Tag>
+        ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
+          <Tag color="orange">UNDER MAINTENANCE</Tag>
+        ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
+          <Tag color="red">DECOMMISSIONED</Tag>
+        ) : (
+          <Tag>{asset?.parkAssetStatus}</Tag>
+        ),
     },
+    // {
+    //   key: 'nextMaintenance',
+    //   label: 'Next Maintenance',
+    //   children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
+    // },
+    // Add park name for Superadmin only
+    ...(user?.role === StaffType.SUPERADMIN ? [
+      {
+        key: 'park',
+        label: 'Park',
+        children: asset ? asset.parkName : 'Loading...',
+      },
+    ] : []),
     {
-      key: 'lastMaintenance',
-      label: 'Last Maintenance',
-      children: asset ? moment(asset.lastMaintenanceDate).fromNow() : 'Loading...',
-    },
-     {
-      key: 'facilityName',
+      key: 'facility',
       label: 'Facility',
-      children: asset ? asset.facilityName : 'Loading...',
+      children: asset ? asset.facility?.name : 'Loading...',
     },
   ];
 
@@ -74,24 +90,24 @@ const AssetDetails = () => {
       isMain: true,
     },
     {
-      title: asset?.parkAssetName ? asset.parkAssetName : 'Details',
-      pathKey: `/assets/${asset?.id}`,
+      title: asset?.name ? asset.name : 'Details',
+      pathKey: `/parkasset/${asset?.id}`,
       isCurrent: true,
     },
   ];
 
-  const getAssetTypeIcon = (assetType: ParkAssetTypeEnum) => {
-    switch (assetType) {
-      case ParkAssetTypeEnum.EQUIPMENT_RELATED:
-        return <FaTools className="text-3xl mt-2 text-blue-500" />;
-      case ParkAssetTypeEnum.PLANT_RELATED:
-        return <FaLeaf className="text-3xl mt-2 text-green-500" />;
-      case ParkAssetTypeEnum.PLANT_TOOL:
-        return <FaWrench className="text-3xl mt-2 text-orange-500" />;
-      default:
-        return <FaTools className="text-3xl mt-2 text-gray-500" />;
-    }
-  };
+  // const getAssetTypeIcon = (assetType: ParkAssetTypeEnum) => {
+  //   switch (assetType) {
+  //     case ParkAssetTypeEnum.PLANT_TOOL_AND_EQUIPMENT:
+  //       return <FaTools className="text-3xl mt-2 text-blue-500" />;
+  //     case ParkAssetTypeEnum.PLANT_RELATED:
+  //       return <FaLeaf className="text-3xl mt-2 text-green-500" />;
+  //     case ParkAssetTypeEnum.PLANT_TOOL:
+  //       return <FaWrench className="text-3xl mt-2 text-orange-500" />;
+  //     default:
+  //       return <FaTools className="text-3xl mt-2 text-gray-500" />;
+  //   }
+  // };
 
   const getAssetConditionInfo = (condition: ParkAssetConditionEnum) => {
     switch (condition) {
@@ -118,12 +134,6 @@ const AssetDetails = () => {
         </Card>
       </ContentWrapperDark>
     );
-  }
-
-  if (notFound) {
-    // [ ENTITY NOT FOUND MERGE ISSUE ]
-    return <></>
-    // return <EntityNotFound entityName="Asset" listPath="/parkasset" />;
   }
 
   if (!asset) {
@@ -160,12 +170,8 @@ const AssetDetails = () => {
             )}
           </div>
           <div className="flex-1 flex-col flex">
-            <LogoText className="text-2xl py-2 m-0">{asset?.parkAssetName}</LogoText>
-            <Descriptions items={descriptionsItems} column={1} size="small" />
-
-            <div className="flex h-24 w-full gap-2 mt-auto">
-              {/* Asset type, maintenance, and condition info can be added here if needed */}
-            </div>
+            <LogoText className="text-2xl py-2 m-0">{asset?.name}</LogoText>
+            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4"/>
           </div>
         </div>
 

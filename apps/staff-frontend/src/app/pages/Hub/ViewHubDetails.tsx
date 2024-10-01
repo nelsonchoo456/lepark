@@ -1,46 +1,19 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse } from '@lepark/data-access';
-import { Card, Descriptions, Spin, Tabs, Tag } from 'antd';
+import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty } from 'antd';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
-import HubCarousel from './components/HubCarousel';
 import InformationTab from './components/InformationTab';
+import LocationTab from './components/LocationTab';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
-  const { hub } = useRestrictHub(hubId); // Custom hook to fetch hub details
-  const [loading, setLoading] = useState(true);
-  const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const { hub, loading } = useRestrictHub(hubId);
   const { user } = useAuth<StaffResponse>();
-  const [park, setPark] = useState<ParkResponse | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (hubId) {
-        try {
-          if (hub && hub.facilityId) {
-            const facilityResponse = await getFacilityById(hub.facilityId);
-            if (facilityResponse.status === 200) {
-              setFacility(facilityResponse.data);
-              //console.log(facilityResponse.data);
-              const parkResponse = await getParkById(facilityResponse.data.parkId);
-              if (parkResponse.status === 200) {
-                setPark(parkResponse.data);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching hub data:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchData();
-  }, [hubId, hub]);
+  const { zones } = useFetchZones();
 
   const breadcrumbItems = [
     {
@@ -49,7 +22,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.name ? hub?.name : 'Details',
+      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -69,7 +42,7 @@ const ViewHubDetails = () => {
           case 'ACTIVE':
             return <Tag color="green">ACTIVE</Tag>;
           case 'INACTIVE':
-            return <Tag color="silver">INACTIVE</Tag>;
+            return <Tag color="blue">INACTIVE</Tag>;
           case 'UNDER_MAINTENANCE':
             return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
           case 'DECOMMISSIONED':
@@ -79,47 +52,22 @@ const ViewHubDetails = () => {
         }
       })(),
     },
-    {
-      key: 'ipAddress',
-      label: 'IP Address',
-      children: hub?.ipAddress,
-    },
-    {
-      key: 'macAddress',
-      label: 'MAC Address',
-      children: hub?.macAddress,
-    },
-    {
-      key: 'radioGroup',
-      label: 'Radio Group',
-      children: hub?.radioGroup,
-    },
-    {
-      key: 'hubSecret',
-      label: 'Hub Secret',
-      children: hub?.hubSecret,
-    },
-    {
-      key: 'facilityName',
-      label: 'Facility',
-      children: facility?.facilityName,
-    },
-  ]
-
-  if (hub?.nextMaintenanceDate) {
-    descriptionsItems.push({
+  /*  {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
-      children: moment(hub.nextMaintenanceDate).format('D MMM YY'),
-    });
-  }
-
-  const descriptionsItemsForSuperAdmin = [
-    ...descriptionsItems,
+      children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+    },*/
+    ...(user?.role === StaffType.SUPERADMIN ? [
+      {
+        key: 'parkName',
+        label: 'Park Name',
+        children: hub?.park?.name ?? '-',
+      },
+    ] : []),
     {
-      key: 'parkName',
-      label: 'Park Name',
-      children: park?.name,
+      key: 'name',
+      label: 'Facility',
+      children: hub?.facility?.name,
     },
   ];
 
@@ -128,6 +76,11 @@ const ViewHubDetails = () => {
       key: 'information',
       label: 'Information',
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
+    },
+    {
+      key: 'location',
+      label: 'Storeroom Location',
+      children: hub ? <LocationTab facility={hub.facility} park={hub.park} zones={zones} /> : <p>Loading hub data...</p>,
     },
   ];
 
@@ -144,14 +97,35 @@ const ViewHubDetails = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <div className="md:flex w-full gap-4">
-          <div className="w-full md:w-1/2 lg:w-1/2 ">
-            <HubCarousel images={hub?.images || []} />
+          <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">
+            {hub?.images && hub.images.length > 0 ? (
+              <Carousel style={{ maxWidth: '100%' }}>
+                {hub.images.map((url, index) => (
+                  <div key={index}>
+                    <div
+                      style={{
+                        backgroundImage: `url('${url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        color: 'white',
+                        overflow: 'hidden',
+                      }}
+                      className="h-64 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            ) : (
+              <div className="h-64 bg-gray-200 flex items-center justify-center">
+                <Empty description="No Image" />
+              </div>
+            )}
           </div>
 
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
             <Descriptions
-              items={user?.role === 'SUPERADMIN' ? descriptionsItemsForSuperAdmin : descriptionsItems}
+              items={descriptionsItems}
               column={1}
               size="small"
               className="mb-4"

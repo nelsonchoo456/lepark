@@ -1,50 +1,52 @@
+import { FacilityResponse } from './facility';
+import { MaintenanceHistoryResponse } from './maintenancehistory';
+import { ParkResponse } from './park';
 import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedenums';
 
 export interface ParkAssetData {
-  parkAssetName: string;
+  name: string;
   parkAssetType: ParkAssetTypeEnum;
-  parkAssetDescription?: string;
+  description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  recurringMaintenanceDuration: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
-  images: string[];
+  images?: string[];
   remarks?: string;
-  facilityId: string;
+  facilityId?: string;
 }
 
 export interface ParkAssetResponse {
   id: string;
-  parkAssetName: string;
+  serialNumber: string; // Add this line
+  name: string;
   parkAssetType: ParkAssetTypeEnum;
-  parkAssetDescription?: string;
+  description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  recurringMaintenanceDuration: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
-  images: string[];
+  images?: string[];
   remarks?: string;
   facilityId: string;
-  facilityName: string;
-  parkId: number;
-  //maintenanceHistory?: MaintenanceHistoryResponse[];
+  facility?: FacilityResponse;
+  parkName?: string;
+  park?: ParkResponse;
+  maintenanceHistory?: MaintenanceHistoryResponse[];
 }
 
 export interface ParkAssetUpdateData {
-  parkAssetName?: string;
+  name?: string;
   parkAssetType?: ParkAssetTypeEnum;
-  parkAssetDescription?: string;
+  description?: string;
   parkAssetStatus?: ParkAssetStatusEnum;
   acquisitionDate?: string;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   supplier?: string;

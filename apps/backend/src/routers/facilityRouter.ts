@@ -1,11 +1,12 @@
 import express from 'express';
 import FacilityService from '../services/FacilityService';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createFacility', async (req, res) => {
+router.post('/createFacility', authenticateJWTStaff, async (req, res) => {
   try {
     const facility = await FacilityService.createFacility(req.body);
     res.status(201).json(facility);
@@ -42,7 +43,7 @@ router.get('/getFacilityById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateFacilityDetails/:id', async (req, res) => {
+router.put('/updateFacilityDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const facility = await FacilityService.updateFacilityDetails(req.params.id, req.body);
     res.status(200).json(facility);
@@ -51,7 +52,7 @@ router.put('/updateFacilityDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteFacility/:id', async (req, res) => {
+router.delete('/deleteFacility/:id', authenticateJWTStaff, async (req, res) => {
   try {
     await FacilityService.deleteFacility(req.params.id);
     res.status(204).send();
@@ -76,6 +77,18 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+router.get('/check-existing', async (req, res) => {
+  const { name, parkId } = req.query;
+
+  try {
+    const exists = await FacilityService.checkExistingFacility(name as string, Number(parkId));
+    return res.status(200).json({ exists });
+  } catch (error) {
+    console.error('Error checking existing facility:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 

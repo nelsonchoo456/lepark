@@ -1,5 +1,3 @@
-export * from './lib/data-access';
-
 export * from './lib/api/park';
 export * from './lib/types/park';
 

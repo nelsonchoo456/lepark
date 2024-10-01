@@ -2,14 +2,25 @@ import express from 'express';
 import AttractionService from '../services/AttractionService';
 import { AttractionSchemaType, AttractionTicketListingSchemaType } from '../schemas/attractionSchema';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createAttraction', async (req, res) => {
+router.post('/createAttraction', authenticateJWTStaff, async (req, res) => {
   try {
     const attraction = await AttractionService.createAttraction(req.body);
     res.status(201).json(attraction);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/checkAttractionNameExists', async (req, res) => {
+  try {
+    const { parkId, title } = req.query;
+    const exists = await AttractionService.checkAttractionNameExists(Number(parkId), String(title));
+    res.status(200).json({ exists });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -44,7 +55,7 @@ router.get('/viewAttractionDetails/:id', async (req, res) => {
   }
 });
 
-router.put('/updateAttractionDetails/:id', async (req, res) => {
+router.put('/updateAttractionDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const attractionId = req.params.id;
     const updateData: Partial<AttractionSchemaType> = req.body;
@@ -55,7 +66,7 @@ router.put('/updateAttractionDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteAttraction/:id', async (req, res) => {
+router.delete('/deleteAttraction/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const attractionId = req.params.id;
     await AttractionService.deleteAttraction(attractionId);
@@ -67,12 +78,12 @@ router.delete('/deleteAttraction/:id', async (req, res) => {
 
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
-     const files = req.files as Express.Multer.File[];
+    const files = req.files as Express.Multer.File[];
 
-     // Check if a file is provided
-     if (!files || files.length === 0) {
-       // return res.status(400).json({ error: 'No file uploaded' });
-     }
+    // Check if a file is provided
+    if (!files || files.length === 0) {
+      // return res.status(400).json({ error: 'No file uploaded' });
+    }
 
     const uploadedUrls = [];
     for (const file of files) {

@@ -1,21 +1,14 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import L, { DivIcon } from 'leaflet';
 import { Tooltip as AntdTooltip, Button, Tag } from 'antd';
 import { Marker, Tooltip } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EventResponse, EventStatusEnum, FacilityResponse } from '@lepark/data-access';
-import { FaMale, FaFemale, FaCampground, FaCar } from 'react-icons/fa';
-import { FaPersonShelter } from 'react-icons/fa6';
-import { IoInformationSharp, IoAccessibilitySharp } from 'react-icons/io5';
-import { IoIosWater } from 'react-icons/io';
-import { GiFirstAidKit, GiFireplace, GiTheaterCurtains } from 'react-icons/gi';
-import { MdArrowOutward, MdOutlineStorage } from 'react-icons/md';
-import { TbLocation, TbPlayFootball } from 'react-icons/tb';
-import { PiPicnicTableBold } from 'react-icons/pi';
-import { GrAed } from 'react-icons/gr';
+import { MdArrowOutward } from 'react-icons/md';
+import { TbLocation } from 'react-icons/tb';
 import { InnerPictureMarkerGlow, PictureMarkerInner } from '@lepark/common-ui';
 import { BiSolidCalendar, BiSolidCalendarEvent } from 'react-icons/bi';
-import HoverInformation, { HoverItem } from './HoverInformation';
+import { HoverItem } from './HoverInformation';
 import { Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import ParkStatusTag from '../../pages/ParkDetails/components/ParkStatusTag';
@@ -66,12 +59,11 @@ function FacilityEventsPictureMarker({
   const eventMarkerGap = 16;
 
   const getCustomIcon = (event: EventResponse, index: number) => {
-    
     if (hovered && hovered?.id === event?.id) {
       const thisCircleWidth = hovered?.id === event.id ? circleWidth * 1.3 : circleWidth;
       const iconHTML = renderToStaticMarkup(
         <InnerPictureMarkerGlow>
-          <PictureMarkerInner circleWidth={thisCircleWidth} innerBackgroundColor="transparent">
+          <PictureMarkerInner $circleWidth={thisCircleWidth} $innerBackgroundColor="transparent">
             <div
               style={{
                 width: '100%',
@@ -87,17 +79,17 @@ function FacilityEventsPictureMarker({
           </PictureMarkerInner>
         </InnerPictureMarkerGlow>,
       );
-  
+
       return L.divIcon({
         html: iconHTML,
         iconSize: [thisCircleWidth, thisCircleWidth],
-        iconAnchor: [thisCircleWidth / 2 - (index + 1) * eventMarkerGap, thisCircleWidth],
+        iconAnchor: [thisCircleWidth / 2 - (index + 1) * eventMarkerGap, thisCircleWidth / 2],
         className: '',
       });
     }
 
     const iconHTML = renderToStaticMarkup(
-      <PictureMarkerInner circleWidth={circleWidth} innerBackgroundColor="transparent">
+      <PictureMarkerInner $circleWidth={circleWidth} $innerBackgroundColor="transparent">
         <div
           style={{
             width: '100%',
@@ -116,7 +108,7 @@ function FacilityEventsPictureMarker({
     return L.divIcon({
       html: iconHTML,
       iconSize: [circleWidth, circleWidth],
-      iconAnchor: [circleWidth / 2 - (index + 1) * eventMarkerGap, circleWidth],
+      iconAnchor: [circleWidth / 2 - (index + 1) * eventMarkerGap, circleWidth / 2],
       className: '',
     });
   };
@@ -131,14 +123,14 @@ function FacilityEventsPictureMarker({
           lat={lat}
           lng={lng}
           innerBackgroundColor={COLORS.sky[400]}
-          tooltipLabel={facility.facilityName}
+          tooltipLabel={facility.name}
           facilityType={facility.facilityType}
           hovered={hovered}
           setHovered={() =>
             setHovered &&
             setHovered({
               ...facility,
-              title: facility.facilityName,
+              title: facility.name,
               image: facility.images ? facility.images[0] : null,
               entityType: 'FACILITY',
               children: (
@@ -212,7 +204,7 @@ function FacilityEventsPictureMarker({
                                               className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
                                               onClick={() => navigate(`/facilities/${facility.id}`)}
                                             >
-                                              @ {facility.facilityName}
+                                              @ {facility.name}
                                             </p>
                                           </AntdTooltip>
                                         </div>
@@ -293,7 +285,7 @@ function FacilityEventsPictureMarker({
                             className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
                             onClick={() => navigate(`/facilities/${facility.id}`)}
                           >
-                            @ {facility.facilityName}
+                            @ {facility.name}
                           </p>
                         </AntdTooltip>
                       </div>

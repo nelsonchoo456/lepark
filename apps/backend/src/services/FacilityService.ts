@@ -14,6 +14,11 @@ const s3 = new aws.S3({
 class FacilityService {
   public async createFacility(data: FacilitySchemaType): Promise<Facility> {
     try {
+      const existingFacility = await FacilityDao.getFacilityByNameAndParkId(data.name, data.parkId);
+      if (existingFacility) {
+        throw new Error('A facility with this name already exists in the park.');
+      }
+
       const formattedData = dateFormatter(data);
 
       // Validate input data using Zod
@@ -54,10 +59,15 @@ class FacilityService {
       const formattedData = dateFormatter(data);
 
       // Merge existing data with update data
-      let mergedData = { ...existingFacility, ...formattedData };
+      const mergedData = { ...existingFacility, ...formattedData };
 
       // Validate merged data using Zod
       FacilitySchema.parse(mergedData);
+
+      const existingFacilityInNewPark = await FacilityDao.getFacilityByNameAndParkId(mergedData.name, data.parkId);
+      if (existingFacilityInNewPark && existingFacilityInNewPark.id !== id) {
+        throw new Error('A facility with this name already exists in the park.');
+      }
 
       // Convert validated FacilitySchemaType data to Prisma-compatible update input
       const updateData: Prisma.FacilityUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
@@ -101,13 +111,18 @@ class FacilityService {
       throw new Error('Error uploading image to S3');
     }
   }
+
+  public async checkExistingFacility(name: string, parkId: number): Promise<boolean> {
+    const existingFacility = await FacilityDao.getFacilityByNameAndParkId(name, parkId);
+    return !!existingFacility; // Returns true if exists, false otherwise
+  }
 }
 
 function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreateInput {
   // Add checks for all required fields
   if (
-    !data.facilityName ||
-    !data.facilityDescription ||
+    !data.name ||
+    !data.description ||
     !data.isBookable === undefined ||
     !data.isPublic === undefined ||
     !data.isSheltered === undefined ||
@@ -122,7 +137,7 @@ function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreate
     !data.lat ||
     !data.long ||
     !data.size ||
-    !data.capacity ||
+    !data.capacity === undefined ||
     !data.fee === undefined ||
     !data.parkId
   ) {

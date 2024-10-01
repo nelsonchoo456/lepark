@@ -66,7 +66,7 @@ const AttractionDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: attraction && park ? <LocationTab attraction={attraction} park={park} /> : <></>,
+      children: attraction && park ? <LocationTab attraction={attraction} park={park} user={user} /> : <></>,
     },
     {
       key: 'tickets',

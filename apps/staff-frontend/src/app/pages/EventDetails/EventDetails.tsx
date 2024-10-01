@@ -11,7 +11,16 @@ import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import { WiDaySunny } from 'react-icons/wi';
-import { FaChalkboardTeacher, FaWalking, FaTheaterMasks, FaMicrophoneAlt, FaTrophy, FaUmbrellaBeach, FaUsers, FaUserFriends } from 'react-icons/fa';
+import {
+  FaChalkboardTeacher,
+  FaWalking,
+  FaTheaterMasks,
+  FaMicrophoneAlt,
+  FaTrophy,
+  FaUmbrellaBeach,
+  FaUsers,
+  FaUserFriends,
+} from 'react-icons/fa';
 import { GiPublicSpeaker } from 'react-icons/gi';
 import { MdEvent, MdChildCare, MdNaturePeople, MdPets, MdFitnessCenter } from 'react-icons/md';
 
@@ -66,20 +75,19 @@ const EventDetails = () => {
   };
 
   const descriptionsItems = [
-
     {
-        key: 'facility',
-        label: 'Location',
-        children: (
-            <Flex justify="space-between" align="center">
-                <span className="font-semibold">{facility?.facilityName || 'Loading...'}</span>
-                {facility && (
+      key: 'facility',
+      label: 'Location',
+      children: (
+        <Flex justify="space-between" align="center">
+          <span className="font-semibold">{facility?.name || 'Loading...'}</span>
+          {facility && (
             <Tooltip title="Go to Facility">
               <Button type="link" icon={<FiExternalLink />} onClick={() => navigate(`/facilities/${facility.id}`)} />
             </Tooltip>
           )}
-            </Flex>
-        )
+        </Flex>
+      ),
     },
 
     {

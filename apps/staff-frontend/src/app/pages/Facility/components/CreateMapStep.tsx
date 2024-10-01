@@ -22,7 +22,8 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, parks, formValu
   const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
 
   useEffect(() => {
-    console.log(parks)
+    console.log(parks);
+    console.log(formValues);
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((z) => z.id === formValues.parkId);
       setSelectedPark(selectedPark);
@@ -33,16 +34,15 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, parks, formValu
           const zonesData = zonesRes.data;
           setSelectedParkZones(zonesData);
         }
-      }
+      };
       fetchZones();
     }
   }, [parks, formValues.parkId]);
-  
+
   return (
     <>
-      <div className='mt-4'>
-        <div className='font-semibold'>Instructions: 
-        </div> Drag the Marker around within the boundaries of your selected Park.
+      <div className="mt-4">
+        <div className="font-semibold">Instructions:</div> Drag the Marker around within the boundaries of your selected Park.
       </div>
       <div
         style={{
@@ -61,17 +61,31 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, parks, formValu
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <PolygonFitBounds geom={selectedPark?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={selectedPark?.name}/>
-          {selectedParkZones && selectedParkZones?.length > 0 &&
-            selectedParkZones
-              .map((zone) => (
-                <PolygonWithLabel key={zone.id} entityId={zone.id} geom={zone.geom} polygonLabel={<div className='flex items-center gap-2'><TbTree className='text-xl'/>{zone.name}</div>} color={COLORS.green[600]} fillColor={"transparent"} labelFields={{ color: COLORS.green[800], textShadow: "none" }}/>
+          <PolygonFitBounds geom={selectedPark?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={selectedPark?.name} />
+          {selectedParkZones &&
+            selectedParkZones?.length > 0 &&
+            selectedParkZones.map((zone) => (
+              <PolygonWithLabel
+                key={zone.id}
+                entityId={zone.id}
+                geom={zone.geom}
+                polygonLabel={
+                  <div className="flex items-center gap-2">
+                    <TbTree className="text-xl" />
+                    {zone.name}
+                  </div>
+                }
+                color={COLORS.green[600]}
+                fillColor={'transparent'}
+                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+              />
             ))}
           <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} />
         </MapContainer>
       </div>
-      {selectedPark?.geom?.coordinates && selectedPark?.geom.coordinates.length > 0 && 
-        <div className='font-semibold mb-4 text-[#006400]'>Displaying Park: {selectedPark.name}</div>}
+      {selectedPark?.geom?.coordinates && selectedPark?.geom.coordinates.length > 0 && (
+        <div className="font-semibold mb-4 text-[#006400]">Displaying Park: {selectedPark.name}</div>
+      )}
     </>
   );
 };

@@ -17,7 +17,6 @@ import {
   Steps,
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '../../components/main/PageHeader';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { registerStaff, RegisterStaffData, StaffResponse, StaffType, ParkResponse, getParkById, getAllParks } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';

@@ -367,10 +367,15 @@ const EventEdit = () => {
                   <Select placeholder={park?.name} disabled />
                 </Form.Item>
 
-                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}>
+                <Form.Item
+                  name="facilityId"
+                  label="Facility"
+                  rules={[{ required: true }]}
+                  tooltip="Only public facilities of these types are available: Playground, Carpark, Stage, Picnic Area, BBQ Pit, Camping Area, Amphitheater, Gazebo."
+                >
                   <Select
                     placeholder="Select a Facility for this Event"
-                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.facilityName }))}
+                    options={facilities.map((facility) => ({ key: facility.id, value: facility.id, label: facility.name }))}
                     onChange={onFacilityChange}
                   />
                 </Form.Item>

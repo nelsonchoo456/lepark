@@ -3,7 +3,6 @@ import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, T
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { deleteSensor, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -11,9 +10,14 @@ import { MdDeleteOutline } from 'react-icons/md';
 import { ColumnsType } from 'antd/es/table';
 import { SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
 import { useFetchSensors } from '../../hooks/Sensors/useFetchSensors';
+import moment from 'moment';
+import PageHeader2 from '../../components/main/PageHeader2';
 
 const formatEnumLabel = (enumValue: string): string => {
-  return enumValue.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  return enumValue
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 const SensorManagementPage: React.FC = () => {
@@ -31,8 +35,8 @@ const SensorManagementPage: React.FC = () => {
           content: 'Deleting a Sensor cannot be undone. Are you sure you want to proceed?',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
-          okText: "Confirm Delete",
-          okButtonProps: { danger: true }
+          okText: 'Confirm Delete',
+          okButtonProps: { danger: true },
         });
       });
 
@@ -49,9 +53,7 @@ const SensorManagementPage: React.FC = () => {
 
   const filteredSensors = useMemo(() => {
     return sensors.filter((sensor) => {
-      return Object.values(sensor).some((value) =>
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      return Object.values(sensor).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()));
     });
   }, [sensors, searchQuery]);
 
@@ -61,11 +63,39 @@ const SensorManagementPage: React.FC = () => {
 
   const columns: ColumnsType<SensorResponse> = [
     {
-      title: 'Name',
-      dataIndex: 'sensorName',
-      key: 'sensorName',
-      sorter: (a, b) => a.sensorName.localeCompare(b.sensorName),
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '20%',
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      width: '20%',
+    },
+    {
+      title: 'Facility',
+      render: (text, record) => (
+        <Flex justify="space-between" align="center">
+          {record.facility?.name}
+        </Flex>
+      ),
+      sorter: (a, b) => {
+        if (a.park?.name && b.park?.name) {
+          return a.park.name.localeCompare(b.park.name);
+        }
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
+        }
+        return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
+      },
+
+      width: '15%',
     },
     {
       title: 'Type',
@@ -75,37 +105,178 @@ const SensorManagementPage: React.FC = () => {
       onFilter: (value, record) => record.sensorType === value,
       render: (type: string) => formatEnumLabel(type),
       width: '15%',
-
     },
     {
-      title: 'Status',
+      title: 'Sensor Status',
       dataIndex: 'sensorStatus',
       key: 'sensorStatus',
       filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabel(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
-      render: (status: string) => (
-        <Tag color={status === 'ACTIVE' ? 'green' : status === 'INACTIVE' ? 'orange' : 'red'} bordered={false}>
-          {formatEnumLabel(status)}
-        </Tag>
+      render: (status: string) => {
+        switch (status) {
+          case SensorStatusEnum.ACTIVE:
+            return (
+              <Tag color="green" bordered={false}>
+                {status}
+              </Tag>
+            );
+          case SensorStatusEnum.INACTIVE:
+            return (
+              <Tag color="blue" bordered={false}>
+                {status}
+              </Tag>
+            );
+          case SensorStatusEnum.UNDER_MAINTENANCE:
+            return (
+              <Tag color="yellow" bordered={false}>
+                {status}
+              </Tag>
+            );
+          case SensorStatusEnum.DECOMMISSIONED:
+            return (
+              <Tag color="red" bordered={false}>
+                {status}
+              </Tag>
+            );
+          default:
+            return (
+              <Tag color="default" bordered={false}>
+                {status}
+              </Tag>
+            );
+        }
+      },
+      width: '15%',
+    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
+    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
+    //   width: '15%',
+    // },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: React.ReactNode, record: SensorResponse) => (
+        <Flex justify="center" gap={8}>
+          <Tooltip title="View Details">
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
+          </Tooltip>
+            <>
+              <Tooltip title="Edit Sensor">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
+              </Tooltip>
+              <Tooltip title="Delete Sensor">
+                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+              </Tooltip>
+            </>
+        </Flex>
       ),
+      width: '20%',
+    },
+  ];
+
+  const superAdminColumns: ColumnsType<SensorResponse> = [
+    {
+      title: 'Serial Number',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
+      width: '20%',
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      width: '20%',
+    },
+    {
+      title: 'Park, Facility',
+      render: (_, record) => (
+        <div>
+          <p className="font-semibold">{record.park?.name}</p>
+          <div className="flex">
+            <p className="opacity-50 mr-2">Facility:</p>
+            {record.facility?.name}
+          </div>
+        </div>
+      ),
+      sorter: (a, b) => {
+        if (a.park?.name && b.park?.name) {
+          return a.park.name.localeCompare(b.park.name);
+        }
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
+        }
+        return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
+      },
+
       width: '15%',
     },
     {
-      title: 'Last Calibrated',
-      dataIndex: 'lastCalibratedDate',
-      key: 'lastCalibratedDate',
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
-      sorter: (a, b) => new Date(a.lastCalibratedDate || '').getTime() - new Date(b.lastCalibratedDate || '').getTime(),
+      title: 'Type',
+      dataIndex: 'sensorType',
+      key: 'sensorType',
+      filters: Object.values(SensorTypeEnum).map((type) => ({ text: formatEnumLabel(type), value: type })),
+      onFilter: (value, record) => record.sensorType === value,
+      render: (type: string) => formatEnumLabel(type),
       width: '15%',
     },
     {
-      title: 'Next Maintenance',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
-      sorter: (a, b) => new Date(a.nextMaintenanceDate || '').getTime() - new Date(b.nextMaintenanceDate || '').getTime(),
+      title: 'Sensor Status',
+      dataIndex: 'sensorStatus',
+      key: 'sensorStatus',
+      filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabel(status), value: status })),
+      onFilter: (value, record) => record.sensorStatus === value,
+      render: (status: string) => {
+        switch (status) {
+          case SensorStatusEnum.ACTIVE:
+            return (
+              <Tag color="green" bordered={false}>
+                {status}
+              </Tag>
+            );
+          case SensorStatusEnum.INACTIVE:
+            return (
+              <Tag color="blue" bordered={false}>
+                {status}
+              </Tag>
+            );
+          case SensorStatusEnum.UNDER_MAINTENANCE:
+            return (
+              <Tag color="yellow" bordered={false}>
+                {status}
+              </Tag>
+            );
+          case SensorStatusEnum.DECOMMISSIONED:
+            return (
+              <Tag color="red" bordered={false}>
+                {status}
+              </Tag>
+            );
+          default:
+            return (
+              <Tag color="default" bordered={false}>
+                {status}
+              </Tag>
+            );
+        }
+      },
       width: '15%',
     },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
+    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
+    //   width: '15%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -117,7 +288,7 @@ const SensorManagementPage: React.FC = () => {
           {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
             <>
               <Tooltip title="Edit Sensor">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete Sensor">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
@@ -130,9 +301,18 @@ const SensorManagementPage: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Sensors Management',
+      pathKey: '/sensor',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
+
   return (
-     <ContentWrapperDark>
-      <PageHeader>Sensor Management</PageHeader>
+    <ContentWrapperDark>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}
@@ -141,15 +321,14 @@ const SensorManagementPage: React.FC = () => {
           className="mb-4 bg-white"
           variant="filled"
         />
-        {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-          <Button type="primary" onClick={() => navigate('create')}>
-            Create Sensor
-          </Button>
-        )}
+
+        <Button type="primary" onClick={() => navigate('create')}>
+          Create Sensor
+        </Button>
       </Flex>
       <Card>
         <Table
-          columns={columns}
+          columns={user?.role === StaffType.SUPERADMIN ? superAdminColumns : columns}
           dataSource={filteredSensors}
           rowKey="id"
           loading={loading}

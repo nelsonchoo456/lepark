@@ -1,24 +1,24 @@
-import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client';
+import { FacilityResponse } from './facility';
+import { HubResponse } from './hub';
+import { ParkResponse } from './park';
+import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums';
 
 export interface SensorData {
-  sensorName: string;
-  serialNumber: string;
+  name: string;
   sensorType: SensorTypeEnum;
-  sensorDescription?: string;
+  description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  lastCalibratedDate?: string;
   calibrationFrequencyDays: number;
-  recurringMaintenanceDuration: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes: number;
+  dataFrequencyMinutes?: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
-  image?: string;
-  latitude?: number;
-  longitude?: number;
+  images?: string[];
+  lat?: number;
+  long?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;
@@ -26,57 +26,49 @@ export interface SensorData {
 
 export interface SensorResponse {
   id: string;
-  sensorName: string;
+  name: string;
   serialNumber: string;
   sensorType: SensorTypeEnum;
-  sensorDescription?: string;
+  description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
   lastCalibratedDate?: string;
   calibrationFrequencyDays: number;
-  recurringMaintenanceDuration: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
-  image?: string;
-  latitude?: number;
-  longitude?: number;
+  images?: string[];
+  lat?: number;
+  long?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;
-  hub?: {
-    id: string;
-    name: string;
-  };
-  facility?: {
-    id: string;
-    facilityName: string;
-    parkId?: number;
-  };
+  hub?: HubResponse;
+  facility?: FacilityResponse;
+  park?: ParkResponse;
+  parkName?: string;
 }
 
 export interface SensorUpdateData {
-  sensorName?: string;
-  serialNumber?: string;
+  name?: string;
   sensorType?: SensorTypeEnum;
-  sensorDescription?: string;
+  description?: string;
   sensorStatus?: SensorStatusEnum;
   acquisitionDate?: string;
   lastCalibratedDate?: string;
   calibrationFrequencyDays?: number;
-  recurringMaintenanceDuration?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes?: number;
   sensorUnit?: SensorUnitEnum;
   supplier?: string;
   supplierContactNumber?: string;
-  image?: string;
-  latitude?: number;
-  longitude?: number;
+  images?: string[];
+  lat?: number;
+  long?: number;
   remarks?: string;
   hubId?: string;
   facilityId?: string;
@@ -87,7 +79,7 @@ export interface SensorMaintenanceHistoryResponse {
   maintenanceDate: string;
   description: string;
   sensorId: string;
-  sensorName: string;
+  name: string;
 }
 
 export interface SensorCalibrationHistoryResponse {
@@ -95,7 +87,7 @@ export interface SensorCalibrationHistoryResponse {
   calibrationDate: string;
   description: string;
   sensorId: string;
-  sensorName: string;
+  name: string;
 }
 
 export interface SensorUsageMetricsResponse {
@@ -105,5 +97,5 @@ export interface SensorUsageMetricsResponse {
   dataVolume: number;
   description: string;
   sensorId: string;
-  sensorName: string;
+  name: string;
 }

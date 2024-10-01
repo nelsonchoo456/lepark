@@ -67,7 +67,7 @@ const InformationTab = ({ event, facility, park }: InformationTabProps) => {
     {
       key: 'facility',
       label: 'Facility',
-      children: facility?.facilityName,
+      children: facility?.name,
     },
     {
       key: 'park',
@@ -83,43 +83,25 @@ const InformationTab = ({ event, facility, park }: InformationTabProps) => {
       children: dayjs(event?.startDate).format('D MMMM YYYY') + ' - ' + dayjs(event?.endDate).format('D MMMM YYYY'),
     },
     {
-        key: 'time',
-        label: 'Time',
-        children: (
-          <>
-            <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>- {' '}
-            <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
-          </>
-        ),
-      },
-    ];
+      key: 'time',
+      label: 'Time',
+      children: (
+        <>
+          <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>-{' '}
+          <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
+        </>
+      ),
+    },
+  ];
 
   return (
     <div>
       <Divider orientation="left">Event Details</Divider>
-      <Descriptions
-        key="details"
-        items={detailsItems}
-        column={1}
-        bordered
-        labelStyle={{ width: '15vw' }}
-      />
+      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: '15vw' }} />
       <Divider orientation="left">Event Location</Divider>
-      <Descriptions
-        key="location"
-        items={locationItems}
-        column={1}
-        bordered
-        labelStyle={{ width: '15vw' }}
-      />
+      <Descriptions key="location" items={locationItems} column={1} bordered labelStyle={{ width: '15vw' }} />
       <Divider orientation="left">Event Time</Divider>
-      <Descriptions
-        key="time"
-        items={timeItems}
-        column={1}
-        bordered
-        labelStyle={{ width: '15vw' }}
-      />
+      <Descriptions key="time" items={timeItems} column={1} bordered labelStyle={{ width: '15vw' }} />
     </div>
   );
 };

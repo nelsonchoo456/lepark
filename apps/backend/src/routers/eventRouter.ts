@@ -2,11 +2,12 @@ import express from 'express';
 import EventService from '../services/EventService';
 import { EventSchemaType } from '../schemas/eventSchema';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createEvent', async (req, res) => {
+router.post('/createEvent', authenticateJWTStaff, async (req, res) => {
   try {
     const event = await EventService.createEvent(req.body);
     res.status(201).json(event);
@@ -34,8 +35,18 @@ router.get('/getEventsByParkId/:parkId', async (req, res) => {
   }
 });
 
-router.get('/getEventsByFacilityId/:facilityId', async (req, res) => {
+router.get('/getEventCountByParkId/:parkId', async (req, res) => {
+  try {
+    const parkId = req.params.parkId;
+    const events = await EventService.getEventCountByParkId(parkId);
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
+
+router.get('/getEventsByFacilityId/:facilityId', async (req, res) => {
   try {
     const facilityId = req.params.facilityId;
     const events = await EventService.getEventsByFacilityId(facilityId);
@@ -55,7 +66,7 @@ router.get('/getEventById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateEventDetails/:id', async (req, res) => {
+router.put('/updateEventDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const eventId = req.params.id;
     const updateData: Partial<EventSchemaType> = req.body;
@@ -66,7 +77,7 @@ router.put('/updateEventDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteEvent/:id', async (req, res) => {
+router.delete('/deleteEvent/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const eventId = req.params.id;
     await EventService.deleteEvent(eventId);

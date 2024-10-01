@@ -1,5 +1,9 @@
-import { PrismaClient, Hub, Prisma } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility } from '@prisma/client';
 import ParkDao from './ParkDao';
+import FacilityDao from './FacilityDao';
+import ZoneDao from './ZoneDao';
+import { ParkResponseData } from '../schemas/parkSchema';
+import { ZoneResponseData } from '../schemas/zoneSchema';
 
 const prisma = new PrismaClient();
 
@@ -8,30 +12,40 @@ class HubDao {
     return prisma.hub.create({ data });
   }
 
-  public async getAllHubs(): Promise<Hub[]> {
-    // Fetch all hubs with their related facility information
+  public async getAllHubs(): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
     const hubs = await prisma.hub.findMany({
       include: {
         facility: true,
       },
     });
 
-    // Fetch park information for each facility
-    const parkPromises = hubs.map((hub) => {
-      if (hub.facility?.parkId) {
-        return ParkDao.getParkById(hub.facility.parkId);
+    const hubsWithDetails = await Promise.all(hubs.map(async (hub) => {
+      let facility, park, zone;
+
+      if (hub.facilityId) {
+        const fetchedFacility = await FacilityDao.getFacilityById(hub.facilityId);
+        facility = fetchedFacility;
+
+        if (facility?.parkId) {
+          const fetchedPark = await ParkDao.getParkById(facility.parkId);
+          park = fetchedPark;
+        }
       }
-      return Promise.resolve(null);
-    });
 
-    const parks = await Promise.all(parkPromises);
+      if (hub.zoneId) {
+        const fetchedZone = await ZoneDao.getZoneById(hub.zoneId);
+        zone = fetchedZone;
+      }
 
-    // Map hubs to include facility name and park information
-    return hubs.map((hub, index) => ({
-      ...hub,
-      facilityName: hub.facility?.facilityName,
-      parkName: parks[index]?.name,
+      return {
+        ...hub,
+        facility: facility || null,
+        park: park || null,
+        zone: zone || null,
+      };
     }));
+
+    return hubsWithDetails;
   }
 
   public async getHubsByParkId(parkId: number): Promise<Hub[]> {
@@ -49,13 +63,22 @@ class HubDao {
     // Map hubs to include facility name and park information
     return hubs.map((hub) => ({
       ...hub,
-      facilityName: hub.facility?.facilityName,
+      facilityName: hub.facility?.name,
       parkName: park?.name,
     }));
   }
 
   public async getHubById(id: string): Promise<Hub | null> {
-    return prisma.hub.findUnique({ where: { id } });
+    return prisma.hub.findUnique({
+      where: { id },
+      include: {
+        facility: true,
+      },
+    });
+  }
+
+  public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
+    return prisma.hub.findUnique({ where: { identifierNumber } });
   }
 
   public async getHubBySerialNumber(serialNumber: string): Promise<Hub | null> {

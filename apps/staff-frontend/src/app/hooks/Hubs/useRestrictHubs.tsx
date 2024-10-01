@@ -1,55 +1,61 @@
 import { useAuth } from '@lepark/common-ui';
-import { getFacilityById, getHubById, getParkById, HubResponse, ParkResponse, StaffResponse } from '@lepark/data-access';
-import { StaffType } from '@lepark/data-access';
-import { message, notification } from 'antd';
+import {
+  getHubById,
+  getFacilityById,
+  getParkById,
+  HubResponse,
+  FacilityResponse,
+  ParkResponse,
+  StaffResponse,
+  StaffType,
+} from '@lepark/data-access';
+import { notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const useRestrictHub = (hubId?: string) => {
-  const { user } = useAuth<StaffResponse>();
-  const [hub, setHub] = useState<HubResponse>();
+  const [hub, setHub] = useState<HubResponse | null>(null);
+  const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
-  const [park, setPark] = useState<ParkResponse>();
 
   useEffect(() => {
     if (!hubId || hubId === undefined) {
       navigate('/');
       return;
     }
-    fetchHub(hubId);
-  }, [hubId, navigate]);
 
-  const fetchHub = async (hubId: string) => {
-    setLoading(true);
-    try {
-      const hubResponse = await getHubById(hubId);
+    const fetchHub = async (hubId: string) => {
+      setLoading(true);
+      setHub(null);
+      setFacility(null);
+      try {
+        const hubResponse = await getHubById(hubId);
 
-      if (hubResponse.status === 200) {
-        const hub = hubResponse.data;
-        handleHubRestrictions(hub);
-      } else {
-        throw new Error('Unable to fetch Hub');
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (hubResponse.status === 200) {
+          const fetchedHub = hubResponse.data;
 
-  const handleHubRestrictions = async (hub: HubResponse) => {
-    if (hub.facilityId) {
-      const facilityResponse = await getFacilityById(hub.facilityId);
-      const facility = facilityResponse.data;
-      const parkResponse = await getParkById(facility.parkId);
-      const parkData = parkResponse.data;
-      //setPark(parkData);
+          // Fetch facility information
+          if (fetchedHub.facilityId) {
+            const facilityResponse = await getFacilityById(fetchedHub.facilityId);
+            const fetchedFacility = facilityResponse.data;
+            setFacility(fetchedFacility);
 
-      if (user?.parkId === parkData?.id || user?.role === StaffType.SUPERADMIN) {
-        setHub(hub);
-      } else {
+            // Check if user has permission to view this hub
+            if (user?.role === StaffType.SUPERADMIN || user?.parkId === fetchedFacility.parkId) {
+              setHub(fetchedHub);
+            } else {
+              throw new Error('Access denied');
+            }
+          } else {
+            throw new Error('Facility not found for this hub');
+          }
+        } else {
+          throw new Error('Hub not found');
+        }
+      } catch (error) {
         if (!notificationShown.current) {
           notification.error({
             message: 'Access Denied',
@@ -58,9 +64,13 @@ export const useRestrictHub = (hubId?: string) => {
           notificationShown.current = true;
         }
         navigate('/');
+      } finally {
+        setLoading(false);
       }
-    }
-  };
+    };
 
-  return { hub, loading };
+    fetchHub(hubId);
+  }, [hubId, navigate, user]);
+
+  return { hub, facility, loading };
 };

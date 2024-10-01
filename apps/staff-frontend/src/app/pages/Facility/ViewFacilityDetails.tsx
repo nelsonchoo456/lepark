@@ -25,7 +25,7 @@ const ViewFacilityDetails = () => {
       isMain: true,
     },
     {
-      title: facility?.facilityName ? facility.facilityName : 'Details',
+      title: facility?.name ? facility.name : 'Details',
       pathKey: `/facilities/${facility?.id}`,
       isCurrent: true,
     },
@@ -64,8 +64,8 @@ const ViewFacilityDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: facility ? <LocationTab facility={facility} park={park}/> : <p>Loading facility data...</p>,
-    }
+      children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
+    },
   ];
 
   return (
@@ -79,7 +79,7 @@ const ViewFacilityDetails = () => {
 
           <div className="flex-1 flex-col flex">
             <div className="w-full flex justify-between items-center">
-              <LogoText className="text-2xl py-2 m-0">{facility?.facilityName}</LogoText>
+              <LogoText className="text-2xl py-2 m-0">{facility?.name}</LogoText>
               {user?.role !== StaffType.ARBORIST && user?.role !== StaffType.BOTANIST ? (
                 <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`edit`)} />
               ) : null}

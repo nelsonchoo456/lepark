@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
-import { HubResponse } from '../types/hub';
+import { HubData, HubResponse } from '../types/hub';
 import client from './client';
 
 const URL = '/hubs';
 
-export async function createHub(data: HubResponse, files?: File[]): Promise<AxiosResponse<HubResponse>> {
+export async function createHub(data: HubData, files?: File[]): Promise<AxiosResponse<HubResponse>> {
   try {
     if (files && files.length > 0) {
       const formData = new FormData();
@@ -78,7 +78,8 @@ export async function updateHubDetails(id: string, data: Partial<HubResponse>, f
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images = uploadedUrls.data.uploadedUrls;
+      data.images = data.images || [];
+      data.images.push(...uploadedUrls.data.uploadedUrls);
     }
 
     const response: AxiosResponse<HubResponse> = await client.put(`${URL}/updateHubDetails/${id}`, data);
