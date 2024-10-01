@@ -152,14 +152,12 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-          <>
-            <Tooltip title="Edit Asset">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
-            </Tooltip>
-            <Tooltip title="Delete Asset">
-              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-            </Tooltip>
-          </>
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '20%',
@@ -224,16 +222,12 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-            <>
-              <Tooltip title="Edit Asset">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
-              </Tooltip>
-              <Tooltip title="Delete Asset">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
-            </>
-          )}
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '8%',
