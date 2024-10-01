@@ -256,15 +256,16 @@ const EventList: React.FC = () => {
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Events..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        <Button
-          type="primary"
+        {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+          <Button
+            type="primary"
           onClick={() => {
             navigate('create');
           }}
-          disabled={user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER}
         >
           Create Event
-        </Button>
+          </Button>
+        ) : null}
       </Flex>
 
       <Card>

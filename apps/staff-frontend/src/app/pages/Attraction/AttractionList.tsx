@@ -34,7 +34,10 @@ const AttractionList: React.FC = () => {
   const statusConfig: Record<AttractionStatusEnum, { color: string; label: string }> = {
     [AttractionStatusEnum.OPEN]: { color: 'green', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.OPEN) },
     [AttractionStatusEnum.CLOSED]: { color: 'red', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.CLOSED) },
-    [AttractionStatusEnum.UNDER_MAINTENANCE]: { color: 'yellow', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.UNDER_MAINTENANCE) },
+    [AttractionStatusEnum.UNDER_MAINTENANCE]: {
+      color: 'yellow',
+      label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.UNDER_MAINTENANCE),
+    },
   };
 
   const filteredAttractions = useMemo(() => {
@@ -196,15 +199,16 @@ const AttractionList: React.FC = () => {
           variant="filled"
           onChange={handleSearch}
         />
-        <Button
-          type="primary"
-          onClick={() => {
-            navigate('create');
-          }}
-          disabled={user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER}
-        >
-          Create Attraction
-        </Button>
+        {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+          <Button
+            type="primary"
+            onClick={() => {
+              navigate('create');
+            }}
+          >
+            Create Attraction
+          </Button>
+        ) : null}
       </Flex>
 
       <Card>
