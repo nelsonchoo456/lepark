@@ -20,16 +20,6 @@ const HubList: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [hubToBeDeleted, setHubToBeDeleted] = useState<HubResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [radioGroupFilters, setRadioGroupFilters] = useState<{ text: string; value: string }[]>([]);
-  const [hubSecretFilters, setHubSecretFilters] = useState<{ text: string; value: string }[]>([]);
-
-  useEffect(() => {
-    const uniqueRadioGroups = Array.from(new Set(hubs.map((item) => item.radioGroup)));
-    const uniqueSecretFilters = Array.from(new Set(hubs.map((item) => item.hubSecret)));
-
-    setRadioGroupFilters(uniqueRadioGroups.map((group) => ({ text: group.toString(), value: group.toString() })));
-    setHubSecretFilters(uniqueSecretFilters.map((secret) => ({ text: secret.toString(), value: secret.toString() })));
-  }, [hubs]);
 
   const filteredHubs = useMemo(() => {
     return hubs.filter((hub) => Object.values(hub).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
@@ -38,6 +28,8 @@ const HubList: React.FC = () => {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  console.log(hubs);
 
   const navigateToDetails = (hubId: string) => {
     navigate(`/hubs/${hubId}`);
@@ -50,13 +42,13 @@ const HubList: React.FC = () => {
       key: 'serialNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '20%',
+      width: '15%',
     },
     {
       title: 'Hub Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <div>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.name.localeCompare(b.name),
       width: '15%',
     },
@@ -70,12 +62,12 @@ const HubList: React.FC = () => {
         </Flex>
       ),
       sorter: (a, b) => {
-        if (a.facilityName && b.facilityName) {
-          return a.facilityName.localeCompare(b.facilityName);
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
         }
         return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
       },
-      width: '33%',
+      width: '15%',
     },
     {
       title: 'Hub Status',
@@ -84,13 +76,29 @@ const HubList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'ACTIVE':
-            return <Tag color="green">ACTIVE</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                ACTIVE
+              </Tag>
+            );
           case 'INACTIVE':
-            return <Tag color="silver">INACTIVE</Tag>;
+            return (
+              <Tag color="blue" bordered={false}>
+                INACTIVE
+              </Tag>
+            );
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                UNDER MAINTENANCE
+              </Tag>
+            );
           case 'DECOMMISSIONED':
-            return <Tag color="red">DECOMMISSIONED</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                DECOMMISSIONED
+              </Tag>
+            );
         }
       },
       filters: [
@@ -102,14 +110,16 @@ const HubList: React.FC = () => {
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
     },
-    {
+ /*   {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
-      width: '10%',
-    },
+      render: (text) => (text ? moment(text).format('D MMM YY') : '-'),
+      sorter: (a, b) => {
+        return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
+      },
+      width: '15%',
+    },*/
     {
       title: 'Actions',
       key: 'actions',
@@ -118,10 +128,10 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN && (
+          {user?.role !== StaffType.VENDOR_MAANGER && (
             <>
               <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/edit/${record.id}`)} />
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
               </Tooltip>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
@@ -141,13 +151,13 @@ const HubList: React.FC = () => {
       key: 'serialNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
-      width: '20%',
+      width: '15%',
     },
     {
       title: 'Hub Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <div>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.name.localeCompare(b.name),
       width: '15%',
     },
@@ -155,21 +165,21 @@ const HubList: React.FC = () => {
       title: 'Park, Facility',
       render: (_, record) => (
         <div>
-          <p className="font-semibold">{record.parkName}</p>
+          <p className="font-semibold">{record.park.name}</p>
           <div className="flex">
             <p className="opacity-50 mr-2">Facility:</p>
-            {record.facilityName}
+            {record.facility.name}
           </div>
         </div>
       ),
       sorter: (a, b) => {
-        if (a.parkName && b.parkName) {
-          return a.parkName.localeCompare(b.parkName);
+        if (a.park.name && b.park.name) {
+          return a.park.name.localeCompare(b.park.name);
         }
-        if (a.facilityName && b.facilityName) {
-          return a.facilityName.localeCompare(b.facilityName);
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
         }
-        return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
+        return (a.facility.id ?? '').localeCompare(b.facility.id ?? '');
       },
 
       width: '15%',
@@ -181,13 +191,29 @@ const HubList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'ACTIVE':
-            return <Tag color="green">ACTIVE</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                ACTIVE
+              </Tag>
+            );
           case 'INACTIVE':
-            return <Tag color="silver">INACTIVE</Tag>;
+            return (
+              <Tag color="blue" bordered={false}>
+                INACTIVE
+              </Tag>
+            );
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                UNDER MAINTENANCE
+              </Tag>
+            );
           case 'DECOMMISSIONED':
-            return <Tag color="red">DECOMMISSIONED</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                DECOMMISSIONED
+              </Tag>
+            );
         }
       },
       filters: [
@@ -199,14 +225,16 @@ const HubList: React.FC = () => {
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
     },
-    {
+   /* {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate).unix() - moment(b.nextMaintenanceDate).unix(),
-      width: '10%',
-    },
+      render: (text) => (text ? moment(text).format('D MMM YY') : '-'),
+      sorter: (a, b) => {
+        return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
+      },
+      width: '15%',
+    },*/
     {
       title: 'Actions',
       key: 'actions',
@@ -215,16 +243,12 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN && (
-            <>
-              <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/edit/${record.id}`)} />
-              </Tooltip>
-              <Tooltip title="Delete">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-              </Tooltip>
-            </>
-          )}
+          <Tooltip title="Edit">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
@@ -276,7 +300,9 @@ const HubList: React.FC = () => {
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Hubs..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        {user?.role === StaffType.SUPERADMIN && (
+        {[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(
+          user?.role as StaffType,
+        ) && (
           <Button type="primary" onClick={() => navigate('/hubs/create')}>
             Create Hub
           </Button>

@@ -1,19 +1,23 @@
 import axios, { AxiosResponse } from 'axios';
-import { HubResponse } from '../types/hub';
+import { HubData, HubResponse } from '../types/hub';
 import client from './client';
 
 const URL = '/hubs';
 
-export async function createHub(data: HubResponse, files?: File[]): Promise<AxiosResponse<HubResponse>> {
+export async function createHub(data: HubData, files?: File[]): Promise<AxiosResponse<HubResponse>> {
   try {
-    const formData = new FormData();
+    if (files && files.length > 0) {
+      const formData = new FormData();
 
-    files?.forEach((file) => {
-      formData.append('files', file);
-    });
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
 
-    const uploadedUrls = await client.post(`${URL}/upload`, formData);
-    data.images = uploadedUrls.data.uploadedUrls;
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images = uploadedUrls.data.uploadedUrls;
+    } else {
+      data.images = [];
+    }
 
     const response: AxiosResponse<HubResponse> = await client.post(`${URL}/createHub`, data);
     return response;
@@ -25,7 +29,6 @@ export async function createHub(data: HubResponse, files?: File[]): Promise<Axio
     }
   }
 }
-
 export async function getAllHubs(): Promise<AxiosResponse<HubResponse[]>> {
   try {
     const response: AxiosResponse<HubResponse[]> = await client.get(`${URL}/getAllHubs`);
@@ -75,7 +78,8 @@ export async function updateHubDetails(id: string, data: Partial<HubResponse>, f
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images = uploadedUrls.data.uploadedUrls;
+      data.images = data.images || [];
+      data.images.push(...uploadedUrls.data.uploadedUrls);
     }
 
     const response: AxiosResponse<HubResponse> = await client.put(`${URL}/updateHubDetails/${id}`, data);

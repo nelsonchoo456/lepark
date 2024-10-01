@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { ParkResponse, StaffResponse, StaffType, updatePark } from '@lepark/data-access';
+import { getZonesByParkId, ParkResponse, StaffResponse, StaffType, updatePark, ZoneResponse } from '@lepark/data-access';
 import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Typography, TimePicker, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
@@ -26,7 +26,7 @@ const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', '
 const attributes = ['name', 'description', 'address', 'contactNumber', 'openingHours', 'closingHours'];
 
 const ParkEdit = () => {
-  const { user } = useAuth<StaffResponse>();
+  const { user, updateUser } = useAuth<StaffResponse>();
   const { id } = useParams();
   const navigate = useNavigate();
   const { park, loading } = useRestrictPark(id);
@@ -34,7 +34,10 @@ const ParkEdit = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
+  const [parkZones, setParkZones] = useState<ZoneResponse[]>();
   const [form] = Form.useForm();
+
+  const [showParkZones, setShowParkZones] = useState<boolean>(false);
 
   useEffect(() => {
     if (park) {
@@ -201,7 +204,7 @@ const ParkEdit = () => {
         <Form form={form} onFinish={handleSubmit} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
           {contextHolder}
           <Divider orientation="left">Park Details</Divider>
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+          <Form.Item name="name" label="Name" rules={[{ required: true }, { min: 3, max: 40, message: 'Name must have between 3 and 40 characters' }]}>
             <Input placeholder="Park Name" />
           </Form.Item>
           <Form.Item name="description" label="Description" rules={[{ required: true }]}>
@@ -210,7 +213,6 @@ const ParkEdit = () => {
           <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={parkStatusOptions} />
           </Form.Item>
-
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>

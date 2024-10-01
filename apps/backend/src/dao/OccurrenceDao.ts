@@ -37,6 +37,36 @@ class OccurrenceDao {
     });
   }
 
+  async getAllOccurrencesByZoneId(zoneId: number): Promise<Occurrence[]> {
+    const occurrences = await prisma.occurrence.findMany({
+      where: {
+        zoneId,
+      },
+      include: {
+        species: {
+          select: {
+            id: true,
+            speciesName: true,
+          },
+        },
+      },
+    });
+  
+    const zones = await ZoneDao.getAllZones();
+    const zone = zones.find((z: any) => z.id === zoneId);
+  
+    return occurrences.map((occurrence) => ({
+      ...occurrence,
+      speciesId: occurrence.species?.id,
+      speciesName: occurrence.species?.speciesName,
+      zoneId: zone?.id,
+      zoneName: zone?.name,
+      parkId: zone?.parkId,
+      parkName: zone?.parkName,
+      parkDescription: zone?.parkDescription,
+    }));
+  }
+
   async getAllOccurrencesByParkId(parkId: number): Promise<Occurrence[]> {
     const occurrences = await prisma.occurrence.findMany({
       include: {

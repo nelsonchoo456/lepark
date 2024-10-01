@@ -1,6 +1,7 @@
 import { ImageInput } from '@lepark/common-ui';
-import { ZoneResponse, AttractionStatusEnum, ParkResponse } from '@lepark/data-access';
+import { ZoneResponse, AttractionStatusEnum, ParkResponse, checkAttractionNameExists } from '@lepark/data-access';
 import { Button, Divider, Flex, Form, FormInstance, Input, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
+import { useState } from 'react';
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -25,12 +26,32 @@ const CreateDetailsStep = ({
   onInputClick,
 }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
+  const [isChecking, setIsChecking] = useState(false);
 
   const attractionStatusOptions = [
     { value: AttractionStatusEnum.OPEN, label: 'Open' },
     { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
     { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
   ];
+
+  const handleNext = async () => {
+    try {
+      await form.validateFields();
+      const values = form.getFieldsValue();
+      setIsChecking(true);
+      const response = await checkAttractionNameExists(values.parkId, values.title);
+      setIsChecking(false);
+      if (response.data.exists === true) {
+        console.error('Duplicate found:', response.data);
+        messageApi.error(`An attraction with this title already exists in ${parks.find(park => park.id === values.parkId)?.name}.`);
+      } else {
+        handleCurrStep(1);
+      }
+    } catch (error) {
+      console.error('Validation or check failed:', error);
+      setIsChecking(false);
+    }
+  };
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -70,7 +91,11 @@ const CreateDetailsStep = ({
       </Form.Item>
 
       <Form.Item name="title" label="Title" rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}>
-        <Input placeholder="Attraction Title" />
+        <Input placeholder="Attraction Title"
+         onBlur={(e) => {
+          const trimmedValue = e.target.value.trim();
+          form.setFieldsValue({ title: trimmedValue });
+        }} />
       </Form.Item>
 
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
@@ -118,7 +143,8 @@ const CreateDetailsStep = ({
       ))}
 
       <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+        {contextHolder}
+        <Button type="primary" className="w-full" onClick={handleNext} loading={isChecking}>
           Next
         </Button>
       </Form.Item>

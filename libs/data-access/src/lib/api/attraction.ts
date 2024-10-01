@@ -26,6 +26,19 @@ export async function createAttraction(data: CreateAttractionData, files?: File[
   }
 }
 
+export async function checkAttractionNameExists(parkId: number, title: string): Promise<AxiosResponse<{ exists: boolean }>> {
+  try {
+    const response: AxiosResponse<{ exists: boolean }> = await client.get(`${URL}/checkAttractionNameExists`, { params: { parkId, title } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getAllAttractions(): Promise<AxiosResponse<AttractionResponse[]>> {
   try {
     const response: AxiosResponse<AttractionResponse[]> = await client.get(`${URL}/getAllAttractions`);

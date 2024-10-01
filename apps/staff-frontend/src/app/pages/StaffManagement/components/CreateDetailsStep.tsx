@@ -59,7 +59,12 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({ form, parks, user
           { type: 'email', message: 'Please enter a valid email.' },
         ]}
       >
-        <Input />
+        <Input
+          onBlur={(e) => {
+            const trimmedValue = e.target.value.trim();
+            form.setFieldsValue({ emailInput: trimmedValue });
+          }}
+        />
       </Form.Item>
       <Form.Item
         name="contactNumberInput"

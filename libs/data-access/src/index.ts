@@ -1,5 +1,3 @@
-export * from './lib/data-access';
-
 export * from './lib/api/park';
 export * from './lib/types/park';
 
@@ -39,3 +37,10 @@ export * from './lib/types/event';
 
 export * from './lib/api/planttask';
 export * from './lib/types/planttask';
+export * from './lib/api/parkasset';
+export * from './lib/types/parkasset';
+
+export * from './lib/api/sensor';
+export * from './lib/types/sensor';
+export * from './lib/api/facility';
+export * from './lib/types/facility';

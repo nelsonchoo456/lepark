@@ -3,10 +3,12 @@ import { FeatureGroup, Polygon } from 'react-leaflet';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import DraggableMarker from '../../../components/map/DraggableMarker';
 import { AdjustLatLngInterface } from '../AttractionCreate';
-import { ParkResponse } from '@lepark/data-access';
+import { getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import { useEffect, useState } from 'react';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { COLORS } from '../../../config/colors';
+import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
+import { TbTree } from 'react-icons/tb';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
@@ -19,11 +21,21 @@ interface CreateMapStepProps {
 
 const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, formValues, parks }: CreateMapStepProps) => {
   const [selectedPark, setSelectedPark] = useState<ParkResponse>();
+  const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
 
   useEffect(() => {
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((p) => p.id === formValues.parkId);
       setSelectedPark(selectedPark);
+
+      const fetchZones = async () => {
+        const zonesRes = await getZonesByParkId(formValues.parkId);
+        if (zonesRes.status === 200) {
+          const zonesData = zonesRes.data;
+          setSelectedParkZones(zonesData);
+        }
+      }
+      fetchZones();
     }
   }, [parks, formValues]);
 
@@ -47,11 +59,17 @@ const CreateMapStep = ({ handleCurrStep, adjustLatLng, lat, lng, formValues, par
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+            
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           
           <PolygonFitBounds geom={selectedPark?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={selectedPark?.name}/>
+          {selectedParkZones && selectedParkZones?.length > 0 &&
+            selectedParkZones
+              .map((zone) => (
+                <PolygonWithLabel key={zone.id} entityId={zone.id} geom={zone.geom} polygonLabel={<div className='flex items-center gap-2'><TbTree className='text-xl'/>{zone.name}</div>} color={COLORS.green[600]} fillColor={"transparent"} labelFields={{ color: COLORS.green[800], textShadow: "none" }}/>
+            ))}
           <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} backgroundColor={COLORS.sky[400]} />
         </MapContainer>
       </div>

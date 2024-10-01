@@ -18,14 +18,20 @@ router.post('/createOccurrence', authenticateJWTStaff, async (req, res) => {
 
 router.get('/getAllOccurrences', async (req, res) => {
   // http://localhost:3333/api/zones/getAllZones
-  // http://localhost:3333/api/zones/getAllZones?parkId=<enter_oarkId_here>
+  // http://localhost:3333/api/zones/getAllZones?parkId=<enter_parkId_here>
+  // http://localhost:3333/api/zones/getAllZones?zoneId=<enter_zoneId_here>
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
-    if (!parkId) {
-      const occurrenceList = await OccurrenceService.getAllOccurrence();
+    const zoneId = req.query.zoneId ? parseInt(req.query.zoneId as string) : null;
+
+    if (zoneId) {
+      const occurrenceList = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
+      res.status(200).json(occurrenceList);
+    } else if (parkId) {
+      const occurrenceList = await OccurrenceService.getAllOccurrenceByParkId(parkId);
       res.status(200).json(occurrenceList);
     } else {
-      const occurrenceList = await OccurrenceService.getAllOccurrenceByParkId(parkId);
+      const occurrenceList = await OccurrenceService.getAllOccurrence();
       res.status(200).json(occurrenceList);
     }
   } catch (error) {

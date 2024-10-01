@@ -6,7 +6,6 @@ import { conservationStatus, lightType, plantTaxonomy, regions, soilType } from 
 import type { Checkbox, GetProp } from 'antd';
 import { Button, Card, Form, Input, InputNumber, message, Modal, Select, Space, Spin } from 'antd';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import PageHeader from '../../components/main/PageHeader';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
@@ -509,7 +508,7 @@ const ViewEditSpecies = () => {
               </Space>
             </Form.Item>
 
-            <Form.Item label="Upload Images">
+            <Form.Item label="Image">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
 
