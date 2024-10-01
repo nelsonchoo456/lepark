@@ -223,6 +223,16 @@ class SensorDao {
       data: { hubId: null },
     });
   }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {
+    const sensor = await prisma.sensor.findFirst({
+      where: {
+        serialNumber,
+        id: { not: excludeSensorId }, // Exclude the current sensor when updating
+      },
+    });
+    return !!sensor;
+  }
 }
 
 export default new SensorDao();

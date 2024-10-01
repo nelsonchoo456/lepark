@@ -46,8 +46,8 @@ class SensorService {
 
       // Validate serialNumber uniqueness
       if (sensorData.serialNumber) {
-        const existingSensorWithSerialNumber = await SensorDao.getSensorBySerialNumber(sensorData.serialNumber);
-        if (existingSensorWithSerialNumber) {
+        const isDuplicate = await this.isSerialNumberDuplicate(sensorData.serialNumber);
+        if (isDuplicate) {
           throw new Error(`Sensor with serial number ${sensorData.serialNumber} already exists.`);
         }
       }
@@ -117,8 +117,8 @@ class SensorService {
       }
 
       if (formattedData.serialNumber) {
-        const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(formattedData.serialNumber);
-        if (checkForExistingSensor && checkForExistingSensor.id !== id) {
+        const isDuplicate = await this.isSerialNumberDuplicate(formattedData.serialNumber, id);
+        if (isDuplicate) {
           throw new Error(`Sensor with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
@@ -238,6 +238,10 @@ class SensorService {
 
   private generateIdentifierNumber(): string {
     return `SENS-${uuidv4().substr(0, 8).toUpperCase()}`;
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {
+    return SensorDao.isSerialNumberDuplicate(serialNumber, excludeSensorId);
   }
 }
 

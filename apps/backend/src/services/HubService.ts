@@ -36,6 +36,7 @@ const dateFormatter = (data: any) => {
 };
 
 class HubService {
+
   public async createHub(data: HubSchemaType): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
@@ -54,8 +55,8 @@ class HubService {
 
       // Validate serialNumber uniqueness
       if (formattedData.serialNumber) {
-        const existingHubWithSerialNumber = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
-        if (existingHubWithSerialNumber) {
+        const isDuplicate = await this.isSerialNumberDuplicate(formattedData.serialNumber);
+        if (isDuplicate) {
           throw new Error(`Hub with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
@@ -124,8 +125,8 @@ class HubService {
       }
 
       if (formattedData.serialNumber) {
-        const checkForExistingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
-        if (checkForExistingHub && checkForExistingHub.id !== id) {
+        const isDuplicate = await this.isSerialNumberDuplicate(formattedData.serialNumber, id);
+        if (isDuplicate) {
           throw new Error(`Hub with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
@@ -142,6 +143,10 @@ class HubService {
 
   public async deleteHub(id: string): Promise<void> {
     await HubDao.deleteHub(id);
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
+    return HubDao.isSerialNumberDuplicate(serialNumber, excludeHubId);
   }
 
   public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {

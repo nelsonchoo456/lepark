@@ -92,6 +92,16 @@ class HubDao {
   public async deleteHub(id: string): Promise<void> {
     await prisma.hub.delete({ where: { id } });
   }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
+    const hub = await prisma.hub.findFirst({
+      where: {
+        serialNumber,
+        id: { not: excludeHubId }, // Exclude the current hub when updating
+      },
+    });
+    return !!hub;
+  }
 }
 
 export default new HubDao();

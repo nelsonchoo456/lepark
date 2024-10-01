@@ -11,6 +11,7 @@ import {
   HubResponse,
   getFacilityById,
   FacilityResponse,
+  checkSensorDuplicateSerialNumber,
 } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -90,6 +91,12 @@ const SensorEdit = () => {
         }
         return acc;
       }, {} as Partial<SensorUpdateData>);
+
+      const isDuplicate = await checkSensorDuplicateSerialNumber(values.serialNumber, sensor.id);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();

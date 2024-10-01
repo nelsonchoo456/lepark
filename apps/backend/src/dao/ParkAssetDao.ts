@@ -155,6 +155,16 @@ class ParkAssetDao {
       },
     });
   }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeParkAssetId?: string): Promise<boolean> {
+    const parkAsset = await prisma.parkAsset.findFirst({
+      where: {
+        serialNumber,
+        id: { not: excludeParkAssetId }, // Exclude the current park asset when updating
+      },
+    });
+    return !!parkAsset;
+  }
 }
 
 export default new ParkAssetDao();

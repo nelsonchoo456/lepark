@@ -17,6 +17,7 @@ import {
   getParkById,
   getFacilitiesByParkId,
   getFacilityById,
+  checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
 import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage, Divider } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,6 +28,7 @@ import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { message } from 'antd';
 
 const { TextArea } = Input;
 
@@ -165,6 +167,12 @@ const AssetEdit = () => {
 
       if (!assetId) {
         throw new Error('Asset ID is missing');
+      }
+
+      const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber, assetId);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
       }
 
       const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);

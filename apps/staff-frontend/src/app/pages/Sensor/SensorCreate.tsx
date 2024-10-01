@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createSensor, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { checkSensorDuplicateSerialNumber, createSensor, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, DatePicker, Divider, Form, Input, InputNumber, Select, message, Result, FormInstance } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import dayjs from 'dayjs';
@@ -76,6 +76,12 @@ const SensorCreate = () => {
         acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
         images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [],
       };
+
+      const isDuplicate = await checkSensorDuplicateSerialNumber(values.serialNumber);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
 
       console.log('finalData', finalData);
 

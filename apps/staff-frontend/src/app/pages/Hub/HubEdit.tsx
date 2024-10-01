@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData } from '@lepark/data-access';
+import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData, checkHubDuplicateSerialNumber } from '@lepark/data-access';
 import {
   Button,
   Card,
@@ -98,6 +98,12 @@ const HubEdit = () => {
         }
         return acc;
       }, {} as Partial<HubUpdateData>);
+
+      const isDuplicate = await checkHubDuplicateSerialNumber(values.serialNumber, hub.id);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();

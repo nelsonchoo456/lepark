@@ -15,6 +15,7 @@ import {
   StaffType,
   getParkById,
   getFacilitiesByParkId,
+  checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
 import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +49,7 @@ const AssetCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createMultiple, setCreateMultiple] = useState(false);
   const [assetQuantity, setAssetQuantity] = useState<number>(1);
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const handleResize = () => {
@@ -114,6 +116,14 @@ const AssetCreate = () => {
     setIsSubmitting(true);
     try {
       const values = await form.validateFields();
+
+      // Check for duplicate serial number
+      const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
+
       const baseAssetData: ParkAssetData = {
         name: values.name,
         serialNumber: values.serialNumber,
@@ -146,7 +156,8 @@ const AssetCreate = () => {
       setCreatedAssetName(values.name);
       setShowSuccessAlert(true);
     } catch (error) {
-      message.error(String(error));
+      console.error('Error creating Asset', error);
+      messageApi.error('Unable to create Asset. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
@@ -175,6 +186,7 @@ const AssetCreate = () => {
 
   return (
     <ContentWrapperDark>
+      {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {loading ? (
