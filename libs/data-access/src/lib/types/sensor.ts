@@ -10,7 +10,6 @@ export interface SensorData {
   description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  calibrationFrequencyDays: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes?: number;
@@ -35,7 +34,7 @@ export interface SensorResponse {
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
   lastCalibratedDate?: string;
-  calibrationFrequencyDays: number;
+  calibrationFrequencyDays?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   dataFrequencyMinutes: number;

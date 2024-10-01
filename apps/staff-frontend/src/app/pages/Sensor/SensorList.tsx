@@ -57,11 +57,11 @@ const SensorManagementPage: React.FC = () => {
 
   const columns: ColumnsType<SensorResponse> = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a, b) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '20%',
     },
     {
@@ -174,9 +174,9 @@ const SensorManagementPage: React.FC = () => {
 
   const superAdminColumns: ColumnsType<SensorResponse> = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '20%',

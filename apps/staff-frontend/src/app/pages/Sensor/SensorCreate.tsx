@@ -117,7 +117,11 @@ const SensorCreate = () => {
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-            <Divider orientation="left">Park & Facility Details</Divider>
+            {user?.role === StaffType.SUPERADMIN ? (
+              <Divider orientation="left">Select Park and Facility</Divider>
+            ) : (
+              <Divider orientation="left">Select Facility</Divider>
+            )}
 
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -147,6 +151,9 @@ const SensorCreate = () => {
             </Form.Item>
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
             </Form.Item>
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
               <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />

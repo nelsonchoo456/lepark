@@ -23,7 +23,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
+      title: hub?.identifierNumber ? hub?.identifierNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },

@@ -124,7 +124,11 @@ const HubCreate = () => {
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-            <Divider orientation="left">Select the Park and Facility</Divider>
+            {user?.role === StaffType.SUPERADMIN ? (
+              <Divider orientation="left">Select Park and Facility</Divider>
+            ) : (
+              <Divider orientation="left">Select Facility</Divider>
+            )}
 
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>

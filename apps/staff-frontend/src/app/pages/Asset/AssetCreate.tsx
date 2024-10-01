@@ -90,7 +90,7 @@ const AssetCreate = () => {
         (facility) =>
           facility.parkId === selectedParkId &&
           facility.facilityStatus === FacilityStatusEnum.OPEN &&
-          facility.facilityType === FacilityTypeEnum.STOREROOM
+          facility.facilityType === FacilityTypeEnum.STOREROOM,
       );
       setFilteredFacilities(filtered);
     } else {
@@ -99,8 +99,8 @@ const AssetCreate = () => {
           (facility) =>
             facility.parkId === user?.parkId &&
             facility.facilityStatus === FacilityStatusEnum.OPEN &&
-            facility.facilityType === FacilityTypeEnum.STOREROOM
-        )
+            facility.facilityType === FacilityTypeEnum.STOREROOM,
+        ),
       );
     }
   }, [selectedParkId, facilities]);
@@ -153,11 +153,11 @@ const AssetCreate = () => {
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-    const phoneRegex = /^[89]\d{7}$/;
+    const phoneRegex = /^[689]\d{7}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid 8-digit phone number starting with 8 or 9');
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
   };
 
   const breadcrumbItems = [
@@ -190,7 +190,11 @@ const AssetCreate = () => {
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
-            <Divider orientation="left">Park & Facility Details</Divider>
+            {user?.role === StaffType.SUPERADMIN ? (
+              <Divider orientation="left">Select Park and Facility</Divider>
+            ) : (
+              <Divider orientation="left">Select Facility</Divider>
+            )}
             {user?.role !== StaffType.SUPERADMIN && park ? (
               <Form.Item label="Park">{park.name}</Form.Item>
             ) : (
@@ -263,7 +267,7 @@ const AssetCreate = () => {
             <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
               <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
             </Form.Item>
-                 {createMultiple && (
+            {createMultiple && (
               <Form.Item
                 name="assetQuantity"
                 label="Park Asset Quantity"
@@ -274,7 +278,7 @@ const AssetCreate = () => {
                 <InputNumber onChange={(value) => setAssetQuantity(value as number)} min={1} max={10} />
               </Form.Item>
             )}
-             <Form.Item label="Upload Images">
+            <Form.Item label="Upload Images">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
             {previewImages.length > 0 && (
@@ -292,8 +296,8 @@ const AssetCreate = () => {
                 </div>
               </Form.Item>
             )}
-             <Divider orientation="left">Supplier Details</Divider>
-               <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+            <Divider orientation="left">Supplier Details</Divider>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
             <Form.Item
@@ -303,7 +307,6 @@ const AssetCreate = () => {
             >
               <Input />
             </Form.Item>
-
 
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">

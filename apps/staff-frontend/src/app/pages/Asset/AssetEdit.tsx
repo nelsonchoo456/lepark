@@ -64,7 +64,7 @@ const AssetEdit = () => {
       isMain: true,
     },
     {
-      title: asset?.name ? asset.name : 'Details',
+      title: asset?.identifierNumber ? asset.identifierNumber : 'Details',
       pathKey: `/parkasset/${assetId}`,
     },
     {
@@ -187,7 +187,7 @@ const AssetEdit = () => {
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid Singapore phone number');
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
   };
 
   const handleImageClick = (index: number) => {
@@ -288,7 +288,7 @@ const AssetEdit = () => {
                 ))}
               </div>
             </Form.Item>
-            <Divider orientation="left">Select the Facility</Divider>
+            <Divider orientation="left">Supplier Details</Divider>
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
