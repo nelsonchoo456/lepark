@@ -33,7 +33,7 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const descriptionItems = [
     { key: 'name', label: 'Asset Name', children: asset.name },
     { key: 'identifierNumber', label: 'Identifier Number', children: asset.identifierNumber },
-    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
+    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber || '-' },
     { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabelToRemoveUnderscores(asset.parkAssetType) },
     { key: 'description', label: 'Description', children: asset.description || '-' },
     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },

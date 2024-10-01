@@ -296,7 +296,7 @@ const AssetCreate = () => {
             </Form.Item>
             {!hasSerialNumber && (
               <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
-                <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
+                <Switch onChange={(checked) => setCreateMultiple(checked)} />
               </Form.Item>
             )}
             {!hasSerialNumber && createMultiple && (
