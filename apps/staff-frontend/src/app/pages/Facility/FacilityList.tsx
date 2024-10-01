@@ -90,11 +90,23 @@ const FacilityList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case FacilityStatusEnum.OPEN:
-            return <Tag color="green">{formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.OPEN)}</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.OPEN)}
+              </Tag>
+            );
           case FacilityStatusEnum.CLOSED:
-            return <Tag color="red">{formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.CLOSED)}</Tag>;
-          case FacilityStatusEnum.MAINTENANCE:
-            return <Tag color="yellow">{formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.MAINTENANCE)}</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.CLOSED)}
+              </Tag>
+            );
+          case FacilityStatusEnum.UNDER_MAINTENANCE:
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.UNDER_MAINTENANCE)}
+              </Tag>
+            );
           default:
             return <Tag>{text}</Tag>;
         }
@@ -102,7 +114,7 @@ const FacilityList: React.FC = () => {
       filters: [
         { text: 'Open', value: 'OPEN' },
         { text: 'Closed', value: 'CLOSED' },
-        { text: 'Maintenance', value: 'MAINTENANCE' },
+        { text: 'Under Maintenance', value: 'UNDER_MAINTENANCE' },
       ],
       onFilter: (value, record) => record.facilityStatus === value,
       width: '20%',
@@ -124,18 +136,14 @@ const FacilityList: React.FC = () => {
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           {user?.role !== StaffType.ARBORIST && user?.role !== StaffType.BOTANIST && (
-            <>
-              <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/${record.id}/edit`)} />
-              </Tooltip>
-            </>
+            <Tooltip title="Edit">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/${record.id}/edit`)} />
+            </Tooltip>
           )}
           {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
-            <>
-              <Tooltip title="Delete">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-              </Tooltip>
-            </>
+            <Tooltip title="Delete">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+            </Tooltip>
           )}
         </Flex>
       ),

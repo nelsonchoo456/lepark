@@ -90,7 +90,7 @@ export enum SensorUnitEnum {
 export enum FacilityStatusEnum {
   OPEN = 'OPEN',
   CLOSED = 'CLOSED',
-  MAINTENANCE = 'MAINTENANCE',
+  UNDER_MAINTENANCE = 'UNDER_MAINTENANCE',
 }
 
 export enum FacilityTypeEnum {

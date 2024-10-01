@@ -34,7 +34,7 @@ const AttractionList: React.FC = () => {
   const statusConfig: Record<AttractionStatusEnum, { color: string; label: string }> = {
     [AttractionStatusEnum.OPEN]: { color: 'green', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.OPEN) },
     [AttractionStatusEnum.CLOSED]: { color: 'red', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.CLOSED) },
-    [AttractionStatusEnum.UNDER_MAINTENANCE]: { color: 'orange', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.UNDER_MAINTENANCE) },
+    [AttractionStatusEnum.UNDER_MAINTENANCE]: { color: 'yellow', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.UNDER_MAINTENANCE) },
   };
 
   const filteredAttractions = useMemo(() => {

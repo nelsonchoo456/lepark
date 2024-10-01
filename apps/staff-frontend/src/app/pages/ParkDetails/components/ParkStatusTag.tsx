@@ -6,7 +6,7 @@ interface ParkStatusTagProps {
 
 const ParkStatusTag = ({ children }: ParkStatusTagProps) => {
   return (
-    <Tag color={children === 'Open' ? 'green' : children === 'Under Maintenance' ? 'orange' : children === 'Limited Access' ? 'yellow' : 'red'} className="w-min" bordered={false}>
+    <Tag color={children === 'Open' ? 'green' : children === 'Under Construction' ? 'orange' : children === 'Limited Access' ? 'yellow' : 'red'} className="w-min" bordered={false}>
       {children}
     </Tag>
   );

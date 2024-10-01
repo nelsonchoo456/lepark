@@ -42,13 +42,13 @@ const ViewHubDetails = () => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(hub?.hubStatus ?? '');
         switch (hub?.hubStatus) {
           case 'ACTIVE':
-            return <Tag color="green">{formattedStatus}</Tag>;
+            return <Tag color="green" bordered={false}>{formattedStatus}</Tag>;
           case 'INACTIVE':
-            return <Tag color="blue">{formattedStatus}</Tag>;
+            return <Tag color="blue" bordered={false}>{formattedStatus}</Tag>;
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow">{formattedStatus}</Tag>;
+            return <Tag color="yellow" bordered={false}>{formattedStatus}</Tag>;
           case 'DECOMMISSIONED':
-            return <Tag color="red">{formattedStatus}</Tag>;
+            return <Tag color="red" bordered={false}>{formattedStatus}</Tag>;
           default:
             return <Tag>{formattedStatus}</Tag>;
         }

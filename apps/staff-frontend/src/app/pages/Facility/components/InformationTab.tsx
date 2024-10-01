@@ -53,11 +53,11 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
       children: (() => {
         switch (facility?.facilityStatus) {
           case FacilityStatusEnum.OPEN:
-            return <Tag color="green">{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
-          case FacilityStatusEnum.MAINTENANCE:
-            return <Tag color="yellow">{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+          case FacilityStatusEnum.UNDER_MAINTENANCE:
+            return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
           case FacilityStatusEnum.CLOSED:
-            return <Tag color="red">{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
           default:
             return <Tag>{facility?.facilityStatus}</Tag>;
         }

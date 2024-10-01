@@ -20,7 +20,7 @@ const EventStatusTag: React.FC<EventStatusTagProps> = ({ status }) => {
   }
 
   const { color, label } = statusConfig[status] || { color: 'default', label: status };
-  return <Tag color={color}>{label}</Tag>;
+  return <Tag color={color} bordered={false}>{label}</Tag>;
 };
 
 export default EventStatusTag;

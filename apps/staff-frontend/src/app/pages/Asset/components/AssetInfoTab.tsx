@@ -17,13 +17,13 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const getStatusTag = (status: string) => {
     switch (status) {
       case ParkAssetStatusEnum.AVAILABLE:
-        return <Tag color="green">{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case ParkAssetStatusEnum.IN_USE:
-        return <Tag color="blue">{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case ParkAssetStatusEnum.UNDER_MAINTENANCE:
-        return <Tag color="orange">{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case ParkAssetStatusEnum.DECOMMISSIONED:
-        return <Tag color="red">{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       default:
         return <Tag>{status}</Tag>;
     }

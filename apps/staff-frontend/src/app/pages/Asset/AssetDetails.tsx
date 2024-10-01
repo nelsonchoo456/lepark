@@ -35,13 +35,13 @@ const AssetDetails = () => {
       label: 'Status',
       children:
         asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-          <Tag color="green">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-          <Tag color="blue">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-          <Tag color="orange">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-          <Tag color="red">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : (
           <Tag>{asset?.parkAssetStatus}</Tag>
         ),

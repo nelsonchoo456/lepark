@@ -58,13 +58,13 @@ const ViewSensorDetails = () => {
       children: (() => {
         switch (sensor?.sensorStatus) {
           case 'ACTIVE':
-            return <Tag color="green">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
+            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           case 'INACTIVE':
-            return <Tag color="blue">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
+            return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           case 'UNDER_MAINTENANCE':
-            return <Tag color="orange">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
+            return <Tag color="orange" bordered={false}>{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           case 'DECOMMISSIONED':
-            return <Tag color="red">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
+            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           default:
             return <Tag>{formatEnumLabelToRemoveUnderscores(sensor?.sensorStatus ?? '')}</Tag>;
         }

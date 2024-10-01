@@ -19,7 +19,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       DECOMMISSIONED: 'red',
     };
     const formattedStatus = formatEnumLabelToRemoveUnderscores(status);
-    return <Tag color={statusColors[status]}>{formattedStatus}</Tag>;
+    return <Tag color={statusColors[status]} bordered={false}>{formattedStatus}</Tag>;
   };
 
   const descriptionsItems = [

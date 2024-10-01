@@ -111,7 +111,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetStatus === value,
       render: (status: string) => (
-        <Tag color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : status === ParkAssetStatusEnum.UNDER_MAINTENANCE ? 'orange' : 'red'} bordered={false}>
+        <Tag color={status === ParkAssetStatusEnum.AVAILABLE ? 'green' : status === ParkAssetStatusEnum.IN_USE ? 'blue' : status === ParkAssetStatusEnum.UNDER_MAINTENANCE ? 'yellow' : 'red'} bordered={false}>
           {formatEnumLabelToRemoveUnderscores(status)}
         </Tag>
       ),
@@ -181,7 +181,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetStatus === value,
       render: (status: string) => (
-        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : 'red'} bordered={false}>
+        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : status === 'UNDER_MAINTENANCE' ? 'yellow' : 'red'} bordered={false}>
           {formatEnumLabelToRemoveUnderscores(status)}
         </Tag>
       ),
