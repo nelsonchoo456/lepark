@@ -61,17 +61,10 @@ const EventCreate = () => {
   const [selectedDateRange, setSelectedDateRange] = useState<[moment.Moment, moment.Moment] | null>(null);
 
   useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Event Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
+    if (user?.role !== StaffType.SUPERADMIN && user?.parkId) {
+      setSelectedParkId(user.parkId);
     }
-  }, [user, navigate]);
+  }, [user]);
 
   useEffect(() => {
     const dateRange = form.getFieldValue('dateRange');
@@ -283,24 +276,37 @@ const EventCreate = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={24} md={24} lg={16} xl={16}>
               <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-                <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
-                  <Select
-                    placeholder="Select a Park for this Event"
-                    options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
-                    onChange={onParkChange}
-                  />
-                </Form.Item>
+                <Divider orientation="left">
+                  {user?.role === StaffType.SUPERADMIN ? 'Select Park and Facility' : 'Select Facility'}
+                </Divider>
+                {user?.role === StaffType.SUPERADMIN ? (
+                  <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+                    <Select
+                      placeholder="Select a Park for this Event"
+                      options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
+                      onChange={onParkChange}
+                    />
+                  </Form.Item>
+                ) : (
+                  <Form.Item label="Park">
+                    {parks?.find(park => park.id === user?.parkId)?.name || 'Loading...'}
+                      
+                  </Form.Item>
+                )}
 
-                <Form.Item name="facilityId" label="Facility" rules={[{ required: true }]}
-                tooltip="Only public facilities of these types are available: Playground, Carpark, Stage, Picnic Area, BBQ Pit, Camping Area, Amphitheater, Gazebo."
-              >
+                <Form.Item 
+                  name="facilityId" 
+                  label="Facility" 
+                  rules={[{ required: true }]}
+                  tooltip="Only public facilities of these types are available: Playground, Carpark, Stage, Picnic Area, BBQ Pit, Camping Area, Amphitheater, Gazebo."
+                >
                   {isLoadingFacilities ? (
                     <div>Loading...</div>
                   ) : (
                     <Select
-                      key={facilities.length} // Force re-render when facilities change
+                      key={facilities.length}
                       placeholder={
-                        form.getFieldValue('parkId') && facilities.length === 0
+                        selectedParkId && facilities.length === 0
                           ? 'No facilities available at this park!'
                           : 'Select a Facility for this Event'
                       }
@@ -309,7 +315,7 @@ const EventCreate = () => {
                         value: facility.id,
                         label: facility.name,
                       }))}
-                      disabled={!form.getFieldValue('parkId') || facilities.length === 0}
+                      disabled={!selectedParkId || facilities.length === 0}
                       onChange={onFacilityChange}
                     />
                   )}

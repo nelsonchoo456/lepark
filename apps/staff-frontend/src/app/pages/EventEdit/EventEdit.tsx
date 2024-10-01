@@ -134,11 +134,17 @@ const EventEdit = () => {
 
   const eventSuitabilityOptions = [
     { value: EventSuitabilityEnum.ANYONE, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.ANYONE) },
-    { value: EventSuitabilityEnum.FAMILIES_AND_FRIENDS, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FAMILIES_AND_FRIENDS) },
+    {
+      value: EventSuitabilityEnum.FAMILIES_AND_FRIENDS,
+      label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FAMILIES_AND_FRIENDS),
+    },
     { value: EventSuitabilityEnum.CHILDREN, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.CHILDREN) },
     { value: EventSuitabilityEnum.NATURE_ENTHUSIASTS, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.NATURE_ENTHUSIASTS) },
     { value: EventSuitabilityEnum.PETS, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.PETS) },
-    { value: EventSuitabilityEnum.FITNESS_ENTHUSIASTS, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FITNESS_ENTHUSIASTS) },
+    {
+      value: EventSuitabilityEnum.FITNESS_ENTHUSIASTS,
+      label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FITNESS_ENTHUSIASTS),
+    },
   ];
 
   const onFacilityChange = async (facilityId: string) => {
@@ -364,8 +370,9 @@ const EventEdit = () => {
                 className="max-w-[600px] mx-auto mt-8"
                 initialValues={initialValues}
               >
+                <Divider orientation="left">{'Select Facility'}</Divider>
                 <Form.Item name="parkName" label="Park">
-                  <Select placeholder={park?.name} disabled />
+                  {park?.name}
                 </Form.Item>
 
                 <Form.Item
