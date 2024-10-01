@@ -101,6 +101,18 @@ class ParkService {
       });
     }
     
+    await prisma.facility.deleteMany({
+      where: {
+          parkId: id,
+      },
+    });
+
+    await prisma.attraction.deleteMany({
+      where: {
+          parkId: id,
+      },
+    });
+
     return ParkDao.deleteParkById(id);
   }
 

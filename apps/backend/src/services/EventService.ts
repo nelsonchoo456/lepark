@@ -68,6 +68,11 @@ class EventService {
     return Promise.all(events.map(updateEventStatus));
   }
 
+  public async getEventCountByParkId(parkId: string): Promise<number> {
+    const count = await EventDao.getEventCountByParkId(parkId);
+    return count;
+  }
+
   public async getEventsByFacilityId(facilityId: string): Promise<Event[]> {
     const facility = await FacilityDao.getFacilityById(facilityId);
     if (!facility) {

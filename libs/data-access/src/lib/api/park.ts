@@ -117,6 +117,19 @@ export async function getRandomParkImage(): Promise<AxiosResponse<string[]>> {
   }
 }
 
+export async function getSpeciesCountByParkId(parkId: number): Promise<AxiosResponse<number>> {
+  try {
+    const response: AxiosResponse<number> = await client.get(`${URL}/getSpeciesCountByParkId/${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function deletePark(id: number): Promise<AxiosResponse<void>> {
   try {
     const response: AxiosResponse<void> = await client.delete(`${URL}/deletePark/${id}`);
