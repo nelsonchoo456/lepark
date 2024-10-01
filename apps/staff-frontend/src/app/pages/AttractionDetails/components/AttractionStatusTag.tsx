@@ -1,12 +1,12 @@
 import React from 'react';
 import { Tag } from 'antd';
 import { AttractionStatusEnum } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const statusConfig: Record<AttractionStatusEnum, { color: string; label: string }> = {
-
-  OPEN: { color: 'success', label: 'Open' },
-  CLOSED: { color: 'error', label: 'Closed' },
-  UNDER_MAINTENANCE: { color: 'warning', label: 'Under Maintenance' },
+  [AttractionStatusEnum.OPEN]: { color: 'success', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.OPEN) },
+  [AttractionStatusEnum.CLOSED]: { color: 'error', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.CLOSED) },
+  [AttractionStatusEnum.UNDER_MAINTENANCE]: { color: 'warning', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.UNDER_MAINTENANCE) },
 };
 
 interface AttractionStatusTagProps {

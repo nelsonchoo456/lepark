@@ -21,6 +21,7 @@ import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum, FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -168,7 +169,7 @@ const SensorEdit = () => {
             <Select placeholder="Select Sensor Type">
               {Object.values(SensorTypeEnum).map((type) => (
                 <Select.Option key={type} value={type}>
-                  {type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {formatEnumLabelToRemoveUnderscores(type)}
                 </Select.Option>
               ))}
             </Select>
@@ -180,7 +181,7 @@ const SensorEdit = () => {
             <Select placeholder="Select Sensor Status">
               {Object.values(SensorStatusEnum).map((status) => (
                 <Select.Option key={status} value={status}>
-                  {status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {formatEnumLabelToRemoveUnderscores(status)}
                 </Select.Option>
               ))}
             </Select>
@@ -203,7 +204,7 @@ const SensorEdit = () => {
             <Select placeholder="Select Sensor Unit">
               {Object.values(SensorUnitEnum).map((unit) => (
                 <Select.Option key={unit} value={unit}>
-                  {unit.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {formatEnumLabelToRemoveUnderscores(unit)}
                 </Select.Option>
               ))}
             </Select>

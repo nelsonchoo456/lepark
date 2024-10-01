@@ -10,6 +10,7 @@ import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useAuth } from '@lepark/common-ui'; // Add this import
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
@@ -17,16 +18,6 @@ const AssetDetails = () => {
   const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
   console.log(asset);
   const navigate = useNavigate();
-
-  const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
-    const words = enumValue.split('_');
-
-    if (enumType === 'type' || enumType === 'condition') {
-      return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-    } else {
-      return words.map((word) => word.toUpperCase()).join(' ');
-    }
-  };
 
   const descriptionsItems = [
     {
@@ -37,20 +28,20 @@ const AssetDetails = () => {
     {
       key: 'assetType',
       label: 'Asset Type',
-      children: asset ? formatEnumLabel(asset.parkAssetType, 'type') : 'Loading...',
+      children: asset ? formatEnumLabelToRemoveUnderscores(asset.parkAssetType) : 'Loading...',
     },
     {
       key: 'assetStatus',
       label: 'Status',
       children:
         asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-          <Tag color="green">AVAILABLE</Tag>
+          <Tag color="green">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-          <Tag color="blue">IN USE</Tag>
+          <Tag color="blue">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-          <Tag color="orange">UNDER MAINTENANCE</Tag>
+          <Tag color="orange">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-          <Tag color="red">DECOMMISSIONED</Tag>
+          <Tag color="red">{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : (
           <Tag>{asset?.parkAssetStatus}</Tag>
         ),

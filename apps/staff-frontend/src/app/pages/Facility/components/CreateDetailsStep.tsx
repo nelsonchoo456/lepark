@@ -23,6 +23,8 @@ import { message } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { FacilityTypeEnum, FacilityStatusEnum } from '@lepark/data-access';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -60,87 +62,15 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   }, [user, parks]);
 
-  const facilityTypeOptions = [
-    {
-      value: 'TOILET',
-      label: 'Toilet',
-    },
-    {
-      value: 'PLAYGROUND',
-      label: 'Playground',
-    },
-    {
-      value: 'INFORMATION',
-      label: 'Information',
-    },
-    {
-      value: 'CARPARK',
-      label: 'Carpark',
-    },
-    {
-      value: 'ACCESSIBILITY',
-      label: 'Accessibility',
-    },
-    {
-      value: 'STAGE',
-      label: 'Stage',
-    },
-    {
-      value: 'WATER_FOUNTAIN',
-      label: 'Water Fountain',
-    },
-    {
-      value: 'PICNIC_AREA',
-      label: 'Picnic Area',
-    },
-    {
-      value: 'BBQ_PIT',
-      label: 'BBQ Pit',
-    },
-    {
-      value: 'CAMPING_AREA',
-      label: 'Camping Area',
-    },
-    {
-      value: 'AED',
-      label: 'AED',
-    },
-    {
-      value: 'FIRST_AID',
-      label: 'First Aid',
-    },
-    {
-      value: 'AMPHITHEATER',
-      label: 'Amphitheater',
-    },
-    {
-      value: 'GAZEBO',
-      label: 'Gazebo',
-    },
-    {
-      value: 'STOREROOM',
-      label: 'Storeroom',
-    },
-    {
-      value: 'OTHERS',
-      label: 'Others',
-    },
-  ];
+  const facilityTypeOptions = Object.values(FacilityTypeEnum).map(type => ({
+    value: type,
+    label: formatEnumLabelToRemoveUnderscores(type),
+  }));
 
-  const facilityStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'CLOSED',
-      label: 'Closed',
-    },
-    {
-      value: 'MAINTENANCE',
-      label: 'Maintenance',
-    },
-  ];
+  const facilityStatusOptions = Object.values(FacilityStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const handleApplyToAllChange = (day: string) => {
     try {

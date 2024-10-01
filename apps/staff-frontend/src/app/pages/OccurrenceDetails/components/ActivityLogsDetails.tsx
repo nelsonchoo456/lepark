@@ -11,6 +11,7 @@ import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../../components/main/PageHeader2';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -140,7 +141,7 @@ const ActivityLogDetails: React.FC = () => {
       key: 'activityLogType',
       label: 'Activity Type',
       children: !inEditMode ? (
-        <Tag>{activityLog?.activityLogType ? ActivityLogTypeEnum[activityLog.activityLogType] : ''}</Tag>
+        <Tag>{activityLog?.activityLogType ? formatEnumLabelToRemoveUnderscores(activityLog.activityLogType) : ''}</Tag>
       ) : (
         <Select
           value={editedActivityLog?.activityLogType}

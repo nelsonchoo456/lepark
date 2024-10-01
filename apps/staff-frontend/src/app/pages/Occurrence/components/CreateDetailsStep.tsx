@@ -1,5 +1,6 @@
 import { ImageInput } from '@lepark/common-ui';
-import { ParkResponse, SpeciesResponse, ZoneResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { ParkResponse, SpeciesResponse, ZoneResponse, StaffResponse, StaffType, OccurrenceStatusEnum, DecarbonizationTypeEnum } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { Button, DatePicker, Divider, Form, FormInstance, Input, InputNumber, Select } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
@@ -36,43 +37,15 @@ const CreateDetailsStep = ({
   user,
 }: CreateDetailsStepProps) => {
   const nonExtinctSpecies = species.filter((species) => species.conservationStatus !== 'EXTINCT');
-  const decarbonizationTypeOptions = [
-    {
-      value: 'TREE_TROPICAL',
-      label: 'Tree Tropical',
-    },
-    {
-      value: 'TREE_MANGROVE',
-      label: 'Tree Mangrove',
-    },
-    {
-      value: 'SHRUB',
-      label: 'Shrub',
-    },
-  ];
+  const decarbonizationTypeOptions = Object.values(DecarbonizationTypeEnum).map(type => ({
+    value: type,
+    label: formatEnumLabelToRemoveUnderscores(type),
+  }));
 
-  const occurrenceStatusOptions = [
-    {
-      value: 'HEALTHY',
-      label: 'Healthy',
-    },
-    {
-      value: 'MONITOR_AFTER_TREATMENT',
-      label: 'Monitor After Treatment',
-    },
-    {
-      value: 'NEEDS_ATTENTION',
-      label: 'Needs Attention',
-    },
-    {
-      value: 'URGENT_ACTION_REQUIRED',
-      label: 'Urgent Action Required',
-    },
-    {
-      value: 'REMOVED',
-      label: 'Removed',
-    },
-  ];
+  const occurrenceStatusOptions = Object.values(OccurrenceStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {

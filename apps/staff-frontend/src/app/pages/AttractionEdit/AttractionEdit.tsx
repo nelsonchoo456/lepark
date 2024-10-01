@@ -15,6 +15,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -57,11 +58,10 @@ const AttractionEdit = () => {
     fetchData();
   }, [id, attraction]);
 
-  const attractionStatusOptions = [
-    { value: AttractionStatusEnum.OPEN, label: 'Open' },
-    { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
-    { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
-  ];
+  const attractionStatusOptions = Object.values(AttractionStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const handleSubmit = async () => {
     if (!attraction) return;

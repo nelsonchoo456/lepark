@@ -18,6 +18,9 @@ import {
   message
 } from 'antd';
 import useUploadImages from '../../../hooks/Images/useUploadImages';
+import { ParkStatusEnum } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -33,26 +36,6 @@ interface CreateDetailsStepProps {
 
 const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChange, removeImage, onInputClick }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
-  
-
-  const parkStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'UNDER_CONSTRUCTION',
-      label: 'Under Construction',
-    },
-    {
-      value: 'LIMITED_ACCESS',
-      label: 'Limited Access',
-    },
-    {
-      value: 'CLOSED',
-      label: 'Close',
-    },
-  ];
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -92,7 +75,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChan
         <TextArea placeholder="Park Description" />
       </Form.Item>
       <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
-        <Select placeholder="Select a Status" options={parkStatusOptions} />
+        <Select placeholder="Select a Status" options={Object.values(ParkStatusEnum).map((status) => ({ key: status, value: status, label: formatEnumLabelToRemoveUnderscores(status) }))} />
       </Form.Item>
 
       <Form.Item label={'Image'}>

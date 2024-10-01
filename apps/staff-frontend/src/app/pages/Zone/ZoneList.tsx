@@ -89,13 +89,13 @@ const ZoneList: React.FC = () => {
             );
           case 'UNDER_CONSTRUCTION':
             return (
-              <Tag color="red" bordered={false}>
+              <Tag color="orange" bordered={false}>
                 Under Construction
               </Tag>
             );
           case 'LIMITED_ACCESS':
             return (
-              <Tag color="orange" bordered={false}>
+              <Tag color="yellow" bordered={false}>
                 Limited Access
               </Tag>
             );
@@ -213,13 +213,13 @@ const ZoneList: React.FC = () => {
             );
           case 'UNDER_CONSTRUCTION':
             return (
-              <Tag color="red" bordered={false}>
+              <Tag color="orange" bordered={false}>
                 Under Construction
               </Tag>
             );
           case 'LIMITED_ACCESS':
             return (
-              <Tag color="orange" bordered={false}>
+              <Tag color="yellow" bordered={false}>
                 Limited Access
               </Tag>
             );

@@ -19,6 +19,7 @@ import { useFetchAttractions } from '../../hooks/Attractions/useFetchAttractions
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const AttractionList: React.FC = () => {
   const { attractions, loading, triggerFetch } = useFetchAttractions();
@@ -31,13 +32,13 @@ const AttractionList: React.FC = () => {
   const { parks } = useFetchParks();
 
   const statusConfig: Record<AttractionStatusEnum, { color: string; label: string }> = {
-    [AttractionStatusEnum.OPEN]: { color: 'green', label: 'Open' },
-    [AttractionStatusEnum.CLOSED]: { color: 'red', label: 'Closed' },
-    [AttractionStatusEnum.UNDER_MAINTENANCE]: { color: 'orange', label: 'Under Maintenance' },
+    [AttractionStatusEnum.OPEN]: { color: 'green', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.OPEN) },
+    [AttractionStatusEnum.CLOSED]: { color: 'red', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.CLOSED) },
+    [AttractionStatusEnum.UNDER_MAINTENANCE]: { color: 'orange', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.UNDER_MAINTENANCE) },
   };
 
   const filteredAttractions = useMemo(() => {
-    let filtered = attractions;
+    const filtered = attractions;
 
     return filtered.filter((attraction) => {
       const park = parks.find((p) => p.id === attraction.parkId);

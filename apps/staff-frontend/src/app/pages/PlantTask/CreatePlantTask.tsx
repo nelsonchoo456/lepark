@@ -19,6 +19,7 @@ import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -92,18 +93,12 @@ const CreatePlantTask = () => {
 
   const taskTypeOptions = Object.values(PlantTaskTypeEnum).map((type) => ({
     value: type,
-    label: type
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(type),
   }));
 
   const taskUrgencyOptions = Object.values(PlantTaskUrgencyEnum).map((urgency) => ({
     value: urgency,
-    label: urgency
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(urgency),
   }));
 
   const handleSubmit = async () => {

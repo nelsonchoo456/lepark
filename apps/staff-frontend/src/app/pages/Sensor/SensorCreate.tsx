@@ -10,6 +10,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { FacilityStatusEnum, FacilityTypeEnum, SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -27,26 +28,17 @@ const SensorCreate = () => {
 
   const sensorTypeOptions = Object.values(SensorTypeEnum).map((type) => ({
     value: type,
-    label: type
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(type),
   }));
 
   const sensorStatusOptions = Object.values(SensorStatusEnum).map((status) => ({
     value: status,
-    label: status
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(status),
   }));
 
   const sensorUnitOptions = Object.values(SensorUnitEnum).map((unit) => ({
     value: unit,
-    label: unit
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(unit),
   }));
 
   const validateDates = (form: FormInstance) => ({

@@ -17,6 +17,7 @@ import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -57,30 +58,30 @@ const ViewSensorDetails = () => {
       children: (() => {
         switch (sensor?.sensorStatus) {
           case 'ACTIVE':
-            return <Tag color="green">ACTIVE</Tag>;
+            return <Tag color="green">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           case 'INACTIVE':
-            return <Tag color="blue">INACTIVE</Tag>;
+            return <Tag color="blue">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           case 'UNDER_MAINTENANCE':
-            return <Tag color="orange">UNDER MAINTENANCE</Tag>;
+            return <Tag color="orange">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           case 'DECOMMISSIONED':
-            return <Tag color="red">DECOMMISSIONED</Tag>;
+            return <Tag color="red">{formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}</Tag>;
           default:
-            return <Tag>{sensor?.sensorStatus}</Tag>;
+            return <Tag>{formatEnumLabelToRemoveUnderscores(sensor?.sensorStatus ?? '')}</Tag>;
         }
       })(),
     },
-    { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
-    {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
+    { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(sensor?.sensorType ?? '') },
+    // {
+    //   key: 'nextMaintenanceDate',
+    //   label: 'Next Maintenance Date',
+    //   children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+    // },
     ...(user?.role === StaffType.SUPERADMIN
       ? [
           {
             key: 'parkName',
-            label: 'Park Name',
-            children: sensor?.parkName ?? '-',
+            label: 'Park',
+            children: sensor?.park?.name ?? '-',
           },
         ]
       : []),

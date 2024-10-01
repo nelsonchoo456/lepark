@@ -9,6 +9,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Text } = Typography;
 
@@ -103,7 +104,7 @@ const ZoneDetails = () => {
             <div className="w-full flex justify-between items-center">
               <Space>
                 <LogoText className="text-2xl py-2 m-0">{zone.name}</LogoText>
-                <ZoneStatusTag>{zone.zoneStatus}</ZoneStatusTag>
+                <ZoneStatusTag>{formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}</ZoneStatusTag>
               </Space>
               {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
                 <Button

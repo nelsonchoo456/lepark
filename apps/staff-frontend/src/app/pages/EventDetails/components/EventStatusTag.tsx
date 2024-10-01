@@ -1,12 +1,13 @@
 import React from 'react';
 import { Tag } from 'antd';
 import { EventStatusEnum } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const statusConfig: Record<EventStatusEnum, { color: string; label: string }> = {
-  UPCOMING: { color: 'processing', label: 'Upcoming' },
-  ONGOING: { color: 'success', label: 'Ongoing' },
-  COMPLETED: { color: 'gold', label: 'Completed' },
-  CANCELLED: { color: 'default', label: 'Cancelled' },
+  [EventStatusEnum.UPCOMING]: { color: 'processing', label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.UPCOMING) },
+  [EventStatusEnum.ONGOING]: { color: 'success', label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.ONGOING) },
+  [EventStatusEnum.COMPLETED]: { color: 'gold', label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.COMPLETED) },
+  [EventStatusEnum.CANCELLED]: { color: 'default', label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.CANCELLED) },
 };
 
 interface EventStatusTagProps {

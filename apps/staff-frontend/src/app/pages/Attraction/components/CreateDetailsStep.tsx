@@ -1,6 +1,8 @@
 import { ImageInput } from '@lepark/common-ui';
 import { ZoneResponse, AttractionStatusEnum, ParkResponse } from '@lepark/data-access';
 import { Button, Divider, Flex, Form, FormInstance, Input, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
+import { useState } from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -26,11 +28,29 @@ const CreateDetailsStep = ({
 }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const attractionStatusOptions = [
-    { value: AttractionStatusEnum.OPEN, label: 'Open' },
-    { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
-    { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
-  ];
+  const attractionStatusOptions = Object.values(AttractionStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
+
+  const handleNext = async () => {
+    try {
+      await form.validateFields();
+      const values = form.getFieldsValue();
+      setIsChecking(true);
+      const response = await checkAttractionNameExists(values.parkId, values.title);
+      setIsChecking(false);
+      if (response.data.exists === true) {
+        console.error('Duplicate found:', response.data);
+        messageApi.error(`An attraction with this title already exists in ${parks.find(park => park.id === values.parkId)?.name}.`);
+      } else {
+        handleCurrStep(1);
+      }
+    } catch (error) {
+      console.error('Validation or check failed:', error);
+      setIsChecking(false);
+    }
+  };
 
   const handleApplyToAllChange = (day: string) => {
     try {

@@ -10,6 +10,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -29,10 +30,10 @@ const HubCreate = () => {
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
 
   const hubStatusOptions = [
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' },
-    { value: 'UNDER_MAINTENANCE', label: 'Under Maintenance' },
-    { value: 'DECOMMISSIONED', label: 'Decommissioned' },
+    { value: 'ACTIVE', label: formatEnumLabelToRemoveUnderscores('ACTIVE') },
+    { value: 'INACTIVE', label: formatEnumLabelToRemoveUnderscores('INACTIVE') },
+    { value: 'UNDER_MAINTENANCE', label: formatEnumLabelToRemoveUnderscores('UNDER_MAINTENANCE') },
+    { value: 'DECOMMISSIONED', label: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED') },
   ];
 
   const validateDates = (form: FormInstance) => ({

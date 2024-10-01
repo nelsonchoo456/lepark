@@ -25,6 +25,7 @@ import dayjs from 'dayjs';
 import moment from 'moment';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -132,19 +133,19 @@ const HubEdit = () => {
   const hubStatusOptions = [
     {
       value: 'ACTIVE',
-      label: 'Active',
+      label: formatEnumLabelToRemoveUnderscores('ACTIVE'),
     },
     {
       value: 'INACTIVE',
-      label: 'Inactive',
+      label: formatEnumLabelToRemoveUnderscores('INACTIVE'),
     },
     {
       value: 'UNDER_MAINTENANCE',
-      label: 'Under Maintenance',
+      label: formatEnumLabelToRemoveUnderscores('UNDER_MAINTENANCE'),
     },
     {
       value: 'DECOMMISSIONED',
-      label: 'Decommissioned',
+      label: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED'),
     },
   ];
 

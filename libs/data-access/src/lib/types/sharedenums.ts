@@ -10,7 +10,7 @@ export enum PlantTaskStatusEnum {
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export enum PlantTaskTypeEnum {
@@ -22,14 +22,14 @@ export enum PlantTaskTypeEnum {
   STAKING_SUPPORTING = 'STAKING_SUPPORTING',
   DEBRIS_REMOVAL = 'DEBRIS_REMOVAL',
   ENVIRONMENTAL_ADJUSTMENT = 'ENVIRONMENTAL_ADJUSTMENT',
-  OTHERS = 'OTHERS'
+  OTHERS = 'OTHERS',
 }
 
 export enum PlantTaskUrgencyEnum {
   IMMEDIATE = 'IMMEDIATE',
   HIGH = 'HIGH',
   NORMAL = 'NORMAL',
-  LOW = 'LOW'
+  LOW = 'LOW',
 }
 export enum ParkAssetTypeEnum {
   PLANT_TOOL_AND_EQUIPMENT = 'PLANT_TOOL_AND_EQUIPMENT',
@@ -68,7 +68,7 @@ export enum SensorTypeEnum {
   HUMIDITY = 'HUMIDITY',
   SOIL_MOISTURE = 'SOIL_MOISTURE',
   LIGHT = 'LIGHT',
-  CAMERA = 'CAMERA',  
+  CAMERA = 'CAMERA',
 }
 
 export enum SensorStatusEnum {
@@ -86,3 +86,71 @@ export enum SensorUnitEnum {
   PAX = 'PAX',
   // Add other units as needed
 }
+
+export enum FacilityStatusEnum {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  MAINTENANCE = 'MAINTENANCE',
+}
+
+export enum FacilityTypeEnum {
+  TOILET = 'TOILET',
+  PLAYGROUND = 'PLAYGROUND',
+  INFORMATION = 'INFORMATION',
+  CARPARK = 'CARPARK',
+  ACCESSIBILITY = 'ACCESSIBILITY',
+  STAGE = 'STAGE',
+  WATER_FOUNTAIN = 'WATER_FOUNTAIN',
+  PICNIC_AREA = 'PICNIC_AREA',
+  BBQ_PIT = 'BBQ_PIT',
+  CAMPING_AREA = 'CAMPING_AREA',
+  AED = 'AED',
+  FIRST_AID = 'FIRST_AID',
+  AMPHITHEATER = 'AMPHITHEATER',
+  GAZEBO = 'GAZEBO',
+  STOREROOM = 'STOREROOM',
+  OTHERS = 'OTHERS',
+}
+
+export enum DecarbonizationTypeEnum {
+  TREE_TROPICAL = 'TREE_TROPICAL',
+  TREE_MANGROVE = 'TREE_MANGROVE',
+  SHRUB = 'SHRUB',
+}
+
+export enum ParkStatusEnum {
+  OPEN = 'OPEN',
+  UNDER_CONSTRUCTION = 'UNDER_CONSTRUCTION',
+  LIMITED_ACCESS = 'LIMITED_ACCESS',
+  CLOSED = 'CLOSED',
+}
+
+export enum ConservationStatusEnum {
+  LEAST_CONCERN = 'LEAST_CONCERN',
+  NEAR_THREATENED = 'NEAR_THREATENED',
+  VULNERABLE = 'VULNERABLE',
+  ENDANGERED = 'ENDANGERED',
+  CRITICALLY_ENDANGERED = 'CRITICALLY_ENDANGERED',
+  EXTINCT_IN_THE_WILD = 'EXTINCT_IN_THE_WILD',
+  EXTINCT = 'EXTINCT',
+}
+
+export enum LightTypeEnum {
+  FULL_SUN = 'FULL_SUN',
+  PARTIAL_SHADE = 'PARTIAL_SHADE',
+  FULL_SHADE = 'FULL_SHADE',
+}
+
+export enum SoilTypeEnum {
+  SANDY = 'SANDY',
+  CLAYEY = 'CLAYEY',
+  LOAMY = 'LOAMY',
+}
+
+export enum ZoneStatusEnum {
+  OPEN = 'OPEN',
+  UNDER_CONSTRUCTION = 'UNDER_CONSTRUCTION',
+  LIMITED_ACCESS = 'LIMITED_ACCESS',
+  CLOSED = 'CLOSED',
+}
+

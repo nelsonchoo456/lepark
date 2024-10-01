@@ -22,15 +22,11 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
-const formatEnumLabel = (enumValue: string): string => {
-  return enumValue
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
+const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
 const AssetCreate = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);

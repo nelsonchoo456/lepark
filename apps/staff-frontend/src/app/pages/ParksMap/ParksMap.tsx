@@ -21,6 +21,7 @@ import { TbEdit, TbTree } from 'react-icons/tb';
 import ParkStatusTag from '../ParkDetails/components/ParkStatusTag';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import React from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ParksMap = () => {
   const { user } = useAuth<StaffResponse>();
@@ -98,7 +99,7 @@ const ParksMap = () => {
                   </div>
                 </div>
                 <div className="flex mt-2 justify-between">
-                  <ParkStatusTag>{park.parkStatus}</ParkStatusTag>
+                  <ParkStatusTag>{formatEnumLabelToRemoveUnderscores(park.parkStatus)}</ParkStatusTag>
                   <div className="flex gap-2">
                     <Tooltip title="Edit Boundaries">
                       <div className="">

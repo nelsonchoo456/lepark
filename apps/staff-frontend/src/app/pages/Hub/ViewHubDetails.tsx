@@ -8,6 +8,7 @@ import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
@@ -38,17 +39,18 @@ const ViewHubDetails = () => {
       key: 'hubStatus',
       label: 'Hub Status',
       children: (() => {
+        const formattedStatus = formatEnumLabelToRemoveUnderscores(hub?.hubStatus ?? '');
         switch (hub?.hubStatus) {
           case 'ACTIVE':
-            return <Tag color="green">ACTIVE</Tag>;
+            return <Tag color="green">{formattedStatus}</Tag>;
           case 'INACTIVE':
-            return <Tag color="blue">INACTIVE</Tag>;
+            return <Tag color="blue">{formattedStatus}</Tag>;
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+            return <Tag color="yellow">{formattedStatus}</Tag>;
           case 'DECOMMISSIONED':
-            return <Tag color="red">DECOMMISSIONED</Tag>;
+            return <Tag color="red">{formattedStatus}</Tag>;
           default:
-            return <Tag>{hub?.hubStatus}</Tag>;
+            return <Tag>{formattedStatus}</Tag>;
         }
       })(),
     },
