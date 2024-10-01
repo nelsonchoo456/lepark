@@ -28,7 +28,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(hub.acquisitionDate).format('MMMM D, YYYY') },
-    {
+    /*{
       key: 'lastMaintenanceDate',
       label: 'Last Maintenance Date',
       children: hub.lastMaintenanceDate ? moment(hub.lastMaintenanceDate).format('MMMM D, YYYY') : '-',
@@ -37,12 +37,12 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
       children: hub.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
-    {
-      key: 'dataTransmissionInterval',
-      label: 'Data Transmission Interval',
-      children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
-    },
+    },*/
+    // {
+    //   key: 'dataTransmissionInterval',
+    //   label: 'Data Transmission Interval',
+    //   children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
+    // },
     { key: 'supplier', label: 'Supplier', children: hub.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: hub.supplierContactNumber },
     // { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress || '-' },
@@ -69,12 +69,12 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
       children: hub.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
-    {
-      key: 'dataTransmissionInterval',
-      label: 'Data Transmission Interval',
-      children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
-    },
+    },*/
+    // {
+    //   key: 'dataTransmissionInterval',
+    //   label: 'Data Transmission Interval',
+    //   children: hub.dataTransmissionInterval ? `${hub.dataTransmissionInterval} minutes` : '-',
+    // },
     { key: 'supplier', label: 'Supplier', children: hub.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: hub.supplierContactNumber },
     // { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress || '-' },

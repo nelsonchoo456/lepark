@@ -129,13 +129,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       render: (condition: string) => formatEnumLabelToRemoveUnderscores(condition),
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
-      width: '12%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
+    //   width: '12%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -144,14 +144,12 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-          <>
-            <Tooltip title="Edit Asset">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
-            </Tooltip>
-            <Tooltip title="Delete Asset">
-              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-            </Tooltip>
-          </>
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '20%',
@@ -201,13 +199,13 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       render: (condition: string) => formatEnumLabelToRemoveUnderscores(condition),
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
-      width: '12%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (nextMaintenanceDate: string) => (nextMaintenanceDate ? moment(nextMaintenanceDate).format('MMMM D, YYYY') : '-'),
+    //   width: '12%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -216,16 +214,12 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/parkasset/${record.id}`)} />
           </Tooltip>
-          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-            <>
-              <Tooltip title="Edit Asset">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
-              </Tooltip>
-              <Tooltip title="Delete Asset">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
-            </>
-          )}
+          <Tooltip title="Edit Asset">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/parkasset/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete Asset">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+          </Tooltip>
         </Flex>
       ),
       width: '8%',
@@ -307,7 +301,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
         columns={tableShowTypeColumn ? columns : columnsNoType}
         dataSource={filteredParkAssets}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 6 }}
         scroll={{ x: SCREEN_LG }}
       />
     </Card>

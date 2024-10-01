@@ -33,7 +33,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
     {
       key: 'reservationPolicy',
       label: 'Reservation Policy',
-      children: facility.reservationPolicy === 'NIL' ? '-' : facility.reservationPolicy,
+      children: facility.reservationPolicy,
     },
     { key: 'rulesAndRegulations', label: 'Rules And Regulations', children: facility.rulesAndRegulations },
     { key: 'lastMaintenanceDate', label: 'Last Maintenance Date	', children: moment(facility.lastMaintenanceDate).format('MMMM D, YYYY') },
@@ -74,17 +74,22 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
     <div>
       <Divider orientation="left">Facility Details</Divider>
       <Descriptions
-        items={descriptionsItems}
+        items={filteredDescriptionsItems}
         bordered
         column={1}
         labelStyle={{ width: '15vw' }} // Consistent width
       />
       <Divider orientation="left">Facility Hours</Divider>
-      <Descriptions bordered column={1} labelStyle={{ width: '15vw' }} contentStyle={{ fontWeight: '500' }}>
+      <Descriptions
+        bordered
+        column={1}
+        labelStyle={{ width: '15vw' }} // Same width for labels
+        contentStyle={{ fontWeight: '500' }} // Same font weight for content
+      >
         {openingHours &&
           closingHours &&
           daysOfWeek.map((day, index) => (
-            <Descriptions.Item label={day} key={index} labelStyle={{ width: '15vw' }}>
+            <Descriptions.Item label={day} key={index}>
               <Tag bordered={false}>{openingHours[index]}</Tag> - <Tag bordered={false}>{closingHours[index]}</Tag>
             </Descriptions.Item>
           ))}

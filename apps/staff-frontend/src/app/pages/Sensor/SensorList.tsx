@@ -3,7 +3,6 @@ import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, T
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { deleteSensor, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -143,14 +142,14 @@ const SensorManagementPage: React.FC = () => {
       },
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
-      width: '15%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
+    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
+    //   width: '15%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -264,14 +263,14 @@ const SensorManagementPage: React.FC = () => {
       },
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
-      width: '15%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
+    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
+    //   width: '15%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -296,9 +295,18 @@ const SensorManagementPage: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Sensors Management',
+      pathKey: '/sensor',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Sensor Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}

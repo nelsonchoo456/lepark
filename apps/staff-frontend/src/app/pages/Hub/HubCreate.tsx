@@ -165,20 +165,9 @@ const HubCreate = () => {
             >
               <DatePicker className="w-full" maxDate={dayjs()} />
             </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
-              <Input placeholder="Enter Supplier" />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact Number"
-              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input placeholder="Enter Supplier Contact Number" />
-            </Form.Item>
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-
             <Form.Item label={'Images'}>
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
@@ -197,6 +186,17 @@ const HubCreate = () => {
                 </div>
               </Form.Item>
             )}
+            <Divider orientation="left">Supplier Details</Divider>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+              <Input placeholder="Enter Supplier" />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input placeholder="Enter Supplier Contact Number" />
+            </Form.Item>
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>

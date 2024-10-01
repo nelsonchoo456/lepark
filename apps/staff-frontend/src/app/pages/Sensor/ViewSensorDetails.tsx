@@ -92,8 +92,6 @@ const ViewSensorDetails = () => {
     },
   ];
 
-  console.log('sensor', sensor);
-
   const tabsItems = [
     {
       key: 'information',

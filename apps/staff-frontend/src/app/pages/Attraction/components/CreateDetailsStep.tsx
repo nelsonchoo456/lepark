@@ -1,5 +1,5 @@
 import { ImageInput } from '@lepark/common-ui';
-import { ZoneResponse, AttractionStatusEnum, ParkResponse } from '@lepark/data-access';
+import { ZoneResponse, AttractionStatusEnum, ParkResponse, checkAttractionNameExists } from '@lepark/data-access';
 import { Button, Divider, Flex, Form, FormInstance, Input, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
 import { useState } from 'react';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
@@ -27,6 +27,7 @@ const CreateDetailsStep = ({
   onInputClick,
 }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
+  const [isChecking, setIsChecking] = useState(false);
 
   const attractionStatusOptions = Object.values(AttractionStatusEnum).map(status => ({
     value: status,
@@ -142,7 +143,8 @@ const CreateDetailsStep = ({
       ))}
 
       <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+        {contextHolder}
+        <Button type="primary" className="w-full" onClick={handleNext} loading={isChecking}>
           Next
         </Button>
       </Form.Item>

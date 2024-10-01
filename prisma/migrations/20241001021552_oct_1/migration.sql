@@ -59,7 +59,7 @@ CREATE TYPE "FacilityTypeEnum" AS ENUM ('TOILET', 'PLAYGROUND', 'INFORMATION', '
 CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'MAINTENANCE');
 
 -- CreateEnum
-CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIMMING', 'PEST_MANAGEMENT', 'SOIL_MAINTENANCE', 'STAKING_SUPPORTING', 'DEBRIS_REMOVAL', 'ENVIRONMENTAL_ADJUSTMENT', 'OTHERS');
@@ -355,7 +355,8 @@ CREATE TABLE "PlantTask" (
     "images" TEXT[],
     "remarks" TEXT,
     "occurrenceId" UUID NOT NULL,
-    "staffId" UUID,
+    "assignedStaffId" UUID,
+    "submittingStaffId" UUID NOT NULL,
 
     CONSTRAINT "PlantTask_pkey" PRIMARY KEY ("id")
 );
@@ -445,7 +446,10 @@ ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_sensorId_fke
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_assignedStaffId_fkey" FOREIGN KEY ("assignedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_submittingStaffId_fkey" FOREIGN KEY ("submittingStaffId") REFERENCES "Staff"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;

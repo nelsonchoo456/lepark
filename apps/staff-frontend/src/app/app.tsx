@@ -365,7 +365,7 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
+                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
                     redirectTo="/"
                   />
                 }
@@ -411,7 +411,7 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
+                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
                     redirectTo="/"
                   />
                 }

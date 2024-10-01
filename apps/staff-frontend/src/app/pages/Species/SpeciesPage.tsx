@@ -8,8 +8,6 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { deleteSpecies, getAllSpecies, SpeciesResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Input, message, Modal, Table, TableProps, Tag, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '../../components/main/PageHeader';
-
 import { FiEdit2, FiEye, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
@@ -192,9 +190,18 @@ const SpeciesPage = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Species Management',
+      pathKey: '/species',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Species Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}

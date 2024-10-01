@@ -2,7 +2,6 @@ import {
   AttractionResponse,
   getAttractionsByParkId,
   getOccurrencesByParkId,
-  getZoneById,
   getZonesByParkId,
   OccurrenceResponse,
   ParkResponse,
@@ -10,35 +9,26 @@ import {
   StaffResponse,
   StaffType,
   getFacilitiesByParkId,
-  FacilityResponse,
   getEventsByParkId,
   EventResponse,
   FacilityWithEvents,
   getEventsByFacilityId,
-  EventStatusEnum,
 } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Avatar, Button, Card, Checkbox, Collapse, Empty, Space, Tag, Tooltip, Typography } from 'antd';
-import { TbEdit, TbLocation, TbTicket, TbTree } from 'react-icons/tb';
+import { Button, Card, Checkbox, Space, Tooltip, Typography } from 'antd';
+import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import type { GetProp } from 'antd';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { COLORS } from '../../../config/colors';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { PiPlantFill } from 'react-icons/pi';
 import { useAuth } from '@lepark/common-ui';
-import { FaFemale, FaMale } from 'react-icons/fa';
-import FacilityPictureMarker from '../../../components/map/FacilityPictureMarker';
 import FacilityEventsPictureMarker from '../../../components/map/FacilityEventsPictureMarker';
 import HoverInformation, { HoverItem } from '../../../components/map/HoverInformation';
 import { MdArrowOutward } from 'react-icons/md';
 import ParkStatusTag from './ParkStatusTag';
-import { BiSolidCalendar } from 'react-icons/bi';
-import { capitalizeFirstLetter } from '../../../components/textFormatters/textFormatters';
-import dayjs from 'dayjs';
-import EventStatusTag from '../../EventDetails/components/EventStatusTag';
 import { SCREEN_LG } from '../../../config/breakpoints';
 
 interface MapTabProps {

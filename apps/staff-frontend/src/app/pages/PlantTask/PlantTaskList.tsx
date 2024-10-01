@@ -156,10 +156,10 @@ const PlantTaskList: React.FC = () => {
       key: 'taskStatus',
       render: (text) => {
         switch (text) {
-          case 'PENDING':
+          case 'OPEN':
             return (
               <Tag color="orange" bordered={false}>
-                PENDING
+                OPEN
               </Tag>
             );
           case 'IN_PROGRESS':
@@ -185,7 +185,7 @@ const PlantTaskList: React.FC = () => {
         }
       },
       filters: [
-        { text: 'PENDING', value: 'PENDING' },
+        { text: 'OPEN', value: 'OPEN' },
         { text: 'IN_PROGRESS', value: 'IN_PROGRESS' },
         { text: 'COMPLETED', value: 'COMPLETED' },
         { text: 'CANCELLED', value: 'CANCELLED' },

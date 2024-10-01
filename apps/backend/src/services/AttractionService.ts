@@ -45,6 +45,27 @@ class AttractionService {
     }
   }
 
+  public async checkAttractionNameExists(parkId: number, title: string): Promise<boolean> {
+    try {
+      if (!parkId || !title) {
+        throw new Error('Park ID and attraction title are required');
+      }
+
+      const park = await ParkDao.getParkById(parkId);
+      if (!park) {
+        throw new Error('Park not found');
+      }
+
+      return await AttractionDao.checkAttractionNameExists(parkId, title);
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error in checkAttractionNameExists:', error);
+
+      // Rethrow the error or throw a generic error
+      throw new Error('An error occurred while checking the attraction name');
+    }
+  }
+
   public async getAllAttractions(): Promise<Attraction[]> {
     return AttractionDao.getAllAttractions();
   }

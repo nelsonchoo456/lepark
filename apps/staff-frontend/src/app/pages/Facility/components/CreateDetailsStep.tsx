@@ -1,27 +1,7 @@
-import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import {
-  Button,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-  TimePicker,
-  Upload,
-  Flex,
-  Popconfirm,
-  FormInstance,
-  Divider,
-  Typography,
-} from 'antd';
-import { RcFile } from 'antd/es/upload';
-import { FiUpload } from 'react-icons/fi';
+import { ParkResponse, StaffResponse, StaffType, checkExistingFacility } from '@lepark/data-access';
+import { Button, Form, Input, InputNumber, Select, TimePicker, Flex, Popconfirm, FormInstance, Divider, Typography } from 'antd';
 import { ImageInput } from '@lepark/common-ui';
 import { message } from 'antd';
-import dayjs from 'dayjs';
-import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { FacilityTypeEnum, FacilityStatusEnum } from '@lepark/data-access';
@@ -59,6 +39,17 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       form.setFieldsValue({ parkId: user?.parkId });
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
+    }
+
+    const isPublicValue = form.getFieldValue('isPublic');
+    if (isPublicValue !== undefined && !isPublicValue) {
+      setIsPublic(isPublicValue);
+      setIsBookable(isPublicValue);
+    }
+
+    const isBookableValue = form.getFieldValue('isBookable');
+    if (isBookableValue !== undefined && !isBookableValue) {
+      setIsBookable(isPublicValue);
     }
   }, [user, parks]);
 
@@ -131,13 +122,34 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   };
 
+  const handleClick = async () => {
+    try {
+      await form.validateFields();
+
+      const facilityName = form.getFieldValue('name'); // Assuming 'name' is the field name for facility name
+      const parkId = form.getFieldValue('parkId'); // Assuming 'parkId' is the field name for park ID
+
+      // Check if the facility already exists
+      const response = await checkExistingFacility(facilityName, parkId);
+      if (response.data.exists) {
+        message.error('A facility with this name already exists in the park.');
+        return; // Prevent moving to the next step
+      }
+      await handleCurrStep(1);
+    } catch (error) {
+      console.error('Error checking existing facility:', error);
+    }
+  };
+
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
       {user?.role !== StaffType.SUPERADMIN && park ? (
-        <Form.Item name="parkId" label="Park">{park?.name}</Form.Item>
+        <Form.Item name="parkId" label="Park">
+          {park?.name}
+        </Form.Item>
       ) : (
-        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+        <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
         </Form.Item>
       )}
@@ -325,7 +337,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Flex>
       </Form.Item>
 
-      <Form.Item label={'Image'} required tooltip="At least one image is required">
+      <Form.Item label={'Image'}>
         <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
       {previewImages?.length > 0 && (
@@ -344,7 +356,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         </Form.Item>
       )}
       <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+        <Button type="primary" className="w-full" onClick={handleClick}>
           Next
         </Button>
       </Form.Item>

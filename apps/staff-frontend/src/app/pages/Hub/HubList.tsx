@@ -112,7 +112,7 @@ const HubList: React.FC = () => {
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
     },
-    {
+ /*   {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
@@ -121,7 +121,7 @@ const HubList: React.FC = () => {
         return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
       },
       width: '15%',
-    },
+    },*/
     {
       title: 'Actions',
       key: 'actions',
@@ -228,7 +228,7 @@ const HubList: React.FC = () => {
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
     },
-    {
+   /* {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
@@ -237,7 +237,7 @@ const HubList: React.FC = () => {
         return moment(a.nextMaintenanceDate).valueOf() - moment(b.nextMaintenanceDate).valueOf();
       },
       width: '15%',
-    },
+    },*/
     {
       title: 'Actions',
       key: 'actions',

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { createOccurrence, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, Flex, Form, Input, Result, Steps, message, notification } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';

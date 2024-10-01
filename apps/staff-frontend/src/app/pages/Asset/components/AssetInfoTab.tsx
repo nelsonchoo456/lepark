@@ -38,8 +38,6 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
     { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabelToRemoveUnderscores(asset.parkAssetCondition) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
-    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: asset.lastMaintenanceDate ? moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') : '-' },
-    { key: 'nextMaintenanceDate', label: 'Next Maintenance Date', children: asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-' },
     { key: 'supplier', label: 'Supplier', children: asset.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
     { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
@@ -76,7 +74,12 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
 
   return (
     <div>
-      <Descriptions items={(descriptionsItems) as DescriptionsItemType[]} bordered column={1} size="middle" />
+      <Descriptions
+        items={(descriptionsItems) as DescriptionsItemType[]}
+        bordered
+        column={1}
+        size="middle"
+      />
     </div>
   );
 };

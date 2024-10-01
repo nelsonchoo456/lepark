@@ -98,6 +98,26 @@ class OccurrenceDao {
       .filter((occurrence: any) => occurrence.parkId === parkId);
   }
 
+  async getSpeciesCountByParkId(parkId: number): Promise<number> {
+    // Get all zones associated with the parkId
+    const zones = await ZoneDao.getAllZones();
+    const zoneIds = zones.filter((zone: any) => zone.parkId === parkId).map((zone: any) => zone.id);
+  
+    // Group by speciesId and count the number of unique species
+    const uniqueSpecies = await prisma.occurrence.groupBy({
+      by: ['speciesId'],
+      where: {
+        zoneId: {
+          in: zoneIds,
+        },
+      },
+    });
+  
+    // The length of the grouped result will be the number of unique species
+    return uniqueSpecies.length;
+  }
+  
+
   async getOccurrenceById(id: string): Promise<Occurrence> {
     return prisma.occurrence.findUnique({ where: { id } });
   }
@@ -108,6 +128,16 @@ class OccurrenceDao {
 
   async deleteOccurrence(id: string): Promise<void> {
     await prisma.occurrence.delete({ where: { id } });
+  }
+
+  async getOccurrencesByIds(ids: string[]): Promise<any[]> {
+    return prisma.occurrence.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
   }
 }
 

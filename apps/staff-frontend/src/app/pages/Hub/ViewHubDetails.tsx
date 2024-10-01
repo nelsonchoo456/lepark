@@ -54,11 +54,11 @@ const ViewHubDetails = () => {
         }
       })(),
     },
-    {
+  /*  {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
       children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
+    },*/
     ...(user?.role === StaffType.SUPERADMIN ? [
       {
         key: 'parkName',
