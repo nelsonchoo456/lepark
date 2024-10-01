@@ -148,6 +148,9 @@ const SensorCreate = () => {
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
+            </Form.Item>
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
               <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
             </Form.Item>

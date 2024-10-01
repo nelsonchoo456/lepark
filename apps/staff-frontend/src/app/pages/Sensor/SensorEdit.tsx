@@ -69,7 +69,7 @@ const SensorEdit = () => {
 
         // Filter facilities based on the current facility's parkId
         const filtered = facilities.filter(
-          (f) => f.parkId === parkId && f.facilityStatus === FacilityStatusEnum.OPEN && f.facilityType === FacilityTypeEnum.STOREROOM
+          (f) => f.parkId === parkId && f.facilityStatus === FacilityStatusEnum.OPEN && f.facilityType === FacilityTypeEnum.STOREROOM,
         );
         setParkFacilities(filtered);
       }
@@ -176,6 +176,9 @@ const SensorEdit = () => {
           <Form.Item name="description" label="Description">
             <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
+          <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+            <Input placeholder="Enter Serial Number" />
+          </Form.Item>
           <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
             <Select placeholder="Select Sensor Type">
               {Object.values(SensorTypeEnum).map((type) => (
@@ -203,11 +206,7 @@ const SensorEdit = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item
-            name="acquisitionDate"
-            label="Acquisition Date"
-            rules={[{ required: true, message: 'Please enter Acquisition Date' }]}
-          >
+          <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true, message: 'Please enter Acquisition Date' }]}>
             <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
           </Form.Item>
           <Form.Item name="remarks" label="Remarks">
