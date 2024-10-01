@@ -25,6 +25,7 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
 
   const baseDescriptionsItems = [
     { key: 'name', label: 'Sensor Name', children: sensor.name || '-' },
+    { key: 'identifierNumber', label: 'Identifier Number', children: sensor.identifierNumber || '-' },
     { key: 'serialNumber', label: 'Serial Number', children: sensor.serialNumber || '-' },
     { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(sensor.sensorType) || '-' },
     { key: 'description', label: 'Description', children: sensor.description || '-' },

@@ -40,7 +40,7 @@ const ViewSensorDetails = () => {
       isMain: true,
     },
     {
-      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
+      title: sensor?.identifierNumber ? sensor?.identifierNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
       isCurrent: true,
     },
@@ -48,9 +48,9 @@ const ViewSensorDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNumber',
-      label: 'Serial Number',
-      children: sensor?.serialNumber,
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: sensor?.identifierNumber,
     },
     {
       key: 'sensorStatus',

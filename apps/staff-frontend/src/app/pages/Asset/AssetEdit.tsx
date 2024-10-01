@@ -187,7 +187,7 @@ const AssetEdit = () => {
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid Singapore phone number');
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
   };
 
   const handleImageClick = (index: number) => {
