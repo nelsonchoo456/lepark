@@ -174,7 +174,7 @@ const DiscoverPerPark = () => {
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
-      <ParkHeader cardClassName="h-24 md:h-[120px]">
+      <ParkHeader cardClassName="h-24 md:h-[160px]">
         <div className="flex w-full md:text-center md:mx-auto md:block md:w-auto">
           <div className="flex-1 font-medium text-2xl md:text-3xl">
             Species <span className="text-sm md:text-lg">in {selectedPark?.name}</span>
