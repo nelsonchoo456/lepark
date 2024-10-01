@@ -130,6 +130,16 @@ class ParkAssetDao {
     }));
   }
 
+  async getParkAssetByIdentifierNumber(identifierNumber: string): Promise<ParkAsset | null> {
+    return prisma.parkAsset.findUnique({
+      where: { identifierNumber },
+      include: {
+        maintenanceHistory: true,
+        facility: true,
+      },
+    });
+  }
+
   async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
     return prisma.parkAsset.findUnique({
       where: { serialNumber },

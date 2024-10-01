@@ -77,6 +77,10 @@ class HubDao {
     });
   }
 
+  public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
+    return prisma.hub.findUnique({ where: { identifierNumber } });
+  }
+
   public async getHubBySerialNumber(serialNumber: string): Promise<Hub | null> {
     return prisma.hub.findUnique({ where: { serialNumber } });
   }

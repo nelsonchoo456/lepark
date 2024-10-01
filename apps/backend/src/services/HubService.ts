@@ -43,13 +43,21 @@ class HubService {
       HubSchema.parse(formattedData);
       console.log('formattedData', formattedData);
 
-      formattedData.serialNumber = this.generateSerialNumber();
+      formattedData.identifierNumber = this.generateIdentifierNumber();
 
-      let existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
+      let existingHub = await HubDao.getHubByIdentifierNumber(formattedData.identifierNumber);
 
       while (existingHub) {
-        formattedData.serialNumber = this.generateSerialNumber();
-        existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
+        formattedData.identifierNumber = this.generateIdentifierNumber();
+        existingHub = await HubDao.getHubByIdentifierNumber(formattedData.identifierNumber);
+      }
+
+      // Validate serialNumber uniqueness
+      if (formattedData.serialNumber) {
+        const existingHubWithSerialNumber = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
+        if (existingHubWithSerialNumber) {
+          throw new Error(`Hub with serial number ${formattedData.serialNumber} already exists.`);
+        }
       }
 
       const hubData = formattedData as Prisma.HubCreateInput;
@@ -100,14 +108,24 @@ class HubService {
   public async updateHubDetails(id: string, data: Partial<HubSchemaType>): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
+      if (formattedData.identifierNumber) {
+        formattedData.identifierNumber = formattedData.identifierNumber.trim();
+      }
       if (formattedData.serialNumber) {
         formattedData.serialNumber = formattedData.serialNumber.trim();
       }
       HubSchema.partial().parse(formattedData);
 
+      if (formattedData.identifierNumber) {
+        const checkForExistingHub = await HubDao.getHubByIdentifierNumber(formattedData.identifierNumber);
+        if (checkForExistingHub && checkForExistingHub.id !== id) {
+          throw new Error(`Hub with identifier number ${formattedData.identifierNumber} already exists.`);
+        }
+      }
+
       if (formattedData.serialNumber) {
-        const existingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
-        if (existingHub && existingHub.id !== id) {
+        const checkForExistingHub = await HubDao.getHubBySerialNumber(formattedData.serialNumber);
+        if (checkForExistingHub && checkForExistingHub.id !== id) {
           throw new Error(`Hub with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
@@ -143,7 +161,7 @@ class HubService {
     }
   }
 
-  private generateSerialNumber(): string {
+  private generateIdentifierNumber(): string {
     return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
   }
 }

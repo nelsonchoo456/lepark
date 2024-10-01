@@ -29,14 +29,22 @@ class ParkAssetService {
       ParkAssetSchema.parse(formattedData);
       const parkAssetData = ensureAllFieldsPresent(formattedData);
       
-      // Generate a unique serialNumber based on the asset type
-      parkAssetData.serialNumber = this.generateSerialNumber(parkAssetData.parkAssetType);
+      // Generate a unique identifierNumber based on the asset type
+      parkAssetData.identifierNumber = this.generateIdentifierNumber(parkAssetData.parkAssetType);
 
-      let existingAsset = await ParkAssetDao.getParkAssetBySerialNumber(parkAssetData.serialNumber);
+      let existingAsset = await ParkAssetDao.getParkAssetByIdentifierNumber(parkAssetData.identifierNumber);
 
       while (existingAsset) {
-        parkAssetData.serialNumber = this.generateSerialNumber(parkAssetData.parkAssetType);
-        existingAsset = await ParkAssetDao.getParkAssetBySerialNumber(parkAssetData.serialNumber);
+        parkAssetData.identifierNumber = this.generateIdentifierNumber(parkAssetData.parkAssetType);
+        existingAsset = await ParkAssetDao.getParkAssetByIdentifierNumber(parkAssetData.identifierNumber);
+      }
+
+      // Validate serialNumber uniqueness
+      if (parkAssetData.serialNumber) {
+        const existingAssetWithSerialNumber = await ParkAssetDao.getParkAssetBySerialNumber(parkAssetData.serialNumber);
+        if (existingAssetWithSerialNumber) {
+          throw new Error(`Park asset with serial number ${parkAssetData.serialNumber} already exists.`);
+        }
       }
 
       return ParkAssetDao.createParkAsset(parkAssetData);
@@ -94,6 +102,20 @@ class ParkAssetService {
         return acc;
       }, {});
 
+      if (formattedData.identifierNumber) {
+        const checkForExistingAsset = await ParkAssetDao.getParkAssetByIdentifierNumber(formattedData.identifierNumber);
+        if (checkForExistingAsset && checkForExistingAsset.id !== id) {
+          throw new Error(`Park asset with identifier number ${formattedData.identifierNumber} already exists.`);
+        }
+      }
+
+      if (formattedData.serialNumber) {
+        const checkForExistingAsset = await ParkAssetDao.getParkAssetBySerialNumber(formattedData.serialNumber);
+        if (checkForExistingAsset && checkForExistingAsset.id !== id) {
+          throw new Error(`Park asset with serial number ${formattedData.serialNumber} already exists.`);
+        }
+      }
+
       return ParkAssetDao.updateParkAsset(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -144,7 +166,7 @@ class ParkAssetService {
     return ParkAssetDao.getParkAssetBySerialNumber(serialNumber);
   }
 
-  private generateSerialNumber(assetType: ParkAssetTypeEnum): string {
+  private generateIdentifierNumber(assetType: ParkAssetTypeEnum): string {
     const prefix = this.getAssetTypePrefix(assetType);
     return `${prefix}-${uuidv4().substr(0, 8).toUpperCase()}`;
   }

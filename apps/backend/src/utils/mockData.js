@@ -1166,6 +1166,7 @@ const parkAssetsData = [
   {
     name: 'Honda Lawnmower HRJ 196',
     serialNumber: 'HJ196',
+    identifierNumber: 'PT-LMFJ9238',
     parkAssetType: 'PLANT_TOOL_AND_EQUIPMENT',
     description:
       "The Honda HRJ196 Lawn Mower is your ultimate solution for maintaining a pristine lawn with minimal effort. This high-performance gardening tool boasts a cutting width of 470mm, ensuring wide coverage with each pass. With a large grass bag capacity of 60 liters, you'll spend less time emptying and more time mowing.",
@@ -1186,6 +1187,7 @@ const parkAssetsData = [
   {
     name: 'Karcher HR 25 15m Aluminum Coated Water Hose Reel',
     serialNumber: 'HR2515',
+    identifierNumber: 'HP-HR2515DK',
     parkAssetType: 'HOSES_AND_PIPES',
     description:
       'The HR 25 hose reel for mobile or stationary use is perfect for watering small to medium-sized areas and gardens. The practical hose storage is characterised by its robust, non-corrosive aluminium frame. The compact dimensions save space and simplify the work. So nothing can now get in the way of your gardening. For the innovative Karcher hose storage systems set new standards with regard to function, design and quality. Ideal for quick winding and unwinding of the hose, without manual guide - with minimum space requirement.',
@@ -1205,7 +1207,8 @@ const parkAssetsData = [
   },
   {
     name: 'Aiko 70cm Safety (Traffic) Cone',
-    serialNumber: 'CONE-7093',
+    serialNumber: 'CONE7093',
+    identifierNumber: 'SF-CONE7093',
     parkAssetType: 'SAFETY',
     description:
       'These reflective cones are ideal for roadworks, civil engineering, schools and carparks etc. Features soft PVC material. One piece design means no seams to split or tear. Superior flexibility in heat and cold. Bounce back to shape when crushed',
@@ -1226,6 +1229,7 @@ const parkAssetsData = [
   {
     name: 'Ingco Var. Speed Reciprocating SAW 1200W',
     serialNumber: 'RS12001',
+    identifierNumber: 'GT-DRS12001',
     parkAssetType: 'GENERAL_TOOLS',
     description:
       'This saw operates on a voltage range of 220-240V at 50/60Hz, with an input power of 1200W. It features a no-load speed ranging from 1000 to 2800 rpm, offering a maximum cutting depth of 210mm for wood, 20mm for steel, and 10mm for aluminum. Equipped with variable speed control, it also includes an integrated work light and a 4-step pendulum action. The SDS blade change chuck ensures easy blade replacement, and the saw comes with one metal saw blade and one saw blade for wood.',
@@ -1248,7 +1252,8 @@ const parkAssetsData = [
 const sensorsData = [
   {
     name: 'Temperature Sensor 1',
-    serialNumber: 'TS1234567890',
+    serialNumber: 'STE0234589',
+    identifierNumber: 'SENS-DLJK9482',
     sensorType: 'TEMPERATURE',
     description: 'Main temperature sensor for greenhouse',
     sensorStatus: 'ACTIVE',
@@ -1268,7 +1273,8 @@ const sensorsData = [
   },
   {
     name: 'Humidity Sensor 01',
-    serialNumber: 'HS9876543210',
+    serialNumber: 'STE2302459',
+    identifierNumber: 'SENS-LSDK84KD',
     sensorType: 'HUMIDITY',
     description: 'Primary humidity sensor for tropical plants section',
     sensorStatus: 'INACTIVE',
@@ -1285,7 +1291,8 @@ const sensorsData = [
   },
   {
     name: 'Soil Moisture Probe 03',
-    serialNumber: 'SM5678901234',
+    serialNumber: 'STE9258592',
+    identifierNumber: 'SENS-024KSDN8',
     sensorType: 'SOIL_MOISTURE',
     description: 'Soil moisture sensor for drought-resistant plants',
     sensorStatus: 'UNDER_MAINTENANCE',
@@ -1302,7 +1309,8 @@ const sensorsData = [
   },
   {
     name: 'Light Sensor Datalogger 02',
-    serialNumber: 'LS2468013579',
+    serialNumber: 'STE6238227',
+    identifierNumber: 'SENS-IRWTU987',
     sensorType: 'LIGHT',
     description: 'Light intensity sensor for shade-loving plants',
     sensorStatus: 'ACTIVE',
@@ -1321,7 +1329,8 @@ const sensorsData = [
 
 const hubsData = [
   {
-    serialNumber: 'HUB-6BB2LDKD',
+    serialNumber: 'IA21431241512551',
+    identifierNumber: 'HUB-6PPSLD9D',
     name: 'Hub 1',
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
@@ -1340,7 +1349,8 @@ const hubsData = [
     facilityId: '',
   },
   {
-    serialNumber: 'HUB-6BB3LDKD',
+    serialNumber: 'IA21431242115100',
+    identifierNumber: 'HUB-6CC2JFUD',
     name: 'Hub 2',
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'DECOMMISSIONED',
@@ -1359,7 +1369,8 @@ const hubsData = [
     facilityId: '',
   },
   {
-    serialNumber: 'HUB-6BB4LDKD',
+    serialNumber: 'IA92381571234567',
+    identifierNumber: 'HUB-6BB4LDKD',
     name: 'Hub 3',
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'UNDER_MAINTENANCE',
