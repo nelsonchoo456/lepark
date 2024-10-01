@@ -28,6 +28,14 @@ class AttractionDao {
     return prisma.attraction.findMany({ where: { parkId } });
   }
 
+  async getAttractionCountByParkId(parkId: number): Promise<number> {
+    return prisma.attraction.count({
+      where: {
+        parkId,
+      },
+    });
+  }
+
   async getAttractionById(id: string): Promise<Attraction | null> {
     return prisma.attraction.findUnique({ where: { id } });
   }
