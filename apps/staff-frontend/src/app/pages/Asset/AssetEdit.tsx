@@ -64,7 +64,7 @@ const AssetEdit = () => {
       isMain: true,
     },
     {
-      title: asset?.name ? asset.name : 'Details',
+      title: asset?.identifierNumber ? asset.identifierNumber : 'Details',
       pathKey: `/parkasset/${assetId}`,
     },
     {
@@ -288,7 +288,7 @@ const AssetEdit = () => {
                 ))}
               </div>
             </Form.Item>
-            <Divider orientation="left">Select the Facility</Divider>
+            <Divider orientation="left">Supplier Details</Divider>
             <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
               <Input />
             </Form.Item>

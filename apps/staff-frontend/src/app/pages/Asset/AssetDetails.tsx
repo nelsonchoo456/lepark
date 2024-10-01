@@ -81,7 +81,7 @@ const AssetDetails = () => {
       isMain: true,
     },
     {
-      title: asset?.name ? asset.name : 'Details',
+      title: asset?.identifierNumber ? asset.identifierNumber : 'Details',
       pathKey: `/parkasset/${asset?.id}`,
       isCurrent: true,
     },
