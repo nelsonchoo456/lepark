@@ -122,11 +122,11 @@ const CreateDetailsStep = ({
       <Form.Item name="zoneStatus" label="Zone Status" rules={[{ required: true }]}>
         <Select placeholder="Select a Status" options={zoneStatusOptions} />
       </Form.Item>
-      <Form.Item label={'Image'}>
+      <Form.Item label={<div><Text type="danger">{'* '}</Text>Image</div>}>
         <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
       {previewImages?.length > 0 && (
-        <Form.Item label={'Image Previews'}>
+        <Form.Item label={'Image Previews'} >
           <div className="flex flex-wrap gap-2">
             {previewImages.map((imgSrc, index) => (
               <img
