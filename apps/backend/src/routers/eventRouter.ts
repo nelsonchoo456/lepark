@@ -35,6 +35,17 @@ router.get('/getEventsByParkId/:parkId', async (req, res) => {
   }
 });
 
+router.get('/getEventCountByParkId/:parkId', async (req, res) => {
+  try {
+    const parkId = req.params.parkId;
+    const events = await EventService.getEventCountByParkId(parkId);
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+
 router.get('/getEventsByFacilityId/:facilityId', async (req, res) => {
   try {
     const facilityId = req.params.facilityId;

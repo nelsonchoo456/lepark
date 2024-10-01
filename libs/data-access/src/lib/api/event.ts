@@ -69,6 +69,19 @@ export async function getEventsByParkId(parkId: number): Promise<AxiosResponse<E
   }
 }
 
+export async function getEventCountByParkId(parkId: number): Promise<AxiosResponse<number>> {
+  try {
+    const response: AxiosResponse<number> = await client.get(`${URL}/getEventCountByParkId/${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getEventById(id: string): Promise<AxiosResponse<EventResponse>> {
   try {
     const response: AxiosResponse<EventResponse> = await client.get(`${URL}/getEventById/${id}`);

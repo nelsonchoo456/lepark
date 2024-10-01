@@ -173,38 +173,38 @@ const SelectParkPage: React.FC = () => {
                   </div>
                 ),
               },
-              {
-                key: 'area',
-                label: <p className="font-semibold text-green-600">Area</p>,
-                children: (
-                  <div>
-                    <Checkbox.Group onChange={setCheckedAreas}>
-                      <Row gutter={[0, 8]}>
-                        <Col span={24}>
-                          <Checkbox value="NORTH" className="">
-                            North
-                          </Checkbox>
-                        </Col>
-                        <Col span={24}>
-                          <Checkbox value="SOUTH" className="">
-                            South
-                          </Checkbox>
-                        </Col>
-                        <Col span={24}>
-                          <Checkbox value="EAST" className="">
-                            East
-                          </Checkbox>
-                        </Col>
-                        <Col span={24}>
-                          <Checkbox value="WEST" className="">
-                            West
-                          </Checkbox>
-                        </Col>
-                      </Row>
-                    </Checkbox.Group>
-                  </div>
-                ),
-              },
+              // {
+              //   key: 'area',
+              //   label: <p className="font-semibold text-green-600">Area</p>,
+              //   children: (
+              //     <div>
+              //       <Checkbox.Group onChange={setCheckedAreas}>
+              //         <Row gutter={[0, 8]}>
+              //           <Col span={24}>
+              //             <Checkbox value="NORTH" className="">
+              //               North
+              //             </Checkbox>
+              //           </Col>
+              //           <Col span={24}>
+              //             <Checkbox value="SOUTH" className="">
+              //               South
+              //             </Checkbox>
+              //           </Col>
+              //           <Col span={24}>
+              //             <Checkbox value="EAST" className="">
+              //               East
+              //             </Checkbox>
+              //           </Col>
+              //           <Col span={24}>
+              //             <Checkbox value="WEST" className="">
+              //               West
+              //             </Checkbox>
+              //           </Col>
+              //         </Row>
+              //       </Checkbox.Group>
+              //     </div>
+              //   ),
+              // },
             ]}
           />
         </div>
