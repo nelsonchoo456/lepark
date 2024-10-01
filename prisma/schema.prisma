@@ -200,17 +200,6 @@ model Attraction {
   lat          Float?
   lng          Float?
   parkId       Int
-  id           String               @id @default(uuid()) @db.Uuid
-  title        String
-  description  String
-  openingHours DateTime[]
-  closingHours DateTime[]
-  images       String[]
-  status       AttractionStatusEnum
-  lat          Float?
-  lng          Float?
-  parkId       Int
-
   @@index([parkId])
 }
 
