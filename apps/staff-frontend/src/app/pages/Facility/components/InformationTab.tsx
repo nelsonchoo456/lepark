@@ -35,7 +35,19 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
       label: 'Reservation Policy',
       children: facility.reservationPolicy,
     },
-    { key: 'rulesAndRegulations', label: 'Rules And Regulations', children: facility.rulesAndRegulations },
+    {
+      key: 'rulesAndRegulations',
+      label: 'Rules And Regulations',
+      children: (
+        <div
+          dangerouslySetInnerHTML={{
+            __html: facility.rulesAndRegulations
+              .replace(/(\d+\.\s)/g, '<br />$1') // Add line breaks before each numbered rule
+              .replace(/^(<br\s*\/?>)+/, ''), // Remove any leading <br> tags
+          }}
+        />
+      ),
+    },
     { key: 'lastMaintenanceDate', label: 'Last Maintenance Date	', children: moment(facility.lastMaintenanceDate).format('MMMM D, YYYY') },
     { key: 'size', label: 'Size', children: facility?.size ? `${facility.size} m²` : '-' },
     { key: 'capacity', label: 'Capacity', children: facility?.capacity ? `${facility.capacity} pax` : '-' },
