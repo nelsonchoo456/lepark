@@ -111,6 +111,11 @@ class FacilityService {
       throw new Error('Error uploading image to S3');
     }
   }
+
+  public async checkExistingFacility(name: string, parkId: number): Promise<boolean> {
+    const existingFacility = await FacilityDao.getFacilityByNameAndParkId(name, parkId);
+    return !!existingFacility; // Returns true if exists, false otherwise
+  }
 }
 
 function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreateInput {

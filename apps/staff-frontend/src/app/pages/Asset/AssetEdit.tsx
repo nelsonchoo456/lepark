@@ -43,7 +43,7 @@ const AssetEdit = () => {
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
   const { assetId = '' } = useParams<{ assetId: string }>();
-  const { asset, loading: assetLoading, notFound } = useRestrictAsset(assetId);
+  const { asset, loading: assetLoading, } = useRestrictAsset(assetId);
   const {
     selectedFiles,
     previewImages,

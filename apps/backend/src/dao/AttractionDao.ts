@@ -7,12 +7,33 @@ class AttractionDao {
     return prisma.attraction.create({ data });
   }
 
+  async checkAttractionNameExists(parkId: number, title: string): Promise<boolean> {
+    const count = await prisma.attraction.count({
+      where: {
+        parkId,
+        title: {
+          equals: title,
+          mode: 'insensitive', // This makes the search case-insensitive
+        },
+      },
+    });
+    return count > 0;
+  }
+
   async getAllAttractions(): Promise<Attraction[]> {
     return prisma.attraction.findMany();
   }
 
   async getAttractionsByParkId(parkId: number): Promise<Attraction[]> {
     return prisma.attraction.findMany({ where: { parkId } });
+  }
+
+  async getAttractionCountByParkId(parkId: number): Promise<number> {
+    return prisma.attraction.count({
+      where: {
+        parkId,
+      },
+    });
   }
 
   async getAttractionById(id: string): Promise<Attraction | null> {

@@ -5,7 +5,6 @@ import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, T
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { getAllStaffs, StaffResponse, StaffType, getParkById, ParkResponse, getAllParks, getAllStaffsByParkId } from '@lepark/data-access';

@@ -125,7 +125,7 @@ const SensorCreate = () => {
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-            <Divider orientation="left">Select the Park and Facility</Divider>
+            <Divider orientation="left">Park & Facility Details</Divider>
 
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -153,14 +153,17 @@ const SensorCreate = () => {
             <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
               <Input placeholder="Enter Name" />
             </Form.Item>
-            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
-              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
-            </Form.Item>
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
+            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
+              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
+            </Form.Item>
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
               <Select placeholder="Select Sensor Status" options={sensorStatusOptions} />
+            </Form.Item>
+            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
+              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
             </Form.Item>
             <Form.Item
               name="acquisitionDate"
@@ -169,7 +172,7 @@ const SensorCreate = () => {
             >
               <DatePicker className="w-full" maxDate={dayjs()} />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               name="calibrationFrequencyDays"
               label="Calibration Frequency"
               tooltip={{
@@ -178,20 +181,8 @@ const SensorCreate = () => {
               rules={[{ required: true, type: 'number', min: 0, max: 90, message: 'Please enter a number between 0 and 90' }]}
             >
               <InputNumber min={0} max={90} className="w-full" />
-            </Form.Item>
-            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
-              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
-            </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
-              <Input placeholder="Enter Supplier" />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact Number"
-              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input placeholder="Enter Supplier Contact Number" />
-            </Form.Item>
+            </Form.Item> */}
+
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
@@ -214,6 +205,17 @@ const SensorCreate = () => {
                 </div>
               </Form.Item>
             )}
+            <Divider orientation="left">Supplier Details</Divider>
+              <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+              <Input placeholder="Enter Supplier" />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input placeholder="Enter Supplier Contact Number" />
+            </Form.Item>
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>

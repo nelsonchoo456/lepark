@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { createZone, getAllParks, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, notification, Result, Steps, Tooltip } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon } from '../../components/map/functions/functions';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import PageHeader2 from '../../components/main/PageHeader2';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -139,10 +139,23 @@ const ZoneCreate = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Zones Management',
+      pathKey: '/zone',
+      isMain: true,
+    },
+    {
+      title: "Create",
+      pathKey: `/zone/create`,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Create a Zone</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Steps
           current={currStep}
