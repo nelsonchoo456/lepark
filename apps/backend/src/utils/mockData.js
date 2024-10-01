@@ -812,7 +812,7 @@ const occurrenceData = [
     speciesId: '',
     occurrenceStatus: 'HEALTHY',
     zoneId: 1,
-    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-1.jpg'],
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-11.jpg'],
   },
 ];
 
