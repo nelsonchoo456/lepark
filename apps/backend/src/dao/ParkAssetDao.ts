@@ -52,6 +52,8 @@ class ParkAssetDao {
             id: true,
             name: true,
             parkId: true,
+            lat: true,
+            long: true
           },
         },
       },
