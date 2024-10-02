@@ -174,7 +174,7 @@ const MapTab = ({ park }: MapTabProps) => {
       </Card>
       <div
         style={{
-          height: `${webMode ? '60vh' : '80vh'}`,
+          height: `${webMode ? '80vh' : '80vh'}`,
           position: 'relative',
         }}
         className="rounded-xl md:overflow-hidden"
