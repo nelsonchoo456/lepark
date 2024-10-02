@@ -10,11 +10,9 @@ import { IoIosInformationCircle } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
-import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 import { COLORS } from '../../config/colors';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
-import { MdArrowOutward } from 'react-icons/md';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { FiEye } from 'react-icons/fi';
 import { TbEdit, TbTree } from 'react-icons/tb';
@@ -270,6 +268,7 @@ const ParksMap = () => {
               color="transparent"
               fillOpacity={0.8}
               handlePolygonClick={handleParkPolygonClick}
+              handleMarkerClick={() => navigate(`/park/${park.id}`)} // not present in web mode
             />
           ))}
 
