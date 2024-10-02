@@ -105,3 +105,20 @@ export async function deleteHub(id: string): Promise<AxiosResponse<void>> {
     }
   }
 }
+
+export async function checkHubDuplicateSerialNumber(serialNumber: string, hubId?: string): Promise<boolean> {
+  try {
+    const params = new URLSearchParams({ serialNumber });
+    if (hubId) {
+      params.append('hubId', hubId);
+    }
+    const response: AxiosResponse<{ isDuplicate: boolean }> = await client.get(`${URL}/checkDuplicateSerialNumber?${params}`);
+    return response.data.isDuplicate;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

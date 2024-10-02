@@ -15,22 +15,19 @@ import {
   StaffType,
   getParkById,
   getFacilitiesByParkId,
+  checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip, Switch } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
 import dayjs from 'dayjs';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
-const formatEnumLabel = (enumValue: string): string => {
-  return enumValue
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
+const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
 const AssetCreate = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
@@ -52,6 +49,17 @@ const AssetCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createMultiple, setCreateMultiple] = useState(false);
   const [assetQuantity, setAssetQuantity] = useState<number>(1);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [hasSerialNumber, setHasSerialNumber] = useState(false);
+
+  const handleSerialNumberChange = (checked: boolean) => {
+    setHasSerialNumber(checked);
+    if (checked) {
+      setCreateMultiple(false);
+      setAssetQuantity(1);
+      form.setFieldsValue({ createMultiple: false, assetQuantity: undefined });
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -94,7 +102,7 @@ const AssetCreate = () => {
         (facility) =>
           facility.parkId === selectedParkId &&
           facility.facilityStatus === FacilityStatusEnum.OPEN &&
-          facility.facilityType === FacilityTypeEnum.STOREROOM
+          facility.facilityType === FacilityTypeEnum.STOREROOM,
       );
       setFilteredFacilities(filtered);
     } else {
@@ -103,8 +111,8 @@ const AssetCreate = () => {
           (facility) =>
             facility.parkId === user?.parkId &&
             facility.facilityStatus === FacilityStatusEnum.OPEN &&
-            facility.facilityType === FacilityTypeEnum.STOREROOM
-        )
+            facility.facilityType === FacilityTypeEnum.STOREROOM,
+        ),
       );
     }
   }, [selectedParkId, facilities]);
@@ -118,8 +126,20 @@ const AssetCreate = () => {
     setIsSubmitting(true);
     try {
       const values = await form.validateFields();
+
+      // Check for duplicate serial number only if hasSerialNumber is true
+      if (hasSerialNumber && values.serialNumber) {
+        const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber);
+        if (isDuplicate) {
+          messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const baseAssetData: ParkAssetData = {
         name: values.name,
+        serialNumber: hasSerialNumber ? values.serialNumber : undefined,
         parkAssetType: values.parkAssetType,
         description: values.description,
         parkAssetStatus: values.parkAssetStatus,
@@ -149,18 +169,19 @@ const AssetCreate = () => {
       setCreatedAssetName(values.name);
       setShowSuccessAlert(true);
     } catch (error) {
-      message.error(String(error));
+      console.error('Error creating Asset', error);
+      messageApi.error('Unable to create Asset. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const validatePhoneNumber = (_: any, value: string) => {
-    const phoneRegex = /^[89]\d{7}$/;
+    const phoneRegex = /^[689]\d{7}$/;
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid 8-digit phone number starting with 8 or 9');
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
   };
 
   const breadcrumbItems = [
@@ -178,6 +199,7 @@ const AssetCreate = () => {
 
   return (
     <ContentWrapperDark>
+      {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {loading ? (
@@ -193,7 +215,11 @@ const AssetCreate = () => {
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: '600px', margin: '0 auto' }}
           >
-            <Divider orientation="left">Asset Details</Divider>
+            {user?.role === StaffType.SUPERADMIN ? (
+              <Divider orientation="left">Select Park and Facility</Divider>
+            ) : (
+              <Divider orientation="left">Select Facility</Divider>
+            )}
             {user?.role !== StaffType.SUPERADMIN && park ? (
               <Form.Item label="Park">{park.name}</Form.Item>
             ) : (
@@ -208,8 +234,8 @@ const AssetCreate = () => {
               </Form.Item>
             )}
             <Form.Item name="facilityId" label="Facility" rules={[{ required: true, message: 'Please select a facility!' }]}>
-              <Select 
-                placeholder={selectedParkId || user?.role !== StaffType.SUPERADMIN ? 'Select a facility' : 'Please select a park first'} 
+              <Select
+                placeholder={selectedParkId || user?.role !== StaffType.SUPERADMIN ? 'Select a facility' : 'Please select a park first'}
                 disabled={user?.role === StaffType.SUPERADMIN && !selectedParkId}
               >
                 {filteredFacilities.map((facility) => (
@@ -219,9 +245,22 @@ const AssetCreate = () => {
                 ))}
               </Select>
             </Form.Item>
+            <Divider orientation="left">Asset Details</Divider>
+
             <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
+            <Form.Item name="hasSerialNumber" label="Has Serial Number" valuePropName="checked">
+              <Switch onChange={handleSerialNumberChange} />
+            </Form.Item>
+            {hasSerialNumber && (
+              <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+                <Input placeholder="Enter Serial Number" />
+              </Form.Item>
+            )}
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
@@ -230,9 +269,6 @@ const AssetCreate = () => {
                   </Select.Option>
                 ))}
               </Select>
-            </Form.Item>
-            <Form.Item name="description" label="Description">
-              <TextArea />
             </Form.Item>
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
               <Select placeholder="Select asset status">
@@ -243,20 +279,6 @@ const AssetCreate = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
-              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
-            </Form.Item>
-
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input />
-            </Form.Item>
             <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
               <Select placeholder="Select asset condition">
                 {Object.values(ParkAssetConditionEnum).map((condition) => (
@@ -266,13 +288,18 @@ const AssetCreate = () => {
                 ))}
               </Select>
             </Form.Item>
+            <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true }]}>
+              <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
+            </Form.Item>
             <Form.Item name="remarks" label="Remarks">
-              <TextArea />
+              <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-            <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
-              <Checkbox onChange={(e) => setCreateMultiple(e.target.checked)} />
-            </Form.Item>
-            {createMultiple && (
+            {!hasSerialNumber && (
+              <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
+                <Switch onChange={(checked) => setCreateMultiple(checked)} />
+              </Form.Item>
+            )}
+            {!hasSerialNumber && createMultiple && (
               <Form.Item
                 name="assetQuantity"
                 label="Park Asset Quantity"
@@ -301,7 +328,19 @@ const AssetCreate = () => {
                 </div>
               </Form.Item>
             )}
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Divider orientation="left">Supplier Details</Divider>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item label={" "} colon={false}>
               <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">
                 Submit
               </Button>

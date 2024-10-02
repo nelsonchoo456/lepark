@@ -40,6 +40,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import FacilityInfoCard from '../Event/components/FacilityInfoCard';
 import { useFetchPublicFacilitiesForEventsByPark } from '../../hooks/Facilities/useFetchPublicFacilitiesForEventsByPark';
 import { useFetchEventsByFacilityId } from '../../hooks/Events/useFetchEventsByFacilityId';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -114,30 +115,36 @@ const EventEdit = () => {
   }, [id, event, park, facilities]);
 
   const eventStatusOptions = [
-    { value: EventStatusEnum.UPCOMING, label: 'Upcoming' },
-    { value: EventStatusEnum.ONGOING, label: 'Ongoing' },
-    { value: EventStatusEnum.COMPLETED, label: 'Completed' },
-    { value: EventStatusEnum.CANCELLED, label: 'Cancelled' },
+    { value: EventStatusEnum.UPCOMING, label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.UPCOMING) },
+    { value: EventStatusEnum.ONGOING, label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.ONGOING) },
+    { value: EventStatusEnum.COMPLETED, label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.COMPLETED) },
+    { value: EventStatusEnum.CANCELLED, label: formatEnumLabelToRemoveUnderscores(EventStatusEnum.CANCELLED) },
   ];
 
   const eventTypeOptions = [
-    { value: EventTypeEnum.WORKSHOP, label: 'Workshop' },
-    { value: EventTypeEnum.EXHIBITION, label: 'Exhibition' },
-    { value: EventTypeEnum.GUIDED_TOUR, label: 'Guided Tour' },
-    { value: EventTypeEnum.PERFORMANCE, label: 'Performance' },
-    { value: EventTypeEnum.TALK, label: 'Talk' },
-    { value: EventTypeEnum.COMPETITION, label: 'Competition' },
-    { value: EventTypeEnum.FESTIVAL, label: 'Festival' },
-    { value: EventTypeEnum.CONFERENCE, label: 'Conference' },
+    { value: EventTypeEnum.WORKSHOP, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.WORKSHOP) },
+    { value: EventTypeEnum.EXHIBITION, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.EXHIBITION) },
+    { value: EventTypeEnum.GUIDED_TOUR, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.GUIDED_TOUR) },
+    { value: EventTypeEnum.PERFORMANCE, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.PERFORMANCE) },
+    { value: EventTypeEnum.TALK, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.TALK) },
+    { value: EventTypeEnum.COMPETITION, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.COMPETITION) },
+    { value: EventTypeEnum.FESTIVAL, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.FESTIVAL) },
+    { value: EventTypeEnum.CONFERENCE, label: formatEnumLabelToRemoveUnderscores(EventTypeEnum.CONFERENCE) },
   ];
 
   const eventSuitabilityOptions = [
-    { value: EventSuitabilityEnum.ANYONE, label: 'Anyone' },
-    { value: EventSuitabilityEnum.FAMILIES_AND_FRIENDS, label: 'Families and Friends' },
-    { value: EventSuitabilityEnum.CHILDREN, label: 'Children' },
-    { value: EventSuitabilityEnum.NATURE_ENTHUSIASTS, label: 'Nature Enthusiasts' },
-    { value: EventSuitabilityEnum.PETS, label: 'Pets' },
-    { value: EventSuitabilityEnum.FITNESS_ENTHUSIASTS, label: 'Fitness Enthusiasts' },
+    { value: EventSuitabilityEnum.ANYONE, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.ANYONE) },
+    {
+      value: EventSuitabilityEnum.FAMILIES_AND_FRIENDS,
+      label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FAMILIES_AND_FRIENDS),
+    },
+    { value: EventSuitabilityEnum.CHILDREN, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.CHILDREN) },
+    { value: EventSuitabilityEnum.NATURE_ENTHUSIASTS, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.NATURE_ENTHUSIASTS) },
+    { value: EventSuitabilityEnum.PETS, label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.PETS) },
+    {
+      value: EventSuitabilityEnum.FITNESS_ENTHUSIASTS,
+      label: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FITNESS_ENTHUSIASTS),
+    },
   ];
 
   const onFacilityChange = async (facilityId: string) => {
@@ -363,8 +370,9 @@ const EventEdit = () => {
                 className="max-w-[600px] mx-auto mt-8"
                 initialValues={initialValues}
               >
+                <Divider orientation="left">{'Select Facility'}</Divider>
                 <Form.Item name="parkName" label="Park">
-                  <Select placeholder={park?.name} disabled />
+                  {park?.name}
                 </Form.Item>
 
                 <Form.Item

@@ -1,7 +1,6 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, Typography, message } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -89,13 +88,13 @@ const ZoneList: React.FC = () => {
             );
           case 'UNDER_CONSTRUCTION':
             return (
-              <Tag color="red" bordered={false}>
+              <Tag color="orange" bordered={false}>
                 Under Construction
               </Tag>
             );
           case 'LIMITED_ACCESS':
             return (
-              <Tag color="orange" bordered={false}>
+              <Tag color="yellow" bordered={false}>
                 Limited Access
               </Tag>
             );
@@ -213,13 +212,13 @@ const ZoneList: React.FC = () => {
             );
           case 'UNDER_CONSTRUCTION':
             return (
-              <Tag color="red" bordered={false}>
+              <Tag color="orange" bordered={false}>
                 Under Construction
               </Tag>
             );
           case 'LIMITED_ACCESS':
             return (
-              <Tag color="orange" bordered={false}>
+              <Tag color="yellow" bordered={false}>
                 Limited Access
               </Tag>
             );

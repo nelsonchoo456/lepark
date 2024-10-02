@@ -4,68 +4,62 @@ import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 
 import { FaTools, FaLeaf, FaWrench } from 'react-icons/fa';
 import moment from 'moment';
-import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType } from '@lepark/data-access';
+import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType, FacilityResponse } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useAuth } from '@lepark/common-ui'; // Add this import
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import LocationTab from './components/LocationTab';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
-  const { asset, loading } = useRestrictAsset(assetId);
+  const { asset, park, facility, loading } = useRestrictAsset(assetId);
+  const { zones } = useFetchZones();
   const { user } = useAuth<StaffResponse>(); // Add this line to get the current user
   console.log(asset);
   const navigate = useNavigate();
 
-  const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
-    const words = enumValue.split('_');
-
-    if (enumType === 'type' || enumType === 'condition') {
-      return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-    } else {
-      return words.map((word) => word.toUpperCase()).join(' ');
-    }
-  };
-
   const descriptionsItems = [
     {
-      key: 'serialNumber',
-      label: 'Serial Number',
-      children: asset ? asset.serialNumber : 'Loading...',
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: asset ? asset.identifierNumber : 'Loading...',
     },
     {
       key: 'assetType',
       label: 'Asset Type',
-      children: asset ? formatEnumLabel(asset.parkAssetType, 'type') : 'Loading...',
+      children: asset ? formatEnumLabelToRemoveUnderscores(asset.parkAssetType) : 'Loading...',
     },
     {
       key: 'assetStatus',
       label: 'Status',
       children:
         asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-          <Tag color="green">AVAILABLE</Tag>
+          <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-          <Tag color="blue">IN USE</Tag>
+          <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-          <Tag color="orange">UNDER MAINTENANCE</Tag>
+          <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-          <Tag color="red">DECOMMISSIONED</Tag>
+          <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
         ) : (
           <Tag>{asset?.parkAssetStatus}</Tag>
         ),
     },
-    {
-      key: 'nextMaintenance',
-      label: 'Next Maintenance',
-      children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
-    },
+    // {
+    //   key: 'nextMaintenance',
+    //   label: 'Next Maintenance',
+    //   children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
+    // },
     // Add park name for Superadmin only
     ...(user?.role === StaffType.SUPERADMIN ? [
       {
         key: 'park',
         label: 'Park',
-        children: asset ? asset.parkName : 'Loading...',
+        children: asset ? asset.park?.name : 'Loading...',
       },
     ] : []),
     {
@@ -81,6 +75,11 @@ const AssetDetails = () => {
       label: 'Information',
       children: asset ? <AssetInfoTab asset={asset} /> : <p>Loading asset data...</p>,
     },
+    {
+      key: 'location',
+      label: 'Location',
+      children: facility ? <LocationTab facility={facility} zones={zones} park={park}/> : <p>Loading asset data...</p>,
+    },
   ];
 
   const breadcrumbItems = [
@@ -90,7 +89,7 @@ const AssetDetails = () => {
       isMain: true,
     },
     {
-      title: asset?.name ? asset.name : 'Details',
+      title: asset?.identifierNumber ? asset.identifierNumber : 'Details',
       pathKey: `/parkasset/${asset?.id}`,
       isCurrent: true,
     },

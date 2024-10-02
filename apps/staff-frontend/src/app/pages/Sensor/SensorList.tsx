@@ -3,7 +3,6 @@ import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, T
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { deleteSensor, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import PageHeader from '../../components/main/PageHeader';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -12,13 +11,8 @@ import { ColumnsType } from 'antd/es/table';
 import { SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
 import { useFetchSensors } from '../../hooks/Sensors/useFetchSensors';
 import moment from 'moment';
-
-const formatEnumLabel = (enumValue: string): string => {
-  return enumValue
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
+import PageHeader2 from '../../components/main/PageHeader2';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const SensorManagementPage: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
@@ -63,11 +57,11 @@ const SensorManagementPage: React.FC = () => {
 
   const columns: ColumnsType<SensorResponse> = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a, b) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '20%',
     },
     {
@@ -98,64 +92,64 @@ const SensorManagementPage: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Type',
+      title: 'Sensor Type',
       dataIndex: 'sensorType',
       key: 'sensorType',
-      filters: Object.values(SensorTypeEnum).map((type) => ({ text: formatEnumLabel(type), value: type })),
+      filters: Object.values(SensorTypeEnum).map((type) => ({ text: formatEnumLabelToRemoveUnderscores(type), value: type })),
       onFilter: (value, record) => record.sensorType === value,
-      render: (type: string) => formatEnumLabel(type),
+      render: (type: string) => formatEnumLabelToRemoveUnderscores(type),
       width: '15%',
     },
     {
       title: 'Sensor Status',
       dataIndex: 'sensorStatus',
       key: 'sensorStatus',
-      filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabel(status), value: status })),
+      filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
       render: (status: string) => {
         switch (status) {
           case SensorStatusEnum.ACTIVE:
             return (
               <Tag color="green" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           case SensorStatusEnum.INACTIVE:
             return (
               <Tag color="blue" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           case SensorStatusEnum.UNDER_MAINTENANCE:
             return (
               <Tag color="yellow" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           case SensorStatusEnum.DECOMMISSIONED:
             return (
               <Tag color="red" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           default:
             return (
               <Tag color="default" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
         }
       },
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
-      width: '15%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
+    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
+    //   width: '15%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -180,9 +174,9 @@ const SensorManagementPage: React.FC = () => {
 
   const superAdminColumns: ColumnsType<SensorResponse> = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
       width: '20%',
@@ -219,64 +213,64 @@ const SensorManagementPage: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Type',
+      title: 'Sensor Type',
       dataIndex: 'sensorType',
       key: 'sensorType',
-      filters: Object.values(SensorTypeEnum).map((type) => ({ text: formatEnumLabel(type), value: type })),
+      filters: Object.values(SensorTypeEnum).map((type) => ({ text: formatEnumLabelToRemoveUnderscores(type), value: type })),
       onFilter: (value, record) => record.sensorType === value,
-      render: (type: string) => formatEnumLabel(type),
+      render: (type: string) => formatEnumLabelToRemoveUnderscores(type),
       width: '15%',
     },
     {
       title: 'Sensor Status',
       dataIndex: 'sensorStatus',
       key: 'sensorStatus',
-      filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabel(status), value: status })),
+      filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
       render: (status: string) => {
         switch (status) {
           case SensorStatusEnum.ACTIVE:
             return (
               <Tag color="green" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           case SensorStatusEnum.INACTIVE:
             return (
               <Tag color="blue" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           case SensorStatusEnum.UNDER_MAINTENANCE:
             return (
               <Tag color="yellow" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           case SensorStatusEnum.DECOMMISSIONED:
             return (
               <Tag color="red" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
           default:
             return (
               <Tag color="default" bordered={false}>
-                {status}
+                {formatEnumLabelToRemoveUnderscores(status)}
               </Tag>
             );
         }
       },
       width: '15%',
     },
-    {
-      title: 'Next Maintenance Date',
-      dataIndex: 'nextMaintenanceDate',
-      key: 'nextMaintenanceDate',
-      render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
-      sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
-      width: '15%',
-    },
+    // {
+    //   title: 'Next Maintenance Date',
+    //   dataIndex: 'nextMaintenanceDate',
+    //   key: 'nextMaintenanceDate',
+    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
+    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
+    //   width: '15%',
+    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -301,9 +295,18 @@ const SensorManagementPage: React.FC = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Sensors Management',
+      pathKey: '/sensor',
+      isMain: true,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
-      <PageHeader>Sensor Management</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
       <Flex justify="end" gap={10}>
         <Input
           suffix={<FiSearch />}

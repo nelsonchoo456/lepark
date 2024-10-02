@@ -1,17 +1,5 @@
 import {
-  AttractionResponse,
-  FacilityResponse,
-  FacilityWithEvents,
-  getAttractionsByParkId,
-  getEventsByFacilityId,
-  getEventsByParkId,
-  getFacilitiesByParkId,
-  getOccurrencesByParkId,
-  getOccurrencesByZoneId,
   getParkById,
-  getZoneById,
-  getZonesByParkId,
-  OccurrenceResponse,
   ParkResponse,
   StaffResponse,
   StaffType,
@@ -19,26 +7,12 @@ import {
 } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Button, Card, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
-import { TbEdit, TbLocation, TbTicket, TbTree } from 'react-icons/tb';
+import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
+import { TbEdit } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import type { GetProp } from 'antd';
-import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { COLORS } from '../../../config/colors';
-import PictureMarker from '../../../components/map/PictureMarker';
-import { PiPlantFill } from 'react-icons/pi';
 import { useAuth } from '@lepark/common-ui';
-import { pointInsidePolygonGeom } from '../../../components/map/functions/functions';
-import { EventStatusEnum, Facility } from '@prisma/client';
-import HoverInformation, { HoverItem } from '../../../components/map/HoverInformation';
-import { MdArrowOutward } from 'react-icons/md';
-import ParkStatusTag from '../../ParkDetails/components/ParkStatusTag';
-import { capitalizeFirstLetter } from '../../../components/textFormatters/textFormatters';
-import FacilityPictureMarker from '../../../components/map/FacilityPictureMarker';
-import { BiSolidCalendar } from 'react-icons/bi';
-import dayjs from 'dayjs';
-import EventStatusTag from '../../EventDetails/components/EventStatusTag';
+import HoverInformation from '../../../components/map/HoverInformation';
 import MarkersGroup from '../../../components/map/MarkersGroup';
 import { useFetchMarkersGroup } from '../../../components/map/hooks/useFetchMarkersGroup';
 

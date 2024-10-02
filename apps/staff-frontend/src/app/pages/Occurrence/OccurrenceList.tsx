@@ -11,6 +11,7 @@ import { MdDeleteOutline } from 'react-icons/md';
 import { useFetchOccurrences } from '../../hooks/Occurrences/useFetchOccurrences';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const OccurrenceList: React.FC = () => {
   const { occurrences, loading, triggerFetch } = useFetchOccurrences();
@@ -48,7 +49,6 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },
-      width: '33%',
     },
     {
       title: 'Species Name',
@@ -65,7 +65,6 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return a.speciesName.localeCompare(b.speciesName);
       },
-      width: '33%',
     },
     {
       title: 'Zone',
@@ -82,7 +81,6 @@ const OccurrenceList: React.FC = () => {
         }
         return a.zoneId - b.zoneId;
       },
-      width: '33%',
     },
     {
       title: 'Occurrence Status',
@@ -91,26 +89,41 @@ const OccurrenceList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green" bordered={false}>HEALTHY</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>;
+            return (
+              <Tag color="yellow" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
+            return (
+              <Tag color="orange" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>;
+            return (
+              <Tag color="red" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'REMOVED':
-            return <Tag>REMOVED</Tag>;
+            return <Tag bordered={false}>REMOVED</Tag>;
         }
       },
       filters: [
-        { text: 'HEALTHY', value: 'HEALTHY' },
-        { text: 'MONITOR AFTER TREATMENT', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'NEEDS ATTENTION', value: 'NEEDS_ATTENTION' },
-        { text: 'URGENT ACTION REQUIRED', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'REMOVED', value: 'REMOVED' },
+        { text: formatEnumLabelToRemoveUnderscores('HEALTHY'), value: 'HEALTHY' },
+        { text: formatEnumLabelToRemoveUnderscores('MONITOR_AFTER_TREATMENT'), value: 'MONITOR_AFTER_TREATMENT' },
+        { text: formatEnumLabelToRemoveUnderscores('NEEDS_ATTENTION'), value: 'NEEDS_ATTENTION' },
+        { text: formatEnumLabelToRemoveUnderscores('URGENT_ACTION_REQUIRED'), value: 'URGENT_ACTION_REQUIRED' },
+        { text: formatEnumLabelToRemoveUnderscores('REMOVED'), value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
-      width: '1%',
     },
     {
       title: 'Last Observed',
@@ -120,7 +133,6 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return moment(a.dateObserved).valueOf() - moment(b.dateObserved).valueOf();
       },
-      width: '1%',
     },
     {
       title: 'Actions',
@@ -216,25 +228,25 @@ const OccurrenceList: React.FC = () => {
           case 'HEALTHY':
             return (
               <Tag color="green" bordered={false}>
-                HEALTHY
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'MONITOR_AFTER_TREATMENT':
             return (
-              <Tag color="yellow" className="text-wrap max-w-32" bordered={false}>
-                MONITOR AFTER TREATMENT
+              <Tag color="yellow" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'NEEDS_ATTENTION':
             return (
               <Tag color="orange" bordered={false}>
-                NEEDS ATTENTION
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'URGENT_ACTION_REQUIRED':
             return (
-              <Tag color="red" className="text-wrap max-w-32" bordered={false}>
-                URGENT ACTION REQUIRED
+              <Tag color="red" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'REMOVED':
@@ -242,14 +254,14 @@ const OccurrenceList: React.FC = () => {
         }
       },
       filters: [
-        { text: 'HEALTHY', value: 'HEALTHY' },
-        { text: 'MONITOR AFTER TREATMENT', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'NEEDS ATTENTION', value: 'NEEDS_ATTENTION' },
-        { text: 'URGENT ACTION REQUIRED', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'REMOVED', value: 'REMOVED' },
+        { text: formatEnumLabelToRemoveUnderscores('HEALTHY'), value: 'HEALTHY' },
+        { text: formatEnumLabelToRemoveUnderscores('MONITOR_AFTER_TREATMENT'), value: 'MONITOR_AFTER_TREATMENT' },
+        { text: formatEnumLabelToRemoveUnderscores('NEEDS_ATTENTION'), value: 'NEEDS_ATTENTION' },
+        { text: formatEnumLabelToRemoveUnderscores('URGENT_ACTION_REQUIRED'), value: 'URGENT_ACTION_REQUIRED' },
+        { text: formatEnumLabelToRemoveUnderscores('REMOVED'), value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
-      // width: '1%',
+      //width: '20%',
     },
     {
       title: 'Last Observed',
