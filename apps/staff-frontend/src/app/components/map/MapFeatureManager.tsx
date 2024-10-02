@@ -4,93 +4,22 @@ import { EditControl } from 'react-leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L, { GeoJSON } from 'leaflet';
 import { getAllParks, ParkResponse } from '@lepark/data-access';
-
-const tempPolygon = [
-  [
-    [
-      {
-        lat: 1.2401524020202566,
-        lng: 103.78715515136719,
-      },
-      {
-        lat: 1.3300173076720356,
-        lng: 103.78715515136719,
-      },
-      {
-        lat: 1.3300173076720356,
-        lng: 103.87435913085938,
-      },
-      {
-        lat: 1.2586744333774667,
-        lng: 103.8805389404297,
-      },
-    ],
-  ],
-];
-
-const tempPolygon2 = [
-  [
-    [
-      {
-        lat: 1.292,
-        lng: 103.854,
-      },
-      {
-        lat: 1.293,
-        lng: 103.855,
-      },
-      {
-        lat: 1.292,
-        lng: 103.856,
-      },
-      {
-        lat: 1.291,
-        lng: 103.855,
-      },
-      {
-        lat: 1.292,
-        lng: 103.854,
-      },
-    ],
-  ],
-];
+import { COLORS } from '../../config/colors';
 
 interface MapFeatureManagerProps {
   polygon: any[];
   setPolygon: (item: any[]) => void;
   lines: any[];
   setLines: (item: any[]) => void;
+
+  color?: string;
+  fillColor?: string;
 }
 
-const MapFeatureManager = ({ polygon, setPolygon, lines, setLines }: MapFeatureManagerProps) => {
+const MapFeatureManager = ({ polygon, setPolygon, lines, setLines, color, fillColor }: MapFeatureManagerProps) => {
   // const [polygon, setPolygon] = useState<any[]>([]);  // Holds the single polygon
   // const [lines, setLines] = useState<any[]>([]);      // Holds the multiple lines
-  const [parks, setParks] = useState<any>([]);
 
-  useEffect(() => {
-    const fetchParks = async () => {
-      try {
-        const parksRes = await getAllParks();
-        if (parksRes.status === 200) {
-          const data = parksRes.data;
-
-          const parkTemp = data.map((d) => d.geom.coordinates);
-
-          const formattedCoordinates = parkTemp[0].map((polygon: any) =>
-            polygon.map(([lng, lat]: number[]) => ({
-              lat: lat,
-              lng: lng,
-            })),
-          );
-
-          setParks([formattedCoordinates]);
-        }
-      } catch (error) {
-        //
-      }
-    };
-    fetchParks();
-  }, []);
 
   const handleCreated = (e: any) => {
     const { layer } = e;
@@ -154,7 +83,15 @@ const MapFeatureManager = ({ polygon, setPolygon, lines, setLines }: MapFeatureM
         }}
       />
       {/* Render polygon if it exists */}
-      {polygon.length > 0 && <Polygon positions={polygon[0]} />}
+      {polygon.length > 0 && (
+        <Polygon
+          key={Math.random()}
+          positions={polygon[0]}
+          pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
+          fillOpacity={0.75}
+        />
+      )} 
+
       {/* {parks.length > 0 && <Polygon positions={parks} />} */}
       {/* {parks.length > 0 && <Polygon positions={tempPolygon2[0]} />} */}
       {/* Render multiple lines */}

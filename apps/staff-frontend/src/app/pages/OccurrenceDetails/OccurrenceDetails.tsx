@@ -10,41 +10,81 @@ import AboutTab from './components/AboutTab';
 import ActivityLogs from './components/ActivityLogs';
 import StatusLogs from './components/StatusLogs';
 import QRTab from './components/QRTab';
-import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum } from '@lepark/data-access';
+import { LightTypeEnum, SoilTypeEnum, ConservationStatusEnum, getOccurrenceById, OccurrenceStatusEnum } from '@lepark/data-access';
 import { WiDaySunny, WiDayCloudy, WiNightAltCloudy } from 'react-icons/wi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { useCallback, useEffect, useState } from 'react';
+import OccurrenceMapTab from './components/OccurrenceMapTab';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
-
-  const { occurrence, species, loading } = useRestrictOccurrence(occurrenceId);
-  // const [occurrence, setOccurrence] = useState<OccurrenceResponse | null>(null);
-  // const [species, setSpecies] = useState<SpeciesResponse | null>(null);
+  const { occurrence, species, loading, zone, updateOccurrence } = useRestrictOccurrence(occurrenceId);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (occurrenceId) {
-  //       setLoading(true);
-  //       try {
-  //         const occurrenceResponse = await getOccurrenceById(occurrenceId);
-  //         setOccurrence(occurrenceResponse.data);
+  const refreshOccurrence = useCallback(async () => {
+    if (occurrenceId) {
+      try {
+        const occurrenceResponse = await getOccurrenceById(occurrenceId);
+        if (occurrence) {
+          updateOccurrence(occurrenceResponse.data);
+          // console.log('Occurrence status updated:', occurrenceResponse.data);
+        }
+      } catch (error) {
+        console.error('Error refreshing occurrence:', error);
+      }
+    }
+  }, [occurrenceId, occurrence, updateOccurrence]);
 
-  //         if (occurrenceResponse.data.speciesId) {
-  //           const speciesResponse = await getSpeciesById(occurrenceResponse.data.speciesId);
-  //           setSpecies(speciesResponse.data);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching data:', error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     }
-  //   };
+  const getStatusTag = (status?: string) => {
+    switch (status) {
+      case OccurrenceStatusEnum.HEALTHY:
+        return (
+          <Tag color="green" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.HEALTHY)}
+          </Tag>
+        );
+      case OccurrenceStatusEnum.MONITOR_AFTER_TREATMENT:
+        return (
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.MONITOR_AFTER_TREATMENT)}
+          </Tag>
+        );
+      case OccurrenceStatusEnum.NEEDS_ATTENTION:
+        return (
+          <Tag color="orange" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.NEEDS_ATTENTION)}
+          </Tag>
+        );
+      case OccurrenceStatusEnum.URGENT_ACTION_REQUIRED:
+        return (
+          <Tag color="red" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.URGENT_ACTION_REQUIRED)}
+          </Tag>
+        );
+      case OccurrenceStatusEnum.REMOVED:
+        return <Tag bordered={false}>{formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.REMOVED)}</Tag>;
+      default:
+        return <Tag bordered={false}>{status ? formatEnumLabelToRemoveUnderscores(status) : ''}</Tag>;
+    }
+  };
 
-  //   fetchData();
-  // }, [occurrenceId]);
+  if (loading) {
+    return (
+      <ContentWrapperDark>
+        <Card>
+          <div className="flex justify-center items-center h-64">
+            <Spin size="large" />
+          </div>
+        </Card>
+      </ContentWrapperDark>
+    );
+  }
+
+  if (!occurrence) {
+    return null; // This will handle cases where the occurrence is not found or user doesn't have access
+  }
 
   const descriptionsItems = [
     {
@@ -55,19 +95,7 @@ const OccurrenceDetails = () => {
     {
       key: 'occurrenceStatus',
       label: 'Status',
-      children: occurrence?.occurrenceStatus === "HEALTHY" ? (
-          <Tag color="green" bordered={false}>HEALTHY</Tag>
-        ) : occurrence?.occurrenceStatus === "MONITOR_AFTER_TREATMENT" ? (
-          <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>
-        ) : occurrence?.occurrenceStatus === "NEEDS_ATTENTION" ? (
-          <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>
-        ) : occurrence?.occurrenceStatus === "URGENT_ACTION_REQUIRED" ? (
-          <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>
-        ) : occurrence?.occurrenceStatus === "REMOVED" ? (
-          <Tag bordered={false}>REMOVED</Tag>
-        ) : (
-          <Tag bordered={false}>{occurrence?.occurrenceStatus}</Tag> 
-        )
+      children: getStatusTag(occurrence?.occurrenceStatus),
     },
     {
       key: 'dateObserved',
@@ -84,6 +112,11 @@ const OccurrenceDetails = () => {
       children: occurrence ? <InformationTab occurrence={occurrence} /> : <p>Loading occurrence data...</p>,
     },
     {
+      key: 'location',
+      label: 'Location',
+      children: occurrence && zone ? <OccurrenceMapTab occurrence={occurrence} zone={zone} /> : <p>Loading occurrence data...</p>,
+    },
+    {
       key: 'about',
       label: 'Species',
       children: species && occurrence ? <AboutTab species={species} occurrence={occurrence} /> : <p>Loading Species data...</p>,
@@ -96,7 +129,7 @@ const OccurrenceDetails = () => {
     {
       key: 'statusLogs',
       label: 'Status Logs',
-      children: occurrence && <StatusLogs occurrence={occurrence} />,
+      children: occurrence && <StatusLogs occurrence={occurrence} onStatusLogCreated={refreshOccurrence} />,
     },
     {
       key: 'qr',
@@ -127,48 +160,22 @@ const OccurrenceDetails = () => {
   const getLightTypeInfo = (lightType: LightTypeEnum) => {
     switch (lightType) {
       case LightTypeEnum.FULL_SUN:
-        return { text: 'Full Sun', icon: <WiDaySunny className="text-3xl mt-2 text-yellow-500" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(LightTypeEnum.FULL_SUN), icon: <WiDaySunny className="text-3xl mt-2 text-yellow-500" /> };
       case LightTypeEnum.PARTIAL_SHADE:
-        return { text: 'Partial Shade', icon: <WiDayCloudy className="text-3xl mt-2 text-yellow-300" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(LightTypeEnum.PARTIAL_SHADE), icon: <WiDayCloudy className="text-3xl mt-2 text-yellow-300" /> };
       case LightTypeEnum.FULL_SHADE:
-        return { text: 'Full Shade', icon: <WiNightAltCloudy className="text-3xl mt-2 text-gray-500" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(LightTypeEnum.FULL_SHADE), icon: <WiNightAltCloudy className="text-3xl mt-2 text-gray-500" /> };
       default:
         return { text: 'Unknown', icon: <FiSun className="text-3xl mt-2" /> };
     }
   };
 
   const getSoilTypeText = (soilType: SoilTypeEnum) => {
-    switch (soilType) {
-      case SoilTypeEnum.SANDY:
-        return 'Sandy';
-      case SoilTypeEnum.CLAYEY:
-        return 'Clayey';
-      case SoilTypeEnum.LOAMY:
-        return 'Loamy';
-      default:
-        return 'Unknown';
-    }
+    return formatEnumLabelToRemoveUnderscores(soilType);
   };
 
   const getConservationStatusText = (status: ConservationStatusEnum) => {
-    switch (status) {
-      case ConservationStatusEnum.LEAST_CONCERN:
-        return 'Least Concern';
-      case ConservationStatusEnum.NEAR_THREATENED:
-        return 'Near Threatened';
-      case ConservationStatusEnum.VULNERABLE:
-        return 'Vulnerable';
-      case ConservationStatusEnum.ENDANGERED:
-        return 'Endangered';
-      case ConservationStatusEnum.CRITICALLY_ENDANGERED:
-        return 'Critically Endangered';
-      case ConservationStatusEnum.EXTINCT_IN_THE_WILD:
-        return 'Extinct in the Wild';
-      case ConservationStatusEnum.EXTINCT:
-        return 'Extinct';
-      default:
-        return 'Unknown';
-    }
+    return formatEnumLabelToRemoveUnderscores(status);
   };
 
   return (

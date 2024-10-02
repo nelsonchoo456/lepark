@@ -16,6 +16,9 @@ const s3 = new aws.S3({
 class SpeciesService {
   public async createSpecies(data: SpeciesSchemaType): Promise<Species> {
     try {
+      // Trim speciesName before validation
+      data.speciesName = data.speciesName.trim();
+
       // Validate input data using Zod
       SpeciesSchema.parse(data);
 
@@ -81,11 +84,15 @@ class SpeciesService {
     data: Partial<SpeciesSchemaType>,
   ): Promise<Species> {
     try {
+      if (data.speciesName) {
+        data.speciesName = data.speciesName.trim();
+      }
+
       const existingSpecies = await SpeciesDao.getSpeciesById(id);
 
       const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
 
-      if (checkForExistingSpecies && (existingSpecies.id !== checkForExistingSpecies.id)) {
+      if (checkForExistingSpecies && existingSpecies.id !== checkForExistingSpecies.id) {
         throw new Error('Identical species name already exists.');
       }
 

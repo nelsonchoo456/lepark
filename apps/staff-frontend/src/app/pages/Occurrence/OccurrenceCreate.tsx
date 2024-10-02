@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { createOccurrence, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, Flex, Form, Input, Result, Steps, message, notification } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import moment from 'moment';
@@ -13,6 +12,8 @@ import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import { useFetchSpecies } from '../../hooks/Species/useFetchSpecies';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { useFetchParks } from '../../hooks/Parks/useFetchParks'; // Add this import
+import { getCentroidOfGeom } from '../../components/map/functions/functions';
 
 const center = {
   lat: 1.3503881629328163,
@@ -28,32 +29,24 @@ const OccurrenceCreate = () => {
   const { user } = useAuth<StaffResponse>();
   const { zones, loading } = useFetchZones();
   const { species, speciesLoading } = useFetchSpecies();
+  const { parks } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
-  const [messageApi, contextHolder] = message.useMessage();
   const [createdData, setCreatedData] = useState<OccurrenceResponse | null>();
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
+  
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
   const notificationShown = useRef(false);
+  const [selectedParkId, setSelectedParkId] = useState<number | null>(null); // Add this state
 
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
+
   // Map Values
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
-
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Occurrence Creation page!',
-      });
-      notificationShown.current = true;
-    }
-      navigate('/');
-    }
-  }, [user, navigate]);
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
@@ -90,6 +83,9 @@ const OccurrenceCreate = () => {
         dateOfBirth: formValues.dateOfBirth ? dayjs(formValues.dateOfBirth).toISOString() : null,
       };
 
+      // Remove parkId from finalData if it exists
+      delete finalData.parkId;
+
       const response = await createOccurrence(finalData, selectedFiles);
       if (response?.status && response.status === 201) {
         setCurrStep(2);
@@ -99,9 +95,8 @@ const OccurrenceCreate = () => {
       console.log(error);
       messageApi.open({
         type: 'error',
-        content: 'Unable to create Occurrence as Species cannot be found. Please try again later.',
+        content: 'Unable to create Occurrence. Please try again later.',
       });
-      //
     }
   };
 
@@ -118,6 +113,10 @@ const OccurrenceCreate = () => {
           handleFileChange={handleFileChange}
           removeImage={removeImage}
           onInputClick={onInputClick}
+          parks={parks}
+          selectedParkId={selectedParkId}
+          setSelectedParkId={setSelectedParkId}
+          user={user}
         />
       ),
     },

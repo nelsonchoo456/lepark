@@ -16,6 +16,14 @@ import activityLogRouter from './routers/activityLogRouter';
 import statusLogRouter from './routers/statusLogRouter';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import attractionRouter from './routers/attractionRouter';
+import hubRouter from './routers/hubRouter';
+import parkAssetRouter from './routers/parkAssetRouter';
+import facilityRouter from './routers/facilityRouter';
+import eventRouter from './routers/eventRouter';
+import plantTaskRouter from './routers/plantTaskRouter';
+import { authenticateJWTStaff } from './middleware/authenticateJWT';
+import sensorRouter from './routers/sensorRouter';
 
 dotenv.config();
 const app = express();
@@ -55,8 +63,15 @@ app.use('/api/visitors', visitorRouter);
 app.use('/api/parks', parkRouter);
 app.use('/api/zones', zoneRouter);
 app.use('/api/occurrences', occurrenceRouter);
-app.use('/api/activitylogs', activityLogRouter);
-app.use('/api/statuslogs', statusLogRouter);
+app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
+app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
+app.use('/api/attractions', attractionRouter);
+app.use('/api/hubs', authenticateJWTStaff, hubRouter);
+app.use('/api/parkassets', authenticateJWTStaff, parkAssetRouter);
+app.use('/api/facilities', facilityRouter);
+app.use('/api/events', eventRouter);
+app.use('/api/planttasks', authenticateJWTStaff, plantTaskRouter);
+app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

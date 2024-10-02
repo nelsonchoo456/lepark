@@ -1,11 +1,13 @@
 import express from 'express';
 import ParkService from '../services/ParkService';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
+import OccurrenceService from '../services/OccurrenceService';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createPark', async (req, res) => {
+router.post('/createPark', authenticateJWTStaff, async (req, res) => {
   try {
     const park = await ParkService.createPark(req.body);
     res.status(201).json(park);
@@ -18,7 +20,7 @@ router.post('/createPark', async (req, res) => {
   }
 });
 
-router.put('/updatePark/:id', async (req, res) => {
+router.put('/updatePark/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const park = await ParkService.updatePark(id, req.body);
@@ -61,7 +63,19 @@ router.get('/getRandomParkImage', async (_, res) => {
   }
 });
 
-router.delete('/deletePark/:id', async (req, res) => {
+router.get('/getSpeciesCountByParkId/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const count = await OccurrenceService.getSpeciesCountByParkId(id);
+    res.status(200).json(count);
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({ error: error.message });
+  }
+});
+
+
+router.delete('/deletePark/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await ParkService.deleteParkById(id);
@@ -70,7 +84,6 @@ router.delete('/deletePark/:id', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-
 
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
@@ -98,6 +111,5 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
     res.status(500).json({ error: 'Failed to upload image' });
   }
 });
-
 
 export default router;

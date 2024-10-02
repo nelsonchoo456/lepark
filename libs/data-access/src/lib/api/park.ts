@@ -3,14 +3,6 @@ import { ParkData, ParkResponse } from '../types/park';
 import client from './client';
 const URL = '/parks';
 
-const axiosClient = axios.create({
-  baseURL: 'http://localhost:3333/api/parks', // Replace with your backend URL
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 5000, // optional: specify request timeout in milliseconds
-});
-
 export async function createPark(data: ParkData, files?: File[]): Promise<AxiosResponse<ParkResponse>> {
   try {
     const formData = new FormData();
@@ -23,7 +15,7 @@ export async function createPark(data: ParkData, files?: File[]): Promise<AxiosR
     data.images = uploadedUrls.data.uploadedUrls;
 
     console.log( data.images );
-    const response: AxiosResponse<ParkResponse> = await axiosClient.post('/createPark', data);
+    const response: AxiosResponse<ParkResponse> = await client.post(`${URL}/createPark`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -52,7 +44,7 @@ export async function createPark(data: ParkData, files?: File[]): Promise<AxiosR
 
 export async function getAllParks(): Promise<AxiosResponse<ParkResponse[]>> {
   try {
-    const response: AxiosResponse<ParkResponse[]> = await axiosClient.get(`/getAllParks`);
+    const response: AxiosResponse<ParkResponse[]> = await client.get(`${URL}/getAllParks`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -65,7 +57,7 @@ export async function getAllParks(): Promise<AxiosResponse<ParkResponse[]>> {
 
 export async function getParkById(id: number): Promise<AxiosResponse<ParkResponse>> {
   try {
-    const response: AxiosResponse<ParkResponse> = await axiosClient.get(`/getParkById/${id}`);
+    const response: AxiosResponse<ParkResponse> = await client.get(`${URL}/getParkById/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -89,7 +81,7 @@ export async function updatePark(id: number, data: Partial<ParkResponse>, files?
       data.images?.push(...uploadedUrls.data.uploadedUrls);
     }
     
-    const response: AxiosResponse<ParkResponse> = await axiosClient.put(`/updatePark/${id}`, data);
+    const response: AxiosResponse<ParkResponse> = await client.put(`${URL}/updatePark/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -114,7 +106,20 @@ export async function updatePark(id: number, data: Partial<ParkResponse>, files?
 
 export async function getRandomParkImage(): Promise<AxiosResponse<string[]>> {
   try {
-    const response: AxiosResponse<string[]> = await axiosClient.get(`/getRandomParkImage`);
+    const response: AxiosResponse<string[]> = await client.get(`${URL}/getRandomParkImage`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getSpeciesCountByParkId(parkId: number): Promise<AxiosResponse<number>> {
+  try {
+    const response: AxiosResponse<number> = await client.get(`${URL}/getSpeciesCountByParkId/${parkId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -127,7 +132,7 @@ export async function getRandomParkImage(): Promise<AxiosResponse<string[]>> {
 
 export async function deletePark(id: number): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await axiosClient.delete(`/deletePark/${id}`);
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deletePark/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

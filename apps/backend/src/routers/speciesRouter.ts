@@ -2,11 +2,12 @@ import express from 'express';
 import SpeciesService from '../services/SpeciesService';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
 import multer from 'multer';
+import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
 const router = express.Router();
 const upload = multer();
 
-router.post('/createSpecies', async (req, res) => {
+router.post('/createSpecies', authenticateJWTStaff, async (req, res) => {
   try {
     const speciesData = SpeciesSchema.parse(req.body);
     const species = await SpeciesService.createSpecies(speciesData);
@@ -45,7 +46,7 @@ router.get('/getSpeciesNameById/:id', async (req, res) => {
   }
 });
 
-router.put('/updateSpeciesDetails/:id', async (req, res) => {
+router.put('/updateSpeciesDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const speciesId = req.params.id;
     const updateData: Partial<SpeciesSchemaType> = req.body;
@@ -57,7 +58,7 @@ router.put('/updateSpeciesDetails/:id', async (req, res) => {
   }
 });
 
-router.delete('/deleteSpecies/:id', async (req, res) => {
+router.delete('/deleteSpecies/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const speciesId = req.params.id;
 

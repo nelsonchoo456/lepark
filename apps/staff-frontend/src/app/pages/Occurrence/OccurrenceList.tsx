@@ -11,6 +11,7 @@ import { MdDeleteOutline } from 'react-icons/md';
 import { useFetchOccurrences } from '../../hooks/Occurrences/useFetchOccurrences';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const OccurrenceList: React.FC = () => {
   const { occurrences, loading, triggerFetch } = useFetchOccurrences();
@@ -23,9 +24,7 @@ const OccurrenceList: React.FC = () => {
 
   const filteredOccurrences = useMemo(() => {
     return occurrences.filter((occurrence) =>
-      Object.values(occurrence).some((value) => 
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      Object.values(occurrence).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
     );
   }, [searchQuery, occurrences]);
 
@@ -43,14 +42,13 @@ const OccurrenceList: React.FC = () => {
 
   const columns: TableProps<OccurrenceResponse>['columns'] = [
     {
-      title: 'Label',
+      title: 'Occurrence Name',
       dataIndex: 'title',
       key: 'title',
       render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },
-      width: '33%',
     },
     {
       title: 'Species Name',
@@ -67,7 +65,6 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return a.speciesName.localeCompare(b.speciesName);
       },
-      width: '33%',
     },
     {
       title: 'Zone',
@@ -84,7 +81,6 @@ const OccurrenceList: React.FC = () => {
         }
         return a.zoneId - b.zoneId;
       },
-      width: '33%',
     },
     {
       title: 'Occurrence Status',
@@ -93,26 +89,41 @@ const OccurrenceList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green">HEALTHY</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow">MONITOR_AFTER_TREATMENT</Tag>;
+            return (
+              <Tag color="yellow" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange">NEEDS_ATTENTION</Tag>;
+            return (
+              <Tag color="orange" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red">URGENT_ACTION_REQUIRED</Tag>;
+            return (
+              <Tag color="red" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'REMOVED':
-            return <Tag>REMOVED</Tag>;
+            return <Tag bordered={false}>REMOVED</Tag>;
         }
       },
       filters: [
-        { text: 'HEALTHY', value: 'HEALTHY' },
-        { text: 'MONITOR_AFTER_TREATMENT', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'NEEDS_ATTENTION', value: 'NEEDS_ATTENTION' },
-        { text: 'URGENT_ACTION_REQUIRED', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'REMOVED', value: 'REMOVED' },
+        { text: formatEnumLabelToRemoveUnderscores('HEALTHY'), value: 'HEALTHY' },
+        { text: formatEnumLabelToRemoveUnderscores('MONITOR_AFTER_TREATMENT'), value: 'MONITOR_AFTER_TREATMENT' },
+        { text: formatEnumLabelToRemoveUnderscores('NEEDS_ATTENTION'), value: 'NEEDS_ATTENTION' },
+        { text: formatEnumLabelToRemoveUnderscores('URGENT_ACTION_REQUIRED'), value: 'URGENT_ACTION_REQUIRED' },
+        { text: formatEnumLabelToRemoveUnderscores('REMOVED'), value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
-      width: '1%',
     },
     {
       title: 'Last Observed',
@@ -122,23 +133,22 @@ const OccurrenceList: React.FC = () => {
       sorter: (a, b) => {
         return moment(a.dateObserved).valueOf() - moment(b.dateObserved).valueOf();
       },
-      width: '1%',
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Occurrence">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           {user?.role === StaffType.SUPERADMIN ||
             ((user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
               <>
-                <Tooltip title="Edit Details">
+                <Tooltip title="Edit Occurrence">
                   <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
                 </Tooltip>
-                <Tooltip title="Delete">
+                <Tooltip title="Delete Occurrence">
                   <Button
                     danger
                     type="link"
@@ -164,15 +174,14 @@ const OccurrenceList: React.FC = () => {
 
   const columnsForSuperadmin: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
-      title: 'Label',
+      title: 'Occurrence Name',
       dataIndex: 'title',
       key: 'title',
-      render: (text) => <div className='font-semibold'>{text}</div>,
+      render: (text) => <div className="font-semibold">{text}</div>,
       sorter: (a, b) => {
         return a.title.localeCompare(b.title);
       },
       // width: '33%',
-      fixed: 'left',
     },
     {
       title: 'Species Name',
@@ -196,7 +205,10 @@ const OccurrenceList: React.FC = () => {
       render: (_, record) => (
         <div>
           <p className="font-semibold">{record.parkName}</p>
-          <div className='flex'><p className='opacity-50 mr-2'>Zone:</p>{record.zoneName}</div>
+          <div className="flex">
+            <p className="opacity-50 mr-2">Zone:</p>
+            {record.zoneName}
+          </div>
         </div>
       ),
       sorter: (a, b) => {
@@ -214,26 +226,42 @@ const OccurrenceList: React.FC = () => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green" bordered={false}>HEALTHY</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow" className='text-wrap max-w-32' bordered={false}>MONITOR AFTER TREATMENT</Tag>;
+            return (
+              <Tag color="yellow" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
+            return (
+              <Tag color="orange" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red" className='text-wrap max-w-32' bordered={false}>URGENT ACTION REQUIRED</Tag>;
+            return (
+              <Tag color="red" className="text-wrap max-w-48" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           case 'REMOVED':
             return <Tag bordered={false}>REMOVED</Tag>;
         }
       },
       filters: [
-        { text: 'Healthy', value: 'HEALTHY' },
-        { text: 'Monitor After Treatment', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'Needs Attention', value: 'NEEDS_ATTENTION' },
-        { text: 'Urgent Action Required', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'Removed', value: 'REMOVED' },
+        { text: formatEnumLabelToRemoveUnderscores('HEALTHY'), value: 'HEALTHY' },
+        { text: formatEnumLabelToRemoveUnderscores('MONITOR_AFTER_TREATMENT'), value: 'MONITOR_AFTER_TREATMENT' },
+        { text: formatEnumLabelToRemoveUnderscores('NEEDS_ATTENTION'), value: 'NEEDS_ATTENTION' },
+        { text: formatEnumLabelToRemoveUnderscores('URGENT_ACTION_REQUIRED'), value: 'URGENT_ACTION_REQUIRED' },
+        { text: formatEnumLabelToRemoveUnderscores('REMOVED'), value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
-      // width: '1%',
+      //width: '20%',
     },
     {
       title: 'Last Observed',
@@ -250,13 +278,13 @@ const OccurrenceList: React.FC = () => {
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center" gap={8}>
-          <Tooltip title="View Details">
+          <Tooltip title="View Occurrence">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Details">
+          <Tooltip title="Edit Occurrence">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/occurrences/${record.id}/edit`)} />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete Occurrence">
             <Button
               danger
               type="link"
@@ -273,7 +301,7 @@ const OccurrenceList: React.FC = () => {
           </Tooltip> */}
         </Flex>
       ),
-      width: '120px'
+      width: '120px',
       // width: '1%',
     },
   ];
@@ -282,17 +310,17 @@ const OccurrenceList: React.FC = () => {
   const cancelDelete = () => {
     setOccurrenceToBeDeleted(null);
     setDeleteModalOpen(false);
-  }
+  };
 
   const showDeleteModal = (occurrence: OccurrenceResponse) => {
     setDeleteModalOpen(true);
     setOccurrenceToBeDeleted(occurrence);
-  }
-  
-  const deleteOccurrenceToBeDeleted= async () => {
+  };
+
+  const deleteOccurrenceToBeDeleted = async () => {
     try {
       if (!occurrenceToBeDeleted || !user) {
-        throw new Error("Unable to delete Occurrence at this time");
+        throw new Error('Unable to delete Occurrence at this time');
       }
       await deleteOccurrence(occurrenceToBeDeleted.id, user.id);
       triggerFetch();
@@ -303,7 +331,7 @@ const OccurrenceList: React.FC = () => {
         content: `Deleted Occurrence: ${occurrenceToBeDeleted.title}.`,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setOccurrenceToBeDeleted(null);
       setDeleteModalOpen(false);
       messageApi.open({
@@ -311,46 +339,58 @@ const OccurrenceList: React.FC = () => {
         content: `Unable to delete Occurrence at this time. Please try again later.`,
       });
     }
-  } 
+  };
 
   const breadcrumbItems = [
     {
-      title: "Occurrence Management",
+      title: 'Occurrence Management',
       pathKey: '/occurrences',
       isMain: true,
-      isCurrent: true
+      isCurrent: true,
     },
-  ]
+  ];
+
+  const canCreateOccurrence =
+    user?.role === StaffType.SUPERADMIN ||
+    user?.role === StaffType.MANAGER ||
+    user?.role === StaffType.BOTANIST ||
+    user?.role === StaffType.ARBORIST;
 
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <ConfirmDeleteModal onConfirm={deleteOccurrenceToBeDeleted} open={deleteModalOpen} onCancel={cancelDelete} description='Deleting an Occurrence will delete all of its Logs.'></ConfirmDeleteModal>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      <ConfirmDeleteModal
+        onConfirm={deleteOccurrenceToBeDeleted}
+        open={deleteModalOpen}
+        onCancel={cancelDelete}
+        description="Deleting an Occurrence will delete all of its Logs."
+      ></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
-        <Input 
-          suffix={<FiSearch />} 
-          placeholder="Search in Occurrences..." 
-          className="mb-4 bg-white" 
-          variant="filled" 
+        <Input
+          suffix={<FiSearch />}
+          placeholder="Search in Occurrences..."
+          className="mb-4 bg-white"
+          variant="filled"
           onChange={handleSearch}
         />
-        <Button
-          type="primary"
-          onClick={() => {
-            navigate('/occurrences/create');
-          }}
-          disabled={user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST}
-        >
-          Create Occurrence
-        </Button>
+        {canCreateOccurrence && (
+          <Button
+            type="primary"
+            onClick={() => {
+              navigate('/occurrences/create');
+            }}
+          >
+            Create Occurrence
+          </Button>
+        )}
       </Flex>
 
-      <Card >
+      <Card>
         {user?.role === StaffType.SUPERADMIN ? (
-          <Table dataSource={filteredOccurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
+          <Table dataSource={filteredOccurrences} columns={columnsForSuperadmin} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
         ) : (
-          <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
+          <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
         )}
       </Card>
     </ContentWrapperDark>

@@ -1,9 +1,12 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import ParkDao from '../dao/ParkDao';
 import { ParkCreateData, ParkUpdateData } from '../schemas/parkSchema';
 import aws from 'aws-sdk';
+import ZoneDao from '../dao/ZoneDao';
+
+const prisma = new PrismaClient();
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -33,6 +36,9 @@ class ParkService {
       }
       if (!data.parkStatus) {
         errors.push('Park Status is required');
+      }
+      if (!data.geom) {
+        errors.push('Zone Boundaries is required');
       }
 
       if (errors.length !== 0) {
@@ -84,6 +90,29 @@ class ParkService {
   }
 
   public async deleteParkById(id: number): Promise<any> {
+    const zones = await ZoneDao.getZonesByParkId(id);
+    const zoneIds = zones.map(zone => zone.id);
+
+    if (zoneIds.length > 0) {
+      await prisma.occurrence.deleteMany({
+        where: {
+          zoneId: { in: zoneIds },
+        },
+      });
+    }
+    
+    await prisma.facility.deleteMany({
+      where: {
+          parkId: id,
+      },
+    });
+
+    await prisma.attraction.deleteMany({
+      where: {
+          parkId: id,
+      },
+    });
+
     return ParkDao.deleteParkById(id);
   }
 

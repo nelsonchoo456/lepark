@@ -35,12 +35,18 @@ const MainLanding = () => {
           key="discover"
           icon={<PiPlantFill />}
           onClick={() => {
-            navigate('/discover');
+            navigate(`/discover/park/${selectedPark?.id}`);
           }}
         >
-          Taxonomy
+          Species
         </NavButton>
-        <NavButton key="attractions" icon={<PiStarFill />}>
+        <NavButton
+          key="attractions"
+          icon={<PiStarFill />}
+          onClick={() => {
+            navigate(`/attractions/park/${selectedPark?.id}`);
+          }}
+        >
           Attractions
         </NavButton>
         <NavButton key="venues" icon={<FaTent />}>
@@ -103,12 +109,12 @@ const MainLanding = () => {
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
-          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full h-48">
-            <PiPlant className="text-4xl" />
-            <br />
-            No Plant of the Day yet.
-            <br />
-            Check back soon for Plant of the Day!
+            <div className="opacity-40 flex flex-col justify-center items-center text-center w-full h-48">
+              <PiPlant className="text-4xl" />
+              <br />
+              No Plant of the Day yet.
+              <br />
+              Check back soon for Plant of the Day!
             </div>
           </Card>
         </Badge.Ribbon>

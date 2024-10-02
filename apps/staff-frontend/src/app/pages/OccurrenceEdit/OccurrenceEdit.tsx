@@ -3,7 +3,9 @@ import { useParams } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
 import {
+  DecarbonizationTypeEnum,
   OccurrenceResponse,
+  OccurrenceStatusEnum,
   StaffResponse,
   StaffType,
   updateOccurrenceDetails,
@@ -28,6 +30,7 @@ import dayjs from 'dayjs';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const center = {
   lat: 1.3503881629328163,
@@ -55,24 +58,6 @@ const OccurrenceEdit = () => {
   const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const notificationShown = useRef(false);
-
-  useEffect(() => {
-    if (
-      user?.role !== StaffType.SUPERADMIN &&
-      user?.role !== StaffType.MANAGER &&
-      user?.role !== StaffType.BOTANIST &&
-      user?.role !== StaffType.ARBORIST
-    ) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Occurrence Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
 
   useEffect(() => {
     if (occurrence) {
@@ -168,43 +153,15 @@ const OccurrenceEdit = () => {
     },
   ];
 
-  const decarbonizationTypeOptions = [
-    {
-      value: 'TREE_TROPICAL',
-      label: 'Tree Tropical',
-    },
-    {
-      value: 'TREE_MANGROVE',
-      label: 'Tree Mangrove',
-    },
-    {
-      value: 'SHRUB',
-      label: 'Shrub',
-    },
-  ];
+  const decarbonizationTypeOptions = Object.values(DecarbonizationTypeEnum).map(type => ({
+    value: type,
+    label: formatEnumLabelToRemoveUnderscores(type),
+  }));
 
-  const occurrenceStatusOptions = [
-    {
-      value: 'HEALTHY',
-      label: 'Healthy',
-    },
-    {
-      value: 'MONITOR_AFTER_TREATMENT',
-      label: 'Monitor After Treatment',
-    },
-    {
-      value: 'NEEDS_ATTENTION',
-      label: 'Needs Attention',
-    },
-    {
-      value: 'URGENT_ACTION_REQUIRED',
-      label: 'Urgent Action Required',
-    },
-    {
-      value: 'REMOVED',
-      label: 'Removed',
-    },
-  ];
+  const occurrenceStatusOptions = Object.values(OccurrenceStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const breadcrumbItems = [
     {
@@ -222,15 +179,6 @@ const OccurrenceEdit = () => {
       isCurrent: true,
     },
   ];
-
-  if (
-    user?.role !== StaffType.SUPERADMIN &&
-    user?.role !== StaffType.MANAGER &&
-    user?.role !== StaffType.BOTANIST &&
-    user?.role !== StaffType.ARBORIST
-  ) {
-    return <></>;
-  }
 
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {

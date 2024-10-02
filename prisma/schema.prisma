@@ -24,16 +24,20 @@ enum StaffRoleEnum {
 }
 
 model Staff {
-  id            String        @id @default(uuid()) @db.Uuid
-  firstName     String
-  lastName      String
-  email         String        @unique
-  password      String
-  contactNumber String
-  role          StaffRoleEnum
-  isActive      Boolean
-  parkId        Int?      
-  isFirstLogin  Boolean 
+  id                  String        @id @default(uuid()) @db.Uuid
+  firstName           String
+  lastName            String
+  email               String        @unique
+  password            String
+  contactNumber       String
+  role                StaffRoleEnum
+  isActive            Boolean
+  parkId              Int?
+  isFirstLogin        Boolean
+  resetTokenUsed      Boolean       @default(false)
+  resetToken          String?
+  assignedPlantTasks  PlantTask[]   @relation("assignedStaff")
+  submittedPlantTasks PlantTask[]   @relation("submittingStaff")
 }
 
 enum ConservationStatusEnum {
@@ -120,6 +124,7 @@ model Occurrence {
   decarbonizationType DecarbonizationTypeEnum
   speciesId           String                  @db.Uuid
   zoneId              Int
+  plantTasks          PlantTask[]
 
   // decarbonizationAreaId String @db.Uuid
   images       String[]
@@ -127,8 +132,9 @@ model Occurrence {
   statusLogs   StatusLog[]
 
   species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
-  @@index([zoneId])
   // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId])
 }
 
 enum ActivityLogTypeEnum {
@@ -138,7 +144,7 @@ enum ActivityLogTypeEnum {
   PRUNED
   REPLANTED
   CHECKED_HEALTH
-  TREATED_PESTS
+  PEST_MONITORING
   SOIL_REPLACED
   HARVESTED
   STAKED
@@ -146,6 +152,10 @@ enum ActivityLogTypeEnum {
   MOVED
   CHECKED
   ADDED_COMPOST
+  SHADE_ADJUSTMENT
+  PLANT_PROPAGATION
+  LIGHT_EXPOSURE_CHECK
+  WATERING_ADJUSTMENT
   OTHERS
 }
 
@@ -173,6 +183,74 @@ model StatusLog {
   occurrence Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
 }
 
+enum AttractionStatusEnum {
+  OPEN
+  CLOSED
+  UNDER_MAINTENANCE
+}
+
+model Attraction {
+  id           String               @id @default(uuid()) @db.Uuid
+  title        String
+  description  String
+  openingHours DateTime[]
+  closingHours DateTime[]
+  images       String[]
+  status       AttractionStatusEnum
+  lat          Float?
+  lng          Float?
+  parkId       Int
+
+  @@index([parkId])
+}
+
+enum EventStatusEnum {
+  ONGOING
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+enum EventTypeEnum {
+  WORKSHOP
+  EXHIBITION
+  GUIDED_TOUR
+  PERFORMANCE
+  TALK
+  COMPETITION
+  FESTIVAL
+  CONFERENCE
+}
+
+enum EventSuitabilityEnum {
+  ANYONE
+  FAMILIES_AND_FRIENDS
+  CHILDREN
+  NATURE_ENTHUSIASTS
+  PETS
+  FITNESS_ENTHUSIASTS
+}
+
+model Event {
+  id          String               @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  type        EventTypeEnum
+  suitability EventSuitabilityEnum
+  startDate   DateTime
+  endDate     DateTime
+  startTime   DateTime
+  endTime     DateTime
+  maxCapacity Int
+  images      String[]
+  status      EventStatusEnum
+  facilityId  String               @db.Uuid
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([facilityId])
+}
+
 // model DecarbonizationArea {
 //   id                  String   @id @default(uuid()) @db.Uuid
 //   carbonSeqValue      Float
@@ -186,24 +264,6 @@ model StatusLog {
 //   occurrences Occurrence[]
 // }
 
-// enum PARK_STATUS_ENUM {
-//   OPEN 
-//   CLOSED
-//   UNDER_CONSTRUCTION
-//   LIMITED_ACCESS
-// }
-
-// model Park {
-//   id           Int     @id @default(autoincrement())
-//   name         String
-//   description  String
-//   parkStatus   PARK_STATUS_ENUM
-//   openingHours DateTime[]
-//   closingHours DateTime[]
-//   geom         String
-//   paths        String
-// }
-
 model Visitor {
   id              String    @id @default(uuid()) @db.Uuid
   firstName       String
@@ -213,4 +273,270 @@ model Visitor {
   contactNumber   String
   favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
   isVerified      Boolean
+  resetToken      String?
+  resetTokenUsed  Boolean   @default(false)
+}
+
+enum HubStatusEnum {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+model Hub {
+  id                       String        @id @default(uuid()) @db.Uuid
+  identifierNumber         String        @unique
+  serialNumber             String        @unique
+  name                     String
+  description              String?
+  hubStatus                HubStatusEnum
+  acquisitionDate          DateTime
+  lastMaintenanceDate      DateTime?
+  nextMaintenanceDate      DateTime? // for predictive maintenance
+  dataTransmissionInterval Float?
+  supplier                 String
+  supplierContactNumber    String
+  ipAddress                String?
+  macAddress               String?
+  radioGroup               Int?
+  hubSecret                String?
+  images                   String[]
+  lat                      Float?
+  long                     Float?
+  remarks                  String?
+  zoneId                   Int? // for when installed in a zone
+  facilityId               String        @db.Uuid
+  facility                 Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  maintenanceHistory MaintenanceHistory[]
+  sensors            Sensor[]
+
+  //facility Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId])
+}
+
+enum SensorTypeEnum {
+  TEMPERATURE
+  HUMIDITY
+  SOIL_MOISTURE
+  LIGHT
+  CAMERA
+}
+
+enum SensorStatusEnum {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+enum SensorUnitEnum {
+  PERCENT
+  DEGREES_CELSIUS
+  VOLUMETRIC_WATER_CONTENT
+  LUX
+  PAX
+  // Add other units as needed
+}
+
+model Sensor {
+  id                       String               @id @default(uuid()) @db.Uuid
+  name                     String
+  identifierNumber         String               @unique
+  serialNumber             String               @unique
+  sensorType               SensorTypeEnum
+  description              String?
+  sensorStatus             SensorStatusEnum
+  acquisitionDate          DateTime
+  lastCalibratedDate       DateTime?
+  calibrationFrequencyDays Int?
+  lastMaintenanceDate      DateTime?
+  nextMaintenanceDate      DateTime?
+  dataFrequencyMinutes     Int?
+  sensorUnit               SensorUnitEnum
+  supplier                 String
+  supplierContactNumber    String
+  images                   String[]
+  lat                      Float?
+  long                     Float?
+  remarks                  String?
+  hubId                    String?              @db.Uuid
+  hub                      Hub?                 @relation(fields: [hubId], references: [id])
+  facilityId               String?              @db.Uuid
+  facility                 Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  maintenanceHistory       MaintenanceHistory[]
+  calibrationHistory       CalibrationHistory[]
+}
+
+enum ParkAssetTypeEnum {
+  PLANT_TOOL_AND_EQUIPMENT
+  HOSES_AND_PIPES
+  INFRASTRUCTURE
+  LANDSCAPING
+  GENERAL_TOOLS
+  SAFETY
+  DIGITAL
+  EVENT
+}
+
+enum ParkAssetStatusEnum {
+  AVAILABLE
+  IN_USE
+  UNDER_MAINTENANCE
+  DECOMMISSIONED
+}
+
+enum ParkAssetConditionEnum {
+  EXCELLENT
+  FAIR
+  POOR
+  DAMAGED
+}
+
+model ParkAsset {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  identifierNumber      String                 @unique
+  serialNumber          String?                @unique
+  name                  String
+  parkAssetType         ParkAssetTypeEnum
+  description           String?
+  parkAssetStatus       ParkAssetStatusEnum
+  acquisitionDate       DateTime
+  lastMaintenanceDate   DateTime? // Keep this field
+  nextMaintenanceDate   DateTime? // Keep this field
+  supplier              String
+  supplierContactNumber String
+  parkAssetCondition    ParkAssetConditionEnum
+  images                String[]
+  remarks               String?
+  facilityId            String                 @db.Uuid
+  facility              Facility               @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  maintenanceHistory    MaintenanceHistory[]
+}
+
+model MaintenanceHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  hubId           String?  @map("hubId") @db.Uuid
+  sensorId        String?  @map("sensorId") @db.Uuid
+  assetId         String?  @map("assetId") @db.Uuid
+  maintenanceDate DateTime
+  description     String
+
+  hub       Hub?       @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  sensor    Sensor?    @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  parkAsset ParkAsset? @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model CalibrationHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  hubId           String?  @map("hubId") @db.Uuid
+  sensorId        String?  @map("sensorId") @db.Uuid
+  calibrationDate DateTime
+  description     String
+
+  sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+}
+
+model Facility {
+  id                  String             @id @default(uuid()) @db.Uuid
+  name                String
+  description         String
+  isBookable          Boolean
+  isPublic            Boolean
+  isSheltered         Boolean
+  facilityType        FacilityTypeEnum
+  reservationPolicy   String
+  rulesAndRegulations String
+  images              String[]
+  lastMaintenanceDate DateTime
+  // nextMaintenanceDate   DateTime
+  openingHours        DateTime[]
+  closingHours        DateTime[]
+  facilityStatus      FacilityStatusEnum
+  lat                 Float
+  long                Float
+  size                Float
+  capacity            Float
+  fee                 Float
+  parkId              Int
+  hubs                Hub[]
+  events              Event[]
+  parkAssets          ParkAsset[]
+  sensors             Sensor[]
+
+  @@index([parkId])
+}
+
+enum FacilityTypeEnum {
+  TOILET
+  PLAYGROUND
+  INFORMATION
+  CARPARK
+  ACCESSIBILITY
+  STAGE
+  WATER_FOUNTAIN
+  PICNIC_AREA
+  BBQ_PIT
+  CAMPING_AREA
+  AED
+  FIRST_AID
+  AMPHITHEATER
+  GAZEBO
+  STOREROOM
+  OTHERS
+}
+
+enum FacilityStatusEnum {
+  OPEN
+  CLOSED
+  UNDER_MAINTENANCE
+}
+
+enum PlantTaskStatusEnum {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PlantTaskTypeEnum {
+  INSPECTION
+  WATERING
+  PRUNING_TRIMMING
+  PEST_MANAGEMENT
+  SOIL_MAINTENANCE
+  STAKING_SUPPORTING
+  DEBRIS_REMOVAL
+  ENVIRONMENTAL_ADJUSTMENT
+  OTHERS
+}
+
+enum PlantTaskUrgencyEnum {
+  IMMEDIATE
+  HIGH
+  NORMAL
+  LOW
+}
+
+model PlantTask {
+  id                String               @id @default(uuid()) @db.Uuid
+  title             String
+  description       String
+  taskStatus        PlantTaskStatusEnum
+  taskType          PlantTaskTypeEnum
+  taskUrgency       PlantTaskUrgencyEnum
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  dueDate           DateTime
+  completedDate     DateTime?
+  images            String[]
+  remarks           String?
+  occurrenceId      String               @db.Uuid
+  occurrence        Occurrence           @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  assignedStaffId   String?              @map("assignedStaffId") @db.Uuid
+  assignedStaff     Staff?               @relation(name: "assignedStaff", fields: [assignedStaffId], references: [id])
+  submittingStaffId String               @map("submittingStaffId") @db.Uuid
+  submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
 }

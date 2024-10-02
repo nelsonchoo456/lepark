@@ -8,6 +8,7 @@ import useUploadImages from '../../../hooks/Images/useUploadImages';
 import { ImageInput } from '@lepark/common-ui';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface ActivityLog {
   id: string;
@@ -152,8 +153,11 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
       title: 'Activity Type',
       dataIndex: 'activityLogType',
       key: 'activityLogType',
-      render: (activityLogType: string) => <Tag>{activityLogType}</Tag>,
-      filters: Object.values(ActivityLogTypeEnum).map(type => ({ text: type, value: type })),
+      render: (activityLogType: string) => <Tag>{formatEnumLabelToRemoveUnderscores(activityLogType)}</Tag>,
+      filters: Object.values(ActivityLogTypeEnum).map(type => ({ 
+        text: formatEnumLabelToRemoveUnderscores(type), 
+        value: type 
+      })),
       onFilter: (value, record) => record.activityLogType === value,
     },
     {
@@ -237,7 +241,7 @@ const ActivityLogs: React.FC<{ occurrence: OccurrenceResponse | null }> = ({ occ
             <Select>
               {Object.values(ActivityLogTypeEnum).map((type) => (
                 <Select.Option key={type} value={type}>
-                  {type}
+                  {formatEnumLabelToRemoveUnderscores(type)}
                 </Select.Option>
               ))}
             </Select>

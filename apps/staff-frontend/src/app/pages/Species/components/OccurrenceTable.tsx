@@ -12,6 +12,7 @@ import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurren
 import { Input } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { SCREEN_LG } from '../../../config/breakpoints';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface OccurrenceTableProps {
   speciesId: string;
@@ -79,23 +80,23 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId }) => {
       render: (text) => {
         switch (text) {
           case 'HEALTHY':
-            return <Tag color="green" bordered={false}>HEALTHY</Tag>;
+            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
           case 'MONITOR_AFTER_TREATMENT':
-            return <Tag color="yellow" bordered={false}>MONITOR AFTER TREATMENT</Tag>;
+            return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
           case 'NEEDS_ATTENTION':
-            return <Tag color="orange" bordered={false}>NEEDS ATTENTION</Tag>;
+            return <Tag color="orange" bordered={false}>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
           case 'URGENT_ACTION_REQUIRED':
-            return <Tag color="red" bordered={false}>URGENT ACTION REQUIRED</Tag>;
+            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
           case 'REMOVED':
-            return <Tag bordered={false}>REMOVED</Tag>;
+            return <Tag bordered={false}>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
         }
       },
       filters: [
-        { text: 'Healthy', value: 'HEALTHY' },
-        { text: 'Monitor After Treatment', value: 'MONITOR_AFTER_TREATMENT' },
-        { text: 'Needs Attention', value: 'NEEDS_ATTENTION' },
-        { text: 'Urgent Action Required', value: 'URGENT_ACTION_REQUIRED' },
-        { text: 'Removed', value: 'REMOVED' },
+        { text: formatEnumLabelToRemoveUnderscores('HEALTHY'), value: 'HEALTHY' },
+        { text: formatEnumLabelToRemoveUnderscores('MONITOR_AFTER_TREATMENT'), value: 'MONITOR_AFTER_TREATMENT' },
+        { text: formatEnumLabelToRemoveUnderscores('NEEDS_ATTENTION'), value: 'NEEDS_ATTENTION' },
+        { text: formatEnumLabelToRemoveUnderscores('URGENT_ACTION_REQUIRED'), value: 'URGENT_ACTION_REQUIRED' },
+        { text: formatEnumLabelToRemoveUnderscores('REMOVED'), value: 'REMOVED' },
       ],
       onFilter: (value, record) => record.occurrenceStatus === value,
       width: '25%',

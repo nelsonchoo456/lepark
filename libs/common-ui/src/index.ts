@@ -11,6 +11,7 @@ export * from './lib/main-mobile/MobileContent';
 export * from './lib/main-mobile/MobileSidebar';
 
 // Utilities
+export * from './lib/map/marker';
 export * from './lib/input/ImageInput';
 export * from './lib/button/CustButton';
 export * from './lib/divider/Divider';
@@ -28,3 +29,4 @@ export { StaffAuthWrapper } from './lib/auth/StaffAuthWrapper';
 export { VisitorAuthWrapper } from './lib/auth/VisitorAuthWrapper';
 export * from './lib/auth/ProtectedRoute';
 export * from './lib/auth/Spinner';
+export * from './lib/auth/RoleProtectedRoute';

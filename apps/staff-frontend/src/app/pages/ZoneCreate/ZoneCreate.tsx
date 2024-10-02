@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { createZone, getAllParks, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
+import { createZone, getAllParks, getZonesByParkId, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, notification, Result, Steps, Tooltip } from 'antd';
-import PageHeader from '../../components/main/PageHeader';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
 import { LatLng } from 'leaflet';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
+import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../components/map/functions/functions';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import PageHeader2 from '../../components/main/PageHeader2';
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -23,8 +23,8 @@ export interface AdjustLatLngInterface {
 const daysOfTheWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const ZoneCreate = () => {
-  const { user, updateUser } = useAuth<StaffResponse>();
-  const { parks, restrictedParkId, loading } = useFetchParks();
+  const { user } = useAuth<StaffResponse>();
+  const { parks } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [createdData, setCreatedData] = useState<ZoneResponse | null>();
@@ -32,30 +32,38 @@ const ZoneCreate = () => {
   const navigate = useNavigate();
   const notificationShown = useRef(false);
 
+  const [selectedPark, setSelectedPark] = useState<ParkResponse>();
+  const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
+
   // Form Values
   const [formValues, setFormValues] = useState<any>({});
   const [form] = Form.useForm();
   // Map Values
-  const [polygon, setPolygon] = useState<LatLng[][]>([]);
+  const [polygon, setPolygon] = useState<any[]>([]);
   const [lines, setLines] = useState<any[]>([]);  
-  const [lat, setLat] = useState(center.lat);
-  const [lng, setLng] = useState(center.lng);
 
   useEffect(() => {
-    if (user?.role !== StaffType.MANAGER && user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.LANDSCAPE_ARCHITECT) {
-      if (!notificationShown.current) {
-      notification.error({
-        message: 'Access Denied',
-        description: 'You are not allowed to access the Zone Creation page!',
-      });
-      notificationShown.current = true;
+    if (parks?.length > 0 && formValues && formValues.parkId) {
+      if (selectedPark && selectedPark.id !== formValues.parkId) {
+        // check if there is a previously selected park, if so, reset polygon
+        setPolygon([]);
+      }
+      
+      const currSelectedPark = parks.find((z) => z.id === formValues.parkId);
+      setSelectedPark(currSelectedPark);
+
+      const fetchZones = async () => {
+        const zonesRes = await getZonesByParkId(formValues.parkId);
+        if (zonesRes.status === 200) {
+          const zonesData = zonesRes.data;
+          setSelectedParkZones(zonesData);
+        }
+      }
+      fetchZones();
     }
-      navigate('/');
-    }
-  }, [user, navigate]);
+  }, [parks, formValues.parkId]);
   
   const handleCurrStep = async (step: number) => {
-    // console.log(formValues)
     if (step === 0) {
       setCurrStep(0);
     } else if (step === 1) {
@@ -73,7 +81,10 @@ const ZoneCreate = () => {
 
   const handleSubmit = async () => {
     try {
-      // console.log(formValues);
+      if (!polygon || !(polygon.length > 0) || !polygon[0][0]) {
+        throw new Error ("Please draw Zone boundaries on the map.");
+      }
+
       const { monday, tuesday, wednesday, thursday, friday, saturday, sunday, ...rest } = formValues;
       
       const openingHours: any[] = [];
@@ -96,7 +107,29 @@ const ZoneCreate = () => {
         finalData.geom = polygonData;
       }
     
-      const response = await createZone(finalData);
+      // Boundary validation
+      const hasOverlap = polygonHasOverlap(
+        polygon[0][0],
+        selectedParkZones?.map((z) => z?.geom?.coordinates?.[0]),
+      );
+      const isWithinPark = polygonIsWithin(polygon[0][0], selectedPark?.geom?.coordinates?.[0]);
+      if (hasOverlap) {
+        messageApi.open({
+          type: 'error',
+          content: 'The Zone boundaries overlaps with other Zone(s).',
+        });
+      }
+      if (!isWithinPark) {
+        messageApi.open({
+          type: 'error',
+          content: 'The Zone boundaries is not within the Park.',
+        });
+      }
+      if (hasOverlap || !isWithinPark) {
+        return;
+      }
+      
+      const response = await createZone(finalData, selectedFiles);
       if (response.status === 201) {
         setCreatedData(response.data)
         setCurrStep(2);
@@ -107,11 +140,18 @@ const ZoneCreate = () => {
       }
       
     } catch (error) {
-      console.error(error);
-      messageApi.open({
-        type: 'error',
-        content: 'Unable to create a Zone. Please try again later.',
-      });
+      console.error(error)
+      if (error instanceof Error) {
+        messageApi.open({
+          type: 'error',
+          content: error.message || 'An error occurred while creating the Zone',
+        });
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: 'Unable to create a Zone. Please try again later.',
+        });
+      }
     }
   };
 
@@ -133,7 +173,7 @@ const ZoneCreate = () => {
     {
       key: 'location',
       children: (
-        <CreateMapStep handleCurrStep={handleCurrStep} polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines} />
+        <CreateMapStep polygon={polygon} setPolygon={setPolygon} lines={lines} setLines={setLines} selectedPark={selectedPark} selectedParkZones={selectedParkZones}/>
       ),
     },
     {
@@ -142,10 +182,23 @@ const ZoneCreate = () => {
     },
   ];
 
+  const breadcrumbItems = [
+    {
+      title: 'Zones Management',
+      pathKey: '/zone',
+      isMain: true,
+    },
+    {
+      title: "Create",
+      pathKey: `/zone/create`,
+      isCurrent: true,
+    },
+  ];
+
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader>Create a Zone</PageHeader>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Steps
           current={currStep}
@@ -187,8 +240,8 @@ const ZoneCreate = () => {
               }
               extra={[
                 <Button key="back" onClick={() => navigate('/zone')}>Back to Zone Management</Button>,
-                <Tooltip title="Zone details coming soon.">
-                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)} disabled>
+                <Tooltip title="View Zone Details">
+                  <Button type="primary" key="view" onClick={() => navigate(`/zone/${createdData?.id}`)}>
                     View new Zone
                   </Button>
                 </Tooltip>

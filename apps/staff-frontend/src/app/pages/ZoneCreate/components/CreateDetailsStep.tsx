@@ -19,6 +19,9 @@ import {
   message,
 } from 'antd';
 import { useEffect, useState } from 'react';
+import { ZoneStatusEnum } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -52,22 +55,7 @@ const CreateDetailsStep = ({
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
     }
-  }, [user, parks]);
-
-  const zoneStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'UNDER_CONSTRUCTION',
-      label: 'Under Construction',
-    },
-    {
-      value: 'LIMITED_ACCESS',
-      label: 'Limited Access',
-    },
-  ];
+  }, [user, parks, form]);
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -109,31 +97,33 @@ const CreateDetailsStep = ({
       )}
 
       <Divider orientation="left">Zone Details</Divider>
-      <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+      <Form.Item name="name" label="Name" rules={[{ required: true },  { min: 3, message: 'Valid name must be at least 3 characters long'}]}>
         <Input placeholder="Zone Name" />
       </Form.Item>
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
         <TextArea placeholder="Zone Description" />
       </Form.Item>
       <Form.Item name="zoneStatus" label="Zone Status" rules={[{ required: true }]}>
-        <Select placeholder="Select a Status" options={zoneStatusOptions} />
+        <Select placeholder="Select a Status" options={Object.values(ZoneStatusEnum).map((status) => ({ key: status, value: status, label: formatEnumLabelToRemoveUnderscores(status) }))} />
       </Form.Item>
-      {/* <Form.Item label={'Image'}>
-        <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick}/>
+      <Form.Item label={<div><Text type="danger">{'* '}</Text>Image</div>}>
+        <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
       </Form.Item>
-      {previewImages?.length > 0 && <Form.Item label={'Image Previews'}>
-      <div className="flex flex-wrap gap-2">
-          {previewImages.map((imgSrc, index) => (
-            <img
-              key={index}
-              src={imgSrc}
-              alt={`Preview ${index}`}
-              className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-              onClick={() => removeImage(index)}
-            />
-          ))}
-        </div>
-      </Form.Item>} */}
+      {previewImages?.length > 0 && (
+        <Form.Item label={'Image Previews'} >
+          <div className="flex flex-wrap gap-2">
+            {previewImages.map((imgSrc, index) => (
+              <img
+                key={index}
+                src={imgSrc}
+                alt={`Preview ${index}`}
+                className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                onClick={() => removeImage(index)}
+              />
+            ))}
+          </div>
+        </Form.Item>
+      )}
 
       <Divider orientation="left">
         Zone Hours <Text type="danger">{' *'}</Text>
@@ -216,7 +206,7 @@ const CreateDetailsStep = ({
         </Flex>
       </Form.Item>
 
-      <Form.Item wrapperCol={{ offset: 8 }}>
+      <Form.Item label={" "} colon={false}>
         <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
           Next
         </Button>

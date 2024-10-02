@@ -37,6 +37,36 @@ class OccurrenceDao {
     });
   }
 
+  async getAllOccurrencesByZoneId(zoneId: number): Promise<Occurrence[]> {
+    const occurrences = await prisma.occurrence.findMany({
+      where: {
+        zoneId,
+      },
+      include: {
+        species: {
+          select: {
+            id: true,
+            speciesName: true,
+          },
+        },
+      },
+    });
+  
+    const zones = await ZoneDao.getAllZones();
+    const zone = zones.find((z: any) => z.id === zoneId);
+  
+    return occurrences.map((occurrence) => ({
+      ...occurrence,
+      speciesId: occurrence.species?.id,
+      speciesName: occurrence.species?.speciesName,
+      zoneId: zone?.id,
+      zoneName: zone?.name,
+      parkId: zone?.parkId,
+      parkName: zone?.parkName,
+      parkDescription: zone?.parkDescription,
+    }));
+  }
+
   async getAllOccurrencesByParkId(parkId: number): Promise<Occurrence[]> {
     const occurrences = await prisma.occurrence.findMany({
       include: {
@@ -68,6 +98,26 @@ class OccurrenceDao {
       .filter((occurrence: any) => occurrence.parkId === parkId);
   }
 
+  async getSpeciesCountByParkId(parkId: number): Promise<number> {
+    // Get all zones associated with the parkId
+    const zones = await ZoneDao.getAllZones();
+    const zoneIds = zones.filter((zone: any) => zone.parkId === parkId).map((zone: any) => zone.id);
+  
+    // Group by speciesId and count the number of unique species
+    const uniqueSpecies = await prisma.occurrence.groupBy({
+      by: ['speciesId'],
+      where: {
+        zoneId: {
+          in: zoneIds,
+        },
+      },
+    });
+  
+    // The length of the grouped result will be the number of unique species
+    return uniqueSpecies.length;
+  }
+  
+
   async getOccurrenceById(id: string): Promise<Occurrence> {
     return prisma.occurrence.findUnique({ where: { id } });
   }
@@ -78,6 +128,16 @@ class OccurrenceDao {
 
   async deleteOccurrence(id: string): Promise<void> {
     await prisma.occurrence.delete({ where: { id } });
+  }
+
+  async getOccurrencesByIds(ids: string[]): Promise<any[]> {
+    return prisma.occurrence.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
   }
 }
 

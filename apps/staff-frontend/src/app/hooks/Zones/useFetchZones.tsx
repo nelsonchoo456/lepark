@@ -1,52 +1,43 @@
 import { useState, useEffect } from 'react';
-import { message } from 'antd'; // or whatever message system you are using
+import { ZoneResponse, getAllZones, getZonesByParkId } from '@lepark/data-access';
 import { useAuth } from '@lepark/common-ui';
-import { getAllZones, getZonesByParkId, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
-import { useNavigate } from 'react-router-dom'; // or your routing solution
+import { StaffResponse, StaffType } from '@lepark/data-access';
 
 export const useFetchZones = () => {
   const [zones, setZones] = useState<ZoneResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth<StaffResponse>();
-  const [loading, setLoading] = useState(false);
-  const [trigger, setTrigger] = useState(false);
-  const navigate = useNavigate();
+
+  const fetchZones = async () => {
+    setLoading(true);
+    try {
+      let response;
+      if (user?.role === StaffType.SUPERADMIN) {
+        response = await getAllZones();
+      } else if (user?.parkId) {
+        response = await getZonesByParkId(user.parkId);
+      } else {
+        // Handle case where user is not a superadmin and doesn't have a parkId
+        setZones([]);
+        setLoading(false);
+        return;
+      }
+      setZones(response.data);
+    } catch (error) {
+      console.error('Error fetching zones:', error);
+      setZones([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!user) return;
-    if (user?.role === StaffType.SUPERADMIN) {
-      fetchAllZones();
-    } else if (user?.parkId) {
-      fetchZonesByParkId(user?.parkId);
-    }
-  }, [user, trigger]);
-
-  const fetchAllZones = async () => {
-    try {
-      setLoading(true);
-      const response = await getAllZones();
-      setZones(response.data);
-    } catch (error) {
-      message.error('Failed to fetch Zones');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchZonesByParkId = async (parkId: number) => {
-    try {
-      setLoading(true);
-      const response = await getZonesByParkId(parkId);
-      setZones(response.data);
-    } catch (error) {
-      message.error('Failed to fetch Zones');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchZones();
+  }, [user]);
 
   const triggerFetch = () => {
-    setTrigger(prev => !prev); // Toggle the trigger value
+    fetchZones();
   };
 
-  return { zones, loading, setZones, fetchAllZones, fetchZonesByParkId, triggerFetch };
+  return { zones, loading, triggerFetch };
 };

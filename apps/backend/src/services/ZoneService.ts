@@ -1,9 +1,18 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-import { ZoneCreateData } from '../schemas/zoneSchema';
+import { ZoneCreateData, ZoneUpdateData } from '../schemas/zoneSchema';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
+import aws from 'aws-sdk';
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1',
+});
+
+const prisma = new PrismaClient();
 
 class ZoneService {
   public async createZone(data: ZoneCreateData): Promise<any> {
@@ -27,6 +36,9 @@ class ZoneService {
       }
       if (!data.zoneStatus) {
         errors.push('Zone Status is required');
+      }
+      if (!data.geom) {
+        errors.push('Zone Boundaries is required');
       }
 
       if (errors.length !== 0) {
@@ -61,7 +73,49 @@ class ZoneService {
   }
 
   public async deleteZoneById(id: number): Promise<any> {
-    return ZoneDao.deleteZoneById(id);
+    const res = await ZoneDao.deleteZoneById(id);
+    await prisma.occurrence.deleteMany({
+      where: {
+        zoneId: id,
+      },
+    });
+    return res;
+  }
+
+  public async updateZone(id: number, data: ZoneUpdateData): Promise<any> {
+    try {
+      if (data.parkId) {
+        const park = await ParkDao.getParkById(data.parkId);
+        if (!park) {
+          throw new Error('Park not found.');
+        }
+      }
+
+      return ZoneDao.updateZone(id, data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map((e) => `${e.message}`);
+        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+      }
+      throw error;
+    }
+  }
+
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+    const params = {
+      Bucket: 'lepark',
+      Key: `zone/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+    
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
   }
 }
 
