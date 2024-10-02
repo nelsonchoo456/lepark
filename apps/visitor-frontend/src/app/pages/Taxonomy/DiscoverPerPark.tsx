@@ -40,6 +40,9 @@ const DiscoverPerPark = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    if (!selectedPark) {
+      navigate('/');
+    }
     const fetchSpecies = async () => {
       setLoading(true);
       try {
