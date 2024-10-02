@@ -53,12 +53,12 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   }, [user, parks]);
 
-  const facilityTypeOptions = Object.values(FacilityTypeEnum).map(type => ({
+  const facilityTypeOptions = Object.values(FacilityTypeEnum).map((type) => ({
     value: type,
     label: formatEnumLabelToRemoveUnderscores(type),
   }));
 
-  const facilityStatusOptions = Object.values(FacilityStatusEnum).map(status => ({
+  const facilityStatusOptions = Object.values(FacilityStatusEnum).map((status) => ({
     value: status,
     label: formatEnumLabelToRemoveUnderscores(status),
   }));
@@ -244,7 +244,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item name="capacity" label="Capacity (pax)" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber min={0} />
+        <InputNumber min={0} precision={0} step={1} />
       </Form.Item>
 
       <Form.Item
@@ -253,7 +253,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         rules={[{ required: true, message: 'Please input the fee!' }]}
         hidden={!isPublic || !isBookable}
       >
-        <InputNumber min={0} />
+        <InputNumber min={0} precision={2} step={0.01} />
       </Form.Item>
 
       <Divider orientation="left">
