@@ -3,6 +3,7 @@ import { Descriptions, Divider, Tag, Typography } from 'antd';
 import ZoneStatusTag from './ZoneStatusTag';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface InformationTabProps {
   zone: ZoneResponse;
@@ -31,7 +32,7 @@ const InformationTab = ({ zone }: InformationTabProps) => {
     {
       key: 'zoneStatus',
       label: 'Status',
-      children: <ZoneStatusTag>{zone?.zoneStatus}</ZoneStatusTag>,
+      children: <ZoneStatusTag>{formatEnumLabelToRemoveUnderscores(zone?.zoneStatus)}</ZoneStatusTag>,
     },
     {
       key: 'description',
@@ -53,7 +54,7 @@ const InformationTab = ({ zone }: InformationTabProps) => {
   return (
     <div>
       <Divider orientation="left">Zone Details</Divider>
-      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
+      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: "15vw"}}/>
       <Divider orientation="left">Zone Hours</Divider>
       <Descriptions bordered column={1} labelStyle={{ width: "15vw" }} contentStyle={{ fontWeight: "500" }}>
         {openingHours &&

@@ -39,7 +39,7 @@ class EventService {
         // Check for overlapping events in the same facility
         const hasOverlap = await checkEventOverlap(formattedData.facilityId, formattedData.startDate, formattedData.endDate);
         if (hasOverlap) {
-          throw new Error('There is already an event scheduled at this facility during the specified time');
+          throw new Error('There is already an event scheduled at this facility during the specified dates');
         }
 
     //  // Check facility availability
@@ -66,6 +66,11 @@ class EventService {
   public async getEventsByParkId(parkId: string): Promise<Event[]> {
     const events = await EventDao.getEventsByParkId(parkId);
     return Promise.all(events.map(updateEventStatus));
+  }
+
+  public async getEventCountByParkId(parkId: string): Promise<number> {
+    const count = await EventDao.getEventCountByParkId(parkId);
+    return count;
   }
 
   public async getEventsByFacilityId(facilityId: string): Promise<Event[]> {

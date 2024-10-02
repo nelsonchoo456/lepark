@@ -17,11 +17,24 @@ interface PolygonWithLabelProps {
   polygonLabel?: any;
   polygonFields?: { [key: string]: any };
   handlePolygonClick?: (map: any, geom: any[], entityId: string | number) => void;
+  handleMarkerClick?: () => void,
   labelFields?: { [key: string]: any };
   image?: string;
 }
 
-const PolygonWithLabel = ({ entityId, geom, color, fillColor, fillOpacity, polygonLabel,labelFields,  polygonFields, image, handlePolygonClick }: PolygonWithLabelProps) => {
+const PolygonWithLabel = ({
+  entityId,
+  geom,
+  color,
+  fillColor,
+  fillOpacity,
+  polygonLabel,
+  labelFields,
+  polygonFields,
+  image,
+  handlePolygonClick,
+  handleMarkerClick
+}: PolygonWithLabelProps) => {
   const map = useMap();
   const centroid = getCentroidOfGeom(geom);
 
@@ -34,7 +47,7 @@ const PolygonWithLabel = ({ entityId, geom, color, fillColor, fillOpacity, polyg
 
   const getLabelIcon = () => {
     const iconHTML = renderToStaticMarkup(
-      <div className='flex flex-col items-center'>
+      <div className="flex flex-col items-center">
         {image && image !== '' && (
           <div
             style={{
@@ -48,7 +61,7 @@ const PolygonWithLabel = ({ entityId, geom, color, fillColor, fillOpacity, polyg
         )}
         {image === '' && (
           <div className="h-12 w-12 rounded-full bg-gray-200 shadow-lg p-4 grow-0">
-            <TbTrees className='text-lg opacity-40'/>
+            <TbTrees className="text-lg opacity-40" />
           </div>
         )}
 
@@ -59,7 +72,7 @@ const PolygonWithLabel = ({ entityId, geom, color, fillColor, fillOpacity, polyg
             color: '#fff',
             textShadow: `-1px -1px 0 ${COLORS.green[600]}, 1px -1px 0 ${COLORS.green[600]}, -1px 1px 0 ${COLORS.green[600]}, 1px 1px 0 ${COLORS.green[600]}`,
             textWrap: 'nowrap',
-            ...labelFields
+            ...labelFields,
           }}
         >
           {polygonLabel}
@@ -82,14 +95,29 @@ const PolygonWithLabel = ({ entityId, geom, color, fillColor, fillOpacity, polyg
           pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
           fillOpacity={fillOpacity ? fillOpacity : 0.8}
           {...polygonFields}
-
           eventHandlers={{
-            click: () => handlePolygonClick &&  handlePolygonClick(map, geom.coordinates[0].map((item: number[]) => [item[1], item[0]]), entityId), // Zoom in on click
+            click: () =>
+              handlePolygonClick &&
+              handlePolygonClick(
+                map,
+                geom.coordinates[0].map((item: number[]) => [item[1], item[0]]),
+                entityId,
+              ), // Zoom in on click
           }}
         />
       )}
       {polygonLabel && centroid?.lat && centroid.lng && (
-        <Marker key="polygon-label" position={[centroid?.lat, centroid?.lng]} icon={getLabelIcon()} opacity={1} />
+        <Marker
+          key="polygon-label"
+          position={[centroid?.lat, centroid?.lng]}
+          icon={getLabelIcon()}
+          opacity={1}
+          eventHandlers={{
+            click: () =>
+              handleMarkerClick &&
+              handleMarkerClick()
+          }}
+        />
       )}
     </>
   );

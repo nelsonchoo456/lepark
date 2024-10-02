@@ -2,6 +2,7 @@ import express from 'express';
 import ParkService from '../services/ParkService';
 import multer from 'multer';
 import { authenticateJWTStaff } from '../middleware/authenticateJWT';
+import OccurrenceService from '../services/OccurrenceService';
 
 const router = express.Router();
 const upload = multer();
@@ -61,6 +62,18 @@ router.get('/getRandomParkImage', async (_, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+router.get('/getSpeciesCountByParkId/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const count = await OccurrenceService.getSpeciesCountByParkId(id);
+    res.status(200).json(count);
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({ error: error.message });
+  }
+});
+
 
 router.delete('/deletePark/:id', authenticateJWTStaff, async (req, res) => {
   try {

@@ -11,9 +11,19 @@ import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import { WiDaySunny } from 'react-icons/wi';
-import { FaChalkboardTeacher, FaWalking, FaTheaterMasks, FaMicrophoneAlt, FaTrophy, FaUmbrellaBeach, FaUsers, FaUserFriends } from 'react-icons/fa';
+import {
+  FaChalkboardTeacher,
+  FaWalking,
+  FaTheaterMasks,
+  FaMicrophoneAlt,
+  FaTrophy,
+  FaUmbrellaBeach,
+  FaUsers,
+  FaUserFriends,
+} from 'react-icons/fa';
 import { GiPublicSpeaker } from 'react-icons/gi';
 import { MdEvent, MdChildCare, MdNaturePeople, MdPets, MdFitnessCenter } from 'react-icons/md';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Text } = Typography;
 
@@ -26,21 +36,21 @@ const EventDetails = () => {
   const getEventTypeInfo = (eventType: EventTypeEnum) => {
     switch (eventType) {
       case EventTypeEnum.WORKSHOP:
-        return { text: 'Workshop', icon: <FaChalkboardTeacher className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.WORKSHOP), icon: <FaChalkboardTeacher className="text-3xl mt-2" /> };
       case EventTypeEnum.EXHIBITION:
-        return { text: 'Exhibition', icon: <MdEvent className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.EXHIBITION), icon: <MdEvent className="text-3xl mt-2" /> };
       case EventTypeEnum.GUIDED_TOUR:
-        return { text: 'Guided Tour', icon: <FaWalking className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.GUIDED_TOUR), icon: <FaWalking className="text-3xl mt-2" /> };
       case EventTypeEnum.PERFORMANCE:
-        return { text: 'Performance', icon: <FaTheaterMasks className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.PERFORMANCE), icon: <FaTheaterMasks className="text-3xl mt-2" /> };
       case EventTypeEnum.TALK:
-        return { text: 'Talk', icon: <FaMicrophoneAlt className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.TALK), icon: <FaMicrophoneAlt className="text-3xl mt-2" /> };
       case EventTypeEnum.COMPETITION:
-        return { text: 'Competition', icon: <FaTrophy className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.COMPETITION), icon: <FaTrophy className="text-3xl mt-2" /> };
       case EventTypeEnum.FESTIVAL:
-        return { text: 'Festival', icon: <FaUmbrellaBeach className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.FESTIVAL), icon: <FaUmbrellaBeach className="text-3xl mt-2" /> };
       case EventTypeEnum.CONFERENCE:
-        return { text: 'Conference', icon: <GiPublicSpeaker className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventTypeEnum.CONFERENCE), icon: <GiPublicSpeaker className="text-3xl mt-2" /> };
       default:
         return { text: 'Unknown', icon: <MdEvent className="text-3xl mt-2" /> };
     }
@@ -49,37 +59,36 @@ const EventDetails = () => {
   const getEventSuitabilityInfo = (suitability: EventSuitabilityEnum) => {
     switch (suitability) {
       case EventSuitabilityEnum.ANYONE:
-        return { text: 'Anyone', icon: <FaUsers className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.ANYONE), icon: <FaUsers className="text-3xl mt-2" /> };
       case EventSuitabilityEnum.FAMILIES_AND_FRIENDS:
-        return { text: 'Families & Friends', icon: <FaUserFriends className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FAMILIES_AND_FRIENDS), icon: <FaUserFriends className="text-3xl mt-2" /> };
       case EventSuitabilityEnum.CHILDREN:
-        return { text: 'Children', icon: <MdChildCare className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.CHILDREN), icon: <MdChildCare className="text-3xl mt-2" /> };
       case EventSuitabilityEnum.NATURE_ENTHUSIASTS:
-        return { text: 'Nature Enthusiasts', icon: <MdNaturePeople className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.NATURE_ENTHUSIASTS), icon: <MdNaturePeople className="text-3xl mt-2" /> };
       case EventSuitabilityEnum.PETS:
-        return { text: 'Pets', icon: <MdPets className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.PETS), icon: <MdPets className="text-3xl mt-2" /> };
       case EventSuitabilityEnum.FITNESS_ENTHUSIASTS:
-        return { text: 'Fitness Enthusiasts', icon: <MdFitnessCenter className="text-3xl mt-2" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(EventSuitabilityEnum.FITNESS_ENTHUSIASTS), icon: <MdFitnessCenter className="text-3xl mt-2" /> };
       default:
         return { text: 'Unknown', icon: <FaUsers className="text-3xl mt-2" /> };
     }
   };
 
   const descriptionsItems = [
-
     {
-        key: 'facility',
-        label: 'Location',
-        children: (
-            <Flex justify="space-between" align="center">
-                <span className="font-semibold">{facility?.facilityName || 'Loading...'}</span>
-                {facility && (
+      key: 'facility',
+      label: 'Location',
+      children: (
+        <Flex justify="space-between" align="center">
+          <span className="font-semibold">{facility?.name || 'Loading...'}</span>
+          {facility && (
             <Tooltip title="Go to Facility">
               <Button type="link" icon={<FiExternalLink />} onClick={() => navigate(`/facilities/${facility.id}`)} />
             </Tooltip>
           )}
-            </Flex>
-        )
+        </Flex>
+      ),
     },
 
     {

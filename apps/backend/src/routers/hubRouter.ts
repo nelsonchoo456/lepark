@@ -7,7 +7,9 @@ const upload = multer();
 
 router.post('/createHub', async (req, res) => {
   try {
+    console.log('HELLO!');
     const hub = await HubService.createHub(req.body);
+    console.log('SUCCESSFULLY CREATED HUB!');
     res.status(201).json(hub);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -21,6 +23,7 @@ router.get('/getAllHubs', async (req, res) => {
       const hubs = await HubService.getAllHubs();
       res.status(200).json(hubs);
     } else {
+      //console.log('Getting hubs by parkId:', parkId);
       const hubs = await HubService.getHubsByParkId(parkId);
       res.status(200).json(hubs);
     }
@@ -80,6 +83,19 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+router.get('/checkDuplicateSerialNumber', async (req, res) => {
+  try {
+    const { serialNumber, hubId } = req.query;
+    if (!serialNumber) {
+      return res.status(400).json({ error: 'Serial number is required' });
+    }
+    const isDuplicate = await HubService.isSerialNumberDuplicate(serialNumber as string, hubId as string);
+    res.status(200).json({ isDuplicate });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

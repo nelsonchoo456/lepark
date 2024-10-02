@@ -17,6 +17,7 @@ import { IoIosArrowDown, IoMdHeart, IoMdHeartDislike, IoMdHeartEmpty } from 'rea
 import { useHandleFavoriteSpecies } from '../../hooks/useHandleFavoriteSpecies';
 import { IoEarth } from 'react-icons/io5';
 import { convertEnumToNormalFormat } from '@lepark/data-utility';
+import withParkGuard from '../../park-context/withParkGuard';
 // Add these type definitions at the top of your file
 type OrdersType = { orders: string[] };
 type PhylumDataType = {
@@ -174,9 +175,11 @@ const DiscoverPerPark = () => {
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
-      <ParkHeader cardClassName="h-48 md:h-[160px]">
+      <ParkHeader cardClassName="h-24 md:h-[160px]">
         <div className="flex w-full md:text-center md:mx-auto md:block md:w-auto">
-          <div className="flex-1 font-medium text-2xl md:text-3xl">Taxonomy</div>
+          <div className="flex-1 font-medium text-2xl md:text-3xl">
+            Species <span className="text-sm md:text-lg">in {selectedPark?.name}</span>
+          </div>{' '}
           {/* <div className="backdrop-blur bg-white/15 px-3 h-8 flex items-center rounded-full">{selectedPark?.name}</div> */}
         </div>
       </ParkHeader>
@@ -219,17 +222,15 @@ const DiscoverPerPark = () => {
         >
           {filteredSpecies.map((species, index) => (
             <div
+              key={species.id} // Add the key prop here
               onClick={() => navigateToSpecies(species.id)}
               className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
-                bg-white rounded-xl mb-2
-                md:border-[1px]
-                hover:bg-green-600/10"
+      bg-white rounded-xl mb-2
+      md:border-[1px]
+      hover:bg-green-600/10"
             >
               <div className="flex flex-row w-full">
-                <div
-                  className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
-                "
-                >
+                <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
                   <img src={species.images[0]} alt={species.commonName} className="w-full h-full object-cover" />
                 </div>
                 <div className="h-full flex-1">
@@ -243,18 +244,16 @@ const DiscoverPerPark = () => {
                 <div className="h-full flex-1 hidden lg:block">
                   <div className="-mt-[2px] ">{renderConservationStatus(species.conservationStatus)}</div>
                   <div className="-mt-[2px] text-green-700/80 italic flex items-center">
-                    {' '}
                     <IoEarth className="mr-1" />
                     {species.originCountry}
                   </div>
                 </div>
-
                 <div className="h-full">
                   {user &&
                     user.isVerified &&
                     (isFavoriteSpecies(species.id) ? (
                       <Button
-                        icon={<IoMdHeartDislike className="text-lg text-pastelPink-400" />}
+                        icon={<IoMdHeart className="text-lg text-pastelPink-400" />}
                         shape="circle"
                         type="text"
                         onClick={(e) => {
@@ -264,7 +263,7 @@ const DiscoverPerPark = () => {
                       />
                     ) : (
                       <Button
-                        icon={<IoMdHeart className="text-lg text-pastelPink-500" />}
+                        icon={<IoMdHeartEmpty className="text-lg text-pastelPink-500" />}
                         shape="circle"
                         type="text"
                         onClick={(e) => {
@@ -283,4 +282,4 @@ const DiscoverPerPark = () => {
   );
 };
 
-export default DiscoverPerPark;
+export default withParkGuard(DiscoverPerPark);

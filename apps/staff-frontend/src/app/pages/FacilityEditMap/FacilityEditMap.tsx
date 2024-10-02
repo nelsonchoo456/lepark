@@ -1,6 +1,15 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
 import DraggableMarker, { center } from '../../components/map/DraggableMarker';
-import { ParkResponse, AttractionResponse, getAttractionById, getParkById, updateAttractionDetails, updateFacilityDetails } from '@lepark/data-access';
+import {
+  ParkResponse,
+  AttractionResponse,
+  getAttractionById,
+  getParkById,
+  updateAttractionDetails,
+  updateFacilityDetails,
+  getZonesByParkId,
+  ZoneResponse,
+} from '@lepark/data-access';
 import { useEffect, useState } from 'react';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import { COLORS } from '../../config/colors';
@@ -12,6 +21,8 @@ import { Button, Card, Flex, Input, message, Popconfirm } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
+import PolygonWithLabel from '../../components/map/PolygonWithLabel';
+import { TbTree } from 'react-icons/tb';
 
 export interface AdjustLatLngInterface {
   lat?: number | null;
@@ -24,6 +35,7 @@ const FacilityEditMap = () => {
   const [lat, setLat] = useState<number | undefined>();
   const [lng, setLng] = useState<number | undefined>();
   const [polygon, setPolygon] = useState<LatLng[][]>([]);
+  const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -31,12 +43,21 @@ const FacilityEditMap = () => {
     const fetchData = async () => {
       if (park) {
         setPolygon(park.geom.coordinates);
+
+        const fetchZones = async () => {
+          const zonesRes = await getZonesByParkId(park.id);
+          if (zonesRes.status === 200) {
+            const zonesData = zonesRes.data;
+            setSelectedParkZones(zonesData);
+          }
+        };
+        fetchZones();
       }
 
       if (facility && facility.lat && facility.long) {
         setLat(facility.lat);
         setLng(facility.long);
-      } 
+      }
       // else {
       //   setLat(center.lat);
       //   setLat(center.lng);
@@ -97,7 +118,7 @@ const FacilityEditMap = () => {
       isMain: true,
     },
     {
-      title: facility?.facilityName ? facility?.facilityName : 'Details',
+      title: facility?.name ? facility?.name : 'Details',
       pathKey: `/facilities/${facility?.id}`,
     },
     {
@@ -115,7 +136,7 @@ const FacilityEditMap = () => {
         <>
           <div className="">
             <div className="font-semibold">Instructions: </div>
-            Drag the Marker to adjust the location of the attraction within the park boundaries.
+            Drag the Marker to adjust the location of the facility within the park boundaries.
           </div>
           <div
             style={{
@@ -136,6 +157,24 @@ const FacilityEditMap = () => {
               />
 
               <PolygonFitBounds geom={park?.geom} adjustLatLng={adjustLatLng} lat={lat} lng={lng} polygonLabel={park?.name} />
+              {selectedParkZones &&
+                selectedParkZones?.length > 0 &&
+                selectedParkZones.map((zone) => (
+                  <PolygonWithLabel
+                    key={zone.id}
+                    entityId={zone.id}
+                    geom={zone.geom}
+                    polygonLabel={
+                      <div className="flex items-center gap-2">
+                        <TbTree className="text-xl" />
+                        {zone.name}
+                      </div>
+                    }
+                    color={COLORS.green[600]}
+                    fillColor={'transparent'}
+                    labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+                  />
+                ))}
               <DraggableMarker adjustLatLng={adjustLatLng} lat={lat} lng={lng} backgroundColor={COLORS.sky[400]} />
             </MapContainer>
           </div>

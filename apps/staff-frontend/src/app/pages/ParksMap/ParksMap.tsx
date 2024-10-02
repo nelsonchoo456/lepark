@@ -10,17 +10,16 @@ import { IoIosInformationCircle } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
-import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 import { COLORS } from '../../config/colors';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
-import { MdArrowOutward } from 'react-icons/md';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { FiEye } from 'react-icons/fi';
 import { TbEdit, TbTree } from 'react-icons/tb';
 import ParkStatusTag from '../ParkDetails/components/ParkStatusTag';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import React from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ParksMap = () => {
   const { user } = useAuth<StaffResponse>();
@@ -98,7 +97,7 @@ const ParksMap = () => {
                   </div>
                 </div>
                 <div className="flex mt-2 justify-between">
-                  <ParkStatusTag>{park.parkStatus}</ParkStatusTag>
+                  <ParkStatusTag>{formatEnumLabelToRemoveUnderscores(park.parkStatus)}</ParkStatusTag>
                   <div className="flex gap-2">
                     <Tooltip title="Edit Boundaries">
                       <div className="">
@@ -269,6 +268,7 @@ const ParksMap = () => {
               color="transparent"
               fillOpacity={0.8}
               handlePolygonClick={handleParkPolygonClick}
+              handleMarkerClick={() => navigate(`/park/${park.id}`)} // not present in web mode
             />
           ))}
 

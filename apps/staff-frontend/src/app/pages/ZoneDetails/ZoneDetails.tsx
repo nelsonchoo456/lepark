@@ -9,6 +9,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Text } = Typography;
 
@@ -49,16 +50,6 @@ const ZoneDetails = () => {
       key: 'map',
       label: 'Map',
       children: zone ? <MapTab zone={zone} /> : <Empty description={'No Map data for this Park'}></Empty>,
-    },
-    {
-      key: 'attractions',
-      label: 'Attractions',
-      children: <Empty description={'Attractions Coming Soon'}></Empty>,
-    },
-    {
-      key: 'events',
-      label: 'Events',
-      children: <Empty description={'Events Coming Soon'}></Empty>,
     },
     {
       key: 'IoT',
@@ -113,9 +104,9 @@ const ZoneDetails = () => {
             <div className="w-full flex justify-between items-center">
               <Space>
                 <LogoText className="text-2xl py-2 m-0">{zone.name}</LogoText>
-                <ZoneStatusTag>{zone.zoneStatus}</ZoneStatusTag>
+                <ZoneStatusTag>{formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}</ZoneStatusTag>
               </Space>
-              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"

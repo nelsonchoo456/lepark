@@ -30,18 +30,40 @@ class PlantTaskDao {
   }
 
   async getPlantTaskById(id: string): Promise<PlantTask | null> {
-    return prisma.plantTask.findUnique({
+    const plantTask = await prisma.plantTask.findUnique({
       where: { id },
       include: {
         occurrence: true,
         assignedStaff: true,
       },
     });
+
+    if (!plantTask) {
+      return null; // Return null if no plant task is found
+    }
+
+    // Retrieve the zone information for the task's occurrence
+    const zone = await ZoneDao.getZoneById(plantTask.occurrence.zoneId);
+
+    // Define a new type that extends the existing type
+    type PlantTaskWithZone = typeof plantTask & { zoneName: string | null };
+
+    // Use the new type for the object
+    const plantTaskWithZone: PlantTaskWithZone = {
+      ...plantTask,
+      zoneName: zone?.name || null, // Attach the zone name or null if not found
+    };
+
+    return plantTaskWithZone;
   }
 
   async getPlantTasksByParkId(parkId: number): Promise<PlantTask[]> {
     const zones = await ZoneDao.getZonesByParkId(parkId);
     const zoneIds = zones.map(zone => zone.id);
+
+    if (zoneIds.length === 0) {
+      return []; // Return an empty array if no zones are found
+    }
 
     const plantTasks = await prisma.plantTask.findMany({
       include: {
@@ -63,7 +85,7 @@ class PlantTaskDao {
       where: {
         occurrence: {
           zoneId: {
-            in: zoneIds,
+            in: zoneIds, // Ensure zoneIds is an array
           },
         },
       },

@@ -50,7 +50,7 @@ const EventList: React.FC = () => {
       return (
         Object.values(event).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
         park?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        facility?.facilityName.toLowerCase().includes(searchQuery.toLowerCase())
+        facility?.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
   }, [searchQuery, events, parks]);
@@ -94,29 +94,27 @@ const EventList: React.FC = () => {
       onFilter: (value, record) => record.type === value,
     },
     {
-        title: 'Date & Time',
-        key: 'dateTime',
-        render: (_, record) => {
-          const startDateTime = record.startDate ? dayjs(record.startDate) : null;
-          const endDateTime = record.endDate ? dayjs(record.endDate) : null;
-          return (
+      title: 'Date & Time',
+      key: 'dateTime',
+      render: (_, record) => {
+        const startDateTime = record.startDate ? dayjs(record.startDate) : null;
+        const endDateTime = record.endDate ? dayjs(record.endDate) : null;
+        return (
+          <div>
             <div>
-              <div>
-                {startDateTime ? startDateTime.format('DD MMM YYYY') : 'N/A'} - {' '}
-                {endDateTime ? endDateTime.format('DD MMM YYYY') : 'N/A'}
-              </div>
-              <div>
-                {startDateTime ? startDateTime.format('hh:mm A') : 'N/A'} - {' '}
-                {endDateTime ? endDateTime.format('hh:mm A') : 'N/A'}
-              </div>
+              {startDateTime ? startDateTime.format('DD MMM YYYY') : 'N/A'} - {endDateTime ? endDateTime.format('DD MMM YYYY') : 'N/A'}
             </div>
-          );
-        },
-        sorter: (a, b) => {
-          const dateTimeA = dayjs(a.startDate);
-          const dateTimeB = dayjs(b.startDate);
-          return dateTimeA.isValid() && dateTimeB.isValid() ? dateTimeA.valueOf() - dateTimeB.valueOf() : 0;
-        },
+            <div>
+              {startDateTime ? startDateTime.format('hh:mm A') : 'N/A'} - {endDateTime ? endDateTime.format('hh:mm A') : 'N/A'}
+            </div>
+          </div>
+        );
+      },
+      sorter: (a, b) => {
+        const dateTimeA = dayjs(a.startDate);
+        const dateTimeB = dayjs(b.startDate);
+        return dateTimeA.isValid() && dateTimeB.isValid() ? dateTimeA.valueOf() - dateTimeB.valueOf() : 0;
+      },
     },
     {
       title: user?.role === StaffType.SUPERADMIN ? 'Park, Facility' : 'Facility',
@@ -130,30 +128,28 @@ const EventList: React.FC = () => {
             <div>
               <div className="font-semibold">{park ? park.name : 'Unknown Park'}</div>
               <div className="flex">
-                <p className="opacity-50 mr-2">Zone:</p>
-                {facility ? facility.facilityName : 'Unknown Facility'}
+                <p className="opacity-50 mr-2">Facility:</p>
+                {facility ? facility.name : 'Unknown Facility'}
               </div>
             </div>
           );
         } else {
-          return <div>{facility ? facility.facilityName : 'Unknown Facility'}</div>;
+          return <div>{facility ? facility.name : 'Unknown Facility'}</div>;
         }
       },
       filters: useMemo(() => {
         if (user?.role === StaffType.SUPERADMIN) {
           const parkFilters = [...new Set(facilities.map((f) => f.parkId))].map((parkId) => {
             const park = parks.find((p) => p.id === parkId);
-            return { 
-              text: park ? park.name : `Park ${parkId}`, 
+            return {
+              text: park ? park.name : `Park ${parkId}`,
               value: parkId,
-              children: facilities
-                .filter(f => f.parkId === parkId)
-                .map(f => ({ text: f.facilityName, value: f.id }))
+              children: facilities.filter((f) => f.parkId === parkId).map((f) => ({ text: f.name, value: f.id })),
             };
           });
           return parkFilters;
         } else {
-          return facilities.map(f => ({ text: f.facilityName, value: f.id }));
+          return facilities.map((f) => ({ text: f.name, value: f.id }));
         }
       }, [facilities, parks, user?.role]),
       onFilter: (value, record) => {
@@ -260,19 +256,26 @@ const EventList: React.FC = () => {
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Events..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        <Button
-          type="primary"
+        {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+          <Button
+            type="primary"
           onClick={() => {
             navigate('create');
           }}
-          disabled={user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER}
         >
           Create Event
-        </Button>
+          </Button>
+        ) : null}
       </Flex>
 
       <Card>
-        <Table dataSource={filteredEvents} columns={columns} rowKey="id" loading={eventsLoading || facilitiesLoading} scroll={{ x: SCREEN_LG }} />
+        <Table
+          dataSource={filteredEvents}
+          columns={columns}
+          rowKey="id"
+          loading={eventsLoading || facilitiesLoading}
+          scroll={{ x: SCREEN_LG }}
+        />
       </Card>
     </ContentWrapperDark>
   );

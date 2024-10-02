@@ -9,8 +9,8 @@ const upload = multer();
 
 router.post('/createPlantTask', authenticateJWTStaff, async (req, res) => {
   try {
-    const { staffId, ...plantTaskData } = req.body;
-    const plantTask = await PlantTaskService.createPlantTask(plantTaskData, staffId);
+    const { submittingStaffId, ...plantTaskData } = req.body;
+    const plantTask = await PlantTaskService.createPlantTask(plantTaskData, submittingStaffId);
     res.status(201).json(plantTask);
   } catch (error) {
     res.status(400).json({ error: error.message });

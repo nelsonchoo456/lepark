@@ -35,19 +35,6 @@ const FacilityCreate = () => {
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
 
-  useEffect(() => {
-    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-      if (!notificationShown.current) {
-        notification.error({
-          message: 'Access Denied',
-          description: 'You are not allowed to access the Facility Creation page!',
-        });
-        notificationShown.current = true;
-      }
-      navigate('/');
-    }
-  }, [user, navigate]);
-
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
       setCurrStep(0);
@@ -97,12 +84,14 @@ const FacilityCreate = () => {
         setCurrStep(2);
         setCreatedData(response.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      messageApi.open({
-        type: 'error',
-        content: 'Unable to create Facility. Please try again later.',
-      });
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('A facility with this name already exists in the park.')) {
+        messageApi.error('A facility with this name already exists in the park.');
+      } else {
+        messageApi.error(errorMessage || 'An error occurred while creating the facility.');
+      }
     }
   };
 
@@ -124,7 +113,16 @@ const FacilityCreate = () => {
     },
     {
       key: 'location',
-      children: <CreateMapStep handleCurrStep={handleCurrStep} adjustLatLng={adjustLatLng} lat={lat} lng={lng} parks={parks} formValues={formValues} />,
+      children: (
+        <CreateMapStep
+          handleCurrStep={handleCurrStep}
+          adjustLatLng={adjustLatLng}
+          lat={lat}
+          lng={lng}
+          parks={parks}
+          formValues={formValues}
+        />
+      ),
     },
     {
       key: 'complete',
@@ -144,10 +142,6 @@ const FacilityCreate = () => {
       isCurrent: true,
     },
   ];
-
-  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER) {
-    return <></>;
-  }
 
   return (
     <ContentWrapperDark>
@@ -197,7 +191,7 @@ const FacilityCreate = () => {
             <Result
               status="success"
               title="Created new Facility"
-              subTitle={createdData && <>Facility name: {createdData.facilityName}</>}
+              subTitle={createdData && <>Facility name: {createdData.name}</>}
               extra={[
                 <Button key="back" onClick={() => navigate('/facilities')}>
                   Back to Facility Management

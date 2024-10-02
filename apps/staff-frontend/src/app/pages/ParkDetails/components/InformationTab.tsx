@@ -5,6 +5,7 @@ import ParkStatusTag from './ParkStatusTag';
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import dayjs from 'dayjs';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 const { Text } = Typography;
 
 interface AboutTabProps {
@@ -37,7 +38,7 @@ const AboutTab = ({ park }: AboutTabProps) => {
     {
       key: 'parkStatus',
       label: 'Status',
-      children: <ParkStatusTag>{park?.parkStatus}</ParkStatusTag>,
+      children: <ParkStatusTag>{formatEnumLabelToRemoveUnderscores(park?.parkStatus)}</ParkStatusTag>,
     },
     {
       key: 'description',
@@ -75,15 +76,15 @@ const AboutTab = ({ park }: AboutTabProps) => {
   return (
     <div>
       <Divider orientation="left">Park Details</Divider>
-      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
+      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: '15vw' }} />
       <Divider orientation="left">Contact</Divider>
-      <Descriptions key="contact" items={contactsItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
+      <Descriptions key="contact" items={contactsItems} column={1} bordered labelStyle={{ width: '15vw' }} />
       <Divider orientation="left">Park Hours</Divider>
-      <Descriptions bordered column={1} labelStyle={{ width: "15vw" }} contentStyle={{ fontWeight: "500" }}>
+      <Descriptions bordered column={1} labelStyle={{ width: '15vw' }} contentStyle={{ fontWeight: '500' }}>
         {openingHours &&
           closingHours &&
           daysOfWeek.map((day, index) => (
-            <Descriptions.Item label={day} key={index} labelStyle={{ width: "15vw"}}>
+            <Descriptions.Item label={day} key={index} labelStyle={{ width: '15vw' }}>
               <Tag bordered={false}>{openingHours[index]}</Tag> - <Tag bordered={false}>{closingHours[index]}</Tag>
             </Descriptions.Item>
           ))}

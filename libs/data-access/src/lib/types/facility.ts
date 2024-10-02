@@ -1,9 +1,9 @@
-import { FacilityTypeEnum, FacilityStatusEnum } from '@prisma/client';
+import { FacilityTypeEnum, FacilityStatusEnum } from './sharedenums';
 import { EventResponse } from './event';
 
 export interface FacilityData {
-  facilityName: string;
-  facilityDescription: string;
+  name: string;
+  description: string;
   isBookable: boolean;
   isPublic: boolean;
   isSheltered: boolean;
@@ -36,7 +36,7 @@ export interface FacilityData {
 //   BBQ_PIT = "BBQ_PIT",
 //   CAMPING_AREA = "CAMPING_AREA",
 //   AED = "AED",
-//   FIRST_AID = "FIRST_AID", 
+//   FIRST_AID = "FIRST_AID",
 //   AMPHITHEATER = "AMPHITHEATER",
 //   GAZEBO = "GAZEBO",
 //   STOREROOM = "STOREROOM",
@@ -45,8 +45,8 @@ export interface FacilityData {
 
 export interface FacilityResponse {
   id: string;
-  facilityName: string;
-  facilityDescription: string;
+  name: string;
+  description: string;
   isBookable: boolean;
   isPublic: boolean;
   isSheltered: boolean;
@@ -71,8 +71,8 @@ export interface FacilityResponse {
 
 export interface FacilityWithEvents {
   id: string;
-  facilityName: string;
-  facilityDescription: string;
+  name: string;
+  description: string;
   isBookable: boolean;
   isPublic: boolean;
   isSheltered: boolean;

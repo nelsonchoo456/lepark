@@ -3,6 +3,7 @@ import { Card, Descriptions, Tag, Typography } from 'antd';
 import { FacilityResponse } from '@lepark/data-access';
 import moment from 'moment';
 import dayjs from 'dayjs';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Text } = Typography;
 
@@ -29,24 +30,21 @@ const FacilityInfoCard: React.FC<FacilityInfoCardProps> = ({ facility }) => {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   return (
-    <Card title="Facility Information" style={{ marginTop: '20px' }}>
-      <Descriptions column={1} style={{ marginBottom: '16px' }}>
+    <Card title="Facility Information" className="mt-5">
+      <Descriptions column={1} className="mb-4">
         <Descriptions.Item label="Name">
-          {facility.facilityName}
-          <Tag 
-            color={facility.facilityStatus === 'OPEN' ? 'green' : 'red'} 
-            style={{ marginLeft: '8px' }}
-          >
-            {facility.facilityStatus}
+          {facility.name}
+          <Tag color={facility.facilityStatus === 'OPEN' ? 'green' : 'red'} className="ml-2">
+            {formatEnumLabelToRemoveUnderscores(facility.facilityStatus)}
           </Tag>
         </Descriptions.Item>
-        <Descriptions.Item label="Description">{facility.facilityDescription}</Descriptions.Item>
+        <Descriptions.Item label="Description">{facility.description}</Descriptions.Item>
       </Descriptions>
-      <Descriptions column={2} style={{ marginBottom: '16px' }}>
+      <Descriptions column={2} className="mb-4">
         <Descriptions.Item label="Capacity">{facility.capacity}</Descriptions.Item>
         <Descriptions.Item label="Size">{facility.size} sqm</Descriptions.Item>
       </Descriptions>
-      <Descriptions title={<span style={{ fontWeight: 'normal' }}>Operating Hours</span>} column={1} style={{ marginTop: '20px' }}>
+      <Descriptions title={<span className="font-normal">Operating Hours</span>} column={1} className="mt-5">
         {daysOfWeek.map((day, index) => (
           <Descriptions.Item label={day} key={index}>
             {openingHours[index] && closingHours[index] ? (

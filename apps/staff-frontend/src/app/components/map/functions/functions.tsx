@@ -101,6 +101,50 @@ export const polygonHasOverlap = (newPolygon: any[], existingPolygons?: number[]
 
 export const polygonIsWithin = (newPolygon: any[], existingPolygon: number[][]): boolean => {
   try {
+    const checkingPolygon = newPolygon.map((item) => [item.lng, item.lat]);
+
+    if (
+      checkingPolygon.length > 0 &&
+      (checkingPolygon[0][0] !== checkingPolygon[checkingPolygon.length - 1][0] ||
+        checkingPolygon[0][1] !== checkingPolygon[checkingPolygon.length - 1][1])
+    ) {
+      checkingPolygon.push(checkingPolygon[0]); 
+    }
+
+    const newPolygonGeoJSON = turf.polygon([checkingPolygon]);
+    const existingPolygonGeoJSON = turf.polygon([existingPolygon]);
+
+    return turf.booleanWithin(newPolygonGeoJSON, existingPolygonGeoJSON);
+  } catch (error) {
+    throw new Error("Unable to check if the boundaries are valid.");
+  }
+};
+
+export const polygonIsWithinPark = (existingPolygon: number[][], newParkPolygon: any[]): boolean => {
+  try {
+    const checkingPolygon = newParkPolygon.map((item) => [item.lng, item.lat]);
+
+    if (
+      checkingPolygon.length > 0 &&
+      (checkingPolygon[0][0] !== checkingPolygon[checkingPolygon.length - 1][0] ||
+        checkingPolygon[0][1] !== checkingPolygon[checkingPolygon.length - 1][1])
+    ) {
+      checkingPolygon.push(checkingPolygon[0]); 
+    }
+
+    const newPolygonGeoJSON = turf.polygon([checkingPolygon]);
+    const existingPolygonGeoJSON = turf.polygon([existingPolygon]);
+
+    return turf.booleanWithin(existingPolygonGeoJSON, newPolygonGeoJSON);
+  } catch (error) {
+    console.error(error)
+    throw new Error("Unable to check if the boundaries are valid.");
+  }
+};
+
+export const pointsAreWithinPolygon = (newPolygon: any[], points?: {lat: number, lng: number}[]): boolean => {
+  if (!points) return true;
+  try {
     // Convert newPolygon to the format expected by Turf.js (number[][])
     const checkingPolygon = newPolygon.map((item) => [item.lng, item.lat]);
 
@@ -113,13 +157,29 @@ export const polygonIsWithin = (newPolygon: any[], existingPolygon: number[][]):
       checkingPolygon.push(checkingPolygon[0]); // Close the polygon
     }
 
-    // Convert to GeoJSON Polygon
-    const newPolygonGeoJSON = turf.polygon([checkingPolygon]);
-    const existingPolygonGeoJSON = turf.polygon([existingPolygon]);
+    const checkingPolygonGeoJSON = turf.polygon([checkingPolygon]);
 
-    // Check if newPolygon is fully within existingPolygon
-    return turf.booleanWithin(newPolygonGeoJSON, existingPolygonGeoJSON);
+    // Check if each point is within the polygon
+    const allPointsWithin = points.every(({ lat, lng }) => {
+      return turf.booleanPointInPolygon(turf.point([lng, lat]), checkingPolygonGeoJSON);
+    });
+
+    return allPointsWithin;
+
   } catch (error) {
-    throw new Error("Unable to check if the boundaries is valid.");
+    console.error(error)
+    throw new Error("Unable to check if the boundaries are valid.");
+  }
+};
+
+export const pointInsidePolygonGeom = (point: { lat: number, lng: number }, geom: number[][]): boolean => {
+  if (!point.lat || !point.lng) return false;
+
+  try {
+    const checkingPolygonGeoJSON = turf.polygon([geom]);
+    return turf.booleanPointInPolygon(turf.point([point.lng, point.lat]), checkingPolygonGeoJSON);
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };

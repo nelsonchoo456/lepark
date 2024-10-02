@@ -1,5 +1,5 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { getFacilityById, FacilityResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { getFacilityById, FacilityResponse, StaffResponse, StaffType, FacilityStatusEnum, FacilityTypeEnum } from '@lepark/data-access';
 import { Button, Card, Descriptions, Tabs, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
@@ -11,6 +11,7 @@ import FacilityCarousel from './components/FacilityCarousel';
 import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
@@ -25,7 +26,7 @@ const ViewFacilityDetails = () => {
       isMain: true,
     },
     {
-      title: facility?.facilityName ? facility.facilityName : 'Details',
+      title: facility?.name ? facility.name : 'Details',
       pathKey: `/facilities/${facility?.id}`,
       isCurrent: true,
     },
@@ -35,19 +36,22 @@ const ViewFacilityDetails = () => {
     {
       key: 'facilityType',
       label: 'Facility Type',
-      children: facility?.facilityType,
+      children: (() => {
+        const formattedType = formatEnumLabelToRemoveUnderscores(facility?.facilityType ?? '');
+        return formattedType;
+      })(),
     },
     {
       key: 'facilityStatus',
       label: 'Facility Status',
       children: (() => {
         switch (facility?.facilityStatus) {
-          case 'OPEN':
-            return <Tag color="green">ACTIVE</Tag>;
-          case 'MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
-          case 'CLOSED':
-            return <Tag color="red">CLOSED</Tag>;
+          case FacilityStatusEnum.OPEN:
+            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+          case FacilityStatusEnum.UNDER_MAINTENANCE:
+            return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+          case FacilityStatusEnum.CLOSED:
+            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
           default:
             return <Tag>{facility?.facilityStatus}</Tag>;
         }
@@ -64,8 +68,8 @@ const ViewFacilityDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: facility ? <LocationTab facility={facility} park={park}/> : <p>Loading facility data...</p>,
-    }
+      children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
+    },
   ];
 
   return (
@@ -79,7 +83,7 @@ const ViewFacilityDetails = () => {
 
           <div className="flex-1 flex-col flex">
             <div className="w-full flex justify-between items-center">
-              <LogoText className="text-2xl py-2 m-0">{facility?.facilityName}</LogoText>
+              <LogoText className="text-2xl py-2 m-0">{facility?.name}</LogoText>
               {user?.role !== StaffType.ARBORIST && user?.role !== StaffType.BOTANIST ? (
                 <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`edit`)} />
               ) : null}

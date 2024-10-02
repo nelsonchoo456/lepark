@@ -11,14 +11,11 @@ import { MdDeleteOutline } from 'react-icons/md';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Typography } from 'antd';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
-  return taskType
-    .toLowerCase()
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
 const PlantTaskList: React.FC = () => {
@@ -159,10 +156,10 @@ const PlantTaskList: React.FC = () => {
       key: 'taskStatus',
       render: (text) => {
         switch (text) {
-          case 'PENDING':
+          case 'OPEN':
             return (
               <Tag color="orange" bordered={false}>
-                PENDING
+                OPEN
               </Tag>
             );
           case 'IN_PROGRESS':
@@ -188,7 +185,7 @@ const PlantTaskList: React.FC = () => {
         }
       },
       filters: [
-        { text: 'PENDING', value: 'PENDING' },
+        { text: 'OPEN', value: 'OPEN' },
         { text: 'IN_PROGRESS', value: 'IN_PROGRESS' },
         { text: 'COMPLETED', value: 'COMPLETED' },
         { text: 'CANCELLED', value: 'CANCELLED' },

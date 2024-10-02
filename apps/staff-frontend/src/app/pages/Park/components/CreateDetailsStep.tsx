@@ -18,6 +18,9 @@ import {
   message
 } from 'antd';
 import useUploadImages from '../../../hooks/Images/useUploadImages';
+import { ParkStatusEnum } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -33,26 +36,6 @@ interface CreateDetailsStepProps {
 
 const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChange, removeImage, onInputClick }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
-  
-
-  const parkStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'UNDER_CONSTRUCTION',
-      label: 'Under Construction',
-    },
-    {
-      value: 'LIMITED_ACCESS',
-      label: 'Limited Access',
-    },
-    {
-      value: 'CLOSED',
-      label: 'Close',
-    },
-  ];
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -85,14 +68,14 @@ const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChan
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       {contextHolder}
       <Divider orientation="left">Park Details</Divider>
-      <Form.Item name="name" label="Name" rules={[{ required: true }, { min: 3, message: 'Valid name must be at least 3 characters long' }]}>
+      <Form.Item name="name" label="Name" rules={[{ required: true }, { min: 3, max: 40, message: 'Name must have between 3 and 40 characters' }]}>
         <Input placeholder="Park Name" />
       </Form.Item>
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
         <TextArea placeholder="Park Description" />
       </Form.Item>
       <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
-        <Select placeholder="Select a Status" options={parkStatusOptions} />
+        <Select placeholder="Select a Status" options={Object.values(ParkStatusEnum).map((status) => ({ key: status, value: status, label: formatEnumLabelToRemoveUnderscores(status) }))} />
       </Form.Item>
 
       <Form.Item label={'Image'}>
@@ -211,7 +194,7 @@ const CreateDetailsStep = ({ handleCurrStep, form, previewImages, handleFileChan
         </Flex>
       </Form.Item>
 
-      <Form.Item wrapperCol={{ offset: 8 }}>
+      <Form.Item label={" "} colon={false}>
         <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
           Next
         </Button>

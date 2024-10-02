@@ -15,6 +15,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -38,30 +39,29 @@ const AttractionEdit = () => {
 
     const fetchData = async () => {
       if (!attraction) return;
-     
-          const initialValues = {
-            ...attraction,
-            sunday: [dayjs(attraction.openingHours[0]), dayjs(attraction.closingHours[0])],
-            monday: [dayjs(attraction.openingHours[1]), dayjs(attraction.closingHours[1])],
-            tuesday: [dayjs(attraction.openingHours[2]), dayjs(attraction.closingHours[2])],
-            wednesday: [dayjs(attraction.openingHours[3]), dayjs(attraction.closingHours[3])],
-            thursday: [dayjs(attraction.openingHours[4]), dayjs(attraction.closingHours[4])],
-            friday: [dayjs(attraction.openingHours[5]), dayjs(attraction.closingHours[5])],
-            saturday: [dayjs(attraction.openingHours[6]), dayjs(attraction.closingHours[6])],
-          };
-          if (attraction.images) {
-            setCurrentImages(attraction.images);
-          }
+
+      const initialValues = {
+        ...attraction,
+        sunday: [dayjs(attraction.openingHours[0]), dayjs(attraction.closingHours[0])],
+        monday: [dayjs(attraction.openingHours[1]), dayjs(attraction.closingHours[1])],
+        tuesday: [dayjs(attraction.openingHours[2]), dayjs(attraction.closingHours[2])],
+        wednesday: [dayjs(attraction.openingHours[3]), dayjs(attraction.closingHours[3])],
+        thursday: [dayjs(attraction.openingHours[4]), dayjs(attraction.closingHours[4])],
+        friday: [dayjs(attraction.openingHours[5]), dayjs(attraction.closingHours[5])],
+        saturday: [dayjs(attraction.openingHours[6]), dayjs(attraction.closingHours[6])],
+      };
+      if (attraction.images) {
+        setCurrentImages(attraction.images);
+      }
       form.setFieldsValue(initialValues);
     };
     fetchData();
-  }, [id,attraction]);
+  }, [id, attraction]);
 
-  const attractionStatusOptions = [
-    { value: AttractionStatusEnum.OPEN, label: 'Open' },
-    { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
-    { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
-  ];
+  const attractionStatusOptions = Object.values(AttractionStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const handleSubmit = async () => {
     if (!attraction) return;
@@ -170,7 +170,13 @@ const AttractionEdit = () => {
           {contextHolder}
           <Divider orientation="left">Attraction Details</Divider>
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
-            <Input placeholder="Attraction Title" />
+            <Input
+              placeholder="Attraction Title"
+              onBlur={(e) => {
+                const trimmedValue = e.target.value.trim();
+                form.setFieldsValue({ title: trimmedValue });
+              }}
+            />
           </Form.Item>
           <Form.Item name="description" label="Description" rules={[{ required: true }]}>
             <TextArea placeholder="Attraction Description" />

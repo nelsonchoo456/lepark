@@ -56,6 +56,19 @@ export async function getOccurrencesByParkId(parkId: number): Promise<AxiosRespo
   }
 }
 
+export async function getOccurrencesByZoneId(zoneId: number): Promise<AxiosResponse<OccurrenceResponse[]>> {
+  try {
+    const response: AxiosResponse<OccurrenceResponse[]> = await client.get(`${URL}/getAllOccurrences?zoneId=${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getOccurrenceById(id: string): Promise<AxiosResponse<OccurrenceResponse>> {
   try {
     const response: AxiosResponse<OccurrenceResponse> = await client.get(`${URL}/viewOccurrenceDetails/${id}`);

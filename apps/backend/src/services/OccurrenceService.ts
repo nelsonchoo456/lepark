@@ -54,8 +54,16 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrences();
   }
 
+  public async getAllOccurrenceByZoneId(zoneId: number): Promise<Occurrence[]> {
+    return OccurrenceDao.getAllOccurrencesByZoneId(zoneId);
+  }
+
   public async getAllOccurrenceByParkId(parkId: number): Promise<Occurrence[]> {
     return OccurrenceDao.getAllOccurrencesByParkId(parkId);
+  }
+
+  public async getSpeciesCountByParkId(parkId: number): Promise<number> {
+    return OccurrenceDao.getSpeciesCountByParkId(parkId);
   }
 
   public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: number }> {

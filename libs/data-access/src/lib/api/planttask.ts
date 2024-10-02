@@ -6,7 +6,6 @@ const URL = '/planttasks';
 
 export async function createPlantTask(data: PlantTaskData, staffId: string, files?: File[]): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
-
     const formData = new FormData();
 
     files?.forEach((file) => {
@@ -17,7 +16,7 @@ export async function createPlantTask(data: PlantTaskData, staffId: string, file
     data.images = uploadedUrls.data.uploadedUrls;
 
     console.log(data.images);
-    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/createPlantTask`, { ...data, staffId });
+    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/createPlantTask`, { ...data, submittingStaffId: staffId });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {

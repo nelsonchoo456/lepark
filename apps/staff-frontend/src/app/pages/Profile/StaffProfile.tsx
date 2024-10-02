@@ -6,7 +6,6 @@ import { UserOutlined, LogoutOutlined, LockOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '../../components/main/PageHeader';
 import {
   forgotStaffPassword,
   getAllParks,

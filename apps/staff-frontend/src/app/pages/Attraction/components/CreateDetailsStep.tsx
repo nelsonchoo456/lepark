@@ -1,6 +1,8 @@
-import { ImageInput } from '@lepark/common-ui';
-import { ZoneResponse, AttractionStatusEnum, ParkResponse } from '@lepark/data-access';
+import { ImageInput, useAuth } from '@lepark/common-ui';
+import { ZoneResponse, AttractionStatusEnum, ParkResponse, checkAttractionNameExists, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Divider, Flex, Form, FormInstance, Input, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
+import { useState, useEffect } from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 const { TextArea } = Input;
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -25,12 +27,39 @@ const CreateDetailsStep = ({
   onInputClick,
 }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
+  const [isChecking, setIsChecking] = useState(false);
+  const { user } = useAuth<StaffResponse>();
 
-  const attractionStatusOptions = [
-    { value: AttractionStatusEnum.OPEN, label: 'Open' },
-    { value: AttractionStatusEnum.CLOSED, label: 'Closed' },
-    { value: AttractionStatusEnum.UNDER_MAINTENANCE, label: 'Under Maintenance' },
-  ];
+  // Add this effect to set the parkId for non-superadmin users
+  useEffect(() => {
+    if (user?.role !== StaffType.SUPERADMIN && user?.parkId) {
+      form.setFieldsValue({ parkId: user.parkId });
+    }
+  }, [user, form]);
+
+  const attractionStatusOptions = Object.values(AttractionStatusEnum).map((status) => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
+
+  const handleNext = async () => {
+    try {
+      await form.validateFields();
+      const values = form.getFieldsValue();
+      setIsChecking(true);
+      const response = await checkAttractionNameExists(values.parkId, values.title);
+      setIsChecking(false);
+      if (response.data.exists === true) {
+        console.error('Duplicate found:', response.data);
+        messageApi.error(`An attraction with this title already exists in ${parks.find((park) => park.id === values.parkId)?.name}.`);
+      } else {
+        handleCurrStep(1);
+      }
+    } catch (error) {
+      console.error('Validation or check failed:', error);
+      setIsChecking(false);
+    }
+  };
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -62,19 +91,29 @@ const CreateDetailsStep = ({
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Attraction Details</Divider>
-      <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
-        <Select
-          placeholder="Select a Park for this Attraction"
-          options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
-        />
+      <Form.Item 
+        name="parkId" 
+        label="Park" 
+        rules={[{ required: user?.role === StaffType.SUPERADMIN }]}
+      >
+        {user?.role === StaffType.SUPERADMIN ? (
+          <Select
+            placeholder="Select a Park for this Attraction"
+            options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))}
+          />
+        ) : (
+          <span>{parks?.find((park) => park.id === user?.parkId)?.name || 'Loading...'}</span>
+        )}
       </Form.Item>
 
       <Form.Item name="title" label="Title" rules={[{ required: true }, { min: 3, message: 'Title must be at least 3 characters long' }]}>
-        <Input placeholder="Attraction Title"
-         onBlur={(e) => {
-          const trimmedValue = e.target.value.trim();
-          form.setFieldsValue({ title: trimmedValue });
-        }} />
+        <Input
+          placeholder="Attraction Title"
+          onBlur={(e) => {
+            const trimmedValue = e.target.value.trim();
+            form.setFieldsValue({ title: trimmedValue });
+          }}
+        />
       </Form.Item>
 
       <Form.Item name="description" label="Description" rules={[{ required: true }]}>
@@ -121,8 +160,9 @@ const CreateDetailsStep = ({
         </Form.Item>
       ))}
 
-      <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+      <Form.Item label={" "} colon={false}>
+        {contextHolder}
+        <Button type="primary" className="w-full" onClick={handleNext} loading={isChecking}>
           Next
         </Button>
       </Form.Item>

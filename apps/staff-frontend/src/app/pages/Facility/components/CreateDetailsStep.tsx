@@ -1,28 +1,10 @@
-import { ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import {
-  Button,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-  TimePicker,
-  Upload,
-  Flex,
-  Popconfirm,
-  FormInstance,
-  Divider,
-  Typography,
-} from 'antd';
-import { RcFile } from 'antd/es/upload';
-import { FiUpload } from 'react-icons/fi';
+import { ParkResponse, StaffResponse, StaffType, checkExistingFacility } from '@lepark/data-access';
+import { Button, Form, Input, InputNumber, Select, TimePicker, Flex, Popconfirm, FormInstance, Divider, Typography } from 'antd';
 import { ImageInput } from '@lepark/common-ui';
 import { message } from 'antd';
-import dayjs from 'dayjs';
-import moment from 'moment';
 import { useEffect, useState } from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { FacilityTypeEnum, FacilityStatusEnum } from '@lepark/data-access';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -49,6 +31,8 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
   user,
 }) => {
   const [park, setPark] = useState<ParkResponse>();
+  const [isPublic, setIsPublic] = useState(true);
+  const [isBookable, setIsBookable] = useState(true);
 
   useEffect(() => {
     if (user?.role !== StaffType.SUPERADMIN && user?.parkId) {
@@ -56,89 +40,28 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
     }
+
+    const isPublicValue = form.getFieldValue('isPublic');
+    if (isPublicValue !== undefined && !isPublicValue) {
+      setIsPublic(isPublicValue);
+      setIsBookable(isPublicValue);
+    }
+
+    const isBookableValue = form.getFieldValue('isBookable');
+    if (isBookableValue !== undefined && !isBookableValue) {
+      setIsBookable(isPublicValue);
+    }
   }, [user, parks]);
 
-  const facilityTypeOptions = [
-    {
-      value: 'TOILET',
-      label: 'Toilet',
-    },
-    {
-      value: 'PLAYGROUND',
-      label: 'Playground',
-    },
-    {
-      value: 'INFORMATION',
-      label: 'Information',
-    },
-    {
-      value: 'CARPARK',
-      label: 'Carpark',
-    },
-    {
-      value: 'ACCESSIBILITY',
-      label: 'Accessibility',
-    },
-    {
-      value: 'STAGE',
-      label: 'Stage',
-    },
-    {
-      value: 'WATER_FOUNTAIN',
-      label: 'Water Fountain',
-    },
-    {
-      value: 'PICNIC_AREA',
-      label: 'Picnic Area',
-    },
-    {
-      value: 'BBQ_PIT',
-      label: 'BBQ Pit',
-    },
-    {
-      value: 'CAMPING_AREA',
-      label: 'Camping Area',
-    },
-    {
-      value: 'AED',
-      label: 'AED',
-    },
-    {
-      value: 'FIRST_AID',
-      label: 'First Aid',
-    },
-    {
-      value: 'AMPHITHEATER',
-      label: 'Amphitheater',
-    },
-    {
-      value: 'GAZEBO',
-      label: 'Gazebo',
-    },
-    {
-      value: 'STOREROOM',
-      label: 'Storeroom',
-    },
-    {
-      value: 'OTHERS',
-      label: 'Others',
-    },
-  ];
+  const facilityTypeOptions = Object.values(FacilityTypeEnum).map((type) => ({
+    value: type,
+    label: formatEnumLabelToRemoveUnderscores(type),
+  }));
 
-  const facilityStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'CLOSED',
-      label: 'Closed',
-    },
-    {
-      value: 'MAINTENANCE',
-      label: 'Maintenance',
-    },
-  ];
+  const facilityStatusOptions = Object.values(FacilityStatusEnum).map((status) => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -161,57 +84,101 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
     }
   };
 
+  const handleIsPublicChange = (value: boolean) => {
+    setIsPublic(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        isBookable: false,
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+      setIsBookable(false);
+    } else {
+      form.setFieldsValue({
+        isBookable: null,
+        reservationPolicy: '',
+        fee: null,
+      });
+      setIsBookable(true);
+    }
+  };
+
+  const handleIsBookableChange = (value: boolean) => {
+    setIsBookable(value);
+
+    if (!value) {
+      // If isPublic is set to false, set isBookable to false as well
+      form.setFieldsValue({
+        reservationPolicy: 'NIL',
+        fee: 0,
+      });
+    } else {
+      form.setFieldsValue({
+        reservationPolicy: '',
+        fee: null,
+      });
+    }
+  };
+
+  const handleClick = async () => {
+    try {
+      await form.validateFields();
+
+      const facilityName = form.getFieldValue('name'); // Assuming 'name' is the field name for facility name
+      const parkId = form.getFieldValue('parkId'); // Assuming 'parkId' is the field name for park ID
+
+      // Check if the facility already exists
+      const response = await checkExistingFacility(facilityName, parkId);
+      if (response.data.exists) {
+        message.error('A facility with this name already exists in the park.');
+        return; // Prevent moving to the next step
+      }
+      await handleCurrStep(1);
+    } catch (error) {
+      console.error('Error checking existing facility:', error);
+    }
+  };
+
   return (
     <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
       <Divider orientation="left">Select the Park</Divider>
       {user?.role !== StaffType.SUPERADMIN && park ? (
-        <Form.Item name="parkId"label="Park">{park?.name}</Form.Item>
+        <Form.Item name="parkId" label="Park">
+          {park?.name}
+        </Form.Item>
       ) : (
-        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+        <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
         </Form.Item>
       )}
 
       <Divider orientation="left">Facility Details</Divider>
 
-      <Form.Item name="facilityName" label="Facility Name" rules={[{ required: true, message: 'Please input the facility name!' }]}>
+      <Form.Item name="name" label="Facility Name" rules={[{ required: true, message: 'Please input the facility name!' }]}>
         <Input placeholder="Enter Facility Name" />
       </Form.Item>
       <Form.Item name="facilityType" label="Facility Type" rules={[{ required: true, message: 'Please select the facility type!' }]}>
         <Select options={facilityTypeOptions} placeholder="Select a Facility Type" />
       </Form.Item>
       <Form.Item
-        name="facilityDescription"
+        name="description"
         label="Facility Description"
         rules={[{ required: true, message: 'Please input the facility description!' }]}
       >
         <Input.TextArea rows={3} placeholder="Enter description" />
       </Form.Item>
 
-      <Form.Item name="isBookable" label="Is Bookable" rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}>
-        <Select
-          options={[
-            { label: 'Yes', value: true },
-            { label: 'No', value: false },
-          ]}
-          placeholder="Select if the facility is bookable"
-        />
-      </Form.Item>
-
-      <Form.Item name="isPublic" label="Is Public" rules={[{ required: true, message: 'Please select if the facility is public!' }]}>
-        <Select
-          options={[
-            { label: 'Yes', value: true },
-            { label: 'No', value: false },
-          ]}
-          placeholder="Select if the facility is open to public"
-        />
+      <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
+        <Select options={facilityStatusOptions} placeholder="Enter facility status" />
       </Form.Item>
 
       <Form.Item
         name="isSheltered"
         label="Is Sheltered"
         rules={[{ required: true, message: 'Please select if the facility is sheltered!' }]}
+        tooltip="Please indicate if the facility is sheltered"
       >
         <Select
           options={[
@@ -223,12 +190,47 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item
+        name="isPublic"
+        label="Is Public"
+        rules={[{ required: true, message: 'Please select if the facility is public!' }]}
+        tooltip="Please indicate if the facility is open to public"
+      >
+        <Select
+          options={[
+            { label: 'Yes', value: true },
+            { label: 'No', value: false },
+          ]}
+          placeholder="Select if the facility is open to public"
+          onChange={handleIsPublicChange}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="isBookable"
+        label="Is Bookable"
+        rules={[{ required: true, message: 'Please select if the facility is bookable!' }]}
+        tooltip="Please indicate if the facility is open to booking"
+        hidden={!isPublic}
+      >
+        <Select
+          options={[
+            { label: 'Yes', value: true },
+            { label: 'No', value: false },
+          ]}
+          placeholder="Select if the facility is bookable"
+          onChange={handleIsBookableChange}
+        />
+      </Form.Item>
+
+      <Form.Item
         name="reservationPolicy"
         label="Reservation Policy"
         rules={[{ required: true, message: 'Please input the reservation policy!' }]}
+        hidden={!isPublic || !isBookable}
       >
         <Input.TextArea rows={3} placeholder="Enter reservation policy" />
       </Form.Item>
+
       <Form.Item
         name="rulesAndRegulations"
         label="Rules and Regulations"
@@ -237,27 +239,21 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         <Input.TextArea rows={3} placeholder="Enter rules and regulations" />
       </Form.Item>
 
-      <Form.Item name="size" label="Size" rules={[{ required: true, message: 'Please input the size!' }]}>
+      <Form.Item name="size" label="Size (m²)" rules={[{ required: true, message: 'Please input the size!' }]}>
         <InputNumber min={1} />
       </Form.Item>
 
-      <Form.Item name="capacity" label="Capacity" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber min={1} />
+      <Form.Item name="capacity" label="Capacity (pax)" rules={[{ required: true, message: 'Please input the capacity!' }]}>
+        <InputNumber min={0} precision={0} step={1} />
       </Form.Item>
 
-      <Form.Item 
-        name="fee" 
-        label="Fee" 
-        rules={[
-          { required: true, message: 'Please input the fee!' },
-          { type: 'number', min: 0, message: 'Fee cannot be negative!' }
-        ]}
+      <Form.Item
+        name="fee"
+        label="Fee ($)"
+        rules={[{ required: true, message: 'Please input the fee!' }]}
+        hidden={!isPublic || !isBookable}
       >
-        <InputNumber min={0} step={0.01} />
-      </Form.Item>
-
-      <Form.Item name="facilityStatus" label="Facility Status" rules={[{ required: true, message: 'Please select the facility status!' }]}>
-        <Select options={facilityStatusOptions} placeholder="Enter facility status" />
+        <InputNumber min={0} precision={2} step={0.01} />
       </Form.Item>
 
       <Divider orientation="left">
@@ -359,8 +355,8 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
           </div>
         </Form.Item>
       )}
-      <Form.Item wrapperCol={{ offset: 8 }}>
-        <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
+      <Form.Item label={' '} colon={false}>
+        <Button type="primary" className="w-full" onClick={handleClick}>
           Next
         </Button>
       </Form.Item>
