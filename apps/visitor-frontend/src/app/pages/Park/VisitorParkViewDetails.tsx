@@ -206,7 +206,7 @@ const VisitorViewParkDetails = () => {
       label: (
         <div className="flex items-center">
           <BsInfoCircleFill className="text-xl mr-2" />
-          More Information
+          Information
         </div>
       ),
       children: park && (
@@ -273,7 +273,7 @@ const VisitorViewParkDetails = () => {
           Sustainability
         </div>
       ),
-      children: <Empty description={'Sustanability Information Coming Soon'}></Empty>,
+      children:<Empty description={'Sustanability Information Coming Soon'}></Empty>,
     },
   ];
 
