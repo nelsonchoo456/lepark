@@ -181,7 +181,7 @@ const CreateDetailsStep = ({
         </Form.Item>
       )}
 
-      <Form.Item wrapperCol={{ offset: 8 }}>
+      <Form.Item label={" "} colon={false}>
         <Button type="primary" className="w-full" onClick={() => handleCurrStep(1)}>
           Next
         </Button>

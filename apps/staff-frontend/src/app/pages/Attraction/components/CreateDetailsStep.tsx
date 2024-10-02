@@ -160,7 +160,7 @@ const CreateDetailsStep = ({
         </Form.Item>
       ))}
 
-      <Form.Item wrapperCol={{ offset: 8 }}>
+      <Form.Item label={" "} colon={false}>
         {contextHolder}
         <Button type="primary" className="w-full" onClick={handleNext} loading={isChecking}>
           Next

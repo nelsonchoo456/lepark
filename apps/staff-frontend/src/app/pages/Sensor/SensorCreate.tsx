@@ -222,7 +222,7 @@ const SensorCreate = () => {
               <Input placeholder="Enter Supplier Contact Number" />
             </Form.Item>
 
-            <Form.Item wrapperCol={{ offset: 8 }}>
+            <Form.Item label={" "} colon={false}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
                 Submit
               </Button>

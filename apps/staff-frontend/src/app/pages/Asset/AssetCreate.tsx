@@ -340,7 +340,7 @@ const AssetCreate = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Form.Item label={" "} colon={false}>
               <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">
                 Submit
               </Button>
