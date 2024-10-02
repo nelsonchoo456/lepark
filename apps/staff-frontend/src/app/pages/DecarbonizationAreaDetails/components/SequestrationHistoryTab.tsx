@@ -127,19 +127,19 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
         <>
           <Row gutter={16} style={{ marginTop: '10px' }}>
             <Col span={6}>
-              <Statistic title="Total Sequestration" value={metrics.total} />
+              <Statistic title="Total Sequestration (kg)" value={metrics.total} />
             </Col>
             <Col span={6}>
-              <Statistic title="Average Sequestration" value={metrics.average} />
+              <Statistic title="Average Sequestration (kg)" value={metrics.average} />
             </Col>
             <Col span={6}>
-              <Statistic title="Max Sequestration" value={metrics.max} />
+              <Statistic title="Max Sequestration (kg)" value={metrics.max} />
             </Col>
             <Col span={6}>
-              <Statistic title="Min Sequestration" value={metrics.min} />
+              <Statistic title="Min Sequestration (kg)" value={metrics.min} />
             </Col>
             <Col span={6}>
-              <Statistic title="Trend (per day)" value={metrics.trend} />
+              <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
             </Col>
           </Row>
           <Line data={chartData} />
