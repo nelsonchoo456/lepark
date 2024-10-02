@@ -1,27 +1,5 @@
 import { OccurrenceResponse } from "./occurrence";
-
-export enum ConservationStatusEnum {
-  LEAST_CONCERN = 'LEAST_CONCERN',
-  NEAR_THREATENED = 'NEAR_THREATENED',
-  VULNERABLE = 'VULNERABLE',
-  ENDANGERED = 'ENDANGERED',
-  CRITICALLY_ENDANGERED = 'CRITICALLY_ENDANGERED',
-  EXTINCT_IN_THE_WILD = 'EXTINCT_IN_THE_WILD',
-  EXTINCT = 'EXTINCT',
-}
-
-export enum LightTypeEnum {
-  FULL_SUN = 'FULL_SUN',
-  PARTIAL_SHADE = 'PARTIAL_SHADE',
-  FULL_SHADE = 'FULL_SHADE',
-}
-
-export enum SoilTypeEnum {
-  SANDY = 'SANDY',
-  CLAYEY = 'CLAYEY',
-  LOAMY = 'LOAMY',
-}
-
+import { ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from "./sharedenums";
 // Define the Species interface
 export interface SpeciesResponse {
   id: string;

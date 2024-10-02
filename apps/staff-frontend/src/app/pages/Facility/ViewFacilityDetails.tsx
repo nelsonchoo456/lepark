@@ -1,5 +1,5 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { getFacilityById, FacilityResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { getFacilityById, FacilityResponse, StaffResponse, StaffType, FacilityStatusEnum, FacilityTypeEnum } from '@lepark/data-access';
 import { Button, Card, Descriptions, Tabs, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
@@ -11,6 +11,7 @@ import FacilityCarousel from './components/FacilityCarousel';
 import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
@@ -35,19 +36,22 @@ const ViewFacilityDetails = () => {
     {
       key: 'facilityType',
       label: 'Facility Type',
-      children: facility?.facilityType,
+      children: (() => {
+        const formattedType = formatEnumLabelToRemoveUnderscores(facility?.facilityType ?? '');
+        return formattedType;
+      })(),
     },
     {
       key: 'facilityStatus',
       label: 'Facility Status',
       children: (() => {
         switch (facility?.facilityStatus) {
-          case 'OPEN':
-            return <Tag color="green">ACTIVE</Tag>;
-          case 'MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
-          case 'CLOSED':
-            return <Tag color="red">CLOSED</Tag>;
+          case FacilityStatusEnum.OPEN:
+            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+          case FacilityStatusEnum.UNDER_MAINTENANCE:
+            return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+          case FacilityStatusEnum.CLOSED:
+            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
           default:
             return <Tag>{facility?.facilityStatus}</Tag>;
         }

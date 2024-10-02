@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Descriptions, Image, Typography, Space, Tag, message, Button, Input, Select, Empty } from 'antd';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import PageHeader from '../../../components/main/PageHeader';
 import moment from 'moment';
 import { getStatusLogById, updateStatusLog, getOccurrenceById } from '@lepark/data-access';
 import { StatusLogResponse, StatusLogUpdateData, OccurrenceResponse } from '@lepark/data-access';
@@ -11,6 +10,7 @@ import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../../components/main/PageHeader2';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -163,7 +163,7 @@ const StatusLogDetails: React.FC = () => {
     {
       key: 'statusLogType',
       label: 'Status Type',
-      children: <Tag>{statusLog?.statusLogType}</Tag>,
+      children: <Tag>{statusLog?.statusLogType ? formatEnumLabelToRemoveUnderscores(statusLog.statusLogType) : ''}</Tag>,
     },
   ];
 

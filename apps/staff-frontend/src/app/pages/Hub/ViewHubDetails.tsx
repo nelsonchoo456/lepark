@@ -8,6 +8,7 @@ import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
@@ -22,7 +23,7 @@ const ViewHubDetails = () => {
       isMain: true,
     },
     {
-      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
+      title: hub?.identifierNumber ? hub?.identifierNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
       isCurrent: true,
     },
@@ -30,25 +31,26 @@ const ViewHubDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNo',
-      label: 'Serial Number',
-      children: hub?.serialNumber,
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: hub?.identifierNumber,
     },
     {
       key: 'hubStatus',
       label: 'Hub Status',
       children: (() => {
+        const formattedStatus = formatEnumLabelToRemoveUnderscores(hub?.hubStatus ?? '');
         switch (hub?.hubStatus) {
           case 'ACTIVE':
-            return <Tag color="green">ACTIVE</Tag>;
+            return <Tag color="green" bordered={false}>{formattedStatus}</Tag>;
           case 'INACTIVE':
-            return <Tag color="blue">INACTIVE</Tag>;
+            return <Tag color="blue" bordered={false}>{formattedStatus}</Tag>;
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow">UNDER MAINTENANCE</Tag>;
+            return <Tag color="yellow" bordered={false}>{formattedStatus}</Tag>;
           case 'DECOMMISSIONED':
-            return <Tag color="red">DECOMMISSIONED</Tag>;
+            return <Tag color="red" bordered={false}>{formattedStatus}</Tag>;
           default:
-            return <Tag>{hub?.hubStatus}</Tag>;
+            return <Tag>{formattedStatus}</Tag>;
         }
       })(),
     },

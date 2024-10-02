@@ -4,7 +4,8 @@ import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum } from '@prisma/client
 export const SensorSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(1, { message: 'Sensor name is required' }),
-  serialNumber: z.string().optional(),
+  identifierNumber: z.string().optional(), // Make it optional as it will be auto-generated
+  serialNumber: z.string().min(1, { message: 'Serial number is required' }),
   sensorType: z.nativeEnum(SensorTypeEnum),
   description: z.string().optional(),
   sensorStatus: z.nativeEnum(SensorStatusEnum),

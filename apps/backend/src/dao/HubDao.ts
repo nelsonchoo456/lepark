@@ -77,6 +77,10 @@ class HubDao {
     });
   }
 
+  public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
+    return prisma.hub.findUnique({ where: { identifierNumber } });
+  }
+
   public async getHubBySerialNumber(serialNumber: string): Promise<Hub | null> {
     return prisma.hub.findUnique({ where: { serialNumber } });
   }
@@ -87,6 +91,16 @@ class HubDao {
 
   public async deleteHub(id: string): Promise<void> {
     await prisma.hub.delete({ where: { id } });
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
+    const hub = await prisma.hub.findFirst({
+      where: {
+        serialNumber,
+        id: { not: excludeHubId }, // Exclude the current hub when updating
+      },
+    });
+    return !!hub;
   }
 }
 

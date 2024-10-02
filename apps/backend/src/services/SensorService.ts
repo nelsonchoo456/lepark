@@ -35,13 +35,21 @@ class SensorService {
       // Convert validated data to Prisma input type
       const sensorData = ensureAllFieldsPresent(formattedData);
 
-      sensorData.serialNumber = this.generateSerialNumber();
+      sensorData.identifierNumber = this.generateIdentifierNumber();
 
-      let existingSensor = await SensorDao.getSensorBySerialNumber(sensorData.serialNumber);
+      let existingSensor = await SensorDao.getSensorByIdentifierNumber(sensorData.identifierNumber);
 
       while (existingSensor) {
-        sensorData.serialNumber = this.generateSerialNumber();
-        existingSensor = await SensorDao.getSensorBySerialNumber(sensorData.serialNumber);
+        sensorData.identifierNumber = this.generateIdentifierNumber();
+        existingSensor = await SensorDao.getSensorByIdentifierNumber(sensorData.identifierNumber);
+      }
+
+      // Validate serialNumber uniqueness
+      if (sensorData.serialNumber) {
+        const isDuplicate = await this.isSerialNumberDuplicate(sensorData.serialNumber);
+        if (isDuplicate) {
+          throw new Error(`Sensor with serial number ${sensorData.serialNumber} already exists.`);
+        }
       }
 
       // Create the sensor, remember to pass in Prisma.SensorCreateInput type
@@ -93,14 +101,24 @@ class SensorService {
   public async updateSensor(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
     try {
       const formattedData = dateFormatter(data);
+      if (formattedData.identifierNumber) {
+        formattedData.identifierNumber = formattedData.identifierNumber.trim();
+      }
       if (formattedData.serialNumber) {
         formattedData.serialNumber = formattedData.serialNumber.trim();
       }
       SensorSchema.partial().parse(formattedData);
 
-      if (formattedData.serialNumber) {
-        const checkForExistingSensor = await SensorDao.getSensorBySerialNumber(formattedData.serialNumber);
+      if (formattedData.identifierNumber) {
+        const checkForExistingSensor = await SensorDao.getSensorByIdentifierNumber(formattedData.identifierNumber);
         if (checkForExistingSensor && checkForExistingSensor.id !== id) {
+          throw new Error(`Sensor with identifier number ${formattedData.identifierNumber} already exists.`);
+        }
+      }
+
+      if (formattedData.serialNumber) {
+        const isDuplicate = await this.isSerialNumberDuplicate(formattedData.serialNumber, id);
+        if (isDuplicate) {
           throw new Error(`Sensor with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
@@ -218,8 +236,12 @@ class SensorService {
     return SensorDao.unlinkSensorToHub(sensorId);
   }
 
-  private generateSerialNumber(): string {
+  private generateIdentifierNumber(): string {
     return `SENS-${uuidv4().substr(0, 8).toUpperCase()}`;
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {
+    return SensorDao.isSerialNumberDuplicate(serialNumber, excludeSensorId);
   }
 }
 

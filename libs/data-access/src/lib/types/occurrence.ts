@@ -6,13 +6,7 @@
 //   REMOVED = 'REMOVED',
 // }
 
-import { OccurrenceStatusEnum } from './sharedenums';
-
-export enum DecarbonizationTypeEnum {
-  TREE_TROPICAL = 'TREE_TROPICAL',
-  TREE_MANGROVE = 'TREE_MANGROVE',
-  SHRUB = 'SHRUB',
-}
+import { DecarbonizationTypeEnum, OccurrenceStatusEnum } from './sharedenums';
 
 export interface OccurrenceData {
   lat: number;

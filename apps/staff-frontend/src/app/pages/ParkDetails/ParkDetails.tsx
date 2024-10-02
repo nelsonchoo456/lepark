@@ -13,6 +13,7 @@ import MapTab from './components/MapTab';
 import { SCREEN_LG } from '../../config/breakpoints';
 import AttractionsTab from './components/AttractionsTab';
 import EventsTab from './components/EventsTab';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 const { Text } = Typography;
 
 const ParkDetails = () => {
@@ -119,7 +120,7 @@ const ParkDetails = () => {
             <div className="w-full flex justify-between items-center">
               <Space>
                 <LogoText className="text-2xl py-2 m-0">{park.name}</LogoText>
-                <ParkStatusTag>{park.parkStatus}</ParkStatusTag>
+                <ParkStatusTag>{formatEnumLabelToRemoveUnderscores(park.parkStatus)}</ParkStatusTag>
               </Space>
               {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
                 <Button

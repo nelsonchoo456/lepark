@@ -3,6 +3,8 @@ import { ParkAssetResponse, ParkAssetStatusEnum, StaffResponse, StaffType } from
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@lepark/common-ui';
+import { DescriptionsItemType } from 'antd/es/descriptions';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const [loading, setLoading] = useState(false);
@@ -12,64 +14,60 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
     setLoading(false);
   }, [asset]);
 
-  const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
-    const words = enumValue.split('_');
-
-    if (enumType === 'type' || enumType === 'condition') {
-      return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-    } else {
-      return words.map((word) => word.toUpperCase()).join(' ');
-    }
-  };
-
   const getStatusTag = (status: string) => {
     switch (status) {
       case ParkAssetStatusEnum.AVAILABLE:
-        return <Tag color="green">AVAILABLE</Tag>;
+        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case ParkAssetStatusEnum.IN_USE:
-        return <Tag color="blue">IN USE</Tag>;
+        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case ParkAssetStatusEnum.UNDER_MAINTENANCE:
-        return <Tag color="orange">UNDER MAINTENANCE</Tag>;
+        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case ParkAssetStatusEnum.DECOMMISSIONED:
-        return <Tag color="red">DECOMMISSIONED</Tag>;
+        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       default:
         return <Tag>{status}</Tag>;
     }
   };
   console.log(asset);
 
-  const descriptionsItems = [
+  const descriptionItems = [
     { key: 'name', label: 'Asset Name', children: asset.name },
-    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
-    { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
+    { key: 'identifierNumber', label: 'Identifier Number', children: asset.identifierNumber },
+    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber || '-' },
+    { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabelToRemoveUnderscores(asset.parkAssetType) },
     { key: 'description', label: 'Description', children: asset.description || '-' },
     { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
-    { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabel(asset.parkAssetCondition, 'condition') },
+    { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabelToRemoveUnderscores(asset.parkAssetCondition) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
-    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: asset.lastMaintenanceDate ? moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') : '-' },
-    { key: 'nextMaintenanceDate', label: 'Next Maintenance Date', children: asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-' },
     { key: 'supplier', label: 'Supplier', children: asset.supplier },
     { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
     { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
-    {key: 'facility', label: 'Facility', children: asset.facility?.name},
   ];
 
-  const superAdminDescriptionsItems = [
-    { key: 'name', label: 'Asset Name', children: asset.name },
-    { key: 'serialNumber', label: 'Serial Number', children: asset.serialNumber },
-    { key: 'parkAssetType', label: 'Asset Type', children: formatEnumLabel(asset.parkAssetType, 'type') },
-    { key: 'description', label: 'Description', children: asset.description || '-' },
-    { key: 'parkAssetStatus', label: 'Status', children: getStatusTag(asset.parkAssetStatus) },
-    { key: 'parkAssetCondition', label: 'Asset Condition', children: formatEnumLabel(asset.parkAssetCondition, 'condition') },
-    { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(asset.acquisitionDate).format('MMMM D, YYYY') },
-    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date', children: asset.lastMaintenanceDate ? moment(asset.lastMaintenanceDate).format('MMMM D, YYYY') : '-' },
-    { key: 'nextMaintenanceDate', label: 'Next Maintenance Date', children: asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-' },
-    { key: 'supplier', label: 'Supplier', children: asset.supplier },
-    { key: 'supplierContactNumber', label: 'Supplier Contact', children: asset.supplierContactNumber },
-    { key: 'remarks', label: 'Remarks', children: asset.remarks || '-' },
-    {key: 'park', label: 'Park', children: asset.parkName},
-    {key: 'facility', label: 'Facility', children: asset.facility?.name},
-  ];
+  const conditionalItems = [
+    // asset.lastMaintenanceDate && {
+    //   key: 'lastMaintenanceDate',
+    //   label: 'Last Maintenance Date',
+    //   children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY'),
+    // },
+    // asset.nextMaintenanceDate && {
+    //   key: 'nextMaintenanceDate',
+    //   label: 'Next Maintenance Date',
+    //   children: moment(asset.nextMaintenanceDate).format('MMMM D, YYYY'),
+    // },
+    user?.role === StaffType.SUPERADMIN && {
+      key: 'park',
+      label: 'Park',
+      children: asset.park?.name,
+    },
+    asset.facility?.name && {
+      key: 'facility',
+      label: 'Facility',
+      children: asset.facility.name,
+    }
+  ].filter(Boolean);
+
+  const descriptionsItems = [...descriptionItems, ...conditionalItems];
 
   if (loading) {
     return <Spin />;
@@ -77,7 +75,12 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
 
   return (
     <div>
-      <Descriptions items={user?.role === StaffType.SUPERADMIN ? superAdminDescriptionsItems : descriptionsItems} bordered column={1} size="middle" />
+      <Descriptions
+        items={(descriptionsItems) as DescriptionsItemType[]}
+        bordered
+        column={1}
+        size="middle"
+      />
     </div>
   );
 };

@@ -1,121 +1,81 @@
 import { useAuth } from '@lepark/common-ui';
 import { SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Descriptions, Tag } from 'antd';
+import { DescriptionsItemType } from 'antd/es/descriptions';
 import moment from 'moment';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   const { user } = useAuth<StaffResponse>();
-  const formatEnum = (type: string): string => {
-    return type
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
 
   const getStatusTag = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Tag color="green">ACTIVE</Tag>;
+        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'INACTIVE':
-        return <Tag color="blue">INACTIVE</Tag>;
+        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'UNDER_MAINTENANCE':
-        return <Tag color="orange">UNDER MAINTENANCE</Tag>;
+        return <Tag color="orange" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'DECOMMISSIONED':
-        return <Tag color="red">DECOMMISSIONED</Tag>;
+        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       default:
-        return <Tag>{status}</Tag>;
+        return <Tag>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
     }
   };
 
-  const descriptionsItems = [
+  const baseDescriptionsItems = [
     { key: 'name', label: 'Sensor Name', children: sensor.name || '-' },
+    { key: 'identifierNumber', label: 'Identifier Number', children: sensor.identifierNumber || '-' },
     { key: 'serialNumber', label: 'Serial Number', children: sensor.serialNumber || '-' },
-    { key: 'sensorType', label: 'Sensor Type', children: formatEnum(sensor.sensorType) || '-' },
+    { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(sensor.sensorType) || '-' },
     { key: 'description', label: 'Description', children: sensor.description || '-' },
     { key: 'sensorStatus', label: 'Sensor Status', children: getStatusTag(sensor.sensorStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(sensor.acquisitionDate).format('MMMM D, YYYY') },
-    {
-      key: 'lastCalibratedDate',
-      label: 'Last Calibrated Date',
-      children: sensor.lastCalibratedDate ? moment(sensor.lastCalibratedDate).format('MMMM D, YYYY') : '-',
-    },
-    {
-      key: 'calibrationFrequencyDays',
-      label: 'Calibration Frequency (days)',
-      children: sensor.calibrationFrequencyDays ? `${sensor.calibrationFrequencyDays} days` : '-',
-    },
-    {
-      key: 'lastMaintenanceDate',
-      label: 'Last Maintenance Date',
-      children: sensor.lastMaintenanceDate ? moment(sensor.lastMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
-    {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: sensor.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
-    {
-      key: 'dataFrequencyMinutes',
-      label: 'Data Frequency (minutes)',
-      children: sensor.dataFrequencyMinutes ? `${sensor.dataFrequencyMinutes} minutes` : '-',
-    },
-    { key: 'sensorUnit', label: 'Sensor Unit', children: formatEnum(sensor.sensorUnit) || '-' },
+    { key: 'sensorUnit', label: 'Sensor Unit', children: formatEnumLabelToRemoveUnderscores(sensor.sensorUnit) || '-' },
     { key: 'supplier', label: 'Supplier', children: sensor.supplier || '-' },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: sensor.supplierContactNumber || '-' },
-    { key: 'lat', label: 'Latitude', children: sensor.lat ? sensor.lat.toString() : '-' },
-    { key: 'long', label: 'Longitude', children: sensor.long ? sensor.long.toString() : '-' },
     { key: 'remarks', label: 'Remarks', children: sensor.remarks || '-' },
     { key: 'hubName', label: 'Connected Hub', children: sensor.hub?.name || '-' },
+    user?.role === StaffType.SUPERADMIN && { key: 'parkName', label: 'Park', children: sensor.park?.name || '-' },
     { key: 'facilityName', label: 'Facility', children: sensor.facility?.name || '-' },
   ];
 
-  const superAdminDescriptionsItems = [
-    { key: 'name', label: 'Sensor Name', children: sensor.name || '-' },
-    { key: 'serialNumber', label: 'Serial Number', children: sensor.serialNumber || '-' },
-    { key: 'sensorType', label: 'Sensor Type', children: formatEnum(sensor.sensorType) || '-' },
-    { key: 'description', label: 'Description', children: sensor.description || '-' },
-    { key: 'sensorStatus', label: 'Sensor Status', children: getStatusTag(sensor.sensorStatus) },
-    { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(sensor.acquisitionDate).format('MMMM D, YYYY') },
-    {
-      key: 'lastCalibratedDate',
-      label: 'Last Calibrated Date',
-      children: sensor.lastCalibratedDate ? moment(sensor.lastCalibratedDate).format('MMMM D, YYYY') : '-',
-    },
-    {
+  const conditionalItems = [
+    sensor.calibrationFrequencyDays && {
       key: 'calibrationFrequencyDays',
       label: 'Calibration Frequency (days)',
-      children: sensor.calibrationFrequencyDays ? `${sensor.calibrationFrequencyDays} days` : '-',
+      children: `${sensor.calibrationFrequencyDays} days`,
     },
-    {
+    sensor.lastCalibratedDate && {
+      key: 'lastCalibratedDate',
+      label: 'Last Calibrated Date',
+      children: moment(sensor.lastCalibratedDate).format('MMMM D, YYYY'),
+    },
+    sensor.lastMaintenanceDate && {
       key: 'lastMaintenanceDate',
       label: 'Last Maintenance Date',
-      children: sensor.lastMaintenanceDate ? moment(sensor.lastMaintenanceDate).format('MMMM D, YYYY') : '-',
+      children: moment(sensor.lastMaintenanceDate).format('MMMM D, YYYY'),
     },
-    {
+    sensor.nextMaintenanceDate && {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
-      children: sensor.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+      children: moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY'),
     },
-    {
+    sensor.dataFrequencyMinutes && {
       key: 'dataFrequencyMinutes',
       label: 'Data Frequency (minutes)',
-      children: sensor.dataFrequencyMinutes ? `${sensor.dataFrequencyMinutes} minutes` : '-',
+      children: `${sensor.dataFrequencyMinutes} minutes`,
     },
-    { key: 'sensorUnit', label: 'Sensor Unit', children: formatEnum(sensor.sensorUnit) || '-' },
-    { key: 'supplier', label: 'Supplier', children: sensor.supplier || '-' },
-    { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: sensor.supplierContactNumber || '-' },
-    { key: 'lat', label: 'Latitude', children: sensor.lat ? sensor.lat.toString() : '-' },
-    { key: 'long', label: 'Longitude', children: sensor.long ? sensor.long.toString() : '-' },
-    { key: 'remarks', label: 'Remarks', children: sensor.remarks || '-' },
-    { key: 'hubName', label: 'Connected Hub', children: sensor.hub?.name || '-' },
-    { key: 'parkName', label: 'Park Name', children: sensor.park?.name || '-' },
-    { key: 'facilityName', label: 'Facility', children: sensor.facility?.name || '-' },
-  ];
+    sensor.lat && { key: 'lat', label: 'Latitude', children: sensor.lat.toString() },
+    sensor.long && { key: 'long', label: 'Longitude', children: sensor.long.toString() },
+  ].filter(Boolean);
+
+  const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
 
   return (
     <div>
       <Descriptions
-        items={user?.role === StaffType.SUPERADMIN ? superAdminDescriptionsItems : descriptionsItems}
+        items={(descriptionsItems) as DescriptionsItemType[]}
         bordered
         column={1}
         size="middle"

@@ -1,28 +1,10 @@
 import { ParkResponse, StaffResponse, StaffType, checkExistingFacility } from '@lepark/data-access';
-import {
-  Button,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-  TimePicker,
-  Upload,
-  Flex,
-  Popconfirm,
-  FormInstance,
-  Divider,
-  Typography,
-} from 'antd';
-import { RcFile } from 'antd/es/upload';
-import { FiUpload } from 'react-icons/fi';
+import { Button, Form, Input, InputNumber, Select, TimePicker, Flex, Popconfirm, FormInstance, Divider, Typography } from 'antd';
 import { ImageInput } from '@lepark/common-ui';
 import { message } from 'antd';
-import dayjs from 'dayjs';
-import moment from 'moment';
 import { useEffect, useState } from 'react';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { FacilityTypeEnum, FacilityStatusEnum } from '@lepark/data-access';
 
 const { RangePicker } = TimePicker;
 const { Text } = Typography;
@@ -58,89 +40,28 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       const park = parks.find((park) => park.id === user.parkId);
       setPark(park);
     }
+
+    const isPublicValue = form.getFieldValue('isPublic');
+    if (isPublicValue !== undefined && !isPublicValue) {
+      setIsPublic(isPublicValue);
+      setIsBookable(isPublicValue);
+    }
+
+    const isBookableValue = form.getFieldValue('isBookable');
+    if (isBookableValue !== undefined && !isBookableValue) {
+      setIsBookable(isPublicValue);
+    }
   }, [user, parks]);
 
-  const facilityTypeOptions = [
-    {
-      value: 'TOILET',
-      label: 'Toilet',
-    },
-    {
-      value: 'PLAYGROUND',
-      label: 'Playground',
-    },
-    {
-      value: 'INFORMATION',
-      label: 'Information',
-    },
-    {
-      value: 'CARPARK',
-      label: 'Carpark',
-    },
-    {
-      value: 'ACCESSIBILITY',
-      label: 'Accessibility',
-    },
-    {
-      value: 'STAGE',
-      label: 'Stage',
-    },
-    {
-      value: 'WATER_FOUNTAIN',
-      label: 'Water Fountain',
-    },
-    {
-      value: 'PICNIC_AREA',
-      label: 'Picnic Area',
-    },
-    {
-      value: 'BBQ_PIT',
-      label: 'BBQ Pit',
-    },
-    {
-      value: 'CAMPING_AREA',
-      label: 'Camping Area',
-    },
-    {
-      value: 'AED',
-      label: 'AED',
-    },
-    {
-      value: 'FIRST_AID',
-      label: 'First Aid',
-    },
-    {
-      value: 'AMPHITHEATER',
-      label: 'Amphitheater',
-    },
-    {
-      value: 'GAZEBO',
-      label: 'Gazebo',
-    },
-    {
-      value: 'STOREROOM',
-      label: 'Storeroom',
-    },
-    {
-      value: 'OTHERS',
-      label: 'Others',
-    },
-  ];
+  const facilityTypeOptions = Object.values(FacilityTypeEnum).map((type) => ({
+    value: type,
+    label: formatEnumLabelToRemoveUnderscores(type),
+  }));
 
-  const facilityStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'CLOSED',
-      label: 'Closed',
-    },
-    {
-      value: 'MAINTENANCE',
-      label: 'Maintenance',
-    },
-  ];
+  const facilityStatusOptions = Object.values(FacilityStatusEnum).map((status) => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const handleApplyToAllChange = (day: string) => {
     try {
@@ -203,6 +124,8 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
 
   const handleClick = async () => {
     try {
+      await form.validateFields();
+
       const facilityName = form.getFieldValue('name'); // Assuming 'name' is the field name for facility name
       const parkId = form.getFieldValue('parkId'); // Assuming 'parkId' is the field name for park ID
 
@@ -215,7 +138,6 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       await handleCurrStep(1);
     } catch (error) {
       console.error('Error checking existing facility:', error);
-      message.error('An error occurred while checking for existing facilities.');
     }
   };
 
@@ -227,7 +149,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
           {park?.name}
         </Form.Item>
       ) : (
-        <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
+        <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
           <Select placeholder="Select a Park" options={parks?.map((park) => ({ key: park.id, value: park.id, label: park.name }))} />
         </Form.Item>
       )}
@@ -322,7 +244,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
       </Form.Item>
 
       <Form.Item name="capacity" label="Capacity (pax)" rules={[{ required: true, message: 'Please input the capacity!' }]}>
-        <InputNumber min={0} />
+        <InputNumber min={0} precision={0} step={1} />
       </Form.Item>
 
       <Form.Item
@@ -331,7 +253,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
         rules={[{ required: true, message: 'Please input the fee!' }]}
         hidden={!isPublic || !isBookable}
       >
-        <InputNumber min={0} />
+        <InputNumber min={0} precision={2} step={0.01} />
       </Form.Item>
 
       <Divider orientation="left">
@@ -433,7 +355,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
           </div>
         </Form.Item>
       )}
-      <Form.Item wrapperCol={{ offset: 8 }}>
+      <Form.Item label={" "} colon={false}>
         <Button type="primary" className="w-full" onClick={handleClick}>
           Next
         </Button>

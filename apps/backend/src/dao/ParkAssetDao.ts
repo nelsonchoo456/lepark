@@ -52,6 +52,8 @@ class ParkAssetDao {
             id: true,
             name: true,
             parkId: true,
+            lat: true,
+            long: true
           },
         },
       },
@@ -130,8 +132,18 @@ class ParkAssetDao {
     }));
   }
 
-  async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
+  async getParkAssetByIdentifierNumber(identifierNumber: string): Promise<ParkAsset | null> {
     return prisma.parkAsset.findUnique({
+      where: { identifierNumber },
+      include: {
+        maintenanceHistory: true,
+        facility: true,
+      },
+    });
+  }
+
+  async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
+    return prisma.parkAsset.findFirst({
       where: { serialNumber },
       include: {
         maintenanceHistory: true,
@@ -144,6 +156,17 @@ class ParkAssetDao {
         },
       },
     });
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string | null, excludeParkAssetId?: string): Promise<boolean> {
+    if (!serialNumber) return false;
+    const parkAsset = await prisma.parkAsset.findFirst({
+      where: {
+        serialNumber,
+        id: { not: excludeParkAssetId },
+      },
+    });
+    return !!parkAsset;
   }
 }
 
