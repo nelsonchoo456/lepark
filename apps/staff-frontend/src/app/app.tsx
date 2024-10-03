@@ -74,6 +74,8 @@ import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 import HubEdit from './pages/Hub/HubEdit';
 import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
+import AnnouncementList from './pages/Announcement/AnnouncementList';
+import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -365,7 +367,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -411,7 +419,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -421,6 +435,16 @@ export function App() {
                   <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
+                </Route>
+              </Route>
+
+              {/* Announcement Routes */}
+              <Route path="/announcement">
+                <Route index element={<AnnouncementList />} />
+                {/* <Route path=":announcementId" element={<AnnouncementDetails />} /> */}
+                <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/announcement" />}>
+                  <Route path="create" element={<AnnouncementCreate />} />
+                  {/* <Route path=":announcementId/edit" element={<AnnouncementEdit />} /> */}
                 </Route>
               </Route>
 

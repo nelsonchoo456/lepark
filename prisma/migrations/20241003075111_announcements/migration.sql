@@ -67,6 +67,9 @@ CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIM
 -- CreateEnum
 CREATE TYPE "PlantTaskUrgencyEnum" AS ENUM ('IMMEDIATE', 'HIGH', 'NORMAL', 'LOW');
 
+-- CreateEnum
+CREATE TYPE "AnnouncementStatusEnum" AS ENUM ('UPCOMING', 'ACTIVE', 'INACTIVE', 'EXPIRED');
+
 -- CreateTable
 CREATE TABLE "Staff" (
     "id" UUID NOT NULL,
@@ -362,6 +365,19 @@ CREATE TABLE "PlantTask" (
     "submittingStaffId" UUID NOT NULL,
 
     CONSTRAINT "PlantTask_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Announcement" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "parkId" INTEGER NOT NULL,
+
+    CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

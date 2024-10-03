@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -216,6 +216,12 @@ const MainLayout = () => {
           onClick: () => navigate('/event'),
         }
       : null,
+    {
+      key: 'announcement',
+      icon: <FiMessageSquare />,
+      label: 'Announcements',
+      onClick: () => navigate('/announcement'),
+    },
     // userRole === 'MANAGER' ||
     // userRole === 'SUPERADMIN' ||
     // userRole === 'BOTANIST' ||
