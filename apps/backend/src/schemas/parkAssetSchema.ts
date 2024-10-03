@@ -4,7 +4,7 @@ import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from '
 export const ParkAssetSchema = z.object({
   id: z.string().uuid().optional(),
   identifierNumber: z.string().optional(), // Make it optional as it will be auto-generated
-  serialNumber: z.string().min(1, { message: 'Serial number is required' }),
+  serialNumber: z.string().optional(),
   name: z.string().min(1, { message: 'Asset name is required' }),
   parkAssetType: z.nativeEnum(ParkAssetTypeEnum),
   description: z.string().optional(),

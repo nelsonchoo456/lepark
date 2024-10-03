@@ -8,11 +8,11 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { deleteSpecies, getAllSpecies, SpeciesResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Input, message, Modal, Table, TableProps, Tag, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
-
 import { FiEdit2, FiEye, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const SpeciesPage = () => {
   const [fetchedSpecies, setFetchedSpecies] = useState<SpeciesResponse[]>([]);
@@ -43,7 +43,7 @@ const SpeciesPage = () => {
       setClassFilters(uniqueClasses.map((cls) => ({ text: cls, value: cls })));
       setOrderFilters(uniqueOrders.map((order) => ({ text: order, value: order })));
       setConservationStatusFilters(uniqueConservationStatuses.map((status) => ({
-        text: status.replace(/_/g, ' '),
+        text: formatEnumLabelToRemoveUnderscores(status),
         value: status
       })));
     } catch (error) {
@@ -152,7 +152,7 @@ const SpeciesPage = () => {
             color = 'purple';
             break;
           case 'EXTINCT':
-            color = 'white';
+            color = 'lightgray';
             style = { color: 'rgba(0, 0, 0, 0.85)', border: '1px solid #d9d9d9' };
             break;
           default:
@@ -160,7 +160,7 @@ const SpeciesPage = () => {
         }
         return (
           <Tag color={color} style={style} bordered={false}>
-            {status.replace(/_/g, ' ')}
+            {formatEnumLabelToRemoveUnderscores(status)}
           </Tag>
         );
       },

@@ -161,7 +161,8 @@ class ZoneDao {
       return zones.map(zone => ({
         ...zone,
         geom: JSON.parse(zone.geom),  
-        paths: JSON.parse(zone.paths)  
+        paths: JSON.parse(zone.paths),
+        parkId: parkId  
       }));
     } else {
       throw new Error(`Zone with Park ID ${parkId} not found`);

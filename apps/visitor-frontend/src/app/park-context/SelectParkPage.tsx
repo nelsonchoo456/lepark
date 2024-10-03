@@ -50,7 +50,7 @@ const SelectParkPage: React.FC = () => {
     let filteredParks = parks;
     if (searchValue && searchValue.length > 2) {
       filteredParks = filteredParks.filter((park) => {
-        const val = searchValue.toLowerCase();
+        const val = searchValue.trim().toLowerCase();
         return (
           park.name.toLowerCase().includes(val) ||
           park.description?.toLowerCase().includes(val) ||
@@ -136,7 +136,7 @@ const SelectParkPage: React.FC = () => {
             placeholder="Search for a Park..."
             className="w-full bg-white/60"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value.trim())}
+            onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
         <div

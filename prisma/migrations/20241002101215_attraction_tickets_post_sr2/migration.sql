@@ -23,6 +23,15 @@ CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', '
 CREATE TYPE "AttractionStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
 
 -- CreateEnum
+CREATE TYPE "AttractionTicketCategoryEnum" AS ENUM ('ADULT', 'CHILD', 'SENIOR', 'STUDENT');
+
+-- CreateEnum
+CREATE TYPE "AttractionTicketNationalityEnum" AS ENUM ('LOCAL', 'STANDARD');
+
+-- CreateEnum
+CREATE TYPE "AttractionTicketStatusEnum" AS ENUM ('VALID', 'INVALID', 'USED');
+
+-- CreateEnum
 CREATE TYPE "EventStatusEnum" AS ENUM ('ONGOING', 'UPCOMING', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
@@ -56,7 +65,7 @@ CREATE TYPE "ParkAssetConditionEnum" AS ENUM ('EXCELLENT', 'FAIR', 'POOR', 'DAMA
 CREATE TYPE "FacilityTypeEnum" AS ENUM ('TOILET', 'PLAYGROUND', 'INFORMATION', 'CARPARK', 'ACCESSIBILITY', 'STAGE', 'WATER_FOUNTAIN', 'PICNIC_AREA', 'BBQ_PIT', 'CAMPING_AREA', 'AED', 'FIRST_AID', 'AMPHITHEATER', 'GAZEBO', 'STOREROOM', 'OTHERS');
 
 -- CreateEnum
-CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'MAINTENANCE');
+CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
 
 -- CreateEnum
 CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
@@ -183,6 +192,43 @@ CREATE TABLE "Attraction" (
 );
 
 -- CreateTable
+CREATE TABLE "AttractionTicketListing" (
+    "id" UUID NOT NULL,
+    "category" "AttractionTicketCategoryEnum" NOT NULL,
+    "nationality" "AttractionTicketNationalityEnum" NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "isActive" BOOLEAN NOT NULL,
+    "attractionId" UUID NOT NULL,
+
+    CONSTRAINT "AttractionTicketListing_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AttractionTicket" (
+    "id" UUID NOT NULL,
+    "attractionDate" TIMESTAMP(3) NOT NULL,
+    "status" "AttractionTicketStatusEnum" NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "attractionTicketListingId" UUID NOT NULL,
+    "attractionTicketTransactionId" UUID NOT NULL,
+
+    CONSTRAINT "AttractionTicket_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AttractionTicketTransaction" (
+    "id" UUID NOT NULL,
+    "attractionDate" TIMESTAMP(3) NOT NULL,
+    "purchaseDate" TIMESTAMP(3) NOT NULL,
+    "quantity" DOUBLE PRECISION NOT NULL,
+    "totalAmount" DOUBLE PRECISION NOT NULL,
+    "visitorId" UUID NOT NULL,
+    "attractionId" UUID NOT NULL,
+
+    CONSTRAINT "AttractionTicketTransaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Event" (
     "id" UUID NOT NULL,
     "title" TEXT NOT NULL,
@@ -219,6 +265,7 @@ CREATE TABLE "Visitor" (
 -- CreateTable
 CREATE TABLE "Hub" (
     "id" UUID NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -247,6 +294,7 @@ CREATE TABLE "Hub" (
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "sensorType" "SensorTypeEnum" NOT NULL,
     "description" TEXT,
@@ -273,7 +321,8 @@ CREATE TABLE "Sensor" (
 -- CreateTable
 CREATE TABLE "ParkAsset" (
     "id" UUID NOT NULL,
-    "serialNumber" TEXT NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
+    "serialNumber" TEXT,
     "name" TEXT NOT NULL,
     "parkAssetType" "ParkAssetTypeEnum" NOT NULL,
     "description" TEXT,
@@ -386,13 +435,22 @@ CREATE INDEX "Event_facilityId_idx" ON "Event"("facilityId");
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Hub_identifierNumber_key" ON "Hub"("identifierNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
 
 -- CreateIndex
 CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Sensor_identifierNumber_key" ON "Sensor"("identifierNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ParkAsset_identifierNumber_key" ON "ParkAsset"("identifierNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ParkAsset_serialNumber_key" ON "ParkAsset"("serialNumber");
@@ -414,6 +472,15 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicketListing" ADD CONSTRAINT "AttractionTicketListing_attractionId_fkey" FOREIGN KEY ("attractionId") REFERENCES "Attraction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicket" ADD CONSTRAINT "AttractionTicket_attractionTicketTransactionId_fkey" FOREIGN KEY ("attractionTicketTransactionId") REFERENCES "AttractionTicketTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicketTransaction" ADD CONSTRAINT "AttractionTicketTransaction_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;

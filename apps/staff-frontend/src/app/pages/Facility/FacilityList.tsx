@@ -1,5 +1,5 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { FacilityResponse, StaffResponse, StaffType, deleteFacility } from '@lepark/data-access';
+import { FacilityResponse, FacilityStatusEnum, StaffResponse, StaffType, deleteFacility } from '@lepark/data-access';
 import { Button, Card, Flex, Input, Table, TableProps, Tag, Tooltip, message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { FiEye, FiSearch } from 'react-icons/fi';
@@ -12,6 +12,7 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import moment from 'moment';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const FacilityList: React.FC = () => {
   const { facilities, loading, triggerFetch } = useFetchFacilities();
@@ -77,7 +78,7 @@ const FacilityList: React.FC = () => {
       title: 'Facility Type',
       dataIndex: 'facilityType',
       key: 'facilityType',
-      render: (text) => <div>{text}</div>,
+      render: (text) => <div>{formatEnumLabelToRemoveUnderscores(text)}</div>,
       filters: facilityTypes,
       onFilter: (value, record) => record.facilityType === value,
       width: '20%',
@@ -88,12 +89,24 @@ const FacilityList: React.FC = () => {
       key: 'facilityStatus',
       render: (text) => {
         switch (text) {
-          case 'OPEN':
-            return <Tag color="green">OPEN</Tag>;
-          case 'CLOSED':
-            return <Tag color="red">CLOSED</Tag>;
-          case 'MAINTENANCE':
-            return <Tag color="yellow">MAINTENANCE</Tag>;
+          case FacilityStatusEnum.OPEN:
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.OPEN)}
+              </Tag>
+            );
+          case FacilityStatusEnum.CLOSED:
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.CLOSED)}
+              </Tag>
+            );
+          case FacilityStatusEnum.UNDER_MAINTENANCE:
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(FacilityStatusEnum.UNDER_MAINTENANCE)}
+              </Tag>
+            );
           default:
             return <Tag>{text}</Tag>;
         }
@@ -101,7 +114,7 @@ const FacilityList: React.FC = () => {
       filters: [
         { text: 'Open', value: 'OPEN' },
         { text: 'Closed', value: 'CLOSED' },
-        { text: 'Maintenance', value: 'MAINTENANCE' },
+        { text: 'Under Maintenance', value: 'UNDER_MAINTENANCE' },
       ],
       onFilter: (value, record) => record.facilityStatus === value,
       width: '20%',
@@ -123,18 +136,14 @@ const FacilityList: React.FC = () => {
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           {user?.role !== StaffType.ARBORIST && user?.role !== StaffType.BOTANIST && (
-            <>
-              <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/${record.id}/edit`)} />
-              </Tooltip>
-            </>
+            <Tooltip title="Edit">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/facilities/${record.id}/edit`)} />
+            </Tooltip>
           )}
           {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
-            <>
-              <Tooltip title="Delete">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-              </Tooltip>
-            </>
+            <Tooltip title="Delete">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+            </Tooltip>
           )}
         </Flex>
       ),

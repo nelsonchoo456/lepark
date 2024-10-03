@@ -71,7 +71,6 @@ app.use('/api/hubs', authenticateJWTStaff, hubRouter);
 app.use('/api/parkassets', authenticateJWTStaff, parkAssetRouter);
 app.use('/api/facilities', facilityRouter);
 app.use('/api/events', eventRouter);
-app.use('/api/attractionTickets', attractionTicketRouter);
 app.use('/api/planttasks', authenticateJWTStaff, plantTaskRouter);
 app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 

@@ -17,8 +17,9 @@ import {
   getParkById,
   getFacilitiesByParkId,
   getFacilityById,
+  checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage, Divider } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Select, Space, Spin, message as antMessage, Divider, Switch } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
@@ -26,15 +27,12 @@ import dayjs from 'dayjs';
 import { useRestrictAsset } from '../../hooks/Asset/useRestrictAsset';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { message } from 'antd';
 
 const { TextArea } = Input;
 
-const formatEnumLabel = (enumValue: string): string => {
-  return enumValue
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
+const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
 const AssetEdit = () => {
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
@@ -60,6 +58,7 @@ const AssetEdit = () => {
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [filteredFacilities, setFilteredFacilities] = useState<FacilityResponse[]>([]);
   const [messageApi, contextHolder] = antMessage.useMessage();
+  const [hasSerialNumber, setHasSerialNumber] = useState(false);
 
   const breadcrumbItems = [
     {
@@ -68,7 +67,7 @@ const AssetEdit = () => {
       isMain: true,
     },
     {
-      title: asset?.name ? asset.name : 'Details',
+      title: asset?.identifierNumber ? asset.identifierNumber : 'Details',
       pathKey: `/parkasset/${assetId}`,
     },
     {
@@ -132,8 +131,10 @@ const AssetEdit = () => {
       setPreviewImages([]);
       const assetFacility = facilities.find((f) => f.id === asset.facilityId);
       if (assetFacility) {
+        setHasSerialNumber(!!asset.serialNumber);
         form.setFieldsValue({
           ...asset,
+          hasSerialNumber: !!asset.serialNumber,
           acquisitionDate: asset.acquisitionDate ? dayjs(asset.acquisitionDate) : undefined,
           facilityId: asset.facilityId,
         });
@@ -150,11 +151,19 @@ const AssetEdit = () => {
     wrapperCol: { offset: 8, span: 16 },
   };
 
+  const handleSerialNumberChange = (checked: boolean) => {
+    setHasSerialNumber(checked);
+    if (!checked) {
+      form.setFieldsValue({ serialNumber: undefined });
+    }
+  };
+
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
       const assetData: ParkAssetUpdateData = {
         name: values.name,
+        serialNumber: hasSerialNumber ? values.serialNumber : null, // Set to null if hasSerialNumber is false
         parkAssetType: values.parkAssetType,
         description: values.description,
         parkAssetStatus: values.parkAssetStatus,
@@ -169,6 +178,15 @@ const AssetEdit = () => {
 
       if (!assetId) {
         throw new Error('Asset ID is missing');
+      }
+
+      if (hasSerialNumber && values.serialNumber) {
+        const isDuplicate = await checkParkAssetDuplicateSerialNumber(values.serialNumber, assetId);
+        if (isDuplicate) {
+          messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       const response = await updateParkAssetDetails(assetId, assetData, selectedFiles);
@@ -191,7 +209,7 @@ const AssetEdit = () => {
     if (!value || phoneRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Please enter a valid Singapore phone number');
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
   };
 
   const handleImageClick = (index: number) => {
@@ -231,6 +249,17 @@ const AssetEdit = () => {
             <Form.Item name="name" label="Asset Name" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
+            <Form.Item name="description" label="Description">
+              <TextArea />
+            </Form.Item>
+            <Form.Item name="hasSerialNumber" label="Has Serial Number" valuePropName="checked">
+              <Switch onChange={handleSerialNumberChange} />
+            </Form.Item>
+            {hasSerialNumber && (
+              <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+                <Input placeholder="Enter Serial Number" />
+              </Form.Item>
+            )}
             <Form.Item name="parkAssetType" label="Asset Type" rules={[{ required: true }]}>
               <Select placeholder="Select asset type">
                 {Object.values(ParkAssetTypeEnum).map((type) => (
@@ -240,14 +269,20 @@ const AssetEdit = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="description" label="Description">
-              <TextArea />
-            </Form.Item>
             <Form.Item name="parkAssetStatus" label="Asset Status" rules={[{ required: true }]}>
               <Select placeholder="Select asset status">
                 {Object.values(ParkAssetStatusEnum).map((status) => (
                   <Select.Option key={status} value={status}>
                     {formatEnumLabel(status)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
+              <Select placeholder="Select asset condition">
+                {Object.values(ParkAssetConditionEnum).map((condition) => (
+                  <Select.Option key={condition} value={condition}>
+                    {formatEnumLabel(condition)}
                   </Select.Option>
                 ))}
               </Select>
@@ -259,25 +294,6 @@ const AssetEdit = () => {
                   return current && current > dayjs().endOf('day');
                 }}
               />
-            </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact"
-              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name="parkAssetCondition" label="Asset Condition" rules={[{ required: true }]}>
-              <Select placeholder="Select asset condition">
-                {Object.values(ParkAssetConditionEnum).map((condition) => (
-                  <Select.Option key={condition} value={condition}>
-                    {formatEnumLabel(condition)}
-                  </Select.Option>
-                ))}
-              </Select>
             </Form.Item>
             <Form.Item name="remarks" label="Remarks">
               <TextArea />
@@ -298,6 +314,17 @@ const AssetEdit = () => {
                   />
                 ))}
               </div>
+            </Form.Item>
+            <Divider orientation="left">Supplier Details</Divider>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact"
+              rules={[{ required: true, message: 'Please input the supplier contact number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input />
             </Form.Item>
 
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

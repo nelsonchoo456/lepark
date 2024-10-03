@@ -17,21 +17,13 @@ import { SCREEN_LG } from '../../../config/breakpoints';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { parkAssetTypesLabels } from '../AssetListSummary';
 import moment from 'moment';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface AssetsByTypeTableProps {
   parkAssets: ParkAssetResponse[];
   triggerFetch: () => void;
   tableShowTypeColumn?: boolean;
 }
-
-export const formatEnumLabel = (enumValue: string, enumType: 'type' | 'status' | 'condition'): string => {
-  const words = enumValue.split('_');
-  if (enumType === 'type' || enumType === 'condition') {
-    return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-  } else {
-    return words.map((word) => word.toUpperCase()).join(' ');
-  }
-};
 
 const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = false }: AssetsByTypeTableProps) => {
   const { user } = useAuth<StaffResponse>();
@@ -56,10 +48,12 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
   useEffect(() => {
     if (parkAssets && parkAssets.length > 0) {
       setTotalCount(parkAssets.length);
-      setInUseCount(parkAssets.filter((a) => a.parkAssetStatus === 'IN_USE').length);
-      setAvailableCount(parkAssets.filter((a) => a.parkAssetStatus === 'AVAILABLE').length);
+      setInUseCount(parkAssets.filter((a) => a.parkAssetStatus === ParkAssetStatusEnum.IN_USE).length);
+      setAvailableCount(parkAssets.filter((a) => a.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE).length);
       setUnavailableCount(
-        parkAssets.filter((a) => a.parkAssetStatus === 'UNDER_MAINTENANCE' || a.parkAssetStatus === 'DECOMMISSIONED').length,
+        parkAssets.filter(
+          (a) => a.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE || a.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED,
+        ).length,
       );
     }
   }, [parkAssets]);
@@ -71,7 +65,7 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       <div>
         {user?.role === StaffType.SUPERADMIN && <p className="font-semibold">{record.park?.name}</p>}
         <div className="flex">
-          <p className="opacity-50 mr-2">Facility:</p>
+          {user?.role === StaffType.SUPERADMIN ? <p className="opacity-50 mr-2">Facility:</p> : <></>}
           {record.facility?.name}
         </div>
       </div>
@@ -87,11 +81,11 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columns = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '15%',
     },
     {
@@ -109,18 +103,29 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       key: 'parkAssetType',
       filters: parkAssetTypesLabels.map((a) => ({ value: a.key, text: a.label })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetType === value,
-      render: (type: string) => formatEnumLabel(type, 'type'),
+      render: (type: string) => formatEnumLabelToRemoveUnderscores(type),
       width: '15%',
     },
     {
       title: 'Status',
       dataIndex: 'parkAssetStatus',
       key: 'parkAssetStatus',
-      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
+      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetStatus === value,
       render: (status: string) => (
-        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : 'red'} bordered={false}>
-          {formatEnumLabel(status, 'status')}
+        <Tag
+          color={
+            status === ParkAssetStatusEnum.AVAILABLE
+              ? 'green'
+              : status === ParkAssetStatusEnum.IN_USE
+              ? 'blue'
+              : status === ParkAssetStatusEnum.UNDER_MAINTENANCE
+              ? 'yellow'
+              : 'red'
+          }
+          bordered={false}
+        >
+          {formatEnumLabelToRemoveUnderscores(status)}
         </Tag>
       ),
       width: '15%',
@@ -130,11 +135,11 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       dataIndex: 'parkAssetCondition',
       key: 'parkAssetCondition',
       filters: Object.values(ParkAssetConditionEnum).map((condition) => ({
-        text: formatEnumLabel(condition, 'condition'),
+        text: formatEnumLabelToRemoveUnderscores(condition),
         value: condition,
       })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetCondition === value,
-      render: (condition: string) => formatEnumLabel(condition, 'condition'),
+      render: (condition: string) => formatEnumLabelToRemoveUnderscores(condition),
       width: '15%',
     },
     // {
@@ -166,11 +171,11 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
 
   const columnsNoType = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (serialNumber: string) => <div className="font-semibold">{serialNumber}</div>,
-      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a: ParkAssetResponse, b: ParkAssetResponse) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '16%',
     },
     {
@@ -186,11 +191,14 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       title: 'Status',
       dataIndex: 'parkAssetStatus',
       key: 'parkAssetStatus',
-      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabel(status, 'status'), value: status })),
+      filters: Object.values(ParkAssetStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetStatus === value,
       render: (status: string) => (
-        <Tag color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : 'red'} bordered={false}>
-          {formatEnumLabel(status, 'status')}
+        <Tag
+          color={status === 'AVAILABLE' ? 'green' : status === 'IN_USE' ? 'blue' : status === 'UNDER_MAINTENANCE' ? 'yellow' : 'red'}
+          bordered={false}
+        >
+          {formatEnumLabelToRemoveUnderscores(status)}
         </Tag>
       ),
       width: '15%',
@@ -200,11 +208,11 @@ const AssetsByTypeTable = ({ parkAssets, triggerFetch, tableShowTypeColumn = fal
       dataIndex: 'parkAssetCondition',
       key: 'parkAssetCondition',
       filters: Object.values(ParkAssetConditionEnum).map((condition) => ({
-        text: formatEnumLabel(condition, 'condition'),
+        text: formatEnumLabelToRemoveUnderscores(condition),
         value: condition,
       })),
       onFilter: (value: any, record: ParkAssetResponse) => record.parkAssetCondition === value,
-      render: (condition: string) => formatEnumLabel(condition, 'condition'),
+      render: (condition: string) => formatEnumLabelToRemoveUnderscores(condition),
       width: '15%',
     },
     // {

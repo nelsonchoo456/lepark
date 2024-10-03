@@ -1,4 +1,4 @@
-import { Prisma, ParkAsset, ParkAssetStatusEnum, ParkAssetTypeEnum } from '@prisma/client';
+import { Prisma, ParkAsset, ParkAssetStatusEnum, ParkAssetTypeEnum, Facility } from '@prisma/client';
 import { z } from 'zod';
 import { ParkAssetSchema, ParkAssetSchemaType } from '../schemas/parkAssetSchema';
 import ParkAssetDao from '../dao/ParkAssetDao';
@@ -39,10 +39,10 @@ class ParkAssetService {
         existingAsset = await ParkAssetDao.getParkAssetByIdentifierNumber(parkAssetData.identifierNumber);
       }
 
-      // Validate serialNumber uniqueness
+      // Validate serialNumber uniqueness only if it's provided
       if (parkAssetData.serialNumber) {
-        const existingAssetWithSerialNumber = await ParkAssetDao.getParkAssetBySerialNumber(parkAssetData.serialNumber);
-        if (existingAssetWithSerialNumber) {
+        const isDuplicate = await this.isSerialNumberDuplicate(parkAssetData.serialNumber);
+        if (isDuplicate) {
           throw new Error(`Park asset with serial number ${parkAssetData.serialNumber} already exists.`);
         }
       }
@@ -64,7 +64,7 @@ class ParkAssetService {
     return ParkAssetDao.getAllParkAssetsByParkId(parkId);
   }
 
-  public async getParkAssetById(id: string): Promise<(ParkAsset & { parkName: string }) | null> {
+  public async getParkAssetById(id: string): Promise<(ParkAsset & { park: ParkResponseData, facility: Facility }) | null> {
     const parkAsset = await ParkAssetDao.getParkAssetById(id);
     if (!parkAsset) return null;
 
@@ -74,7 +74,7 @@ class ParkAssetService {
     const park = await ParkDao.getParkById(facility.parkId);
     if (!park) return null;
 
-    return { ...parkAsset, parkName: park.name };
+    return { ...parkAsset, park, facility };
   }
 
   public async updateParkAsset(id: string, data: Partial<ParkAssetSchemaType>): Promise<ParkAsset> {
@@ -109,9 +109,9 @@ class ParkAssetService {
         }
       }
 
-      if (formattedData.serialNumber) {
-        const checkForExistingAsset = await ParkAssetDao.getParkAssetBySerialNumber(formattedData.serialNumber);
-        if (checkForExistingAsset && checkForExistingAsset.id !== id) {
+      if (formattedData.serialNumber !== undefined) {
+        const isDuplicate = await this.isSerialNumberDuplicate(formattedData.serialNumber, id);
+        if (isDuplicate) {
           throw new Error(`Park asset with serial number ${formattedData.serialNumber} already exists.`);
         }
       }
@@ -192,6 +192,10 @@ class ParkAssetService {
       default:
         return 'PA'; // Default prefix for unknown types
     }
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string | null, excludeParkAssetId?: string): Promise<boolean> {
+    return ParkAssetDao.isSerialNumberDuplicate(serialNumber, excludeParkAssetId);
   }
 }
 

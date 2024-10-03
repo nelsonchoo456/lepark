@@ -1,10 +1,11 @@
-import { FacilityResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { FacilityResponse, getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { TbBuildingEstate, TbTree } from 'react-icons/tb';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
+import { useEffect, useState } from 'react';
 
 interface MapTabProps {
   facility: FacilityResponse;
@@ -14,9 +15,7 @@ interface MapTabProps {
 
 const LocationTab = ({ facility, park, zones }: MapTabProps) => {
   const selectedParkId = park?.id;
-
-  console.log(selectedParkId);
-  console.log(zones.map((zone) => zone.parkId));
+  
   return (
     <div
       style={{
@@ -48,7 +47,7 @@ const LocationTab = ({ facility, park, zones }: MapTabProps) => {
             icon={<TbBuildingEstate className="text-sky-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
           />
         )}
-        {zones.map((zone) => (
+        {zones?.map((zone) => (
           zone.parkId === selectedParkId && (
           <PolygonWithLabel
             key={zone.id}

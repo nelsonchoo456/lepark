@@ -10,6 +10,7 @@ import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../../components/main/PageHeader2';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -162,7 +163,7 @@ const StatusLogDetails: React.FC = () => {
     {
       key: 'statusLogType',
       label: 'Status Type',
-      children: <Tag>{statusLog?.statusLogType}</Tag>,
+      children: <Tag>{statusLog?.statusLogType ? formatEnumLabelToRemoveUnderscores(statusLog.statusLogType) : ''}</Tag>,
     },
   ];
 

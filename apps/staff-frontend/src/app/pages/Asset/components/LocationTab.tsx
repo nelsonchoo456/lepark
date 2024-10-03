@@ -1,4 +1,4 @@
-import { FacilityResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { FacilityResponse, ParkAssetResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
@@ -8,15 +8,13 @@ import { COLORS } from '../../../config/colors';
 
 interface MapTabProps {
   facility: FacilityResponse;
-  park?: ParkResponse | null;
+  park: ParkResponse | null;
   zones: ZoneResponse[];
 }
 
 const LocationTab = ({ facility, park, zones }: MapTabProps) => {
   const selectedParkId = park?.id;
 
-  console.log(selectedParkId);
-  console.log(zones.map((zone) => zone.parkId));
   return (
     <div
       style={{
