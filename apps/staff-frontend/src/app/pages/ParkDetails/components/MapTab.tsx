@@ -30,6 +30,7 @@ import HoverInformation, { HoverItem } from '../../../components/map/HoverInform
 import { MdArrowOutward } from 'react-icons/md';
 import ParkStatusTag from './ParkStatusTag';
 import { SCREEN_LG } from '../../../config/breakpoints';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -173,7 +174,7 @@ const MapTab = ({ park }: MapTabProps) => {
       </Card>
       <div
         style={{
-          height: `${webMode ? '60vh' : '80vh'}`,
+          height: `${webMode ? '80vh' : '80vh'}`,
           position: 'relative',
         }}
         className="rounded-xl md:overflow-hidden"
@@ -271,7 +272,7 @@ const MapTab = ({ park }: MapTabProps) => {
                     title: (
                       <div className="flex justify-between items-center">
                         {attraction.title}
-                        <ParkStatusTag>{attraction.status}</ParkStatusTag>
+                        <ParkStatusTag>{formatEnumLabelToRemoveUnderscores(attraction.status)}</ParkStatusTag>
                       </div>
                     ),
                     image: attraction.images ? attraction.images[0] : null,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData } from '@lepark/data-access';
+import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData, checkHubDuplicateSerialNumber } from '@lepark/data-access';
 import {
   Button,
   Card,
@@ -25,6 +25,7 @@ import dayjs from 'dayjs';
 import moment from 'moment';
 import { useRestrictHub } from '../../hooks/Hubs/useRestrictHubs';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -98,6 +99,12 @@ const HubEdit = () => {
         return acc;
       }, {} as Partial<HubUpdateData>);
 
+      const isDuplicate = await checkHubDuplicateSerialNumber(values.serialNumber, hub.id);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
+
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
       }
@@ -132,19 +139,19 @@ const HubEdit = () => {
   const hubStatusOptions = [
     {
       value: 'ACTIVE',
-      label: 'Active',
+      label: formatEnumLabelToRemoveUnderscores('ACTIVE'),
     },
     {
       value: 'INACTIVE',
-      label: 'Inactive',
+      label: formatEnumLabelToRemoveUnderscores('INACTIVE'),
     },
     {
       value: 'UNDER_MAINTENANCE',
-      label: 'Under Maintenance',
+      label: formatEnumLabelToRemoveUnderscores('UNDER_MAINTENANCE'),
     },
     {
       value: 'DECOMMISSIONED',
-      label: 'Decommissioned',
+      label: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED'),
     },
   ];
 
@@ -155,7 +162,7 @@ const HubEdit = () => {
       isMain: true,
     },
     {
-      title: hub?.serialNumber ? hub?.serialNumber : 'Details',
+      title: hub?.identifierNumber ? hub?.identifierNumber : 'Details',
       pathKey: `/hubs/${hub?.id}`,
     },
     {
@@ -220,6 +227,9 @@ const HubEdit = () => {
           <Form.Item name="description" label="Description">
             <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
+          <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
+            </Form.Item>
           <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
             <Select placeholder="Select Hub Status" options={hubStatusOptions} />
           </Form.Item>
@@ -229,16 +239,6 @@ const HubEdit = () => {
             rules={[{ required: true, message: 'Please enter Acquisition Date' }, validateDates(form)]}
           >
             <DatePicker className="w-full" maxDate={dayjs()} />
-          </Form.Item>
-          <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
-            <Input placeholder="Enter Supplier" />
-          </Form.Item>
-          <Form.Item
-            name="supplierContactNumber"
-            label="Supplier Contact Number"
-            rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}
-          >
-            <Input placeholder="Enter Supplier Contact Number" />
           </Form.Item>
           <Form.Item name="remarks" label="Remarks">
             <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
@@ -272,6 +272,17 @@ const HubEdit = () => {
                   />
                 ))}
             </div>
+          </Form.Item>
+          <Divider orientation="left">Supplier Details</Divider>
+          <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+            <Input placeholder="Enter Supplier" />
+          </Form.Item>
+          <Form.Item
+            name="supplierContactNumber"
+            label="Supplier Contact Number"
+            rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}
+          >
+            <Input placeholder="Enter Supplier Contact Number" />
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8 }}>

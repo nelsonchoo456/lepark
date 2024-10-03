@@ -1,16 +1,17 @@
-import { ContentWrapperDark, useAuth } from "@lepark/common-ui";
-import { useNavigate } from "react-router-dom";
-import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip, notification, message } from "antd";
-import moment from "moment";
-import { FiEye, FiSearch } from "react-icons/fi";
-import { deletePark, ParkResponse, StaffResponse, StaffType } from "@lepark/data-access";
-import { useEffect, useRef, useState, useMemo } from "react";
-import { RiEdit2Line } from "react-icons/ri";
-import { useFetchParks } from "../../hooks/Parks/useFetchParks";
-import { MdDeleteOutline, MdOutlineDeleteOutline } from "react-icons/md";
-import ConfirmDeleteModal from "../../components/modal/ConfirmDeleteModal";
-import PageHeader2 from "../../components/main/PageHeader2";
-import { SCREEN_LG } from "../../config/breakpoints";
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { useNavigate } from 'react-router-dom';
+import { Button, Card, Input, Table, TableProps, Tag, Row, Col, Flex, Collapse, Tooltip, notification, message } from 'antd';
+import moment from 'moment';
+import { FiEye, FiSearch } from 'react-icons/fi';
+import { deletePark, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { RiEdit2Line } from 'react-icons/ri';
+import { useFetchParks } from '../../hooks/Parks/useFetchParks';
+import { MdDeleteOutline, MdOutlineDeleteOutline } from 'react-icons/md';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
+import PageHeader2 from '../../components/main/PageHeader2';
+import { SCREEN_LG } from '../../config/breakpoints';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ParkList = () => {
   const { user } = useAuth<StaffResponse>();
@@ -23,11 +24,7 @@ const ParkList = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredParks = useMemo(() => {
-    return parks.filter((park) =>
-      Object.values(park).some((value) => 
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
+    return parks.filter((park) => Object.values(park).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
   }, [searchQuery, parks]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +37,7 @@ const ParkList = () => {
       dataIndex: 'name',
       key: 'name',
       render: (text) => (
-        <Flex justify="space-between" align="center" className='font-semibold'>
+        <Flex justify="space-between" align="center" className="font-semibold">
           {text}
         </Flex>
       ),
@@ -48,7 +45,7 @@ const ParkList = () => {
         return a.name.localeCompare(b.name);
       },
       // width: '33%',
-      fixed: 'left'
+      fixed: 'left',
     },
     {
       title: 'Address',
@@ -79,20 +76,40 @@ const ParkList = () => {
           case 'OPEN':
             return (
               <Tag color="green" bordered={false}>
-                Open
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'UNDER_CONSTRUCTION':
-            return <Tag color="red" bordered={false}>Under Construction</Tag>;
+            return (
+              <Tag color="orange" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
+          case 'LIMITED_ACCESS':
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
+          case 'CLOSED':
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
           default:
-            return <Tag color="red" bordered={false}>Limited Access</Tag>;
+            return (
+              <Tag color="default" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
         }
       },
       filters: [
-        { text: 'Open', value: 'OPEN' },
-        { text: 'Under Construction', value: 'UNDER_CONSTRUCTION' },
-        { text: 'Limited Access', value: 'LIMITED_ACCESS' },
-        { text: 'Closed', value: 'CLOSED' },
+        { text: formatEnumLabelToRemoveUnderscores('OPEN'), value: 'OPEN' },
+        { text: formatEnumLabelToRemoveUnderscores('UNDER_CONSTRUCTION'), value: 'UNDER_CONSTRUCTION' },
+        { text: formatEnumLabelToRemoveUnderscores('LIMITED_ACCESS'), value: 'LIMITED_ACCESS' },
+        { text: formatEnumLabelToRemoveUnderscores('CLOSED'), value: 'CLOSED' },
       ],
       onFilter: (value, record) => record.parkStatus === value,
       // width: '1%',
@@ -108,10 +125,15 @@ const ParkList = () => {
             <Button type="link" icon={<FiEye />} onClick={() => navigateTo(id)} />
           </Tooltip>
           <Tooltip title="Edit Park">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)}/>
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigateTo(`${id}/edit`)} />
           </Tooltip>
           <Tooltip title="Delete Park">
-            <Button danger type="link" icon={<MdDeleteOutline className='text-error'/>} onClick={() => showDeleteModal(record as ParkResponse)}  />
+            <Button
+              danger
+              type="link"
+              icon={<MdDeleteOutline className="text-error" />}
+              onClick={() => showDeleteModal(record as ParkResponse)}
+            />
           </Tooltip>
         </Flex>
       ),
@@ -119,25 +141,25 @@ const ParkList = () => {
     },
   ];
 
-  const navigateTo = (parkId: string) =>{
-    navigate(`/park/${parkId}`)
-  }
+  const navigateTo = (parkId: string) => {
+    navigate(`/park/${parkId}`);
+  };
 
   // Confirm Delete Modal utility
   const cancelDelete = () => {
     setParkToBeDeleted(null);
     setDeleteModalOpen(false);
-  }
+  };
 
   const showDeleteModal = (park: ParkResponse) => {
     setDeleteModalOpen(true);
     setParkToBeDeleted(park);
-  }
-  
+  };
+
   const deleteParkToBeDeleted = async () => {
     try {
       if (!parkToBeDeleted) {
-        throw new Error("Unable to delete Park at this time");
+        throw new Error('Unable to delete Park at this time');
       }
       await deletePark(parkToBeDeleted.id);
       triggerFetch();
@@ -148,7 +170,7 @@ const ParkList = () => {
         content: `Deleted Park: ${parkToBeDeleted.name}.`,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setParkToBeDeleted(null);
       setDeleteModalOpen(false);
       messageApi.open({
@@ -156,7 +178,7 @@ const ParkList = () => {
         content: `Unable to delete Park at this time. Please try again later.`,
       });
     }
-  } 
+  };
 
   const breadcrumbItems = [
     {
@@ -169,38 +191,34 @@ const ParkList = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {contextHolder}
-      <ConfirmDeleteModal onConfirm={deleteParkToBeDeleted} open={deleteModalOpen} description='Deleting a Park will delete all of its Zones and Occurrences. This cannot be undone.' onCancel={cancelDelete}></ConfirmDeleteModal>
+      <ConfirmDeleteModal
+        onConfirm={deleteParkToBeDeleted}
+        open={deleteModalOpen}
+        description="Deleting a Park will delete all of its Zones and Occurrences. This cannot be undone."
+        onCancel={cancelDelete}
+      ></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
-        <Input
-          suffix={<FiSearch />}
-          placeholder="Search in Parks..."
-          className="mb-4 bg-white"
-          variant="filled"
-          onChange={handleSearch}
-        />
-        <Tooltip title={user?.role !== StaffType.SUPERADMIN ? "Not allowed to create park!" : ""}>
+        <Input suffix={<FiSearch />} placeholder="Search in Parks..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
+        <Tooltip title={user?.role !== StaffType.SUPERADMIN ? 'Not allowed to create park!' : ''}>
           <Button
             type="primary"
-            onClick={() => { navigate('/park/create'); }}
+            onClick={() => {
+              navigate('/park/create');
+            }}
             disabled={user?.role !== StaffType.SUPERADMIN}
           >
             Create Park
           </Button>
         </Tooltip>
       </Flex>
-      
+
       <Card>
-        <Table 
-          dataSource={filteredParks} 
-          columns={columns} 
-          rowKey={(record) => record.id}
-          scroll={{ x: SCREEN_LG }}
-        />
+        <Table dataSource={filteredParks} columns={columns} rowKey={(record) => record.id} scroll={{ x: SCREEN_LG }} />
       </Card>
     </ContentWrapperDark>
   );
-}
+};
 
 export default ParkList;

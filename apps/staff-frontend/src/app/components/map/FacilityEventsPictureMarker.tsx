@@ -3,7 +3,7 @@ import L, { DivIcon } from 'leaflet';
 import { Tooltip as AntdTooltip, Button, Tag } from 'antd';
 import { Marker, Tooltip } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { EventResponse, EventStatusEnum, FacilityResponse } from '@lepark/data-access';
+import { EventResponse, EventStatusEnum, FacilityResponse, FacilityStatusEnum } from '@lepark/data-access';
 import { MdArrowOutward } from 'react-icons/md';
 import { TbLocation } from 'react-icons/tb';
 import { InnerPictureMarkerGlow, PictureMarkerInner } from '@lepark/common-ui';
@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 import EventStatusTag from '../../pages/EventDetails/components/EventStatusTag';
 import { capitalizeFirstLetter } from '../textFormatters/textFormatters';
 import FacilityPictureMarker from './FacilityPictureMarker';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface FacilityEventsPictureMarkerProps {
   lat: number;
@@ -136,8 +137,10 @@ function FacilityEventsPictureMarker({
               children: (
                 <div className="h-full w-full flex flex-col justify-between">
                   <div className="flex justify-between flex-wrap mb-2">
-                    <p className="">{capitalizeFirstLetter(facility.facilityType)}</p>
-                    <ParkStatusTag>{facility.facilityStatus}</ParkStatusTag>
+                    <p className="">{formatEnumLabelToRemoveUnderscores(facility.facilityType)}</p>
+                    <Tag color={facility.facilityStatus === FacilityStatusEnum.OPEN ? 'green' : facility.facilityStatus === FacilityStatusEnum.CLOSED ? 'red' : 'yellow'} bordered={false}>
+                      {formatEnumLabelToRemoveUnderscores(facility.facilityStatus)}
+                    </Tag>
                   </div>
 
                   <div className="">
@@ -231,7 +234,7 @@ function FacilityEventsPictureMarker({
                   </div>
                   <div className="flex justify-end">
                     <AntdTooltip title="View Facility details">
-                      <Button shape="circle" onClick={() => navigate(`/facility/${facility.id}`)}>
+                      <Button shape="circle" onClick={() => navigate(`/facilities/${facility.id}`)}>
                         <MdArrowOutward />
                       </Button>
                     </AntdTooltip>

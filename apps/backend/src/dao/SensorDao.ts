@@ -146,7 +146,11 @@ class SensorDao {
     });
   }
 
-  async getSensorBySerialNumber(serialNumber: string): Promise<Sensor> {
+  async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
+    return prisma.sensor.findUnique({ where: { identifierNumber } });
+  }
+
+  async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
     return prisma.sensor.findUnique({ where: { serialNumber } });
   }
 
@@ -218,6 +222,16 @@ class SensorDao {
       where: { id: sensorId },
       data: { hubId: null },
     });
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {
+    const sensor = await prisma.sensor.findFirst({
+      where: {
+        serialNumber,
+        id: { not: excludeSensorId }, // Exclude the current sensor when updating
+      },
+    });
+    return !!sensor;
   }
 }
 

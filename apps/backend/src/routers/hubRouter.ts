@@ -86,4 +86,17 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   }
 });
 
+router.get('/checkDuplicateSerialNumber', async (req, res) => {
+  try {
+    const { serialNumber, hubId } = req.query;
+    if (!serialNumber) {
+      return res.status(400).json({ error: 'Serial number is required' });
+    }
+    const isDuplicate = await HubService.isSerialNumberDuplicate(serialNumber as string, hubId as string);
+    res.status(200).json({ isDuplicate });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

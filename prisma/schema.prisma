@@ -24,20 +24,20 @@ enum StaffRoleEnum {
 }
 
 model Staff {
-  id             String        @id @default(uuid()) @db.Uuid
-  firstName      String
-  lastName       String
-  email          String        @unique
-  password       String
-  contactNumber  String
-  role           StaffRoleEnum
-  isActive       Boolean
-  parkId         Int?
-  isFirstLogin   Boolean
-  resetTokenUsed Boolean       @default(false)
-  resetToken     String?
-  assignedPlantTasks     PlantTask[] @relation("assignedStaff")
-  submittedPlantTasks     PlantTask[] @relation("submittingStaff")
+  id                  String        @id @default(uuid()) @db.Uuid
+  firstName           String
+  lastName            String
+  email               String        @unique
+  password            String
+  contactNumber       String
+  role                StaffRoleEnum
+  isActive            Boolean
+  parkId              Int?
+  isFirstLogin        Boolean
+  resetTokenUsed      Boolean       @default(false)
+  resetToken          String?
+  assignedPlantTasks  PlantTask[]   @relation("assignedStaff")
+  submittedPlantTasks PlantTask[]   @relation("submittingStaff")
 }
 
 enum ConservationStatusEnum {
@@ -200,16 +200,6 @@ model Attraction {
   lat          Float?
   lng          Float?
   parkId       Int
-  id           String               @id @default(uuid()) @db.Uuid
-  title        String
-  description  String
-  openingHours DateTime[]
-  closingHours DateTime[]
-  images       String[]
-  status       AttractionStatusEnum
-  lat          Float?
-  lng          Float?
-  parkId       Int
 
   @@index([parkId])
 }
@@ -296,6 +286,7 @@ enum HubStatusEnum {
 
 model Hub {
   id                       String        @id @default(uuid()) @db.Uuid
+  identifierNumber         String        @unique
   serialNumber             String        @unique
   name                     String
   description              String?
@@ -353,6 +344,7 @@ enum SensorUnitEnum {
 model Sensor {
   id                       String               @id @default(uuid()) @db.Uuid
   name                     String
+  identifierNumber         String               @unique
   serialNumber             String               @unique
   sensorType               SensorTypeEnum
   description              String?
@@ -405,7 +397,8 @@ enum ParkAssetConditionEnum {
 
 model ParkAsset {
   id                    String                 @id @default(uuid()) @db.Uuid
-  serialNumber          String                 @unique
+  identifierNumber      String                 @unique
+  serialNumber          String?                @unique
   name                  String
   parkAssetType         ParkAssetTypeEnum
   description           String?
@@ -498,7 +491,7 @@ enum FacilityTypeEnum {
 enum FacilityStatusEnum {
   OPEN
   CLOSED
-  MAINTENANCE
+  UNDER_MAINTENANCE
 }
 
 enum PlantTaskStatusEnum {
@@ -544,6 +537,6 @@ model PlantTask {
   occurrence        Occurrence           @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
   assignedStaffId   String?              @map("assignedStaffId") @db.Uuid
   assignedStaff     Staff?               @relation(name: "assignedStaff", fields: [assignedStaffId], references: [id])
-  submittingStaffId String              @map("submittingStaffId") @db.Uuid
-  submittingStaff   Staff               @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
+  submittingStaffId String               @map("submittingStaffId") @db.Uuid
+  submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
 }

@@ -56,10 +56,10 @@ CREATE TYPE "ParkAssetConditionEnum" AS ENUM ('EXCELLENT', 'FAIR', 'POOR', 'DAMA
 CREATE TYPE "FacilityTypeEnum" AS ENUM ('TOILET', 'PLAYGROUND', 'INFORMATION', 'CARPARK', 'ACCESSIBILITY', 'STAGE', 'WATER_FOUNTAIN', 'PICNIC_AREA', 'BBQ_PIT', 'CAMPING_AREA', 'AED', 'FIRST_AID', 'AMPHITHEATER', 'GAZEBO', 'STOREROOM', 'OTHERS');
 
 -- CreateEnum
-CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'MAINTENANCE');
+CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
 
 -- CreateEnum
-CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIMMING', 'PEST_MANAGEMENT', 'SOIL_MAINTENANCE', 'STAKING_SUPPORTING', 'DEBRIS_REMOVAL', 'ENVIRONMENTAL_ADJUSTMENT', 'OTHERS');
@@ -219,6 +219,7 @@ CREATE TABLE "Visitor" (
 -- CreateTable
 CREATE TABLE "Hub" (
     "id" UUID NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -247,6 +248,7 @@ CREATE TABLE "Hub" (
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "sensorType" "SensorTypeEnum" NOT NULL,
     "description" TEXT,
@@ -273,7 +275,8 @@ CREATE TABLE "Sensor" (
 -- CreateTable
 CREATE TABLE "ParkAsset" (
     "id" UUID NOT NULL,
-    "serialNumber" TEXT NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
+    "serialNumber" TEXT,
     "name" TEXT NOT NULL,
     "parkAssetType" "ParkAssetTypeEnum" NOT NULL,
     "description" TEXT,
@@ -355,7 +358,8 @@ CREATE TABLE "PlantTask" (
     "images" TEXT[],
     "remarks" TEXT,
     "occurrenceId" UUID NOT NULL,
-    "staffId" UUID,
+    "assignedStaffId" UUID,
+    "submittingStaffId" UUID NOT NULL,
 
     CONSTRAINT "PlantTask_pkey" PRIMARY KEY ("id")
 );
@@ -385,13 +389,22 @@ CREATE INDEX "Event_facilityId_idx" ON "Event"("facilityId");
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Hub_identifierNumber_key" ON "Hub"("identifierNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
 
 -- CreateIndex
 CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Sensor_identifierNumber_key" ON "Sensor"("identifierNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ParkAsset_identifierNumber_key" ON "ParkAsset"("identifierNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ParkAsset_serialNumber_key" ON "ParkAsset"("serialNumber");
@@ -445,7 +458,10 @@ ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_sensorId_fke
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_assignedStaffId_fkey" FOREIGN KEY ("assignedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_submittingStaffId_fkey" FOREIGN KEY ("submittingStaffId") REFERENCES "Staff"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;

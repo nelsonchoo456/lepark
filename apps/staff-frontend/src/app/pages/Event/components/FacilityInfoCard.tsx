@@ -3,6 +3,7 @@ import { Card, Descriptions, Tag, Typography } from 'antd';
 import { FacilityResponse } from '@lepark/data-access';
 import moment from 'moment';
 import dayjs from 'dayjs';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { Text } = Typography;
 
@@ -34,7 +35,7 @@ const FacilityInfoCard: React.FC<FacilityInfoCardProps> = ({ facility }) => {
         <Descriptions.Item label="Name">
           {facility.name}
           <Tag color={facility.facilityStatus === 'OPEN' ? 'green' : 'red'} className="ml-2">
-            {facility.facilityStatus}
+            {formatEnumLabelToRemoveUnderscores(facility.facilityStatus)}
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Description">{facility.description}</Descriptions.Item>

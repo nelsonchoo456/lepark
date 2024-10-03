@@ -62,6 +62,10 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrencesByParkId(parkId);
   }
 
+  public async getSpeciesCountByParkId(parkId: number): Promise<number> {
+    return OccurrenceDao.getSpeciesCountByParkId(parkId);
+  }
+
   public async getOccurrenceById(id: string): Promise<Occurrence & { parkId?: number }> {
     try {
       const occurrence = await OccurrenceDao.getOccurrenceById(id);
