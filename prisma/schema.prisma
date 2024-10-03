@@ -538,5 +538,5 @@ model PlantTask {
   assignedStaffId   String?              @map("assignedStaffId") @db.Uuid
   assignedStaff     Staff?               @relation(name: "assignedStaff", fields: [assignedStaffId], references: [id])
   submittingStaffId String               @map("submittingStaffId") @db.Uuid
-  submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
+  submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id], onDelete: Cascade)
 }
