@@ -74,6 +74,9 @@ import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 import HubEdit from './pages/Hub/HubEdit';
 import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
+import PromotionList from './pages/Promotion/PromotionList';
+import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -329,6 +332,7 @@ export function App() {
                   }
                 />
               </Route>
+
               {/* Attraction Routes */}
               <Route
                 element={
@@ -422,6 +426,35 @@ export function App() {
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
                 </Route>
+              </Route>
+
+              <Route path="/promotion">
+                <Route index element={<PromotionList />} />
+                <Route
+                  path="create-park-promotion"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]}
+                        redirectTo="/"
+                      />
+                      <ParkPromotionCreate />
+                    </>
+                  }
+                />
+                <Route
+                  path="create-promotion"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]}
+                        redirectTo="/"
+                      />
+                      {/* <PromotionCreate /> */}
+                    </>
+                  }
+                />
+                
               </Route>
 
               {/* Catch-all for 404 */}
