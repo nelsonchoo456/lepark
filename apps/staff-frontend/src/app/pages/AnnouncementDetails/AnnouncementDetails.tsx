@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import dayjs from 'dayjs';
+import { useRestrictAnnouncements } from '../../hooks/Announcements/useRestrictAnnouncements';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -19,16 +20,14 @@ const { RangePicker } = DatePicker;
 
 const AnnouncementDetails: React.FC = () => {
   const { announcementId } = useParams<{ announcementId: string }>();
-  const [announcement, setAnnouncement] = useState<AnnouncementResponse | null>(null);
+  const { announcement, park, loading, refresh } = useRestrictAnnouncements(announcementId);
   const [editedAnnouncement, setEditedAnnouncement] = useState<AnnouncementResponse | null>(null);
-  const [park, setPark] = useState<ParkResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [inEditMode, setInEditMode] = useState(false);
   const navigate = useNavigate();
 
   const { user } = useAuth<StaffResponse>();
 
-  const canEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
+  const canEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER;
 
   const statusConfig: Record<AnnouncementStatusEnum, { color: string; label: string }> = {
     [AnnouncementStatusEnum.UPCOMING]: { color: 'blue', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.UPCOMING) },
@@ -42,20 +41,20 @@ const AnnouncementDetails: React.FC = () => {
       if (!announcementId) return;
 
       try {
-        setLoading(true);
+        // setLoading(true);
         const response = await viewAnnouncementDetails(announcementId);
-        setAnnouncement(response.data);
+        // setAnnouncement(response.data);
         setEditedAnnouncement(response.data);
 
-        if (response.data.parkId) {
-          const parkResponse = await getParkById(response.data.parkId);
-          setPark(parkResponse.data);
-        }
+        // if (response.data.parkId) {
+        //   const parkResponse = await getParkById(response.data.parkId);
+        //   setPark(parkResponse.data);
+        // }
       } catch (error) {
         console.error('Error fetching announcement details:', error);
         message.error('Failed to fetch announcement details');
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
@@ -135,8 +134,7 @@ const AnnouncementDetails: React.FC = () => {
           return;
         }
         const response = await updateAnnouncementDetails(announcementId, updatedAnnouncementData);
-        const announcementResponse = await viewAnnouncementDetails(announcementId);
-        setAnnouncement(announcementResponse.data);
+        refresh();
         setInEditMode(false);
         message.success('Announcement updated successfully!');
       } catch (error) {

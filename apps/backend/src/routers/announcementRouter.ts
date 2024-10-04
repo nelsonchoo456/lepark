@@ -44,6 +44,15 @@ router.get('/getAnnouncementsByParkId/:parkId', async (req, res) => {
   }
 });
 
+router.get('/getNParksAnnouncements', async (req, res) => {
+  try {
+    const announcements = await AnnouncementService.getNParksAnnouncements();
+    res.status(200).json(announcements);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/updateAnnouncementDetails/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const announcementId = req.params.id;

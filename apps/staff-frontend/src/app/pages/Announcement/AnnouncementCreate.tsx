@@ -138,6 +138,13 @@ const AnnouncementCreate = () => {
                 </Form.Item>
               </>
             )}
+
+            {user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER && (
+              <Form.Item name="parkId" label="Park" initialValue={user?.parkId}>
+                <span>{parks?.find((park) => park.id === user?.parkId)?.name || 'Loading...'}</span>
+              </Form.Item>
+            )}
+
             <Form.Item
               name="title"
               label="Title"

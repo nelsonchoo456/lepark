@@ -443,9 +443,8 @@ export function App() {
               <Route path="/announcement">
                 <Route index element={<AnnouncementList />} />
                 <Route path=":announcementId" element={<AnnouncementDetails />} />
-                <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/announcement" />}>
+                <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/announcement" />}>
                   <Route path="create" element={<AnnouncementCreate />} />
-                  {/* <Route path=":announcementId/edit" element={<AnnouncementEdit />} /> */}
                 </Route>
               </Route>
 

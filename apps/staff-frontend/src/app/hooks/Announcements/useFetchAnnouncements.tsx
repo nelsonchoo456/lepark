@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AnnouncementResponse, getAllAnnouncements } from '@lepark/data-access';
+import { AnnouncementResponse, getAllAnnouncements, getAnnouncementsByParkId, getNParksAnnouncements, StaffResponse, StaffType } from '@lepark/data-access';
+import { useAuth } from '@lepark/common-ui';
 
 export const useFetchAnnouncements = () => {
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth<StaffResponse>();
   const [error, setError] = useState<string | null>(null);
 
   const fetchAnnouncements = useCallback(async () => {
@@ -20,9 +22,27 @@ export const useFetchAnnouncements = () => {
     }
   }, []);
 
+  const fetchAnnouncementsByParkId = useCallback(async (parkId: number) => {
+    try {
+      const response = await getAnnouncementsByParkId(parkId);
+      const response2 = await getNParksAnnouncements();
+      setAnnouncements([...response.data, ...response2.data]);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch announcements');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    fetchAnnouncements();
-  }, [fetchAnnouncements]);
+    if (!user) return;
+    if (user?.role === StaffType.SUPERADMIN) {
+      fetchAnnouncements();
+    } else if (user?.parkId) {
+      fetchAnnouncementsByParkId(user.parkId);
+    }
+  }, [user, fetchAnnouncements, fetchAnnouncementsByParkId]);
 
   const triggerFetch = () => {
     fetchAnnouncements();

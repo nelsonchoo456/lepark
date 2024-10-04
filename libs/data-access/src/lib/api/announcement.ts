@@ -45,6 +45,19 @@ export async function getAnnouncementsByParkId(parkId: number): Promise<AxiosRes
   }
 }
 
+export async function getNParksAnnouncements(): Promise<AxiosResponse<AnnouncementResponse[]>> {
+  try {
+    const response: AxiosResponse<AnnouncementResponse[]> = await client.get(`${URL}/getNParksAnnouncements`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function viewAnnouncementDetails(id: string): Promise<AxiosResponse<AnnouncementResponse>> {
   try {
     const response: AxiosResponse<AnnouncementResponse> = await client.get(`${URL}/viewAnnouncementDetails/${id}`);

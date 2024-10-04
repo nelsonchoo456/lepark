@@ -15,6 +15,10 @@ class AnnouncementDao {
     return prisma.announcement.findMany({ where: { parkId } });
   }
 
+  async getNParksAnnouncements(): Promise<Announcement[]> {
+    return prisma.announcement.findMany({ where: { parkId: null } });
+  }
+
   async getAnnouncementById(id: string): Promise<Announcement | null> {
     return prisma.announcement.findUnique({ where: { id } });
   }

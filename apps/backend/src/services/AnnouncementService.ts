@@ -46,6 +46,11 @@ class AnnouncementService {
     return Promise.all(announcements.map(updateAnnouncementStatus));
   }
 
+  public async getNParksAnnouncements(): Promise<Announcement[]> {
+    const announcements = await AnnouncementDao.getNParksAnnouncements();
+    return Promise.all(announcements.map(updateAnnouncementStatus));
+  }
+
   public async getAnnouncementById(id: string): Promise<Announcement> {
     const announcement = await AnnouncementDao.getAnnouncementById(id);
     if (!announcement) {

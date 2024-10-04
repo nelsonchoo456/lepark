@@ -145,7 +145,7 @@ const AnnouncementList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+          {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER ? (
             <>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
@@ -219,7 +219,7 @@ const AnnouncementList: React.FC = () => {
           variant="filled"
           onChange={handleSearch}
         />
-        {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
+        {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER ? (
           <Button
             type="primary"
             onClick={() => {
