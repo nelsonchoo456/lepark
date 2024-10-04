@@ -290,20 +290,20 @@ const DecarbonizationAreaChart: React.FC = () => {
           <Spin />
         ) : data.length > 0 ? (
           <>
-            <Row gutter={16} style={{ marginTop: '10px' }}>
-              <Col span={6}>
+              <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }}>
+              <Col span={4}>
                 <Statistic title="Total Sequestration (kg)" value={metrics.total} />
               </Col>
-              <Col span={6}>
+              <Col span={4}>
                 <Statistic title="Average Sequestration (kg)" value={metrics.average} />
               </Col>
-              <Col span={6}>
+              <Col span={4}>
                 <Statistic title="Max Sequestration (kg)" value={metrics.max} />
               </Col>
-              <Col span={6}>
+              <Col span={4}>
                 <Statistic title="Min Sequestration (kg)" value={metrics.min} />
               </Col>
-              <Col span={6}>
+              <Col span={4}>
                 <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
               </Col>
             </Row>

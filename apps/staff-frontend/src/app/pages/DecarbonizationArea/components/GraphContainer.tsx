@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
+import './GraphContainer.css'; // Import the CSS file
 
 interface GraphContainerProps {
   title: string;
@@ -10,59 +11,27 @@ interface GraphContainerProps {
 
 const GraphContainer: React.FC<GraphContainerProps> = ({ title, data, type, options }) => {
   const [isLargeView, setIsLargeView] = useState(false);
+  const [isSingleColumn, setIsSingleColumn] = useState(window.innerWidth <= 1024);
 
-  const toggleView = () => {
-    setIsLargeView(!isLargeView);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSingleColumn(window.innerWidth <= 1024);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const toggleView = (e: React.MouseEvent) => {
+    if (!isSingleColumn) {
+      e.stopPropagation(); // Prevent event bubbling
+      setIsLargeView(!isLargeView);
+    }
   };
 
-  const containerStyle: React.CSSProperties = isLargeView
-    ? {
-        width: '100%',
-        margin: '20px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        border: '1px solid #f0f0f0',
-        borderRadius: '4px',
-        padding: '16px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        transition: 'box-shadow 0.3s',
-      }
-    : {
-        flex: '1 1 45%',
-        margin: '20px 10px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        border: '1px solid #f0f0f0',
-        borderRadius: '4px',
-        padding: '16px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        transition: 'box-shadow 0.3s',
-      };
-
-  const titleStyle: React.CSSProperties = {
-    marginBottom: '16px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  };
-
-  const graphWrapperStyle: React.CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    paddingBottom: '56.25%', // 16:9 aspect ratio
-    height: 0,
-    overflow: 'hidden',
-  };
-
-  const graphStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-  };
+  const containerClass = isLargeView ? 'graph-container large' : 'graph-container';
 
   // Check if data is empty
   if (!data || !data.labels || data.labels.length === 0) {
@@ -71,22 +40,22 @@ const GraphContainer: React.FC<GraphContainerProps> = ({ title, data, type, opti
 
   return (
     <div
-      style={containerStyle}
+      className={containerClass}
       onClick={toggleView}
       onMouseEnter={(e) => {
-        if (window.innerWidth > 768) {
+        if (!isSingleColumn) {
           e.currentTarget.style.boxShadow = '0 4px 8px #a3d4c7';
         }
       }}
       onMouseLeave={(e) => {
-        if (window.innerWidth > 768) {
+        if (!isSingleColumn) {
           e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
         }
       }}
     >
-      <div style={titleStyle}>{title}</div>
-      <div style={graphWrapperStyle}>
-        <div style={graphStyle}>{type === 'line' ? <Line data={data} options={options} /> : <Bar data={data} options={options} />}</div>
+      <div className="graph-title">{title}</div>
+      <div className="graph-wrapper">
+        <div className="graph">{type === 'line' ? <Line data={data} options={options} /> : <Bar data={data} options={options} />}</div>
       </div>
     </div>
   );
