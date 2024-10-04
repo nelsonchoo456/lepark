@@ -42,15 +42,13 @@ const MainLayout = () => {
       const fetchPark = async () => {
         const parkRes = await getParkById(user.parkId as number);
         if (parkRes.status === 200) {
-          const parkData = parkRes.data
+          const parkData = parkRes.data;
           setPark(parkData);
         }
       };
       fetchPark();
     }
-  
-  }, [user])
-  
+  }, [user]);
 
   // Resizing
   useEffect(() => {
@@ -229,46 +227,30 @@ const MainLayout = () => {
           ],
         }
       : null,
-    // userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
-    //   ? {
-    //       key: 'attraction',
-    //       icon: <TbTicket />,
-    //       label: 'Attractions',
-    //       onClick: () => navigate('/attraction'),
-    //     }
-    //   : null,
-    // userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
-    //   ? {
-    //       key: 'event',
-    //       icon: <TbCalendarEvent />,
-    //       label: 'Events',
-    //       onClick: () => navigate('/event'),
-    //     }
-    //   : null,
-    // userRole === 'MANAGER' ||
-    // userRole === 'SUPERADMIN' ||
-    // userRole === 'BOTANIST' ||
-    // userRole === 'ARBORIST' ||
-    // userRole === 'PARK_RANGER' ||
-    // userRole === 'VENDOR_MANAGER'
-    //   ? {
-    //       key: 'task',
-    //       icon: <FiInbox />,
-    //       label: 'Tasks',
-    //       children: [
-    //         {
-    //           key: 'plant-tasks',
-    //           label: 'Plant Tasks',
-    //           onClick: () => navigate('/plant-tasks'),
-    //         },
-    //         {
-    //           key: 'maintenance-tasks',
-    //           label: 'Maintenance Tasks',
-    //           onClick: () => navigate('/maintenance-tasks'),
-    //         },
-    //       ],
-    //     }
-    //   : null,
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'BOTANIST' ||
+    userRole === 'ARBORIST' ||
+    userRole === 'PARK_RANGER' ||
+    userRole === 'VENDOR_MANAGER'
+      ? {
+          key: 'task',
+          icon: <FiInbox />,
+          label: 'Tasks',
+          children: [
+            {
+              key: 'plant-tasks',
+              label: 'Plant Tasks',
+              onClick: () => navigate('/plant-tasks'),
+            },
+            {
+              key: 'maintenance-tasks',
+              label: 'Maintenance Tasks',
+              onClick: () => navigate('/maintenance-tasks'),
+            },
+          ],
+        }
+      : null,
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',
