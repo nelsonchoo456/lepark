@@ -78,6 +78,7 @@ import PromotionList from './pages/Promotion/PromotionList';
 import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
+import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -370,7 +371,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -416,7 +423,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -431,14 +444,12 @@ export function App() {
 
               <Route path="/promotion">
                 <Route index element={<PromotionList />} />
+                <Route path="archived" element={<ArchivedPromotionList />} />
                 <Route
                   path="create"
                   element={
                     <>
-                      <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]}
-                        redirectTo="/"
-                      />
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
                       <ParkPromotionCreate />
                     </>
                   }
@@ -447,15 +458,11 @@ export function App() {
                   path=":promotionId"
                   element={
                     <>
-                      <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]}
-                        redirectTo="/"
-                      />
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
                       <PromotionDetails />
                     </>
                   }
                 />
-                
               </Route>
 
               {/* Catch-all for 404 */}

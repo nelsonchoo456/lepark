@@ -74,7 +74,7 @@ export async function getPromotionsByParkId(parkId: string, archived?: boolean, 
       params.enabled = enabled; // Add `enabled` to the query if defined
     }
 
-    const response: AxiosResponse<PromotionResponse[]> = await client.get(`${URL}/getAllPromotions?parkId=${parkId}`, { params });
+    const response: AxiosResponse<PromotionResponse[]> = await client.get(`${URL}/getAllPromotions?parkId=${parkId}&nparks=true`, { params });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

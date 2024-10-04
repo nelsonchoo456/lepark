@@ -14,25 +14,25 @@ const TabsNoBottomMargin = styled(Tabs)`
   }
 `;
 
-const PromotionList = () => {
+const ArchivedPromotionList = () => {
   const { user } = useAuth<StaffResponse>();
-  const { promotions, parksPromotions, nParksPromotions, triggerFetch } = useFetchPromotions(false);
+  const { promotions, parksPromotions, nParksPromotions, triggerFetch } = useFetchPromotions(true);
 
   const promotionTabs = [
     {
       key: 'all',
       label: <LogoText>All</LogoText>,
-      children: <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} tableShowParks />,
+      children: <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} tableShowParks nonArchived={false}/>,
     },
     {
       key: 'nparks',
       label: <LogoText>NParks-Wide</LogoText>,
-      children: <PromotionByTypeTab promotions={nParksPromotions} triggerFetch={triggerFetch} />,
+      children: <PromotionByTypeTab promotions={nParksPromotions} triggerFetch={triggerFetch} nonArchived={false}/>,
     },
     {
       key: 'park',
       label: <LogoText>Parks</LogoText>,
-      children: <PromotionByTypeTab promotions={parksPromotions} triggerFetch={triggerFetch} tableShowParks/>,
+      children: <PromotionByTypeTab promotions={parksPromotions} triggerFetch={triggerFetch} tableShowParks nonArchived={false}/>,
     },
   ];
 
@@ -44,10 +44,10 @@ const PromotionList = () => {
       {user?.role === StaffType.SUPERADMIN ? (
         <TabsNoBottomMargin items={promotionTabs} type="card" />
       ) : (
-        <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} tableShowParks/>
+        <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} />
       )}
     </ContentWrapperDark>
   );
 };
 
-export default PromotionList;
+export default ArchivedPromotionList;

@@ -1,3 +1,5 @@
+import { ParkResponse } from "./park";
+
 export enum DiscountTypeEnum {
   PERCENTAGE = 'PERCENTAGE',
   FIXED_AMOUND = 'FIXED_AMOUNT'
@@ -24,6 +26,7 @@ export interface PromotionResponse {
   minimumAmount?: number;
   isOneTime?: boolean;
   discountType:  DiscountTypeEnum;
+  park?: ParkResponse
 }
 
 export interface PromotionData {

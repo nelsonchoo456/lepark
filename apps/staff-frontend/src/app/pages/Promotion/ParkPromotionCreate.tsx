@@ -115,6 +115,7 @@ const ParkPromotionCreate = () => {
       isCurrent: true,
     },
   ];
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
@@ -143,8 +144,8 @@ const ParkPromotionCreate = () => {
             )}
 
             <Divider orientation="left">Promotion Display</Divider>
-            <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
-              <Input placeholder="Enter Name" />
+            <Form.Item name="name" label="Title" rules={[{ required: true, message: 'Please enter Title' }]}>
+              <Input placeholder="Enter Title" />
             </Form.Item>
             <Form.Item name="promoCode" label="Promo Code" rules={[{ required: true, message: 'Please enter Promo Code' }]}>
               <Input placeholder="Enter a unique Promo Code" />

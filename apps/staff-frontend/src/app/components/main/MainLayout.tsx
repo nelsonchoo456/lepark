@@ -14,6 +14,7 @@ import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
+import { AiOutlinePercentage } from 'react-icons/ai';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -219,8 +220,8 @@ const MainLayout = () => {
               onClick: () => navigate('/event'),
             },
             {
-              key: 'promotions',
-              // icon: <TbCalendarEvent />,
+              key: 'promotion',
+              icon: <AiOutlinePercentage />,
               label: 'Promotions',
               onClick: () => navigate('/promotion'),
             },

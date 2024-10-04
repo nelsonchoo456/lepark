@@ -17,7 +17,7 @@ const s3 = new aws.S3({
 
 class PromotionService {
   // Create a new promotion
-  async createPromotion(data: Prisma.PromotionCreateInput): Promise<Promotion> {
+  async createPromotion(data: PromotionSchemaType): Promise<Promotion> {
     try {
       if (!data.isNParksWide) {
         if (!data.parkId) {
@@ -29,12 +29,17 @@ class PromotionService {
         }
       }
 
+      
       if (data.promoCode) {
-        const existingPromotions = await prisma.promotion.findMany({
-          where: { promoCode: data.promoCode },
+        data.promoCode = data.promoCode.trim();
+        const existingPromotion = await prisma.promotion.findFirst({
+          where: { promoCode: {
+            equals: data.promoCode,
+            mode: 'insensitive',
+          }, },
         });
   
-        if (existingPromotions && existingPromotions.length > 0) {
+        if (existingPromotion) {
           throw new Error('Please enter a unique Promo Code');
         }
       }
@@ -88,6 +93,26 @@ class PromotionService {
     return promotion;
   }
 
+  async getPromotionsForNParksAndParkId(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
+    const promotions =  await PromotionDao.getPromotionsForNParksAndParkId(parkId, archived, enabled);
+    const parks = await ParkDao.getAllParks();
+    return promotions.map((promotion) => {
+      if (promotion.isNParksWide || !promotion.parkId) {
+        return promotion;
+      } else {
+        const park = parks.find((p: any) => p.id === promotion.parkId);
+        return {
+          ...promotion,
+          park,
+        };
+      }
+    });
+  }
+
+  async getPromotionsForNParks(archived: boolean, enabled: boolean): Promise<Promotion[]> {
+    return await PromotionDao.getPromotionsForNParks(archived, enabled);
+  }
+
   // Get all promotions for a specific park
   async getPromotionsByParkId(parkId: string, archived: boolean, enabled: boolean): Promise<Promotion[]> {
     const id = parseInt(parkId);
@@ -97,24 +122,27 @@ class PromotionService {
     } else {
       return await PromotionDao.getPromotionsByParkId(id);
     }
-
-    // const parks = await ParkDao.getAllParks();
-    // return promotions.map((promotion) => {
-    //   if (promotion.isNParksWide || !promotion.parkId) {
-    //     return promotion;
-    //   } else {
-    //     const park = parks.find((p: any) => p.id === promotion.parkId);
-    //     return {
-    //       ...promotion,
-    //       park,
-    //     };
-    //   }
-    // });
   }
 
   // Update promotion details
-  async updatePromotionDetails(id: string, data: Prisma.PromotionUpdateInput): Promise<Promotion> {
-    return PromotionDao.updatePromotion(id, data);
+  async updatePromotionDetails(id: string, data: Partial<PromotionSchemaType>): Promise<Promotion> {
+    if (data.promoCode) {
+      data.promoCode = data.promoCode.trim();
+      const existingPromotion = await prisma.promotion.findFirst({
+        where: { promoCode: {
+          equals: data.promoCode,
+          mode: 'insensitive',
+        }, },
+      });
+
+      if (existingPromotion) {
+        throw new Error('Please enter a unique Promo Code');
+      }
+    }
+    
+    const formattedData = dateFormatter(data);
+
+    return PromotionDao.updatePromotion(id, formattedData);
   }
 
   async disablePromotion(id: string): Promise<void> {
