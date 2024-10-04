@@ -33,8 +33,8 @@ const AnnouncementList: React.FC = () => {
   const statusConfig: Record<AnnouncementStatusEnum, { color: string; label: string }> = {
     [AnnouncementStatusEnum.UPCOMING]: { color: 'blue', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.UPCOMING) },
     [AnnouncementStatusEnum.ACTIVE]: { color: 'green', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.ACTIVE) },
-    [AnnouncementStatusEnum.EXPIRED]: { color: 'red', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.EXPIRED) },
-    [AnnouncementStatusEnum.INACTIVE]: { color: 'gray', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.INACTIVE) },
+    [AnnouncementStatusEnum.EXPIRED]: { color: 'gold', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.EXPIRED) },
+    [AnnouncementStatusEnum.INACTIVE]: { color: 'default', label: formatEnumLabelToRemoveUnderscores(AnnouncementStatusEnum.INACTIVE) },
   };
 
   const filteredAnnouncements = useMemo(() => {
@@ -67,12 +67,12 @@ const AnnouncementList: React.FC = () => {
       sorter: (a, b) => a.title.localeCompare(b.title),
       fixed: 'left',
     },
-    {
-      title: 'Content',
-      dataIndex: 'content',
-      key: 'content',
-      ellipsis: true,
-    },
+    // {
+    //   title: 'Content',
+    //   dataIndex: 'content',
+    //   key: 'content',
+    //   ellipsis: true,
+    // },
     {
       title: 'Park',
       dataIndex: 'parkId',
@@ -81,21 +81,28 @@ const AnnouncementList: React.FC = () => {
         const park = parks.find((p) => p.id === parkId);
         return <div>{park ? park.name : 'NParks'}</div>;
       },
-      filters:
-      user?.role === StaffType.SUPERADMIN
-        ? useMemo(() => {
-            const uniqueParkIds = [...new Set(announcements.map((a) => a.parkId))];
-            return [
-              { text: 'NParks', value: 'nparks' },
-              ...uniqueParkIds
-                .filter((parkId): parkId is number => parkId !== null)
-                .map((parkId) => {
-                  const park = parks.find((p) => p.id === parkId);
-                  return { text: park ? park.name : `Park ${parkId}`, value: parkId };
-                })
-            ];
-          }, [announcements, parks])
-        : undefined,
+      filters: useMemo(() => {
+        if (user?.role === StaffType.SUPERADMIN) {
+          const uniqueParkIds = [...new Set(announcements.map((a) => a.parkId))];
+          return [
+            { text: 'NParks', value: 'nparks' },
+            ...uniqueParkIds
+              .filter((parkId): parkId is number => parkId !== null)
+              .map((parkId) => {
+                const park = parks.find((p) => p.id === parkId);
+                return { text: park ? park.name : `Park ${parkId}`, value: parkId };
+              })
+          ];
+        } else if (user?.parkId) {
+          const userPark = parks.find(p => p.id === user.parkId);
+          return [
+            { text: 'NParks', value: 'nparks' },
+            { text: userPark ? userPark.name : `Park ${user.parkId}`, value: user.parkId }
+          ];
+        } else {
+          return [{ text: 'NParks', value: 'nparks' }];
+        }
+      }, [announcements, parks, user]),
       onFilter: (value: boolean | Key, record: AnnouncementResponse) => {
         if (value === 'nparks') return record.parkId === null;
         return record.parkId === value;
@@ -105,14 +112,14 @@ const AnnouncementList: React.FC = () => {
       title: 'Publish Date',
       dataIndex: 'startDate',
       key: 'startDate',
-      render: (date) => moment(date).format('YYYY-MM-DD'),
+      render: (date) => moment(date).format('DD MMM YYYY'),
       sorter: (a, b) => moment(a.startDate).unix() - moment(b.startDate).unix(),
     },
     {
       title: 'End Date',
       dataIndex: 'endDate',
       key: 'endDate',
-      render: (date) => moment(date).format('YYYY-MM-DD'),
+      render: (date) => moment(date).format('DD MMM YYYY'),
       sorter: (a, b) => moment(a.endDate).unix() - moment(b.endDate).unix(),
     },
     {
@@ -140,9 +147,6 @@ const AnnouncementList: React.FC = () => {
           </Tooltip>
           {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
             <>
-              <Tooltip title="Edit Details">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
-              </Tooltip>
               <Tooltip title="Delete">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
               </Tooltip>
@@ -228,7 +232,7 @@ const AnnouncementList: React.FC = () => {
       </Flex>
 
       <Card>
-        <Table dataSource={filteredAnnouncements} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
+        <Table dataSource={filteredAnnouncements} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} pagination={{ pageSize: 10 }} />
       </Card>
     </ContentWrapperDark>
   );

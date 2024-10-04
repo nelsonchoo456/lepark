@@ -76,6 +76,7 @@ import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
 import AnnouncementList from './pages/Announcement/AnnouncementList';
 import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
+import AnnouncementDetails from './pages/AnnouncementDetails/AnnouncementDetails';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -441,7 +442,7 @@ export function App() {
               {/* Announcement Routes */}
               <Route path="/announcement">
                 <Route index element={<AnnouncementList />} />
-                {/* <Route path=":announcementId" element={<AnnouncementDetails />} /> */}
+                <Route path=":announcementId" element={<AnnouncementDetails />} />
                 <Route element={<RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/announcement" />}>
                   <Route path="create" element={<AnnouncementCreate />} />
                   {/* <Route path=":announcementId/edit" element={<AnnouncementEdit />} /> */}

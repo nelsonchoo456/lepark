@@ -38,7 +38,7 @@ const AnnouncementCreate = () => {
     try {
       const values = await form.validateFields();
 
-      console.log('Values:', values);
+      // console.log('Values:', values);
 
       const { isParkWide, dateRange, ...otherValues } = values;
 
@@ -50,11 +50,11 @@ const AnnouncementCreate = () => {
         ...otherValues,
         startDate: dateToSGT(values.dateRange[0]).format(),
         endDate: dateToSGT(values.dateRange[1], true).format(),
-        updatedAt: moment().tz('Asia/Singapore').format(),
+        updatedAt: dateToSGT(moment()).format(),
         status: AnnouncementStatusEnum.ACTIVE,
       };
 
-      console.log('Final Data:', finalData);
+      // console.log('Final Data:', finalData);
 
       const response = await createAnnouncement(finalData);
       if (response?.status && response.status === 201) {
