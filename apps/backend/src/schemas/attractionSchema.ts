@@ -16,6 +16,7 @@ export const AttractionSchema = z.object({
 export const AttractionTicketListingSchema = z.object({
   category: z.nativeEnum(AttractionTicketCategoryEnum),
   nationality: z.nativeEnum(AttractionTicketNationalityEnum),
+  description: z.string(),
   price: z.number(),
   isActive: z.boolean(),
   attractionId: z.string()

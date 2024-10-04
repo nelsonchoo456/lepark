@@ -57,6 +57,7 @@ export interface AttractionTicketListingResponse {
   id: string;
   category: AttractionTicketCategoryEnum;
   nationality: AttractionTicketNationalityEnum;
+  description: string;
   price: number;
   isActive: boolean;
   attractionId: string;
@@ -65,6 +66,7 @@ export interface AttractionTicketListingResponse {
 export interface CreateAttractionTicketListingData {
   category: AttractionTicketCategoryEnum;
   nationality: AttractionTicketNationalityEnum;
+  description: string;
   price: number;
   isActive: boolean;
   attractionId: string;
@@ -73,6 +75,7 @@ export interface CreateAttractionTicketListingData {
 export interface UpdateAttractionTicketListingData {
   category?: AttractionTicketCategoryEnum;
   nationality?: AttractionTicketNationalityEnum;
+  description?: string;
   price?: number;
   isActive?: boolean;
   attractionId?: string;

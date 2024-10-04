@@ -15,6 +15,7 @@ import {
 } from '@lepark/data-access';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
+import TextArea from 'antd/es/input/TextArea';
 // import TicketPurchaseChart from './TicketPurchaseChart';
 
 interface TicketsTabProps {
@@ -58,7 +59,10 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
   }, [attraction]);
 
   useEffect(() => {
-    const searchTerms = searchTerm.toLowerCase().split(' ').filter(term => term.length > 0);
+    const searchTerms = searchTerm
+      .toLowerCase()
+      .split(' ')
+      .filter((term) => term.length > 0);
     const filtered = ticketListings.filter((listing) => {
       const listingString = `
         ${listing.category.toLowerCase()}
@@ -66,7 +70,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         ${listing.price.toString()}
         ${listing.isActive ? 'active' : 'inactive'}
       `;
-      return searchTerms.every(term => listingString.includes(term));
+      return searchTerms.every((term) => listingString.includes(term));
     });
     setFilteredListings(filtered);
   }, [searchTerm, ticketListings]);
@@ -86,23 +90,24 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         const newListingData = {
           category: values.category,
           nationality: values.nationality,
+          description: values.description,
           price: parseFloat(values.price),
           attractionId: attraction.id,
-          isActive: true
+          isActive: true,
         };
-  
+
         // Check if an active ticket listing with the same category and nationality already exists
         const existing = ticketListings.find(
           (listing) => listing.category === values.category && listing.nationality === values.nationality && listing.isActive,
         );
-  
+
         if (existing) {
           setExistingListing(existing);
           setNewListingValues(newListingData);
           setPromptModalVisible(true);
           return;
         }
-  
+
         await createNewListing(newListingData);
       } catch (error) {
         console.error('Error creating ticket listing:', error);
@@ -110,7 +115,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
       }
     }
   };
-  
+
   const createNewListing = async (newListingData: any) => {
     await createAttractionTicketListing(newListingData);
     message.success('Ticket listing created successfully');
@@ -129,25 +134,26 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         // Make the existing listing inactive
         await updateAttractionTicketListingDetails(existingListing.id, {
           ...existingListing,
-          isActive: false
+          isActive: false,
         });
-  
+
         // Create the new listing
         await createAttractionTicketListing({
           category: newListingValues.category,
           nationality: newListingValues.nationality,
+          description: newListingValues.description,
           price: parseFloat(newListingValues.price),
           attractionId: attraction.id,
-          isActive: true
+          isActive: true,
         });
-  
+
         message.success('Existing listing deactivated and new listing created successfully');
         setPromptModalVisible(false);
         setIsModalVisible(false);
         setExistingListing(null);
         setNewListingValues(null);
         form.resetFields();
-        
+
         // Refresh ticket listings
         const response = await getAttractionTicketListingsByAttractionId(attraction.id);
         setTicketListings(response.data);
@@ -285,7 +291,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
       <Modal title="Add Ticket Listing" open={isModalVisible} onCancel={handleCancel} footer={null}>
         <Form form={form} onFinish={handleSubmit} layout="vertical">
           <Form.Item name="nationality" label="Nationality" rules={[{ required: true, message: 'Please select a nationality' }]}>
-            <Select>
+            <Select placeholder="Select ticket listing nationality">
               {Object.values(AttractionTicketNationalityEnum).map((nationality) => (
                 <Select.Option key={nationality} value={nationality}>
                   {nationality}
@@ -294,7 +300,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
             </Select>
           </Form.Item>
           <Form.Item name="category" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
-            <Select>
+            <Select placeholder="Select ticket listing category">
               {Object.values(AttractionTicketCategoryEnum).map((category) => (
                 <Select.Option key={category} value={category}>
                   {category}
@@ -302,8 +308,12 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
               ))}
             </Select>
           </Form.Item>
+          <Form.Item name="description" label="Description" rules={[{ required: true, message: 'Please enter a description' }]}>
+            <TextArea placeholder="Describe the ticket listing" autoSize={{ minRows: 3, maxRows: 5 }} />
+          </Form.Item>
           <Form.Item name="price" label="Price" rules={[{ required: true, message: 'Please enter a price' }]}>
             <Input
+              placeholder="Enter ticket listing price"
               type="number"
               step="0.01"
               min="0"

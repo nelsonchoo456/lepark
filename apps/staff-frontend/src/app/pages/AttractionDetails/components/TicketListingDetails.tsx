@@ -2,12 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Descriptions, Typography, Tag, message, Button, Input, Select, Modal } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { getAttractionTicketListingById, updateAttractionTicketListingDetails, getAttractionById, UpdateAttractionTicketListingData, getAttractionTicketListingsByAttractionId } from '@lepark/data-access';
-import { AttractionTicketListingResponse, AttractionResponse, AttractionTicketCategoryEnum, AttractionTicketNationalityEnum } from '@lepark/data-access';
+import {
+  getAttractionTicketListingById,
+  updateAttractionTicketListingDetails,
+  getAttractionById,
+  UpdateAttractionTicketListingData,
+  getAttractionTicketListingsByAttractionId,
+} from '@lepark/data-access';
+import {
+  AttractionTicketListingResponse,
+  AttractionResponse,
+  AttractionTicketCategoryEnum,
+  AttractionTicketNationalityEnum,
+} from '@lepark/data-access';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 import { StaffType, StaffResponse } from '@lepark/data-access';
 import PageHeader2 from '../../../components/main/PageHeader2';
 import { useRestrictAttractionTicketListing } from '../../../hooks/Attractions/useRestrictAttractionTicketListing';
+import TextArea from 'antd/es/input/TextArea';
 
 const TicketListingDetails: React.FC = () => {
   const { ticketListingId } = useParams<{ ticketListingId: string }>();
@@ -37,7 +49,7 @@ const TicketListingDetails: React.FC = () => {
   const handleInputChange = (key: string, value: any) => {
     setEditedTicketListing((prev) => {
       if (prev === null) return null;
-      
+  
       // Handle price input
       if (key === 'price') {
         const regex = /^\d*\.?\d{0,2}$/;
@@ -50,18 +62,19 @@ const TicketListingDetails: React.FC = () => {
         return prev;
       }
   
+      // Handle all other inputs, including description
       return {
         ...prev,
         [key]: value,
       };
     });
-
+  
     // Check for existing active listing when changing to active
     if (key === 'isActive' && value === true) {
-    checkExistingActiveListing();
+      checkExistingActiveListing();
     }
   };
-  
+
   const checkExistingActiveListing = async () => {
     if (!editedTicketListing || !attraction) return;
 
@@ -72,7 +85,7 @@ const TicketListingDetails: React.FC = () => {
           listing.id !== editedTicketListing.id &&
           listing.category === editedTicketListing.category &&
           listing.nationality === editedTicketListing.nationality &&
-          listing.isActive
+          listing.isActive,
       );
 
       if (existingListing) {
@@ -86,13 +99,8 @@ const TicketListingDetails: React.FC = () => {
 
   const validateInputs = () => {
     if (editedTicketListing === null) return false;
-    const { category, nationality, isActive, price } = editedTicketListing;
-    return (
-      category &&
-      nationality &&
-      isActive !== undefined &&
-      price !== undefined
-    );
+    const { category, nationality, description, isActive, price } = editedTicketListing;
+    return category && nationality && description && isActive !== undefined && price !== undefined;
   };
 
   const handleSave = async () => {
@@ -112,6 +120,7 @@ const TicketListingDetails: React.FC = () => {
       const updatedTicketListingData: UpdateAttractionTicketListingData = {
         category: ticketListing?.category,
         nationality: ticketListing?.nationality,
+        description: editedTicketListing?.description,
         price: parseFloat(editedTicketListing?.price.toString() || '0'),
         isActive: editedTicketListing?.isActive,
         attractionId: ticketListing?.attractionId,
@@ -137,7 +146,7 @@ const TicketListingDetails: React.FC = () => {
         // Make the existing listing inactive
         await updateAttractionTicketListingDetails(existingActiveListing.id, {
           ...existingActiveListing,
-          isActive: false
+          isActive: false,
         });
 
         // Update the current listing
@@ -155,7 +164,7 @@ const TicketListingDetails: React.FC = () => {
   const handleCancelPrompt = () => {
     setPromptModalVisible(false);
     setExistingActiveListing(null);
-    setEditedTicketListing((prev) => prev ? { ...prev, isActive: false } : null);
+    setEditedTicketListing((prev) => (prev ? { ...prev, isActive: false } : null));
   };
 
   const getDescriptionItems = () => [
@@ -175,11 +184,26 @@ const TicketListingDetails: React.FC = () => {
       children: ticketListing?.nationality,
     },
     {
+      key: 'description',
+      label: 'Description',
+      children: inEditMode ? (
+        <TextArea
+          value={editedTicketListing?.description}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+          autoSize={{ minRows: 3, maxRows: 5 }}
+        />
+      ) : (
+        <div style={{ whiteSpace: 'pre-wrap' }}>{ticketListing?.description}</div>
+      ),
+    },
+    {
       key: 'price',
       label: 'Price',
       children: inEditMode ? (
-        <Input
-          type="number"
+        <div className="flex items-center">
+          <span className="mr-2">$</span>
+          <Input
+            type="number"
           value={editedTicketListing?.price}
           onChange={(e) => {
             const value = e.target.value;
@@ -198,48 +222,49 @@ const TicketListingDetails: React.FC = () => {
           }}
           step="0.01"
           min="0"
-          style={{ width: '100%' }}
-        />
+            style={{ width: '100%' }}
+          />
+        </div>
       ) : (
         `$${parseFloat(ticketListing?.price.toString() || '0').toFixed(2)}`
       ),
     },
     {
-        key: 'isActive',
-        label: 'Status',
-        children: (
-          <div style={{ minWidth: '100px' }}>  {/* Add a minimum width */}
-            {!inEditMode ? (
-              <Tag color={ticketListing?.isActive ? 'green' : 'red'}>
-                {ticketListing?.isActive ? 'Active' : 'Inactive'}
-              </Tag>
-            ) : (
-              <Select
-                value={editedTicketListing?.isActive}
-                onChange={(value) => handleInputChange('isActive', value)}
-                style={{ width: '100%' }}
-              >
-                <Select.Option value={true}>Active</Select.Option>
-                <Select.Option value={false}>Inactive</Select.Option>
-              </Select>
-            )}
-          </div>
-        ),
-      },
+      key: 'isActive',
+      label: 'Status',
+      children: (
+        <div style={{ minWidth: '100px' }}>
+          {' '}
+          {/* Add a minimum width */}
+          {!inEditMode ? (
+            <Tag color={ticketListing?.isActive ? 'green' : 'red'}>{ticketListing?.isActive ? 'Active' : 'Inactive'}</Tag>
+          ) : (
+            <Select
+              value={editedTicketListing?.isActive}
+              onChange={(value) => handleInputChange('isActive', value)}
+              style={{ width: '100%' }}
+            >
+              <Select.Option value={true}>Active</Select.Option>
+              <Select.Option value={false}>Inactive</Select.Option>
+            </Select>
+          )}
+        </div>
+      ),
+    },
   ];
 
   const breadcrumbItems = [
     {
-      title: "Attraction Management",
+      title: 'Attraction Management',
       pathKey: '/attraction',
       isMain: true,
     },
     {
-      title: attraction?.title || "Attraction Details",
+      title: attraction?.title || 'Attraction Details',
       pathKey: `/attraction/${attraction?.id}?tab=tickets`,
     },
     {
-      title: "Ticket Listing Details",
+      title: 'Ticket Listing Details',
       pathKey: `/attraction/${attraction?.id}/ticketlisting/${ticketListing?.id}`,
       isCurrent: true,
     },
@@ -266,6 +291,7 @@ const TicketListingDetails: React.FC = () => {
         <PageHeader2 breadcrumbItems={breadcrumbItems} />
         <Card>
           <Descriptions
+            labelStyle={{ width: '30%' }}
             bordered
             column={1}
             size="middle"
@@ -275,9 +301,7 @@ const TicketListingDetails: React.FC = () => {
                 {!inEditMode ? (
                   <>
                     <div>Ticket Listing Details</div>
-                    {canEdit && (
-                      <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
-                    )}
+                    {canEdit && <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />}
                   </>
                 ) : (
                   <>

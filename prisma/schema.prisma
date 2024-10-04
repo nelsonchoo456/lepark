@@ -221,6 +221,7 @@ model AttractionTicketListing {
   id              String    @id @default(uuid()) @db.Uuid
   category        AttractionTicketCategoryEnum
   nationality     AttractionTicketNationalityEnum
+  description     String
   price           Float
   isActive        Boolean
   attractionId    String    @db.Uuid
