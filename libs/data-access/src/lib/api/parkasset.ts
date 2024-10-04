@@ -153,3 +153,20 @@ export async function getParkAssetBySerialNumber(serialNumber: string): Promise<
   }
 }
 
+export async function checkParkAssetDuplicateSerialNumber(serialNumber: string, parkAssetId?: string): Promise<boolean> {
+  try {
+    const params = new URLSearchParams({ serialNumber });
+    if (parkAssetId) {
+      params.append('parkAssetId', parkAssetId);
+    }
+    const response: AxiosResponse<{ isDuplicate: boolean }> = await client.get(`${URL}/checkDuplicateSerialNumber?${params}`);
+    return response.data.isDuplicate;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+

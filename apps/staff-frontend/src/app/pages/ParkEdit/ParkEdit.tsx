@@ -8,6 +8,8 @@ import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { ParkStatusEnum } from '@lepark/data-access';
 
 const center = {
   lat: 1.3503881629328163,
@@ -57,25 +59,6 @@ const ParkEdit = () => {
       form.setFieldsValue(initialValues);
     }
   }, [park, form]);
-
-  const parkStatusOptions = [
-    {
-      value: 'OPEN',
-      label: 'Open',
-    },
-    {
-      value: 'UNDER_CONSTRUCTION',
-      label: 'Under Construction',
-    },
-    {
-      value: 'LIMITED_ACCESS',
-      label: 'Limited Access',
-    },
-    {
-      value: 'CLOSED',
-      label: 'Closed',
-    },
-  ];
 
   const handleSubmit = async () => {
     if (!park) return;
@@ -211,7 +194,7 @@ const ParkEdit = () => {
             <TextArea placeholder="Park Description" />
           </Form.Item>
           <Form.Item name="parkStatus" label="Park Status" rules={[{ required: true }]}>
-            <Select placeholder="Select a Status" options={parkStatusOptions} />
+            <Select placeholder="Select a Status" options={Object.values(ParkStatusEnum).map((status) => ({ key: status, value: status, label: formatEnumLabelToRemoveUnderscores(status) }))} />
           </Form.Item>
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />

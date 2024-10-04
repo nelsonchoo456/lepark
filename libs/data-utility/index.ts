@@ -3,3 +3,4 @@ export * from './speciesData';
 // export * from './otherFile1';
 // export * from './otherFile2';
 export * from './speciesEnumHandler';
+export * from './enumUtil';

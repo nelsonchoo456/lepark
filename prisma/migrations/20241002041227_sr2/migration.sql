@@ -56,7 +56,7 @@ CREATE TYPE "ParkAssetConditionEnum" AS ENUM ('EXCELLENT', 'FAIR', 'POOR', 'DAMA
 CREATE TYPE "FacilityTypeEnum" AS ENUM ('TOILET', 'PLAYGROUND', 'INFORMATION', 'CARPARK', 'ACCESSIBILITY', 'STAGE', 'WATER_FOUNTAIN', 'PICNIC_AREA', 'BBQ_PIT', 'CAMPING_AREA', 'AED', 'FIRST_AID', 'AMPHITHEATER', 'GAZEBO', 'STOREROOM', 'OTHERS');
 
 -- CreateEnum
-CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'MAINTENANCE');
+CREATE TYPE "FacilityStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
 
 -- CreateEnum
 CREATE TYPE "PlantTaskStatusEnum" AS ENUM ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
@@ -219,6 +219,7 @@ CREATE TABLE "Visitor" (
 -- CreateTable
 CREATE TABLE "Hub" (
     "id" UUID NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -247,6 +248,7 @@ CREATE TABLE "Hub" (
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
     "serialNumber" TEXT NOT NULL,
     "sensorType" "SensorTypeEnum" NOT NULL,
     "description" TEXT,
@@ -273,7 +275,8 @@ CREATE TABLE "Sensor" (
 -- CreateTable
 CREATE TABLE "ParkAsset" (
     "id" UUID NOT NULL,
-    "serialNumber" TEXT NOT NULL,
+    "identifierNumber" TEXT NOT NULL,
+    "serialNumber" TEXT,
     "name" TEXT NOT NULL,
     "parkAssetType" "ParkAssetTypeEnum" NOT NULL,
     "description" TEXT,
@@ -386,13 +389,22 @@ CREATE INDEX "Event_facilityId_idx" ON "Event"("facilityId");
 CREATE UNIQUE INDEX "Visitor_email_key" ON "Visitor"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Hub_identifierNumber_key" ON "Hub"("identifierNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
 
 -- CreateIndex
 CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Sensor_identifierNumber_key" ON "Sensor"("identifierNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ParkAsset_identifierNumber_key" ON "ParkAsset"("identifierNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ParkAsset_serialNumber_key" ON "ParkAsset"("serialNumber");

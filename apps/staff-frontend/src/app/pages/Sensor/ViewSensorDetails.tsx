@@ -17,6 +17,9 @@ import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import LocationTab from './components/LocationTab';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -31,6 +34,7 @@ const ViewSensorDetails = () => {
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
   const [park, setPark] = useState<ParkResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
+  const { zones } = useFetchZones();
 
   const breadcrumbItems = [
     {
@@ -39,7 +43,7 @@ const ViewSensorDetails = () => {
       isMain: true,
     },
     {
-      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
+      title: sensor?.identifierNumber ? sensor?.identifierNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
       isCurrent: true,
     },
@@ -47,9 +51,9 @@ const ViewSensorDetails = () => {
 
   const descriptionsItems = [
     {
-      key: 'serialNumber',
-      label: 'Serial Number',
-      children: sensor?.serialNumber,
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: sensor?.identifierNumber,
     },
     {
       key: 'sensorStatus',
@@ -57,30 +61,46 @@ const ViewSensorDetails = () => {
       children: (() => {
         switch (sensor?.sensorStatus) {
           case 'ACTIVE':
-            return <Tag color="green">ACTIVE</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
+              </Tag>
+            );
           case 'INACTIVE':
-            return <Tag color="blue">INACTIVE</Tag>;
+            return (
+              <Tag color="blue" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
+              </Tag>
+            );
           case 'UNDER_MAINTENANCE':
-            return <Tag color="orange">UNDER MAINTENANCE</Tag>;
+            return (
+              <Tag color="orange" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
+              </Tag>
+            );
           case 'DECOMMISSIONED':
-            return <Tag color="red">DECOMMISSIONED</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
+              </Tag>
+            );
           default:
-            return <Tag>{sensor?.sensorStatus}</Tag>;
+            return <Tag>{formatEnumLabelToRemoveUnderscores(sensor?.sensorStatus ?? '')}</Tag>;
         }
       })(),
     },
-    { key: 'sensorType', label: 'Sensor Type', children: formatSensorType(sensor?.sensorType ?? '') },
-    {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
+    { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(sensor?.sensorType ?? '') },
+    // {
+    //   key: 'nextMaintenanceDate',
+    //   label: 'Next Maintenance Date',
+    //   children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
+    // },
     ...(user?.role === StaffType.SUPERADMIN
       ? [
           {
             key: 'parkName',
-            label: 'Park Name',
-            children: sensor?.parkName ?? '-',
+            label: 'Park',
+            children: sensor?.park?.name ?? '-',
           },
         ]
       : []),
@@ -91,14 +111,19 @@ const ViewSensorDetails = () => {
     },
   ];
 
-  console.log('sensor', sensor);
-
   const tabsItems = [
     {
       key: 'information',
       label: 'Information',
       children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
+    sensor && sensor.facility
+      ? {
+          key: 'location',
+          label: 'Storeroom Location',
+          children: <LocationTab facility={sensor.facility} park={sensor.park} zones={zones} />,
+        }
+      : null,
   ];
 
   if (loading) {
@@ -148,7 +173,7 @@ const ViewSensorDetails = () => {
         <Tabs
           centered
           defaultActiveKey="information"
-          items={tabsItems}
+          items={tabsItems.filter((item) => item !== null)}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />

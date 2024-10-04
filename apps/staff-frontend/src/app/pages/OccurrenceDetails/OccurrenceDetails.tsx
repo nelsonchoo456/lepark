@@ -16,6 +16,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictOccurrence } from '../../hooks/Occurrences/useRestrictOccurrence';
 import { useCallback, useEffect, useState } from 'react';
 import OccurrenceMapTab from './components/OccurrenceMapTab';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const OccurrenceDetails = () => {
   const { occurrenceId } = useParams<{ occurrenceId: string }>();
@@ -38,34 +39,34 @@ const OccurrenceDetails = () => {
 
   const getStatusTag = (status?: string) => {
     switch (status) {
-      case 'HEALTHY':
+      case OccurrenceStatusEnum.HEALTHY:
         return (
           <Tag color="green" bordered={false}>
-            HEALTHY
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.HEALTHY)}
           </Tag>
         );
-      case 'MONITOR_AFTER_TREATMENT':
+      case OccurrenceStatusEnum.MONITOR_AFTER_TREATMENT:
         return (
           <Tag color="yellow" bordered={false}>
-            MONITOR AFTER TREATMENT
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.MONITOR_AFTER_TREATMENT)}
           </Tag>
         );
-      case 'NEEDS_ATTENTION':
+      case OccurrenceStatusEnum.NEEDS_ATTENTION:
         return (
           <Tag color="orange" bordered={false}>
-            NEEDS ATTENTION
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.NEEDS_ATTENTION)}
           </Tag>
         );
-      case 'URGENT_ACTION_REQUIRED':
+      case OccurrenceStatusEnum.URGENT_ACTION_REQUIRED:
         return (
           <Tag color="red" bordered={false}>
-            URGENT ACTION REQUIRED
+            {formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.URGENT_ACTION_REQUIRED)}
           </Tag>
         );
-      case 'REMOVED':
-        return <Tag bordered={false}>REMOVED</Tag>;
+      case OccurrenceStatusEnum.REMOVED:
+        return <Tag bordered={false}>{formatEnumLabelToRemoveUnderscores(OccurrenceStatusEnum.REMOVED)}</Tag>;
       default:
-        return <Tag bordered={false}>{status}</Tag>;
+        return <Tag bordered={false}>{status ? formatEnumLabelToRemoveUnderscores(status) : ''}</Tag>;
     }
   };
 
@@ -159,48 +160,22 @@ const OccurrenceDetails = () => {
   const getLightTypeInfo = (lightType: LightTypeEnum) => {
     switch (lightType) {
       case LightTypeEnum.FULL_SUN:
-        return { text: 'Full Sun', icon: <WiDaySunny className="text-3xl mt-2 text-yellow-500" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(LightTypeEnum.FULL_SUN), icon: <WiDaySunny className="text-3xl mt-2 text-yellow-500" /> };
       case LightTypeEnum.PARTIAL_SHADE:
-        return { text: 'Partial Shade', icon: <WiDayCloudy className="text-3xl mt-2 text-yellow-300" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(LightTypeEnum.PARTIAL_SHADE), icon: <WiDayCloudy className="text-3xl mt-2 text-yellow-300" /> };
       case LightTypeEnum.FULL_SHADE:
-        return { text: 'Full Shade', icon: <WiNightAltCloudy className="text-3xl mt-2 text-gray-500" /> };
+        return { text: formatEnumLabelToRemoveUnderscores(LightTypeEnum.FULL_SHADE), icon: <WiNightAltCloudy className="text-3xl mt-2 text-gray-500" /> };
       default:
         return { text: 'Unknown', icon: <FiSun className="text-3xl mt-2" /> };
     }
   };
 
   const getSoilTypeText = (soilType: SoilTypeEnum) => {
-    switch (soilType) {
-      case SoilTypeEnum.SANDY:
-        return 'Sandy';
-      case SoilTypeEnum.CLAYEY:
-        return 'Clayey';
-      case SoilTypeEnum.LOAMY:
-        return 'Loamy';
-      default:
-        return 'Unknown';
-    }
+    return formatEnumLabelToRemoveUnderscores(soilType);
   };
 
   const getConservationStatusText = (status: ConservationStatusEnum) => {
-    switch (status) {
-      case ConservationStatusEnum.LEAST_CONCERN:
-        return 'Least Concern';
-      case ConservationStatusEnum.NEAR_THREATENED:
-        return 'Near Threatened';
-      case ConservationStatusEnum.VULNERABLE:
-        return 'Vulnerable';
-      case ConservationStatusEnum.ENDANGERED:
-        return 'Endangered';
-      case ConservationStatusEnum.CRITICALLY_ENDANGERED:
-        return 'Critically Endangered';
-      case ConservationStatusEnum.EXTINCT_IN_THE_WILD:
-        return 'Extinct in the Wild';
-      case ConservationStatusEnum.EXTINCT:
-        return 'Extinct';
-      default:
-        return 'Unknown';
-    }
+    return formatEnumLabelToRemoveUnderscores(status);
   };
 
   return (

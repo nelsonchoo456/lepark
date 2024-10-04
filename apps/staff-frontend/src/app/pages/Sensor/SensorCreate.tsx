@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createSensor, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { checkSensorDuplicateSerialNumber, createSensor, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, DatePicker, Divider, Form, Input, InputNumber, Select, message, Result, FormInstance } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import dayjs from 'dayjs';
@@ -10,6 +10,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { FacilityStatusEnum, FacilityTypeEnum, SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -27,26 +28,17 @@ const SensorCreate = () => {
 
   const sensorTypeOptions = Object.values(SensorTypeEnum).map((type) => ({
     value: type,
-    label: type
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(type),
   }));
 
   const sensorStatusOptions = Object.values(SensorStatusEnum).map((status) => ({
     value: status,
-    label: status
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(status),
   }));
 
   const sensorUnitOptions = Object.values(SensorUnitEnum).map((unit) => ({
     value: unit,
-    label: unit
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    label: formatEnumLabelToRemoveUnderscores(unit),
   }));
 
   const validateDates = (form: FormInstance) => ({
@@ -84,6 +76,12 @@ const SensorCreate = () => {
         acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
         images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [],
       };
+
+      const isDuplicate = await checkSensorDuplicateSerialNumber(values.serialNumber);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
 
       console.log('finalData', finalData);
 
@@ -125,7 +123,11 @@ const SensorCreate = () => {
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-            <Divider orientation="left">Park & Facility Details</Divider>
+            {user?.role === StaffType.SUPERADMIN ? (
+              <Divider orientation="left">Select Park and Facility</Divider>
+            ) : (
+              <Divider orientation="left">Select Facility</Divider>
+            )}
 
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -153,14 +155,20 @@ const SensorCreate = () => {
             <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
               <Input placeholder="Enter Name" />
             </Form.Item>
-            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
-              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
-            </Form.Item>
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
+            </Form.Item>
+            <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
+              <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
+            </Form.Item>
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
               <Select placeholder="Select Sensor Status" options={sensorStatusOptions} />
+            </Form.Item>
+            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
+              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
             </Form.Item>
             <Form.Item
               name="acquisitionDate"
@@ -169,7 +177,7 @@ const SensorCreate = () => {
             >
               <DatePicker className="w-full" maxDate={dayjs()} />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               name="calibrationFrequencyDays"
               label="Calibration Frequency"
               tooltip={{
@@ -178,10 +186,7 @@ const SensorCreate = () => {
               rules={[{ required: true, type: 'number', min: 0, max: 90, message: 'Please enter a number between 0 and 90' }]}
             >
               <InputNumber min={0} max={90} className="w-full" />
-            </Form.Item>
-            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
-              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
-            </Form.Item>
+            </Form.Item> */}
 
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
@@ -217,7 +222,7 @@ const SensorCreate = () => {
               <Input placeholder="Enter Supplier Contact Number" />
             </Form.Item>
 
-            <Form.Item wrapperCol={{ offset: 8 }}>
+            <Form.Item label={" "} colon={false}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
                 Submit
               </Button>

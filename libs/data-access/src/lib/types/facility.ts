@@ -1,4 +1,4 @@
-import { FacilityTypeEnum, FacilityStatusEnum } from '@prisma/client';
+import { FacilityTypeEnum, FacilityStatusEnum } from './sharedenums';
 import { EventResponse } from './event';
 
 export interface FacilityData {

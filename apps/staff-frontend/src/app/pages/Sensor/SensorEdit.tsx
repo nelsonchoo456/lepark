@@ -11,6 +11,7 @@ import {
   HubResponse,
   getFacilityById,
   FacilityResponse,
+  checkSensorDuplicateSerialNumber,
 } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -21,6 +22,7 @@ import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum, FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -68,7 +70,7 @@ const SensorEdit = () => {
 
         // Filter facilities based on the current facility's parkId
         const filtered = facilities.filter(
-          (f) => f.parkId === parkId && f.facilityStatus === FacilityStatusEnum.OPEN && f.facilityType === FacilityTypeEnum.STOREROOM
+          (f) => f.parkId === parkId && f.facilityStatus === FacilityStatusEnum.OPEN && f.facilityType === FacilityTypeEnum.STOREROOM,
         );
         setParkFacilities(filtered);
       }
@@ -89,6 +91,12 @@ const SensorEdit = () => {
         }
         return acc;
       }, {} as Partial<SensorUpdateData>);
+
+      const isDuplicate = await checkSensorDuplicateSerialNumber(values.serialNumber, sensor.id);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
 
       if (changedData.acquisitionDate) {
         changedData.acquisitionDate = dayjs(changedData.acquisitionDate).toISOString();
@@ -119,6 +127,14 @@ const SensorEdit = () => {
     setCurrentImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
+  const validatePhoneNumber = (_: any, value: string) => {
+    const phoneRegex = /^[689]\d{7}$/;
+    if (!value || phoneRegex.test(value)) {
+      return Promise.resolve();
+    }
+    return Promise.reject('Please enter a valid 8-digit phone number starting with 6, 8, or 9');
+  };
+
   const breadcrumbItems = [
     {
       title: 'Sensor Management',
@@ -126,7 +142,7 @@ const SensorEdit = () => {
       isMain: true,
     },
     {
-      title: sensor?.serialNumber ? sensor?.serialNumber : 'Details',
+      title: sensor?.identifierNumber ? sensor?.identifierNumber : 'Details',
       pathKey: `/sensor/${sensor?.id}`,
     },
     {
@@ -164,64 +180,45 @@ const SensorEdit = () => {
           <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter Sensor Name' }]}>
             <Input placeholder="Enter Name" />
           </Form.Item>
+          <Form.Item name="description" label="Description">
+            <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
+          </Form.Item>
+          <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+            <Input placeholder="Enter Serial Number" />
+          </Form.Item>
           <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
             <Select placeholder="Select Sensor Type">
               {Object.values(SensorTypeEnum).map((type) => (
                 <Select.Option key={type} value={type}>
-                  {type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {formatEnumLabelToRemoveUnderscores(type)}
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item name="description" label="Description">
-            <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
           <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
             <Select placeholder="Select Sensor Status">
               {Object.values(SensorStatusEnum).map((status) => (
                 <Select.Option key={status} value={status}>
-                  {status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {formatEnumLabelToRemoveUnderscores(status)}
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item
-            name="acquisitionDate"
-            label="Acquisition Date"
-            rules={[{ required: true, message: 'Please enter Acquisition Date' }]}
-          >
-            <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
-          </Form.Item>
-          <Form.Item
-            name="calibrationFrequencyDays"
-            label="Calibration Frequency"
-            rules={[{ required: true, type: 'number', min: 0, max: 90, message: 'Please enter a number between 0 and 90' }]}
-          >
-            <InputNumber min={0} max={90} className="w-full" />
           </Form.Item>
           <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
             <Select placeholder="Select Sensor Unit">
               {Object.values(SensorUnitEnum).map((unit) => (
                 <Select.Option key={unit} value={unit}>
-                  {unit.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {formatEnumLabelToRemoveUnderscores(unit)}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
-            <Input placeholder="Enter Supplier" />
-          </Form.Item>
-          <Form.Item
-            name="supplierContactNumber"
-            label="Supplier Contact Number"
-            rules={[{ required: true, message: 'Please enter Supplier Contact Number' }]}
-          >
-            <Input placeholder="Enter Supplier Contact Number" />
+          <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true, message: 'Please enter Acquisition Date' }]}>
+            <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
           </Form.Item>
           <Form.Item name="remarks" label="Remarks">
             <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
-
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>
@@ -250,6 +247,17 @@ const SensorEdit = () => {
                   />
                 ))}
             </div>
+          </Form.Item>
+          <Divider orientation="left">Supplier Details</Divider>
+          <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+            <Input placeholder="Enter Supplier" />
+          </Form.Item>
+          <Form.Item
+            name="supplierContactNumber"
+            label="Supplier Contact Number"
+            rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
+          >
+            <Input placeholder="Enter Supplier Contact Number" />
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8 }}>

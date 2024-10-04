@@ -11,14 +11,11 @@ import { MdDeleteOutline } from 'react-icons/md';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Typography } from 'antd';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
-  return taskType
-    .toLowerCase()
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
 const PlantTaskList: React.FC = () => {

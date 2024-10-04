@@ -55,9 +55,9 @@ const InformationTab = ({ attraction, park }: InformationTabProps) => {
   return (
     <div>
       <Divider orientation="left">Attraction Details</Divider>
-      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
+      <Descriptions key="details" items={detailsItems} column={1} bordered labelStyle={{ width: "15vw"}}/>
       <Divider orientation="left">Attraction Location</Divider>
-      <Descriptions key="location" items={locationItems} column={1} bordered labelStyle={{ width: "15vw"}} contentStyle={{ fontWeight: "500" }}/>
+      <Descriptions key="location" items={locationItems} column={1} bordered labelStyle={{ width: "15vw"}}/>
       <Divider orientation="left">Attraction Hours</Divider>
       <Descriptions bordered column={1} labelStyle={{ width: "15vw" }} contentStyle={{ fontWeight: "500" }}>
         {openingHours &&

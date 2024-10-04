@@ -17,6 +17,7 @@ import { IoIosArrowDown, IoMdHeart, IoMdHeartDislike, IoMdHeartEmpty } from 'rea
 import { useHandleFavoriteSpecies } from '../../hooks/useHandleFavoriteSpecies';
 import { IoEarth } from 'react-icons/io5';
 import { convertEnumToNormalFormat } from '@lepark/data-utility';
+import withParkGuard from '../../park-context/withParkGuard';
 // Add these type definitions at the top of your file
 type OrdersType = { orders: string[] };
 type PhylumDataType = {
@@ -174,7 +175,7 @@ const DiscoverPerPark = () => {
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
-      <ParkHeader cardClassName="h-24 md:h-[120px]">
+      <ParkHeader cardClassName="h-24 md:h-[160px]">
         <div className="flex w-full md:text-center md:mx-auto md:block md:w-auto">
           <div className="flex-1 font-medium text-2xl md:text-3xl">
             Species <span className="text-sm md:text-lg">in {selectedPark?.name}</span>
@@ -281,4 +282,4 @@ const DiscoverPerPark = () => {
   );
 };
 
-export default DiscoverPerPark;
+export default withParkGuard(DiscoverPerPark);

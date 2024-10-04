@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import {
   OccurrenceResponse,
-  // OccurrenceStatusEnum,
+  OccurrenceStatusEnum,
   StatusLogResponse,
   getStatusLogsByOccurrenceId,
   createStatusLog,
@@ -15,6 +15,7 @@ import useUploadImages from '../../../hooks/Images/useUploadImages';
 import { ImageInput } from '@lepark/common-ui';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface StatusLogsProps {
   occurrence: OccurrenceResponse | null;
@@ -67,28 +68,10 @@ const StatusLogs: React.FC<StatusLogsProps> = ({ occurrence, onStatusLogCreated 
     setFilteredLogs(filtered);
   }, [searchTerm, statusLogs]);
 
-  const occurrenceStatusOptions = [
-    {
-      value: 'HEALTHY',
-      label: 'HEALTHY',
-    },
-    {
-      value: 'MONITOR_AFTER_TREATMENT',
-      label: 'MONITOR_AFTER_TREATMENT',
-    },
-    {
-      value: 'NEEDS_ATTENTION',
-      label: 'NEEDS_ATTENTION',
-    },
-    {
-      value: 'URGENT_ACTION_REQUIRED',
-      label: 'URGENT_ACTION_REQUIRED',
-    },
-    {
-      value: 'REMOVED',
-      label: 'REMOVED',
-    },
-  ]
+  const occurrenceStatusOptions = Object.values(OccurrenceStatusEnum).map(status => ({
+    value: status,
+    label: formatEnumLabelToRemoveUnderscores(status),
+  }));
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -181,7 +164,7 @@ const StatusLogs: React.FC<StatusLogsProps> = ({ occurrence, onStatusLogCreated 
       title: 'Status Type',
       dataIndex: 'statusLogType',
       key: 'statusLogType',
-      render: (statusLogType: string) => <Tag>{statusLogType}</Tag>,
+      render: (statusLogType: string) => <Tag>{formatEnumLabelToRemoveUnderscores(statusLogType)}</Tag>,
       filters: occurrenceStatusOptions.map(type => ({ text: type.label, value: type.value })),
       onFilter: (value, record) => record.statusLogType === value,
     },

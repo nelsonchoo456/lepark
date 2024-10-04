@@ -11,6 +11,7 @@ import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { useFetchHubs } from '../../hooks/Hubs/useFetchHubs';
 import moment from 'moment';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const HubList: React.FC = () => {
   const { hubs, loading, triggerFetch } = useFetchHubs();
@@ -37,11 +38,11 @@ const HubList: React.FC = () => {
 
   const columns: TableProps<HubResponse>['columns'] = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a, b) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '15%',
     },
     {
@@ -74,38 +75,39 @@ const HubList: React.FC = () => {
       dataIndex: 'hubStatus',
       key: 'hubStatus',
       render: (text) => {
+        const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
             return (
               <Tag color="green" bordered={false}>
-                ACTIVE
+                {formattedStatus}
               </Tag>
             );
           case 'INACTIVE':
             return (
               <Tag color="blue" bordered={false}>
-                INACTIVE
+                {formattedStatus}
               </Tag>
             );
           case 'UNDER_MAINTENANCE':
             return (
               <Tag color="yellow" bordered={false}>
-                UNDER MAINTENANCE
+                {formattedStatus}
               </Tag>
             );
           case 'DECOMMISSIONED':
             return (
               <Tag color="red" bordered={false}>
-                DECOMMISSIONED
+                {formattedStatus}
               </Tag>
             );
         }
       },
       filters: [
-        { text: 'ACTIVE', value: 'ACTIVE' },
-        { text: 'INACTIVE', value: 'INACTIVE' },
-        { text: 'UNDER_MAINTENANCE', value: 'UNDER_MAINTENANCE' },
-        { text: 'DECOMMISSIONED', value: 'DECOMMISSIONED' },
+        { text: formatEnumLabelToRemoveUnderscores('ACTIVE'), value: 'ACTIVE' },
+        { text: formatEnumLabelToRemoveUnderscores('INACTIVE'), value: 'INACTIVE' },
+        { text: formatEnumLabelToRemoveUnderscores('UNDER_MAINTENANCE'), value: 'UNDER_MAINTENANCE' },
+        { text: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED'), value: 'DECOMMISSIONED' },
       ],
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
@@ -146,11 +148,11 @@ const HubList: React.FC = () => {
 
   const columnsForSuperadmin: TableProps<HubResponse>['columns'] = [
     {
-      title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      title: 'Identifier Number',
+      dataIndex: 'identifierNumber',
+      key: 'identifierNumber',
       render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
+      sorter: (a, b) => a.identifierNumber.localeCompare(b.identifierNumber),
       width: '15%',
     },
     {
@@ -189,38 +191,39 @@ const HubList: React.FC = () => {
       dataIndex: 'hubStatus',
       key: 'hubStatus',
       render: (text) => {
+        const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
             return (
               <Tag color="green" bordered={false}>
-                ACTIVE
+                {formattedStatus}
               </Tag>
             );
           case 'INACTIVE':
             return (
               <Tag color="blue" bordered={false}>
-                INACTIVE
+                {formattedStatus}
               </Tag>
             );
           case 'UNDER_MAINTENANCE':
             return (
               <Tag color="yellow" bordered={false}>
-                UNDER MAINTENANCE
+                {formattedStatus}
               </Tag>
             );
           case 'DECOMMISSIONED':
             return (
               <Tag color="red" bordered={false}>
-                DECOMMISSIONED
+                {formattedStatus}
               </Tag>
             );
         }
       },
       filters: [
-        { text: 'ACTIVE', value: 'ACTIVE' },
-        { text: 'INACTIVE', value: 'INACTIVE' },
-        { text: 'UNDER_MAINTENANCE', value: 'UNDER_MAINTENANCE' },
-        { text: 'DECOMMISSIONED', value: 'DECOMMISSIONED' },
+        { text: formatEnumLabelToRemoveUnderscores('ACTIVE'), value: 'ACTIVE' },
+        { text: formatEnumLabelToRemoveUnderscores('INACTIVE'), value: 'INACTIVE' },
+        { text: formatEnumLabelToRemoveUnderscores('UNDER_MAINTENANCE'), value: 'UNDER_MAINTENANCE' },
+        { text: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED'), value: 'DECOMMISSIONED' },
       ],
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',

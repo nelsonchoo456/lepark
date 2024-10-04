@@ -1,4 +1,4 @@
-import { AttractionResponse, getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { AttractionResponse, getZonesByParkId, ParkResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
@@ -14,8 +14,9 @@ import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 interface MapTabProps {
   attraction: AttractionResponse;
   park: ParkResponse;
+  user: StaffResponse | null;
 }
-const MapTab = ({ attraction, park }: MapTabProps) => {
+const MapTab = ({ attraction, park, user }: MapTabProps) => {
   const navigate = useNavigate();
   const [zones, setZones] = useState<ZoneResponse[]>();
 
@@ -101,11 +102,13 @@ const MapTab = ({ attraction, park }: MapTabProps) => {
         </MapContainer>
 
         <div className="absolute top-4 right-3 z-[1000]">
-          <Tooltip title="Edit Location">
-            <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-map`)}>
-              Edit Location
-            </Button>
-          </Tooltip>
+        {(user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && user?.parkId === attraction.parkId)) && (
+        <Tooltip title="Edit Location">
+          <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-map`)}>
+            Edit Location
+          </Button>
+        </Tooltip>
+      )}
         </div>
       </div>
     </>

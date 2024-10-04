@@ -180,3 +180,20 @@ export async function getSensorsByParkId(parkId: number): Promise<AxiosResponse<
     }
   }
 }
+
+export async function checkSensorDuplicateSerialNumber(serialNumber: string, sensorId?: string): Promise<boolean> {
+  try {
+    const params = new URLSearchParams({ serialNumber });
+    if (sensorId) {
+      params.append('sensorId', sensorId);
+    }
+    const response: AxiosResponse<{ isDuplicate: boolean }> = await client.get(`${URL}/checkDuplicateSerialNumber?${params}`);
+    return response.data.isDuplicate;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { createHub, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { checkHubDuplicateSerialNumber, createHub, FacilityResponse, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, DatePicker, Divider, Form, Input, InputNumber, Select, message, notification, Result, FormInstance } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import dayjs from 'dayjs';
@@ -10,6 +10,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import { useFetchFacilities } from '../../hooks/Facilities/useFetchFacilities';
 import { FacilityStatusEnum, FacilityTypeEnum } from '@prisma/client';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
@@ -29,10 +30,10 @@ const HubCreate = () => {
   const [selectedFacilityId, setSelectedFacilityId] = useState<number | null>(null);
 
   const hubStatusOptions = [
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' },
-    { value: 'UNDER_MAINTENANCE', label: 'Under Maintenance' },
-    { value: 'DECOMMISSIONED', label: 'Decommissioned' },
+    { value: 'ACTIVE', label: formatEnumLabelToRemoveUnderscores('ACTIVE') },
+    { value: 'INACTIVE', label: formatEnumLabelToRemoveUnderscores('INACTIVE') },
+    { value: 'UNDER_MAINTENANCE', label: formatEnumLabelToRemoveUnderscores('UNDER_MAINTENANCE') },
+    { value: 'DECOMMISSIONED', label: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED') },
   ];
 
   const validateDates = (form: FormInstance) => ({
@@ -82,6 +83,12 @@ const HubCreate = () => {
         images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [], // Ensure images are sent as an array of strings
       };
 
+      const isDuplicate = await checkHubDuplicateSerialNumber(values.serialNumber);
+      if (isDuplicate) {
+        messageApi.error('This Serial Number already exists. Please enter a unique Serial Number.');
+        return;
+      }
+
       console.log('finalData', finalData);
 
       const response = await createHub(finalData, selectedFiles.length > 0 ? selectedFiles : undefined);
@@ -123,7 +130,11 @@ const HubCreate = () => {
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
-            <Divider orientation="left">Select the Park and Facility</Divider>
+            {user?.role === StaffType.SUPERADMIN ? (
+              <Divider orientation="left">Select Park and Facility</Divider>
+            ) : (
+              <Divider orientation="left">Select Facility</Divider>
+            )}
 
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -154,6 +165,9 @@ const HubCreate = () => {
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
+            <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
+              <Input placeholder="Enter Serial Number" />
+            </Form.Item>
             <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
               <Select placeholder="Select Hub Status" options={hubStatusOptions} />
             </Form.Item>
@@ -164,20 +178,9 @@ const HubCreate = () => {
             >
               <DatePicker className="w-full" maxDate={dayjs()} />
             </Form.Item>
-            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
-              <Input placeholder="Enter Supplier" />
-            </Form.Item>
-            <Form.Item
-              name="supplierContactNumber"
-              label="Supplier Contact Number"
-              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
-            >
-              <Input placeholder="Enter Supplier Contact Number" />
-            </Form.Item>
             <Form.Item name="remarks" label="Remarks">
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-
             <Form.Item label={'Images'}>
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>
@@ -196,8 +199,19 @@ const HubCreate = () => {
                 </div>
               </Form.Item>
             )}
+            <Divider orientation="left">Supplier Details</Divider>
+            <Form.Item name="supplier" label="Supplier" rules={[{ required: true, message: 'Please enter Supplier' }]}>
+              <Input placeholder="Enter Supplier" />
+            </Form.Item>
+            <Form.Item
+              name="supplierContactNumber"
+              label="Supplier Contact Number"
+              rules={[{ required: true, message: 'Please enter Supplier Contact Number' }, { validator: validatePhoneNumber }]}
+            >
+              <Input placeholder="Enter Supplier Contact Number" />
+            </Form.Item>
 
-            <Form.Item wrapperCol={{ offset: 8 }}>
+            <Form.Item label={" "} colon={false}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
                 Submit
               </Button>

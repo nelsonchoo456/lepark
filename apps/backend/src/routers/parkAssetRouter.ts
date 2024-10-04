@@ -126,4 +126,17 @@ router.get('/getBySerialNumber/:serialNumber', async (req, res) => {
   }
 });
 
+router.get('/checkDuplicateSerialNumber', async (req, res) => {
+  try {
+    const { serialNumber, parkAssetId } = req.query;
+    if (!serialNumber) {
+      return res.status(400).json({ error: 'Serial number is required' });
+    }
+    const isDuplicate = await ParkAssetService.isSerialNumberDuplicate(serialNumber as string, parkAssetId as string);
+    res.status(200).json({ isDuplicate });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

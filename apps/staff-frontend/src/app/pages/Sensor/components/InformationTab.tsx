@@ -3,48 +3,49 @@ import { SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Descriptions, Tag } from 'antd';
 import { DescriptionsItemType } from 'antd/es/descriptions';
 import moment from 'moment';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   const { user } = useAuth<StaffResponse>();
-  const formatEnum = (type: string): string => {
-    return type
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
 
   const getStatusTag = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Tag color="green">ACTIVE</Tag>;
+        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'INACTIVE':
-        return <Tag color="blue">INACTIVE</Tag>;
+        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'UNDER_MAINTENANCE':
-        return <Tag color="orange">UNDER MAINTENANCE</Tag>;
+        return <Tag color="orange" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'DECOMMISSIONED':
-        return <Tag color="red">DECOMMISSIONED</Tag>;
+        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       default:
-        return <Tag>{status}</Tag>;
+        return <Tag>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
     }
   };
 
   const baseDescriptionsItems = [
     { key: 'name', label: 'Sensor Name', children: sensor.name || '-' },
+    { key: 'identifierNumber', label: 'Identifier Number', children: sensor.identifierNumber || '-' },
     { key: 'serialNumber', label: 'Serial Number', children: sensor.serialNumber || '-' },
-    { key: 'sensorType', label: 'Sensor Type', children: formatEnum(sensor.sensorType) || '-' },
+    { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(sensor.sensorType) || '-' },
     { key: 'description', label: 'Description', children: sensor.description || '-' },
     { key: 'sensorStatus', label: 'Sensor Status', children: getStatusTag(sensor.sensorStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(sensor.acquisitionDate).format('MMMM D, YYYY') },
-    { key: 'calibrationFrequencyDays', label: 'Calibration Frequency (days)', children: sensor.calibrationFrequencyDays ? `${sensor.calibrationFrequencyDays} days` : '-' },
-    { key: 'sensorUnit', label: 'Sensor Unit', children: formatEnum(sensor.sensorUnit) || '-' },
+    { key: 'sensorUnit', label: 'Sensor Unit', children: formatEnumLabelToRemoveUnderscores(sensor.sensorUnit) || '-' },
     { key: 'supplier', label: 'Supplier', children: sensor.supplier || '-' },
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: sensor.supplierContactNumber || '-' },
     { key: 'remarks', label: 'Remarks', children: sensor.remarks || '-' },
     { key: 'hubName', label: 'Connected Hub', children: sensor.hub?.name || '-' },
+    user?.role === StaffType.SUPERADMIN && { key: 'parkName', label: 'Park', children: sensor.park?.name || '-' },
     { key: 'facilityName', label: 'Facility', children: sensor.facility?.name || '-' },
   ];
 
   const conditionalItems = [
+    sensor.calibrationFrequencyDays && {
+      key: 'calibrationFrequencyDays',
+      label: 'Calibration Frequency (days)',
+      children: `${sensor.calibrationFrequencyDays} days`,
+    },
     sensor.lastCalibratedDate && {
       key: 'lastCalibratedDate',
       label: 'Last Calibrated Date',
@@ -71,15 +72,10 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
 
   const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
 
-  const superAdminDescriptionsItems = [
-    ...descriptionsItems,
-    { key: 'parkName', label: 'Park Name', children: sensor.park?.name || '-' },
-  ];
-
   return (
     <div>
       <Descriptions
-        items={(user?.role === StaffType.SUPERADMIN ? superAdminDescriptionsItems : descriptionsItems) as DescriptionsItemType[]}
+        items={(descriptionsItems) as DescriptionsItemType[]}
         bordered
         column={1}
         size="middle"

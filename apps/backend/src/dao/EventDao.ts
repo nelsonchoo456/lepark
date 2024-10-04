@@ -28,6 +28,16 @@ class EventDao {
     });
   }
 
+  async getEventCountByParkId(parkId: string): Promise<number> {
+    return prisma.event.count({
+      where: {
+        facility: {
+          parkId: parseInt(parkId)
+        }
+      }
+    });
+  }
+
   async getEventById(id: string): Promise<Event | null> {
     return prisma.event.findUnique({ where: { id } });
   }
