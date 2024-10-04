@@ -17,6 +17,7 @@ import { IoIosArrowDown, IoMdHeart, IoMdHeartDislike, IoMdHeartEmpty } from 'rea
 import { useHandleFavoriteSpecies } from '../../hooks/useHandleFavoriteSpecies';
 import { IoEarth } from 'react-icons/io5';
 import { convertEnumToNormalFormat } from '@lepark/data-utility';
+import withParkGuard from '../../park-context/withParkGuard';
 // Add these type definitions at the top of your file
 type OrdersType = { orders: string[] };
 type PhylumDataType = {
@@ -281,4 +282,4 @@ const DiscoverPerPark = () => {
   );
 };
 
-export default DiscoverPerPark;
+export default withParkGuard(DiscoverPerPark);

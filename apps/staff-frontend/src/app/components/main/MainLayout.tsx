@@ -35,7 +35,7 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
-      console.log(user)
+      console.log(user);
       setUserRole(role);
     }
   };
@@ -45,15 +45,13 @@ const MainLayout = () => {
       const fetchPark = async () => {
         const parkRes = await getParkById(user.parkId as number);
         if (parkRes.status === 200) {
-          const parkData = parkRes.data
+          const parkData = parkRes.data;
           setPark(parkData);
         }
       };
       fetchPark();
     }
-  
-  }, [user])
-  
+  }, [user]);
 
   // Resizing
   useEffect(() => {
@@ -181,27 +179,30 @@ const MainLayout = () => {
       label: 'Decarbonization Areas',
       onClick: () => navigate('/decarbonization-area'),
     },
-    userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.ARBORIST || userRole === StaffType.BOTANIST
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.MANAGER ||
+    userRole === StaffType.ARBORIST ||
+    userRole === StaffType.BOTANIST
       ? {
           key: 'iot',
           label: 'IoT Assets',
-      icon: <MdSensors />,
-      children: [
-        {
-          key: 'sensor',
           icon: <MdSensors />,
-          label: 'Sensors',
-          onClick: () => navigate('/sensor'),
-        },
-        {
-          key: 'hubs',
-          icon: <FaNetworkWired />,
-          label: 'Hubs',
-          onClick: () => navigate('/hubs'),
-        },
-      ],
-    }
-    : null,
+          children: [
+            {
+              key: 'sensor',
+              icon: <MdSensors />,
+              label: 'Sensors',
+              onClick: () => navigate('/sensor'),
+            },
+            {
+              key: 'hubs',
+              icon: <FaNetworkWired />,
+              label: 'Hubs',
+              onClick: () => navigate('/hubs'),
+            },
+          ],
+        }
+      : null,
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
@@ -224,30 +225,30 @@ const MainLayout = () => {
           onClick: () => navigate('/event'),
         }
       : null,
-    // userRole === 'MANAGER' ||
-    // userRole === 'SUPERADMIN' ||
-    // userRole === 'BOTANIST' ||
-    // userRole === 'ARBORIST' ||
-    // userRole === 'PARK_RANGER' ||
-    // userRole === 'VENDOR_MANAGER'
-    //   ? {
-    //       key: 'task',
-    //       icon: <FiInbox />,
-    //       label: 'Tasks',
-    //       children: [
-    //         {
-    //           key: 'plant-tasks',
-    //           label: 'Plant Tasks',
-    //           onClick: () => navigate('/plant-tasks'),
-    //         },
-    //         {
-    //           key: 'maintenance-tasks',
-    //           label: 'Maintenance Tasks',
-    //           onClick: () => navigate('/maintenance-tasks'),
-    //         },
-    //       ],
-    //     }
-    //   : null,
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'BOTANIST' ||
+    userRole === 'ARBORIST' ||
+    userRole === 'PARK_RANGER' ||
+    userRole === 'VENDOR_MANAGER'
+      ? {
+          key: 'task',
+          icon: <FiInbox />,
+          label: 'Tasks',
+          children: [
+            {
+              key: 'plant-tasks',
+              label: 'Plant Tasks',
+              onClick: () => navigate('/plant-tasks'),
+            },
+            {
+              key: 'maintenance-tasks',
+              label: 'Maintenance Tasks',
+              onClick: () => navigate('/maintenance-tasks'),
+            },
+          ],
+        }
+      : null,
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',

@@ -1,11 +1,15 @@
+import { OccurrenceResponse } from './occurrence';
 import { PlantTaskStatusEnum, PlantTaskTypeEnum, PlantTaskUrgencyEnum } from './sharedenums';
-import { StaffType } from './staff';
+import { StaffResponse } from './staff';
+import { ZoneResponse } from './zone';
+import { ParkResponse } from './park';
 
 export interface PlantTaskData {
   title: string;
   description: string;
   taskType: PlantTaskTypeEnum;
   taskUrgency: PlantTaskUrgencyEnum;
+  dueDate: string | null;
   images: string[];
   occurrenceId: string;
   assignedStaffId?: string | null;
@@ -26,26 +30,15 @@ export interface PlantTaskResponse {
   images: string[];
   remarks: string | null;
   occurrenceId: string;
-  occurrence: {
-    id: string;
-    title: string;
+  occurrence: OccurrenceResponse & {
+    zone: ZoneResponse & {
+      park: ParkResponse;
+    };
   };
   assignedStaffId: string | null;
-  assignedStaff?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    role: StaffType;
-  };
-  parkId: number;
-  zoneName?: string;
+  assignedStaff?: StaffResponse;
   submittingStaffId: string;
-  submittingStaff: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    role: StaffType;
-  };
+  submittingStaff: StaffResponse;
 }
 
 export interface PlantTaskUpdateData {
@@ -53,5 +46,6 @@ export interface PlantTaskUpdateData {
   description?: string;
   taskType?: PlantTaskTypeEnum;
   taskUrgency?: PlantTaskUrgencyEnum;
+  dueDate?: string | null;
   images?: string[];
 }

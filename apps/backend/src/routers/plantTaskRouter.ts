@@ -58,10 +58,10 @@ router.delete('/deletePlantTask/:id', authenticateJWTStaff, async (req, res) => 
   }
 });
 
-router.get('/getPlantTasksByParkId/:parkId', authenticateJWTStaff, async (req, res) => {
+router.get('/getAllPlantTasksByParkId/:parkId', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = parseInt(req.params.parkId, 10);
-    const plantTasks = await PlantTaskService.getPlantTasksByParkId(parkId);
+    const plantTasks = await PlantTaskService.getAllPlantTasksByParkId(parkId);
     res.status(200).json(plantTasks);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -81,6 +81,60 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+router.post('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const { assignerStaffId, staffId } = req.body;
+    const plantTaskId = req.params.id;
+    const updatedPlantTask = await PlantTaskService.assignPlantTask(plantTaskId, assignerStaffId, staffId);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/unassignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const { unassignerStaffId } = req.body;
+    const plantTaskId = req.params.id;
+    const updatedPlantTask = await PlantTaskService.unassignPlantTask(plantTaskId, unassignerStaffId);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/completePlantTask/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const { staffId } = req.body;
+    const plantTaskId = req.params.id;
+    const updatedPlantTask = await PlantTaskService.completePlantTask(plantTaskId, staffId);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/acceptPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const { staffId } = req.body;
+    const plantTaskId = req.params.id;
+    const updatedPlantTask = await PlantTaskService.acceptPlantTask(staffId, plantTaskId);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/unacceptPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const plantTaskId = req.params.id;
+    const updatedPlantTask = await PlantTaskService.unacceptPlantTask(plantTaskId);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
