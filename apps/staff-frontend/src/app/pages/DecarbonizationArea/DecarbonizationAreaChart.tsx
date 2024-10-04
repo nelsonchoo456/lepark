@@ -5,16 +5,14 @@ import {
   DecarbonizationAreaResponse,
 } from '@lepark/data-access';
 import { Card, DatePicker, Spin, message, Statistic, Row, Col, Select } from 'antd';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import dayjs from 'dayjs';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import { useFetchDecarbonizationAreas } from '../../hooks/DecarbonizationArea/useFetchDecarbonizationAreas';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
-import PageHeader2 from '../../components/main/PageHeader2'; // Import PageHeader2
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import PageHeader2 from '../../components/main/PageHeader2';
+import SequestrationGraph from './components/SequestrationGraph';
+import { formatDate } from './components/dateFormatter'; // Import the utility function
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -25,6 +23,7 @@ const DecarbonizationAreaChart: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SequestrationHistoryResponse[]>([]);
+  const [barChartData, setBarChartData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<string | null>(dayjs().subtract(1, 'month').toISOString());
   const [endDate, setEndDate] = useState<string | null>(dayjs().toISOString());
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
@@ -51,8 +50,9 @@ const DecarbonizationAreaChart: React.FC = () => {
     try {
       const inclusiveEndDate = dayjs(endDate).add(1, 'day').toISOString();
       let response;
+      let filteredAreas: DecarbonizationAreaResponse[] = [];
       if (selectedArea === 'all') {
-        const filteredAreas = decarbonizationAreas.filter((area) => area.parkId === selectedParkId);
+        filteredAreas = decarbonizationAreas.filter((area) => area.parkId === selectedParkId);
         if (filteredAreas.length === 0) {
           setData([]); // Ensure data is cleared if no areas are found
           setLoading(false);
@@ -72,11 +72,51 @@ const DecarbonizationAreaChart: React.FC = () => {
       } else {
         const formattedData = response.map((entry: any) => ({
           ...entry,
-          date: dayjs(entry.date).format('YYYY-MM-DD'),
+          date: formatDate(entry.date), // Use the formatDate utility function
         }));
         // Sort data by date in ascending order
         formattedData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        setData(formattedData);
+
+        // Aggregate data by date and areaId
+        const aggregatedData = formattedData.reduce((acc: any, entry: any) => {
+          const existingEntry = acc.find((e: any) => e.date === entry.date && e.decarbonizationAreaId === entry.decarbonizationAreaId);
+          if (existingEntry) {
+            existingEntry.seqValue += entry.seqValue;
+          } else {
+            acc.push({ ...entry });
+          }
+          return acc;
+        }, []);
+
+        setData(aggregatedData);
+        console.log('Aggregated Data:', aggregatedData);
+        console.log('Filtered Areas:', filteredAreas);
+
+        // Group data by area for bar chart using aggregated data
+        const groupedData = filteredAreas.map((area) => {
+          console.log('Area:', area);
+          const areaData = aggregatedData.filter((entry: { decarbonizationAreaId: string }) => entry.decarbonizationAreaId === area.id);
+          console.log('Area Data:', areaData);
+          const totalSeqValue = areaData.reduce((sum: number, entry: { seqValue: number }) => sum + entry.seqValue, 0);
+          return { areaName: area.name, totalSeqValue };
+        });
+
+        setBarChartData(groupedData);
+        console.log('Grouped Data:', groupedData);
+
+        // Aggregate data by date for line chart
+        const lineChartData = aggregatedData.reduce((acc: any, entry: any) => {
+          const existingEntry = acc.find((e: any) => e.date === entry.date);
+          if (existingEntry) {
+            existingEntry.seqValue += entry.seqValue;
+          } else {
+            acc.push({ date: entry.date, seqValue: entry.seqValue });
+          }
+          return acc;
+        }, []);
+
+        setData(lineChartData);
+        console.log('Line Chart Data:', lineChartData);
       }
     } catch (error) {
       console.log(error);
@@ -127,15 +167,28 @@ const DecarbonizationAreaChart: React.FC = () => {
 
   const metrics = calculateMetrics(data);
 
-  const chartData = {
+  const lineChartData = {
     labels: data.map((entry: any) => entry.date),
     datasets: [
       {
-        label: 'Sequestration Amount',
-        data: data.map((entry: any) => entry.seqValue), // Ensure the correct field is used here
+        label: 'Sequestration Amount (kg)',
+        data: data.map((entry: any) => entry.seqValue),
         fill: false,
-        backgroundColor: 'rgba(75,192,192,0.4)',
-        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: '#a3d4c7',
+        borderColor: '#a3d4c7',
+      },
+    ],
+  };
+
+  const barChartDataConfig = {
+    labels: barChartData.map((entry) => entry.areaName),
+    datasets: [
+      {
+        label: 'Total Sequestration by Area (kg)',
+        data: barChartData.map((entry) => entry.totalSeqValue),
+        backgroundColor: '#a3d4c7',
+        borderColor: '#a3d4c7',
+        borderWidth: 1,
       },
     ],
   };
@@ -211,7 +264,7 @@ const DecarbonizationAreaChart: React.FC = () => {
                 <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
               </Col>
             </Row>
-            <Line data={chartData} />
+            <SequestrationGraph lineChartData={lineChartData} barChartData={barChartDataConfig} showBarChart={selectedArea === 'all'} />
           </>
         ) : (
           <p>No data available</p>

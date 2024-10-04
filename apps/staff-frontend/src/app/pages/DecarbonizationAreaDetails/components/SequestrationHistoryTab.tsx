@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getSequestrationHistory, getSequestrationHistoryByAreaIdAndTimeFrame, SequestrationHistoryResponse } from '@lepark/data-access';
 import { Card, DatePicker, Spin, message, Statistic, Row, Col } from 'antd';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import SequestrationGraph from '../../DecarbonizationArea/components/SequestrationGraph';
 import dayjs from 'dayjs';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const { RangePicker } = DatePicker;
 
@@ -95,20 +92,18 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
 
   const metrics = calculateMetrics(data);
 
-  const chartData = {
+  const lineChartData = {
     labels: data.map((entry: any) => entry.date),
     datasets: [
       {
         label: 'Sequestration Amount',
-        data: data.map((entry: any) => entry.seqValue), // Ensure the correct field is used here
+        data: data.map((entry: any) => entry.seqValue),
         fill: false,
-        backgroundColor: 'rgba(75,192,192,0.4)',
-        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: '#a3d4c7',
+        borderColor: '#a3d4c7',
       },
     ],
   };
-
-  console.log('chartData', chartData);
 
   return (
     <Card>
@@ -142,7 +137,7 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
               <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
             </Col>
           </Row>
-          <Line data={chartData} />
+          <SequestrationGraph lineChartData={lineChartData} showBarChart={false} />
         </>
       ) : (
         <p>No data available</p>
