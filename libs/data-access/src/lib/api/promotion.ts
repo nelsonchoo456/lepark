@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
-import { FacilityResponse, FacilityData } from '../types/facility';
+import { PromotionResponse, PromotionData } from '../types/promotion';
 import client from './client';
 
-const URL = '/facilities';
+const URL = '/promotions';
 
-export async function createFacility(data: FacilityData, files?: File[]): Promise<AxiosResponse<FacilityResponse>> {
+export async function createPromotion(data: PromotionData, files?: File[]): Promise<AxiosResponse<PromotionResponse>> {
   try {
     if (files && files.length > 0) {
       const formData = new FormData();
@@ -19,7 +19,7 @@ export async function createFacility(data: FacilityData, files?: File[]): Promis
       data.images = [];
     }
 
-    const response: AxiosResponse<FacilityResponse> = await client.post(`${URL}/createFacility`, data);
+    const response: AxiosResponse<PromotionResponse> = await client.post(`${URL}/createPromotion`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -30,9 +30,17 @@ export async function createFacility(data: FacilityData, files?: File[]): Promis
   }
 }
 
-export async function getAllFacilities(): Promise<AxiosResponse<FacilityResponse[]>> {
+export async function getAllPromotions(archived?: boolean, enabled?: boolean): Promise<AxiosResponse<PromotionResponse[]>> {
   try {
-    const response: AxiosResponse<FacilityResponse[]> = await client.get(`${URL}/getAllFacilities`);
+    const params: Record<string, any> = {};
+    if (archived !== undefined) {
+      params.archived = archived; // Add `archived` to the query if defined
+    }
+    if (enabled !== undefined) {
+      params.enabled = enabled; // Add `enabled` to the query if defined
+    }
+
+    const response: AxiosResponse<PromotionResponse[]> = await client.get(`${URL}/getAllPromotions`, { params });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -43,9 +51,9 @@ export async function getAllFacilities(): Promise<AxiosResponse<FacilityResponse
   }
 }
 
-export async function getFacilityById(id: string): Promise<AxiosResponse<FacilityResponse>> {
+export async function getPromotionById(id: string): Promise<AxiosResponse<PromotionResponse>> {
   try {
-    const response: AxiosResponse<FacilityResponse> = await client.get(`${URL}/getFacilityById/${id}`);
+    const response: AxiosResponse<PromotionResponse> = await client.get(`${URL}/getPromotionById/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -56,11 +64,32 @@ export async function getFacilityById(id: string): Promise<AxiosResponse<Facilit
   }
 }
 
-export async function updateFacilityDetails(
+export async function getPromotionsByParkId(parkId: string, archived?: boolean, enabled?: boolean): Promise<AxiosResponse<PromotionResponse[]>> {
+  try {
+    const params: Record<string, any> = {};
+    if (archived !== undefined) {
+      params.archived = archived; // Add `archived` to the query if defined
+    }
+    if (enabled !== undefined) {
+      params.enabled = enabled; // Add `enabled` to the query if defined
+    }
+
+    const response: AxiosResponse<PromotionResponse[]> = await client.get(`${URL}/getAllPromotions?parkId=${parkId}`, { params });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updatePromotionDetails(
   id: string,
-  data: Partial<FacilityData>,
+  data: Partial<PromotionData>,
   files?: File[],
-): Promise<AxiosResponse<FacilityResponse>> {
+): Promise<AxiosResponse<PromotionResponse>> {
   try {
     if (files && files.length > 0) {
       const formData = new FormData();
@@ -73,7 +102,7 @@ export async function updateFacilityDetails(
       data.images?.push(...uploadedUrls.data.uploadedUrls);
     }
 
-    const response: AxiosResponse<FacilityResponse> = await client.put(`${URL}/updateFacilityDetails/${id}`, data);
+    const response: AxiosResponse<PromotionResponse> = await client.put(`${URL}/updatePromotion/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -84,37 +113,9 @@ export async function updateFacilityDetails(
   }
 }
 
-export async function deleteFacility(id: string): Promise<AxiosResponse<void>> {
+export async function deletePromotion(id: string): Promise<AxiosResponse<void>> {
   try {
-    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteFacility/${id}`);
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-export async function getFacilitiesByParkId(parkId: number): Promise<AxiosResponse<FacilityResponse[]>> {
-  try {
-    const response: AxiosResponse<FacilityResponse[]> = await client.get(`${URL}/getAllFacilities?parkId=${parkId}`);
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-export async function checkExistingFacility(name: string, parkId: number): Promise<AxiosResponse<{ exists: boolean }>> {
-  try {
-    const response: AxiosResponse<{ exists: boolean }> = await client.get(`${URL}/check-existing`, {
-      params: { name, parkId },
-    });
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deletePromotion/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

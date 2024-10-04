@@ -19,20 +19,14 @@ router.post('/createPromotion', authenticateJWTStaff, async (req, res) => {
 router.get('/getAllPromotions', async (req, res) => {
   try {
     const parkId = req.query.parkId ? req.query.parkId as string : null;
-    const eventId = req.query.eventId ? req.query.eventId as string : null;
-    const attractionId = req.query.attractionId ? req.query.attractionId as string : null;
+    const archived = req.query.archived === 'true';
+    const enabled = req.query.enabled === 'true';
 
     if (parkId) {
-      const zones = await PromotionService.getPromotionsByParkId(parkId);
+      const zones = await PromotionService.getPromotionsByParkId(parkId, archived, enabled);
       res.status(200).json(zones);
-    } else if (eventId) {
-      const promotions = await PromotionService.getPromotionsByEventId(eventId, parseInt(parkId));
-      res.status(200).json(promotions);
-    } else if (attractionId) {
-      const promotions = await PromotionService.getPromotionsByAttractionId(attractionId, parseInt(parkId));
-      res.status(200).json(promotions);
     } else {
-      const promotions = await PromotionService.getAllPromotions();
+      const promotions = await PromotionService.getAllPromotions(archived, enabled);
       res.status(200).json(promotions);
     }
   } catch (error) {
@@ -70,26 +64,26 @@ router.delete('/deletePromotion/:promotionId', authenticateJWTStaff, async (req,
   }
 });
 
-// router.post('/upload', upload.array('files', 5), async (req, res) => {
-//   try {
-//     const files = req.files as Express.Multer.File[];
+router.post('/upload', upload.array('files', 5), async (req, res) => {
+  try {
+    const files = req.files as Express.Multer.File[];
 
-//     if (!files || files.length === 0) {
-//       // return res.status(400).json({ error: 'No file uploaded' });
-//     }
+    if (!files || files.length === 0) {
+      // return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-//     const uploadedUrls = [];
-//     for (const file of files) {
-//       const fileName = `${Date.now()}-${file.originalname}`;
-//       const imageUrl = await EventService.uploadImageToS3(file.buffer, fileName, file.mimetype);
-//       uploadedUrls.push(imageUrl);
-//     }
+    const uploadedUrls = [];
+    for (const file of files) {
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const imageUrl = await PromotionService.uploadImageToS3(file.buffer, fileName, file.mimetype);
+      uploadedUrls.push(imageUrl);
+    }
 
-//     res.status(200).json({ uploadedUrls });
-//   } catch (error) {
-//     console.error('Error uploading file:', error);
-//     res.status(500).json({ error: 'Failed to upload image' });
-//   }
-// });
+    res.status(200).json({ uploadedUrls });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
 
 export default router;

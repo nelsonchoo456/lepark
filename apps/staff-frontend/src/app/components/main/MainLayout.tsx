@@ -33,7 +33,6 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
-      console.log(user)
       setUserRole(role);
     }
   };
@@ -171,29 +170,32 @@ const MainLayout = () => {
           onClick: () => navigate('/occurrences'),
           label: 'Occurrences',
         },
-      ]
+      ],
     },
-    userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.ARBORIST || userRole === StaffType.BOTANIST
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.MANAGER ||
+    userRole === StaffType.ARBORIST ||
+    userRole === StaffType.BOTANIST
       ? {
           key: 'iot',
           label: 'IoT Assets',
-      icon: <MdSensors />,
-      children: [
-        {
-          key: 'sensor',
           icon: <MdSensors />,
-          label: 'Sensors',
-          onClick: () => navigate('/sensor'),
-        },
-        {
-          key: 'hubs',
-          icon: <FaNetworkWired />,
-          label: 'Hubs',
-          onClick: () => navigate('/hubs'),
-        },
-      ],
-    }
-    : null,
+          children: [
+            {
+              key: 'sensor',
+              icon: <MdSensors />,
+              label: 'Sensors',
+              onClick: () => navigate('/sensor'),
+            },
+            {
+              key: 'hubs',
+              icon: <FaNetworkWired />,
+              label: 'Hubs',
+              onClick: () => navigate('/hubs'),
+            },
+          ],
+        }
+      : null,
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
@@ -202,20 +204,47 @@ const MainLayout = () => {
     },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
-          key: 'attraction',
+          key: 'attractionEvents',
           icon: <TbTicket />,
-          label: 'Attractions',
-          onClick: () => navigate('/attraction'),
+          label: 'Attractions & Events',
+          children: [
+            {
+              key: 'attraction',
+              icon: <TbTicket />,
+              label: 'Attractions',
+              onClick: () => navigate('/attraction'),
+            },
+            {
+              key: 'event',
+              icon: <TbCalendarEvent />,
+              label: 'Events',
+              onClick: () => navigate('/event'),
+            },
+            {
+              key: 'promotions',
+              // icon: <TbCalendarEvent />,
+              label: 'Promotions',
+              onClick: () => navigate('/promotion'),
+            },
+          ],
         }
       : null,
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
-      ? {
-          key: 'event',
-          icon: <TbCalendarEvent />,
-          label: 'Events',
-          onClick: () => navigate('/event'),
-        }
-      : null,
+    // userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+    //   ? {
+    //       key: 'attraction',
+    //       icon: <TbTicket />,
+    //       label: 'Attractions',
+    //       onClick: () => navigate('/attraction'),
+    //     }
+    //   : null,
+    // userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+    //   ? {
+    //       key: 'event',
+    //       icon: <TbCalendarEvent />,
+    //       label: 'Events',
+    //       onClick: () => navigate('/event'),
+    //     }
+    //   : null,
     // userRole === 'MANAGER' ||
     // userRole === 'SUPERADMIN' ||
     // userRole === 'BOTANIST' ||

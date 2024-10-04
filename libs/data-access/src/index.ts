@@ -44,3 +44,6 @@ export * from './lib/api/sensor';
 export * from './lib/types/sensor';
 export * from './lib/api/facility';
 export * from './lib/types/facility';
+
+export * from './lib/api/promotion';
+export * from './lib/types/promotion';

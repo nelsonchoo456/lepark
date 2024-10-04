@@ -190,7 +190,7 @@ enum AttractionStatusEnum {
 }
 
 model Attraction {
-  id           String                @id @default(uuid()) @db.Uuid
+  id           String               @id @default(uuid()) @db.Uuid
   title        String
   description  String
   openingHours DateTime[]
@@ -246,7 +246,7 @@ model Event {
   status      EventStatusEnum
   facilityId  String               @db.Uuid
 
-  facility   Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   @@index([facilityId])
 }
@@ -265,17 +265,17 @@ model Event {
 // }
 
 model Visitor {
-  id              String    @id @default(uuid()) @db.Uuid
-  firstName       String
-  lastName        String
-  email           String    @unique
-  password        String
-  contactNumber   String
-  favoriteSpecies Species[] @relation("VisitorfavoriteSpecies")
-  promotions      Promotion[] @relation("VisitorPromotionsRedeemed")
-  isVerified      Boolean
-  resetToken      String?
-  resetTokenUsed  Boolean   @default(false)
+  id                 String      @id @default(uuid()) @db.Uuid
+  firstName          String
+  lastName           String
+  email              String      @unique
+  password           String
+  contactNumber      String
+  favoriteSpecies    Species[]   @relation("VisitorfavoriteSpecies")
+  promotionsRedeemed Promotion[] @relation("VisitorPromotionsRedeemed")
+  isVerified         Boolean
+  resetToken         String?
+  resetTokenUsed     Boolean     @default(false)
 }
 
 enum HubStatusEnum {
@@ -547,51 +547,27 @@ enum DiscountType {
   FIXED_AMOUNT
 }
 
-enum PromotionType {
-  PARK_WIDE
-  ATTRACTION_OR_EVENT
-}
-
 enum PromotionStatus {
-  ACTIVE
-  INACTIVE
+  ENABLED
+  DISABLED
 }
 
 model Promotion {
-  id              String          @id @default(uuid()) @db.Uuid
-  name            String
-  description     String?
-  discountType    DiscountType
-  promoCode       String
-  isNParkWide     Boolean
-  parkId          Int?
-  discountValue   Float
-  validFrom       DateTime
-  validUntil      DateTime
-  promotionType   PromotionType
-  status          PromotionStatus
-  terms           String[]
-  maximumUsage    Int?
-  minimumAmount   Float?
-  isOneTime       Boolean
-  visitors        Visitor[] @relation("VisitorPromotionsRedeemed")
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String
+  description   String?
+  discountType  DiscountType
+  promoCode     String?
+  isNParksWide  Boolean
+  parkId        Int?
+  images        String[]
+  discountValue Float
+  validFrom     DateTime
+  validUntil    DateTime
+  status        PromotionStatus
+  terms         String[]
+  maximumUsage  Int?
+  minimumAmount Float?
+  isOneTime     Boolean
+  visitors      Visitor[]       @relation("VisitorPromotionsRedeemed")
 }
-
-// Join tables for many-to-many rs with Promotion
-// model EventPromotion {
-//   eventId     String    @db.Uuid
-//   promotionId String    @db.Uuid
-//   event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-//   promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-
-//   @@id([eventId, promotionId])
-// }
-
-// model AttractionPromotion {
-//   attractionId String     @db.Uuid
-//   promotionId  String     @db.Uuid
-//   attraction   Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
-//   promotion    Promotion  @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-
-//   @@id([attractionId, promotionId])
-// }

@@ -10,18 +10,14 @@ class PromotionDao {
 
   // Retrieve all promotions
   async getAllPromotions(): Promise<Promotion[]> {
+    return prisma.promotion.findMany();
+  }
+
+  async getAllPromotionsFiltered(archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return prisma.promotion.findMany({
-      include: {
-        events: {
-          select: {
-            event: true, // Include the entire Event entity
-          },
-        },
-        attractions: {
-          select: {
-            attraction: true, // Include the entire Attraction entity
-          },
-        },
+      where: {
+        validUntil: archived ? { lt: new Date() } : { gte: new Date() },
+        status: enabled ? 'ENABLED' : undefined,
       },
     });
   }
@@ -40,7 +36,7 @@ class PromotionDao {
     await prisma.promotion.delete({ where: { id } });
   }
 
-  async findPromotionsByParkId(parkId: number): Promise<Promotion[]> {
+  async getPromotionsByParkId(parkId: number): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {
         parkId: parkId,
@@ -48,28 +44,12 @@ class PromotionDao {
     });
   }
 
-  // Find promotions by event ID (many-to-many relationship)
-  async findPromotionsByEventId(eventId: string): Promise<Promotion[]> {
+  async getPromotionsByParkIdFiltered(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {
-        events: {
-          some: {
-            eventId: eventId,
-          },
-        },
-      },
-    });
-  }
-
-  // Find promotions by attraction ID (many-to-many relationship)
-  async findPromotionsByAttractionId(attractionId: string): Promise<Promotion[]> {
-    return prisma.promotion.findMany({
-      where: {
-        attractions: {
-          some: {
-            attractionId: attractionId,
-          },
-        },
+        parkId: parkId,
+        validUntil: archived ? { lt: new Date() } : { gte: new Date() },
+        status: enabled ? 'ENABLED' : undefined,
       },
     });
   }

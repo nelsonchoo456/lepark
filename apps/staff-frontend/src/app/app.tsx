@@ -77,6 +77,7 @@ import AssetListSummary from './pages/Asset/AssetListSummary';
 import PromotionList from './pages/Promotion/PromotionList';
 import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -431,7 +432,7 @@ export function App() {
               <Route path="/promotion">
                 <Route index element={<PromotionList />} />
                 <Route
-                  path="create-park-promotion"
+                  path="create"
                   element={
                     <>
                       <RoleProtectedRoute
@@ -443,14 +444,14 @@ export function App() {
                   }
                 />
                 <Route
-                  path="create-promotion"
+                  path=":promotionId"
                   element={
                     <>
                       <RoleProtectedRoute
                         allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]}
                         redirectTo="/"
                       />
-                      {/* <PromotionCreate /> */}
+                      <PromotionDetails />
                     </>
                   }
                 />
