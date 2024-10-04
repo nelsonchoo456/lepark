@@ -13,6 +13,7 @@ import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import PageHeader2 from '../../components/main/PageHeader2';
 import GraphContainer from './components/GraphContainer';
 import { formatDate } from './components/dateFormatter'; // Import the utility function
+import useSequestrationHistory from '../../hooks/SequestrationHistory/useSequestrationHistory';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -21,13 +22,11 @@ const DecarbonizationAreaChart: React.FC = () => {
   const { decarbonizationAreas, loading: areasLoading } = useFetchDecarbonizationAreas();
   const { parks } = useFetchParks();
   const { user } = useAuth<StaffResponse>();
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<SequestrationHistoryResponse[]>([]);
-  const [barChartData, setBarChartData] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<string | null>(dayjs().subtract(1, 'month').toISOString());
   const [endDate, setEndDate] = useState<string | null>(dayjs().toISOString());
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
+  const { loading, data, barChartData } = useSequestrationHistory(startDate, endDate, selectedArea, selectedParkId, decarbonizationAreas);
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN && decarbonizationAreas.length > 0) {
@@ -38,110 +37,19 @@ const DecarbonizationAreaChart: React.FC = () => {
     }
   }, [user, decarbonizationAreas]);
 
-  useEffect(() => {
-    if (startDate && endDate && selectedArea) {
-      fetchSequestrationHistory();
-    }
-  }, [startDate, endDate, selectedArea, selectedParkId]);
-
-  const fetchSequestrationHistory = async () => {
-    setLoading(true);
-    setData([]); // Clear data before fetching new data
-    try {
-      const inclusiveEndDate = dayjs(endDate).add(1, 'day').toISOString();
-      let response;
-      let filteredAreas: DecarbonizationAreaResponse[] = [];
-      if (selectedArea === 'all') {
-        filteredAreas = decarbonizationAreas.filter((area) => area.parkId === selectedParkId);
-        if (filteredAreas.length === 0) {
-          setData([]); // Ensure data is cleared if no areas are found
-          setLoading(false);
-          return;
-        }
-        const allData = await Promise.all(
-          filteredAreas.map((area) => getSequestrationHistoryByAreaIdAndTimeFrame(area.id, startDate!, inclusiveEndDate)),
-        );
-        response = allData.flatMap((res) => res.data);
-      } else {
-        response = await getSequestrationHistoryByAreaIdAndTimeFrame(selectedArea!, startDate!, inclusiveEndDate);
-        response = response.data;
-      }
-
-      if (response.length === 0) {
-        setData([]); // Ensure data is cleared if no data is returned
-      } else {
-        const formattedData = response.map((entry: any) => ({
-          ...entry,
-          date: formatDate(entry.date), // Use the formatDate utility function
-        }));
-        // Sort data by date in ascending order
-        formattedData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-        // Aggregate data by date and areaId
-        const aggregatedData = formattedData.reduce((acc: any, entry: any) => {
-          const existingEntry = acc.find((e: any) => e.date === entry.date && e.decarbonizationAreaId === entry.decarbonizationAreaId);
-          if (existingEntry) {
-            existingEntry.seqValue += entry.seqValue;
-          } else {
-            acc.push({ ...entry });
-          }
-          return acc;
-        }, []);
-
-        setData(aggregatedData);
-
-        // Group data by area for bar chart using aggregated data
-        const groupedData = filteredAreas.map((area) => {
-          const areaData = aggregatedData.filter((entry: { decarbonizationAreaId: string }) => entry.decarbonizationAreaId === area.id);
-          const totalSeqValue = areaData.reduce((sum: number, entry: { seqValue: number }) => sum + entry.seqValue, 0);
-          return { areaName: area.name, totalSeqValue };
-        });
-
-        setBarChartData(groupedData);
-
-        // Aggregate data by date for line chart
-        const lineChartData = aggregatedData.reduce((acc: any, entry: any) => {
-          const existingEntry = acc.find((e: any) => e.date === entry.date);
-          if (existingEntry) {
-            existingEntry.seqValue += entry.seqValue;
-          } else {
-            acc.push({ date: entry.date, seqValue: entry.seqValue });
-          }
-          return acc;
-        }, []);
-
-        setData(lineChartData);
-      }
-    } catch (error) {
-      console.log(error);
-      message.error('Error fetching sequestration history.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDateChange = (dates: any, dateStrings: [string, string]) => {
-    setData([]); // Clear data before changing date
     setStartDate(dayjs(dateStrings[0]).toISOString());
     setEndDate(dayjs(dateStrings[1]).toISOString());
   };
 
   const handleAreaChange = (value: string) => {
-    setData([]); // Clear data before changing area
     setSelectedArea(value);
   };
 
   const handleParkChange = (value: number) => {
-    setData([]); // Clear data immediately when park changes
     setSelectedParkId(value);
     setSelectedArea('all'); // Reset selected area to 'all' when park changes
   };
-
-  useEffect(() => {
-    if (selectedParkId !== null) {
-      fetchSequestrationHistory();
-    }
-  }, [selectedParkId]);
 
   const calculateMetrics = (data: SequestrationHistoryResponse[]) => {
     const total = data.reduce((sum, entry) => sum + entry.seqValue, 0);
