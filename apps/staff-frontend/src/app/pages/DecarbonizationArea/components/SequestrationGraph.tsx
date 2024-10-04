@@ -9,7 +9,7 @@ const { TabPane } = Tabs;
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement);
 
 interface SequestrationGraphProps {
-  lineChartData: any;
+  lineChartData?: any;
   barChartData?: any;
   showBarChart: boolean;
 }
@@ -45,7 +45,7 @@ const SequestrationGraph: React.FC<SequestrationGraphProps> = ({ lineChartData, 
   if (!showBarChart) {
     return (
       <div style={chartContainerStyle}>
-        <Line data={lineChartData} options={chartOptions} />
+        {lineChartData && lineChartData.labels ? <Line data={lineChartData} options={chartOptions} /> : <p>No line chart data available</p>}
       </div>
     );
   }
@@ -53,10 +53,10 @@ const SequestrationGraph: React.FC<SequestrationGraphProps> = ({ lineChartData, 
   return (
     <div style={sideBySideContainerStyle}>
       <div style={chartStyle}>
-        <Line data={lineChartData} options={chartOptions} />
+        {lineChartData && lineChartData.labels ? <Line data={lineChartData} options={chartOptions} /> : <p>No line chart data available</p>}
       </div>
       <div style={chartStyle}>
-        <Bar data={barChartData} options={chartOptions} />
+        {barChartData && barChartData.labels ? <Bar data={barChartData} options={chartOptions} /> : <p>No bar chart data available</p>}
       </div>
     </div>
   );
