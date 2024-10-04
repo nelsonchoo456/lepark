@@ -99,7 +99,7 @@ export async function updatePromotionDetails(
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images?.push(...uploadedUrls.data.uploadedUrls);
+      data?.images?.push(...uploadedUrls.data.uploadedUrls)
     }
 
     const response: AxiosResponse<PromotionResponse> = await client.put(`${URL}/updatePromotion/${id}`, data);

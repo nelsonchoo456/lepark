@@ -36,7 +36,7 @@ const ArchivedPromotionList = () => {
     },
   ];
 
-  const breadcrumbItems = [{ title: 'Promotions Management', pathKey: '/promotion', isMain: true, isCurrent: true }];
+  const breadcrumbItems = [{ title: 'Promotions Management', pathKey: '/promotion', isMain: true }, { title: 'Archived', pathKey: '/promotion/archived', isCurrent: true }];
 
   return (
     <ContentWrapperDark>
@@ -44,7 +44,7 @@ const ArchivedPromotionList = () => {
       {user?.role === StaffType.SUPERADMIN ? (
         <TabsNoBottomMargin items={promotionTabs} type="card" />
       ) : (
-        <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} />
+        <PromotionByTypeTab tableShowParks promotions={promotions} triggerFetch={triggerFetch} nonArchived={false}/>
       )}
     </ContentWrapperDark>
   );

@@ -1,5 +1,21 @@
-import { ContentWrapperDark, Logo, LogoText, useAuth } from '@lepark/common-ui';
-import { Descriptions, Card, Button, Input, Tooltip, Tag, message, Switch, notification, Spin, Divider } from 'antd';
+import { ContentWrapperDark, ImageInput, Logo, LogoText, useAuth } from '@lepark/common-ui';
+import {
+  Descriptions,
+  Card,
+  Button,
+  Input,
+  Tooltip,
+  Tag,
+  message,
+  Switch,
+  notification,
+  Spin,
+  Divider,
+  Space,
+  Empty,
+  Typography,
+  Image,
+} from 'antd';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 import { useEffect, useRef, useState } from 'react';
 import { ParkResponse, PromotionResponse, StaffResponse, StaffType, updatePromotionDetails } from '@lepark/data-access';
@@ -9,19 +25,29 @@ import { useRestrictPromotions } from '../../hooks/Promotions/useRestrictPromoti
 import PromotionValueTag from '../Promotion/components/PromotionValueTag';
 import PromotionValidityTag from '../Promotion/components/PromotionValidityTag';
 import { FiInfo } from 'react-icons/fi';
+import useUploadImages from '../../hooks/Images/useUploadImages';
 
 const { TextArea } = Input;
+const { Title } = Typography;
 
 const PromotionDetails = () => {
   const { promotionId = '' } = useParams();
   const [searchParams] = useSearchParams();
   const { user } = useAuth<StaffResponse>();
   const { promotion, isArchived, loading, triggerFetch } = useRestrictPromotions(promotionId);
+  const { selectedFiles, previewImages, setPreviewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+  const [currentImages, setCurrentImages] = useState<string[]>([]);
   const editableRbac = () => {
-    return (user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && !promotion?.isNParksWide));
-  }
+    return user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && !promotion?.isNParksWide);
+  };
   const [inEditMode, setInEditMode] = useState(isArchived ? false : editableRbac() && searchParams.get('editMode') === 'true');
   const [editedPromotion, setEditedPromotion] = useState<Partial<PromotionResponse>>();
+
+  useEffect(() => {
+    if (promotion?.images) {
+      setCurrentImages(promotion.images);
+    }
+  }, [promotion]);
 
   const toggleEditMode = () => {
     if (isArchived) return;
@@ -38,6 +64,12 @@ const PromotionDetails = () => {
     }));
   };
 
+  const handleCurrentImageClick = (index: number) => {
+    const newImages = currentImages.filter((_, i) => i !== index)
+    setCurrentImages((prevImages) => newImages);
+    setEditedPromotion((promotion) => ({ ...promotion, images: newImages }));
+  };
+
   const onFinish = async (values: any) => {
     try {
       if (!promotion) {
@@ -46,9 +78,13 @@ const PromotionDetails = () => {
         throw new Error('Not allowed to edit Promotion details.');
       }
 
-      console.log(values);
+      const finalData = {
+        ...values,
+        images: currentImages,
+      };
+      setPreviewImages([]);
 
-      const updateRes = await updatePromotionDetails(promotion.id, values);
+      const updateRes = await updatePromotionDetails(promotion.id, finalData, selectedFiles);
       if (updateRes.status === 200) {
         await triggerFetch();
         message.success('Promotion details updated successfully!');
@@ -58,19 +94,14 @@ const PromotionDetails = () => {
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.message || error.toString();
-      if (errorMessage === "Please enter a unique Promo Code") {
-        message.error("Please enter a unique Promo Code")
+      if (errorMessage === 'Please enter a unique Promo Code') {
+        message.error('Please enter a unique Promo Code');
       } else if (errorMessage.length < 60) {
-        message.error(errorMessage)
+        message.error(errorMessage);
       }
       setInEditMode(true);
     }
   };
-
-  console.log(promotion)
-  useEffect(() => {
-    console.log(promotion)
-  }, [])
 
   const descriptionsItems = [
     {
@@ -118,16 +149,19 @@ const PromotionDetails = () => {
       children: !inEditMode ? (
         promotion?.status === 'ENABLED' ? (
           <div>
-            <Tag color="green" bordered={false}>Enabled</Tag>
+            <Tag color="green" bordered={false}>
+              Enabled
+            </Tag>
             <p className="flex gap-2 mt-2 items-center text-sm text-secondary">
               <FiInfo className="shrink-0" />
               Enabled means Visitors will able to view and use this Promotion.
             </p>
           </div>
-
         ) : (
           <div>
-            <Tag color="red" bordered={false}>Disabled</Tag>
+            <Tag color="red" bordered={false}>
+              Disabled
+            </Tag>
             <p className="flex gap-2 mt-2 items-center text-sm text-secondary">
               <FiInfo className="shrink-0" />
               Disabled means Visitors will<strong>not</strong>be able to view or use this Promotion.
@@ -141,7 +175,17 @@ const PromotionDetails = () => {
               checked={editedPromotion?.status === 'ENABLED'}
               onChange={(checked) => handleInputChange('status', checked ? 'ENABLED' : 'DISABLED')}
             />
-            <span style={{ marginLeft: 8 }}>{editedPromotion?.status === 'ENABLED' ? <Tag color="green" bordered={false}>Enabled</Tag> : <Tag color="red" bordered={false}>Disabled</Tag>}</span>
+            <span style={{ marginLeft: 8 }}>
+              {editedPromotion?.status === 'ENABLED' ? (
+                <Tag color="green" bordered={false}>
+                  Enabled
+                </Tag>
+              ) : (
+                <Tag color="red" bordered={false}>
+                  Disabled
+                </Tag>
+              )}
+            </span>
           </div>
           {editedPromotion?.status === 'ENABLED' ? (
             <p className="flex gap-2 mt-2 items-center text-sm text-secondary">
@@ -156,14 +200,55 @@ const PromotionDetails = () => {
           )}
         </>
       ),
-    }
+    },
+    {
+      key: 'images',
+      label: 'Cover Image',
+      children: !inEditMode ? (
+        (promotion && promotion.images && promotion.images.length > 0 ? (
+          <Space size="large" wrap>
+            {promotion.images.map((image, index) => (
+              <Image key={index} height={150} src={image} className="rounded-md" />
+            ))}
+          </Space>
+        ) : (
+          <div className="h-32 flex items-center justify-center rounded-lg">
+            <Empty description="No Images" imageStyle={{ height: '50px' }} />
+          </div>
+        ))
+      ) : (
+        <>
+          <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {currentImages?.map((imgSrc, index) => (
+              <img
+                key={index}
+                src={imgSrc}
+                alt={`Preview ${index}`}
+                className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-50"
+                onClick={() => handleCurrentImageClick(index)}
+              />
+            ))}
+            {previewImages?.map((imgSrc, index) => (
+              <img
+                key={index}
+                src={imgSrc}
+                alt={`New ${index}`}
+                className="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-50"
+                onClick={() => removeImage(index)}
+              />
+            ))}
+          </div>
+        </>
+      ),
+    },
   ];
 
   const archivedDescriptionsItems = [
     {
       key: 'name',
       label: 'Title',
-      children: promotion?.name
+      children: promotion?.name,
     },
     {
       label: 'Park',
@@ -180,7 +265,7 @@ const PromotionDetails = () => {
     {
       label: 'Promo Code',
       key: 'promoCode',
-      children: promotion?.promoCode
+      children: promotion?.promoCode,
     },
     {
       label: 'Description',
@@ -221,7 +306,7 @@ const PromotionDetails = () => {
       key: 'minimumAmount',
       children: promotion?.minimumAmount ? promotion?.minimumAmount : <div className="text-secondary">None</div>,
     },
-  ]
+  ];
 
   const breadcrumbItems = [
     {
@@ -267,10 +352,13 @@ const PromotionDetails = () => {
               {!inEditMode ? (
                 <>
                   <div>{`${promotion.name}`}</div>
-                  {!isArchived && editableRbac() ? <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
-                    : !isArchived ? <></>
-                    : <Tag bordered={false}>ARCHIVED</Tag>
-                  }
+                  {!isArchived && editableRbac() ? (
+                    <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                  ) : !isArchived ? (
+                    <></>
+                  ) : (
+                    <Tag bordered={false}>ARCHIVED</Tag>
+                  )}
                 </>
               ) : (
                 <>
@@ -281,7 +369,7 @@ const PromotionDetails = () => {
                   <Button
                     type="primary"
                     onClick={() => onFinish(editedPromotion)}
-                    disabled={editedPromotion === null || editedPromotion === undefined}
+                    disabled={(editedPromotion === null || editedPromotion === undefined) && (selectedFiles?.length === 0)}
                   >
                     Save
                   </Button>
@@ -290,6 +378,20 @@ const PromotionDetails = () => {
             </div>
           }
         />
+        {/* <Title level={5} className="mt-4 mb-2">
+          Images
+        </Title>
+        {promotion.images && promotion.images.length > 0 ? (
+          <Space size="large" wrap>
+            {promotion.images.map((image, index) => (
+              <Image key={index} width={200} src={image} className="rounded-md"/>
+            ))}
+          </Space>
+        ) : (
+          <div className="h-32 bg-gray-200 flex items-center justify-center rounded-lg">
+            <Empty description="No Image" imageStyle={{ height: "50px" }}/>
+          </div>
+        )} */}
         <br />
         <Descriptions
           items={termDescriptionItems}

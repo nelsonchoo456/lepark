@@ -39,8 +39,8 @@ const PromotionByTypeTab = ({ promotions, triggerFetch, tableShowParks = false, 
   }, [promotions, searchQuery]);
 
   const editableRbac = (promotion: PromotionResponse) => {
-    return (user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && !promotion.isNParksWide));
-  }
+    return user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && !promotion.isNParksWide);
+  };
 
   const columns = [
     {
@@ -57,7 +57,10 @@ const PromotionByTypeTab = ({ promotions, triggerFetch, tableShowParks = false, 
         <PromotionValueTag isPercentage={record.discountType === 'PERCENTAGE'}>{record.discountValue}</PromotionValueTag>
       ),
       sorter: (a: PromotionResponse, b: PromotionResponse) => a.discountValue - b.discountValue,
-      filters: [{ value: "PERCENTAGE", text: "Percentage" }, { value: "FIXED_AMOUNT", text: "Fixed Amount" }],
+      filters: [
+        { value: 'PERCENTAGE', text: 'Percentage' },
+        { value: 'FIXED_AMOUNT', text: 'Fixed Amount' },
+      ],
       onFilter: (value: any, record: PromotionResponse) => record.discountType === value,
     },
     {
@@ -65,23 +68,26 @@ const PromotionByTypeTab = ({ promotions, triggerFetch, tableShowParks = false, 
       dataIndex: 'promoCode',
       key: 'promoCode',
       render: (promoCode: string) => (promoCode ? promoCode : '-'),
-      sorter: (a: PromotionResponse, b: PromotionResponse) => a.promoCode && b.promoCode ? a.promoCode.localeCompare(b.promoCode) : 1,
+      sorter: (a: PromotionResponse, b: PromotionResponse) => (a.promoCode && b.promoCode ? a.promoCode.localeCompare(b.promoCode) : 1),
     },
     {
       title: 'Validity',
       dataIndex: 'validFrom',
       key: 'validFrom',
-      render: (_: any, record: PromotionResponse) =>
-        <PromotionValidityTag validFrom={record.validFrom} validUntil={record.validUntil} />,
+      render: (_: any, record: PromotionResponse) => <PromotionValidityTag validFrom={record.validFrom} validUntil={record.validUntil} />,
       sorter: (a: PromotionResponse, b: PromotionResponse) => a.validFrom - b.validFrom,
-      showSorterTooltip: { title: "Sort by Starting Date" },
-      filters: [{ value: "ONGOING", text: "Ongoing" }, { value: "UPCOMING", text: "Upcoming" }, { value: "DONE", text: "Done" }],
+      showSorterTooltip: { title: 'Sort by Starting Date' },
+      filters: [
+        { value: 'ONGOING', text: 'Ongoing' },
+        { value: 'UPCOMING', text: 'Upcoming' },
+        { value: 'DONE', text: 'Done' },
+      ],
       onFilter: (value: any, record: PromotionResponse) => {
-        if (value === "ONGOING") {
+        if (value === 'ONGOING') {
           return now.isAfter(record.validFrom) && now.isBefore(record.validUntil);
-        } else if (value === "UPCOMING") {
+        } else if (value === 'UPCOMING') {
           return now.isBefore(record.validFrom);
-        } else if (value === "DONE") {
+        } else if (value === 'DONE') {
           return now.isAfter(record.validUntil);
         }
         return false;
@@ -220,9 +226,18 @@ const PromotionByTypeTab = ({ promotions, triggerFetch, tableShowParks = false, 
     <Card styles={{ body: { padding: 0 } }} className="p-4 border-t-0 rounded-tl-none">
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search for a Promotion..." onChange={handleSearchBar} className="mb-4" variant="filled" />
-        {nonArchived && (
-          <Button type="primary" onClick={() => navigate('/promotion/create')}>
-            Create Promotion
+        {nonArchived ? (
+          <>
+            <Button type="primary" onClick={() => navigate('/promotion/create')}>
+              Create Promotion
+            </Button>
+            <Button type="default" onClick={() => navigate('/promotion/archived')}>
+              View Archives
+            </Button>
+          </>
+        ) : (
+          <Button type="default" onClick={() => navigate('/promotion')}>
+            Return to Non-Archived
           </Button>
         )}
       </Flex>
