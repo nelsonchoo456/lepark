@@ -75,7 +75,7 @@ const GraphContainer: React.FC<GraphContainerProps> = ({ title, data, type, opti
       onClick={toggleView}
       onMouseEnter={(e) => {
         if (window.innerWidth > 768) {
-          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+          e.currentTarget.style.boxShadow = '0 4px 8px #a3d4c7';
         }
       }}
       onMouseLeave={(e) => {
