@@ -3,6 +3,7 @@ import { getSequestrationHistory, getSequestrationHistoryByAreaIdAndTimeFrame, S
 import { Card, DatePicker, Spin, message, Statistic, Row, Col } from 'antd';
 import SequestrationGraph from '../../DecarbonizationArea/components/SequestrationGraph';
 import dayjs from 'dayjs';
+import { formatDate } from '../../DecarbonizationArea/components/dateFormatter';
 
 const { RangePicker } = DatePicker;
 
@@ -28,7 +29,7 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
       const response = await getSequestrationHistory(areaId);
       const formattedData = response.data.map((entry: any) => ({
         ...entry,
-        date: dayjs(entry.date).format('YYYY-MM-DD'),
+        date: formatDate(entry.date),
       }));
       // Sort data by date in ascending order
       formattedData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -55,7 +56,7 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
 
         const formattedData = response.data.map((entry: any) => ({
           ...entry,
-          date: dayjs(entry.date).format('YYYY-MM-DD'),
+          date: formatDate(entry.date),
         }));
         // Sort data by date in ascending order
         formattedData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
