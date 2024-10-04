@@ -1,4 +1,4 @@
-import { Announcement, PrismaClient } from '@prisma/client';
+import { Announcement, AnnouncementStatusEnum, PrismaClient } from '@prisma/client';
 import { AnnouncementSchema, AnnouncementSchemaType } from '../schemas/announcementSchema';
 import ParkDao from '../dao/ParkDao';
 import AttractionDao from '../dao/AttractionDao';
@@ -32,7 +32,8 @@ class AnnouncementService {
   }
 
   public async getAllAnnouncements(): Promise<Announcement[]> {
-    return AnnouncementDao.getAllAnnouncements();
+    const announcements = await AnnouncementDao.getAllAnnouncements();
+    return Promise.all(announcements.map(updateAnnouncementStatus));
   }
 
   public async getAnnouncementsByParkId(parkId: number): Promise<Announcement[]> {
@@ -41,7 +42,8 @@ class AnnouncementService {
       throw new Error('Park not found');
     }
 
-    return AnnouncementDao.getAnnouncementsByParkId(parkId);
+    const announcements = await AnnouncementDao.getAnnouncementsByParkId(parkId);
+    return Promise.all(announcements.map(updateAnnouncementStatus));
   }
 
   public async getAnnouncementById(id: string): Promise<Announcement> {
@@ -49,7 +51,7 @@ class AnnouncementService {
     if (!announcement) {
       throw new Error('Announcement not found');
     }
-    return announcement;
+    return updateAnnouncementStatus(announcement);
   }
 
   public async updateAnnouncementDetails(id: string, data: Partial<AnnouncementSchemaType>): Promise<Announcement> {
@@ -89,17 +91,46 @@ class AnnouncementService {
 }
 
 const dateFormatter = (data: any) => {
-  const { openingHours, closingHours, ...rest } = data;
+  const { startDate, endDate, updatedAt, ...rest } = data;
   const formattedData = { ...rest };
 
-  if (openingHours) {
-    formattedData.openingHours = openingHours.map((time: string) => new Date(time));
+  if (startDate) {
+    formattedData.startDate = new Date(startDate);
   }
-  if (closingHours) {
-    formattedData.closingHours = closingHours.map((time: string) => new Date(time));
+  if (endDate) {
+    formattedData.endDate = new Date(endDate);
+  }
+  if (updatedAt) {
+    formattedData.updatedAt = new Date(updatedAt);
   }
 
   return formattedData;
+};
+
+const updateAnnouncementStatus = async (announcement: Announcement): Promise<Announcement> => {
+  if (announcement.status === AnnouncementStatusEnum.INACTIVE) {
+    return announcement;
+  }
+
+  const now = new Date();
+  const startDateTime = new Date(announcement.startDate);
+  const endDateTime = new Date(announcement.endDate);
+  
+  let newStatus = announcement.status;
+
+  if (now < startDateTime) {
+    newStatus = AnnouncementStatusEnum.UPCOMING;
+  } else if (now >= startDateTime && now <= endDateTime) {
+    newStatus = AnnouncementStatusEnum.ACTIVE;
+  } else if (now > endDateTime) {
+    newStatus = AnnouncementStatusEnum.EXPIRED;
+  }
+
+  if (newStatus !== announcement.status) {
+    return await AnnouncementDao.updateAnnouncementDetails(announcement.id, { status: newStatus });
+  }
+
+  return announcement;
 };
 
 export default new AnnouncementService();

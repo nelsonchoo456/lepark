@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
 import moment from 'moment';
 import { FiEye, FiSearch } from 'react-icons/fi';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Key } from 'react';
 import {
   AnnouncementResponse,
   StaffType,
@@ -40,9 +40,12 @@ const AnnouncementList: React.FC = () => {
   const filteredAnnouncements = useMemo(() => {
     return announcements.filter((announcement) => {
       const park = parks.find((p) => p.id === announcement.parkId);
+      const parkName = park ? park.name : 'NParks';
       return (
-        Object.values(announcement).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
-        park?.name.toLowerCase().includes(searchQuery.toLowerCase())
+        Object.values(announcement).some((value) => 
+          value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        ) ||
+        parkName.toLowerCase().includes(searchQuery.toLowerCase())
       );
     });
   }, [searchQuery, announcements, parks]);
@@ -71,24 +74,32 @@ const AnnouncementList: React.FC = () => {
       ellipsis: true,
     },
     {
-        title: 'Park',
-        dataIndex: 'parkId',
-        key: 'parkId',
-        render: (parkId) => {
-          const park = parks.find((p) => p.id === parkId);
-          return <div>{park ? park.name : 'All Parks'}</div>;
-        },
-        filters:
-        user?.role === StaffType.SUPERADMIN
-          ? useMemo(() => {
-              const uniqueParkIds = [...new Set(announcements.map((a) => a.parkId))];
-              return uniqueParkIds.map((parkId) => {
-                const park = parks.find((p) => p.id === parkId);
-                return { text: park ? park.name : `Park ${parkId}`, value: parkId ?? 'NParks' };
-              });
-            }, [announcements, parks])
-          : undefined,
-      onFilter: (value, record) => record.parkId === value || (value === null && record.parkId === undefined),
+      title: 'Park',
+      dataIndex: 'parkId',
+      key: 'parkId',
+      render: (parkId: number | null) => {
+        const park = parks.find((p) => p.id === parkId);
+        return <div>{park ? park.name : 'NParks'}</div>;
+      },
+      filters:
+      user?.role === StaffType.SUPERADMIN
+        ? useMemo(() => {
+            const uniqueParkIds = [...new Set(announcements.map((a) => a.parkId))];
+            return [
+              { text: 'NParks', value: 'nparks' },
+              ...uniqueParkIds
+                .filter((parkId): parkId is number => parkId !== null)
+                .map((parkId) => {
+                  const park = parks.find((p) => p.id === parkId);
+                  return { text: park ? park.name : `Park ${parkId}`, value: parkId };
+                })
+            ];
+          }, [announcements, parks])
+        : undefined,
+      onFilter: (value: boolean | Key, record: AnnouncementResponse) => {
+        if (value === 'nparks') return record.parkId === null;
+        return record.parkId === value;
+      },
     },
     {
       title: 'Publish Date',

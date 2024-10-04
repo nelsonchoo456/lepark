@@ -541,6 +541,13 @@ model PlantTask {
   submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
 }
 
+enum AnnouncementStatusEnum {
+  UPCOMING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
 model Announcement {
   id          String   @id @default(uuid()) @db.Uuid
   title       String
@@ -549,12 +556,5 @@ model Announcement {
   startDate   DateTime
   endDate     DateTime
   status      AnnouncementStatusEnum
-  parkId      Int
-}
-
-enum AnnouncementStatusEnum {
-  UPCOMING
-  ACTIVE
-  INACTIVE
-  EXPIRED
+  parkId      Int?
 }

@@ -6,7 +6,6 @@ import AnnouncementService from '../services/AnnouncementService';
 const router = express.Router();
 
 router.post('/createAnnouncement', authenticateJWTStaff, async (req, res) => {
-  console.log('Received request to create announcement');
 
   try {
     const announcement = await AnnouncementService.createAnnouncement(req.body);
