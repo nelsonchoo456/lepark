@@ -4,7 +4,7 @@ import {
   SequestrationHistoryResponse,
   DecarbonizationAreaResponse,
 } from '@lepark/data-access';
-import { Card, DatePicker, Spin, message, Statistic, Row, Col, Select } from 'antd';
+import { Card, DatePicker, Spin, message, Statistic, Row, Col, Select, Switch } from 'antd';
 import dayjs from 'dayjs';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { StaffResponse, StaffType } from '@lepark/data-access';
@@ -27,6 +27,7 @@ const DecarbonizationAreaChart: React.FC = () => {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
   const { loading, data, barChartData } = useSequestrationHistory(startDate, endDate, selectedArea, selectedParkId, decarbonizationAreas);
+  const [isSingleColumn, setIsSingleColumn] = useState(window.innerWidth <= 1024);
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN && decarbonizationAreas.length > 0) {
@@ -193,12 +194,23 @@ const DecarbonizationAreaChart: React.FC = () => {
     responsive: true,
   };
 
+  const toggleSingleColumn = () => {
+    setIsSingleColumn((prev) => !prev);
+  };
+
   const renderGraphs = () => {
     const graphs = [];
 
     if (lineChartData && lineChartData.labels) {
       graphs.push(
-        <GraphContainer key="lineChart" title="Sequestration Amount (kg)" data={lineChartData} type="line" options={chartOptions} />,
+        <GraphContainer
+          key="lineChart"
+          title="Sequestration Amount (kg)"
+          data={lineChartData}
+          type="line"
+          options={chartOptions}
+          isSingleColumn={isSingleColumn}
+        />,
       );
     }
 
@@ -210,6 +222,7 @@ const DecarbonizationAreaChart: React.FC = () => {
           data={barChartDataConfig}
           type="bar"
           options={chartOptions}
+          isSingleColumn={isSingleColumn}
         />,
       );
     }
@@ -222,6 +235,7 @@ const DecarbonizationAreaChart: React.FC = () => {
           data={cumulativeLineChartData}
           type="line"
           options={chartOptions}
+          isSingleColumn={isSingleColumn}
         />,
       );
     }
@@ -234,6 +248,7 @@ const DecarbonizationAreaChart: React.FC = () => {
           data={monthlyChartData}
           type="bar"
           options={chartOptions}
+          isSingleColumn={isSingleColumn}
         />,
       );
     }
@@ -246,6 +261,7 @@ const DecarbonizationAreaChart: React.FC = () => {
           data={yearlyChartData}
           type="bar"
           options={chartOptions}
+          isSingleColumn={isSingleColumn}
         />,
       );
     }
@@ -257,9 +273,13 @@ const DecarbonizationAreaChart: React.FC = () => {
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Row gutter={16} justify="end">
+        <Row gutter={16} justify="end" align="middle">
           {user?.role === StaffType.SUPERADMIN && (
             <>
+              <Col>
+                <Switch checked={isSingleColumn} onChange={toggleSingleColumn} />
+                <span style={{ marginLeft: '8px' }}>Enlarge Visualizations</span>
+              </Col>
               <Col>
                 <Select value={selectedParkId} onChange={handleParkChange} style={{ width: 300 }} placeholder="Select Park">
                   {parks.map((park) => (
@@ -286,11 +306,12 @@ const DecarbonizationAreaChart: React.FC = () => {
             <RangePicker onChange={handleDateChange} defaultValue={[dayjs().subtract(1, 'month'), dayjs()]} />
           </Col>
         </Row>
+        <Row gutter={16} style={{ marginTop: '15px', justifyContent: 'center' }}></Row>
         {loading || areasLoading ? (
           <Spin />
         ) : data.length > 0 ? (
           <>
-              <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }}>
+            <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }}>
               <Col span={4}>
                 <Statistic title="Total Sequestration (kg)" value={metrics.total} />
               </Col>
@@ -307,7 +328,16 @@ const DecarbonizationAreaChart: React.FC = () => {
                 <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
               </Col>
             </Row>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>{renderGraphs()}</div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: isSingleColumn ? 'column' : 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'space-around',
+              }}
+            >
+              {renderGraphs()}
+            </div>
           </>
         ) : (
           <p>No data available</p>
