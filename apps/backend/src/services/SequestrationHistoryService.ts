@@ -109,6 +109,17 @@ class SequestrationHistoryService {
     await SequestrationHistoryDao.deleteSequestrationHistoryForDate(decarbonizationAreaId, new Date());
     await this.createSequestrationHistory(sequestrationHistoryData);
   }
+public async getTotalSequestrationForParkAndDate(parkId: number, date: string): Promise<number> {
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) {
+    throw new Error('Invalid date format');
+  }
+
+  console.log('Fetching total sequestration for park:', parkId, 'and date:', parsedDate);
+  const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndDate(parkId, parsedDate);
+  console.log('Total sequestration result:', result);
+  return result;
+}
 
   // Utility function to format date fields
   private dateFormatter(data: any) {
@@ -122,6 +133,8 @@ class SequestrationHistoryService {
     }
     return formattedData;
   }
+
+
 }
 
 export default new SequestrationHistoryService();

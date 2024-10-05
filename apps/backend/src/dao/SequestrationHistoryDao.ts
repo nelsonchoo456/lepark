@@ -54,6 +54,28 @@ class SequestrationHistoryDao {
       },
     });
   }
+
+  async getTotalSequestrationForParkAndDate(parkId: number, date: Date): Promise<number> {
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+    const result = await prisma.sequestrationHistory.aggregate({
+      _sum: {
+        seqValue: true
+      },
+      where: {
+        decarbonizationArea: {
+          parkId: parkId
+        },
+        date: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      }
+    });
+    console.log('Aggregation result:', result);
+    return result._sum.seqValue || 0;
+  }
 }
 
 export default new SequestrationHistoryDao();
