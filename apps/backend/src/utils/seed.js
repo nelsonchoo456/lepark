@@ -13,6 +13,7 @@ const {
   eventsData,
   parkAssetsData,
   sensorsData,
+  attractionTicketListingsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -369,6 +370,18 @@ async function seed() {
     attractionList.push(createdAttraction);
   }
   console.log(`Total attractions seeded: ${attractionList.length}\n`);
+
+  const flowerDomeId = attractionList[2].id;
+
+  const attractionTicketListingsList = [];
+  for (const listing of attractionTicketListingsData) {
+    listing.attractionId = flowerDomeId;
+    const createdAttraction = await prisma.attractionTicketListing.create({
+      data: listing,
+    });
+    attractionTicketListingsList.push(createdAttraction);
+  }
+  console.log(`Total attractions listings seeded: ${attractionTicketListingsList.length}\n`);
 }
 
 // Utility function for Activity Logs and Status Logs

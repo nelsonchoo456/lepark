@@ -26,6 +26,7 @@ import AttractionsPerPark from './pages/Attractions/AttractionsPerPark';
 import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttractionDetails';
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
+import ViewAttractionTicketListings from './pages/Attractions/ViewAttractionListings';
 
 export function App() {
   return (
@@ -101,6 +102,7 @@ export function App() {
                 <Route path="/attractions">
                   <Route path="park/:parkId" element={<AttractionsPerPark />} />
                   <Route path=":attractionId" element={<VisitorViewAttractionDetails />} />
+                  <Route path=":attractionId/listings" element={<ViewAttractionTicketListings />} />
                 </Route>
               </Route>
             </Routes>

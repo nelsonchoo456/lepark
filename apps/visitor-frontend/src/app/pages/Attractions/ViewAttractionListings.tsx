@@ -1,0 +1,191 @@
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Typography, Card, Row, Col, Button, Checkbox, Spin } from 'antd';
+import { LogoText } from '@lepark/common-ui';
+import dayjs, { Dayjs } from 'dayjs';
+import {
+  AttractionResponse,
+  AttractionTicketListingResponse,
+  getAttractionById,
+  getAttractionTicketListingsByAttractionId,
+} from '@lepark/data-access';
+import SelectDateAndReview from './Components/SelectDateAndReview';
+import OrderReview from './Components/OrderReview';
+
+const { Title, Text } = Typography;
+
+const ViewAttractionTicketListings = () => {
+  const { attractionId } = useParams<{ attractionId: string }>();
+  const [listings, setListings] = useState<AttractionTicketListingResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({});
+  const [step, setStep] = useState('select-tickets');
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [attraction, setAttraction] = useState<AttractionResponse | null>(null);
+  const [discount, setDiscount] = useState(0);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      if (attractionId) {
+        try {
+          const response = await getAttractionTicketListingsByAttractionId(attractionId);
+          setListings(response.data);
+
+          const attractionResponse = await getAttractionById(attractionId);
+          setAttraction(attractionResponse.data);
+        } catch (error) {
+          console.error('Error fetching ticket data:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchTickets();
+  }, [attractionId]);
+
+  const groupedListings = listings.reduce((acc, listing) => {
+    const key = listing.nationality === 'LOCAL' ? 'Local Resident?' : 'Foreign Resident?';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(listing);
+    return acc;
+  }, {} as Record<string, AttractionTicketListingResponse[]>);
+
+  const handleTicketCountChange = (listingId: string, increment: number) => {
+    setTicketCounts((prev) => ({
+      ...prev,
+      [listingId]: Math.max(0, (prev[listingId] || 0) + increment),
+    }));
+  };
+
+  const handleProceedToDateSelection = () => {
+    setStep('select-date');
+  };
+
+  const handleBackToTicketSelection = () => {
+    setStep('select-tickets');
+  };
+
+  const handleDateSelected = (date: Dayjs) => {
+    setSelectedDate(date);
+    setStep('order-review');
+  };
+
+  const handleBackToDateSelection = () => {
+    setStep('select-date');
+  };
+
+  const handleApplyPromotion = async (code: string) => {
+    // Implement the logic to apply promotion code
+    // This is a placeholder implementation
+    console.log('Applying promotion code:', code);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Set a sample discount (replace with actual logic)
+    setDiscount(5);
+  };
+
+  const handleProceedToPayment = () => {
+    // Implement the logic to proceed to payment
+    console.log('Proceeding to payment');
+  };
+
+  const renderListingRow = (listing: AttractionTicketListingResponse) => (
+    <Row key={listing.id} justify="space-between" align="middle" className="mb-4">
+      <Col span={14}>
+        <Text strong className="text-base">
+          {listing.category}
+        </Text>
+        <Text className="text-base ml-2">S${listing.price.toFixed(2)}</Text>
+      </Col>
+      <Col span={10} className="flex items-center justify-end">
+        <Button onClick={() => handleTicketCountChange(listing.id, -1)}>-</Button>
+        <Text className="mx-2 text-base">{ticketCounts[listing.id] || 0}</Text>
+        <Button onClick={() => handleTicketCountChange(listing.id, 1)}>+</Button>
+      </Col>
+    </Row>
+  );
+
+  const renderContent = () => {
+    switch (step) {
+      case 'select-tickets':
+        return (
+          <>
+            {Object.entries(groupedListings).map(([nationality, listings]) => (
+              <Card key={nationality} className="mb-4 shadow-sm">
+                <Title level={4}>{nationality}</Title>
+                {nationality === 'Local Resident?' && (
+                  <Checkbox className="mb-2 text-sm">
+                    I understand that I will not be permitted from entering if I could not prove my identity at the admission gate
+                  </Checkbox>
+                )}
+                {listings.map(renderListingRow)}
+              </Card>
+            ))}
+            <div className="mt-4 pb-16">
+              <Button
+                type="primary"
+                className="w-full h-12 text-lg"
+                onClick={handleProceedToDateSelection}
+                disabled={Object.values(ticketCounts).every((count) => count === 0)}
+              >
+                Proceed to Date Selection
+              </Button>
+            </div>
+          </>
+        );
+      case 'select-date':
+        return (
+          <SelectDateAndReview
+            attractionName={attraction?.title || ''}
+            ticketDetails={Object.entries(ticketCounts).map(([id, quantity]) => {
+              const listing = listings.find((l) => l.id === id);
+              return {
+                description: listing?.category || '',
+                quantity,
+                price: listing?.price || 0,
+              };
+            })}
+            onBack={handleBackToTicketSelection}
+            onNext={handleDateSelected}
+          />
+        );
+      case 'order-review':
+        return (
+          <OrderReview
+            attractionName={attraction?.title || ''}
+            selectedDate={selectedDate!}
+            ticketDetails={Object.entries(ticketCounts).map(([id, quantity]) => {
+              const listing = listings.find((l) => l.id === id);
+              return {
+                description: listing?.category || '',
+                quantity,
+                price: listing?.price || 0,
+              };
+            })}
+            discount={discount}
+            onApplyPromotion={handleApplyPromotion}
+            onBack={handleBackToDateSelection}
+            onNext={handleProceedToPayment}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="p-4 h-full overflow-auto">
+      <LogoText className="text-2xl font-semibold mb-4">
+        {step === 'select-tickets' ? 'Select Listing' : step === 'select-date' ? 'Select Date' : 'Order Review'}
+      </LogoText>
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Spin size="large" />
+        </div>
+      ) : (
+        renderContent()
+      )}
+    </div>
+  );
+};
+export default ViewAttractionTicketListings;
