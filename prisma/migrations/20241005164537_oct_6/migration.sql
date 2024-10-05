@@ -239,7 +239,7 @@ CREATE TABLE "Hub" (
     "long" DOUBLE PRECISION,
     "remarks" TEXT,
     "zoneId" INTEGER,
-    "facilityId" UUID NOT NULL,
+    "facilityId" UUID,
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
 );
@@ -270,6 +270,16 @@ CREATE TABLE "Sensor" (
     "facilityId" UUID,
 
     CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SensorReading" (
+    "id" UUID NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "value" DOUBLE PRECISION NOT NULL,
+    "sensorId" UUID NOT NULL,
+
+    CONSTRAINT "SensorReading_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -438,6 +448,9 @@ ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") RE
 
 -- AddForeignKey
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SensorReading" ADD CONSTRAINT "SensorReading_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;

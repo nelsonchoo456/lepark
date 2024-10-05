@@ -19,31 +19,33 @@ class HubDao {
       },
     });
 
-    const hubsWithDetails = await Promise.all(hubs.map(async (hub) => {
-      let facility, park, zone;
+    const hubsWithDetails = await Promise.all(
+      hubs.map(async (hub) => {
+        let facility, park, zone;
 
-      if (hub.facilityId) {
-        const fetchedFacility = await FacilityDao.getFacilityById(hub.facilityId);
-        facility = fetchedFacility;
+        if (hub.facilityId) {
+          const fetchedFacility = await FacilityDao.getFacilityById(hub.facilityId);
+          facility = fetchedFacility;
 
-        if (facility?.parkId) {
-          const fetchedPark = await ParkDao.getParkById(facility.parkId);
-          park = fetchedPark;
+          if (facility?.parkId) {
+            const fetchedPark = await ParkDao.getParkById(facility.parkId);
+            park = fetchedPark;
+          }
         }
-      }
 
-      if (hub.zoneId) {
-        const fetchedZone = await ZoneDao.getZoneById(hub.zoneId);
-        zone = fetchedZone;
-      }
+        if (hub.zoneId) {
+          const fetchedZone = await ZoneDao.getZoneById(hub.zoneId);
+          zone = fetchedZone;
+        }
 
-      return {
-        ...hub,
-        facility: facility || null,
-        park: park || null,
-        zone: zone || null,
-      };
-    }));
+        return {
+          ...hub,
+          facility: facility || null,
+          park: park || null,
+          zone: zone || null,
+        };
+      }),
+    );
 
     return hubsWithDetails;
   }

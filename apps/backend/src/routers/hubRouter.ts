@@ -99,4 +99,30 @@ router.get('/checkDuplicateSerialNumber', async (req, res) => {
   }
 });
 
+router.post('/addHubToZone/:hubId', async (req, res) => {
+  try {
+    const { hubId } = req.params;
+    const updateData = req.body;
+
+    if (!updateData.zoneId) {
+      return res.status(400).json({ error: 'zoneId is required' });
+    }
+
+    const updatedHub = await HubService.addHubToZone(hubId, updateData);
+    res.status(200).json(updatedHub);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/verifyHubInitialization', async (req, res) => {
+  try {
+    const { identifierNumber, ipAddress, macAddress } = req.body;
+    const result = await HubService.verifyHubInitialization({ identifierNumber, ipAddress, macAddress });
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

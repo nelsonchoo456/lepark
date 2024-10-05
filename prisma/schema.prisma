@@ -306,8 +306,8 @@ model Hub {
   long                     Float?
   remarks                  String?
   zoneId                   Int? // for when installed in a zone
-  facilityId               String        @db.Uuid
-  facility                 Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId               String?       @db.Uuid
+  facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
@@ -368,6 +368,15 @@ model Sensor {
   facility                 Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory       MaintenanceHistory[]
   calibrationHistory       CalibrationHistory[]
+  sensorReadings           SensorReading[]
+}
+
+model SensorReading {
+  id       String   @id @default(uuid()) @db.Uuid
+  date     DateTime
+  value    Float
+  sensorId String   @db.Uuid
+  sensor   Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
 
 enum ParkAssetTypeEnum {

@@ -2,7 +2,7 @@ How to SSH into Raspberry Pi?
 1. Download Raspberry Pi Imager
 2. Choose Raspberry Pi 3, Raspberry Pi OS (64-bit), Storage: SD Card, then click on "CHOOSE SD CARD"
 3. Choose to customize the OS
-    a. Set username and password (Pi, password)
+    a. Set username and password (pi, password)
     b. Configure wireless LAN (SSID, password) [Make sure WiFi is not 5GHz]
     c. Set locale settings [Timezone: Asia/Singapore, Keyboard: English (US)]
     d. Enable SSH (use password authentication)
