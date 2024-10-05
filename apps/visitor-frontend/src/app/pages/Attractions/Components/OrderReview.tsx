@@ -66,7 +66,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
         <Text className="block">{selectedDate.format('DD/MM/YYYY')}</Text>
         {ticketDetails.map((detail, index) => (
           <Text key={index} className="block">
-            {detail.description} x {detail.quantity} S${(detail.price * detail.quantity).toFixed(2)}
+            {detail.quantity} x {detail.description} - S${(detail.price * detail.quantity).toFixed(2)}
           </Text>
         ))}
       </Card>

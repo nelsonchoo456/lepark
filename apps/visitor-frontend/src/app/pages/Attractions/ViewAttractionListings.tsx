@@ -90,19 +90,28 @@ const ViewAttractionTicketListings = () => {
   };
 
   const renderListingRow = (listing: AttractionTicketListingResponse) => (
-    <Row key={listing.id} justify="space-between" align="middle" className="mb-4">
-      <Col span={14}>
-        <Text strong className="text-base">
-          {listing.category}
-        </Text>
-        <Text className="text-base ml-2">S${listing.price.toFixed(2)}</Text>
-      </Col>
-      <Col span={10} className="flex items-center justify-end">
-        <Button onClick={() => handleTicketCountChange(listing.id, -1)}>-</Button>
-        <Text className="mx-2 text-base">{ticketCounts[listing.id] || 0}</Text>
-        <Button onClick={() => handleTicketCountChange(listing.id, 1)}>+</Button>
-      </Col>
-    </Row>
+    <div key={listing.id} className="mb-4">
+      <Row justify="space-between" align="middle" className="mb-1">
+        <Col span={14}>
+          <Text strong className="text-lg">
+            {listing.category}
+          </Text>
+          <Text strong className="text-lg ml-2">
+            S${listing.price}
+          </Text>
+        </Col>
+        <Col span={10} className="flex items-center justify-end">
+          <Button onClick={() => handleTicketCountChange(listing.id, -1)}>-</Button>
+          <Text className="mx-2 text-base">{ticketCounts[listing.id] || 0}</Text>
+          <Button onClick={() => handleTicketCountChange(listing.id, 1)}>+</Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>
+          <Text className="text-sm text-gray-600">{listing.description}</Text>
+        </Col>
+      </Row>
+    </div>
   );
 
   const renderContent = () => {
@@ -114,7 +123,7 @@ const ViewAttractionTicketListings = () => {
               <Card key={nationality} className="mb-4 shadow-sm">
                 <Title level={4}>{nationality}</Title>
                 {nationality === 'Local Resident?' && (
-                  <Checkbox className="mb-2 text-sm">
+                  <Checkbox className="mb-4 text-sm">
                     I understand that I will not be permitted from entering if I could not prove my identity at the admission gate
                   </Checkbox>
                 )}
@@ -140,7 +149,7 @@ const ViewAttractionTicketListings = () => {
             ticketDetails={Object.entries(ticketCounts).map(([id, quantity]) => {
               const listing = listings.find((l) => l.id === id);
               return {
-                description: listing?.category || '',
+                description: `${listing?.nationality} · ${listing?.category}` || '',
                 quantity,
                 price: listing?.price || 0,
               };
@@ -157,7 +166,7 @@ const ViewAttractionTicketListings = () => {
             ticketDetails={Object.entries(ticketCounts).map(([id, quantity]) => {
               const listing = listings.find((l) => l.id === id);
               return {
-                description: listing?.category || '',
+                description: `${listing?.nationality} · ${listing?.category}` || '',
                 quantity,
                 price: listing?.price || 0,
               };
