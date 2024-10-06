@@ -1,4 +1,4 @@
-import { PrismaClient, Hub, Prisma, Facility } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility, Sensor } from '@prisma/client';
 import ParkDao from './ParkDao';
 import FacilityDao from './FacilityDao';
 import ZoneDao from './ZoneDao';
@@ -80,6 +80,7 @@ class HubDao {
   }
 
   public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
+    console.log('identifierNumber', identifierNumber);
     return prisma.hub.findUnique({ where: { identifierNumber } });
   }
 
@@ -93,6 +94,10 @@ class HubDao {
 
   public async deleteHub(id: string): Promise<void> {
     await prisma.hub.delete({ where: { id } });
+  }
+
+  public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hubId } });
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {

@@ -1,7 +1,7 @@
 import aws from 'aws-sdk';
 import { HubSchemaType, HubSchema } from '../schemas/hubSchema';
 import HubDao from '../dao/HubDao';
-import { Prisma, Hub, Facility, SensorReading } from '@prisma/client';
+import { Prisma, Hub, Facility, SensorReading, Sensor } from '@prisma/client';
 import { z } from 'zod';
 import FacilityDao from '../dao/FacilityDao';
 import ParkDao from '../dao/ParkDao';
@@ -13,6 +13,7 @@ import crypto from 'crypto';
 import { SensorReadingSchema, SensorReadingSchemaType } from '../schemas/sensorReadingSchema';
 import { fromZodError } from 'zod-validation-error';
 import SensorReadingDao from '../dao/SensorReadingDao';
+import SensorDao from '../dao/SensorDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -27,9 +28,6 @@ const dateFormatter = (data: any) => {
   if (acquisitionDate) {
     formattedData.acquisitionDate = new Date(acquisitionDate);
   }
-  if (lastCalibratedDate) {
-    formattedData.lastCalibratedDate = new Date(lastCalibratedDate);
-  }
   if (lastMaintenanceDate) {
     formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
   }
@@ -38,6 +36,20 @@ const dateFormatter = (data: any) => {
   }
   return formattedData;
 };
+
+export class HubNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'HubNotFoundError';
+  }
+}
+
+export class HubNotActiveError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'HubNotActiveError';
+  }
+}
 
 class HubService {
   public async createHub(data: HubSchemaType): Promise<Hub> {
@@ -139,6 +151,7 @@ class HubService {
       }
 
       const updateData = formattedData as Prisma.HubUpdateInput;
+      console.log('updateDataHEREEEEEEEE', updateData);
       return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -173,88 +186,84 @@ class HubService {
     }
   }
 
-  public async addHubToZone(hubId: string, data: HubSchemaType): Promise<Hub> {
+  public async addHubToZone(id: string, data: Partial<HubSchemaType>): Promise<Hub> {
     try {
-      // Check if the hub exists
-      const hub = await HubDao.getHubById(hubId);
-      if (!hub) {
-        throw new Error('Hub not found');
+      const formattedData = dateFormatter(data);
+
+      HubSchema.partial().parse(formattedData);
+      const hub = await HubDao.getHubById(id);
+
+      if (formattedData.zoneId) {
+        const zone = await ZoneDao.getZoneById(formattedData.zoneId);
+        if (!zone) {
+          throw new Error('Zone not found');
+        }
       }
 
-      // Define a schema for required fields
-      const requiredSchema = z.object({
-        zoneId: z.number(),
-        name: z.string(),
-        description: z.string(),
-        hubStatus: z.enum(['ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED']),
-        acquisitionDate: z.date(),
-        lastMaintenanceDate: z.date(),
-        nextMaintenanceDate: z.date(),
-        dataTransmissionInterval: z.number(),
-        supplier: z.string(),
-        supplierContactNumber: z.string(),
-        ipAddress: z.string(),
-        macAddress: z.string(),
-        radioGroup: z.number(),
-        hubSecret: z.string(),
-        images: z.array(z.string()),
-        lat: z.number(),
-        long: z.number(),
-        remarks: z.string(),
-      });
+      if (hub.zoneId) {
+        throw new Error('Hub already has a zone');
+      }
 
-      data.hubSecret = this.generateHubSecret(hubId);
-      data.radioGroup = this.generateRandomRadioGroup();
+      if (hub.hubStatus !== 'INACTIVE') {
+        throw new Error('Hub must be inactive to be added to a zone');
+      }
 
-      // Validate the input data
-      const validatedData = requiredSchema.parse(data);
+      if (hub.radioGroup) {
+        throw new Error('Hub already has a radio group');
+      }
 
-      // Prepare update data
-      const updateData: HubSchemaType = {
-        ...validatedData,
-        facilityId: null, // Remove association with facility
-      };
+      if (hub.hubSecret) {
+        throw new Error('Hub already has a hub secret');
+      }
 
-      // Use the existing updateHubDetails method
-      const updatedHub = await this.updateHubDetails(hubId, updateData);
+      const generatedHubSecret = this.generateHubSecret();
+      const generatedRadioGroup = this.generateRandomRadioGroup();
 
-      return updatedHub;
+      // Add hubSecret and radioGroup to formattedData
+      formattedData.hubSecret = generatedHubSecret;
+      formattedData.radioGroup = generatedRadioGroup;
+
+      const updateData = formattedData as Prisma.HubUpdateInput;
+      console.log('updateDataHEREEEEEEEE', updateData);
+      return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const missingFields = error.issues.map((issue) => issue.path.join('.'));
-        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
       }
-      throw new Error(`Failed to add hub to zone: ${error.message}`);
+      throw error;
     }
   }
+
   // Verify hub initialization when raspberry pi first boots up
-  public async verifyHubInitialization(payload: HubInitializationPayload): Promise<{ status: boolean; message: string; hub?: Hub }> {
-    try {
-      const { identifierNumber, ipAddress, macAddress } = payload;
+  public async verifyHubInitialization(identifierNumber: string, ipAddress: string): Promise<string> {
+    const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
 
-      // Fetch the hub from the database
-      const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
-
-      if (!hub) {
-        return { status: false, message: 'Hub not found' };
-      }
-
-      // Check if the provided details match the stored data
-      if (hub.ipAddress !== ipAddress || hub.macAddress !== macAddress) {
-        return { status: false, message: 'Hub details do not match' };
-      }
-
-      // If all checks pass, return success
-      return { status: true, message: 'Hub verified successfully', hub };
-    } catch (error) {
-      console.error('Error verifying hub initialization:', error);
-      return { status: false, message: 'Error verifying hub' };
+    if (!hub) {
+      throw new HubNotFoundError('Hub not found');
     }
+
+    if (hub.hubStatus !== 'INACTIVE') {
+      throw new HubNotActiveError('Hub is already active');
+    }
+
+    if (!hub.zoneId) {
+      throw new Error('Hub must be in a zone to be initialized');
+    }
+
+    await HubDao.updateHubDetails(hub.id, { 
+      ipAddress: ipAddress,
+      hubStatus: 'ACTIVE'
+    });
+
+    return hub.hubSecret;
   }
 
-  public generateHubSecret(hubId: string): string {
-    const randomPart = (Math.random() + 1).toString(36).substring(7) + (Math.random() + 1).toString(36).substring(7);
-    return `HUB-${hubId}-${randomPart}`;
+  public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return HubDao.getAllSensorsByHubId(hubId);
+  }
+
+  public generateHubSecret(): string {
+    return (Math.random() + 1).toString(36).substring(7) + (Math.random() + 1).toString(36).substring(7);
   }
 
   public generateRandomRadioGroup(): number {
@@ -275,21 +284,56 @@ class HubService {
   }
 
   public async updateHubSecret(hubId: string): Promise<Hub> {
-    const newSecret = this.generateHubSecret(hubId);
+    const newSecret = this.generateHubSecret();
     return HubDao.updateHubDetails(hubId, { hubSecret: newSecret });
   }
 
   private generateIdentifierNumber(): string {
     return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
   }
-}
 
-// Define the payload interface
-interface HubInitializationPayload {
-  identifierNumber: string;
-  ipAddress: string;
-  macAddress: string;
-  // Add any other relevant fields
+  public async pushSensorReadings(
+    hubId: string,
+    jsonPayloadString: string,
+    sha256: string,
+    ipAddress: string,
+  ): Promise<{ sensors: string[]; radioGroup: number }> {
+    const hub = await HubDao.getHubById(hubId);
+    if (!hub) {
+      throw new Error('Hub not found');
+    }
+
+    if (!(await this.validatePayload(hubId, jsonPayloadString, sha256))) {
+      throw new Error('JSON validation failed. Digest does not match!');
+    }
+
+    const payload = JSON.parse(jsonPayloadString);
+
+    for (const sensorId of Object.keys(payload)) {
+      for (const sensorReading of payload[sensorId]) {
+        const sensor = await SensorDao.getSensorById(sensorId);
+        if (!sensor) {
+          throw new Error('Sensor not found');
+        }
+        await SensorReadingDao.createSensorReading({
+          date: new Date(sensorReading.readingDate),
+          value: sensorReading.reading,
+          sensor: { connect: { id: sensor.id } },
+        });
+      }
+    }
+
+    // Update hub's last data update and IP address
+    await HubDao.updateHubDetails(hubId, {
+      ipAddress,
+    });
+
+    const sensors = await HubDao.getAllSensorsByHubId(hubId);
+    return {
+      sensors: sensors.map((sensor) => sensor.name),
+      radioGroup: hub.radioGroup,
+    };
+  }
 }
 
 function ensureAllFieldsPresent(data: HubSchemaType): Prisma.HubCreateInput {

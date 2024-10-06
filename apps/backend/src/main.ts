@@ -67,7 +67,7 @@ app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
 app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
-app.use('/api/hubs', authenticateJWTStaff, hubRouter);
+app.use('/api/hubs', hubRouter);
 app.use('/api/parkassets', authenticateJWTStaff, parkAssetRouter);
 app.use('/api/facilities', facilityRouter);
 app.use('/api/events', eventRouter);

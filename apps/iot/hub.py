@@ -150,8 +150,27 @@ def get_token():
         return None
 
 def initialize_connection_to_backend():
-    payload = requests.put(BASE_URL + "/zones/initializeHub", json={"name":HUB_IDENTIFIER_NO}).json()
-    return payload["token"] if "token" in payload else None
+    try:
+        response = requests.post(BASE_URL + "/hubs/verifyHubInitialization", 
+                                json={"identifierNumber": HUB_IDENTIFIER_NO},
+                                timeout=5)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+        payload = response.json()
+        if "token" in payload:
+            return payload["token"]
+        else:
+            print("Error: Unexpected response format")
+            return None
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 404:
+            print("Error: Hub not found")
+        elif response.status_code == 403:
+            print("Error: Hub is not active")
+        else:
+            print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
 
 def save_token(token):
     f = open("SECRET", "w")

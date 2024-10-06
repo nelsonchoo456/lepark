@@ -87,6 +87,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
     // { key: 'zoneName', label: 'Zone Name', children: hub.zone?.name || '-' },
     { key: 'parkName', label: 'Park Name', children: hub.park?.name || '-' },
     { key: 'facilityName', label: 'Facility Name', children: hub.facility?.name || '-' },
+    { key: 'zoneName', label: 'Zone Name', children: hub.zone?.name || '-' },
   ];
 
   return (

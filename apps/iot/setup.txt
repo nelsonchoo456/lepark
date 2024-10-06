@@ -13,5 +13,9 @@ How to SSH into Raspberry Pi?
         - If SSH fails, try unplugging the Raspberry Pi from the power source, then plug it back in.
         - ping raspberrypi.local to find out the IP address
         - ssh pi@<ip address>
+        - Another way to find out Raspberry Pi's IP address:
+            1. arp -a (on Mac)
+            2. Find the device with MAC address b8:27:eb. This is usually the Raspberry Pi.
+            3. ssh pi@<ip address>
     b. password: password
 

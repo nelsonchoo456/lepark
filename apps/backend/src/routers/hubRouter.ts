@@ -1,5 +1,5 @@
 import express from 'express';
-import HubService from '../services/HubService';
+import HubService, { HubNotActiveError, HubNotFoundError } from '../services/HubService';
 import multer from 'multer';
 
 const router = express.Router();
@@ -99,26 +99,38 @@ router.get('/checkDuplicateSerialNumber', async (req, res) => {
   }
 });
 
-router.post('/addHubToZone/:hubId', async (req, res) => {
+router.put('/addHubToZone/:id', async (req, res) => {
   try {
-    const { hubId } = req.params;
-    const updateData = req.body;
-
-    if (!updateData.zoneId) {
-      return res.status(400).json({ error: 'zoneId is required' });
-    }
-
-    const updatedHub = await HubService.addHubToZone(hubId, updateData);
+    const updatedHub = await HubService.addHubToZone(req.params.id, req.body);
     res.status(200).json(updatedHub);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.post('/verifyHubInitialization', async (req, res) => {
+router.put('/verifyHubInitialization', async (req, res) => {
   try {
-    const { identifierNumber, ipAddress, macAddress } = req.body;
-    const result = await HubService.verifyHubInitialization({ identifierNumber, ipAddress, macAddress });
+    const { identifierNumber } = req.body;
+    console.log('req.socket.remoteAddress', req.socket.remoteAddress);
+    let ipAddress = req.socket.remoteAddress || '127.0.0.1';
+    ipAddress = ipAddress == '::1' ? '127.0.0.1' : ipAddress.split(':')[3];
+    const token = await HubService.verifyHubInitialization(identifierNumber, ipAddress);
+    res.status(200).json({ token });
+  } catch (error) {
+    if (error instanceof HubNotFoundError) {
+      res.status(404).json({ error: error.message });
+    } else if (error instanceof HubNotActiveError) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
+  }
+});
+
+router.post('/pushSensorReadings', async (req, res) => {
+  try {
+    const { hubId, jsonPayloadString, sha256, ipAddress } = req.body;
+    const result = await HubService.pushSensorReadings(hubId, jsonPayloadString, sha256, ipAddress);
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ error: error.message });
