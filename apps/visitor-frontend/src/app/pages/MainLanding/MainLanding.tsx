@@ -4,6 +4,7 @@ import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
 import { FaHouseUser, FaLocationDot, FaTent } from 'react-icons/fa6';
+import {BsHouseDoor} from 'react-icons/bs';
 import { Badge, Button, Card, Empty, Space } from 'antd';
 import EventCard from './components/EventCard';
 import { useNavigate } from 'react-router-dom';
@@ -140,7 +141,7 @@ const MainLanding = () => {
     </div>
     <div className="w-px h-full bg-gray-200 mx-4"></div>
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <FaHouseUser className="text-4xl mb-2" />
+      <BsHouseDoor className="text-4xl mb-2" />
       <p>Equivalent to powering a</p>
       <p>4 room HDB for</p>
       <p className="font-bold text-lg">{poweredDays} days</p>

@@ -7,6 +7,7 @@ import NxWelcome from './nx-welcome';
 import MainLanding from './pages/MainLanding/MainLanding';
 import MapPage from './pages/MapPage/MapPage';
 import MainLayout from './components/main/MainLayout';
+import DecarbViewDetails from './pages/Decarb/DecarbViewDetails';
 import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
@@ -105,6 +106,7 @@ export function App() {
                 </Route>
                 <Route path="/decarb">
                   <Route index element={<DecarbViewAll />} />
+                  <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
                 </Route>
               </Route>
             </Routes>

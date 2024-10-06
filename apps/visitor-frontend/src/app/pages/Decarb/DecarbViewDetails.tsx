@@ -176,6 +176,10 @@ const DecarbViewDetails: React.FC = () => {
     }
   }, []);
 
+   const carouselSettings = {
+    arrows: true,
+  };
+
   const parsedGeom = parseGeom(decarbArea?.geom);
   const parkGeom = parseGeom(park?.geom);
 
@@ -250,11 +254,8 @@ const DecarbViewDetails: React.FC = () => {
       ),
       children: (
         <div className="px-4">
-          <Divider>
-            <LogoText className="text-lg font-bold md:font-semibold md:py-2 md:m-0 mb-2">Decarbonization Area Details</LogoText>
-          </Divider>
           <Typography.Paragraph>
-            <strong>Park:</strong> {park?.name}
+            <strong>Located in:</strong> {park?.name}
           </Typography.Paragraph>
           <Typography.Paragraph>
             <strong>Area Size:</strong> {areaSize.toFixed(4)} km²
@@ -290,52 +291,71 @@ const DecarbViewDetails: React.FC = () => {
   }
 
   return (
-    <div className="md:h-screen md:overflow-y-scroll">
-      <div className="w-full gap-4 md:h-full">
-        <div className="bg-gray-200 rounded-b-3xl overflow-hidden md:rounded-none">
-          <div className="h-96 md:h-[16rem] bg-green-100 flex items-center justify-center">
-            {!park || !park.images || park.images.length === 0 ? (
-              <PiPlantFill className="text-6xl text-green-500" />
-            ) : (
-              <Carousel>
-                <div>
-                  <img src={park.images[0]} alt={park?.name || 'Park image'} />
-                </div>
-              </Carousel>
-            )}
-          </div>
-        </div>
-        <div className="py-4 md:p-0 md:pb-8 md:overflow-x-auto md:px-0">
-          <div className="items-start px-4">
-            <div className="">
-              <div className="w-full md:flex">
-                <div>
-                  <LogoText className="text-3xl font-bold md:font-semibold md:py-2 md:w-full">{decarbArea.name}</LogoText>
-                  <div className="w-10 h-[5px] bg-mustard-400 mb-4"></div>
-                </div>
+  <div className="md:h-screen md:overflow-y-scroll">
+    <div className="w-full gap-4 md:h-full">
+      <div className="bg-gray-200 rounded-b-3xl overflow-hidden md:rounded-none">
+        {park && park.images && park.images.length > 0 ? (
+          <Carousel {...carouselSettings}>
+            {park.images.map((image, index) => (
+              <div key={index}>
+                <img
+                  src={image}
+                  alt={`Park image ${index + 1}`}
+                  style={{
+                    width: '100%',
+                    objectFit: 'cover',
+                  }}
+                  className="h-96 md:h-[16rem]"
+                />
               </div>
-              <Typography.Paragraph
-                ellipsis={{
-                  rows: 3,
-                  expandable: true,
-                  symbol: 'more',
-                }}
-              >
-                {decarbArea.description}
-              </Typography.Paragraph>
-              <div className='flex gap-2 items-center'>
+            ))}
+          </Carousel>
+        ) : (
+          <div
+            style={{
+              width: '100%',
+              backgroundColor: '#f0f0f0',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            className="h-96 md:h-[16rem]"
+          >
+            <PiPlantFill className="text-6xl text-green-500" />
+          </div>
+        )}
+      </div>
+      <div className="py-4 md:p-0 md:pb-8 md:overflow-x-auto md:px-0">
+        <div className="items-start px-4">
+          <div className="">
+            <div className="w-full md:flex">
+              <div>
+                <LogoText className="text-3xl font-bold md:font-semibold md:py-2 md:w-full">{decarbArea.name}</LogoText>
+                <div className="w-10 h-[5px] bg-mustard-400 mb-4"></div>
               </div>
             </div>
+            <Typography.Paragraph
+              ellipsis={{
+                rows: 3,
+                expandable: true,
+                symbol: 'more',
+              }}
+            >
+              {decarbArea.description}
+            </Typography.Paragraph>
+            <div className='flex gap-2 items-center'>
+            </div>
           </div>
-          <Tabs
-            defaultActiveKey={'occurrences'}
-            items={tabsItems}
-            renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="px-4" />}
-          />
         </div>
+        <Tabs
+          defaultActiveKey={'occurrences'}
+          items={tabsItems}
+          renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="px-4" />}
+        />
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default React.memo(DecarbViewDetails);
