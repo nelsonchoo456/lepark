@@ -1,7 +1,7 @@
 import aws from 'aws-sdk';
 import { HubSchemaType, HubSchema } from '../schemas/hubSchema';
 import HubDao from '../dao/HubDao';
-import { Prisma, Hub, Facility, SensorReading, Sensor } from '@prisma/client';
+import { Prisma, Hub, Facility, Sensor } from '@prisma/client';
 import { z } from 'zod';
 import FacilityDao from '../dao/FacilityDao';
 import ParkDao from '../dao/ParkDao';
@@ -10,7 +10,6 @@ import { ZoneResponseData } from '../schemas/zoneSchema';
 import { ParkResponseData } from '../schemas/parkSchema';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
-import { SensorReadingSchema, SensorReadingSchemaType } from '../schemas/sensorReadingSchema';
 import { fromZodError } from 'zod-validation-error';
 import SensorReadingDao from '../dao/SensorReadingDao';
 import SensorDao from '../dao/SensorDao';
@@ -98,6 +97,14 @@ class HubService {
     return HubDao.getHubsByParkId(parkId);
   }
 
+  public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
+    return HubDao.getHubByIdentifierNumber(identifierNumber);
+  }
+
+  public async getHubByRadioGroup(radioGroup: number): Promise<Hub | null> {
+    return HubDao.getHubByRadioGroup(radioGroup);
+  }
+
   public async getHubById(id: string): Promise<(Hub & { facility: Facility; zone?: ZoneResponseData; park: ParkResponseData }) | null> {
     const hub = await HubDao.getHubById(id);
     if (!hub) {
@@ -165,39 +172,36 @@ class HubService {
     await HubDao.deleteHub(id);
   }
 
-  public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
-    return HubDao.isSerialNumberDuplicate(serialNumber, excludeHubId);
-  }
-
-  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
-    const params = {
-      Bucket: 'lepark',
-      Key: `hub/${fileName}`,
-      Body: fileBuffer,
-      ContentType: mimeType,
-    };
-
-    try {
-      const data = await s3.upload(params).promise();
-      return data.Location;
-    } catch (error) {
-      console.error('Error uploading image to S3:', error);
-      throw new Error('Error uploading image to S3');
-    }
-  }
-
+  // Update hub's zone, dataTransmissionInterval, macAddress, lat, long, remarks (if any)
   public async addHubToZone(id: string, data: Partial<HubSchemaType>): Promise<Hub> {
     try {
+      const hub = await HubDao.getHubById(id);
+
+      if (!hub) {
+        throw new HubNotFoundError('Hub not found');
+      }
+
       const formattedData = dateFormatter(data);
 
       HubSchema.partial().parse(formattedData);
-      const hub = await HubDao.getHubById(id);
 
       if (formattedData.zoneId) {
         const zone = await ZoneDao.getZoneById(formattedData.zoneId);
         if (!zone) {
           throw new Error('Zone not found');
         }
+
+        // Check if the zone already has a hub
+        const existingHubInZone = await HubDao.getHubByZoneId(formattedData.zoneId);
+        if (existingHubInZone) {
+          throw new Error('Zone already has a hub assigned');
+        }
+      }
+
+      const zone = await ZoneDao.getZoneById(formattedData.zoneId);
+      const hubFacility = await FacilityDao.getFacilityById(hub.facilityId);
+      if (hubFacility.parkId !== zone.parkId) {
+        throw new Error('Hub and zone are in different parks');
       }
 
       if (hub.zoneId) {
@@ -217,14 +221,17 @@ class HubService {
       }
 
       const generatedHubSecret = this.generateHubSecret();
-      const generatedRadioGroup = this.generateRandomRadioGroup();
+      let generatedRadioGroup = this.generateRandomRadioGroup();
+
+      while (await this.getHubByRadioGroup(generatedRadioGroup)) {
+        generatedRadioGroup = this.generateRandomRadioGroup();
+      }
 
       // Add hubSecret and radioGroup to formattedData
       formattedData.hubSecret = generatedHubSecret;
       formattedData.radioGroup = generatedRadioGroup;
 
       const updateData = formattedData as Prisma.HubUpdateInput;
-      console.log('updateDataHEREEEEEEEE', updateData);
       return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -242,54 +249,62 @@ class HubService {
       throw new HubNotFoundError('Hub not found');
     }
 
-    if (hub.hubStatus !== 'INACTIVE') {
-      throw new HubNotActiveError('Hub is already active');
-    }
-
     if (!hub.zoneId) {
       throw new Error('Hub must be in a zone to be initialized');
     }
 
-    await HubDao.updateHubDetails(hub.id, { 
+    if (hub.hubStatus === 'ACTIVE') {
+      throw new HubNotActiveError('Hub is already active');
+    } else if (hub.hubStatus === 'DECOMMISSIONED') {
+      throw new Error('Hub is decommissioned');
+    } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
+      throw new Error('Hub is under maintenance');
+    }
+
+    await HubDao.updateHubDetails(hub.id, {
       ipAddress: ipAddress,
-      hubStatus: 'ACTIVE'
+      hubStatus: 'ACTIVE',
     });
 
     return hub.hubSecret;
   }
 
-  public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
-    return HubDao.getAllSensorsByHubId(hubId);
-  }
+  public async removeHubFromZone(id: string): Promise<Hub> {
+    try {
+      const hub = await HubDao.getHubById(id);
 
-  public generateHubSecret(): string {
-    return (Math.random() + 1).toString(36).substring(7) + (Math.random() + 1).toString(36).substring(7);
-  }
+      if (!hub) {
+        throw new HubNotFoundError('Hub not found');
+      }
 
-  public generateRandomRadioGroup(): number {
-    return Math.floor(Math.random() * 255);
-  }
+      if (!hub.zoneId) {
+        throw new Error('Hub is not assigned to any zone');
+      }
 
-  public async validatePayload(hubId: string, jsonPayload: string, sha256: string): Promise<boolean> {
-    const hub = await HubDao.getHubById(hubId);
-    if (!hub || !hub.hubSecret) {
-      throw new Error('Hub not found or hub secret not set');
+      if (hub.hubStatus !== 'ACTIVE') {
+        throw new Error('Hub must be active to be removed from a zone');
+      }
+
+      const updateData: Prisma.HubUpdateInput = {
+        zoneId: null,
+        hubStatus: 'INACTIVE',
+        radioGroup: null,
+        hubSecret: null,
+        ipAddress: null,
+        dataTransmissionInterval: null,
+        macAddress: null,
+        lat: null,
+        long: null,
+        remarks: null,
+      };
+
+      return HubDao.updateHubDetails(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
+      }
+      throw error;
     }
-    const calculatedHash = this.calculateHash(jsonPayload + hub.hubSecret);
-    return sha256 === calculatedHash;
-  }
-
-  private calculateHash(data: string): string {
-    return crypto.createHash('sha256').update(data).digest('hex');
-  }
-
-  public async updateHubSecret(hubId: string): Promise<Hub> {
-    const newSecret = this.generateHubSecret();
-    return HubDao.updateHubDetails(hubId, { hubSecret: newSecret });
-  }
-
-  private generateIdentifierNumber(): string {
-    return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
   }
 
   public async pushSensorReadings(
@@ -334,8 +349,62 @@ class HubService {
       radioGroup: hub.radioGroup,
     };
   }
-}
 
+  public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return HubDao.getAllSensorsByHubId(hubId);
+  }
+
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+    const params = {
+      Bucket: 'lepark',
+      Key: `hub/${fileName}`,
+      Body: fileBuffer,
+      ContentType: mimeType,
+    };
+
+    try {
+      const data = await s3.upload(params).promise();
+      return data.Location;
+    } catch (error) {
+      console.error('Error uploading image to S3:', error);
+      throw new Error('Error uploading image to S3');
+    }
+  }
+
+  public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
+    return HubDao.isSerialNumberDuplicate(serialNumber, excludeHubId);
+  }
+
+  public generateHubSecret(): string {
+    return (Math.random() + 1).toString(36).substring(7) + (Math.random() + 1).toString(36).substring(7);
+  }
+
+  public generateRandomRadioGroup(): number {
+    return Math.floor(Math.random() * 255);
+  }
+
+  public async validatePayload(hubId: string, jsonPayload: string, sha256: string): Promise<boolean> {
+    const hub = await HubDao.getHubById(hubId);
+    if (!hub || !hub.hubSecret) {
+      throw new Error('Hub not found or hub secret not set');
+    }
+    const calculatedHash = this.calculateHash(jsonPayload + hub.hubSecret);
+    return sha256 === calculatedHash;
+  }
+
+  private calculateHash(data: string): string {
+    return crypto.createHash('sha256').update(data).digest('hex');
+  }
+
+  public async updateHubSecret(hubId: string): Promise<Hub> {
+    const newSecret = this.generateHubSecret();
+    return HubDao.updateHubDetails(hubId, { hubSecret: newSecret });
+  }
+
+  private generateIdentifierNumber(): string {
+    return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
+  }
+}
 function ensureAllFieldsPresent(data: HubSchemaType): Prisma.HubCreateInput {
   // Add checks for all required fields
   if (
@@ -351,5 +420,4 @@ function ensureAllFieldsPresent(data: HubSchemaType): Prisma.HubCreateInput {
   }
   return data as Prisma.HubCreateInput;
 }
-
 export default new HubService();

@@ -88,6 +88,10 @@ class HubDao {
     return prisma.hub.findUnique({ where: { serialNumber } });
   }
 
+  public async getHubByRadioGroup(radioGroup: number): Promise<Hub | null> {
+    return prisma.hub.findFirst({ where: { radioGroup: { equals: radioGroup } } });
+  }
+
   public async updateHubDetails(id: string, data: Prisma.HubUpdateInput): Promise<Hub> {
     return prisma.hub.update({ where: { id }, data });
   }
@@ -108,6 +112,12 @@ class HubDao {
       },
     });
     return !!hub;
+  }
+
+  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
+    return prisma.hub.findFirst({
+      where: { zoneId: zoneId },
+    });
   }
 }
 
