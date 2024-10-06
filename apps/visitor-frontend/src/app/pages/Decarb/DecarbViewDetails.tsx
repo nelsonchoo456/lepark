@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useCallback } from 'react';
 import { LogoText, useAuth } from '@lepark/common-ui';
 import {
   getDecarbonizationAreaById,
@@ -7,34 +8,120 @@ import {
   ParkResponse,
   OccurrenceResponse
 } from '@lepark/data-access';
-import { Button, Carousel, Tabs, Typography, Tag, Divider, Card, Space, Checkbox } from 'antd';
-import { useEffect, useState } from 'react';
+import { Button, Carousel, Tabs, Typography, Tag, Divider, Checkbox, Space, Card } from 'antd';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import DecarbOccurrenceTab from './components/DecarbOccurrenceTab';
 import { usePark } from '../../park-context/ParkContext';
 import { PiPlantFill } from 'react-icons/pi';
 import { FiInfo } from 'react-icons/fi';
 import { FaLeaf } from 'react-icons/fa';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import L from 'leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import { GeomType } from '../../components/map/interfaces/interfaces';
 import { useFetchOccurrencesForDecarbArea } from '../../hooks/Decarb/useFetchOccurrrencesForDecarbArea';
 import PictureMarker from './components/PictureMarker';
 import { COLORS } from '../../config/colors';
 
-const DecarbViewDetails = () => {
+const useMapEvents = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    console.log('Map created');
+
+    const onZoomEnd = () => {
+      console.log('Zoom ended');
+    };
+
+    map.on('zoomend', onZoomEnd);
+
+    return () => {
+      map.off('zoomend', onZoomEnd);
+    };
+  }, [map]);
+
+  return map;
+};
+
+interface MapContentProps {
+  parkGeom: GeomType | undefined;
+  parsedGeom: GeomType | undefined;
+  showOccurrences: boolean;
+  occurrencesLoading: boolean;
+  occurrences: OccurrenceResponse[] | null;
+  park: ParkResponse | null;
+  decarbArea: DecarbonizationAreaResponse | null;
+}
+
+const MapContent: React.FC<MapContentProps> = ({
+  parkGeom,
+  parsedGeom,
+  showOccurrences,
+  occurrencesLoading,
+  occurrences,
+  park,
+  decarbArea
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (map) {
+      console.log('Map instance created');
+      map.invalidateSize();
+    }
+  }, [map]);
+
+  return (
+    <>
+      <TileLayer
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      {parkGeom && (
+        <PolygonFitBounds
+          geom={parkGeom}
+          polygonFields={{ fillOpacity: 0.5 }}
+          polygonLabel={park?.name}
+          color="transparent"
+        />
+      )}
+      {parsedGeom && (
+        <PolygonFitBounds
+          geom={parsedGeom}
+          polygonFields={{ fillOpacity: 0.9 }}
+          polygonLabel={decarbArea?.name}
+        />
+      )}
+      {showOccurrences && !occurrencesLoading && occurrences && occurrences.map((occurrence) => (
+        <PictureMarker
+          key={occurrence.id}
+          id={occurrence.id}
+          entityType="OCCURRENCE"
+          circleWidth={30}
+          lat={occurrence.lat}
+          lng={occurrence.lng}
+          backgroundColor={COLORS.green[300]}
+          icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+          tooltipLabel={occurrence.title}
+        />
+      ))}
+    </>
+  );
+};
+
+const DecarbViewDetails: React.FC = () => {
   const { decarbAreaId } = useParams<{ decarbAreaId: string }>();
   const [decarbArea, setDecarbArea] = useState<DecarbonizationAreaResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  //const { user } = useAuth<VisitorResponse>();
+  const { user } = useAuth<VisitorResponse>();
   const { selectedPark } = usePark();
   const [park, setPark] = useState<ParkResponse | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const fromDiscoverPerPark = location.state?.fromDiscoverPerPark || false;
   const { occurrences, loading: occurrencesLoading } = useFetchOccurrencesForDecarbArea(decarbAreaId || '');
-     const [showOccurrences, setShowOccurrences] = useState<boolean>(true);
+  const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,37 +143,43 @@ const DecarbViewDetails = () => {
     fetchData();
   }, [decarbAreaId]);
 
-  const parseGeom = (geomString: string | undefined): GeomType | undefined => {
-  if (!geomString) return undefined;
+  useEffect(() => {
+    if (!occurrencesLoading && occurrences && occurrences.length > 0) {
+      setShowOccurrences(true);
+    }
+  }, [occurrencesLoading, occurrences]);
 
-  if (typeof geomString === 'string' && geomString.startsWith('SRID=4326;')) {
-    const wktString = geomString.substring(10);
-    const match = wktString.match(/POLYGON\s*\(\(([^)]+)\)\)/);
-    if (!match) {
-      console.error(`Invalid WKT format: ${wktString}`);
+  const parseGeom = useCallback((geomString: string | undefined): GeomType | undefined => {
+    if (!geomString) return undefined;
+
+    if (typeof geomString === 'string' && geomString.startsWith('SRID=4326;')) {
+      const wktString = geomString.substring(10);
+      const match = wktString.match(/POLYGON\s*\(\(([^)]+)\)\)/);
+      if (!match) {
+        console.error(`Invalid WKT format: ${wktString}`);
+        return undefined;
+      }
+      const coordinates = match[1].split(',').map((coord) => {
+        const [lng, lat] = coord.trim().split(' ').map(Number);
+        return [lng, lat];
+      });
+      return {
+        coordinates: [coordinates]
+      };
+    }
+
+    try {
+      return typeof geomString === 'string' ? JSON.parse(geomString) : geomString;
+    } catch (error) {
+      console.error(`Invalid GeoJSON format: ${geomString}`);
       return undefined;
     }
-    const coordinates = match[1].split(',').map((coord) => {
-      const [lng, lat] = coord.trim().split(' ').map(Number);
-      return [lng, lat];
-    });
-    return {
-      coordinates: [coordinates]
-    };
-  }
-
-  try {
-    return typeof geomString === 'string' ? JSON.parse(geomString) : geomString;
-  } catch (error) {
-    console.error(`Invalid GeoJSON format: ${geomString}`);
-    return undefined;
-  }
-};
+  }, []);
 
   const parsedGeom = parseGeom(decarbArea?.geom);
   const parkGeom = parseGeom(park?.geom);
 
-  const calculateAreaFromGeom = (geomString: string | undefined): number => {
+  const calculateAreaFromGeom = useCallback((geomString: string | undefined): number => {
     if (!geomString) return 0;
 
     const coordsMatch = geomString.match(/POLYGON\(\((.*?)\)\)/);
@@ -106,10 +199,28 @@ const DecarbViewDetails = () => {
     area = Math.abs(area * 6378137 * 6378137 / 4);
 
     return area / 1000000; // Convert to square kilometers
-  };
+  }, []);
 
   const areaSize = decarbArea?.geom ? calculateAreaFromGeom(decarbArea.geom) : 0;
 
+  const renderMap = useCallback(() => (
+  <MapContainer
+    key="park-map-tab"
+    center={[1.287953, 103.851784]}
+    zoom={11}
+    className="leaflet-mapview-container h-full w-full"
+  >
+    <MapContent
+      parkGeom={parkGeom}
+      parsedGeom={parsedGeom}
+      showOccurrences={showOccurrences}
+      occurrencesLoading={occurrencesLoading}
+      occurrences={occurrences}
+      park={park}
+      decarbArea={decarbArea}
+    />
+  </MapContainer>
+), [parkGeom, parsedGeom, showOccurrences, occurrencesLoading, occurrences, park, decarbArea]);
   const tabsItems = [
     {
       key: 'occurrences',
@@ -148,60 +259,22 @@ const DecarbViewDetails = () => {
           <Typography.Paragraph>
             <strong>Area Size:</strong> {areaSize.toFixed(4)} km²
           </Typography.Paragraph>
+          <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
+            <Space size={20}>
+              <div className="font-semibold">Display:</div>
+              <Checkbox
+                onChange={(e) => setShowOccurrences(e.target.checked)}
+                checked={showOccurrences}
+                disabled={occurrencesLoading || !occurrences || occurrences.length === 0}
+              >
+                Occurrences {occurrencesLoading ? '(Loading...)' :
+                  (!occurrences || occurrences.length === 0) ? '(None available)' :
+                  `(${occurrences.length})`}
+              </Checkbox>
+            </Space>
+          </Card>
           <div className="flex-[1] bg-green-50 h-72 rounded-xl overflow-hidden md:h-96">
-            <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
-  <Space size={20}>
-    <div className="font-semibold">Display:</div>
-    <Checkbox
-      onChange={(e) => setShowOccurrences(e.target.checked)}
-      checked={showOccurrences}
-      disabled={occurrencesLoading || !occurrences || occurrences.length === 0}
-    >
-      Occurrences {occurrencesLoading ? '(Loading...)' :
-        (!occurrences || occurrences.length === 0) ? '(None available)' :
-        `(${occurrences.length})`}
-    </Checkbox>
-  </Space>
-</Card>
-            <MapContainer
-              key="park-map-tab"
-              center={[1.287953, 103.851784]}
-              zoom={11}
-              className="leaflet-mapview-container h-full w-full"
-            >
-              <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              {parkGeom && (
-                <PolygonFitBounds
-                  geom={parkGeom}
-                  polygonFields={{ fillOpacity: 0.5 }}
-                  polygonLabel={park?.name}
-                  color="transparent"
-                />
-              )}
-              {parsedGeom && (
-                <PolygonFitBounds
-                  geom={parsedGeom}
-                  polygonFields={{ fillOpacity: 0.9 }}
-                  polygonLabel={decarbArea?.name}
-                />
-              )}
-              {showOccurrences && !occurrencesLoading && occurrences.map((occurrence) => (
-                <PictureMarker
-                  key={occurrence.id}
-                  id={occurrence.id}
-                  entityType="OCCURRENCE"
-                  circleWidth={30}
-                  lat={occurrence.lat}
-                  lng={occurrence.lng}
-                  backgroundColor={COLORS.green[300]}
-                  icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
-                  tooltipLabel={occurrence.title}
-                />
-              ))}
-            </MapContainer>
+            {renderMap()}
           </div>
         </div>
       ),
@@ -265,4 +338,4 @@ const DecarbViewDetails = () => {
   );
 };
 
-export default DecarbViewDetails;
+export default React.memo(DecarbViewDetails);
