@@ -5,10 +5,9 @@ import {
   VisitorResponse,
   getParkById,
   ParkResponse,
-  getOccurrencesByParkId,
   OccurrenceResponse
 } from '@lepark/data-access';
-import { Button, Carousel, Tabs, Typography, Tag, Divider } from 'antd';
+import { Button, Carousel, Tabs, Typography, Tag, Divider, Card, Space, Checkbox } from 'antd';
 import { useEffect, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import DecarbOccurrenceTab from './components/DecarbOccurrenceTab';
@@ -28,14 +27,14 @@ const DecarbViewDetails = () => {
   const { decarbAreaId } = useParams<{ decarbAreaId: string }>();
   const [decarbArea, setDecarbArea] = useState<DecarbonizationAreaResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth<VisitorResponse>();
+  //const { user } = useAuth<VisitorResponse>();
   const { selectedPark } = usePark();
   const [park, setPark] = useState<ParkResponse | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const fromDiscoverPerPark = location.state?.fromDiscoverPerPark || false;
   const { occurrences, loading: occurrencesLoading } = useFetchOccurrencesForDecarbArea(decarbAreaId || '');
-
+     const [showOccurrences, setShowOccurrences] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,54 +56,46 @@ const DecarbViewDetails = () => {
     fetchData();
   }, [decarbAreaId]);
 
-
-
-
   const parseGeom = (geomString: string | undefined): GeomType | undefined => {
-    if (!geomString) return undefined;
+  if (!geomString) return undefined;
 
-    // Extract coordinates from the geom string
-    const coordsMatch = geomString.match(/POLYGON\(\((.*?)\)\)/);
-    if (!coordsMatch) return undefined;
-
-    // Parse coordinates into an array of [longitude, latitude] pairs
-    const coords = coordsMatch[1].split(',').map(pair =>
-      pair.trim().split(' ').map(Number)
-    );
-
+  if (typeof geomString === 'string' && geomString.startsWith('SRID=4326;')) {
+    const wktString = geomString.substring(10);
+    const match = wktString.match(/POLYGON\s*\(\(([^)]+)\)\)/);
+    if (!match) {
+      console.error(`Invalid WKT format: ${wktString}`);
+      return undefined;
+    }
+    const coordinates = match[1].split(',').map((coord) => {
+      const [lng, lat] = coord.trim().split(' ').map(Number);
+      return [lng, lat];
+    });
     return {
-      coordinates: [coords]
+      coordinates: [coordinates]
     };
-  };
+  }
+
+  try {
+    return typeof geomString === 'string' ? JSON.parse(geomString) : geomString;
+  } catch (error) {
+    console.error(`Invalid GeoJSON format: ${geomString}`);
+    return undefined;
+  }
+};
 
   const parsedGeom = parseGeom(decarbArea?.geom);
+  const parkGeom = parseGeom(park?.geom);
 
- const calculateAreaFromGeom = (geomString: string | undefined): number => {
+  const calculateAreaFromGeom = (geomString: string | undefined): number => {
     if (!geomString) return 0;
 
-    // Extract coordinates from the geom string
     const coordsMatch = geomString.match(/POLYGON\(\((.*?)\)\)/);
     if (!coordsMatch) return 0;
 
-    // Parse coordinates into an array of [latitude, longitude] pairs
     const coords = coordsMatch[1].split(',').map(pair =>
       pair.trim().split(' ').map(Number).reverse()
     );
 
-    // Function to calculate distance between two points using Haversine formula
-    const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-      const R = 6371; // Earth's radius in km
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    };
-
-    // Calculate area using shoelace formula
     let area = 0;
     for (let i = 0; i < coords.length; i++) {
       const j = (i + 1) % coords.length;
@@ -114,11 +105,10 @@ const DecarbViewDetails = () => {
     }
     area = Math.abs(area * 6378137 * 6378137 / 4);
 
-    return area;
+    return area / 1000000; // Convert to square kilometers
   };
 
   const areaSize = decarbArea?.geom ? calculateAreaFromGeom(decarbArea.geom) : 0;
-
 
   const tabsItems = [
     {
@@ -156,29 +146,66 @@ const DecarbViewDetails = () => {
             <strong>Park:</strong> {park?.name}
           </Typography.Paragraph>
           <Typography.Paragraph>
-            <strong>Area Size:</strong> {areaSize.toFixed(0)} m²
+            <strong>Area Size:</strong> {areaSize.toFixed(4)} km²
           </Typography.Paragraph>
           <div className="flex-[1] bg-green-50 h-72 rounded-xl overflow-hidden md:h-96">
-              <MapContainer
-                key="park-map-tab"
-                center={[1.287953, 103.851784]}
-                zoom={11}
-                className="leaflet-mapview-container h-full w-full"
-              >
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
+  <Space size={20}>
+    <div className="font-semibold">Display:</div>
+    <Checkbox
+      onChange={(e) => setShowOccurrences(e.target.checked)}
+      checked={showOccurrences}
+      disabled={occurrencesLoading || !occurrences || occurrences.length === 0}
+    >
+      Occurrences {occurrencesLoading ? '(Loading...)' :
+        (!occurrences || occurrences.length === 0) ? '(None available)' :
+        `(${occurrences.length})`}
+    </Checkbox>
+  </Space>
+</Card>
+            <MapContainer
+              key="park-map-tab"
+              center={[1.287953, 103.851784]}
+              zoom={11}
+              className="leaflet-mapview-container h-full w-full"
+            >
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              {parkGeom && (
+                <PolygonFitBounds
+                  geom={parkGeom}
+                  polygonFields={{ fillOpacity: 0.5 }}
+                  polygonLabel={park?.name}
+                  color="transparent"
                 />
-                {parsedGeom && (
-                <PolygonFitBounds geom={parsedGeom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={decarbArea?.name} color="transparent" />
-                )}
-              </MapContainer>
-            </div>
+              )}
+              {parsedGeom && (
+                <PolygonFitBounds
+                  geom={parsedGeom}
+                  polygonFields={{ fillOpacity: 0.9 }}
+                  polygonLabel={decarbArea?.name}
+                />
+              )}
+              {showOccurrences && !occurrencesLoading && occurrences.map((occurrence) => (
+                <PictureMarker
+                  key={occurrence.id}
+                  id={occurrence.id}
+                  entityType="OCCURRENCE"
+                  circleWidth={30}
+                  lat={occurrence.lat}
+                  lng={occurrence.lng}
+                  backgroundColor={COLORS.green[300]}
+                  icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                  tooltipLabel={occurrence.title}
+                />
+              ))}
+            </MapContainer>
+          </div>
         </div>
-
       ),
     },
-
   ];
 
   if (loading) {
@@ -224,7 +251,6 @@ const DecarbViewDetails = () => {
                 {decarbArea.description}
               </Typography.Paragraph>
               <div className='flex gap-2 items-center'>
-
               </div>
             </div>
           </div>
