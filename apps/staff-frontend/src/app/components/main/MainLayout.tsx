@@ -15,7 +15,7 @@ import type { MenuProps } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
-
+import { AiOutlinePercentage } from 'react-icons/ai';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -35,7 +35,6 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
-      console.log(user);
       setUserRole(role);
     }
   };
@@ -211,18 +210,29 @@ const MainLayout = () => {
     },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
-          key: 'attraction',
+          key: 'attractionEvents',
           icon: <TbTicket />,
-          label: 'Attractions',
-          onClick: () => navigate('/attraction'),
-        }
-      : null,
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
-      ? {
-          key: 'event',
-          icon: <TbCalendarEvent />,
-          label: 'Events',
-          onClick: () => navigate('/event'),
+          label: 'Attractions & Events',
+          children: [
+            {
+              key: 'attraction',
+              icon: <TbTicket />,
+              label: 'Attractions',
+              onClick: () => navigate('/attraction'),
+            },
+            {
+              key: 'event',
+              icon: <TbCalendarEvent />,
+              label: 'Events',
+              onClick: () => navigate('/event'),
+            },
+            {
+              key: 'promotion',
+              icon: <AiOutlinePercentage />,
+              label: 'Promotions',
+              onClick: () => navigate('/promotion'),
+            },
+          ],
         }
       : null,
     userRole === 'MANAGER' ||

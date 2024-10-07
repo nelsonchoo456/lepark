@@ -4,7 +4,15 @@ import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Ro
 import moment from 'moment';
 import { FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
-import { getAllPlantTasks, PlantTaskResponse, StaffType, StaffResponse, deletePlantTask, PlantTaskTypeEnum } from '@lepark/data-access';
+import {
+  getAllPlantTasks,
+  PlantTaskResponse,
+  StaffType,
+  StaffResponse,
+  deletePlantTask,
+  PlantTaskTypeEnum,
+  PlantTaskStatusEnum,
+} from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MdDeleteOutline } from 'react-icons/md';
@@ -12,6 +20,9 @@ import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Typography } from 'antd';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { COLORS } from '../../config/colors';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import PlantTaskCategories from './PlantTaskCategories';
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
@@ -27,7 +38,13 @@ const PlantTaskList: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
   const [viewMode, setViewMode] = useState<'categories' | 'table'>('categories');
+
+  const [open, setOpen] = useState<PlantTaskResponse[]>([]);
+  const [inProgress, setInProgress] = useState<PlantTaskResponse[]>([]);
+  const [completed, setCompleted] = useState<PlantTaskResponse[]>([]);
+  const [cancelled, setCancelled] = useState<PlantTaskResponse[]>([]);
 
   useEffect(() => {
     fetchPlantTasks();
@@ -36,8 +53,13 @@ const PlantTaskList: React.FC = () => {
   const fetchPlantTasks = async () => {
     try {
       const response = await getAllPlantTasks();
-      console.log('plant tasks', response.data);
       setPlantTasks(response.data);
+
+      // set filtered tables
+      setOpen(response.data.filter((task) => task.taskStatus === 'OPEN'));
+      setInProgress(response.data.filter((task) => task.taskStatus === 'IN_PROGRESS'));
+      setCompleted(response.data.filter((task) => task.taskStatus === 'COMPLETED'));
+      setCancelled(response.data.filter((task) => task.taskStatus === 'CANCELLED'));
     } catch (error) {
       console.error('Error fetching plant tasks:', error);
       messageApi.error('Failed to fetch plant tasks');
@@ -73,13 +95,9 @@ const PlantTaskList: React.FC = () => {
       title: user?.role === StaffType.SUPERADMIN ? 'Park, Zone' : 'Zone',
       render: (_, record) => (
         <div>
-          {user?.role === StaffType.SUPERADMIN && (
-            <p className="font-semibold">{record.occurrence.zone.park.name}</p>
-          )}
+          {user?.role === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence.zone.park.name}</p>}
           <div className="flex">
-            {user?.role === StaffType.SUPERADMIN && (
-              <p className="opacity-50 mr-2">Zone:</p>
-            )}
+            {user?.role === StaffType.SUPERADMIN && <p className="opacity-50 mr-2">Zone:</p>}
             {record.occurrence.zone.name}
           </div>
         </div>
@@ -93,7 +111,7 @@ const PlantTaskList: React.FC = () => {
         if (a.occurrence.zone.name && b.occurrence.zone.name) {
           return a.occurrence.zone.name.localeCompare(b.occurrence.zone.name);
         }
-        return (a.occurrence.zone.id.toString()).localeCompare(b.occurrence.zone.id.toString());
+        return a.occurrence.zone.id.toString().localeCompare(b.occurrence.zone.id.toString());
       },
       width: '15%',
     },
@@ -265,72 +283,32 @@ const PlantTaskList: React.FC = () => {
   ];
 
   const renderDashboardOverview = () => {
-    const openTasks = plantTasks.filter(task => task.taskStatus === 'OPEN');
-    const urgentTasks = openTasks.filter(task => task.taskUrgency === 'IMMEDIATE' || task.taskUrgency === 'HIGH');
-    const myTasks = plantTasks.filter(task => task.assignedStaff?.id === user?.id);
+    const openTasks = plantTasks.filter((task) => task.taskStatus === 'OPEN');
+    const urgentTasks = openTasks.filter((task) => task.taskUrgency === 'IMMEDIATE' || task.taskUrgency === 'HIGH');
+    const myTasks = plantTasks.filter((task) => task.assignedStaff?.id === user?.id);
 
     return (
       <Card className="mb-4">
         <Row gutter={16}>
           <Col span={8}>
-            <Statistic
-              title="Open Tasks"
-              value={openTasks.length}
-              valueStyle={{ color: '#1890ff' }}
-            />
+            <Statistic title="Open Tasks" value={openTasks.length} valueStyle={{ color: '#1890ff' }} />
           </Col>
           <Col span={8}>
-            <Statistic
-              title="Urgent Tasks"
-              value={urgentTasks.length}
-              valueStyle={{ color: '#ff4d4f' }}
-            />
+            <Statistic title="Urgent Tasks" value={urgentTasks.length} valueStyle={{ color: '#ff4d4f' }} />
           </Col>
           <Col span={8}>
-            <Statistic
-              title="My Tasks"
-              value={myTasks.length}
-              valueStyle={{ color: '#52c41a' }}
-            />
+            <Statistic title="My Tasks" value={myTasks.length} valueStyle={{ color: '#52c41a' }} />
           </Col>
         </Row>
       </Card>
     );
   };
 
-  const renderTaskCategories = () => {
-    const categories = [
-      { title: 'Open Tasks', color: 'blue', tasks: plantTasks.filter(task => task.taskStatus === 'OPEN') },
-      { title: 'Immediate Attention', color: 'red', tasks: plantTasks.filter(task => task.taskUrgency === 'IMMEDIATE') },
-      { title: 'Due Soon', color: 'orange', tasks: plantTasks.filter(task => task.dueDate && moment(task.dueDate).isAfter(moment().startOf('day'), 'day') && moment(task.dueDate).isBefore(moment().startOf('day').add(7, 'days'), 'day')) },
-      { title: 'Scheduled Maintenance', color: 'green', tasks: plantTasks.filter(task => task.taskUrgency === 'NORMAL' || task.taskUrgency === 'LOW') },
-    ];
-
-    return (
-      <Row gutter={16} className="mb-4">
-        {categories.map(category => (
-          <Col span={6} key={category.title}>
-            <Card title={category.title} headStyle={{ backgroundColor: category.color, color: 'white' }}>
-              <ul>
-                {category.tasks.slice(0, 5).map(task => (
-                  <li key={task.id}>{task.title}</li>
-                ))}
-              </ul>
-              {category.tasks.length > 5 && (
-                <Button type="link" onClick={() => console.log(`View all ${category.title} tasks`)}>
-                  View all ({category.tasks.length})
-                </Button>
-              )}
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    );
-  };
-
   const renderContent = () => {
     if (viewMode === 'categories') {
-      return renderTaskCategories();
+      return (
+        <PlantTaskCategories open={open} inProgress={inProgress} completed={completed} cancelled={cancelled} setOpen={setOpen} setCompleted={setCompleted} setInProgress={setInProgress} setCancelled={setCancelled}/>
+      )
     } else {
       return (
         <Card>
@@ -364,7 +342,7 @@ const PlantTaskList: React.FC = () => {
               navigate('/plant-tasks/create');
             }}
           >
-            Create Plant Task
+            Create Plant Tak
           </Button>
         </Flex>
       </Flex>

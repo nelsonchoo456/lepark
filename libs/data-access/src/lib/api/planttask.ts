@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { PlantTaskData, PlantTaskResponse, PlantTaskUpdateData } from '../types/planttask';
 import client from './client';
+import { PlantTaskStatusEnum } from '@prisma/client';
 
 const URL = '/planttasks';
 
@@ -43,6 +44,20 @@ export async function getAllPlantTasks(): Promise<AxiosResponse<PlantTaskRespons
 export async function getPlantTaskById(id: string): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
     const response: AxiosResponse<PlantTaskResponse> = await client.get(`${URL}/viewPlantTaskDetails/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse>> {
+  try {
+    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskDetails/${id}`, { taskStatus: newStatus});
+    console.log("updatePlantTaskStatus", response)
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

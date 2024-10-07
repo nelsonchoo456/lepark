@@ -81,6 +81,11 @@ import DecarbonizationAreaList from './pages/DecarbonizationArea/Decarbonization
 import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
 import DecarbonizationAreaChart from './pages/DecarbonizationArea/DecarbonizationAreaChart';
+import PromotionList from './pages/Promotion/PromotionList';
+import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
+import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -336,6 +341,7 @@ export function App() {
                   }
                 />
               </Route>
+
               {/* Attraction Routes */}
               <Route
                 element={
@@ -372,7 +378,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -418,7 +430,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -457,6 +475,29 @@ export function App() {
                         redirectTo="/"
                       />
                       <DecarbonizationAreaEdit />
+                    </>
+                  }
+                />
+              </Route>
+
+              <Route path="/promotion">
+                <Route index element={<PromotionList />} />
+                <Route path="archived" element={<ArchivedPromotionList />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <ParkPromotionCreate />
+                    </>
+                  }
+                />
+                <Route
+                  path=":promotionId"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <PromotionDetails />
                     </>
                   }
                 />
