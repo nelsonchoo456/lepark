@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 import requests
 import json
@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from typing import List, Dict
+import pytz
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,7 +19,10 @@ BACKEND_PORT = os.getenv("BACKEND_PORT")
 COM_PORT = os.getenv("COM_PORT")
 
 # How often the hub will send data to the backend
-UPDATE_SERVER_POLL_FREQUENCY = 2
+UPDATE_SERVER_POLL_FREQUENCY = 5
+
+# Poll sensor data from micro:bits
+POLL_INTERVAL = 10 # (in seconds)
 
 # Backend URL
 BASE_URL = f'http://{BACKEND_IP}:{BACKEND_PORT}/api'  # Replace with your actual backend URL
@@ -57,7 +61,6 @@ def waitResponse():
         return response.decode('utf-8').strip()
     return None
 
-# Poll sensor data from micro:bits
 def poll_sensor_data(valid_sensors, radioGroup):
     if len(valid_sensors) == 0:
         return dict() 
@@ -100,6 +103,10 @@ def poll_sensor_data(valid_sensors, radioGroup):
         except:
             continue
 
+        singapore_tz = pytz.timezone('Asia/Singapore')
+        current_time = datetime.now(singapore_tz)
+        print("current_time", current_time)
+
         # if reading is already in the poll_result dictionary, apply smoothing formula to calculate the new reading
         if sensorIdentifier in poll_result:
             poll_result[sensorIdentifier]["reading"] = poll_result[sensorIdentifier]["reading"]* 0.6 + value*0.4
@@ -107,7 +114,7 @@ def poll_sensor_data(valid_sensors, radioGroup):
             # if reading is not in the poll_result dictionary, add it to the dictionary
             poll_result[sensorIdentifier] = {
                 "reading": value,
-                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "time": current_time.strftime("%Y-%m-%d %H:%M:%S")
             }
         dat = waitResponse()
         time.sleep(0.3)
@@ -164,7 +171,7 @@ def publish_local_sensor_to_server(valid_sensors, token, conn):
             except:
                 time.sleep(0.2)
         valid_sensors = res["sensors"]
-        print("Sent data to server.")
+        print("All sensor readings have been sent to the backend server.")
     else:
         print(f"Error: Unable to connect to hub or process response.")
     return valid_sensors, res["radioGroup"] if "radioGroup" in res else 255
@@ -255,47 +262,50 @@ def main_function():
     sensor_update_counter = 0
     try:
         polls = 0
+        last_poll_time = datetime.now()
         while True:
-            polls += 1
-            sensor_update_counter += 1
+            current_time = datetime.now()
+            if (current_time - last_poll_time).total_seconds() >= POLL_INTERVAL:
+                polls += 1
+                sensor_update_counter += 1
 
-            # Check for new sensors every 10 iterations (adjust as needed)
-            if sensor_update_counter >= 10:
-                new_valid_sensors = update_valid_sensors(HUB_IDENTIFIER_NO)
-                if new_valid_sensors:
-                    valid_sensors = new_valid_sensors
-                sensor_update_counter = 0
+                # Check for new sensors every 10 iterations (adjust as needed)
+                if sensor_update_counter >= 10:
+                    new_valid_sensors = update_valid_sensors(HUB_IDENTIFIER_NO)
+                    if new_valid_sensors:
+                        valid_sensors = new_valid_sensors
+                    sensor_update_counter = 0
 
-            # get the sensor values from the micro:bits
-            sensor_values = poll_sensor_data(valid_sensors, radioGroup)
-            mycursor = mydb.cursor()
-            
-            # insert the sensor values into the database
-            for sensor_identifier, data in sensor_values.items():
-                reading = data["reading"]
-                readingDate = data["time"]
-                query = 'INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)'
-                val = (readingDate, sensor_identifier, reading, 0)
+                # get the sensor values from the micro:bits
+                sensor_values = poll_sensor_data(valid_sensors, radioGroup)
+                mycursor = mydb.cursor()
+                
+                # insert the sensor values into the database
+                for sensor_identifier, data in sensor_values.items():
+                    reading = data["reading"]
+                    readingDate = data["time"]
+                    query = 'INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)'
+                    val = (readingDate, sensor_identifier, reading, 0)
 
-                while True:
-                    try:
-                        mycursor.execute(query, val)
-                        break
-                    except:
-                        time.sleep(0.2)
+                    while True:
+                        try:
+                            mycursor.execute(query, val)
+                            break
+                        except:
+                            time.sleep(0.2)
 
-            mydb.commit()
-            if len(sensor_values): print("Inserted records into database!")
-            else: print("No data")
+                mydb.commit()
+                if len(sensor_values): print("Inserted records into SQLite database!")
+                else: print("No data")
 
-            # send the sensor values to the backend
-            if polls >= UPDATE_SERVER_POLL_FREQUENCY:
-                valid_sensors, radioGroup = publish_local_sensor_to_server(valid_sensors, token, mydb) # Must use token 
-                print("valid_sensors, radioGroup",valid_sensors, radioGroup)
-                polls = 0
+                # send the sensor values to the backend
+                if polls >= UPDATE_SERVER_POLL_FREQUENCY:
+                    valid_sensors, radioGroup = publish_local_sensor_to_server(valid_sensors, token, mydb) # Must use token 
+                    print("valid_sensors", valid_sensors)
+                    print("radioGroup", radioGroup)
+                    polls = 0
 
-            temp_buffer = []
-            time.sleep(0.5)
+                last_poll_time = current_time
 
     except KeyboardInterrupt:
         if ser.is_open:

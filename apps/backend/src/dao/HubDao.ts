@@ -86,7 +86,6 @@ class HubDao {
   }
 
   public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
-    console.log('identifierNumber', identifierNumber);
     return prisma.hub.findUnique({
       where: { identifierNumber },
       include: {

@@ -112,10 +112,10 @@ let testingSerial: boolean;
 // radio group is 255 if the micro:bit is not configured to have a radio group
 let radioGroup = 255;
 // ascii names
-sensorIdentifierNumber = 'SENS-DLJK9482';
-sensorType = 'LIGHT';
-writeSerial = false;
-testingSerial = true;
+sensorIdentifierNumber = 'SENS-11111111';
+sensorType = 'TEMP';
+writeSerial = true;
+testingSerial = false;
 radio.setGroup(radioGroup);
 radio.setTransmitPower(7);
 basic.showIcon(IconNames.Yes);

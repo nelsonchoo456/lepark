@@ -7,9 +7,7 @@ const upload = multer();
 
 router.post('/createHub', async (req, res) => {
   try {
-    console.log('HELLO!');
     const hub = await HubService.createHub(req.body);
-    console.log('SUCCESSFULLY CREATED HUB!');
     res.status(201).json(hub);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,7 +33,6 @@ router.get('/getAllHubs', async (req, res) => {
 router.get('/getHubById/:id', async (req, res) => {
   try {
     const hub = await HubService.getHubById(req.params.id);
-    console.log('req.params.id', req.params.id);
     if (hub) {
       res.status(200).json(hub);
     } else {
@@ -157,7 +154,7 @@ router.put('/removeHubFromZone/:id', async (req, res) => {
 router.put('/verifyHubInitialization', async (req, res) => {
   try {
     const { identifierNumber } = req.body;
-    console.log('req.socket.remoteAddress', req.socket.remoteAddress);
+    console.log('IP Address of Raspberry Pi:', req.socket.remoteAddress);
     let ipAddress = req.socket.remoteAddress || '127.0.0.1';
     ipAddress = ipAddress == '::1' ? '127.0.0.1' : ipAddress.split(':')[3];
     const token = await HubService.verifyHubInitialization(identifierNumber, ipAddress);
@@ -177,7 +174,7 @@ router.post('/pushSensorReadings/:hubIdentifierNumber', async (req, res) => {
   try {
     const { hubIdentifierNumber } = req.params;
     const { jsonPayloadString, sha256 } = req.body;
-    console.log('req.socket.remoteAddress', req.socket.remoteAddress);
+    console.log('IP Address of Raspberry Pi:', req.socket.remoteAddress);
     let ipAddress = req.socket.remoteAddress || '127.0.0.1';
     ipAddress = ipAddress == '::1' ? '127.0.0.1' : ipAddress.split(':')[3];
     const result = await HubService.pushSensorReadings(hubIdentifierNumber, jsonPayloadString, sha256, ipAddress);
