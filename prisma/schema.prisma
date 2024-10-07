@@ -293,7 +293,7 @@ model Hub {
   hubStatus                HubStatusEnum
   acquisitionDate          DateTime
   lastMaintenanceDate      DateTime?
-  nextMaintenanceDate      DateTime? // for predictive maintenance
+  nextMaintenanceDate      DateTime?
   dataTransmissionInterval Float?
   supplier                 String
   supplierContactNumber    String
@@ -305,9 +305,10 @@ model Hub {
   lat                      Float?
   long                     Float?
   remarks                  String?
-  zoneId                   Int? // for when installed in a zone
+  zoneId                   Int?
   facilityId               String?       @db.Uuid
   facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  lastDataUpdateDate       DateTime?     // Add this line
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]

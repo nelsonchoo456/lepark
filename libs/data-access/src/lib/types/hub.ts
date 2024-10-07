@@ -24,6 +24,7 @@ export interface HubData {
   remarks?: string;
   zoneId?: number;
   facilityId?: string;
+  lastDataUpdateDate?: string;
 }
 
 export interface HubResponse {
@@ -52,6 +53,7 @@ export interface HubResponse {
   park: ParkResponse;
   facility: FacilityResponse;
   zone?: ZoneResponse;
+  lastDataUpdateDate?: string;
 }
 
 export interface HubUpdateData {
@@ -75,4 +77,5 @@ export interface HubUpdateData {
   remarks?: string;
   zoneId?: number;
   facilityId?: string;
+  lastDataUpdateDate?: string;
 }

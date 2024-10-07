@@ -313,41 +313,47 @@ class HubService {
     sha256: string,
     ipAddress: string,
   ): Promise<{ sensors: string[]; radioGroup: number }> {
-    const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
-    if (!hub) {
-      throw new Error('Hub not found');
-    }
-
-    if (!(await this.validatePayload(hub.id, jsonPayloadString, sha256))) {
-      throw new Error('JSON validation failed. Digest does not match!');
-    }
-
-    const payload = JSON.parse(jsonPayloadString);
-
-    for (const sensorId of Object.keys(payload)) {
-      for (const sensorReading of payload[sensorId]) {
-        const sensor = await SensorDao.getSensorById(sensorId);
-        if (!sensor) {
-          throw new Error('Sensor not found');
-        }
-        await SensorReadingDao.createSensorReading({
-          date: new Date(sensorReading.readingDate),
-          value: sensorReading.reading,
-          sensor: { connect: { id: sensor.id } },
-        });
+    try {
+      const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
+      if (!hub) {
+        throw new Error('Hub not found');
       }
+
+      if (!(await this.validatePayload(hub.id, jsonPayloadString, sha256))) {
+        throw new Error('JSON validation failed. Digest does not match!');
+      }
+
+      const payload = JSON.parse(jsonPayloadString);
+
+      for (const sensorIdentifier of Object.keys(payload)) {
+        for (const sensorData of payload[sensorIdentifier]) {
+          const sensor = await SensorDao.getSensorByIdentifierNumber(sensorIdentifier);
+          if (!sensor) {
+            throw new Error('Sensor not found');
+          }
+          await SensorReadingDao.createSensorReading({
+            date: new Date(sensorData.readingDate),
+            value: sensorData.reading,
+            sensor: { connect: { id: sensor.id } },
+          });
+        }
+      }
+
+      // Update hub's last data update and IP address
+      await HubDao.updateHubDetails(hub.id, {
+        ipAddress,
+        lastDataUpdateDate: new Date(),
+      });
+
+      const sensors = await HubDao.getAllSensorsByHubId(hub.id);
+      return {
+        sensors: sensors.map((sensor) => sensor.identifierNumber),
+        radioGroup: hub.radioGroup,
+      };
+    } catch (error) {
+      console.error('Error pushing sensor readings:', error);
+      throw error;
     }
-
-    // Update hub's last data update and IP address
-    await HubDao.updateHubDetails(hub.id, {
-      ipAddress,
-    });
-
-    const sensors = await HubDao.getAllSensorsByHubId(hub.id);
-    return {
-      sensors: sensors.map((sensor) => sensor.name),
-      radioGroup: hub.radioGroup,
-    };
   }
 
   public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
