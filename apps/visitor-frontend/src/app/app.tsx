@@ -29,7 +29,7 @@ import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
 import PromotionViewAll from './pages/Promotions/PromotionViewAll';
-
+import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -111,6 +111,7 @@ export function App() {
                 </Route>
                 <Route path="/promotions">
                   <Route index element={<PromotionViewAll/>}/>
+                  <Route path=":promotionId" element={<PromotionViewDetails/>}/>
                 </Route>
               </Route>
             </Routes>

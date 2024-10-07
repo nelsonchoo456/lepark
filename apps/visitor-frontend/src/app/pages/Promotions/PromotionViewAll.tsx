@@ -103,6 +103,7 @@ const renderPromotionCard = (promotion: PromotionResponse) => {
       styles={{
         body: {padding: '7px'},
       }}
+      onClick={() => navigate(`/promotions/${promotion.id}`)}
       cover={
         <div className="h-32 bg-gray-200 flex items-center justify-center overflow-hidden">
           {promotion.images && promotion.images.length > 0 ? (
