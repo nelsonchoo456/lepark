@@ -73,15 +73,6 @@ router.get('/getSensorsByFacilityId/:facilityId', async (req, res) => {
   }
 });
 
-router.get('/getSensorsNeedingCalibration', async (_, res) => {
-  try {
-    const sensors = await SensorService.getSensorsNeedingCalibration();
-    res.status(200).json(sensors);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.get('/getSensorsNeedingMaintenance', async (_, res) => {
   try {
     const sensors = await SensorService.getSensorsNeedingMaintenance();
@@ -125,6 +116,16 @@ router.get('/getSensorsByParkId/:parkId', async (req, res) => {
   }
 });
 
+router.get('/getSensorByIdentifierNumber/:identifierNumber', async (req, res) => {
+  try {
+    const identifierNumber = req.params.identifierNumber;
+    const sensor = await SensorService.getSensorByIdentifierNumber(identifierNumber);
+    res.status(200).json(sensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getSensorsBySerialNumber/:serialNumber', async (req, res) => {
   try {
     const serialNumber = req.params.serialNumber;
@@ -143,6 +144,15 @@ router.get('/checkDuplicateSerialNumber', async (req, res) => {
     }
     const isDuplicate = await SensorService.isSerialNumberDuplicate(serialNumber as string, sensorId as string);
     res.status(200).json({ isDuplicate });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/addSensorToHub/:id', async (req, res) => {
+  try {
+    const updatedSensor = await SensorService.addSensorToHub(req.params.id, req.body);
+    res.status(200).json(updatedSensor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

@@ -1,0 +1,44 @@
+How to SSH into Raspberry Pi?
+1. Download Raspberry Pi Imager
+2. Choose Raspberry Pi 3, Raspberry Pi OS (64-bit), Storage: SD Card, then click on "CHOOSE SD CARD"
+3. Choose to customize the OS
+    a. Set username and password (pi, password)
+    b. Configure wireless LAN (SSID, password) [Make sure WiFi is not 5GHz]
+    c. Set locale settings [Timezone: Asia/Singapore, Keyboard: English (US)]
+    d. Enable SSH (use password authentication)
+    e. Options: Eject media when finished, Enable telemetry
+    f. Click on "SAVE"
+4. ssh pi@raspberrypi.local
+    a. Troubleshooting: 
+        - If SSH fails, try unplugging the Raspberry Pi from the power source, then plug it back in.
+        - ping raspberrypi.local to find out the IP address
+        - ssh pi@<ip address>
+        - Another way to find out Raspberry Pi's IP address:
+            1. arp -a (on Mac)
+            2. Find the device with MAC address b8:27:eb. This is usually the Raspberry Pi.
+            3. ssh pi@<ip address>
+    b. password: password
+
+How to setup Raspberry Pi for IoT? (make sure you are in SSH)
+1. mkdir <folder_name>
+2. cd <folder_name>
+3. nano .env, set the following:
+    a. HUB_IDENTIFIER_NO = <hub_identifier_number>
+    b. BACKEND_IP = <backend_ip_address>
+    c. BACKEND_PORT = <backend_port>
+    d. COM_PORT = <com_port>
+        i. If COM_PORT is not known, run `ls /dev/tty*` to find out the COM_PORT
+        ii. If there are multiple COM_PORT, try connecting the micro:bit to the Raspberry Pi via USB and see which COM_PORT is being used. (usually /dev/ttyACM0)
+4. nano hub.py and copy paste the code into it.
+5. Run the file by running `python3 hub.py`
+
+How to setup micro:bit?
+1. Go to https://makecode.microbit.org/
+2. Copy paste the microbit code into the editor
+    a. Change the sensorIdentifierNumber (find out from backend)
+    b. 
+3. Plug the micro:bit to the computer via USB
+4. Click on "Download"
+5. The micro:bit will reboot
+5. The micro:bit is now ready to be used.
+

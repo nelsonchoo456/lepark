@@ -239,7 +239,8 @@ CREATE TABLE "Hub" (
     "long" DOUBLE PRECISION,
     "remarks" TEXT,
     "zoneId" INTEGER,
-    "facilityId" UUID NOT NULL,
+    "facilityId" UUID,
+    "lastDataUpdateDate" TIMESTAMP(3),
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
 );
@@ -254,11 +255,8 @@ CREATE TABLE "Sensor" (
     "description" TEXT,
     "sensorStatus" "SensorStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "lastCalibratedDate" TIMESTAMP(3),
-    "calibrationFrequencyDays" INTEGER,
     "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
-    "dataFrequencyMinutes" INTEGER,
     "sensorUnit" "SensorUnitEnum" NOT NULL,
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
@@ -270,6 +268,16 @@ CREATE TABLE "Sensor" (
     "facilityId" UUID,
 
     CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SensorReading" (
+    "id" UUID NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "value" DOUBLE PRECISION NOT NULL,
+    "sensorId" UUID NOT NULL,
+
+    CONSTRAINT "SensorReading_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -304,17 +312,6 @@ CREATE TABLE "MaintenanceHistory" (
     "description" TEXT NOT NULL,
 
     CONSTRAINT "MaintenanceHistory_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "CalibrationHistory" (
-    "id" UUID NOT NULL,
-    "hubId" UUID,
-    "sensorId" UUID,
-    "calibrationDate" TIMESTAMP(3) NOT NULL,
-    "description" TEXT NOT NULL,
-
-    CONSTRAINT "CalibrationHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -440,6 +437,9 @@ ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") RE
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "SensorReading" ADD CONSTRAINT "SensorReading_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -450,9 +450,6 @@ ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_sensorId_fke
 
 -- AddForeignKey
 ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "ParkAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;

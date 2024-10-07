@@ -1,4 +1,4 @@
-import { PrismaClient, Hub, Prisma, Facility } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility, Sensor } from '@prisma/client';
 import ParkDao from './ParkDao';
 import FacilityDao from './FacilityDao';
 import ZoneDao from './ZoneDao';
@@ -16,34 +16,38 @@ class HubDao {
     const hubs = await prisma.hub.findMany({
       include: {
         facility: true,
+        sensors: true,
+        maintenanceHistory: true,
       },
     });
 
-    const hubsWithDetails = await Promise.all(hubs.map(async (hub) => {
-      let facility, park, zone;
+    const hubsWithDetails = await Promise.all(
+      hubs.map(async (hub) => {
+        let facility, park, zone;
 
-      if (hub.facilityId) {
-        const fetchedFacility = await FacilityDao.getFacilityById(hub.facilityId);
-        facility = fetchedFacility;
+        if (hub.facilityId) {
+          const fetchedFacility = await FacilityDao.getFacilityById(hub.facilityId);
+          facility = fetchedFacility;
 
-        if (facility?.parkId) {
-          const fetchedPark = await ParkDao.getParkById(facility.parkId);
-          park = fetchedPark;
+          if (facility?.parkId) {
+            const fetchedPark = await ParkDao.getParkById(facility.parkId);
+            park = fetchedPark;
+          }
         }
-      }
 
-      if (hub.zoneId) {
-        const fetchedZone = await ZoneDao.getZoneById(hub.zoneId);
-        zone = fetchedZone;
-      }
+        if (hub.zoneId) {
+          const fetchedZone = await ZoneDao.getZoneById(hub.zoneId);
+          zone = fetchedZone;
+        }
 
-      return {
-        ...hub,
-        facility: facility || null,
-        park: park || null,
-        zone: zone || null,
-      };
-    }));
+        return {
+          ...hub,
+          facility: facility || null,
+          park: park || null,
+          zone: zone || null,
+        };
+      }),
+    );
 
     return hubsWithDetails;
   }
@@ -54,6 +58,8 @@ class HubDao {
       where: { facility: { parkId } },
       include: {
         facility: true,
+        sensors: true,
+        maintenanceHistory: true,
       },
     });
 
@@ -73,16 +79,44 @@ class HubDao {
       where: { id },
       include: {
         facility: true,
+        sensors: true,
+        maintenanceHistory: true,
       },
     });
   }
 
   public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
-    return prisma.hub.findUnique({ where: { identifierNumber } });
+    console.log('identifierNumber', identifierNumber);
+    return prisma.hub.findUnique({
+      where: { identifierNumber },
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+    });
   }
 
   public async getHubBySerialNumber(serialNumber: string): Promise<Hub | null> {
-    return prisma.hub.findUnique({ where: { serialNumber } });
+    return prisma.hub.findUnique({
+      where: { serialNumber },
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+    });
+  }
+
+  public async getHubByRadioGroup(radioGroup: number): Promise<Hub | null> {
+    return prisma.hub.findFirst({
+      where: { radioGroup: { equals: radioGroup } },
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+    });
   }
 
   public async updateHubDetails(id: string, data: Prisma.HubUpdateInput): Promise<Hub> {
@@ -93,6 +127,10 @@ class HubDao {
     await prisma.hub.delete({ where: { id } });
   }
 
+  public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hubId } });
+  }
+
   public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
     const hub = await prisma.hub.findFirst({
       where: {
@@ -101,6 +139,12 @@ class HubDao {
       },
     });
     return !!hub;
+  }
+
+  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
+    return prisma.hub.findFirst({
+      where: { zoneId: zoneId },
+    });
   }
 }
 
