@@ -80,8 +80,6 @@ def poll_sensor_data(valid_sensors, radioGroup):
     # pol does not need to send the radio group because it is already set
     sendCommand("pol")
     time.sleep(0.5)
-    sendCommand("pol")
-    time.sleep(0.5)
     print("Polling sensor data...")
     time.sleep(1)
     poll_result = dict() 

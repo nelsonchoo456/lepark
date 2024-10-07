@@ -2,24 +2,26 @@ function substring(inputString: string, start: number, end: number) {
   length = Math.min(inputString.length, end);
   i = start;
   result = '';
+  new_str = inputString;
   while (i < length) {
-    result = result + inputString[i++];
+    result = '' + result + new_str[i];
+    i = i + 1;
   }
   return result;
 }
 input.onButtonPressed(Button.A, function () {
   basic.showString(sensorIdentifierNumber);
 });
-
 function getSensorValues() {
   if (sensorType == 'TEMP') {
-    return input.temperature();
+    dht11_dht22.queryData(DHTtype.DHT11, DigitalPin.P1, true, false, true);
+    dht11_dht22.selectTempType(tempType.celsius);
+    return dht11_dht22.readData(dataType.temperature);
   } else if (sensorType == 'LIGHT') {
     return input.lightLevel();
   }
   return null;
 }
-
 // Received value from other Micro:bits, send to backend
 radio.onReceivedValue(function (sender, val) {
   if (testingSerial) {
@@ -32,7 +34,6 @@ radio.onReceivedValue(function (sender, val) {
   }
   return 0;
 });
-
 // Received command from another Micro:bit to configure the radio group
 radio.onReceivedString(function (receivedString) {
   if (testingSerial) {
@@ -60,7 +61,6 @@ radio.onReceivedString(function (receivedString) {
       break;
   }
 });
-
 // Received command from Hub
 serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
   // data is in the format of pol|sensorIdentifierNumber|radioGroup
@@ -94,20 +94,18 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
       break;
   }
 });
-
+let new_str = '';
 let result = '';
+let i = 0;
 let length = 0;
 let data = '';
-let i = 0;
 let cmd = '';
 let params = '';
 let cmd2 = '';
 let params2 = '';
 let sensorIdentifierNumber: string;
 let sensorType: string;
-// for writing to the serial port, used once everything is confirmed to be working
 let writeSerial: boolean;
-// for testing serial communication
 let testingSerial: boolean;
 // radio group is 255 if the micro:bit is not configured to have a radio group
 let radioGroup = 255;
