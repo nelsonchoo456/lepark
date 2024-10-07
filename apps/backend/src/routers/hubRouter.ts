@@ -35,6 +35,7 @@ router.get('/getAllHubs', async (req, res) => {
 router.get('/getHubById/:id', async (req, res) => {
   try {
     const hub = await HubService.getHubById(req.params.id);
+    console.log('req.params.id', req.params.id);
     if (hub) {
       res.status(200).json(hub);
     } else {
@@ -109,6 +110,16 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+router.get('/updateHubSensors/:hubIdentifierNumber', async (req, res) => {
+  try {
+    const { hubIdentifierNumber } = req.params;
+    const sensors = await HubService.updateHubSensors(hubIdentifierNumber);
+    res.status(200).json({ sensors });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

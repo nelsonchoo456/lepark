@@ -6,6 +6,8 @@ import json
 import hashlib
 import os
 from dotenv import load_dotenv
+import requests
+from typing import List, Dict
 
 # Load environment variables from .env file
 load_dotenv()
@@ -116,6 +118,7 @@ def poll_sensor_data(valid_sensors, radioGroup):
 # Send sensor readings to the backend
 def publish_local_sensor_to_server(valid_sensors, token, conn):
     mycursor = conn.cursor()
+    # Only take readings that have not been sent to the backend
     mycursor.execute('SELECT readingDate, sensorIdentifier, reading FROM sensordb WHERE sent = 0')
     results = mycursor.fetchall()
     
@@ -151,6 +154,8 @@ def publish_local_sensor_to_server(valid_sensors, token, conn):
         }, 
         timeout=5).json()
     
+    print("res from pushSensorReadings", res)
+    
     if "sensors" in res:
         while True:
             try:
@@ -160,7 +165,8 @@ def publish_local_sensor_to_server(valid_sensors, token, conn):
                 time.sleep(0.2)
         valid_sensors = res["sensors"]
         print("Sent data to server.")
-    else: print("Unable to connect to hub!")
+    else:
+        print(f"Error: Unable to connect to hub or process response.")
     return valid_sensors, res["radioGroup"] if "radioGroup" in res else 255
 
 # Get the token from the SECRET file (in raspberry pi)
@@ -180,23 +186,25 @@ def initialize_connection_to_backend():
     }
     
     try:
-        # Send POST request to the endpoint
+        print(f"Attempting to connect to {endpoint}")
         response = requests.put(endpoint, json=payload, timeout=5)
         
-        # Check the response
+        print(f"Response status code: {response.status_code}")
+        print(f"Response content: {response.text}")
+        
         if response.status_code == 200:
             data = response.json()
             if "token" in data:
                 print(f"Initialization successful. Token: {data['token']}")
                 return data['token']
             else:
-                print("Unexpected response format")
+                print("Unexpected response format. 'token' not found in response.")
         else:
             print(f"Error: Unexpected status code {response.status_code}")
             print(f"Response: {response.text}")
         
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred during connection: {e}")
     
     return None
 
@@ -205,26 +213,59 @@ def save_token(token):
     f = open("SECRET", "w")
     f.write(token)
 
-# Main function to run the hub
+# Add this function to update the list of valid sensors
+def update_valid_sensors(hub_identifier: str) -> List[str]:
+    try:
+        response = requests.get(f"{BASE_URL}/hubs/updateHubSensors/{hub_identifier}", timeout=5)
+        if response.status_code == 200:
+            return response.json()['sensors']
+        else:
+            print(f"Failed to update sensors: {response.text}")
+            return []
+    except requests.exceptions.RequestException as e:
+        print(f"Error updating sensors: {e}")
+        return []
+
+# Update the main_function to periodically check for new sensors
 def main_function():
     attempt_create_db()
     token = get_token()
     if token is None:
-        while token is None:
+        max_retries = 3
+        retry_count = 0
+        while token is None and retry_count < max_retries:
             print("Initializing connection with backend!")
             token = initialize_connection_to_backend()
-            print("Token obtained results: ", token)
-            if token: break
-            time.sleep(3)
-        save_token(token)
+            if token:
+                print("Token obtained successfully.")
+                save_token(token)
+                break
+            else:
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(f"Failed to initialize connection. Retrying in 3 seconds... (Attempt {retry_count}/{max_retries})")
+                    time.sleep(3)
+                else:
+                    print("Failed to obtain token after maximum retries. Please check your backend connection and try again later.")
+                    return  # Exit the main_function
 
     print("Starting program...\n")
     mydb = sqlite3.connect("processor.db")
     valid_sensors, radioGroup = publish_local_sensor_to_server([], token, mydb)
+    sensor_update_counter = 0
     try:
         polls = 0
         while True:
             polls += 1
+            sensor_update_counter += 1
+
+            # Check for new sensors every 10 iterations (adjust as needed)
+            if sensor_update_counter >= 10:
+                new_valid_sensors = update_valid_sensors(HUB_IDENTIFIER_NO)
+                if new_valid_sensors:
+                    valid_sensors = new_valid_sensors
+                sensor_update_counter = 0
+
             # get the sensor values from the micro:bits
             sensor_values = poll_sensor_data(valid_sensors, radioGroup)
             mycursor = mydb.cursor()
