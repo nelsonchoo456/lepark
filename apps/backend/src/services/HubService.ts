@@ -261,6 +261,10 @@ class HubService {
         throw new Error('Hub must be active to be removed from a zone');
       }
 
+      if (await HubDao.doesHubHaveSensors(hub.id)) {
+        throw new Error('Hub has sensors assigned to it. Remove the sensors first.');
+      }
+
       const updateData: Prisma.HubUpdateInput = {
         zoneId: null,
         hubStatus: 'INACTIVE',
