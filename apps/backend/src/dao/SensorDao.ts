@@ -114,19 +114,19 @@ class SensorDao {
     });
   }
 
-  async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
-    return prisma.sensor.update({
-      where: { id },
-      data,
-    });
-  }
-
   async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
     return prisma.sensor.findUnique({ where: { identifierNumber } });
   }
 
   async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
     return prisma.sensor.findUnique({ where: { serialNumber } });
+  }
+
+  async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
+    return prisma.sensor.update({
+      where: { id },
+      data,
+    });
   }
 
   async deleteSensor(id: string): Promise<void> {
@@ -156,20 +156,6 @@ class SensorDao {
           },
         },
       },
-    });
-  }
-
-  async linkSensorToHub(sensorId: string, hubId: string): Promise<Sensor> {
-    return prisma.sensor.update({
-      where: { id: sensorId },
-      data: { hubId },
-    });
-  }
-
-  async unlinkSensorToHub(sensorId: string): Promise<Sensor> {
-    return prisma.sensor.update({
-      where: { id: sensorId },
-      data: { hubId: null },
     });
   }
 

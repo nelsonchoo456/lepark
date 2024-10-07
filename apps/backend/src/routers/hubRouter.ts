@@ -134,6 +134,15 @@ router.put('/addHubToZone/:id', async (req, res) => {
   }
 });
 
+router.put('/removeHubFromZone/:id', async (req, res) => {
+  try {
+    const updatedHub = await HubService.removeHubFromZone(req.params.id);
+    res.status(200).json(updatedHub);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/verifyHubInitialization', async (req, res) => {
   try {
     const { identifierNumber } = req.body;
@@ -162,17 +171,6 @@ router.post('/pushSensorReadings/:hubIdentifierNumber', async (req, res) => {
     ipAddress = ipAddress == '::1' ? '127.0.0.1' : ipAddress.split(':')[3];
     const result = await HubService.pushSensorReadings(hubIdentifierNumber, jsonPayloadString, sha256, ipAddress);
     res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/addSensorToHub/:hubIdentifierNumber', async (req, res) => {
-  try {
-    const { hubIdentifierNumber } = req.params;
-    const { sensorIdentifierNumber } = req.body;
-    const updatedHub = await HubService.addSensorToHub(hubIdentifierNumber, sensorIdentifierNumber);
-    res.status(200).json(updatedHub);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

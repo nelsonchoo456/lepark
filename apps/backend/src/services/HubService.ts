@@ -208,8 +208,12 @@ class HubService {
         throw new Error('Hub already has a zone');
       }
 
-      if (hub.hubStatus !== 'INACTIVE') {
+      if (hub.hubStatus === 'ACTIVE') {
         throw new Error('Hub must be inactive to be added to a zone');
+      } else if (hub.hubStatus === 'DECOMMISSIONED') {
+        throw new Error('Hub is decommissioned. It cannot be used.');
+      } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
+        throw new Error('Hub is under maintenance. It cannot be used.');
       }
 
       if (hub.radioGroup) {
@@ -228,88 +232,17 @@ class HubService {
       }
 
       // Add hubSecret and radioGroup to formattedData
-      formattedData.hubSecret = generatedHubSecret;
-      formattedData.radioGroup = generatedRadioGroup;
+      formattedData.hubStatus = 'ACTIVE';
 
       const updateData = formattedData as Prisma.HubUpdateInput;
       return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
-  }
-
-  public async addSensorToHub(hubIdentifierNumber: string, sensorIdentifierNumber: string): Promise<Hub> {
-    const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
-    if (!hub) {
-      throw new HubNotFoundError('Hub not found');
-    }
-    const sensor = await SensorDao.getSensorByIdentifierNumber(sensorIdentifierNumber);
-    if (!sensor) {
-      throw new Error('Sensor not found');
-    }
-
-    const hubFacility = await FacilityDao.getFacilityById(hub.facilityId);
-    const sensorFacility = await FacilityDao.getFacilityById(sensor.facilityId);
-    if (hubFacility.parkId !== sensorFacility.parkId) {
-      throw new Error('Hub and sensor are in different parks');
-    }
-
-    if (sensor.sensorStatus === 'ACTIVE') {
-      throw new Error('Sensor is already active');
-    } else if (sensor.sensorStatus === 'DECOMMISSIONED') {
-      throw new Error('Sensor is decommissioned. It cannot be used.');
-    } else if (sensor.sensorStatus === 'UNDER_MAINTENANCE') {
-      throw new Error('Sensor is under maintenance. It cannot be used.');
-    }
-
-    if (hub.hubStatus === 'INACTIVE') {
-      throw new Error('Hub is currently inactive. It must be active to add sensors.');
-    } else if (hub.hubStatus === 'DECOMMISSIONED') {
-      throw new Error('Hub is decommissioned. It cannot be used.');
-    } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
-      throw new Error('Hub is under maintenance. It cannot be used.');
-    }
-
-    if (!hub.zoneId) {
-      throw new Error('Hub is not assigned to a zone. It must be assigned to a zone to add sensors.');
-    }
-
-    if (sensor.hubId) {
-      throw new Error('Sensor is already assigned to a hub');
-    }
-
-    return HubDao.addSensorToHub(hub.id, sensor.id);
-  }
-
-  // Verify hub initialization when raspberry pi first boots up
-  public async verifyHubInitialization(identifierNumber: string, ipAddress: string): Promise<string> {
-    const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
-
-    if (!hub) {
-      throw new HubNotFoundError('Hub not found');
-    }
-
-    if (!hub.zoneId) {
-      throw new Error('Hub must be in a zone to be initialized');
-    }
-
-    if (hub.hubStatus === 'ACTIVE') {
-      throw new HubNotActiveError('Hub is already active');
-    } else if (hub.hubStatus === 'DECOMMISSIONED') {
-      throw new Error('Hub is decommissioned');
-    } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
-      throw new Error('Hub is under maintenance');
-    }
-
-    await HubDao.updateHubDetails(hub.id, {
-      ipAddress: ipAddress,
-      hubStatus: 'ACTIVE',
-    });
-
-    return hub.hubSecret;
   }
 
   public async removeHubFromZone(id: string): Promise<Hub> {
@@ -344,10 +277,48 @@ class HubService {
       return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
+  }
+
+  // Verify hub initialization when raspberry pi first boots up
+  public async verifyHubInitialization(identifierNumber: string, ipAddress: string): Promise<string> {
+    const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
+
+    if (!hub) {
+      throw new HubNotFoundError('Hub not found');
+    }
+
+    if (!hub.zoneId) {
+      throw new Error('Hub must be in a zone to be initialized');
+    }
+
+    if (hub.hubStatus === 'INACTIVE') {
+      throw new HubNotActiveError('Hub is inactive. It must be active to be initialized.');
+    } else if (hub.hubStatus === 'DECOMMISSIONED') {
+      throw new Error('Hub is decommissioned. It cannot be used.');
+    } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
+      throw new Error('Hub is under maintenance. It cannot be used.');
+    }
+
+    const generatedHubSecret = this.generateHubSecret();
+    let generatedRadioGroup = this.generateRandomRadioGroup();
+
+    while (await this.getHubByRadioGroup(generatedRadioGroup)) {
+      generatedRadioGroup = this.generateRandomRadioGroup();
+    }
+
+    await HubDao.updateHubDetails(hub.id, {
+      ipAddress: ipAddress,
+      hubStatus: 'ACTIVE',
+      hubSecret: generatedHubSecret,
+      radioGroup: generatedRadioGroup,
+    });
+
+    return generatedHubSecret;
   }
 
   public async pushSensorReadings(

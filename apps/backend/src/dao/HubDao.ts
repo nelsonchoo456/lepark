@@ -119,13 +119,6 @@ class HubDao {
     });
   }
 
-  public async addSensorToHub(hubId: string, sensorId: string): Promise<Hub> {
-    return prisma.hub.update({
-      where: { id: hubId },
-      data: { sensors: { connect: { id: sensorId } } },
-    });
-  }
-
   public async updateHubDetails(id: string, data: Prisma.HubUpdateInput): Promise<Hub> {
     return prisma.hub.update({ where: { id }, data });
   }
