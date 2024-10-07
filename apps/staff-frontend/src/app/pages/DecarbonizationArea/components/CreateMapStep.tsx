@@ -9,6 +9,8 @@ import {
   createDecarbonizationArea,
   OccurrenceResponse,
   getOccurrencesByParkId,
+  getZonesByParkId,
+  ZoneResponse,
 } from '@lepark/data-access';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { COLORS } from '../../../config/colors';
@@ -75,6 +77,8 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [zones, setZones] = useState<ZoneResponse[]>();
+  const [showZones, setShowZones] = useState<boolean>(false);
 
   useEffect(() => {
     if (parks?.length > 0 && formValues && formValues.parkId) {
@@ -96,6 +100,7 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
   useEffect(() => {
     if (selectedPark?.id) {
       fetchOccurrencesData();
+      fetchZones();
     }
   }, [selectedPark]);
 
@@ -114,6 +119,17 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
       // do nothing
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchZones = async () => {
+    if (!selectedPark?.id) {
+      return;
+    }
+    const zonesRes = await getZonesByParkId(selectedPark.id);
+    if (zonesRes.status === 200) {
+      const zonesData = zonesRes.data;
+      setZones(zonesData);
     }
   };
 
@@ -198,8 +214,21 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
       <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4 mt-2">
         <Space size={20}>
           <div className="font-semibold">Display:</div>
+          {zones && zones.length > 0 && (
+            <Checkbox
+              onChange={(e) => setShowZones(e.target.checked)}
+              checked={showZones}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
+              Zones
+            </Checkbox>
+          )}
           {!loading && occurrences && (
-            <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+            <Checkbox
+              onChange={(e) => setShowOccurrences(e.target.checked)}
+              checked={showOccurrences}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
               Occurrences
             </Checkbox>
           )}
@@ -234,8 +263,26 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
                 geom={parseGeom(area.geom)}
                 polygonLabel={
                   <div className="flex items-center gap-2">
-                    <TbTree className="text-xl" />
+                    {/* <TbTree className="text-xl" /> */}
                     {area.name}
+                  </div>
+                }
+                color="green"
+                fillColor={'transparent'}
+                labelFields={{ color: 'green', textShadow: 'none' }}
+              />
+            ))}
+          {showZones &&
+            zones &&
+            zones.map((zone) => (
+              <PolygonWithLabel
+                key={zone.id}
+                entityId={zone.id}
+                geom={zone.geom}
+                polygonLabel={
+                  <div className="flex items-center gap-2">
+                    <TbTree className="text-xl" />
+                    {zone.name}
                   </div>
                 }
                 color={COLORS.green[600]}

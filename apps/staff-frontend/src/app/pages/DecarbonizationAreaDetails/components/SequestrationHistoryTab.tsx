@@ -181,10 +181,12 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
     <Card>
       {startDate && endDate ? (
         <Row gutter={12} style={{ marginBottom: '10px', justifyContent: 'right', alignItems: 'center' }}>
-          <Col>
-            <Switch checked={isSingleColumn} onChange={toggleSingleColumn} />
-            <span style={{ marginLeft: '8px' }}>Enlarge Visualizations</span>
-          </Col>
+          {data.length > 0 && (
+            <Col>
+              <Switch checkedChildren="Expanded" unCheckedChildren="Compact" checked={isSingleColumn} onChange={toggleSingleColumn} />
+              {/* <span style={{ marginLeft: '8px' }}>Enlarge Visualizations</span> */}
+            </Col>
+          )}
           <Col>
             <RangePicker
               onChange={handleDateChange}
