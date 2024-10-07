@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'visitor-frontend',
   // webDir: 'dist'
   webDir: 'dist/apps/visitor-frontend',
-  bundledWebRuntime: false,
+  // bundledWebRuntime: false,
 };
 
 export default config;

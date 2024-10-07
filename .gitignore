@@ -45,3 +45,6 @@ Thumbs.db
 /apps/backend/src/.env
 .env
 apps/backend/.env
+
+# capcitor
+# /ios
