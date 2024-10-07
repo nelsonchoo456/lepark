@@ -4,22 +4,27 @@ import sqlite3
 import requests
 import json
 import hashlib
+import os
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
-env = dict(map(lambda x:(x.strip().split("=")[0].strip(), x.strip().split("=")[1].strip()), map(lambda x:x.split("#")[0] if "=" in x.split("#")[0] else "None=None", open("./.env", "r").read().strip().split("\n"))))
+load_dotenv()
 
-HUB_IDENTIFIER_NO = env["HUB_IDENTIFIER_NO"]
+HUB_IDENTIFIER_NO = os.getenv("HUB_IDENTIFIER_NO")
+BACKEND_IP = os.getenv("BACKEND_IP")
+BACKEND_PORT = os.getenv("BACKEND_PORT")
+COM_PORT = os.getenv("COM_PORT")
+
+# How often the hub will send data to the backend
 UPDATE_SERVER_POLL_FREQUENCY = 2
 
-# Local server IP and URL
-LOCAL_IP = "192.168.1.132"  # Local server IP address
-BASE_URL = 'http://{}:3333/api'.format(LOCAL_IP)  # Local backend URL
+# Backend URL
+BASE_URL = f'http://{BACKEND_IP}:{BACKEND_PORT}/api'  # Replace with your actual backend URL
 HEADERS = {'content-type': 'application/json'}
 
 ser = None
-if "COM_PORT" in env:
+if COM_PORT:
     import serial
-    COM_PORT = env["COM_PORT"]
     ser = serial.Serial(port=COM_PORT, baudrate=115200)
     ser.timeout = 1
 
@@ -28,7 +33,7 @@ def attempt_create_db():
     try: 
         mydb = sqlite3.connect("processor.db")
         mycursor = mydb.cursor()
-        query = "CREATE TABLE sensordb(readingDate TIMESTAMP, sensor CHAR, reading NUMERIC, sent INTEGER)"
+        query = "CREATE TABLE sensordb(readingDate TIMESTAMP, sensorIdentifier CHAR, reading NUMERIC, sent INTEGER)"
         mycursor.execute(query)
         mydb.commit()
         mydb.close()
@@ -76,8 +81,8 @@ def poll_sensor_data(valid_sensors, radioGroup):
     while dat:
         if dat is None: break
         print("data", dat)
-        sensorName = dat.split("|")[0]
-        if sensorName not in valid_sensors: 
+        sensorIdentifier = dat.split("|")[0]
+        if sensorIdentifier not in valid_sensors: 
             dat = waitResponse()
             continue
         try:
@@ -85,10 +90,10 @@ def poll_sensor_data(valid_sensors, radioGroup):
         except:
             continue
 
-        if sensorName in poll_result:
-            poll_result[sensorName]["reading"] = poll_result[sensorName]["reading"]* 0.6 + value*0.4
+        if sensorIdentifier in poll_result:
+            poll_result[sensorIdentifier]["reading"] = poll_result[sensorIdentifier]["reading"]* 0.6 + value*0.4
         else:
-            poll_result[sensorName] = {
+            poll_result[sensorIdentifier] = {
                 "reading": value,
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
@@ -101,23 +106,29 @@ def poll_sensor_data(valid_sensors, radioGroup):
 # Send sensor readings to the backend
 def publish_local_sensor_to_server(valid_sensors, token, conn):
     mycursor = conn.cursor()
-    mycursor.execute('SELECT readingDate, sensor, reading FROM sensordb WHERE sent = 0')
+    mycursor.execute('SELECT readingDate, sensorIdentifier, reading FROM sensordb WHERE sent = 0')
     results = mycursor.fetchall()
     
     json_payload = dict()
     for result in results:
+        # If the sensor is not in the valid_sensors list, skip it
         if result[1] not in valid_sensors: continue
+        # If the sensor is already in the payload, append the reading to the existing list
         if result[1] in json_payload:
             json_payload[result[1]].append({
                 "readingDate": result[0],
                 "reading" : result[2]
             })
+        # If the sensor is not in the payload, create a new list for it
+        #result[1] is the sensor identifier
         else:
             json_payload[result[1]] = [{
                 "readingDate": result[0],
                 "reading" : result[2]
             }]
 
+    # json_payload consists of a dictionary with sensor names as keys and a list of dictionaries as values. Each inner dictionary contains a readingDate and a reading.
+    
     json_payload_string = json.dumps(json_payload)
     hash_obj = hashlib.sha256()
     hash_obj.update((json_payload_string + token).encode())
@@ -142,55 +153,47 @@ def publish_local_sensor_to_server(valid_sensors, token, conn):
     else: print("Unable to connect to hub!")
     return valid_sensors, res["radioGroup"] if "radioGroup" in res else 255
 
-# Token handling functions
+# Get the token from the SECRET file (in raspberry pi)
 def get_token():
     try:
         return None if len(open("./SECRET", "r").read().strip()) == 0 else open("./SECRET", "r").read().strip()
     except:
         return None
 
+# Initialize connection to backend, backend will return a token
 def initialize_connection_to_backend():
+    endpoint = f"{BASE_URL}/hubs/verifyHubInitialization"
+    
+    # Prepare the payload
+    payload = {
+        "identifierNumber": HUB_IDENTIFIER_NO
+    }
+    
     try:
-        response = requests.post(BASE_URL + "/hubs/verifyHubInitialization", 
-                                json={"identifierNumber": HUB_IDENTIFIER_NO},
-                                timeout=5)
-        response.raise_for_status()  # Raises an HTTPError for bad responses
-        payload = response.json()
-        if "token" in payload:
-            return payload["token"]
+        # Send POST request to the endpoint
+        response = requests.put(endpoint, json=payload, timeout=5)
+        
+        # Check the response
+        if response.status_code == 200:
+            data = response.json()
+            if "token" in data:
+                print(f"Initialization successful. Token: {data['token']}")
+                return data['token']
+            else:
+                print("Unexpected response format")
         else:
-            print("Error: Unexpected response format")
-            return None
-    except requests.exceptions.HTTPError as http_err:
-        if response.status_code == 404:
-            print("Error: Hub not found")
-        elif response.status_code == 403:
-            print("Error: Hub is not active")
-        else:
-            print(f"HTTP error occurred: {http_err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
+            print(f"Error: Unexpected status code {response.status_code}")
+            print(f"Response: {response.text}")
+        
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+    
     return None
 
+# Save the token to the SECRET file (in raspberry pi)
 def save_token(token):
     f = open("SECRET", "w")
     f.write(token)
-
-# Static assignment of sensors to micro:bits based on radio groups
-def assign_sensors_to_fixed_microbits():
-    # Static mapping: sensor_name -> radio_group
-    sensor_assignments = [
-        {"sensor_name": "light1", "sensor_type": "LIGHT", "radio_group": 1},  # Micro:bit A
-        {"sensor_name": "humid1", "sensor_type": "HUMID", "radio_group": 2},  # Micro:bit B
-        {"sensor_name": "temp1", "sensor_type": "TEMP", "radio_group": 3},    # Micro:bit C
-    ]
-    
-    # Send the assignment commands to each micro:bit
-    for assignment in sensor_assignments:
-        command = f"bct{assignment['sensor_name']}|{assignment['sensor_type']}"
-        sendCommand(command)  # Send the command to assign the sensor
-        print(f"Assigned {assignment['sensor_name']} to radio group {assignment['radio_group']}")
-        time.sleep(0.2)  # Small delay to ensure the command is processed
 
 # Main function to run the hub
 def main_function():
@@ -198,34 +201,28 @@ def main_function():
     token = get_token()
     if token is None:
         while token is None:
-            print("Initializing connection with local backend!")
+            print("Initializing connection with backend!")
             token = initialize_connection_to_backend()
-            print("Token obtained: ", token)
+            print("Token obtained results: ", token)
             if token: break
             time.sleep(3)
         save_token(token)
 
     print("Starting program...\n")
     mydb = sqlite3.connect("processor.db")
-
-    # Assign sensors statically to micro:bits based on radio group
-    assign_sensors_to_fixed_microbits()
-
+    valid_sensors, radioGroup = publish_local_sensor_to_server([], token, mydb)
     try:
         polls = 0
         while True:
             polls += 1
-            valid_sensors = ["light1", "humid1", "temp1"]
-            radioGroup = 1  # Example, could be updated dynamically
             sensor_values = poll_sensor_data(valid_sensors, radioGroup)
             mycursor = mydb.cursor()
-
-            # Store sensor values in local database
-            for sensor, data in sensor_values.items():
+            
+            for sensor_identifier, data in sensor_values.items():
                 reading = data["reading"]
                 readingDate = data["time"]
-                query = 'INSERT INTO sensordb(readingDate, sensor, reading, sent) VALUES (?, ?, ?, ?)'
-                val = (readingDate, sensor, reading, 0)
+                query = 'INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)'
+                val = (readingDate, sensor_identifier, reading, 0)
 
                 while True:
                     try:
@@ -235,17 +232,15 @@ def main_function():
                         time.sleep(0.2)
 
             mydb.commit()
-            if len(sensor_values):
-                print("Inserted records into database!")
-            else:
-                print("No data")
+            if len(sensor_values): print("Inserted records into database!")
+            else: print("No data")
 
-            # Periodically push data to server and update valid sensors list
             if polls >= UPDATE_SERVER_POLL_FREQUENCY:
-                valid_sensors, radioGroup = publish_local_sensor_to_server(valid_sensors, token, mydb)
-                print("valid_sensors, radioGroup", valid_sensors, radioGroup)
+                valid_sensors, radioGroup = publish_local_sensor_to_server(valid_sensors, token, mydb) # Must use token 
+                print("valid_sensors, radioGroup",valid_sensors, radioGroup)
                 polls = 0
 
+            temp_buffer = []
             time.sleep(0.5)
 
     except KeyboardInterrupt:

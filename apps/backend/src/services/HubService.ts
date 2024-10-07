@@ -308,17 +308,17 @@ class HubService {
   }
 
   public async pushSensorReadings(
-    hubId: string,
+    hubIdentifierNumber: string,
     jsonPayloadString: string,
     sha256: string,
     ipAddress: string,
   ): Promise<{ sensors: string[]; radioGroup: number }> {
-    const hub = await HubDao.getHubById(hubId);
+    const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
     if (!hub) {
       throw new Error('Hub not found');
     }
 
-    if (!(await this.validatePayload(hubId, jsonPayloadString, sha256))) {
+    if (!(await this.validatePayload(hub.id, jsonPayloadString, sha256))) {
       throw new Error('JSON validation failed. Digest does not match!');
     }
 
@@ -339,11 +339,11 @@ class HubService {
     }
 
     // Update hub's last data update and IP address
-    await HubDao.updateHubDetails(hubId, {
+    await HubDao.updateHubDetails(hub.id, {
       ipAddress,
     });
 
-    const sensors = await HubDao.getAllSensorsByHubId(hubId);
+    const sensors = await HubDao.getAllSensorsByHubId(hub.id);
     return {
       sensors: sensors.map((sensor) => sensor.name),
       radioGroup: hub.radioGroup,

@@ -153,10 +153,14 @@ router.put('/verifyHubInitialization', async (req, res) => {
   }
 });
 
-router.post('/pushSensorReadings', async (req, res) => {
+router.post('/pushSensorReadings/:hubIdentifierNumber', async (req, res) => {
   try {
-    const { hubId, jsonPayloadString, sha256, ipAddress } = req.body;
-    const result = await HubService.pushSensorReadings(hubId, jsonPayloadString, sha256, ipAddress);
+    const { hubIdentifierNumber } = req.params;
+    const { jsonPayloadString, sha256 } = req.body;
+    console.log('req.socket.remoteAddress', req.socket.remoteAddress);
+    let ipAddress = req.socket.remoteAddress || '127.0.0.1';
+    ipAddress = ipAddress == '::1' ? '127.0.0.1' : ipAddress.split(':')[3];
+    const result = await HubService.pushSensorReadings(hubIdentifierNumber, jsonPayloadString, sha256, ipAddress);
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ error: error.message });
