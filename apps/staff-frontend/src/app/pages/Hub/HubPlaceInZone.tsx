@@ -107,7 +107,6 @@ const HubPlaceInZone = () => {
         long: lng,
         zoneId: selectedZone.id
       };
-      console.log(finalData)
       const response = await addHubToZone(hub.id, finalData);
 
       if (response.status === 200) {
@@ -115,7 +114,13 @@ const HubPlaceInZone = () => {
         setCurrStep(2)
       }
     } catch (error) {
-      console.log(error);
+      if (typeof error === "string") {
+        messageApi.open({
+          type: 'error',
+          content: error,
+        });
+        return;
+      }
       messageApi.open({
         type: 'error',
         content: 'Unable to place Hub in Zone. Please try again later.',
