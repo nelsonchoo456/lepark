@@ -7,7 +7,7 @@ import { FaHouseUser, FaLocationDot, FaTent } from 'react-icons/fa6';
 import {BsHouseDoor} from 'react-icons/bs';
 import { Badge, Button, Card, Empty, Space } from 'antd';
 import EventCard from './components/EventCard';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
 import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
@@ -15,6 +15,7 @@ import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect, useState } from 'react';
 import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { FiExternalLink } from 'react-icons/fi';
 
 const MainLanding = () => {
     const navigate = useNavigate();
@@ -130,9 +131,18 @@ const MainLanding = () => {
           </EventCard> */}
         </div>
         <br />
-        <LogoText className="font-bold text-lg">Sustainability & Decarbonisation</LogoText>
+      <div className="flex justify-between items-center">
+    <LogoText className="font-bold text-lg">Sustainability & Decarbonisation</LogoText>
+    <Link to="/decarb" className="text-green-600 hover:text-green-700 flex items-center">
+      <Space>
+        Learn More
+        <FiExternalLink />
+      </Space>
+    </Link>
+  </div>
+          <br/>
 
-         <Card size="small" title="" extra={<button onClick={() => navigate('/decarb')} className="text-green-500 hover:underline">Learn More</button>} className="my-2 w-full">
+
   <div className="flex justify-between items-center h-48">
     <div className="flex-1 flex flex-col items-center justify-center text-center">
       <PiPlant className="text-4xl mb-2" />
@@ -147,7 +157,7 @@ const MainLanding = () => {
       <p className="font-bold text-lg">{poweredDays} days</p>
     </div>
   </div>
-</Card>
+
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
