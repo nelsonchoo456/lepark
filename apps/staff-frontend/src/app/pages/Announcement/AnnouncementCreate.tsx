@@ -50,11 +50,11 @@ const AnnouncementCreate = () => {
         ...otherValues,
         startDate: dateToSGT(values.dateRange[0]).format(),
         endDate: dateToSGT(values.dateRange[1], true).format(),
-        updatedAt: dateToSGT(moment()).format(),
+        updatedAt: moment().tz('Asia/Singapore').format(),
         status: AnnouncementStatusEnum.ACTIVE,
       };
 
-      // console.log('Final Data:', finalData);
+      console.log('Final Data:', finalData);
 
       const response = await createAnnouncement(finalData);
       if (response?.status && response.status === 201) {

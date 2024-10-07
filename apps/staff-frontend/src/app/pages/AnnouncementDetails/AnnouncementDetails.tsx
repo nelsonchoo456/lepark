@@ -113,6 +113,11 @@ const AnnouncementDetails: React.FC = () => {
     return current < today;
   };
 
+  const formatLastUpdated = (dateString: string | undefined) => {
+    if (!dateString) return 'N/A';
+    return moment(dateString).tz('Asia/Singapore').format('D MMMM YYYY, h:mm A');
+  };
+
   const handleSave = async () => {
     if (validateInputs()) {
       try {
@@ -121,7 +126,7 @@ const AnnouncementDetails: React.FC = () => {
           content: editedAnnouncement?.content,
           startDate: dateToSGT(moment(editedAnnouncement?.startDate)).format(),
           endDate: dateToSGT(moment(editedAnnouncement?.endDate), true).format(),
-          updatedAt: dateToSGT(moment()).format(),
+          updatedAt: moment().tz('Asia/Singapore').format(),
           status: editedAnnouncement?.status,
           parkId: editedAnnouncement?.parkId,
         };
@@ -227,6 +232,11 @@ const AnnouncementDetails: React.FC = () => {
       key: 'park',
       label: 'Park',
       children: park ? park.name : 'All Parks',
+    },
+    {
+      key: 'lastUpdated',
+      label: 'Last Updated',
+      children: formatLastUpdated(announcement?.updatedAt),
     },
   ];
 
