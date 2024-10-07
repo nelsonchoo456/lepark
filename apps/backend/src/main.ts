@@ -40,6 +40,11 @@ app.use(
         return callback(null, true);
       }
 
+      // To allow Capacitor simulators
+      if (origin.startsWith('capacitor')) {
+        return callback(null, true);
+      }
+
       // To allow specific domains, add them above this line as additional checks
 
       // If the origin doesn't match any criteria, reject it

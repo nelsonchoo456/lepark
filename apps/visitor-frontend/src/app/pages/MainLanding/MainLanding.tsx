@@ -1,4 +1,4 @@
-import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
+import { ContentWrapper, Divider, Header, LogoText, QrScanner, QrScanner2, QrScanner3 } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
@@ -16,8 +16,14 @@ const MainLanding = () => {
   const navigate = useNavigate();
   const { selectedPark } = usePark();
 
+  const onNewScanResult = (decodedText: any, decodedResult: any) => {
+    // handle decoded results here
+    console.log(decodedText, decodedResult)
+};
+
   return (
     <div>
+      
       <ParkHeader>
         <FaLocationDot className="text-highlightGreen-200 text-4xl mt-2 md:hidden" />
         <div className="md:text-center md:mx-auto">
@@ -25,7 +31,7 @@ const MainLanding = () => {
           <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>
       </ParkHeader>
-
+    
       {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
       <div
         className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden relative z-10
@@ -106,6 +112,14 @@ const MainLanding = () => {
           </EventCard> */}
         </div>
         <br />
+        {/* <QrScanner2/> */}
+        <QrScanner3/>
+        {/* <QrScanner 
+        fps={10}
+        qrbox={250}
+        disableFlip={false}
+        qrCodeSuccessCallback={onNewScanResult}
+      /> */}
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
