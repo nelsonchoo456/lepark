@@ -79,6 +79,7 @@ import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
+import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -389,6 +390,7 @@ export function App() {
 
                   <Route path="create" element={<HubCreate />} />
                   <Route path=":hubId/edit" element={<HubEdit />} />
+                  <Route path=":hubId/place-in-zone" element={<HubPlaceInZone />} />
                   {/* <Route path="edit"/> */}
                 </Route>
               </Route>
