@@ -38,6 +38,8 @@ model Staff {
   resetToken          String?
   assignedPlantTasks  PlantTask[]   @relation("assignedStaff")
   submittedPlantTasks PlantTask[]   @relation("submittingStaff")
+
+  Feedback Feedback[]
 }
 
 enum ConservationStatusEnum {
@@ -126,13 +128,12 @@ model Occurrence {
   zoneId              Int
   plantTasks          PlantTask[]
 
-  // decarbonizationAreaId String @db.Uuid
   images       String[]
   activityLogs ActivityLog[]
   statusLogs   StatusLog[]
+  Feedback     Feedback[]
 
   species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
-  // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
 
   @@index([zoneId])
 }
@@ -251,19 +252,6 @@ model Event {
   @@index([facilityId])
 }
 
-// model DecarbonizationArea {
-//   id                  String   @id @default(uuid()) @db.Uuid
-//   carbonSeqValue      Float
-//   startDate           DateTime
-//   endDate             DateTime
-//   carbonSeqFactor     Float
-//   dailyCarbonSeqValye Float
-//   totalBiomass        Float
-//   occurrenceId         String
-
-//   occurrences Occurrence[]
-// }
-
 model Visitor {
   id              String    @id @default(uuid()) @db.Uuid
   firstName       String
@@ -275,6 +263,8 @@ model Visitor {
   isVerified      Boolean
   resetToken      String?
   resetTokenUsed  Boolean   @default(false)
+
+  Feedback Feedback[]
 }
 
 enum HubStatusEnum {
@@ -311,8 +301,6 @@ model Hub {
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
-
-  //facility Facility? @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   @@index([zoneId])
 }
@@ -465,6 +453,7 @@ model Facility {
   events              Event[]
   parkAssets          ParkAsset[]
   sensors             Sensor[]
+  Feedback            Feedback[]
 
   @@index([parkId])
 }
@@ -557,4 +546,38 @@ model SequestrationHistory {
   seqValue              Float
   decarbonizationAreaId String              @db.Uuid
   decarbonizationArea   DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id               String               @id @default(uuid()) @db.Uuid
+  dateCreated      DateTime             @default(now())
+  dateResolved     DateTime?
+  title            String
+  description      String
+  feedbackCategory FeedbackCategoryEnum
+  images           String[]
+  feedbackStatus   FeedbackStatusEnum
+  remarks          String?
+
+  staffId      String?     @db.Uuid
+  staff   Staff?      @relation(fields: [staffId], references: [id])
+  visitorId    String      @db.Uuid
+  visitor      Visitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  facilityId   String?     @db.Uuid
+  facility     Facility?   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  occurrenceId String?     @db.Uuid
+  occurrence   Occurrence? @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+}
+
+enum FeedbackCategoryEnum {
+  FACILITY
+  PLANT
+  GENERAL
+}
+
+enum FeedbackStatusEnum {
+  PENDING
+  IN_PROGRESS
+  REJECTED
+  RESOLVED
 }
