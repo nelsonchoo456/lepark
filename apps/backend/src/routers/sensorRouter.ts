@@ -158,4 +158,13 @@ router.put('/addSensorToHub/:id', async (req, res) => {
   }
 });
 
+router.put('/removeSensorFromHub/:id', async (req, res) => {
+  try {
+    const updatedSensor = await SensorService.removeSensorFromHub(req.params.id);
+    res.status(200).json(updatedSensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

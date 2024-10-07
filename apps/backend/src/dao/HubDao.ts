@@ -146,6 +146,14 @@ class HubDao {
       where: { zoneId: zoneId },
     });
   }
+
+  public async doesHubHaveSensors(hubId: string): Promise<boolean> {
+    const hub = await prisma.hub.findUnique({
+      where: { id: hubId },
+      include: { sensors: true },
+    });
+    return hub?.sensors.length > 0;
+  }
 }
 
 export default new HubDao();

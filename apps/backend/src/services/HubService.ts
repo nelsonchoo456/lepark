@@ -261,6 +261,10 @@ class HubService {
         throw new Error('Hub must be active to be removed from a zone');
       }
 
+      if (await HubDao.doesHubHaveSensors(hub.id)) {
+        throw new Error('Hub has sensors assigned to it. Remove the sensors first.');
+      }
+
       const updateData: Prisma.HubUpdateInput = {
         zoneId: null,
         hubStatus: 'INACTIVE',
@@ -330,7 +334,11 @@ class HubService {
     try {
       const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
       if (!hub) {
-        throw new Error('Hub not found');
+        throw new HubNotFoundError(`Hub with identifier number ${hubIdentifierNumber} not found`);
+      }
+
+      if (!hub.hubSecret) {
+        throw new Error(`Hub secret not set for hub with identifier number ${hubIdentifierNumber}`);
       }
 
       if (!(await this.validatePayload(hub.id, jsonPayloadString, sha256))) {
@@ -359,9 +367,11 @@ class HubService {
         lastDataUpdateDate: new Date(),
       });
 
-      const sensors = await HubDao.getAllSensorsByHubId(hub.id);
+      // After processing the sensor readings, update the list of sensors
+      const updatedSensors = await this.updateHubSensors(hubIdentifierNumber);
+
       return {
-        sensors: sensors.map((sensor) => sensor.identifierNumber),
+        sensors: updatedSensors,
         radioGroup: hub.radioGroup,
       };
     } catch (error) {
@@ -424,7 +434,18 @@ class HubService {
   private generateIdentifierNumber(): string {
     return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
   }
+
+  public async updateHubSensors(hubIdentifierNumber: string): Promise<string[]> {
+    const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
+    if (!hub) {
+      throw new HubNotFoundError('Hub not found');
+    }
+
+    const sensors = await this.getAllSensorsByHubId(hub.id);
+    return sensors.map(sensor => sensor.identifierNumber);
+  }
 }
+
 function ensureAllFieldsPresent(data: HubSchemaType): Prisma.HubCreateInput {
   // Add checks for all required fields
   if (
