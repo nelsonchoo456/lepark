@@ -16,6 +16,8 @@ class HubDao {
     const hubs = await prisma.hub.findMany({
       include: {
         facility: true,
+        sensors: true,
+        maintenanceHistory: true,
       },
     });
 
@@ -56,6 +58,8 @@ class HubDao {
       where: { facility: { parkId } },
       include: {
         facility: true,
+        sensors: true,
+        maintenanceHistory: true,
       },
     });
 
@@ -75,21 +79,51 @@ class HubDao {
       where: { id },
       include: {
         facility: true,
+        sensors: true,
+        maintenanceHistory: true,
       },
     });
   }
 
   public async getHubByIdentifierNumber(identifierNumber: string): Promise<Hub | null> {
     console.log('identifierNumber', identifierNumber);
-    return prisma.hub.findUnique({ where: { identifierNumber } });
+    return prisma.hub.findUnique({
+      where: { identifierNumber },
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+    });
   }
 
   public async getHubBySerialNumber(serialNumber: string): Promise<Hub | null> {
-    return prisma.hub.findUnique({ where: { serialNumber } });
+    return prisma.hub.findUnique({
+      where: { serialNumber },
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+    });
   }
 
   public async getHubByRadioGroup(radioGroup: number): Promise<Hub | null> {
-    return prisma.hub.findFirst({ where: { radioGroup: { equals: radioGroup } } });
+    return prisma.hub.findFirst({
+      where: { radioGroup: { equals: radioGroup } },
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+    });
+  }
+
+  public async addSensorToHub(hubId: string, sensorId: string): Promise<Hub> {
+    return prisma.hub.update({
+      where: { id: hubId },
+      data: { sensors: { connect: { id: sensorId } } },
+    });
   }
 
   public async updateHubDetails(id: string, data: Prisma.HubUpdateInput): Promise<Hub> {

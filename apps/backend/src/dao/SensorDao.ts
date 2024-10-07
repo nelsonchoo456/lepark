@@ -12,34 +12,15 @@ class SensorDao {
 
   async getAllSensors(): Promise<
     (Sensor & {
-      hub?: { id: string; name: string; facilityId: string };
-      facility?: { id: string; name: string; parkId: number };
+      hub?: Hub;
+      facility?: Facility;
       park?: ParkResponseData;
     })[]
   > {
     const sensors = await prisma.sensor.findMany({
       include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-            facilityId: true,
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                parkId: true,
-              },
-            },
-          },
-        },
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
+        hub: true,
+        facility: true,
       },
     });
 
@@ -74,13 +55,7 @@ class SensorDao {
             id: true,
             name: true,
             zoneId: true,
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                parkId: true,
-              },
-            },
+            facility: true,
           },
         },
       },
@@ -156,32 +131,6 @@ class SensorDao {
 
   async deleteSensor(id: string): Promise<void> {
     await prisma.sensor.delete({ where: { id } });
-  }
-
-  async getSensorsNeedingCalibration(): Promise<Sensor[]> {
-    const currentDate = new Date();
-    return prisma.sensor.findMany({
-      where: {
-        lastCalibratedDate: {
-          lte: new Date(currentDate.getTime() - 24 * 60 * 60 * 1000), // More than a day old
-        },
-      },
-      include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
-      },
-    });
   }
 
   async getSensorsNeedingMaintenance(): Promise<Sensor[]> {

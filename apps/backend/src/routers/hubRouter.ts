@@ -167,4 +167,15 @@ router.post('/pushSensorReadings/:hubIdentifierNumber', async (req, res) => {
   }
 });
 
+router.post('/addSensorToHub/:hubIdentifierNumber', async (req, res) => {
+  try {
+    const { hubIdentifierNumber } = req.params;
+    const { sensorIdentifierNumber } = req.body;
+    const updatedHub = await HubService.addSensorToHub(hubIdentifierNumber, sensorIdentifierNumber);
+    res.status(200).json(updatedHub);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

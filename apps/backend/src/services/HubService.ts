@@ -241,6 +241,49 @@ class HubService {
     }
   }
 
+  public async addSensorToHub(hubIdentifierNumber: string, sensorIdentifierNumber: string): Promise<Hub> {
+    const hub = await HubDao.getHubByIdentifierNumber(hubIdentifierNumber);
+    if (!hub) {
+      throw new HubNotFoundError('Hub not found');
+    }
+    const sensor = await SensorDao.getSensorByIdentifierNumber(sensorIdentifierNumber);
+    if (!sensor) {
+      throw new Error('Sensor not found');
+    }
+
+    const hubFacility = await FacilityDao.getFacilityById(hub.facilityId);
+    const sensorFacility = await FacilityDao.getFacilityById(sensor.facilityId);
+    if (hubFacility.parkId !== sensorFacility.parkId) {
+      throw new Error('Hub and sensor are in different parks');
+    }
+
+    if (sensor.sensorStatus === 'ACTIVE') {
+      throw new Error('Sensor is already active');
+    } else if (sensor.sensorStatus === 'DECOMMISSIONED') {
+      throw new Error('Sensor is decommissioned. It cannot be used.');
+    } else if (sensor.sensorStatus === 'UNDER_MAINTENANCE') {
+      throw new Error('Sensor is under maintenance. It cannot be used.');
+    }
+
+    if (hub.hubStatus === 'INACTIVE') {
+      throw new Error('Hub is currently inactive. It must be active to add sensors.');
+    } else if (hub.hubStatus === 'DECOMMISSIONED') {
+      throw new Error('Hub is decommissioned. It cannot be used.');
+    } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
+      throw new Error('Hub is under maintenance. It cannot be used.');
+    }
+
+    if (!hub.zoneId) {
+      throw new Error('Hub is not assigned to a zone. It must be assigned to a zone to add sensors.');
+    }
+
+    if (sensor.hubId) {
+      throw new Error('Sensor is already assigned to a hub');
+    }
+
+    return HubDao.addSensorToHub(hub.id, sensor.id);
+  }
+
   // Verify hub initialization when raspberry pi first boots up
   public async verifyHubInitialization(identifierNumber: string, ipAddress: string): Promise<string> {
     const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
@@ -386,7 +429,7 @@ class HubService {
   }
 
   public generateRandomRadioGroup(): number {
-    return Math.floor(Math.random() * 255);
+    return Math.floor(Math.random() * 255); // 0 - 254, 255 is not available as it is used for Micro:bits with unconfigured radio groups
   }
 
   public async validatePayload(hubId: string, jsonPayload: string, sha256: string): Promise<boolean> {

@@ -61,6 +61,7 @@ def poll_sensor_data(valid_sensors, radioGroup):
         return dict() 
     
     # Broadcast radio group and sensors
+    # this sends the command to all micro:bits to set the radio group to the radioGroup variable and to send data back to the hub
     for sensor in valid_sensors:
         sendCommand("bct"+sensor+"|"+str(radioGroup))
         time.sleep(0.1)
@@ -70,6 +71,8 @@ def poll_sensor_data(valid_sensors, radioGroup):
         time.sleep(0.1)
         continue
 
+    # this sends the command to all micro:bits to send data back to the hub
+    # pol does not need to send the radio group because it is already set
     sendCommand("pol")
     time.sleep(0.5)
     sendCommand("pol")
@@ -77,22 +80,29 @@ def poll_sensor_data(valid_sensors, radioGroup):
     print("Polling sensor data...")
     time.sleep(1)
     poll_result = dict() 
+    # dat is the data that the micro:bit sends back to the hub
+    # format: sensorIdentifier|value
     dat = waitResponse()
     while dat:
         if dat is None: break
         print("data", dat)
+        # get the sensorIdentifier from the dat
         sensorIdentifier = dat.split("|")[0]
+        # if the sensorIdentifier is not in the valid_sensors list, skip it
         if sensorIdentifier not in valid_sensors: 
             dat = waitResponse()
             continue
         try:
+            # get the value from the dat
             value = float(dat.split("|")[1])
         except:
             continue
 
+        # if reading is already in the poll_result dictionary, apply smoothing formula to calculate the new reading
         if sensorIdentifier in poll_result:
             poll_result[sensorIdentifier]["reading"] = poll_result[sensorIdentifier]["reading"]* 0.6 + value*0.4
         else:
+            # if reading is not in the poll_result dictionary, add it to the dictionary
             poll_result[sensorIdentifier] = {
                 "reading": value,
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -215,9 +225,11 @@ def main_function():
         polls = 0
         while True:
             polls += 1
+            # get the sensor values from the micro:bits
             sensor_values = poll_sensor_data(valid_sensors, radioGroup)
             mycursor = mydb.cursor()
             
+            # insert the sensor values into the database
             for sensor_identifier, data in sensor_values.items():
                 reading = data["reading"]
                 readingDate = data["time"]
@@ -235,6 +247,7 @@ def main_function():
             if len(sensor_values): print("Inserted records into database!")
             else: print("No data")
 
+            # send the sensor values to the backend
             if polls >= UPDATE_SERVER_POLL_FREQUENCY:
                 valid_sensors, radioGroup = publish_local_sensor_to_server(valid_sensors, token, mydb) # Must use token 
                 print("valid_sensors, radioGroup",valid_sensors, radioGroup)

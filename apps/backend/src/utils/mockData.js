@@ -1245,10 +1245,10 @@ const sensorsData = [
   {
     name: 'Temperature Sensor 1',
     serialNumber: 'STE0234589',
-    identifierNumber: 'SENS-DLJK9482',
+    identifierNumber: 'SENS-11111111',
     sensorType: 'TEMPERATURE',
     description: 'Main temperature sensor for greenhouse',
-    sensorStatus: 'ACTIVE',
+    sensorStatus: 'INACTIVE',
     acquisitionDate: new Date(),
     sensorUnit: 'DEGREES_CELSIUS',
     supplier: 'TechSense Inc.',
@@ -1263,7 +1263,7 @@ const sensorsData = [
   {
     name: 'Humidity Sensor 01',
     serialNumber: 'STE2302459',
-    identifierNumber: 'SENS-LSDK84KD',
+    identifierNumber: 'SENS-22222222',
     sensorType: 'HUMIDITY',
     description: 'Primary humidity sensor for tropical plants section',
     sensorStatus: 'INACTIVE',

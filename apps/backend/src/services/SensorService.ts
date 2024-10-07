@@ -180,10 +180,6 @@ class SensorService {
     return SensorDao.getAllSensorsByFacilityId(facilityId);
   }
 
-  public async getSensorsNeedingCalibration(): Promise<Sensor[]> {
-    return SensorDao.getSensorsNeedingCalibration();
-  }
-
   public async getSensorsNeedingMaintenance(): Promise<Sensor[]> {
     return SensorDao.getSensorsNeedingMaintenance();
   }

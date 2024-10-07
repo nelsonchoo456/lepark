@@ -73,15 +73,6 @@ router.get('/getSensorsByFacilityId/:facilityId', async (req, res) => {
   }
 });
 
-router.get('/getSensorsNeedingCalibration', async (_, res) => {
-  try {
-    const sensors = await SensorService.getSensorsNeedingCalibration();
-    res.status(200).json(sensors);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.get('/getSensorsNeedingMaintenance', async (_, res) => {
   try {
     const sensors = await SensorService.getSensorsNeedingMaintenance();
