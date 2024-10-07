@@ -3,18 +3,43 @@ import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
-import { FaLocationDot, FaTent } from 'react-icons/fa6';
+import { FaHouseUser, FaLocationDot, FaTent } from 'react-icons/fa6';
+import {BsHouseDoor} from 'react-icons/bs';
 import { Badge, Button, Card, Empty, Space } from 'antd';
 import EventCard from './components/EventCard';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
 import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
+import { GiTreehouse } from 'react-icons/gi';
+import { useEffect, useState } from 'react';
+import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { FiExternalLink } from 'react-icons/fi';
 
 const MainLanding = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const { selectedPark } = usePark();
+  const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
+  const [poweredDays, setPoweredDays] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (selectedPark?.id) {
+        try {
+          const currentDate = '2024-08-28'; // Hardcoded to 28 August 2024
+          const sequestration = await fetchTotalSequestration(selectedPark.id, currentDate);
+          setTotalSequestration(Math.round(sequestration));
+          const days = calculateHDBPoweredDays(sequestration);
+          setPoweredDays(days);
+        } catch (error) {
+          console.error('Error fetching sequestration data:', error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [selectedPark]);
 
   return (
     <div>
@@ -106,6 +131,33 @@ const MainLanding = () => {
           </EventCard> */}
         </div>
         <br />
+      <div className="flex justify-between items-center">
+    <LogoText className="font-bold text-lg">Sustainability & Decarbonisation</LogoText>
+    <Link to="/decarb" className="text-green-600 hover:text-green-700 flex items-center">
+      <Space>
+        Learn More
+        <FiExternalLink />
+      </Space>
+    </Link>
+  </div>
+          <br/>
+
+
+  <div className="flex justify-between items-center h-48">
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <PiPlant className="text-4xl mb-2" />
+      <p>This park has absorbed CO2 mass of</p>
+      <p className="font-bold text-lg">{totalSequestration} kg </p>
+    </div>
+    <div className="w-px h-full bg-gray-200 mx-4"></div>
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <BsHouseDoor className="text-4xl mb-2" />
+      <p>Equivalent to powering a</p>
+      <p>4 room HDB for</p>
+      <p className="font-bold text-lg">{poweredDays} days</p>
+    </div>
+  </div>
+
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">

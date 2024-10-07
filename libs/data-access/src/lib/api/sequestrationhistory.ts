@@ -58,6 +58,20 @@ export async function getSequestrationHistoryByAreaIdAndTimeFrame(
   }
 }
 
+export async function getTotalSequestrationForParkAndDate(
+  parkId: number,
+  date: string
+): Promise<AxiosResponse<{ totalSequestration: number }>> {
+  try {
+    const response: AxiosResponse<{ totalSequestration: number }> = await client.get(
+      `${URL}/park/${parkId}/date/${date}`
+    );
+    return response;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
 function handleAxiosError(error: any): never {
   if (axios.isAxiosError(error)) {
     if (error.response) {
