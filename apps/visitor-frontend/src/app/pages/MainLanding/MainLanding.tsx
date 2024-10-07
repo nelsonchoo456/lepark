@@ -16,6 +16,8 @@ import { GiTreehouse } from 'react-icons/gi';
 import { useEffect, useState } from 'react';
 import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
 import { FiExternalLink } from 'react-icons/fi';
+import { AiOutlinePercentage } from 'react-icons/ai';
+import { BiSolidDiscount } from 'react-icons/bi';
 
 const MainLanding = () => {
     const navigate = useNavigate();
@@ -77,8 +79,14 @@ const MainLanding = () => {
         <NavButton key="venues" icon={<FaTent />}>
           Venues
         </NavButton>
-        <NavButton key="tickets" icon={<PiTicketFill />}>
-          Tickets
+        <NavButton
+          key="promotions"
+          icon={<BiSolidDiscount />}
+          onClick={() => {
+            navigate(`/promotions`);
+          }}
+        >
+          Promotions
         </NavButton>
       </div>
 
@@ -153,8 +161,7 @@ const MainLanding = () => {
     <div className="w-px h-full bg-gray-200 mx-4"></div>
     <div className="flex-1 flex flex-col items-center justify-center text-center">
       <BsHouseDoor className="text-4xl mb-2" />
-      <p>Equivalent to powering a</p>
-      <p>4 room HDB for</p>
+      <p>Equivalent to powering a 4 room HDB for</p>
       <p className="font-bold text-lg">{poweredDays} days</p>
     </div>
   </div>

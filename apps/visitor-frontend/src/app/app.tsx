@@ -28,6 +28,7 @@ import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttract
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
+import PromotionViewAll from './pages/Promotions/PromotionViewAll';
 
 export function App() {
   return (
@@ -107,6 +108,9 @@ export function App() {
                 <Route path="/decarb">
                   <Route index element={<DecarbViewAll />} />
                   <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
+                </Route>
+                <Route path="/promotions">
+                  <Route index element={<PromotionViewAll/>}/>
                 </Route>
               </Route>
             </Routes>
