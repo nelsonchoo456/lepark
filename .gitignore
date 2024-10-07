@@ -47,4 +47,4 @@ Thumbs.db
 apps/backend/.env
 
 # capcitor
-# /ios
+/ios

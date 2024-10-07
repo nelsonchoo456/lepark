@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useNavigate } from 'react-router-dom';
+
 
 export const QrScanner2 = () => {
+  const navigate = useNavigate();
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState<boolean>(false);
 
@@ -20,6 +23,7 @@ export const QrScanner2 = () => {
         (decodedText) => {
           setScanResult(decodedText);
           scanner.clear(); // Stop scanning once we have a result
+          navigate(decodedText.slice(22))
           setShowScanner(false); // Hide the scanner
         },
         (error) => {
