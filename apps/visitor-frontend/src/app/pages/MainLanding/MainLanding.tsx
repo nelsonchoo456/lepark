@@ -16,6 +16,8 @@ import { GiTreehouse } from 'react-icons/gi';
 import { useEffect, useState } from 'react';
 import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
 import { FiExternalLink } from 'react-icons/fi';
+import { AiOutlinePercentage } from 'react-icons/ai';
+import { BiSolidDiscount } from 'react-icons/bi';
 
 const MainLanding = () => {
     const navigate = useNavigate();
@@ -77,8 +79,14 @@ const MainLanding = () => {
         <NavButton key="venues" icon={<FaTent />}>
           Venues
         </NavButton>
-        <NavButton key="tickets" icon={<PiTicketFill />}>
-          Tickets
+        <NavButton
+          key="promotions"
+          icon={<BiSolidDiscount />}
+          onClick={() => {
+            navigate(`/promotions`);
+          }}
+        >
+          Promotions
         </NavButton>
       </div>
 
@@ -132,7 +140,7 @@ const MainLanding = () => {
         </div>
         <br />
       <div className="flex justify-between items-center">
-    <LogoText className="font-bold text-lg">Sustainability & Decarbonisation</LogoText>
+    <LogoText className="font-bold text-lg">Sustainability</LogoText>
     <Link to="/decarb" className="text-green-600 hover:text-green-700 flex items-center">
       <Space>
         Learn More
@@ -146,14 +154,14 @@ const MainLanding = () => {
   <div className="flex justify-between items-center h-48">
     <div className="flex-1 flex flex-col items-center justify-center text-center">
       <PiPlant className="text-4xl mb-2" />
-      <p>This park has absorbed CO2 mass of</p>
-      <p className="font-bold text-lg">{totalSequestration} kg </p>
+      <div className="flex flex-row items-center">
+        <p>In the past year, this park has absorbed <span className="font-bold text-lg ml-1">{totalSequestration} kg</span> of CO2</p>
+      </div>
     </div>
     <div className="w-px h-full bg-gray-200 mx-4"></div>
     <div className="flex-1 flex flex-col items-center justify-center text-center">
       <BsHouseDoor className="text-4xl mb-2" />
-      <p>Equivalent to powering a</p>
-      <p>4 room HDB for</p>
+      <p>Equivalent to powering a 4 room HDB for</p>
       <p className="font-bold text-lg">{poweredDays} days</p>
     </div>
   </div>

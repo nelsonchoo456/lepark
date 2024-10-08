@@ -47,3 +47,8 @@ export * from './lib/api/decarbonizationarea';
 export * from './lib/types/decarbonizationarea';
 export * from './lib/api/sequestrationhistory';
 export * from './lib/types/sequestrationhistory';
+export * from './lib/api/facility';
+export * from './lib/types/facility';
+
+export * from './lib/api/promotion';
+export * from './lib/types/promotion';

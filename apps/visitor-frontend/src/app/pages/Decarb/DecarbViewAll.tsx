@@ -105,29 +105,7 @@ const DecarbViewAll = () => {
 
   const totalSequestration = donutChartData.datasets[0].data.reduce((a, b) => a + b, 0);
 
-  const percentagePlugin = {
-    id: 'percentagePlugin',
-    beforeDraw(chart: any) {
-      const { ctx, chartArea: { top, width, height } } = chart;
-      ctx.save();
-      const fontSize = (height / 114).toFixed(2);
-      ctx.font = `${fontSize}em sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
 
-      donutChartData.datasets[0].data.forEach((value, index) => {
-        const percentage = ((value / totalSequestration) * 100).toFixed(1);
-        const meta = chart.getDatasetMeta(0);
-        const midAngle = meta.data[index].startAngle + (meta.data[index].endAngle - meta.data[index].startAngle) / 2;
-        const x = Math.cos(midAngle) * (chart.getDatasetMeta(0).data[index].outerRadius + chart.getDatasetMeta(0).data[index].innerRadius) / 2 + chart.getDatasetMeta(0).data[index].x;
-        const y = Math.sin(midAngle) * (chart.getDatasetMeta(0).data[index].outerRadius + chart.getDatasetMeta(0).data[index].innerRadius) / 2 + chart.getDatasetMeta(0).data[index].y;
-
-        ctx.fillStyle = 'white';
-        ctx.fillText(`${percentage}%`, x, y);
-      });
-      ctx.restore();
-    }
-  };
 
   const donutOptions = {
     responsive: true,
@@ -155,7 +133,7 @@ const DecarbViewAll = () => {
     datasets: [
       {
         label: 'Sequestration (kg)',
-        data: [1128, 1239, 1349],
+        data: [900, 1239, 1349],
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
         tension: 0.1
@@ -191,15 +169,11 @@ const DecarbViewAll = () => {
    {/* Visualization Area */}
 <div className="h-[35vh] p-4 flex">
   {/* Doughnut Chart */}
-  <div className="w-1/2 flex items-center justify-center" style={{ height: '250px' }}>
-    <div style={{ width: '85%', height: '100%', position: 'relative' }}>
+  <div className="w-full flex flex-col items-center justify-center">
+    <div className="w-full" style={{ height: '120px', position: 'relative' }}>
       <Doughnut data={donutChartData} options={donutOptions} />
     </div>
-  </div>
-
-  {/* Line Graph */}
-  <div className="w-1/2 flex items-center justify-center" style={{ height: '250px' }}>
-    <div style={{ width: '85%', height: '100%', position: 'relative' }}>
+    <div className="w-full" style={{ height: '120px', position: 'relative' }}>
       <Line data={lineChartData} options={options} />
     </div>
   </div>
