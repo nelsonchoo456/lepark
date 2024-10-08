@@ -7,9 +7,6 @@ import hashlib
 import os
 from dotenv import load_dotenv
 import requests
-from typing import List, Dict
-import pytz
-import sys
 
 # Load environment variables from .env file
 load_dotenv()
@@ -21,9 +18,6 @@ COM_PORT = os.getenv("COM_PORT")
 
 # How often the hub will send data to the backend
 UPDATE_SERVER_POLL_FREQUENCY = 5
-
-# Poll sensor data from micro:bits
-POLL_INTERVAL = 5 # (in seconds)
 
 # Backend URL
 BASE_URL = f'http://{BACKEND_IP}:{BACKEND_PORT}/api'  # Replace with your actual backend URL
@@ -67,59 +61,48 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
         return dict() 
     
     # Broadcast radio group and sensors
-    # this sends the command to all micro:bits to set the radio group to the radioGroup variable and to send data back to the hub
     for sensor in valid_sensors:
         sendCommand("bct"+sensor+"|"+str(radioGroup))
-        time.sleep(0.2)
-
-    # Allow more time for micro:bits to process commands
-    time.sleep(1)
-
-    # Clears buffer
-    while waitResponse():
-        continue
-
-    print("Sending polling commands to micro:bits, waiting for valid response...")
-
-    poll_result = dict()
-    start_time = time.time()
-    timeout = 10  # Set a timeout for polling (increased to 10 seconds)
-
-    while time.time() - start_time < timeout:
-        sendCommand("pol")
-        time.sleep(0.5)
-
-        dat = waitResponse()
-        if dat:
-            print("Received data:", dat)
-            sensorIdentifier = dat.split("|")[0]
-            if sensorIdentifier in valid_sensors:
-                try:
-                    value = float(dat.split("|")[1])
-                    singapore_tz = pytz.timezone('Asia/Singapore')
-                    current_time = datetime.now(singapore_tz)
-
-                    if sensorIdentifier in poll_result:
-                        poll_result[sensorIdentifier]["reading"] = poll_result[sensorIdentifier]["reading"] * 0.6 + value * 0.4
-                    else:
-                        poll_result[sensorIdentifier] = {
-                            "reading": value,
-                            "time": current_time.strftime("%Y-%m-%d %H:%M:%S")
-                        }
-                    print(f"Valid reading received for sensor {sensorIdentifier}")
-                    if len(poll_result) == len(valid_sensors):
-                        print("All sensors have reported. Stopping poll.")
-                        break
-                except:
-                    print(f"Invalid reading format for sensor {sensorIdentifier}")
-            else:
-                print(f"Received data from invalid sensor: {sensorIdentifier}")
         time.sleep(0.1)
 
-    if len(poll_result) == 0:
-        print("No valid sensor readings received within the timeout period.")
-    else:
-        print(f"Polling completed! Received data from {len(poll_result)} sensor(s).")
+    # Clears buffer
+    while (test := waitResponse()):
+        # print("test",test)
+        time.sleep(0.1)
+        continue
+    sendCommand("pol")
+    time.sleep(0.5)
+    sendCommand("pol")
+    time.sleep(0.5)
+    print("Polling sensor data...")
+    time.sleep(1)
+    poll_result = dict() 
+    dat = waitResponse()
+    while dat:
+        if dat is None: break
+        print("data", dat)
+        # need to check data
+        sensorName = dat.split("|")[0]
+        if sensorName not in  valid_sensors: 
+            dat = waitResponse()
+            continue
+        #  Do store logic
+        try:
+            value = float(dat.split("|")[1])
+        except:
+            continue
+
+        if sensorName in poll_result:
+            poll_result[sensorName]["reading"] = poll_result[sensorName]["reading"]* 0.6 + value*0.4
+        else:
+            poll_result[sensorName] = {
+                "reading": value,
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        dat = waitResponse()
+        time.sleep(0.3)
+
+    print("Polling Completed!")
     return poll_result
 
 # Send sensor readings to the backend
@@ -174,8 +157,7 @@ def push_sensor_readings_to_backend(valid_sensors, token, conn):
             print("All sensor readings have been sent to the backend server.")
         valid_sensors = res["sensors"]
     else:
-        print(f"Error: Unable to connect to hub or process response.")
-        return None, None  # Return None values to indicate an error
+        print("Error: Unable to connect to hub or process response.")
 
     return valid_sensors, res["radioGroup"] if "radioGroup" in res else 255
 
@@ -220,19 +202,6 @@ def save_token(token):
     f = open("SECRET", "w")
     f.write(token)
 
-# Add this function to update the list of valid sensors
-def update_valid_sensors(hub_identifier: str) -> List[str]:
-    try:
-        response = requests.get(f"{BASE_URL}/hubs/updateHubSensors/{hub_identifier}", timeout=5)
-        if response.status_code == 200:
-            return response.json()['sensors']
-        else:
-            print(f"Failed to update sensors: {response.text}")
-            return []
-    except requests.exceptions.RequestException as e:
-        print(f"Error updating sensors: {e}")
-        return []
-
 # Update the main_function to periodically check for new sensors
 def main_function():
     attempt_create_db()
@@ -259,71 +228,48 @@ def main_function():
     print("Starting program...\n")
     mydb = sqlite3.connect("processor.db")
     valid_sensors, radioGroup = push_sensor_readings_to_backend([], token, mydb)
-    if valid_sensors is None and radioGroup is None:
-        print("Exiting due to error.")
-        return  # Exit the main_function
     print("Valid sensors fetched: ", valid_sensors)
     print()
-    sensor_update_counter = 0
     try:
         polls = 0
-        last_poll_time = datetime.now()
         while True:
-            current_time = datetime.now()
-            if (current_time - last_poll_time).total_seconds() >= POLL_INTERVAL:
-                polls += 1
-                sensor_update_counter += 1
+            polls += 1
 
-                # Check for new sensors every 10 iterations (adjust as needed)
-                if sensor_update_counter >= 10:
-                    new_valid_sensors = update_valid_sensors(HUB_IDENTIFIER_NO)
-                    if new_valid_sensors:
-                        valid_sensors = new_valid_sensors
-                        print("Valid sensors updated: ", valid_sensors)
-                    sensor_update_counter = 0
+            # get the sensor values from the micro:bits
+            sensor_values = poll_sensor_data_from_microbit(valid_sensors, radioGroup)
+            mycursor = mydb.cursor()
+            
+            # insert the sensor values into the sqlite database
+            for sensor_identifier, data in sensor_values.items():
+                reading = data["reading"]
+                readingDate = data["time"]
+                query = 'INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)'
+                val = (readingDate, sensor_identifier, reading, 0)
 
-                # get the sensor values from the micro:bits
-                sensor_values = poll_sensor_data_from_microbit(valid_sensors, radioGroup)
-                mycursor = mydb.cursor()
+                while True:
+                    try:
+                        mycursor.execute(query, val)
+                        break
+                    except:
+                        time.sleep(0.2)
+
+            mydb.commit()
+            if len(sensor_values): print("Inserted records into SQLite database!\n")
+            else: print("No new sensor data to insert\n")
+
+            # send the sensor values to the backend
+            if polls >= UPDATE_SERVER_POLL_FREQUENCY:
+                valid_sensors, radioGroup = push_sensor_readings_to_backend(valid_sensors, token, mydb)
+                print("Valid sensors updated: ", valid_sensors)
+                print()
+                polls = 0
                 
-                # insert the sensor values into the sqlite database
-                for sensor_identifier, data in sensor_values.items():
-                    reading = data["reading"]
-                    readingDate = data["time"]
-                    query = 'INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)'
-                    val = (readingDate, sensor_identifier, reading, 0)
-
-                    while True:
-                        try:
-                            mycursor.execute(query, val)
-                            break
-                        except:
-                            time.sleep(0.2)
-
-                mydb.commit()
-                if len(sensor_values): print("Inserted records into SQLite database!\n")
-                else: print("No new sensor data to insert\n")
-
-                # send the sensor values to the backend
-                if polls >= UPDATE_SERVER_POLL_FREQUENCY:
-                    valid_sensors, radioGroup = push_sensor_readings_to_backend(valid_sensors, token, mydb)
-                    print("Valid sensors updated: ", valid_sensors)
-                    if valid_sensors is None and radioGroup is None:
-                        print("Exiting due to error in publishing sensor data.")
-                        break  # Exit the main_function
-                    polls = 0
-
-                last_poll_time = current_time
+            time.sleep(0.5)
 
     except KeyboardInterrupt:
         if ser.is_open:
             ser.close()
         print("Program terminated!")
-
-    # Close the database connection before exiting
-    mydb.close()
-    print("Exiting the application.")
-    sys.exit(1)  # Exit with a non-zero status code to indicate an error
 
 # Run the main function
 if __name__ == "__main__":
