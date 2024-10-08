@@ -1015,7 +1015,7 @@ const activityLogsData = [
   },
   {
     name: 'Routine Check',
-    description: 'A routine check was performed to monitor the plant’s overall health.',
+    description: "A routine check was performed to monitor the plant's overall health.",
     images: [],
     activityLogType: 'CHECKED',
     dateCreated: '2024-09-16T10:30:00Z',
@@ -1630,6 +1630,99 @@ const attractionsData = [
   },
 ];
 
+const plantTasksData = [
+  {
+    title: 'Prune Ginger Plants',
+    description: 'Trim overgrown ginger plants in the Ginger Garden to promote healthy growth.',
+    taskType: 'PRUNING_TRIMMING',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    dueDate: '2024-10-15T00:00:00Z',
+    submittingStaff: '', // This will be filled programmatically
+    occurrence: '', // This will be filled programmatically
+    images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
+  },
+  {
+    title: 'Water Evolution Garden',
+    description: 'Ensure all plants in the Evolution Garden are properly watered, paying special attention to newly planted specimens.',
+    taskType: 'WATERING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    dueDate: '2024-10-30T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
+  },
+  {
+    title: 'Fertilize Peach Trees',
+    description: 'Apply organic fertilizer to the peach trees to support fruit production.',
+    taskType: 'OTHERS',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    dueDate: '2024-10-23T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
+  },
+  {
+    title: 'Inspect Toromiro for Pests',
+    description: 'Conduct a thorough inspection of the Toromiro trees for any signs of pest infestation.',
+    taskType: 'PEST_MANAGEMENT',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    dueDate: '2024-10-28T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
+  },
+  {
+    title: 'Mulch Tropical Trees',
+    description: 'Apply a layer of organic mulch around the base of tropical trees to retain moisture and suppress weeds.',
+    taskType: 'OTHERS',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    dueDate: '2024-10-10T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
+  },
+  {
+    title: 'Stake Young Mangroves',
+    description: 'Install support stakes for young mangrove trees to ensure proper growth in tidal areas.',
+    taskType: 'STAKING_SUPPORTING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    dueDate: '2024-11-25T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
+  },
+  {
+    title: 'Prune Dead Branches',
+    description: 'Remove dead or diseased branches from trees throughout the park to promote overall health.',
+    taskType: 'PRUNING_TRIMMING',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    dueDate: '2024-10-20T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: ['https://www.tomorrowsharvest.com/wp-content/uploads/2017/08/pruning_clippers-how-to-prune-a-tree.jpg'],
+  },
+  {
+    title: 'Replant Shrubs',
+    description: 'Relocate struggling shrubs to more suitable locations within their designated zones.',
+    taskType: 'OTHERS',
+    taskUrgency: 'LOW',
+    taskStatus: 'OPEN',
+    dueDate: '2024-11-01T00:00:00Z',
+    submittingStaff: '',
+    occurrence: '',
+    images: [
+      'https://www.treehugger.com/thmb/RkJe_rJWflrzXj7p_w81ZQNQTzA=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__mnn__images__2017__03__replant-tree-bfbbfd18d1334ee0aa03851c6800baaa.jpg',
+    ],
+  },
+];
+
 const facilitiesData = [
   {
     name: 'Flower Playground',
@@ -2133,4 +2226,5 @@ module.exports = {
   eventsData,
   parkAssetsData,
   sensorsData,
+  plantTasksData,
 };

@@ -90,6 +90,10 @@ class PlantTaskService {
     return (await this.addZoneAndParkInfo([plantTask]))[0];
   }
 
+  public async getAllAssignedPlantTasks(staffId: string): Promise<PlantTask[]> {
+    return PlantTaskDao.getAllAssignedPlantTasks(staffId);
+  }
+
   public async updatePlantTask(id: string, data: Partial<PlantTaskSchemaType>): Promise<PlantTask> {
     try {
       const existingPlantTask = await PlantTaskDao.getPlantTaskById(id);
@@ -157,7 +161,14 @@ class PlantTaskService {
       throw new Error('Only open tasks can be assigned');
     }
 
-    return PlantTaskDao.assignPlantTask(id, staffId);
+    const assignedStaff = await StaffDao.getStaffById(staffId);
+    if (!assignedStaff) {
+      throw new Error('Assigned staff not found');
+    }
+
+    console.log('assignedStaff', assignedStaff.id);
+
+    return PlantTaskDao.assignPlantTask(id, assignedStaff);
   }
 
   public async unassignPlantTask(id: string, unassignerStaffId: string): Promise<PlantTask> {

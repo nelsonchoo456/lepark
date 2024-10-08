@@ -239,7 +239,7 @@ const CreatePlantTask = () => {
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
             <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
-              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType='button'>
+              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType='button' defaultValue="no">
                 <Radio value="yes">Yes</Radio>
                 <Radio value="no">No</Radio>
               </Radio.Group>

@@ -78,6 +78,7 @@ import PromotionList from './pages/Promotion/PromotionList';
 import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
+import ManagerPlantTaskDashboard from './pages/PlantTask/ManagerPlantTaskDashboard';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -268,6 +269,7 @@ export function App() {
                 <Route index element={<PlantTaskList />} />
                 <Route path="create" element={<CreatePlantTask />} />
                 <Route path=":plantTaskId/edit" element={<PlantTaskEdit />} />
+                <Route path="manager" element={<ManagerPlantTaskDashboard />} />
                 {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
               </Route>
 

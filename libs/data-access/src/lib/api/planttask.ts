@@ -54,10 +54,9 @@ export async function getPlantTaskById(id: string): Promise<AxiosResponse<PlantT
   }
 }
 
-export async function updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse>> {
+export async function getAllAssignedPlantTasks(staffId: string): Promise<AxiosResponse<PlantTaskResponse[]>> {
   try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskDetails/${id}`, { taskStatus: newStatus});
-    console.log("updatePlantTaskStatus", response)
+    const response: AxiosResponse<PlantTaskResponse[]> = await client.get(`${URL}/getAllAssignedPlantTasks/${staffId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -68,9 +67,26 @@ export async function updatePlantTaskStatus(id: string, newStatus: PlantTaskStat
   }
 }
 
-export async function updatePlantTaskDetails(id: string, data: PlantTaskUpdateData, files?: File[]): Promise<AxiosResponse<PlantTaskResponse>> {
+export async function updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
+    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskDetails/${id}`, { taskStatus: newStatus });
+    console.log('updatePlantTaskStatus', response);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
 
+export async function updatePlantTaskDetails(
+  id: string,
+  data: PlantTaskUpdateData,
+  files?: File[],
+): Promise<AxiosResponse<PlantTaskResponse>> {
+  try {
     if (files && files.length > 0) {
       const formData = new FormData();
 
@@ -121,7 +137,9 @@ export async function getPlantTasksByParkId(parkId: number): Promise<AxiosRespon
 
 export async function assignPlantTask(id: string, assignerStaffId: string, staffId: string): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/assignPlantTask/${id}`, { assignerStaffId, staffId });
+    console.log('assignerStaffId', assignerStaffId);
+    console.log('staffId', staffId);
+    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/assignPlantTask/${id}`, { assignerStaffId, staffId });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
