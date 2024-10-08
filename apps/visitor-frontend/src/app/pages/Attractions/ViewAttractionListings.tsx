@@ -11,6 +11,7 @@ import {
 } from '@lepark/data-access';
 import SelectDateAndReview from './Components/SelectDateAndReview';
 import OrderReview from './Components/OrderReview';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -23,6 +24,8 @@ const ViewAttractionTicketListings = () => {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [attraction, setAttraction] = useState<AttractionResponse | null>(null);
   const [discount, setDiscount] = useState(0);
+  const [finalTotalPayable, setFinalTotalPayable] = useState<number>(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -84,9 +87,32 @@ const ViewAttractionTicketListings = () => {
     setDiscount(5);
   };
 
-  const handleProceedToPayment = () => {
-    // Implement the logic to proceed to payment
-    console.log('Proceeding to payment');
+  const handleProceedToPayment = (totalPayable: number) => {
+    setFinalTotalPayable(totalPayable);
+    setStep('payment');
+  };
+
+  const handleNavigateToPayment = () => {
+    const selectedTickets = Object.entries(ticketCounts)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([id, quantity]) => {
+        const listing = listings.find((l) => l.id === id);
+        return {
+          id,
+          description: `${listing?.nationality} · ${listing?.category}`,
+          quantity,
+          price: listing?.price || 0,
+        };
+      });
+
+    navigate('/payment', {
+      state: {
+        attractionName: attraction?.title || '',
+        selectedDate: selectedDate?.format('DD/MM/YYYY'),
+        ticketDetails: selectedTickets,
+        totalPayable: finalTotalPayable,
+      },
+    });
   };
 
   const renderListingRow = (listing: AttractionTicketListingResponse) => (
@@ -177,6 +203,9 @@ const ViewAttractionTicketListings = () => {
             onNext={handleProceedToPayment}
           />
         );
+      case 'payment':
+        handleNavigateToPayment();
+        return null;
       default:
         return null;
     }

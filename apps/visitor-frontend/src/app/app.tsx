@@ -12,7 +12,7 @@ import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import { ProtectedRoute, VisitorAuthWrapper } from '@lepark/common-ui';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
-import Payment from './pages/Payment/Payment';
+// import Payment from './pages/Payment/Payment';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
 // import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import Discover from './pages/Taxonomy/Discover';
@@ -27,6 +27,7 @@ import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttract
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import ViewAttractionTicketListings from './pages/Attractions/ViewAttractionListings';
+import PaymentPage from './pages/Attractions/PaymentPage';
 
 export function App() {
   return (
@@ -77,14 +78,7 @@ export function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/payment"
-                  element={
-                    <ProtectedRoute redirectTo="/login">
-                      <Payment />
-                    </ProtectedRoute>
-                  }
-                />
+                <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/park">
                   <Route index element={<SelectParkPage />} />
                   <Route path=":parkId" element={<VisitorParkViewDetails />} />

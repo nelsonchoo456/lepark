@@ -1,8 +1,13 @@
 import express from 'express';
 import AttractionTicketService from '../services/AttractionTicketService';
 import { AttractionTicketStatusEnum } from '@prisma/client';
+import Stripe from 'stripe';
 
 const router = express.Router();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-09-30.acacia',
+});
 
 // AttractionTicketTransaction routes
 router.post('/createAttractionTicketTransaction', async (req, res) => {
@@ -127,6 +132,40 @@ router.put('/updateAttractionTicketStatus/:id', async (req, res) => {
   } catch (error) {
     res.status(404).json({ error: error.message });
   }
+});
+
+router.post('/create-payment-intent', async (req, res) => {
+  try {
+    // Validate the request body
+    const { total } = req.body;
+
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(total * 100), // Convert to cents and ensure it's an integer
+      currency: 'sgd',
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      description: 'Attraction ticket transaction',
+    });
+
+    res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+      id: paymentIntent.id,
+    });
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      return res.status(error.statusCode || 500).json({ error: error.message });
+    }
+    console.error('Unexpected error:', error);
+    return res.status(500).json({ error: 'An unexpected error occurred' });
+  }
+});
+
+router.get('/stripe-key', (_, res) => {
+  res.send({
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  });
 });
 
 export default router;

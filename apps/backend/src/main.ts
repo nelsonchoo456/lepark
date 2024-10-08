@@ -73,6 +73,7 @@ app.use('/api/facilities', facilityRouter);
 app.use('/api/events', eventRouter);
 app.use('/api/planttasks', authenticateJWTStaff, plantTaskRouter);
 app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
+app.use('/api/attractionTickets', attractionTicketRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

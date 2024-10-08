@@ -18,7 +18,7 @@ interface OrderReviewProps {
   discount: number;
   onApplyPromotion: (code: string) => Promise<void>;
   onBack: () => void;
-  onNext: () => void;
+  onNext: (totalPayable: number) => void;
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -50,6 +50,10 @@ const OrderReview: React.FC<OrderReviewProps> = ({
     } finally {
       setApplyingPromo(false);
     }
+  };
+
+  const handleNext = () => {
+    onNext(totalPayable);
   };
 
   return (
@@ -91,7 +95,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
           </Button>
         </Col>
         <Col span={12}>
-          <Button type="primary" onClick={onNext} className="w-full">
+          <Button type="primary" onClick={handleNext} className="w-full">
             Next
           </Button>
         </Col>
