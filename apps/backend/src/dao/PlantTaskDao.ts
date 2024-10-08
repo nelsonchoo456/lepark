@@ -67,9 +67,9 @@ class PlantTaskDao {
   }
 
   async assignPlantTask(id: string, assignedStaff: Staff): Promise<PlantTask> {
-    return prisma.plantTask.update({ 
-      where: { id }, 
-      data: { assignedStaffId: assignedStaff.id } 
+    return prisma.plantTask.update({
+      where: { id },
+      data: { assignedStaffId: assignedStaff.id },
     });
   }
 
@@ -82,9 +82,9 @@ class PlantTaskDao {
   }
 
   async acceptPlantTask(staffId: string, id: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ 
-      where: { id }, 
-      data: { assignedStaffId: staffId } 
+    return prisma.plantTask.update({
+      where: { id },
+      data: { assignedStaffId: staffId },
     });
   }
 
