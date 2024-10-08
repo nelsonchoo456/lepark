@@ -21,6 +21,7 @@ interface PictureMarkerProps {
   hovered?: HoverItem | null;
   setHovered?: (hovered: any) => void;
   riseOnHover?: boolean;
+  markerFields?: {[key: string]: any}
 }
 
 function PictureMarker({
@@ -37,7 +38,8 @@ function PictureMarker({
   innerBackgroundColor,
   hovered,
   setHovered,
-  riseOnHover = true
+  riseOnHover = true,
+  markerFields
 }: PictureMarkerProps) {
   const [offsetY, setOffsetY] = useState<number>(0);
   const markerRef = useRef<L.Marker>(null);
@@ -100,6 +102,7 @@ function PictureMarker({
           click: () => setHovered && setHovered({ id: id, image: icon, title: tooltipLabel, entityType: entityType }),
         }}
         riseOnHover
+        {...markerFields}
       >
         {tooltipLabel && (
           <Tooltip offset={[20, -10]} permanent={tooltipLabelPermanent}>
@@ -156,9 +159,10 @@ function PictureMarker({
       ref={markerRef}
       icon={getCustomIcon()}
       eventHandlers={{
-        click: setHovered,
+        click: setHovered, 
       }}
       riseOnHover={riseOnHover}
+      {...markerFields}
     >
       {tooltipLabel && (
         <Tooltip offset={[20, -10]} permanent={tooltipLabelPermanent}>

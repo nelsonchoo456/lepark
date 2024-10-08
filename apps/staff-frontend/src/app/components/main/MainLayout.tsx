@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { FiHome, FiInbox, FiMap, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -191,6 +191,12 @@ const MainLayout = () => {
               icon: <FaNetworkWired />,
               label: 'Hubs',
               onClick: () => navigate('/hubs'),
+            },
+            {
+              key: 'iot-map',
+              icon: <FiMap />,
+              label: 'Map View',
+              onClick: () => navigate('/sensor/map-view'),
             },
           ],
         }

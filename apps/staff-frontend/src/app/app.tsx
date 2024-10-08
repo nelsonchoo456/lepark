@@ -81,6 +81,7 @@ import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
 import SensorAddToHub from './pages/Sensor/SensorAddToHub';
+import IotMap from './pages/IotMap/IotMap';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -443,6 +444,7 @@ export function App() {
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
                   <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
+                  <Route path="map-view" element={<IotMap />} />
                 </Route>
               </Route>
 

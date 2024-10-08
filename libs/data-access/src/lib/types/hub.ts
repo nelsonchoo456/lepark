@@ -2,6 +2,7 @@ import { FacilityResponse } from './facility';
 import { ParkResponse } from './park';
 import { ZoneResponse } from './zone';
 import { HubStatusEnum } from './sharedenums';
+import { SensorResponse } from './sensor';
 
 export interface HubData {
   name: string;
@@ -54,6 +55,7 @@ export interface HubResponse {
   facility: FacilityResponse;
   zone?: ZoneResponse;
   lastDataUpdateDate?: string;
+  sensors?: SensorResponse[]; //added by mics for map
 }
 
 export interface HubUpdateData {
