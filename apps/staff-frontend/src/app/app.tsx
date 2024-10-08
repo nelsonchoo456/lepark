@@ -80,6 +80,7 @@ import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
+import SensorAddToHub from './pages/Sensor/SensorAddToHub';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -441,6 +442,7 @@ export function App() {
                   <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
+                  <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
                 </Route>
               </Route>
 

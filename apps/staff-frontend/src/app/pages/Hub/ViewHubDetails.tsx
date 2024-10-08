@@ -105,9 +105,11 @@ const ViewHubDetails = () => {
             children: (
               <div className="flex w-full items-start justify-between">
                 {hub?.facility?.name}{' '}
-                <Button type="primary" icon={<IoLocationOutline />} onClick={() => navigate(`/hubs/${hub?.id}/place-in-zone`)} className="-mt-1">
-                  Place in Zone
-                </Button>
+                {hub?.hubStatus === "INACTIVE" && 
+                  <Button type="primary" icon={<IoLocationOutline />} onClick={() => navigate(`/hubs/${hub?.id}/place-in-zone`)} className="-mt-1">
+                    Place in Zone
+                  </Button>
+                }
               </div>
             ),
           },

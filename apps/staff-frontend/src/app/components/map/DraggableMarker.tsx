@@ -48,7 +48,7 @@ function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, cir
 		});
   }
 
-  return <Marker draggable={true} eventHandlers={eventHandlers} position={[lat, lng]} ref={markerRef} icon={getCustomIcon()}></Marker>;
+  return <Marker draggable={true} eventHandlers={eventHandlers} position={[lat, lng]} ref={markerRef} icon={getCustomIcon()} zIndexOffset={1000}></Marker>;
 }
 
 export default DraggableMarker;

@@ -93,6 +93,10 @@ class HubService {
     return HubDao.getAllHubs();
   }
 
+  public async getHubsFiltered(hubStatus: string, parkId: number): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
+    return HubDao.getHubsFiltered(hubStatus, parkId);
+  }
+
   public async getHubsByParkId(parkId: number): Promise<Hub[]> {
     return HubDao.getHubsByParkId(parkId);
   }

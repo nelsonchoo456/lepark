@@ -20,6 +20,7 @@ interface PictureMarkerProps {
   teardrop?: boolean;
   hovered?: HoverItem | null;
   setHovered?: (hovered: any) => void;
+  riseOnHover?: boolean;
 }
 
 function PictureMarker({
@@ -36,6 +37,7 @@ function PictureMarker({
   innerBackgroundColor,
   hovered,
   setHovered,
+  riseOnHover = true
 }: PictureMarkerProps) {
   const [offsetY, setOffsetY] = useState<number>(0);
   const markerRef = useRef<L.Marker>(null);
@@ -156,7 +158,7 @@ function PictureMarker({
       eventHandlers={{
         click: setHovered,
       }}
-      riseOnHover
+      riseOnHover={riseOnHover}
     >
       {tooltipLabel && (
         <Tooltip offset={[20, -10]} permanent={tooltipLabelPermanent}>

@@ -114,7 +114,16 @@ const HubPlaceInZone = () => {
         setCurrStep(2)
       }
     } catch (error) {
-      if (typeof error === "string") {
+      if (error === "Zone not found" 
+        || error === "Zone already has a hub assigned"
+        || error === "Hub and zone are in different parks"
+        || error === "Hub already has a zone"
+        || error === "Hub must be inactive to be added to a zone"
+        || error === "Hub is decommissioned. It cannot be used."
+        || error === "Hub is under maintenance. It cannot be used."
+        || error === "Hub already has a radio group"
+        || error === "Hub already has a hub secret"
+      ) {
         messageApi.open({
           type: 'error',
           content: error,

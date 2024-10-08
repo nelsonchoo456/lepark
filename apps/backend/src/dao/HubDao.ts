@@ -1,4 +1,4 @@
-import { PrismaClient, Hub, Prisma, Facility, Sensor } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility, Sensor, HubStatusEnum } from '@prisma/client';
 import ParkDao from './ParkDao';
 import FacilityDao from './FacilityDao';
 import ZoneDao from './ZoneDao';
@@ -18,6 +18,50 @@ class HubDao {
         facility: true,
         sensors: true,
         maintenanceHistory: true,
+      },
+    });
+
+    const hubsWithDetails = await Promise.all(
+      hubs.map(async (hub) => {
+        let facility, park, zone;
+
+        if (hub.facilityId) {
+          const fetchedFacility = await FacilityDao.getFacilityById(hub.facilityId);
+          facility = fetchedFacility;
+
+          if (facility?.parkId) {
+            const fetchedPark = await ParkDao.getParkById(facility.parkId);
+            park = fetchedPark;
+          }
+        }
+
+        if (hub.zoneId) {
+          const fetchedZone = await ZoneDao.getZoneById(hub.zoneId);
+          zone = fetchedZone;
+        }
+
+        return {
+          ...hub,
+          facility: facility || null,
+          park: park || null,
+          zone: zone || null,
+        };
+      }),
+    );
+
+    return hubsWithDetails;
+  }
+
+  public async getHubsFiltered(hubStatus: any, parkId: number): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
+    const hubs = await prisma.hub.findMany({
+      include: {
+        facility: true,
+        sensors: true,
+        maintenanceHistory: true,
+      },
+      where: {
+        hubStatus: hubStatus ? hubStatus as HubStatusEnum : undefined,
+        facility: parkId ? { parkId } : undefined
       },
     });
 

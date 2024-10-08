@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
 import {
   FacilityResponse,
@@ -13,13 +13,15 @@ import {
 } from '@lepark/data-access';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
+import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty, Button } from 'antd';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import LocationTab from './components/LocationTab';
+import { MdOutlineHub } from 'react-icons/md';
+import ZoneTab from './components/ZoneTab';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -31,10 +33,11 @@ const formatSensorType = (type: string): string => {
 const ViewSensorDetails = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
   const { sensor, loading } = useRestrictSensors(sensorId);
-  const [facility, setFacility] = useState<FacilityResponse | null>(null);
-  const [park, setPark] = useState<ParkResponse | null>(null);
   const { user } = useAuth<StaffResponse>();
   const { zones } = useFetchZones();
+  const navigate = useNavigate();
+
+  console.log(sensor)
 
   const breadcrumbItems = [
     {
@@ -104,11 +107,35 @@ const ViewSensorDetails = () => {
           },
         ]
       : []),
-    {
-      key: 'name',
-      label: 'Facility',
-      children: sensor?.facility?.name,
-    },
+    ...(sensor?.hub
+      ? [
+          {
+            key: 'hub',
+            label: 'Hub',
+            children: sensor?.hub?.name,
+          },
+        ]
+      : [
+          {
+            key: 'name',
+            label: 'Storage Location',
+            children: (
+              <div className="flex w-full items-start justify-between">
+                {sensor?.facility?.name}{' '}
+                {sensor?.sensorStatus === 'INACTIVE' && (
+                  <Button
+                    type="primary"
+                    icon={<MdOutlineHub />}
+                    onClick={() => navigate(`/sensor/${sensor?.id}/add-to-hub`)}
+                    className="-mt-1"
+                  >
+                    Add to Hub
+                  </Button>
+                )}
+              </div>
+            ),
+          },
+        ]),
   ];
 
   const tabsItems = [
@@ -117,13 +144,30 @@ const ViewSensorDetails = () => {
       label: 'Information',
       children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
-    sensor && sensor.facility
-      ? {
-          key: 'location',
-          label: 'Storeroom Location',
-          children: <LocationTab facility={sensor.facility} park={sensor.park} zones={zones} />,
-        }
-      : null,
+    // sensor && sensor.facility
+    //   ? {
+    //       key: 'location',
+    //       label: 'Storeroom Location',
+    //       children: <LocationTab facility={sensor.facility} park={sensor.park} zones={zones} />,
+    //     }
+    //   : null,
+    ...(sensor?.hub && sensor.lat && sensor.long
+      ? [
+          {
+            key: 'zone',
+            label: 'Zone',
+            children: <ZoneTab hub={sensor.hub} sensor={sensor} lat={sensor.lat} lng={sensor.long} park={sensor.park} zones={zones} />,
+          },
+        ]
+      : [
+          sensor && sensor.facility
+            ? {
+                key: 'location',
+                label: 'Storeroom Location',
+                children: <LocationTab facility={sensor.facility} park={sensor.park} zones={zones} />,
+              }
+            : null,
+        ]),
   ];
 
   if (loading) {
@@ -167,6 +211,9 @@ const ViewSensorDetails = () => {
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{sensor?.name}</LogoText>
             <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
+            {/* <Button type="primary" className="w-24" onClick={() => navigate(`/sensor/${sensor?.id}/add-to-hub`)}>
+              Add to Hub
+            </Button> */}
           </div>
         </div>
 

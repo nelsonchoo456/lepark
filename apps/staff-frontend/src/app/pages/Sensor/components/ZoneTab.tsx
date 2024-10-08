@@ -1,23 +1,31 @@
-import { FacilityResponse, HubResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { FacilityResponse, HubResponse, ParkResponse, SensorResponse, ZoneResponse } from '@lepark/data-access';
+import { Circle, MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { TbBuildingEstate, TbTree } from 'react-icons/tb';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
-import { MdOutlineHub } from 'react-icons/md';
+import { MdOutlineHub, MdSensors } from 'react-icons/md';
+import { useEffect, useState } from 'react';
 
 interface MapTabProps {
   lat: number,
   lng: number,
+  sensor: SensorResponse,
   hub: HubResponse
   park?: ParkResponse | null;
-  zone: ZoneResponse;
   zones: ZoneResponse[];
 }
 
-const ZoneTab = ({ lat, lng, hub, park, zone, zones }: MapTabProps) => {
+const ZoneTab = ({ lat, lng, sensor, hub, park, zones }: MapTabProps) => {
+  const [zone, setZone] = useState<ZoneResponse>();
 
+  useEffect(() => {
+    if (hub.zoneId && zones?.length > 0) {
+      const zone = zones.find((z) => z.id === hub.zoneId);
+      setZone(zone);
+    }
+  }, [hub, zones])
   return (
     <div
       style={{
@@ -37,20 +45,33 @@ const ZoneTab = ({ lat, lng, hub, park, zone, zones }: MapTabProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {park && <PolygonWithLabel key={park?.id} entityId={park?.id} geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }} />}
-        {hub && (
+        {hub && hub.lat && hub.long &&(
           <PictureMarker
             id={hub.id}
             entityType="HUB"
             circleWidth={37}
-            lat={lat}
-            lng={lng}
+            lat={hub.lat}
+            lng={hub.long}
             tooltipLabel={hub.name}
             backgroundColor={COLORS.gray[600]}
             icon={<MdOutlineHub className="text-gray-500 drop-shadow-lg" style={{ fontSize: '1.4rem' }} />}
           />
         )}
+        {sensor && (<>
+          <PictureMarker
+            id={sensor.id}
+            entityType="HUB"
+            circleWidth={37}
+            lat={lat}
+            lng={lng}
+            tooltipLabel={sensor.name}
+            backgroundColor={COLORS.gray[400]}
+            icon={<MdSensors className="text-slate-400 drop-shadow-lg" style={{ fontSize: '1.4rem' }} />}
+          />
+          <Circle center={[lat, lng]} radius={30} pathOptions={{ color: COLORS.gray[400] }} />
+        </>)}
         <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.9 }} color={COLORS.green[600]} polygonLabel={zone?.name}/>
-        {zone && zones.filter((z) => z.id !== zone.id).map((z) =>
+        {zone && zones.filter((z) => z.id !== zone?.id).map((z) =>
           <PolygonWithLabel
             key={z.id}
             entityId={z.id}
