@@ -25,6 +25,7 @@ import plantTaskRouter from './routers/plantTaskRouter';
 import sensorRouter from './routers/sensorRouter';
 import promotionRouter from './routers/promotionRouter';
 import { authenticateJWTStaff } from './middleware/authenticateJWT';
+import os from 'os';
 
 dotenv.config();
 const app = express();
@@ -67,7 +68,7 @@ app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
 app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
-app.use('/api/hubs', authenticateJWTStaff, hubRouter);
+app.use('/api/hubs', hubRouter);
 app.use('/api/parkassets', authenticateJWTStaff, parkAssetRouter);
 app.use('/api/facilities', facilityRouter);
 app.use('/api/events', eventRouter);
@@ -76,6 +77,12 @@ app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 app.use('/api/promotions', promotionRouter);
 
 const port = process.env.PORT || 3333;
+const networkInterfaces = os.networkInterfaces();
+const serverIp = Object.values(networkInterfaces)
+  .flat()
+  .find((iface) => iface?.family === 'IPv4' && !iface.internal)?.address;
+
+console.log(`Server IP address: ${serverIp}`);
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
