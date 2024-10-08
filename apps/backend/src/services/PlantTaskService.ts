@@ -204,6 +204,7 @@ class PlantTaskService {
       throw new Error('Only in progress tasks can be unassigned');
     }
 
+    await PlantTaskDao.updatePlantTask(id, { taskStatus: PlantTaskStatusEnum.OPEN });
     return PlantTaskDao.unassignPlantTask(id);
   }
 

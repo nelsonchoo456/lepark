@@ -152,7 +152,7 @@ export async function assignPlantTask(id: string, assignerStaffId: string, staff
 
 export async function unassignPlantTask(id: string, unassignerStaffId: string): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/unassignPlantTask/${id}`, { unassignerStaffId });
+    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/unassignPlantTask/${id}`, { unassignerStaffId });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
