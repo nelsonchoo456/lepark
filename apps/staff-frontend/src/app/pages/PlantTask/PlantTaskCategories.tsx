@@ -1,7 +1,8 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { PlantTaskResponse, PlantTaskStatusEnum, updatePlantTaskStatus } from '@lepark/data-access';
-import { Card, Col, message, Row } from 'antd';
-import { useState } from 'react';
+import { Card, Col, message, Row, Tag, Typography, Avatar } from 'antd';
+import moment from 'moment';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
 
 interface PlantTaskCategoriesProps {
@@ -132,6 +133,48 @@ const PlantTaskCategories = ({
     }
   };
 
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case 'IMMEDIATE':
+        return 'red';
+      case 'HIGH':
+        return 'orange';
+      case 'NORMAL':
+        return 'blue';
+      case 'LOW':
+        return 'green';
+      default:
+        return 'default';
+    }
+  };
+
+  const renderTaskCard = (task: PlantTaskResponse) => (
+    <Card
+      size="small"
+      className="mb-2"
+      title={
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {task.images && task.images.length > 0 && (
+            <Avatar src={task.images[0]} size="small" style={{ marginRight: 8 }} />
+          )}
+          <Typography.Text ellipsis style={{ maxWidth: 200 }}>{task.title}</Typography.Text>
+        </div>
+      }
+    >
+      <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+        {formatEnumLabelToRemoveUnderscores(task.taskType)}
+      </Typography.Text>
+      <div style={{ marginTop: 4, marginBottom: 4 }}>
+        <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
+          {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
+        </Tag>
+      </div>
+      <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+        Due: {moment(task.dueDate).format('D MMM YY')}
+      </Typography.Text>
+    </Card>
+  );
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Row gutter={16} className="mb-4">
@@ -142,15 +185,25 @@ const PlantTaskCategories = ({
           { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600] },
         ].map((status) => (
           <Col span={6} key={status.value}>
-            <Card title={status.title} styles={{ header: {backgroundColor: status.color, color: "white" }, body: { padding: "1rem" }}}>
+            <Card 
+              title={status.title} 
+              styles={{ 
+                header: {backgroundColor: status.color, color: "white" }, 
+                body: { padding: "1rem", maxHeight: "60vh", overflowY: "auto" }
+              }}
+            >
               <Droppable droppableId={status.value} >
                 {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef} style={{ minHeight: "200px" }}>
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
                     {getList(status.value as PlantTaskStatusEnum).map((task, index) => (
                       <Draggable key={task.id} draggableId={task.id} index={index}>
                         {(provided) => (
-                          <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                            <Card styles={{ body: { padding: 0 }}} className='p-2'>{task.title}</Card>
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            {renderTaskCard(task)}
                           </div>
                         )}
                       </Draggable>

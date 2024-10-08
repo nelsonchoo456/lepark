@@ -15,7 +15,7 @@ import {
   getOccurrencesByParkId,
   StaffType,
 } from '@lepark/data-access';
-import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker, Switch } from 'antd';
+import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker, Switch, Radio } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
@@ -137,7 +137,8 @@ const CreatePlantTask = () => {
     }
   };
 
-  const handleDueDateToggle = (checked: boolean) => {
+  const handleDueDateToggle = (value: string) => {
+    const checked = value === 'yes';
     setShowDueDate(checked);
     if (!checked) {
       form.setFieldsValue({ dueDate: null });
@@ -234,10 +235,14 @@ const CreatePlantTask = () => {
               <Select placeholder="Select a Task Type" options={taskTypeOptions} />
             </Form.Item>
             <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
+              
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
             <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
-              <Switch onChange={handleDueDateToggle} />
+              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType='button'>
+                <Radio value="yes">Yes</Radio>
+                <Radio value="no">No</Radio>
+              </Radio.Group>
             </Form.Item>
             {showDueDate && (
               <Form.Item
