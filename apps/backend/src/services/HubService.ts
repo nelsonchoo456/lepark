@@ -337,6 +337,7 @@ class HubService {
       }
 
       const payload = JSON.parse(jsonPayloadString);
+      console.log('payload', payload);
 
       for (const sensorIdentifier of Object.keys(payload)) {
         for (const sensorData of payload[sensorIdentifier]) {
@@ -362,8 +363,7 @@ class HubService {
       // After processing the sensor readings, update the list of sensors
       const updatedSensors = await this.updateHubSensors(hubIdentifierNumber);
 
-      console.log('updatedSensors', updatedSensors);
-
+      console.log('Finished pushing sensor readings');
       return {
         sensors: updatedSensors,
         radioGroup: hub.radioGroup,
@@ -426,7 +426,7 @@ class HubService {
   }
 
   private generateIdentifierNumber(): string {
-    return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
+    return `HB-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
 
   public async updateHubSensors(hubIdentifierNumber: string): Promise<string[]> {

@@ -72,7 +72,7 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
     # Broadcast radio group and sensors
     # this sends the command to all micro:bits to set the radio group to the radioGroup variable and to send data back to the hub
     for sensor in valid_sensors:
-        sendCommand("bct"+sensor+"|"+str(radioGroup))
+        sendCommand("bct" + sensor + "|" + str(radioGroup))
         time.sleep(0.1)
 
     # Allow more time for micro:bits to process commands
@@ -123,7 +123,7 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
     return poll_result
 
 # Send sensor readings to the backend
-def push_sensor_readings_to_backend(valid_sensors, token, conn):
+def push_sensor_readings_to_backend(valid_sensors, token, conn, is_first_time):
     mycursor = conn.cursor()
     # Only take readings that have not been sent to the backend
     mycursor.execute('SELECT readingDate, sensorIdentifier, reading FROM sensordb WHERE sent = 0')
@@ -162,7 +162,7 @@ def push_sensor_readings_to_backend(valid_sensors, token, conn):
         timeout=5).json()
     
     if "sensors" in response:
-        if len(json_payload) == 0:
+        if is_first_time:
             print("Initial call: Fetched list of valid sensors from the backend.")
         else:
             while True:
@@ -245,7 +245,7 @@ def main_function():
 
     print("Starting program...\n")
     mydb = sqlite3.connect("processor.db")
-    valid_sensors, radioGroup = push_sensor_readings_to_backend([], token, mydb)
+    valid_sensors, radioGroup = push_sensor_readings_to_backend([], token, mydb, True)
     if valid_sensors is None:
         print("No valid sensors. Exiting...")
         return  # Exit the main_function
@@ -285,7 +285,7 @@ def main_function():
 
                 # send the sensor values to the backend
                 if polls >= NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND:
-                    valid_sensors, radioGroup = push_sensor_readings_to_backend(valid_sensors, token, mydb)
+                    valid_sensors, radioGroup = push_sensor_readings_to_backend(valid_sensors, token, mydb, False)
                     print("Sensors list refreshed: ", valid_sensors)
                     print()
                     if valid_sensors is None:

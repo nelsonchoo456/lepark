@@ -1245,7 +1245,7 @@ const sensorsData = [
   {
     name: 'Temperature Sensor 1',
     serialNumber: 'STE0234589',
-    identifierNumber: 'SENS-11111111',
+    identifierNumber: 'SE-11111',
     sensorType: 'TEMPERATURE',
     description: 'Main temperature sensor for greenhouse',
     sensorStatus: 'INACTIVE',
@@ -1263,7 +1263,7 @@ const sensorsData = [
   {
     name: 'Humidity Sensor 01',
     serialNumber: 'STE2302459',
-    identifierNumber: 'SENS-22222222',
+    identifierNumber: 'SE-22222',
     sensorType: 'HUMIDITY',
     description: 'Primary humidity sensor for tropical plants section',
     sensorStatus: 'INACTIVE',
@@ -1280,7 +1280,7 @@ const sensorsData = [
   {
     name: 'Light Sensor 1',
     serialNumber: 'STE0234522',
-    identifierNumber: 'SENS-33333333',
+    identifierNumber: 'SE-33333',
     sensorType: 'LIGHT',
     description: 'Main light sensor for greenhouse',
     sensorStatus: 'INACTIVE',
@@ -1298,7 +1298,7 @@ const sensorsData = [
   {
     name: 'Soil Moisture Probe 03',
     serialNumber: 'STE9258592',
-    identifierNumber: 'SENS-024KSDN8',
+    identifierNumber: 'SE-44444',
     sensorType: 'SOIL_MOISTURE',
     description: 'Soil moisture sensor for drought-resistant plants',
     sensorStatus: 'UNDER_MAINTENANCE',
@@ -1313,7 +1313,7 @@ const sensorsData = [
   {
     name: 'Light Sensor Datalogger 02',
     serialNumber: 'STE6238227',
-    identifierNumber: 'SENS-IRWTU987',
+    identifierNumber: 'SE-55555',
     sensorType: 'LIGHT',
     description: 'Light intensity sensor for shade-loving plants',
     sensorStatus: 'ACTIVE',
@@ -1330,7 +1330,7 @@ const sensorsData = [
 const hubsData = [
   {
     serialNumber: 'IA21431241512551',
-    identifierNumber: 'HUB-11111111',
+    identifierNumber: 'HB-11111',
     name: 'Raspberry Pi 2',
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
@@ -1347,7 +1347,7 @@ const hubsData = [
   },
   {
     serialNumber: 'IA21431241512552',
-    identifierNumber: 'HUB-22222222',
+    identifierNumber: 'HB-22222',
     name: 'Raspberry Pi 2',
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
@@ -1364,7 +1364,7 @@ const hubsData = [
   },
   {
     serialNumber: 'IA21431241512553',
-    identifierNumber: 'HUB-33333333',
+    identifierNumber: 'HB-33333',
     name: 'Raspberry Pi 2',
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
@@ -1381,7 +1381,7 @@ const hubsData = [
   },
   {
     serialNumber: 'IA21431242115100',
-    identifierNumber: 'HUB-6CC2JFUD',
+    identifierNumber: 'HB-44444',
     name: 'Raspberry Pi Zero',
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'DECOMMISSIONED',
@@ -1398,7 +1398,7 @@ const hubsData = [
   },
   {
     serialNumber: 'IA92381571234567',
-    identifierNumber: 'HUB-6BB4LDKD',
+    identifierNumber: 'HB-55555',
     name: 'Raspberry Pi Pico',
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'UNDER_MAINTENANCE',
