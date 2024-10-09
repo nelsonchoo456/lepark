@@ -29,7 +29,8 @@ class SensorService {
       }
 
       const formattedData = dateFormatter(data);
-
+      formattedData.sensorStatus = "INACTIVE";
+      
       // Validate input data using Zod
       SensorSchema.parse(formattedData);
 

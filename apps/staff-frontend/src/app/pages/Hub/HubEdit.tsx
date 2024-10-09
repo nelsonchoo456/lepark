@@ -137,10 +137,10 @@ const HubEdit = () => {
   };
 
   const hubStatusOptions = [
-    {
-      value: 'ACTIVE',
-      label: formatEnumLabelToRemoveUnderscores('ACTIVE'),
-    },
+    // {
+    //   value: 'ACTIVE',
+    //   label: formatEnumLabelToRemoveUnderscores('ACTIVE'),
+    // },
     {
       value: 'INACTIVE',
       label: formatEnumLabelToRemoveUnderscores('INACTIVE'),

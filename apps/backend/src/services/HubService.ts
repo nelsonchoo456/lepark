@@ -54,7 +54,8 @@ class HubService {
   public async createHub(data: HubSchemaType): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
-
+      formattedData.hubStatus = "INACTIVE";
+      
       // Validate input data using Zod
       HubSchema.parse(formattedData);
 
