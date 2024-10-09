@@ -27,6 +27,10 @@ NEXT_POLL_IN_SECONDS = 5
 BASE_URL = f'http://{BACKEND_IP}:{BACKEND_PORT}/api'  # Replace with your actual backend URL
 HEADERS = {'content-type': 'application/json'}
 
+# Smoothing window size and weight for sensor readings
+SMOOTHING_WINDOW_SIZE = 5
+SMOOTHING_WEIGHT = 0.4
+
 ser = None
 if COM_PORT:
     import serial
@@ -85,7 +89,7 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
 
     poll_result = dict()
     start_time = time.time()
-    timeout = 10  # Set a timeout for polling (increased to 10 seconds)
+    timeout = 5  # Set a timeout for polling, during this time we will repeatedly send the polling command
 
     while time.time() - start_time < timeout:
         sendCommand("pol")
@@ -99,22 +103,39 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
                 try:
                     value = float(data.split("|")[1])
 
-                    if sensorIdentifier in poll_result:
-                        poll_result[sensorIdentifier]["reading"] = poll_result[sensorIdentifier]["reading"] * 0.6 + value * 0.4
-                    else:
+                    if sensorIdentifier not in poll_result:
                         poll_result[sensorIdentifier] = {
-                            "reading": value,
+                            "readings": [],
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         }
+                    
+                    poll_result[sensorIdentifier]["readings"].append(value)
+                    
+                    # Keep only the last SMOOTHING_WINDOW_SIZE readings
+                    poll_result[sensorIdentifier]["readings"] = poll_result[sensorIdentifier]["readings"][-SMOOTHING_WINDOW_SIZE:]
+                    
                     print(f"Valid reading received for sensor {sensorIdentifier}")
-                    if len(poll_result) == len(valid_sensors):
-                        print("All sensors have reported. Stopping poll.")
+                    if len(poll_result) == len(valid_sensors) and all(len(sensor_data["readings"]) >= SMOOTHING_WINDOW_SIZE for sensor_data in poll_result.values()):
+                        print("All sensors have reported with enough readings. Stopping poll.")
                         break
                 except:
                     print(f"Invalid reading format for sensor {sensorIdentifier}")
             else:
                 print(f"Received data from invalid sensor: {sensorIdentifier}")
         time.sleep(0.3)
+
+    # Calculate smoothed readings
+    for sensorIdentifier, sensor_data in poll_result.items():
+        print("Smoothing readings for sensor: ", sensorIdentifier)
+        readings = sensor_data["readings"]
+        if len(readings) > 0:
+            # Calculate exponential moving average
+            ema = readings[0]
+            for reading in readings[1:]:
+                ema = ema * (1 - SMOOTHING_WEIGHT) + reading * SMOOTHING_WEIGHT
+            poll_result[sensorIdentifier]["reading"] = ema
+        else:
+            poll_result[sensorIdentifier]["reading"] = None
 
     if len(poll_result) == 0:
         print("No valid sensor readings received within the timeout period.")
