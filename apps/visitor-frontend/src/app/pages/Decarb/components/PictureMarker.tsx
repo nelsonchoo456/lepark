@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { Marker, Tooltip } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { HtmlPictureMarker, HtmlPictureMarkerGlow, InnerPictureMarkerGlow, PictureMarkerInner } from '@lepark/common-ui';
-import { COLORS } from './colors';
+import { COLORS } from '../../../config/colors';
 import { HoverItem } from './HoverInformation';
 
 interface PictureMarkerProps {

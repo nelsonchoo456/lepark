@@ -1,4 +1,4 @@
-import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
+import { ContentWrapper, Divider, LogoText, QrScanner2 } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
@@ -91,6 +91,7 @@ const MainLanding = () => {
       </div>
 
       {/* </div> */}
+      <QrScanner2/>
       <ContentWrapper>
         <div className="flex items-center">
           <LogoText className="text-xl">Our Events</LogoText>

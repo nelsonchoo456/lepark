@@ -30,6 +30,7 @@ import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
 import PromotionViewAll from './pages/Promotions/PromotionViewAll';
 import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
+import DecarbViewAllMap from './pages/Decarb/DecarbViewAllMap';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -107,6 +108,7 @@ export function App() {
                 </Route>
                 <Route path="/decarb">
                   <Route index element={<DecarbViewAll />} />
+                  <Route path="map-view" element={<DecarbViewAllMap />} />
                   <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
                 </Route>
                 <Route path="/promotions">
