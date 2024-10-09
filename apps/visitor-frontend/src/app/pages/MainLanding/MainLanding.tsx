@@ -1,29 +1,50 @@
-import { ContentWrapper, Divider, Header, LogoText, QrScanner, QrScanner2, QrScanner3 } from '@lepark/common-ui';
+import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
-import { FaLocationDot, FaTent } from 'react-icons/fa6';
+import { FaHouseUser, FaLocationDot, FaTent } from 'react-icons/fa6';
+import {BsHouseDoor} from 'react-icons/bs';
 import { Badge, Button, Card, Empty, Space } from 'antd';
 import EventCard from './components/EventCard';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
 import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
+import { GiTreehouse } from 'react-icons/gi';
+import { useEffect, useState } from 'react';
+import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { FiExternalLink } from 'react-icons/fi';
+import { AiOutlinePercentage } from 'react-icons/ai';
+import { BiSolidDiscount } from 'react-icons/bi';
 
 const MainLanding = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const { selectedPark } = usePark();
+  const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
+  const [poweredDays, setPoweredDays] = useState<number | null>(null);
 
-  const onNewScanResult = (decodedText: any, decodedResult: any) => {
-    // handle decoded results here
-    console.log(decodedText, decodedResult)
-};
+  useEffect(() => {
+    const fetchData = async () => {
+      if (selectedPark?.id) {
+        try {
+          const currentDate = '2024-08-28'; // Hardcoded to 28 August 2024
+          const sequestration = await fetchTotalSequestration(selectedPark.id, currentDate);
+          setTotalSequestration(Math.round(sequestration));
+          const days = calculateHDBPoweredDays(sequestration);
+          setPoweredDays(days);
+        } catch (error) {
+          console.error('Error fetching sequestration data:', error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [selectedPark]);
 
   return (
     <div>
-      
       <ParkHeader>
         <FaLocationDot className="text-highlightGreen-200 text-4xl mt-2 md:hidden" />
         <div className="md:text-center md:mx-auto">
@@ -31,7 +52,7 @@ const MainLanding = () => {
           <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>
       </ParkHeader>
-    
+
       {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
       <div
         className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden relative z-10
@@ -58,8 +79,14 @@ const MainLanding = () => {
         <NavButton key="venues" icon={<FaTent />}>
           Venues
         </NavButton>
-        <NavButton key="tickets" icon={<PiTicketFill />}>
-          Tickets
+        <NavButton
+          key="promotions"
+          icon={<BiSolidDiscount />}
+          onClick={() => {
+            navigate(`/promotions`);
+          }}
+        >
+          Promotions
         </NavButton>
       </div>
 
@@ -112,14 +139,33 @@ const MainLanding = () => {
           </EventCard> */}
         </div>
         <br />
-        {/* <QrScanner2/> */}
-        <QrScanner3/>
-        {/* <QrScanner 
-        fps={10}
-        qrbox={250}
-        disableFlip={false}
-        qrCodeSuccessCallback={onNewScanResult}
-      /> */}
+      <div className="flex justify-between items-center">
+    <LogoText className="font-bold text-lg">Sustainability</LogoText>
+    <Link to="/decarb" className="text-green-600 hover:text-green-700 flex items-center">
+      <Space>
+        Learn More
+        <FiExternalLink />
+      </Space>
+    </Link>
+  </div>
+          <br/>
+
+
+  <div className="flex justify-between items-center h-48">
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <PiPlant className="text-4xl mb-2" />
+      <div className="flex flex-row items-center">
+        <p>In the past year, this park has absorbed <span className="font-bold text-lg ml-1">{totalSequestration} kg</span> of CO2</p>
+      </div>
+    </div>
+    <div className="w-px h-full bg-gray-200 mx-4"></div>
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <BsHouseDoor className="text-4xl mb-2" />
+      <p>Equivalent to powering a 4 room HDB for</p>
+      <p className="font-bold text-lg">{poweredDays} days</p>
+    </div>
+  </div>
+
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">

@@ -41,6 +41,7 @@ export interface OccurrenceResponse {
   parkName?: string;
   images: string[];
   occurrenceStatus?: OccurrenceStatusEnum;
+  decarbonizationType: DecarbonizationTypeEnum;
 }
 
 export interface OccurrenceUpdateData {

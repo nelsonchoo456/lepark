@@ -2,7 +2,7 @@ import { ParkResponse } from "./park";
 
 export enum DiscountTypeEnum {
   PERCENTAGE = 'PERCENTAGE',
-  FIXED_AMOUND = 'FIXED_AMOUNT'
+  FIXED_AMOUNT = 'FIXED_AMOUNT'
 }
 export enum PromotionStatusEnum {
   ENABLED = 'ENABLED',
@@ -46,4 +46,3 @@ export interface PromotionData {
   isOneTime?: boolean;
   discountType:  DiscountTypeEnum;
 }
-

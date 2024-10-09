@@ -14,6 +14,7 @@ import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
+import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
 import { AiOutlinePercentage } from 'react-icons/ai';
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -170,6 +171,12 @@ const MainLayout = () => {
           label: 'Occurrences',
         },
       ],
+    },
+    {
+      key: 'decarbonizationarea',
+      icon: <GiTreehouse />,
+      label: 'Decarbonization Areas',
+      onClick: () => navigate('/decarbonization-area'),
     },
     userRole === StaffType.SUPERADMIN ||
     userRole === StaffType.MANAGER ||

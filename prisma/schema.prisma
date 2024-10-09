@@ -538,6 +538,24 @@ model PlantTask {
   submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id], onDelete: Cascade)
 }
 
+model DecarbonizationArea {
+  id          String  @id @default(uuid()) @db.Uuid
+  geom        String
+  description String?
+  name        String
+  parkId      Int
+
+  sequestrationHistory SequestrationHistory[]
+}
+
+model SequestrationHistory {
+  id                    String              @id @default(uuid()) @db.Uuid
+  date                  DateTime
+  seqValue              Float
+  decarbonizationAreaId String              @db.Uuid
+  decarbonizationArea   DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
+}
+
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
