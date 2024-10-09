@@ -304,10 +304,24 @@ const PlantTaskList: React.FC = () => {
     );
   };
 
+  const refreshData = () => {
+    fetchPlantTasks();
+  };
+
   const renderContent = () => {
     if (viewMode === 'categories') {
       return (
-        <PlantTaskCategories open={open} inProgress={inProgress} completed={completed} cancelled={cancelled} setOpen={setOpen} setCompleted={setCompleted} setInProgress={setInProgress} setCancelled={setCancelled}/>
+        <PlantTaskCategories 
+          open={open} 
+          inProgress={inProgress} 
+          completed={completed} 
+          cancelled={cancelled} 
+          setOpen={setOpen} 
+          setCompleted={setCompleted} 
+          setInProgress={setInProgress} 
+          setCancelled={setCancelled}
+          refreshData={refreshData} // Pass the refreshData function
+        />
       )
     } else {
       return (

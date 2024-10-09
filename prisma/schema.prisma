@@ -294,8 +294,8 @@ model Hub {
   hubStatus                HubStatusEnum
   acquisitionDate          DateTime
   lastMaintenanceDate      DateTime?
-  nextMaintenanceDate      DateTime? // for predictive maintenance
-  dataTransmissionInterval Float?
+  nextMaintenanceDate      DateTime?
+  dataTransmissionInterval Float? // might want to initialize this in pi during verifyInitialization
   supplier                 String
   supplierContactNumber    String
   ipAddress                String?
@@ -306,9 +306,10 @@ model Hub {
   lat                      Float?
   long                     Float?
   remarks                  String?
-  zoneId                   Int? // for when installed in a zone
-  facilityId               String        @db.Uuid
-  facility                 Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  zoneId                   Int?
+  facilityId               String?       @db.Uuid
+  facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  lastDataUpdateDate       DateTime?     // Add this line
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
@@ -351,11 +352,8 @@ model Sensor {
   description              String?
   sensorStatus             SensorStatusEnum
   acquisitionDate          DateTime
-  lastCalibratedDate       DateTime?
-  calibrationFrequencyDays Int?
   lastMaintenanceDate      DateTime?
   nextMaintenanceDate      DateTime?
-  dataFrequencyMinutes     Int?
   sensorUnit               SensorUnitEnum
   supplier                 String
   supplierContactNumber    String
@@ -368,7 +366,15 @@ model Sensor {
   facilityId               String?              @db.Uuid
   facility                 Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory       MaintenanceHistory[]
-  calibrationHistory       CalibrationHistory[]
+  sensorReadings           SensorReading[]
+}
+
+model SensorReading {
+  id       String   @id @default(uuid()) @db.Uuid
+  date     DateTime
+  value    Float
+  sensorId String   @db.Uuid
+  sensor   Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
 
 enum ParkAssetTypeEnum {
@@ -428,16 +434,6 @@ model MaintenanceHistory {
   hub       Hub?       @relation(fields: [hubId], references: [id], onDelete: Cascade)
   sensor    Sensor?    @relation(fields: [sensorId], references: [id], onDelete: Cascade)
   parkAsset ParkAsset? @relation(fields: [assetId], references: [id], onDelete: Cascade)
-}
-
-model CalibrationHistory {
-  id              String   @id @default(uuid()) @db.Uuid
-  hubId           String?  @map("hubId") @db.Uuid
-  sensorId        String?  @map("sensorId") @db.Uuid
-  calibrationDate DateTime
-  description     String
-
-  sensor Sensor? @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
 
 model Facility {

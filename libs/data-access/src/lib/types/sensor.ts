@@ -12,7 +12,6 @@ export interface SensorData {
   acquisitionDate: string;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes?: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
@@ -33,11 +32,8 @@ export interface SensorResponse {
   description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  lastCalibratedDate?: string;
-  calibrationFrequencyDays?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
@@ -60,11 +56,8 @@ export interface SensorUpdateData {
   description?: string;
   sensorStatus?: SensorStatusEnum;
   acquisitionDate?: string;
-  lastCalibratedDate?: string;
-  calibrationFrequencyDays?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes?: number;
   sensorUnit?: SensorUnitEnum;
   supplier?: string;
   supplierContactNumber?: string;
@@ -79,14 +72,6 @@ export interface SensorUpdateData {
 export interface SensorMaintenanceHistoryResponse {
   id: string;
   maintenanceDate: string;
-  description: string;
-  sensorId: string;
-  name: string;
-}
-
-export interface SensorCalibrationHistoryResponse {
-  id: string;
-  calibrationDate: string;
   description: string;
   sensorId: string;
   name: string;

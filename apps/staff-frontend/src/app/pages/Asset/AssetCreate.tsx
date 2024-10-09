@@ -17,7 +17,7 @@ import {
   getFacilitiesByParkId,
   checkParkAssetDuplicateSerialNumber,
 } from '@lepark/data-access';
-import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip, Switch } from 'antd';
+import { Button, Card, DatePicker, Form, Checkbox, Input, InputNumber, message, Result, Select, Space, Spin, Divider, Tooltip, Radio } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImagesAssets from '../../hooks/Images/useUploadImagesAssets';
@@ -52,12 +52,13 @@ const AssetCreate = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [hasSerialNumber, setHasSerialNumber] = useState(false);
 
-  const handleSerialNumberChange = (checked: boolean) => {
+  const handleSerialNumberChange = (value: string) => {
+    const checked = value === 'yes';
     setHasSerialNumber(checked);
     if (checked) {
       setCreateMultiple(false);
       setAssetQuantity(1);
-      form.setFieldsValue({ createMultiple: false, assetQuantity: undefined });
+      form.setFieldsValue({ createMultiple: 'no', assetQuantity: undefined });
     }
   };
 
@@ -253,8 +254,11 @@ const AssetCreate = () => {
             <Form.Item name="description" label="Description">
               <TextArea placeholder="Enter Description" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-            <Form.Item name="hasSerialNumber" label="Has Serial Number" valuePropName="checked">
-              <Switch onChange={handleSerialNumberChange} />
+            <Form.Item name="hasSerialNumber" label="Has Serial Number" rules={[{ required: true }]}>
+              <Radio.Group onChange={(e) => handleSerialNumberChange(e.target.value)} optionType='button'>
+                <Radio value="yes">Yes</Radio>
+                <Radio value="no">No</Radio>
+              </Radio.Group>
             </Form.Item>
             {hasSerialNumber && (
               <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
@@ -295,8 +299,11 @@ const AssetCreate = () => {
               <TextArea placeholder="Enter any remarks" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
             {!hasSerialNumber && (
-              <Form.Item name="createMultiple" label="Create multiple assets?" valuePropName="checked">
-                <Switch onChange={(checked) => setCreateMultiple(checked)} />
+              <Form.Item name="createMultiple" label="Create multiple assets?" rules={[{ required: true }]}>
+                <Radio.Group onChange={(e) => setCreateMultiple(e.target.value === 'yes')} optionType='button'>
+                  <Radio value="yes">Yes</Radio>
+                  <Radio value="no">No</Radio>
+                </Radio.Group>
               </Form.Item>
             )}
             {!hasSerialNumber && createMultiple && (

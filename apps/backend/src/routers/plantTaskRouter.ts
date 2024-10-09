@@ -68,6 +68,16 @@ router.get('/getAllPlantTasksByParkId/:parkId', authenticateJWTStaff, async (req
   }
 });
 
+router.get('/getAllAssignedPlantTasks/:staffId', authenticateJWTStaff, async (req, res) => {
+  try {
+    const staffId = req.params.staffId;
+    const plantTasks = await PlantTaskService.getAllAssignedPlantTasks(staffId);
+    res.status(200).json(plantTasks);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
@@ -84,7 +94,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   }
 });
 
-router.post('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+router.put('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const { assignerStaffId, staffId } = req.body;
     const plantTaskId = req.params.id;
@@ -95,7 +105,7 @@ router.post('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   }
 });
 
-router.post('/unassignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+router.put('/unassignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const { unassignerStaffId } = req.body;
     const plantTaskId = req.params.id;
