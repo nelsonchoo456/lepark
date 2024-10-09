@@ -267,7 +267,14 @@ const PlantTaskCategories = ({
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} style={{ minHeight: '100px' }}>
                       {getList(status.value as PlantTaskStatusEnum).map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                        <Draggable
+                          key={task.id}
+                          draggableId={task.id}
+                          index={index}
+                          isDragDisabled={
+                            task.taskStatus === PlantTaskStatusEnum.COMPLETED || task.taskStatus === PlantTaskStatusEnum.CANCELLED
+                          }
+                        >
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
