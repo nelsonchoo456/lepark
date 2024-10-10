@@ -5,6 +5,7 @@ import { FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
 import {
   getAllPlantTasks,
+  getPlantTasksByParkId,
   PlantTaskResponse,
   StaffType,
   StaffResponse,
@@ -46,11 +47,18 @@ const PlantTaskList: React.FC = () => {
 
   useEffect(() => {
     fetchPlantTasks();
-  }, []);
+  }, [user]);
 
   const fetchPlantTasks = async () => {
     try {
-      const response = await getAllPlantTasks();
+      let response;
+      if (user?.role === StaffType.SUPERADMIN) {
+        response = await getAllPlantTasks();
+      } else if (user?.parkId) {
+        response = await getPlantTasksByParkId(user.parkId);
+      } else {
+        throw new Error('User does not have a parkId');
+      }
       setPlantTasks(response.data);
 
       // Sort tasks by position before setting the state
@@ -62,17 +70,18 @@ const PlantTaskList: React.FC = () => {
       setCompleted(sortedTasks.filter((task) => task.taskStatus === 'COMPLETED'));
       setCancelled(sortedTasks.filter((task) => task.taskStatus === 'CANCELLED'));
 
-      // Fetch staff list for each unique parkId
-      const uniqueParkIds = [...new Set(sortedTasks.map(task => task.occurrence?.zone?.parkId))];
-      const staffPromises = uniqueParkIds.map(parkId => getAllStaffsByParkId(parkId));
-      const staffResponses = await Promise.all(staffPromises);
+      // Fetch staff list
+      let staffResponse;
+      if (user?.role === StaffType.SUPERADMIN) {
+        staffResponse = await getAllStaffs();
+      } else if (user?.parkId) {
+        staffResponse = await getAllStaffsByParkId(user.parkId);
+      }
       
-      const allStaff = staffResponses.flatMap(response => response.data);
-      const filteredStaff = allStaff.filter(staff => 
+      const filteredStaff = staffResponse?.data.filter(staff => 
         staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST
       );
-      console.log(filteredStaff);
-      setStaffList(filteredStaff);
+      setStaffList(filteredStaff || []);
     } catch (error) {
       console.error('Error fetching plant tasks:', error);
       messageApi.error('Failed to fetch plant tasks');
