@@ -248,10 +248,15 @@ const PlantTaskCategories = ({
             </Tag>
           )}
         </div>
-        <div style={{ marginTop: 4, marginBottom: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
           <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
             {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
           </Tag>
+          {(isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED) && (
+            <Tag color="red" style={{ fontSize: '0.7rem' }}>
+              OVERDUE
+            </Tag>
+          )}
         </div>
         <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
           Due: {moment(task.dueDate).format('D MMM YY')}
