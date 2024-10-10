@@ -220,9 +220,16 @@ const PlantTaskCategories = ({
         </div>
       }
     >
-      <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-        {'Type: '} {formatEnumLabelToRemoveUnderscores(task.taskType)}
-      </Typography.Text>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+          {'Type: '} {formatEnumLabelToRemoveUnderscores(task.taskType)}
+        </Typography.Text>
+        {!task.assignedStaffId && (
+          <Tag color="default" style={{ fontSize: '0.7rem' }}>
+            UNASSIGNED
+          </Tag>
+        )}
+      </div>
       <div style={{ marginTop: 4, marginBottom: 4 }}>
         <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
           {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
