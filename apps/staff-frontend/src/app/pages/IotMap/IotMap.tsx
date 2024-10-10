@@ -275,9 +275,9 @@ const IotMap = () => {
   const handleSelectSensor = (sensor: SensorResponse) => {
     setSelectedSensor(sensor);
     if (selectedHub?.id !== sensor.hubId) {
-      setSelectedHub(hubs?.find((h) => h.id === sensor.hubId))
+      setSelectedHub(hubs?.find((h) => h.id === sensor.hubId));
     }
-  }
+  };
 
   const showDrawerDisplay = () => {
     if (selectedSensor) {
@@ -402,15 +402,92 @@ const IotMap = () => {
           ) : (
             <div className="w-full flex-col flex">
               <div className="text-center w-full font-semibold text-secondary mt-10"> No Hubs available. </div>
-              {user?.role === StaffType.SUPERADMIN &&
+              {user?.role === StaffType.SUPERADMIN && (
                 <Button onClick={() => setPark(undefined)} className="mx-auto" type="link">
                   {' '}
                   Select Another Park?
                 </Button>
-              }
+              )}
             </div>
           )}
         </>
+      );
+    }
+  };
+
+  const showDrawerDisplayMobile = () => {
+    if (selectedSensor) {
+      return (
+        <>
+          <div className="flex gap-2 items-center mb-4">
+            {' '}
+            <Button onClick={() => setSelectedSensor(undefined)} icon={<MdArrowBack className="text-md" />} type="text" size="small" />
+            <div className="text-lg font-semibold text-green-600">Sensor Details</div>
+          </div>
+          {selectedSensor?.images && selectedSensor.images.length > 0 ? (
+            <Carousel style={{ maxWidth: '100%' }}>
+              {selectedSensor.images.map((url, index) => (
+                <div key={index}>
+                  <div
+                    style={{
+                      backgroundImage: `url('${url}')`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      color: 'white',
+                      overflow: 'hidden',
+                    }}
+                    className="h-20 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                  />
+                </div>
+              ))}
+            </Carousel>
+          ) : (
+            <div className="h-20 bg-gray-200 flex items-center justify-center">
+              <div className='text-secondary'>No Image</div>
+            </div>
+          )}
+          <div className="font-semibold text-wrap text-lg my-2">{selectedSensor.name}</div>
+          <Descriptions items={getSensorDescriptionItems(selectedSensor)} column={1} size="small" className="mb-2" />
+        </>
+      );
+    } else if (selectedHub) {
+      return (
+        <>
+          <div className="flex gap-2 items-center mb-4">
+            <div className="text-lg font-semibold text-green-600">Hub Details</div>
+          </div>
+          {selectedHub?.images && selectedHub.images.length > 0 ? (
+            <Carousel style={{ maxWidth: '100%' }}>
+              {selectedHub.images.map((url, index) => (
+                <div key={index}>
+                  <div
+                    style={{
+                      backgroundImage: `url('${url}')`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      color: 'white',
+                      overflow: 'hidden',
+                    }}
+                    className="h-20 max-h-64 flex-1 rounded-lg shadow-lg p-4"
+                  />
+                </div>
+              ))}
+            </Carousel>
+          ) : (
+            <div className="h-20 bg-gray-200 flex items-center justify-center">
+              <div className='text-secondary'>No Image</div>
+            </div>
+          )}
+          <div className="font-semibold text-wrap text-lg my-2">{selectedHub.name}</div>
+          <Descriptions items={getHubDescriptionsItems(selectedHub)} column={1} size="small" className="mb-2" />
+          <Card styles={{ body: { padding: 0 } }} className="mt-2 px-2 py-2 overflow-hidden">
+            {selectedHub.sensors?.length} Sensors
+          </Card>
+        </>
+      );
+    } else {
+      return (
+        <></>
       );
     }
   };
@@ -517,7 +594,7 @@ const IotMap = () => {
                 tooltipLabel={h.name}
                 backgroundColor={COLORS.gray[600]}
                 icon={<MdOutlineHub className="text-gray-500 drop-shadow-lg" style={{ fontSize: '1.4rem' }} />}
-                hovered={(selectedHub) ? { ...selectedHub, title: 'keke', entityType: 'SENSOR' } : null}
+                hovered={selectedHub ? { ...selectedHub, title: 'keke', entityType: 'SENSOR' } : null}
               />
             ),
         )}
@@ -587,8 +664,47 @@ const IotMap = () => {
         paddingTop: '3rem',
         height: 'calc(100vh)',
         width: `100vw`,
+        overflow: "hidden"
       }}
+      className='relative'
     >
+      {contextHolder}
+      {!park && (
+        <div className="h-full w-full bg-black/40 absolute flex justify-center items-center px-4 pb-10" style={{ zIndex: 1000 }}>
+          <div className="w-full bg-white rounded-lg p-4">
+            <LogoText className="text-lg mb-4"> Select a Park to View</LogoText>
+            <br />
+            <Select placeholder="Select a Park" onChange={(parkId: number) => setParkId(parkId)} className="w-full">
+              {parks?.map((p) => (
+                <Select.Option key={p.id} value={p.id}>
+                  <div className="flex">
+                    <div className="flex-[1] font-semibold">{p.name}</div>
+                    {p.parkStatus === 'OPEN' ? (
+                      <Tag color="green" bordered={false}>
+                        {formatEnumLabelToRemoveUnderscores(p.parkStatus)}
+                      </Tag>
+                    ) : p.parkStatus === 'UNDER_CONSTRUCTION' ? (
+                      <Tag color="orange" bordered={false}>
+                        {formatEnumLabelToRemoveUnderscores(p.parkStatus)}
+                      </Tag>
+                    ) : p.parkStatus === 'LIMITED_ACCESS' ? (
+                      <Tag color="yellow" bordered={false}>
+                        {formatEnumLabelToRemoveUnderscores(p.parkStatus)}
+                      </Tag>
+                    ) : p.parkStatus === 'CLOSED' ? (
+                      <Tag color="red" bordered={false}>
+                        {formatEnumLabelToRemoveUnderscores(p.parkStatus)}
+                      </Tag>
+                    ) : (
+                      <></>
+                    )}
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+        </div>
+      )}
       <MapContainer
         center={[1.287953, 103.851784]}
         zoom={11}
@@ -600,6 +716,7 @@ const IotMap = () => {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        <MapZoomer selectedHub={selectedHub} />
         <MapZoomListener />
         {park && <PolygonFitBounds key={park.id} geom={park.geom} polygonLabel={park.name} color="transparent" />}
 
@@ -617,33 +734,95 @@ const IotMap = () => {
                   {zone.name}
                 </div>
               }
-              color={COLORS.green[600]}
-              fillColor={'transparent'}
+              color={selectedHub?.zoneId === zone.id ? COLORS.sky[300] : COLORS.green[200]}
+              fillColor={selectedHub?.zoneId === zone.id ? COLORS.sky[300] : 'transparent'}
+              fillOpacity={0.6}
               labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+              handlePolygonClick={() => setSelectedZone(zone)}
             />
           ))}
 
-        {/* NON-SUPERADMIN */}
-        {/* user?.role !== StaffType.SUPERADMIN && zoomLevel >= SHOW_ZONES_ZOOM &&
-          zones?.length > 0 &&
-          zones
-            .map((zone) => (
-              <PolygonWithLabel
-                key={zone.id}
-                entityId={zone.id}
-                geom={zone.geom}
-                polygonLabel={
-                  <div className="flex items-center gap-2">
-                    <TbTree className="text-xl" />
-                    {zone.name}
-                  </div>
-                }
-                color={COLORS.green[600]}
-                fillColor={'transparent'}
-                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+        {hubs?.map(
+          (h) =>
+            h &&
+            h.lat &&
+            h.long && (
+              <PictureMarker
+                id={h.id}
+                entityType="HUB"
+                circleWidth={37}
+                lat={h.lat}
+                lng={h.long}
+                tooltipLabel={h.name}
+                backgroundColor={COLORS.gray[600]}
+                icon={<MdOutlineHub className="text-gray-500 drop-shadow-lg" style={{ fontSize: '1.4rem' }} />}
+                hovered={selectedHub ? { ...selectedHub, title: 'keke', entityType: 'SENSOR' } : null}
               />
-            )) */}
+            ),
+        )}
+
+        {selectedHub &&
+          selectedHub.sensors?.map(
+            (s) =>
+              s.lat &&
+              s.long && (
+                <PictureMarker
+                  id={s.id}
+                  entityType="SENSOR"
+                  circleWidth={37}
+                  lat={s.lat}
+                  lng={s.long}
+                  tooltipLabel={s.name}
+                  backgroundColor={COLORS.sky[400]}
+                  icon={getSensorIcon(s)}
+                  markerFields={{
+                    eventHandlers: {
+                      click: () => {
+                        setSelectedZone(selectedHub.zone);
+                        handleSelectSensor(s);
+                      },
+                    },
+                  }}
+                  hovered={selectedSensor ? { ...selectedSensor, title: 'keke', entityType: 'SENSOR' } : null}
+                />
+              ),
+          )}
+
+        {hubs
+          ?.filter((h) => (selectedHub ? h.id !== selectedHub.id : true))
+          .map(
+            (h) =>
+              h.sensors &&
+              h.sensors.map(
+                (s) =>
+                  s.lat &&
+                  s.long && (
+                    <PictureMarker
+                      id={s.id}
+                      entityType="SENSOR"
+                      circleWidth={37}
+                      lat={s.lat}
+                      lng={s.long}
+                      tooltipLabel={s.name}
+                      backgroundColor={COLORS.sky[400]}
+                      icon={getSensorIcon(s)}
+                      markerFields={{
+                        eventHandlers: {
+                          click: () => {
+                            setSelectedZone(h.zone);
+                            handleSelectSensor(s);
+                          },
+                        },
+                      }}
+                    />
+                  ),
+              ),
+          )}
+          
       </MapContainer>
+      <div className="fixed bottom-0 w-full bg-white rounded-lg p-4" style={{ zIndex: 400 }}>
+        {showDrawerDisplayMobile()}
+      </div>
     </div>
   );
 };
