@@ -1,8 +1,8 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Row, Col, Statistic, Radio, Select } from 'antd';
+import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Row, Col, Statistic, Radio, Select, Collapse } from 'antd';
 import moment from 'moment';
-import { FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
+import { FiExternalLink, FiEye, FiSearch, FiAlertCircle } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
 import {
   getAllPlantTasks,
@@ -26,7 +26,7 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PlantTaskCategories from './PlantTaskCategories';
-import { Collapse } from 'antd';
+import PlantTaskDashboard from './PlantTaskDashboard';
 
 const { Panel } = Collapse;
 
@@ -226,7 +226,17 @@ const PlantTaskList: React.FC = () => {
       title: 'Due Date',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      render: (text) => moment(text).format('D MMM YY'),
+      render: (text, record) => {
+        const isOverdue = moment().isAfter(moment(text)) && 
+          record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+          record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+        return (
+          <Flex align="center">
+            {moment(text).format('D MMM YY')}
+            {isOverdue && <FiAlertCircle className="ml-2 text-red-500" />}
+          </Flex>
+        );
+      },
       sorter: (a, b) => moment(a.dueDate).valueOf() - moment(b.dueDate).valueOf(),
       width: '10%',
     },
@@ -281,11 +291,7 @@ const PlantTaskList: React.FC = () => {
           return `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`;
         } else {
           return (
-            <Select
-              style={{ width: 200 }}
-              placeholder="Assign staff"
-              onChange={(value) => handleAssignStaff(record.id, value)}
-            >
+            <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
               {staffList.map((staff) => (
                 <Select.Option key={staff.id} value={staff.id}>
                   {`${staff.firstName} ${staff.lastName}`}
@@ -355,56 +361,42 @@ const PlantTaskList: React.FC = () => {
   ];
 
   const renderDashboardOverview = () => {
-    const openTasks = plantTasks.filter((task) => task.taskStatus === 'OPEN');
-    const urgentTasks = openTasks.filter((task) => task.taskUrgency === 'IMMEDIATE' || task.taskUrgency === 'HIGH');
-    const myTasks = plantTasks.filter((task) => task.assignedStaff?.id === user?.id);
-
     return (
-      <Card className="mb-4">
-        <Row gutter={16}>
-          <Col span={8}>
-            <Statistic title="Open Tasks" value={openTasks.length} valueStyle={{ color: '#1890ff' }} />
-          </Col>
-          <Col span={8}>
-            <Statistic title="Urgent Tasks" value={urgentTasks.length} valueStyle={{ color: '#ff4d4f' }} />
-          </Col>
-          <Col span={8}>
-            <Statistic title="My Tasks" value={myTasks.length} valueStyle={{ color: '#52c41a' }} />
-          </Col>
-        </Row>
-      </Card>
+      <Collapse defaultActiveKey={['1']} className="mb-4 bg-white">
+        <Panel header="Task Dashboard" key="1">
+          <PlantTaskDashboard plantTasks={plantTasks} />
+        </Panel>
+      </Collapse>
     );
   };
 
-  const refreshData = () => {
-    fetchPlantTasks();
-  };
-
-  const renderGroupedTasks = (groupBy: 'status' | 'urgency') => {
-    const groupedTasks = groupBy === 'status' 
-      ? {
-          OPEN: plantTasks.filter(task => task.taskStatus === 'OPEN'),
-          IN_PROGRESS: plantTasks.filter(task => task.taskStatus === 'IN_PROGRESS'),
-          COMPLETED: plantTasks.filter(task => task.taskStatus === 'COMPLETED'),
-          CANCELLED: plantTasks.filter(task => task.taskStatus === 'CANCELLED'),
-        }
-      : {
-          IMMEDIATE: plantTasks.filter(task => task.taskUrgency === 'IMMEDIATE'),
-          HIGH: plantTasks.filter(task => task.taskUrgency === 'HIGH'),
-          NORMAL: plantTasks.filter(task => task.taskUrgency === 'NORMAL'),
-          LOW: plantTasks.filter(task => task.taskUrgency === 'LOW'),
-        };
+  const renderGroupedTasks = (groupBy: 'status' | 'urgency', tableProps: any) => {
+    const groupedTasks =
+      groupBy === 'status'
+        ? {
+            OPEN: plantTasks.filter((task) => task.taskStatus === 'OPEN'),
+            IN_PROGRESS: plantTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
+            COMPLETED: plantTasks.filter((task) => task.taskStatus === 'COMPLETED'),
+            CANCELLED: plantTasks.filter((task) => task.taskStatus === 'CANCELLED'),
+          }
+        : {
+            IMMEDIATE: plantTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
+            HIGH: plantTasks.filter((task) => task.taskUrgency === 'HIGH'),
+            NORMAL: plantTasks.filter((task) => task.taskUrgency === 'NORMAL'),
+            LOW: plantTasks.filter((task) => task.taskUrgency === 'LOW'),
+          };
 
     return (
       <Collapse defaultActiveKey={Object.keys(groupedTasks).slice(0, 2)}>
         {Object.entries(groupedTasks).map(([key, tasks]) => (
           <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
-            <Table 
-              dataSource={tasks} 
-              columns={columns.filter(col => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))} 
-              rowKey="id" 
+            <Table
+              dataSource={tasks}
+              columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
+              rowKey="id"
               pagination={{ pageSize: 5 }}
               scroll={{ x: SCREEN_LG }}
+              {...tableProps}
             />
           </Panel>
         ))}
@@ -413,21 +405,32 @@ const PlantTaskList: React.FC = () => {
   };
 
   const renderTableView = () => {
+    const tableProps = {
+      rowClassName: (record: PlantTaskResponse) => {
+        return moment().isAfter(moment(record.dueDate)) && 
+          (record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+           record.taskStatus !== PlantTaskStatusEnum.CANCELLED) 
+          ? 'overdue-row' 
+          : '';
+      },
+    };
+
     switch (tableViewType) {
       case 'grouped-status':
-        return renderGroupedTasks('status');
+        return renderGroupedTasks('status', tableProps);
       case 'grouped-urgency':
-        return renderGroupedTasks('urgency');
+        return renderGroupedTasks('urgency', tableProps);
       default:
         return (
           <Card>
-            <Table 
-              dataSource={filteredPlantTasks} 
-              columns={columns} 
-              rowKey="id" 
-              loading={loading} 
+            <Table
+              dataSource={filteredPlantTasks}
+              columns={columns}
+              rowKey="id"
+              loading={loading}
               pagination={{ pageSize: 10 }}
-              scroll={{ x: SCREEN_LG }} 
+              scroll={{ x: SCREEN_LG }}
+              {...tableProps}
             />
           </Card>
         );
@@ -435,23 +438,21 @@ const PlantTaskList: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (viewMode === 'categories') {
-      return (
-        <PlantTaskCategories 
-          open={open} 
-          inProgress={inProgress} 
-          completed={completed} 
-          cancelled={cancelled} 
-          setOpen={setOpen} 
-          setCompleted={setCompleted} 
-          setInProgress={setInProgress} 
-          setCancelled={setCancelled}
-          refreshData={fetchPlantTasks}
-        />
-      );
-    } else {
-      return renderTableView();
-    }
+    return viewMode === 'categories' ? (
+      <PlantTaskCategories
+        open={open}
+        inProgress={inProgress}
+        completed={completed}
+        cancelled={cancelled}
+        setOpen={setOpen}
+        setCompleted={setCompleted}
+        setInProgress={setInProgress}
+        setCancelled={setCancelled}
+        refreshData={fetchPlantTasks}
+      />
+    ) : (
+      renderTableView()
+    );
   };
 
   return (
@@ -461,8 +462,8 @@ const PlantTaskList: React.FC = () => {
       {renderDashboardOverview()}
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
-          <Radio.Group 
-            value={viewMode} 
+          <Radio.Group
+            value={viewMode}
             onChange={(e) => {
               setViewMode(e.target.value);
               if (e.target.value === 'categories') {
@@ -474,11 +475,7 @@ const PlantTaskList: React.FC = () => {
             <Radio.Button value="table">Table View</Radio.Button>
           </Radio.Group>
           {viewMode === 'table' && (
-            <Select
-              value={tableViewType}
-              onChange={setTableViewType}
-              style={{ width: 200, marginLeft: 16 }}
-            >
+            <Select value={tableViewType} onChange={setTableViewType} style={{ width: 200, marginLeft: 16 }}>
               <Select.Option value="all">All Tasks</Select.Option>
               <Select.Option value="grouped-status">Grouped by Status</Select.Option>
               <Select.Option value="grouped-urgency">Grouped by Urgency</Select.Option>
@@ -510,6 +507,14 @@ const PlantTaskList: React.FC = () => {
         onCancel={cancelDelete}
         description="Are you sure you want to delete this Plant Task?"
       />
+      <style jsx global>{`
+        .overdue-row {
+          background-color: rgba(255, 0, 0, 0.1);
+        }
+        .overdue-row:hover td {
+          background-color: rgba(255, 0, 0, 0.2) !important;
+        }
+      `}</style>
     </ContentWrapperDark>
   );
 };

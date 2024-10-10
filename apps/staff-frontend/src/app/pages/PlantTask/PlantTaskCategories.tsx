@@ -66,7 +66,7 @@ const PlantTaskCategories = ({
     const movedTask = sourceList[source.index];
     if (
       source.droppableId === PlantTaskStatusEnum.OPEN &&
-      destination.droppableId !== PlantTaskStatusEnum.OPEN &&
+      (destination.droppableId !== PlantTaskStatusEnum.OPEN && destination.droppableId !== PlantTaskStatusEnum.CANCELLED) &&
       !movedTask.assignedStaffId
     ) {
       message.error('Cannot move unassigned tasks. Please assign a staff member first.');
@@ -201,58 +201,64 @@ const PlantTaskCategories = ({
     }
   };
 
-  const renderTaskCard = (task: PlantTaskResponse) => (
-    <Card
-      size="small"
-      className="mb-2"
-      title={
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {task.images && task.images.length > 0 && <Avatar src={task.images[0]} size="small" style={{ marginRight: 8 }} />}
-            <Typography.Text ellipsis style={{ maxWidth: 200 }}>
-              {task.title}
-            </Typography.Text>
-          </div>
-          <Dropdown
-            overlay={
-              <Menu>
-                <Menu.Item key="1" onClick={() => handleViewDetails(task.id)}>
-                  View Details
-                </Menu.Item>
-                {!task.assignedStaffId && (
-                  <Menu.Item key="2" onClick={() => handleAssignStaff(task.id)}>
-                    Assign Staff
+  const renderTaskCard = (task: PlantTaskResponse) => {
+    const isOverdue = moment().isAfter(moment(task.dueDate));
+    const shouldHighlight = isOverdue && (task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED);
+
+    return (
+      <Card
+        size="small"
+        className="mb-2"
+        style={shouldHighlight ? { backgroundColor: 'rgba(255, 0, 0, 0.1)' } : {}}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {task.images && task.images.length > 0 && <Avatar src={task.images[0]} size="small" style={{ marginRight: 8 }} />}
+              <Typography.Text ellipsis style={{ maxWidth: 200 }}>
+                {task.title}
+              </Typography.Text>
+            </div>
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item key="1" onClick={() => handleViewDetails(task.id)}>
+                    View Details
                   </Menu.Item>
-                )}
-              </Menu>
-            }
-            trigger={['click']}
-          >
-            <MoreOutlined style={{ cursor: 'pointer' }} />
-          </Dropdown>
+                  {!task.assignedStaffId && (
+                    <Menu.Item key="2" onClick={() => handleAssignStaff(task.id)}>
+                      Assign Staff
+                    </Menu.Item>
+                  )}
+                </Menu>
+              }
+              trigger={['click']}
+            >
+              <MoreOutlined style={{ cursor: 'pointer' }} />
+            </Dropdown>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+            {'Type: '} {formatEnumLabelToRemoveUnderscores(task.taskType)}
+          </Typography.Text>
+          {!task.assignedStaffId && (
+            <Tag color="default" style={{ fontSize: '0.7rem' }}>
+              UNASSIGNED
+            </Tag>
+          )}
         </div>
-      }
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-          {'Type: '} {formatEnumLabelToRemoveUnderscores(task.taskType)}
-        </Typography.Text>
-        {!task.assignedStaffId && (
-          <Tag color="default" style={{ fontSize: '0.7rem' }}>
-            UNASSIGNED
+        <div style={{ marginTop: 4, marginBottom: 4 }}>
+          <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
           </Tag>
-        )}
-      </div>
-      <div style={{ marginTop: 4, marginBottom: 4 }}>
-        <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
-          {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
-        </Tag>
-      </div>
-      <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-        Due: {moment(task.dueDate).format('D MMM YY')}
-      </Typography.Text>
-    </Card>
-  );
+        </div>
+        <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+          Due: {moment(task.dueDate).format('D MMM YY')}
+        </Typography.Text>
+      </Card>
+    );
+  };
 
   return (
     <>

@@ -1697,7 +1697,7 @@ const plantTasksData = [
     taskType: 'STAKING_SUPPORTING',
     taskUrgency: 'HIGH',
     taskStatus: 'OPEN',
-    dueDate: '2024-11-25T00:00:00Z',
+    dueDate: '2024-10-05T00:00:00Z',
     submittingStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
