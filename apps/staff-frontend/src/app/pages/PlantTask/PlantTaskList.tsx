@@ -42,6 +42,8 @@ const PlantTaskList: React.FC = () => {
 
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
 
+  const isSuperAdmin = user?.role === StaffType.SUPERADMIN;
+
   useEffect(() => {
     fetchPlantTasks();
   }, []);
@@ -169,22 +171,45 @@ const PlantTaskList: React.FC = () => {
     );
   };
 
-  const renderContent = () => {
-    return viewMode === 'categories' ? (
-      <PlantTaskCategories
-        open={open}
-        inProgress={inProgress}
-        completed={completed}
-        cancelled={cancelled}
-        setOpen={setOpen}
-        setCompleted={setCompleted}
-        setInProgress={setInProgress}
-        setCancelled={setCancelled}
-        refreshData={fetchPlantTasks}
-      />
-    ) : (
-      renderTableView()
+  const renderViewSelector = () => {
+    if (isSuperAdmin) {
+      return null;
+    }
+    return (
+      <Radio.Group
+        value={viewMode}
+        onChange={(e) => {
+          setViewMode(e.target.value);
+          if (e.target.value === 'categories') {
+            setTableViewType('all');
+          }
+        }}
+      >
+        <Radio.Button value="categories">Board View</Radio.Button>
+        <Radio.Button value="table">Table View</Radio.Button>
+      </Radio.Group>
     );
+  };
+
+  const renderContent = () => {
+    if (isSuperAdmin || viewMode === 'table') {
+      return renderTableView();
+    } else {
+      return (
+        <PlantTaskCategories
+          open={open}
+          inProgress={inProgress}
+          completed={completed}
+          cancelled={cancelled}
+          setOpen={setOpen}
+          setCompleted={setCompleted}
+          setInProgress={setInProgress}
+          setCancelled={setCancelled}
+          refreshData={fetchPlantTasks}
+          userRole={user?.role || ''}
+        />
+      );
+    }
   };
 
   return (
@@ -194,19 +219,8 @@ const PlantTaskList: React.FC = () => {
       {renderDashboardOverview()}
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
-          <Radio.Group
-            value={viewMode}
-            onChange={(e) => {
-              setViewMode(e.target.value);
-              if (e.target.value === 'categories') {
-                setTableViewType('all');
-              }
-            }}
-          >
-            <Radio.Button value="categories">Board View</Radio.Button>
-            <Radio.Button value="table">Table View</Radio.Button>
-          </Radio.Group>
-          {viewMode === 'table' && (
+          {renderViewSelector()}
+          {(isSuperAdmin || viewMode === 'table') && (
             <Select value={tableViewType} onChange={setTableViewType} style={{ width: 200, marginLeft: 16 }}>
               <Select.Option value="all">All Tasks</Select.Option>
               <Select.Option value="grouped-status">Grouped by Status</Select.Option>
@@ -215,7 +229,7 @@ const PlantTaskList: React.FC = () => {
           )}
         </Flex>
         <Flex gap={10}>
-          {viewMode === 'table' && (
+          {(isSuperAdmin || viewMode === 'table') && (
             <Input
               suffix={<FiSearch />}
               placeholder="Search in Plant Tasks..."

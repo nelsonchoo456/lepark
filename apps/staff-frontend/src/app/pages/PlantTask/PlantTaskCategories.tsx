@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { StaffRoleEnum } from '@prisma/client';
 import { useAuth } from '@lepark/common-ui';
+import { StaffType } from '@lepark/data-access';
 
 interface PlantTaskCategoriesProps {
   open: PlantTaskResponse[];
@@ -32,6 +33,7 @@ interface PlantTaskCategoriesProps {
   setCompleted: (items: PlantTaskResponse[]) => void;
   setCancelled: (items: PlantTaskResponse[]) => void;
   refreshData: () => void;
+  userRole: string;
 }
 
 const PlantTaskCategories = ({
@@ -44,6 +46,7 @@ const PlantTaskCategories = ({
   setCompleted,
   setCancelled,
   refreshData,
+  userRole,
 }: PlantTaskCategoriesProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
@@ -285,9 +288,16 @@ const PlantTaskCategories = ({
             </Tag>
           )}
         </div>
+        {userRole === StaffType.SUPERADMIN && (
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+              {`Park: ${task.occurrence?.zone?.park?.name}`}
+            </Typography.Text>
+          </div>
+        )}
         <div>
           <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {`Park: ${task.occurrence?.zone?.park?.name}`}
+            {`Zone: ${task.occurrence?.zone?.name}`}
           </Typography.Text>
         </div>
         <div>

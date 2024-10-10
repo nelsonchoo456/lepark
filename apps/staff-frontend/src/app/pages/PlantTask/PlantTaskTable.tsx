@@ -39,10 +39,21 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   showDeleteModal,
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
+  const [activeKeys, setActiveKeys] = useState<string[]>([]);
 
   useEffect(() => {
     fetchParks();
   }, []);
+
+  useEffect(() => {
+    // Update active keys when tableViewType changes
+    if (tableViewType === 'grouped-status' || tableViewType === 'grouped-urgency') {
+      const groupKeys = tableViewType === 'grouped-status'
+        ? ['OPEN', 'IN_PROGRESS']
+        : ['IMMEDIATE', 'HIGH'];
+      setActiveKeys(groupKeys);
+    }
+  }, [tableViewType]);
 
   const fetchParks = async () => {
     try {
@@ -279,7 +290,10 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
           };
 
     return (
-      <Collapse defaultActiveKey={Object.keys(groupedTasks).slice(0, 2)}>
+      <Collapse
+        activeKey={activeKeys}
+        onChange={(keys) => setActiveKeys(keys as string[])}
+      >
         {Object.entries(groupedTasks).map(([key, tasks]) => (
           <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
             <Table
