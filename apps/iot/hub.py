@@ -27,6 +27,10 @@ NEXT_POLL_IN_SECONDS = 5
 BASE_URL = f'http://{BACKEND_IP}:{BACKEND_PORT}/api'  # Replace with your actual backend URL
 HEADERS = {'content-type': 'application/json'}
 
+# Smoothing window size and weight for sensor readings
+SMOOTHING_WINDOW_SIZE = 5
+SMOOTHING_WEIGHT = 0.4
+
 ser = None
 if COM_PORT:
     import serial
@@ -72,7 +76,7 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
     # Broadcast radio group and sensors
     # this sends the command to all micro:bits to set the radio group to the radioGroup variable and to send data back to the hub
     for sensor in valid_sensors:
-        sendCommand("bct"+sensor+"|"+str(radioGroup))
+        sendCommand("bct" + sensor + "|" + str(radioGroup))
         time.sleep(0.1)
 
     # Allow more time for micro:bits to process commands
@@ -85,7 +89,7 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
 
     poll_result = dict()
     start_time = time.time()
-    timeout = 10  # Set a timeout for polling (increased to 10 seconds)
+    timeout = 5  # Set a timeout for polling, during this time we will repeatedly send the polling command
 
     while time.time() - start_time < timeout:
         sendCommand("pol")
@@ -99,22 +103,39 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
                 try:
                     value = float(data.split("|")[1])
 
-                    if sensorIdentifier in poll_result:
-                        poll_result[sensorIdentifier]["reading"] = poll_result[sensorIdentifier]["reading"] * 0.6 + value * 0.4
-                    else:
+                    if sensorIdentifier not in poll_result:
                         poll_result[sensorIdentifier] = {
-                            "reading": value,
+                            "readings": [],
                             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         }
+                    
+                    poll_result[sensorIdentifier]["readings"].append(value)
+                    
+                    # Keep only the last SMOOTHING_WINDOW_SIZE readings
+                    poll_result[sensorIdentifier]["readings"] = poll_result[sensorIdentifier]["readings"][-SMOOTHING_WINDOW_SIZE:]
+                    
                     print(f"Valid reading received for sensor {sensorIdentifier}")
-                    if len(poll_result) == len(valid_sensors):
-                        print("All sensors have reported. Stopping poll.")
+                    if len(poll_result) == len(valid_sensors) and all(len(sensor_data["readings"]) >= SMOOTHING_WINDOW_SIZE for sensor_data in poll_result.values()):
+                        print("All sensors have reported with enough readings. Stopping poll.")
                         break
                 except:
                     print(f"Invalid reading format for sensor {sensorIdentifier}")
             else:
                 print(f"Received data from invalid sensor: {sensorIdentifier}")
         time.sleep(0.3)
+
+    # Calculate smoothed readings
+    for sensorIdentifier, sensor_data in poll_result.items():
+        print("Smoothing readings for sensor: ", sensorIdentifier)
+        readings = sensor_data["readings"]
+        if len(readings) > 0:
+            # Calculate exponential moving average
+            ema = readings[0]
+            for reading in readings[1:]:
+                ema = ema * (1 - SMOOTHING_WEIGHT) + reading * SMOOTHING_WEIGHT
+            poll_result[sensorIdentifier]["reading"] = ema
+        else:
+            poll_result[sensorIdentifier]["reading"] = None
 
     if len(poll_result) == 0:
         print("No valid sensor readings received within the timeout period.")
@@ -123,7 +144,7 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
     return poll_result
 
 # Send sensor readings to the backend
-def push_sensor_readings_to_backend(valid_sensors, token, conn):
+def push_sensor_readings_to_backend(valid_sensors, token, conn, is_first_time):
     mycursor = conn.cursor()
     # Only take readings that have not been sent to the backend
     mycursor.execute('SELECT readingDate, sensorIdentifier, reading FROM sensordb WHERE sent = 0')
@@ -162,7 +183,7 @@ def push_sensor_readings_to_backend(valid_sensors, token, conn):
         timeout=5).json()
     
     if "sensors" in response:
-        if len(json_payload) == 0:
+        if is_first_time:
             print("Initial call: Fetched list of valid sensors from the backend.")
         else:
             while True:
@@ -245,7 +266,7 @@ def main_function():
 
     print("Starting program...\n")
     mydb = sqlite3.connect("processor.db")
-    valid_sensors, radioGroup = push_sensor_readings_to_backend([], token, mydb)
+    valid_sensors, radioGroup = push_sensor_readings_to_backend([], token, mydb, True)
     if valid_sensors is None:
         print("No valid sensors. Exiting...")
         return  # Exit the main_function
@@ -285,7 +306,7 @@ def main_function():
 
                 # send the sensor values to the backend
                 if polls >= NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND:
-                    valid_sensors, radioGroup = push_sensor_readings_to_backend(valid_sensors, token, mydb)
+                    valid_sensors, radioGroup = push_sensor_readings_to_backend(valid_sensors, token, mydb, False)
                     print("Sensors list refreshed: ", valid_sensors)
                     print()
                     if valid_sensors is None:

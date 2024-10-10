@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, PlantTask } from '@prisma/client';
+import { PrismaClient, Prisma, PlantTask, Staff, PlantTaskStatusEnum } from '@prisma/client';
 import ZoneDao from './ZoneDao';
 
 const prisma = new PrismaClient();
@@ -50,6 +50,14 @@ class PlantTaskDao {
     });
   }
 
+  async getAllAssignedPlantTasks(staffId: string): Promise<PlantTask[]> {
+    return prisma.plantTask.findMany({
+      where: {
+        assignedStaffId: staffId,
+      },
+    });
+  }
+
   async updatePlantTask(id: string, data: Prisma.PlantTaskUpdateInput): Promise<PlantTask> {
     return prisma.plantTask.update({ where: { id }, data });
   }
@@ -58,12 +66,15 @@ class PlantTaskDao {
     await prisma.plantTask.delete({ where: { id } });
   }
 
-  async assignPlantTask(id: string, staffId: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: staffId } });
+  async assignPlantTask(id: string, assignedStaff: Staff): Promise<PlantTask> {
+    return prisma.plantTask.update({
+      where: { id },
+      data: { assignedStaffId: assignedStaff.id },
+    });
   }
 
   async unassignPlantTask(id: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null } });
+    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null, taskStatus: PlantTaskStatusEnum.OPEN } });
   }
 
   async completePlantTask(id: string): Promise<PlantTask> {
@@ -71,11 +82,54 @@ class PlantTaskDao {
   }
 
   async acceptPlantTask(staffId: string, id: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: staffId } });
+    return prisma.plantTask.update({
+      where: { id },
+      data: { assignedStaffId: staffId },
+    });
   }
 
   async unacceptPlantTask(id: string): Promise<PlantTask> {
     return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null } });
+  }
+
+  async getMaxPositionForStatus(status: PlantTaskStatusEnum): Promise<number> {
+    const result = await prisma.plantTask.aggregate({
+      where: { taskStatus: status },
+      _max: { position: true }
+    });
+    return result._max.position || 0;
+  }
+
+  async updatePositions(tasks: { id: string; position: number }[]): Promise<void> {
+    await prisma.$transaction(
+      tasks.map(task => 
+        prisma.plantTask.update({
+          where: { id: task.id },
+          data: { position: task.position }
+        })
+      )
+    );
+  }
+
+  async getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<PlantTask[]> {
+    return prisma.plantTask.findMany({
+      where: { taskStatus: status },
+      orderBy: { position: 'asc' },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+      },
+    });
+  }
+
+  async rebalancePositions(status: PlantTaskStatusEnum): Promise<void> {
+    const tasks = await this.getPlantTasksByStatus(status);
+    const updatedTasks = tasks.map((task, index) => ({
+      id: task.id,
+      position: (index + 1) * 1000, // Multiply by 1000 to leave room between tasks
+    }));
+
+    await this.updatePositions(updatedTasks);
   }
 }
 
