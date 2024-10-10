@@ -62,6 +62,15 @@ const PlantTaskCategories = ({
     const sourceList = getList(source.droppableId as PlantTaskStatusEnum);
     const destList = getList(destination.droppableId as PlantTaskStatusEnum);
 
+    // Check if the task is unassigned and being moved from OPEN to another column
+    const movedTask = sourceList[source.index];
+    if (source.droppableId === PlantTaskStatusEnum.OPEN && 
+        destination.droppableId !== PlantTaskStatusEnum.OPEN && 
+        !movedTask.assignedStaffId) {
+      message.error('Cannot move unassigned tasks. Please assign a staff member first.');
+      return;
+    }
+
     if (source.droppableId === destination.droppableId) {
       // Reordering within the same list
       const reorderedTasks = Array.from(sourceList);
@@ -268,7 +277,8 @@ const PlantTaskCategories = ({
                           draggableId={task.id}
                           index={index}
                           isDragDisabled={
-                            task.taskStatus === PlantTaskStatusEnum.COMPLETED || task.taskStatus === PlantTaskStatusEnum.CANCELLED
+                            task.taskStatus === PlantTaskStatusEnum.COMPLETED ||
+                            task.taskStatus === PlantTaskStatusEnum.CANCELLED
                           }
                         >
                           {(provided, snapshot) => (

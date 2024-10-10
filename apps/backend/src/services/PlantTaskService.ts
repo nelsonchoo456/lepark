@@ -170,7 +170,6 @@ class PlantTaskService {
     }
 
     console.log('assignedStaff', assignedStaff.id);
-    await PlantTaskDao.updatePlantTask(id, { taskStatus: PlantTaskStatusEnum.IN_PROGRESS });
 
     return PlantTaskDao.assignPlantTask(id, assignedStaff);
   }
