@@ -44,7 +44,6 @@ const PlantTaskList: React.FC = () => {
 
   useEffect(() => {
     fetchPlantTasks();
-    fetchStaffList();
   }, []);
 
   const fetchPlantTasks = async () => {
@@ -60,27 +59,23 @@ const PlantTaskList: React.FC = () => {
       setInProgress(sortedTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'));
       setCompleted(sortedTasks.filter((task) => task.taskStatus === 'COMPLETED'));
       setCancelled(sortedTasks.filter((task) => task.taskStatus === 'CANCELLED'));
+
+      // Fetch staff list for each unique parkId
+      const uniqueParkIds = [...new Set(sortedTasks.map(task => task.occurrence?.zone?.parkId))];
+      const staffPromises = uniqueParkIds.map(parkId => getAllStaffsByParkId(parkId));
+      const staffResponses = await Promise.all(staffPromises);
+      
+      const allStaff = staffResponses.flatMap(response => response.data);
+      const filteredStaff = allStaff.filter(staff => 
+        staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST
+      );
+      console.log(filteredStaff);
+      setStaffList(filteredStaff);
     } catch (error) {
       console.error('Error fetching plant tasks:', error);
       messageApi.error('Failed to fetch plant tasks');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchStaffList = async () => {
-    try {
-      let response;
-      if (user?.role === StaffType.SUPERADMIN) {
-        response = await getAllStaffs();
-      } else {
-        response = await getAllStaffsByParkId(user?.parkId);
-      }
-      const filteredStaff = response.data.filter((staff) => staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST);
-      setStaffList(filteredStaff);
-    } catch (error) {
-      console.error('Error fetching staff list:', error);
-      messageApi.error('Failed to fetch staff list');
     }
   };
 

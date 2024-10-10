@@ -51,6 +51,7 @@ const PlantTaskCategories = ({
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -66,7 +67,8 @@ const PlantTaskCategories = ({
     const movedTask = sourceList[source.index];
     if (
       source.droppableId === PlantTaskStatusEnum.OPEN &&
-      (destination.droppableId !== PlantTaskStatusEnum.OPEN && destination.droppableId !== PlantTaskStatusEnum.CANCELLED) &&
+      destination.droppableId !== PlantTaskStatusEnum.OPEN &&
+      destination.droppableId !== PlantTaskStatusEnum.CANCELLED &&
       !movedTask.assignedStaffId
     ) {
       message.error('Cannot move unassigned tasks. Please assign a staff member first.');
@@ -174,11 +176,12 @@ const PlantTaskCategories = ({
     navigate(`/plant-tasks/${taskId}`);
   };
 
-  const handleAssignStaff = async (taskId: string) => {
-    setSelectedTaskId(taskId);
+  const handleAssignStaff = async (task: PlantTaskResponse) => {
+    setSelectedTask(task);
+    setSelectedTaskId(task.id);
     setIsAssignModalVisible(true);
     try {
-      const response = await getAllStaffs();
+      const response = await getAllStaffsByParkId(task.occurrence?.zone?.parkId);
       const staff = response.data.filter((s: StaffResponse) => s.role === StaffRoleEnum.ARBORIST || s.role === StaffRoleEnum.BOTANIST);
       setStaffList(staff);
     } catch (error) {
@@ -188,12 +191,16 @@ const PlantTaskCategories = ({
   };
 
   const handleAssignConfirm = async () => {
-    if (selectedTaskId && selectedStaffId) {
+    if (selectedTaskId && selectedStaffId && selectedTask) {
       try {
         await assignPlantTask(selectedTaskId, user?.id || '', selectedStaffId);
         message.success('Task assigned successfully');
         setIsAssignModalVisible(false);
         refreshData();
+
+        // Update the local state
+        const updatedTask = { ...selectedTask, assignedStaffId: selectedStaffId };
+        updateTaskInList(updatedTask);
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');
@@ -201,9 +208,24 @@ const PlantTaskCategories = ({
     }
   };
 
+  const updateTaskInList = (updatedTask: PlantTaskResponse) => {
+    const listUpdaters = {
+      [PlantTaskStatusEnum.OPEN]: setOpen,
+      [PlantTaskStatusEnum.IN_PROGRESS]: setInProgress,
+      [PlantTaskStatusEnum.COMPLETED]: setCompleted,
+      [PlantTaskStatusEnum.CANCELLED]: setCancelled,
+    };
+
+    const updater = listUpdaters[updatedTask.taskStatus] as React.Dispatch<React.SetStateAction<PlantTaskResponse[]>>;
+    updater((prevList: PlantTaskResponse[]) =>
+      prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task)),
+    );
+  };
+
   const renderTaskCard = (task: PlantTaskResponse) => {
     const isOverdue = moment().isAfter(moment(task.dueDate));
-    const shouldHighlight = isOverdue && (task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED);
+    const shouldHighlight =
+      isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
 
     return (
       <Card
@@ -225,7 +247,7 @@ const PlantTaskCategories = ({
                     View Details
                   </Menu.Item>
                   {!task.assignedStaffId && (
-                    <Menu.Item key="2" onClick={() => handleAssignStaff(task.id)}>
+                    <Menu.Item key="2" onClick={() => handleAssignStaff(task)}>
                       Assign Staff
                     </Menu.Item>
                   )}
@@ -249,14 +271,29 @@ const PlantTaskCategories = ({
           )}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
-          <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
-            {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
-          </Tag>
-          {(isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED) && (
+          <div>
+            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+              {`Urgency: `}
+            </Typography.Text>
+            <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
+              {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
+            </Tag>
+          </div>
+          {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
             <Tag color="red" style={{ fontSize: '0.7rem' }}>
               OVERDUE
             </Tag>
           )}
+        </div>
+        <div>
+          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+            {`Park: ${task.occurrence?.zone?.park?.name}`}
+          </Typography.Text>
+        </div>
+        <div>
+          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+            {task.assignedStaffId ? `Assigned to: ${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : 'Unassigned'}
+          </Typography.Text>
         </div>
         <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
           Due: {moment(task.dueDate).format('D MMM YY')}
@@ -323,7 +360,7 @@ const PlantTaskCategories = ({
         <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>
-              {staff.firstName} {staff.lastName}
+              {staff.firstName} {staff.lastName} - {staff.role}
             </Select.Option>
           ))}
         </Select>
