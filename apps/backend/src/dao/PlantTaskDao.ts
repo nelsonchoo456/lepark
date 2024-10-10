@@ -74,7 +74,7 @@ class PlantTaskDao {
   }
 
   async unassignPlantTask(id: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null } });
+    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null, taskStatus: PlantTaskStatusEnum.OPEN } });
   }
 
   async completePlantTask(id: string): Promise<PlantTask> {

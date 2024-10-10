@@ -9,6 +9,7 @@ import {
   StaffResponse,
   getAllStaffs,
   updatePlantTaskPosition,
+  unassignPlantTask,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
 import moment from 'moment';
@@ -89,13 +90,20 @@ const PlantTaskCategories = ({
 
       // Update status and position in the backend
       try {
-        await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
-        await updatePlantTaskPosition(movedTask.id, destination.index);
-        console.log('Task status updated successfully');
-        message.success('Task status updated successfully');
+        // Unassign staff if the task is moved to "Open" status
+        if (destination.droppableId === PlantTaskStatusEnum.OPEN) {
+          await unassignPlantTask(movedTask.id, user?.id || '');
+          await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
+          await updatePlantTaskPosition(movedTask.id, destination.index);
+          message.success('Task moved to Open and unassigned from staff');
+        } else {
+          await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
+          await updatePlantTaskPosition(movedTask.id, destination.index);
+          message.success('Task status updated successfully');
+        }
       } catch (error) {
-        console.error('Error updating task status or position:', error);
-        message.error('Failed to update task status or position');
+        console.error('Error updating task status, position, or unassigning:', error);
+        message.error('Failed to update task status, position, or unassign');
       }
     }
 
