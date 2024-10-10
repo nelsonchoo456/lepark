@@ -471,7 +471,7 @@ const PlantTaskList: React.FC = () => {
               }
             }}
           >
-            <Radio.Button value="categories">Categories</Radio.Button>
+            <Radio.Button value="categories">Board View</Radio.Button>
             <Radio.Button value="table">Table View</Radio.Button>
           </Radio.Group>
           {viewMode === 'table' && (
