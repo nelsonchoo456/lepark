@@ -30,8 +30,17 @@ How to setup Raspberry Pi for IoT? (make sure you are in SSH)
     d. COM_PORT = <com_port>
         i. If COM_PORT is not known, run `ls /dev/tty*` to find out the COM_PORT
         ii. If there are multiple COM_PORT, try connecting the micro:bit to the Raspberry Pi via USB and see which COM_PORT is being used. (usually /dev/ttyACM0)
+    e. CAMERA_NAME = <camera_name>
 4. nano hub.py and copy paste the code into it.
 5. Run the file by running `python3 hub.py`
+6. Camera:
+    a. Attach camera to Raspberry Pi
+    b. Upload these files into Raspberry Pi: camera.py, utils.py, setup.sh
+    c. Install packages by running `sh setup.sh`. Only needed for first setup, and will take around 10min
+    d. Run `python3 camera.py` to start the camera
+    e. Open http://<rpi_ip_address>:8000 in your browser to view the stream
+        i. Find your rpi_ip_address (should be 192.168.xxx.xxx) by running `hostname -I`
+    f. Camera detection images are saved in the detection_results folder
 
 How to setup micro:bit?
 1. Go to https://makecode.microbit.org/
