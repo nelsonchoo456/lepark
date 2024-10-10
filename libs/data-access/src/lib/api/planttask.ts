@@ -69,8 +69,20 @@ export async function getAllAssignedPlantTasks(staffId: string): Promise<AxiosRe
 
 export async function updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskDetails/${id}`, { taskStatus: newStatus });
-    console.log('updatePlantTaskStatus', response);
+    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskStatus/${id}`, { newStatus });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updatePlantTaskPosition(id: string, newPosition: number): Promise<AxiosResponse<PlantTaskResponse>> {
+  try {
+    const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskPosition/${id}`, { newPosition });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -192,6 +204,19 @@ export async function acceptPlantTask(id: string, staffId: string): Promise<Axio
 export async function unacceptPlantTask(id: string): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
     const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/unacceptPlantTask/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse[]>> {
+  try {
+    const response: AxiosResponse<PlantTaskResponse[]> = await client.get(`${URL}/getPlantTasksByStatus/${status}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

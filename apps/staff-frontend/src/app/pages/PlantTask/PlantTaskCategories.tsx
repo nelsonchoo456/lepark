@@ -1,3 +1,4 @@
+import React from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import {
   PlantTaskResponse,
@@ -7,6 +8,7 @@ import {
   getAllStaffsByParkId,
   StaffResponse,
   getAllStaffs,
+  updatePlantTaskPosition,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
 import moment from 'moment';
@@ -31,38 +33,6 @@ interface PlantTaskCategoriesProps {
   refreshData: () => void;
 }
 
-// Utility function to reorder the lists after drag and drop
-const reorder = (list: PlantTaskResponse[], startIndex: number, endIndex: number): PlantTaskResponse[] => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-  return result;
-};
-
-// Utility function to move tasks between different lists
-const move = (
-  source: PlantTaskResponse[],
-  destination: PlantTaskResponse[],
-  droppableSource: { index: number; droppableId: string },
-  droppableDestination: { index: number; droppableId: string },
-): { [key in PlantTaskStatusEnum]: PlantTaskResponse[] } => {
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
-  destClone.splice(droppableDestination.index, 0, removed);
-
-  const result: { [key in PlantTaskStatusEnum]: PlantTaskResponse[] } = {
-    OPEN: [],
-    IN_PROGRESS: [],
-    COMPLETED: [],
-    CANCELLED: [],
-  };
-  result[droppableSource.droppableId as PlantTaskStatusEnum] = sourceClone;
-  result[droppableDestination.droppableId as PlantTaskStatusEnum] = destClone;
-
-  return result;
-};
-
 const PlantTaskCategories = ({
   open,
   inProgress,
@@ -81,17 +51,6 @@ const PlantTaskCategories = ({
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
 
-  const updateTaskStatusInBackend = async (taskId: string, newStatus: PlantTaskStatusEnum) => {
-    try {
-      // Call your backend API to update the task status
-      await updatePlantTaskStatus(taskId, newStatus);
-      message.success('Task status updated successfully');
-    } catch (error) {
-      message.error('Failed to update task status');
-      console.error(error);
-    }
-  };
-
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
 
@@ -99,26 +58,48 @@ const PlantTaskCategories = ({
       return;
     }
 
-    const movedTask = getList(source.droppableId as PlantTaskStatusEnum)[source.index];
+    const sourceList = getList(source.droppableId as PlantTaskStatusEnum);
+    const destList = getList(destination.droppableId as PlantTaskStatusEnum);
+
     if (source.droppableId === destination.droppableId) {
-      const items = reorder(getList(source.droppableId as PlantTaskStatusEnum), source.index, destination.index);
+      // Reordering within the same list
+      const reorderedTasks = Array.from(sourceList);
+      const [reorderedItem] = reorderedTasks.splice(source.index, 1);
+      reorderedTasks.splice(destination.index, 0, reorderedItem);
 
-      updateListState(source.droppableId as PlantTaskStatusEnum, items);
+      updateListState(source.droppableId as PlantTaskStatusEnum, reorderedTasks);
+
+      // Update position in the backend
+      try {
+        await updatePlantTaskPosition(reorderedItem.id, destination.index);
+      } catch (error) {
+        console.error('Error updating task position:', error);
+        message.error('Failed to update task position');
+      }
     } else {
-      const result = move(
-        getList(source.droppableId as PlantTaskStatusEnum),
-        getList(destination.droppableId as PlantTaskStatusEnum),
-        source,
-        destination,
-      );
+      // Moving from one list to another
+      const sourceClone = Array.from(sourceList);
+      const destClone = Array.from(destList);
+      const [movedTask] = sourceClone.splice(source.index, 1);
 
-      updateListState(source.droppableId as PlantTaskStatusEnum, result[source.droppableId as PlantTaskStatusEnum]);
-      updateListState(destination.droppableId as PlantTaskStatusEnum, result[destination.droppableId as PlantTaskStatusEnum]);
+      destClone.splice(destination.index, 0, { ...movedTask, taskStatus: destination.droppableId as PlantTaskStatusEnum });
 
-      console.log('movedTask', movedTask);
-      await updateTaskStatusInBackend(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
-      refreshData(); // Call the refreshData function after updating the task status
+      updateListState(source.droppableId as PlantTaskStatusEnum, sourceClone);
+      updateListState(destination.droppableId as PlantTaskStatusEnum, destClone);
+
+      // Update status and position in the backend
+      try {
+        await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
+        await updatePlantTaskPosition(movedTask.id, destination.index);
+        console.log('Task status updated successfully');
+        message.success('Task status updated successfully');
+      } catch (error) {
+        console.error('Error updating task status or position:', error);
+        message.error('Failed to update task status or position');
+      }
     }
+
+    refreshData(); // Call the refreshData function after updating the task
   };
 
   const getList = (id: PlantTaskStatusEnum) => {

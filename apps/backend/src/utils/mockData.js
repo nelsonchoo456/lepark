@@ -1641,6 +1641,7 @@ const plantTasksData = [
     submittingStaff: '', // This will be filled programmatically
     occurrence: '', // This will be filled programmatically
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
+    position: 1,
   },
   {
     title: 'Water Evolution Garden',
@@ -1652,6 +1653,7 @@ const plantTasksData = [
     submittingStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
+    position: 2,
   },
   {
     title: 'Fertilize Peach Trees',
@@ -1663,6 +1665,7 @@ const plantTasksData = [
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
+    position: 3,
   },
   {
     title: 'Inspect Toromiro for Pests',
@@ -1674,6 +1677,7 @@ const plantTasksData = [
     submittingStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
+    position: 4,
   },
   {
     title: 'Mulch Tropical Trees',
@@ -1685,6 +1689,7 @@ const plantTasksData = [
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
+    position: 5,
   },
   {
     title: 'Stake Young Mangroves',
@@ -1696,6 +1701,7 @@ const plantTasksData = [
     submittingStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
+    position: 6,
   },
   {
     title: 'Prune Dead Branches',
@@ -1707,6 +1713,7 @@ const plantTasksData = [
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.tomorrowsharvest.com/wp-content/uploads/2017/08/pruning_clippers-how-to-prune-a-tree.jpg'],
+    position: 7,
   },
   {
     title: 'Replant Shrubs',
@@ -1720,6 +1727,7 @@ const plantTasksData = [
     images: [
       'https://www.treehugger.com/thmb/RkJe_rJWflrzXj7p_w81ZQNQTzA=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__mnn__images__2017__03__replant-tree-bfbbfd18d1334ee0aa03851c6800baaa.jpg',
     ],
+    position: 8,
   },
 ];
 

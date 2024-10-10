@@ -55,11 +55,14 @@ const PlantTaskList: React.FC = () => {
       const response = await getAllPlantTasks();
       setPlantTasks(response.data);
 
+      // Sort tasks by position before setting the state
+      const sortedTasks = response.data.sort((a, b) => a.position - b.position);
+
       // set filtered tables
-      setOpen(response.data.filter((task) => task.taskStatus === 'OPEN'));
-      setInProgress(response.data.filter((task) => task.taskStatus === 'IN_PROGRESS'));
-      setCompleted(response.data.filter((task) => task.taskStatus === 'COMPLETED'));
-      setCancelled(response.data.filter((task) => task.taskStatus === 'CANCELLED'));
+      setOpen(sortedTasks.filter((task) => task.taskStatus === 'OPEN'));
+      setInProgress(sortedTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'));
+      setCompleted(sortedTasks.filter((task) => task.taskStatus === 'COMPLETED'));
+      setCancelled(sortedTasks.filter((task) => task.taskStatus === 'CANCELLED'));
     } catch (error) {
       console.error('Error fetching plant tasks:', error);
       messageApi.error('Failed to fetch plant tasks');
@@ -320,7 +323,7 @@ const PlantTaskList: React.FC = () => {
           setCompleted={setCompleted} 
           setInProgress={setInProgress} 
           setCancelled={setCancelled}
-          refreshData={refreshData} // Pass the refreshData function
+          refreshData={fetchPlantTasks} // Use fetchPlantTasks instead of refreshData
         />
       )
     } else {

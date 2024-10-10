@@ -62,6 +62,9 @@ class PlantTaskService {
       formattedData.submittingStaffId = submittingStaffId;
       PlantTaskSchema.parse(formattedData);
 
+      const maxPosition = await PlantTaskDao.getMaxPositionForStatus(taskStatus);
+      formattedData.position = maxPosition + 1;
+
       return PlantTaskDao.createPlantTask(formattedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -330,6 +333,65 @@ class PlantTaskService {
     );
 
     return enhancedPlantTasks;
+  }
+
+  public async updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);
+    const updatedTask = await PlantTaskDao.updatePlantTask(id, {
+      taskStatus: newStatus,
+      position: maxPosition + 1000, // Add 1000 to ensure it's at the end
+    });
+
+    return updatedTask;
+  }
+
+  public async updatePlantTaskPosition(id: string, newPosition: number): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    const tasksInSameStatus = await PlantTaskDao.getPlantTasksByStatus(plantTask.taskStatus);
+    
+    // Sort tasks by position
+    tasksInSameStatus.sort((a, b) => a.position - b.position);
+
+    console.log('Finding the tasks immediately before and after the new position');
+    const beforeTask = tasksInSameStatus[newPosition - 1];
+    const afterTask = tasksInSameStatus[newPosition];
+
+    // Calculate the new position
+    let newActualPosition: number;
+    if (!beforeTask) {
+      // If inserting at the beginning, use a position before the first task
+      newActualPosition = afterTask ? afterTask.position - 1 : 1;
+    } else if (!afterTask) {
+      // If inserting at the end, use a position after the last task
+      newActualPosition = beforeTask.position + 1;
+    } else {
+      // If inserting between two tasks, use the average of their positions
+      newActualPosition = Math.floor((beforeTask.position + afterTask.position) / 2);
+    }
+
+    // Check if rebalancing is needed
+    if (newActualPosition === beforeTask?.position || newActualPosition === afterTask?.position) {
+      await PlantTaskDao.rebalancePositions(plantTask.taskStatus);
+      return this.updatePlantTaskPosition(id, newPosition); // Recursive call after rebalancing
+    }
+
+    // Update the position of the task
+    await PlantTaskDao.updatePlantTask(id, { position: newActualPosition });
+
+    return PlantTaskDao.getPlantTaskById(id);
+  }
+
+  public async getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<PlantTask[]> {
+    return PlantTaskDao.getPlantTasksByStatus(status);
   }
 }
 
