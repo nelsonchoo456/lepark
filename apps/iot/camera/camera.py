@@ -39,7 +39,7 @@ import matplotlib.pyplot as plt
 
 # Load environment variables from .env file
 load_dotenv()
-CAMERA_NAME = os.getenv("CAMERA_NAME")
+CAMERA_IDENTIFIER_NO = os.getenv("CAMERA_IDENTIFIER_NO")
 
 #####
 # MJPEG Web Server
@@ -203,7 +203,7 @@ def run_detection(model: str, max_results: int, score_threshold: float) -> None:
                 mycursor = mydb.cursor()
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 query = "INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)"
-                mycursor.execute(query, (current_time, CAMERA_NAME, person_count, 0))
+                mycursor.execute(query, (current_time, CAMERA_IDENTIFIER_NO, person_count, 0))
                 mydb.commit()
                 print(f"Inserted person count {person_count} into database")
         except sqlite3.Error as e:
