@@ -26,6 +26,9 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PlantTaskCategories from './PlantTaskCategories';
+import { Collapse } from 'antd';
+
+const { Panel } = Collapse;
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
@@ -43,6 +46,7 @@ const PlantTaskList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [viewMode, setViewMode] = useState<'categories' | 'table'>('categories');
+  const [tableViewType, setTableViewType] = useState<'all' | 'grouped-status' | 'grouped-urgency'>('all');
 
   const [open, setOpen] = useState<PlantTaskResponse[]>([]);
   const [inProgress, setInProgress] = useState<PlantTaskResponse[]>([]);
@@ -376,6 +380,60 @@ const PlantTaskList: React.FC = () => {
     fetchPlantTasks();
   };
 
+  const renderGroupedTasks = (groupBy: 'status' | 'urgency') => {
+    const groupedTasks = groupBy === 'status' 
+      ? {
+          OPEN: plantTasks.filter(task => task.taskStatus === 'OPEN'),
+          IN_PROGRESS: plantTasks.filter(task => task.taskStatus === 'IN_PROGRESS'),
+          COMPLETED: plantTasks.filter(task => task.taskStatus === 'COMPLETED'),
+          CANCELLED: plantTasks.filter(task => task.taskStatus === 'CANCELLED'),
+        }
+      : {
+          IMMEDIATE: plantTasks.filter(task => task.taskUrgency === 'IMMEDIATE'),
+          HIGH: plantTasks.filter(task => task.taskUrgency === 'HIGH'),
+          NORMAL: plantTasks.filter(task => task.taskUrgency === 'NORMAL'),
+          LOW: plantTasks.filter(task => task.taskUrgency === 'LOW'),
+        };
+
+    return (
+      <Collapse defaultActiveKey={Object.keys(groupedTasks).slice(0, 2)}>
+        {Object.entries(groupedTasks).map(([key, tasks]) => (
+          <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
+            <Table 
+              dataSource={tasks} 
+              columns={columns.filter(col => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))} 
+              rowKey="id" 
+              pagination={{ pageSize: 5 }}
+              scroll={{ x: SCREEN_LG }}
+            />
+          </Panel>
+        ))}
+      </Collapse>
+    );
+  };
+
+  const renderTableView = () => {
+    switch (tableViewType) {
+      case 'grouped-status':
+        return renderGroupedTasks('status');
+      case 'grouped-urgency':
+        return renderGroupedTasks('urgency');
+      default:
+        return (
+          <Card>
+            <Table 
+              dataSource={filteredPlantTasks} 
+              columns={columns} 
+              rowKey="id" 
+              loading={loading} 
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: SCREEN_LG }} 
+            />
+          </Card>
+        );
+    }
+  };
+
   const renderContent = () => {
     if (viewMode === 'categories') {
       return (
@@ -388,15 +446,11 @@ const PlantTaskList: React.FC = () => {
           setCompleted={setCompleted} 
           setInProgress={setInProgress} 
           setCancelled={setCancelled}
-          refreshData={fetchPlantTasks} // Use fetchPlantTasks instead of refreshData
+          refreshData={fetchPlantTasks}
         />
-      )
-    } else {
-      return (
-        <Card>
-          <Table dataSource={filteredPlantTasks} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
-        </Card>
       );
+    } else {
+      return renderTableView();
     }
   };
 
@@ -406,10 +460,31 @@ const PlantTaskList: React.FC = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {renderDashboardOverview()}
       <Flex justify="space-between" align="center" className="mb-4">
-        <Radio.Group value={viewMode} onChange={(e) => setViewMode(e.target.value)}>
-          <Radio.Button value="categories">Categories</Radio.Button>
-          <Radio.Button value="table">Table</Radio.Button>
-        </Radio.Group>
+        <Flex align="center">
+          <Radio.Group 
+            value={viewMode} 
+            onChange={(e) => {
+              setViewMode(e.target.value);
+              if (e.target.value === 'categories') {
+                setTableViewType('all');
+              }
+            }}
+          >
+            <Radio.Button value="categories">Categories</Radio.Button>
+            <Radio.Button value="table">Table View</Radio.Button>
+          </Radio.Group>
+          {viewMode === 'table' && (
+            <Select
+              value={tableViewType}
+              onChange={setTableViewType}
+              style={{ width: 200, marginLeft: 16 }}
+            >
+              <Select.Option value="all">All Tasks</Select.Option>
+              <Select.Option value="grouped-status">Grouped by Status</Select.Option>
+              <Select.Option value="grouped-urgency">Grouped by Urgency</Select.Option>
+            </Select>
+          )}
+        </Flex>
         <Flex gap={10}>
           <Input
             suffix={<FiSearch />}
