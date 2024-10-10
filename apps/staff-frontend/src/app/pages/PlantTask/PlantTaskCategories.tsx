@@ -64,9 +64,11 @@ const PlantTaskCategories = ({
 
     // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
-    if (source.droppableId === PlantTaskStatusEnum.OPEN && 
-        destination.droppableId !== PlantTaskStatusEnum.OPEN && 
-        !movedTask.assignedStaffId) {
+    if (
+      source.droppableId === PlantTaskStatusEnum.OPEN &&
+      destination.droppableId !== PlantTaskStatusEnum.OPEN &&
+      !movedTask.assignedStaffId
+    ) {
       message.error('Cannot move unassigned tasks. Please assign a staff member first.');
       return;
     }
@@ -217,9 +219,11 @@ const PlantTaskCategories = ({
                 <Menu.Item key="1" onClick={() => handleViewDetails(task.id)}>
                   View Details
                 </Menu.Item>
-                <Menu.Item key="2" onClick={() => handleAssignStaff(task.id)}>
-                  Assign Staff
-                </Menu.Item>
+                {!task.assignedStaffId && (
+                  <Menu.Item key="2" onClick={() => handleAssignStaff(task.id)}>
+                    Assign Staff
+                  </Menu.Item>
+                )}
               </Menu>
             }
             trigger={['click']}
@@ -277,8 +281,7 @@ const PlantTaskCategories = ({
                           draggableId={task.id}
                           index={index}
                           isDragDisabled={
-                            task.taskStatus === PlantTaskStatusEnum.COMPLETED ||
-                            task.taskStatus === PlantTaskStatusEnum.CANCELLED
+                            task.taskStatus === PlantTaskStatusEnum.COMPLETED || task.taskStatus === PlantTaskStatusEnum.CANCELLED
                           }
                         >
                           {(provided, snapshot) => (
