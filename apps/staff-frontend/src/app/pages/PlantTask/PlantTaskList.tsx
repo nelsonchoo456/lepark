@@ -1,6 +1,6 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Row, Col, Statistic, Radio } from 'antd';
+import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Row, Col, Statistic, Radio, Select } from 'antd';
 import moment from 'moment';
 import { FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
@@ -12,6 +12,9 @@ import {
   deletePlantTask,
   PlantTaskTypeEnum,
   PlantTaskStatusEnum,
+  assignPlantTask,
+  getAllStaffsByParkId,
+  getAllStaffs,
 } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -46,8 +49,11 @@ const PlantTaskList: React.FC = () => {
   const [completed, setCompleted] = useState<PlantTaskResponse[]>([]);
   const [cancelled, setCancelled] = useState<PlantTaskResponse[]>([]);
 
+  const [staffList, setStaffList] = useState<StaffResponse[]>([]);
+
   useEffect(() => {
     fetchPlantTasks();
+    fetchStaffList();
   }, []);
 
   const fetchPlantTasks = async () => {
@@ -68,6 +74,33 @@ const PlantTaskList: React.FC = () => {
       messageApi.error('Failed to fetch plant tasks');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStaffList = async () => {
+    try {
+      let response;
+      if (user?.role === StaffType.SUPERADMIN) {
+        response = await getAllStaffs();
+      } else {
+        response = await getAllStaffsByParkId(user?.parkId);
+      }
+      const filteredStaff = response.data.filter((staff) => staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST);
+      setStaffList(filteredStaff);
+    } catch (error) {
+      console.error('Error fetching staff list:', error);
+      messageApi.error('Failed to fetch staff list');
+    }
+  };
+
+  const handleAssignStaff = async (plantTaskId: string, staffId: string) => {
+    try {
+      await assignPlantTask(plantTaskId, user?.id || '', staffId);
+      messageApi.success('Staff assigned successfully');
+      fetchPlantTasks();
+    } catch (error) {
+      console.error('Error assigning staff:', error);
+      messageApi.error('Failed to assign staff');
     }
   };
 
@@ -178,6 +211,14 @@ const PlantTaskList: React.FC = () => {
       width: '10%',
     },
     {
+      title: 'Created Date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => moment(a.createdAt).valueOf() - moment(b.createdAt).valueOf(),
+      width: '10%',
+    },
+    {
       title: 'Due Date',
       dataIndex: 'dueDate',
       key: 'dueDate',
@@ -227,6 +268,30 @@ const PlantTaskList: React.FC = () => {
       ],
       onFilter: (value, record) => record.taskStatus === value,
       width: '10%',
+    },
+    {
+      title: 'Assigned Staff',
+      key: 'assignedStaff',
+      render: (_, record) => {
+        if (record.assignedStaff) {
+          return `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`;
+        } else {
+          return (
+            <Select
+              style={{ width: 200 }}
+              placeholder="Assign staff"
+              onChange={(value) => handleAssignStaff(record.id, value)}
+            >
+              {staffList.map((staff) => (
+                <Select.Option key={staff.id} value={staff.id}>
+                  {`${staff.firstName} ${staff.lastName}`}
+                </Select.Option>
+              ))}
+            </Select>
+          );
+        }
+      },
+      width: '15%',
     },
     {
       title: 'Actions',
