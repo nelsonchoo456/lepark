@@ -359,32 +359,30 @@ class PlantTaskService {
     // Sort tasks by position
     tasksInSameStatus.sort((a, b) => a.position - b.position);
 
-    console.log('Finding the tasks immediately before and after the new position');
-    const beforeTask = tasksInSameStatus[newPosition - 1];
-    const afterTask = tasksInSameStatus[newPosition];
-
-    // Calculate the new position
-    let newActualPosition: number;
-    if (!beforeTask) {
-      // If inserting at the beginning, use a position before the first task
-      newActualPosition = afterTask ? afterTask.position - 1 : 1;
-    } else if (!afterTask) {
-      // If inserting at the end, use a position after the last task
-      newActualPosition = beforeTask.position + 1;
-    } else {
-      // If inserting between two tasks, use the average of their positions
-      newActualPosition = Math.floor((beforeTask.position + afterTask.position) / 2);
+    // Find the current index of the task being moved
+    const currentIndex = tasksInSameStatus.findIndex(task => task.id === id);
+    if (currentIndex === -1) {
+      throw new Error('Task not found in the current status');
     }
 
-    // Check if rebalancing is needed
-    if (newActualPosition === beforeTask?.position || newActualPosition === afterTask?.position) {
-      await PlantTaskDao.rebalancePositions(plantTask.taskStatus);
-      return this.updatePlantTaskPosition(id, newPosition); // Recursive call after rebalancing
-    }
+    // Remove the task from its current position
+    const [movedTask] = tasksInSameStatus.splice(currentIndex, 1);
 
-    // Update the position of the task
-    await PlantTaskDao.updatePlantTask(id, { position: newActualPosition });
+    // Insert the task at the new position
+    tasksInSameStatus.splice(newPosition, 0, movedTask);
 
+    // Recalculate positions for all tasks
+    const updatedTasks = tasksInSameStatus.map((task, index) => ({
+      id: task.id,
+      position: (index + 1) * 1000
+    }));
+
+    // Update all task positions in the database
+    await Promise.all(updatedTasks.map(task => 
+      PlantTaskDao.updatePlantTask(task.id, { position: task.position })
+    ));
+
+    // Return the updated task
     return PlantTaskDao.getPlantTaskById(id);
   }
 
