@@ -507,14 +507,6 @@ const PlantTaskList: React.FC = () => {
         onCancel={cancelDelete}
         description="Are you sure you want to delete this Plant Task?"
       />
-      <style jsx global>{`
-        .overdue-row {
-          background-color: rgba(255, 0, 0, 0.1);
-        }
-        .overdue-row:hover td {
-          background-color: rgba(255, 0, 0, 0.2) !important;
-        }
-      `}</style>
     </ContentWrapperDark>
   );
 };
