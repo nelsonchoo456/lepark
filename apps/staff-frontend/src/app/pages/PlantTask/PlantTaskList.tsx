@@ -220,20 +220,22 @@ const PlantTaskList: React.FC = () => {
           )}
         </Flex>
         <Flex gap={10}>
-          <Input
-            suffix={<FiSearch />}
-            placeholder="Search in Plant Tasks..."
-            className="bg-white"
-            variant="filled"
-            onChange={handleSearch}
-          />
+          {viewMode === 'table' && (
+            <Input
+              suffix={<FiSearch />}
+              placeholder="Search in Plant Tasks..."
+              className="bg-white"
+              variant="filled"
+              onChange={handleSearch}
+            />
+          )}
           <Button
             type="primary"
             onClick={() => {
               navigate('/plant-tasks/create');
             }}
           >
-            Create Plant Tak
+            Create Plant Task
           </Button>
         </Flex>
       </Flex>

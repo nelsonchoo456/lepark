@@ -206,14 +206,16 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
             if (record.assignedStaff) {
               return `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`;
             } else {
-              return (
+              return record.taskStatus === PlantTaskStatusEnum.OPEN ? (
                 <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
-                  {staffList.map((staff) => (
+                  {staffList.map((staff: StaffResponse) => (
                     <Select.Option key={staff.id} value={staff.id}>
                       {`${staff.firstName} ${staff.lastName}`}
                     </Select.Option>
                   ))}
                 </Select>
+              ) : (
+                <></>
               );
             }
           },
