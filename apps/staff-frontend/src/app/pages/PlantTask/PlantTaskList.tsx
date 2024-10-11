@@ -189,10 +189,6 @@ const PlantTaskList: React.FC = () => {
                 onParkChange={(parkId) => setSelectedParkId(parkId)}
               />
             </TabPane>
-            <TabPane tab="Chart 2" key="3">
-              {/* Add your second chart component here */}
-              <div>Chart 2 Content</div>
-            </TabPane>
           </Tabs>
         </Card>
       </>
