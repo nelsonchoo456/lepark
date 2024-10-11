@@ -238,7 +238,7 @@ const PlantTaskList: React.FC = () => {
                 <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
               </Col>
             </Flex>
-            {!inDashboards && (
+            {!inDashboards && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
               <div className="flex items-center">
                 <Button type="link" onClick={() => setInDashboards(true)}>
                   View more
