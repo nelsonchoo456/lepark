@@ -2069,31 +2069,31 @@ const eventsData = [
 
 const decarbonizationAreasData = [
   {
-    geom: "SRID=4326;POLYGON((103.83966207504274 1.3644984821319806, 103.83952796459201 1.3643644097063403, 103.83966743946075 1.3642196114782348, 103.83983373641968 1.3640909019348833, 103.83990883827211 1.3642196114782348))",
+    geom: "SRID=4326;POLYGON((103.83966207504274 1.3644984821319806, 103.83952796459201 1.3643644097063403, 103.83966743946075 1.3642196114782348, 103.83983373641968 1.3640909019348833, 103.83990883827211 1.3642196114782348, 103.83966207504274 1.3644984821319806))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "Palm Valley North",
     parkId: 1
   },
   {
-    geom: "SRID=4326;POLYGON((103.81528615951541 1.3088363401940348, 103.81925175476076 1.3076242977326034, 103.81657361984254 1.3077315581510425, 103.81529376134541 1.3091796735510283))",
+    geom: "SRID=4326;POLYGON((103.81528615951541 1.3088363401940348, 103.81925175476076 1.3076242977326034, 103.81657361984254 1.3077315581510425, 103.81529376134541 1.3091796735510283, 103.81528615951541 1.3088363401940348))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "East Area",
     parkId: 2
   },
   {
-    geom: "SRID=4326;POLYGON((103.81365001201631 1.3104669972711763, 103.81317257881166 1.3100001149265114, 103.81384315106537 1.3092171144747307, 103.81430983543397 1.3098070463444697, 103.81417303605662 1.3102171144747307))",
+    geom: "SRID=4326;POLYGON((103.81365001201631 1.3104669972711763, 103.81317257881166 1.3100001149265114, 103.81384315106537 1.3092171144747307, 103.81430983543397 1.3098070463444697, 103.81417303605662 1.3102171144747307, 103.81365001201631 1.3104669972711763))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "West Area",
     parkId: 2
   },
   {
-    geom: "SRID=4326;POLYGON((103.83910953998567 1.3642410630681403, 103.83876085281372 1.3641713454002702, 103.83878231048584 1.3638924747085996, 103.83927583694461 1.3638978376068172, 103.83967280387 1.3641713454002702))",
+    geom: "SRID=4326;POLYGON((103.83910953998567 1.3642410630681403, 103.83876085281372 1.3641713454002702, 103.83878231048584 1.3638924747085996, 103.83927583694461 1.3638978376068172, 103.83967280387 1.3641713454002702, 103.83910953998567 1.3642410630681403))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "Palm Valley Central",
     parkId: 1
   },
   {
-    geom: "SRID=4326;POLYGON((103.83972644805911 1.3638602973190153, 103.83977472782136 1.3635331605005394, 103.84013414382936 1.3635492491975707, 103.84004294872284 1.3637852167416558))",
+    geom: "SRID=4326;POLYGON((103.83972644805911 1.3638602973190153, 103.83977472782136 1.3635331605005394, 103.84013414382936 1.3635492491975707, 103.84004294872284 1.3637852167416558, 103.83972644805911 1.3638602973190153))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "Palm Valley South",
     parkId: 1
