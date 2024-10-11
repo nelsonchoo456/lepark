@@ -58,4 +58,14 @@ router.get('/getFAQsByParkId/:parkId', async (req, res) => {
   }
 });
 
+router.put('/updateFAQPriorities', async (req, res) => {
+  try {
+    const { faqs } = req.body;
+    await FAQService.updateFAQPriorities(faqs);
+    res.status(200).send('Priorities updated successfully');
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

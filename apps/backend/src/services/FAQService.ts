@@ -50,6 +50,11 @@ class FAQService {
   async getFAQsByParkId(parkId: number) {
     return await FAQDao.getFAQsByParkId(parkId);
   }
+
+  async updateFAQPriorities(faqs: { id: string; priority: number }[]) {
+    const updatePromises = faqs.map((faq) => FAQDao.updateFAQ(faq.id, { priority: faq.priority }));
+    await Promise.all(updatePromises);
+  }
 }
 
 export default new FAQService();

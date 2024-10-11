@@ -86,6 +86,7 @@ import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
+import FAQList from './pages/FAQ/FAQList';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -501,6 +502,10 @@ export function App() {
                     </>
                   }
                 />
+              </Route>
+
+              <Route path="/faq">
+                <Route index element={<FAQList />} />
               </Route>
 
               {/* Catch-all for 404 */}

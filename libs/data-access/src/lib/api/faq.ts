@@ -58,6 +58,14 @@ export async function getFAQsByParkId(parkId: number): Promise<AxiosResponse<FAQ
   }
 }
 
+export async function updateFAQPriorities(faqs: FAQResponse[]): Promise<void> {
+  try {
+    await client.put(`${URL}/updateFAQPriorities`, { faqs });
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
 function handleAxiosError(error: any): never {
   if (axios.isAxiosError(error)) {
     if (error.response) {
