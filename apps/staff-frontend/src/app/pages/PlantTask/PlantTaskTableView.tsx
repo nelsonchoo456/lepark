@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker } from 'antd';
+import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, Tabs, Card } from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -10,8 +10,10 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { CloseOutlined } from '@ant-design/icons';
 import { useAuth } from '@lepark/common-ui';
 import EditPlantTaskModal from './EditPlantTaskModal';
+import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 
 const { Panel } = Collapse;
+const { TabPane } = Tabs;
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
@@ -344,20 +346,22 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           };
 
     return (
-      <Collapse activeKey={activeKeys} onChange={(keys) => setActiveKeys(keys as string[])}>
+      <TabsNoBottomMargin defaultActiveKey="1" type="card">
         {Object.entries(groupedTasks).map(([key, tasks]) => (
-          <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
-            <Table
-              dataSource={tasks}
-              columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
-              rowKey="id"
-              pagination={{ pageSize: 5 }}
-              scroll={{ x: SCREEN_LG }}
-              {...tableProps}
-            />
-          </Panel>
+          <TabPane tab={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
+            <Card styles={{ body: { padding: 0 } }} className="p-4 border-t-0 rounded-tl-none">
+              <Table
+                dataSource={tasks}
+                columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
+                rowKey="id"
+                pagination={{ pageSize: 5 }}
+                scroll={{ x: SCREEN_LG }}
+                {...tableProps}
+              />
+            </Card>
+          </TabPane>
         ))}
-      </Collapse>
+      </TabsNoBottomMargin>
     );
   };
 
@@ -385,7 +389,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       return renderGroupedTasks('urgency', tableProps);
     default:
       return (
-        <>
+        <Card styles={{ body: { padding: "1rem" }}}>
           <Table
             dataSource={plantTasks}
             columns={columns}
@@ -401,7 +405,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             onSubmit={handleEditSubmit}
             initialValues={editingTask}
           />
-        </>
+        </Card>
       );
   }
 };

@@ -12,6 +12,7 @@ import {
   unassignPlantTask,
   updatePlantTaskDetails,
   PlantTaskUpdateData,
+  deleteManyPlantTasks,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
 import moment from 'moment';
@@ -395,6 +396,14 @@ const PlantTaskBoardView = ({
     }
   };
 
+  const handleDeleteTasks = async (taskType: string) => {
+    if (taskType === "COMPLETED" || taskType === "CANCELLED") {
+      await deleteManyPlantTasks(taskType);
+      message.success('Cleared Tasks.');
+      refreshData();
+    }
+  }
+
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -407,7 +416,15 @@ const PlantTaskBoardView = ({
           ].map((status) => (
             <Col span={6} key={status.value}>
               <Card
-                title={status.title}
+                title={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (status.value === "COMPLETED" || status.value === "CANCELLED") ?
+                  <div className="flex justify-between">
+                    <div>{status.title}</div>
+                    <Dropdown menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}>
+                      <MoreOutlined style={{ cursor: 'pointer' }} />
+                    </Dropdown>
+                  </div>
+                  : status.title
+                }
                 styles={{
                   header: { backgroundColor: status.color, color: 'white' },
                   body: { padding: '1rem', overflowY: 'auto' },

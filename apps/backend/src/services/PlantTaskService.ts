@@ -133,6 +133,10 @@ class PlantTaskService {
     await PlantTaskDao.deletePlantTask(id);
   }
 
+  public async deleteTaskskByStatus(taskStatus: PlantTaskStatusEnum): Promise<void> {
+    await PlantTaskDao.deleteTaskskByStatus(taskStatus);
+  }
+
   public async assignPlantTask(id: string, assignerStaffId: string, staffId: string): Promise<PlantTask> {
     const plantTask = await PlantTaskDao.getPlantTaskById(id);
     if (!plantTask) {

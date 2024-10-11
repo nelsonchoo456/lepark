@@ -254,21 +254,19 @@ const PlantTaskList: React.FC = () => {
 
   const renderTableView = () => {
     return (
-      <Card>
-        <PlantTaskTableView
-          plantTasks={filteredPlantTasks}
-          loading={loading}
-          staffList={staffList}
-          tableViewType={tableViewType}
-          userRole={user?.role || ''}
-          handleAssignStaff={handleAssignStaff}
-          navigateToDetails={navigateToDetails}
-          navigate={navigate}
-          showDeleteModal={showDeleteModal}
-          handleUnassignStaff={handleUnassignStaff}
-          onTaskUpdated={fetchPlantTasks}
-        />
-      </Card>
+      <PlantTaskTableView
+        plantTasks={filteredPlantTasks}
+        loading={loading}
+        staffList={staffList}
+        tableViewType={tableViewType}
+        userRole={user?.role || ''}
+        handleAssignStaff={handleAssignStaff}
+        navigateToDetails={navigateToDetails}
+        navigate={navigate}
+        showDeleteModal={showDeleteModal}
+        handleUnassignStaff={handleUnassignStaff}
+        onTaskUpdated={fetchPlantTasks}
+      />
     );
   };
 

@@ -12,7 +12,7 @@ import styled from 'styled-components';
 import AssetsByTypeTable from './components/AssetsByTypeTable';
 import { ParkAssetTypeEnum } from '@lepark/data-access';
 
-const TabsNoBottomMargin = styled(Tabs)`
+export const TabsNoBottomMargin = styled(Tabs)`
   .ant-tabs-nav {
     margin-bottom: 0px;
   }

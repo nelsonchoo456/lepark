@@ -134,6 +134,23 @@ export async function deletePlantTask(id: string): Promise<AxiosResponse<void>> 
   }
 }
 
+export async function deleteManyPlantTasks(taskStatus?: PlantTaskStatusEnum): Promise<AxiosResponse<void>> {
+  try {
+    const params: Record<string, any> = {};
+    if (taskStatus !== undefined) {
+      params.taskStatus = taskStatus; // Add `archived` to the query if defined
+    }
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteMany`, { params });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getPlantTasksByParkId(parkId: number): Promise<AxiosResponse<PlantTaskResponse[]>> {
   try {
     const response: AxiosResponse<PlantTaskResponse[]> = await client.get(`${URL}/getAllPlantTasksByParkId/${parkId}`);
