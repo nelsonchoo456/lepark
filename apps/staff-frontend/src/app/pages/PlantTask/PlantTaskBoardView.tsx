@@ -10,6 +10,8 @@ import {
   getAllStaffs,
   updatePlantTaskPosition,
   unassignPlantTask,
+  updatePlantTaskDetails,
+  PlantTaskUpdateData,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
 import moment from 'moment';
@@ -22,6 +24,7 @@ import { StaffRoleEnum } from '@prisma/client';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
+import EditPlantTaskModal from './EditPlantTaskModal';
 
 interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
@@ -56,6 +59,8 @@ const PlantTaskBoardView = ({
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -229,6 +234,25 @@ const PlantTaskBoardView = ({
     );
   };
 
+  const handleEditDetails = (task: PlantTaskResponse) => {
+    setEditingTask(task);
+    setEditModalVisible(true);
+  };
+
+  const handleEditSubmit = async (values: PlantTaskUpdateData) => {
+    if (editingTask) {
+      try {
+        await updatePlantTaskDetails(editingTask.id, values);
+        setEditModalVisible(false);
+        refreshData(); // Refresh the task list
+        message.success('Task updated successfully');
+      } catch (error) {
+        console.error('Error updating plant task:', error);
+        message.error('Failed to update task');
+      }
+    }
+  };
+
   const renderTaskCard = (task: PlantTaskResponse) => {
     const isOverdue = moment().isAfter(moment(task.dueDate));
     const isDueSoon = moment(task.dueDate).isBetween(moment(), moment().add(3, 'days')); // Consider "due soon" if within 3 days
@@ -243,12 +267,17 @@ const PlantTaskBoardView = ({
         key: '1',
         onClick: () => handleViewDetails(task.id),
       },
+      {
+        label: 'Edit Details',
+        key: '2',
+        onClick: () => handleEditDetails(task),
+      },
     ];
 
     if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && !task.assignedStaffId) {
       dropdownItems.push({
         label: 'Assign Staff',
-        key: '2',
+        key: '3',
         onClick: () => handleAssignStaff(task),
       });
     }
@@ -258,7 +287,7 @@ const PlantTaskBoardView = ({
         task.taskStatus === PlantTaskStatusEnum.OPEN) {
       dropdownItems.push({
         label: 'Unassign Staff',
-        key: '3',
+        key: '4',
         onClick: () => handleUnassignStaff(task),
       });
     }
@@ -414,7 +443,7 @@ const PlantTaskBoardView = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal title="Assign Staff" visible={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
+      <Modal title="Assign Staff" open={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
         <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>
@@ -423,6 +452,12 @@ const PlantTaskBoardView = ({
           ))}
         </Select>
       </Modal>
+      <EditPlantTaskModal
+        visible={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onSubmit={handleEditSubmit}
+        initialValues={editingTask}
+      />
     </>
   );
 };

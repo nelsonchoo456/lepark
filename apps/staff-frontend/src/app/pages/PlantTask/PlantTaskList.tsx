@@ -242,6 +242,7 @@ const PlantTaskList: React.FC = () => {
           navigate={navigate}
           showDeleteModal={showDeleteModal}
           handleUnassignStaff={handleUnassignStaff}
+          onTaskUpdated={fetchPlantTasks}
         />
       </Card>
     );

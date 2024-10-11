@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse } from 'antd';
+import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker } from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
-import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks } from '@lepark/data-access';
+import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks, updatePlantTaskDetails, PlantTaskUpdateData } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { CloseOutlined } from '@ant-design/icons';
 import { useAuth } from '@lepark/common-ui';
+import EditPlantTaskModal from './EditPlantTaskModal';
 
 const { Panel } = Collapse;
 
@@ -28,6 +29,7 @@ interface PlantTaskTableViewProps {
   navigate: (path: string) => void;
   showDeleteModal: (plantTask: PlantTaskResponse) => void;
   handleUnassignStaff: (plantTaskId: string, staffId: string) => void;
+  onTaskUpdated: () => void; // Add this prop to refresh the task list after update
 }
 
 const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
@@ -41,10 +43,14 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   navigate,
   showDeleteModal,
   handleUnassignStaff,
+  onTaskUpdated,
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
   const { user } = useAuth<StaffResponse>();
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchParks();
@@ -68,6 +74,24 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       setParks(parkOptions);
     } catch (error) {
       console.error('Error fetching parks:', error);
+    }
+  };
+
+  const showEditModal = (task: PlantTaskResponse) => {
+    setEditingTask(task);
+    setEditModalVisible(true);
+  };
+
+  const handleEditSubmit = async (values: PlantTaskUpdateData) => {
+    if (editingTask) {
+      try {
+        await updatePlantTaskDetails(editingTask.id, values);
+        setEditModalVisible(false);
+        onTaskUpdated(); // Refresh the task list
+      } catch (error) {
+        console.error('Error updating plant task:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 
@@ -288,7 +312,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
           <Tooltip title="Edit Plant Task">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/plant-tasks/${record.id}/edit`)} />
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
           </Tooltip>
           {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
             <Tooltip title="Delete Plant Task">
@@ -359,15 +383,23 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       return renderGroupedTasks('urgency', tableProps);
     default:
       return (
-        <Table
-          dataSource={plantTasks}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: SCREEN_LG }}
-          {...tableProps}
-        />
+        <>
+          <Table
+            dataSource={plantTasks}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: SCREEN_LG }}
+            {...tableProps}
+          />
+          <EditPlantTaskModal
+            visible={editModalVisible}
+            onCancel={() => setEditModalVisible(false)}
+            onSubmit={handleEditSubmit}
+            initialValues={editingTask}
+          />
+        </>
       );
   }
 };
