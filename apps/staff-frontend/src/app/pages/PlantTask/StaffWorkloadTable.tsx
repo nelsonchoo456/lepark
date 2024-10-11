@@ -18,13 +18,13 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
   onParkChange,
 }) => {
   const parkOptions = useMemo(() => {
-    const uniqueParks = Array.from(new Set(staffList.map((staff) => staff.parkId)));
-    return uniqueParks.map((park) => ({ value: park, label: `Park ${park}` }));
+    const uniqueParks = Array.from(new Set(staffList.map((staff) => staff.park?.name)));
+    return uniqueParks.map((parkName) => ({ value: parkName, label: parkName }));
   }, [staffList]);
 
   const filteredStaffList = useMemo(() => {
     return isSuperAdmin && selectedParkId
-      ? staffList.filter((staff) => staff.parkId === Number(selectedParkId))
+      ? staffList.filter((staff) => staff.park?.name === selectedParkId)
       : staffList;
   }, [staffList, isSuperAdmin, selectedParkId]);
 
@@ -35,7 +35,7 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
         key: staff.id,
         name: `${staff.firstName} ${staff.lastName}`,
         role: staff.role,
-        parkId: staff.parkId,
+        parkName: staff.park?.name,
         totalTasks: staffTasks.length,
         openTasks: staffTasks.filter((task) => task.taskStatus === 'OPEN').length,
         inProgressTasks: staffTasks.filter((task) => task.taskStatus === 'IN_PROGRESS').length,
@@ -52,7 +52,7 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
   const columns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
     { title: 'Role', dataIndex: 'role', key: 'role' },
-    { title: 'Park ID', dataIndex: 'parkId', key: 'parkId' },
+    { title: 'Park', dataIndex: 'parkName', key: 'parkName' },
     { title: 'Total Tasks', dataIndex: 'totalTasks', key: 'totalTasks' },
     { title: 'Open', dataIndex: 'openTasks', key: 'openTasks' },
     { title: 'In Progress', dataIndex: 'inProgressTasks', key: 'inProgressTasks' },
