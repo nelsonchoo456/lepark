@@ -2228,7 +2228,7 @@ const decarbonizationAreasData = [
     parkId: 1
   },
   {
-    geom: "SRID=4326;POLYGON((103.81528615951541 1.3088363401940348, 103.81925175476076 1.3076242977326034, 103.81657361984254 1.3077315581510425, 103.81529376134541 1.3091796735510283, 103.81528615951541 1.3088363401940348))",
+    geom: "SRID=4326;POLYGON((103.81498575210573 1.3094477242222462, 103.81526470184328 1.3074741331391198, 103.81711006164552 1.3076028456483761, 103.8166379928589 1.3093190118076432, 103.81498575210573 1.3094477242222462))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "East Area",
     parkId: 2
@@ -2240,7 +2240,7 @@ const decarbonizationAreasData = [
     parkId: 2
   },
   {
-    geom: "SRID=4326;POLYGON((103.83910953998567 1.3642410630681403, 103.83876085281372 1.3641713454002702, 103.83878231048584 1.3638924747085996, 103.83927583694461 1.3638978376068172, 103.83967280387 1.3641713454002702, 103.83910953998567 1.3642410630681403))",
+    geom: "SRID=4326;POLYGON((103.83977472782136 1.3640748132414147, 103.83872330188753 1.3642839662473532, 103.83893251419069 1.3637262248578037, 103.83986592292786 1.3639514665883807, 103.84033799171449 1.3636457813774943, 103.84008586406709 1.3643751355006632, 103.8398712873459 1.364090901934833, 103.83977472782136 1.3640748132414147))",
     description: "A decarbonization area is a designated region aimed at reducing carbon emissions through renewable energy, sustainable practices, and innovative technologies. It fosters collaboration among government, businesses, and residents to create a low-carbon economy that supports environmental sustainability and economic growth.",
     name: "Palm Valley Central",
     parkId: 1
