@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useMemo, useState } from 'react';
-import { EventResponse, StaffType, StaffResponse, deleteEvent, EventStatusEnum, EventTypeEnum } from '@lepark/data-access';
+import {
+  EventResponse,
+  StaffType,
+  StaffResponse,
+  deleteEvent,
+  EventStatusEnum,
+  EventTypeEnum,
+  FacilityTypeEnum,
+} from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { MdDeleteOutline } from 'react-icons/md';
@@ -144,7 +152,7 @@ const EventList: React.FC = () => {
             return {
               text: park ? park.name : `Park ${parkId}`,
               value: parkId,
-              children: facilities.filter((f) => f.parkId === parkId).map((f) => ({ text: f.name, value: f.id })),
+              children: facilities.filter((f) => f.parkId === parkId && f.isPublic).map((f) => ({ text: f.name, value: f.id })),
             };
           });
           return parkFilters;
@@ -259,11 +267,11 @@ const EventList: React.FC = () => {
         {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
           <Button
             type="primary"
-          onClick={() => {
-            navigate('create');
-          }}
-        >
-          Create Event
+            onClick={() => {
+              navigate('create');
+            }}
+          >
+            Create Event
           </Button>
         ) : null}
       </Flex>

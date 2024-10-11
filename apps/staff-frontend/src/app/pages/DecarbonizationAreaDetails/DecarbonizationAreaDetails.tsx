@@ -104,7 +104,7 @@ const DecarbonizationAreaDetails = () => {
                   />
                 )}
                 <Button type="primary" loading={generating} onClick={handleGenerateSequestrationHistory}>
-                  Generate Sequestration Report
+                  Recalculate Current Sequestration
                 </Button>
               </Space>
             </div>

@@ -154,3 +154,16 @@ export enum ZoneStatusEnum {
   CLOSED = 'CLOSED',
 }
 
+export enum FAQStatusEnum {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  STAFF_ONLY = 'STAFF_ONLY',
+}
+
+export enum FAQCategoryEnum {
+  GENERAL = 'GENERAL',
+  PARK_RULES = 'PARK_RULES',
+  FACILITIES = 'FACILITIES',
+  EVENTS = 'EVENTS',
+  OTHER = 'OTHER',
+}

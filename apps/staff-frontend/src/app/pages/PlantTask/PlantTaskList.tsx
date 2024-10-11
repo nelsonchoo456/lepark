@@ -1,33 +1,27 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Row, Col, Statistic, Radio } from 'antd';
-import moment from 'moment';
-import { FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
+import { Button, Card, Input, Flex, message, Radio, Select, Collapse } from 'antd';
+import { FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
 import {
   getAllPlantTasks,
+  getPlantTasksByParkId,
   PlantTaskResponse,
   StaffType,
   StaffResponse,
   deletePlantTask,
-  PlantTaskTypeEnum,
-  PlantTaskStatusEnum,
+  assignPlantTask,
+  getAllStaffsByParkId,
+  getAllStaffs,
 } from '@lepark/data-access';
-import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { MdDeleteOutline } from 'react-icons/md';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
-import { SCREEN_LG } from '../../config/breakpoints';
-import { Typography } from 'antd';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import { COLORS } from '../../config/colors';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PlantTaskCategories from './PlantTaskCategories';
+import PlantTaskDashboard from './PlantTaskDashboard';
+import PlantTaskTable from './PlantTaskTable';
 
-// Utility function to format task type
-const formatTaskType = (taskType: string) => {
-  return formatEnumLabelToRemoveUnderscores(taskType);
-};
+const { Panel } = Collapse;
 
 const PlantTaskList: React.FC = () => {
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
@@ -40,31 +34,70 @@ const PlantTaskList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [viewMode, setViewMode] = useState<'categories' | 'table'>('categories');
+  const [tableViewType, setTableViewType] = useState<'all' | 'grouped-status' | 'grouped-urgency'>('all');
 
   const [open, setOpen] = useState<PlantTaskResponse[]>([]);
   const [inProgress, setInProgress] = useState<PlantTaskResponse[]>([]);
   const [completed, setCompleted] = useState<PlantTaskResponse[]>([]);
   const [cancelled, setCancelled] = useState<PlantTaskResponse[]>([]);
 
+  const [staffList, setStaffList] = useState<StaffResponse[]>([]);
+
+  const isSuperAdmin = user?.role === StaffType.SUPERADMIN;
+
   useEffect(() => {
     fetchPlantTasks();
-  }, []);
+  }, [user]);
 
   const fetchPlantTasks = async () => {
     try {
-      const response = await getAllPlantTasks();
+      let response;
+      if (user?.role === StaffType.SUPERADMIN) {
+        response = await getAllPlantTasks();
+      } else if (user?.parkId) {
+        response = await getPlantTasksByParkId(user.parkId);
+      } else {
+        throw new Error('User does not have a parkId');
+      }
       setPlantTasks(response.data);
 
+      // Sort tasks by position before setting the state
+      const sortedTasks = response.data.sort((a, b) => a.position - b.position);
+
       // set filtered tables
-      setOpen(response.data.filter((task) => task.taskStatus === 'OPEN'));
-      setInProgress(response.data.filter((task) => task.taskStatus === 'IN_PROGRESS'));
-      setCompleted(response.data.filter((task) => task.taskStatus === 'COMPLETED'));
-      setCancelled(response.data.filter((task) => task.taskStatus === 'CANCELLED'));
+      setOpen(sortedTasks.filter((task) => task.taskStatus === 'OPEN'));
+      setInProgress(sortedTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'));
+      setCompleted(sortedTasks.filter((task) => task.taskStatus === 'COMPLETED'));
+      setCancelled(sortedTasks.filter((task) => task.taskStatus === 'CANCELLED'));
+
+      // Fetch staff list
+      let staffResponse;
+      if (user?.role === StaffType.SUPERADMIN) {
+        staffResponse = await getAllStaffs();
+      } else if (user?.parkId) {
+        staffResponse = await getAllStaffsByParkId(user.parkId);
+      }
+      
+      const filteredStaff = staffResponse?.data.filter(staff => 
+        staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST
+      );
+      setStaffList(filteredStaff || []);
     } catch (error) {
       console.error('Error fetching plant tasks:', error);
       messageApi.error('Failed to fetch plant tasks');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAssignStaff = async (plantTaskId: string, staffId: string) => {
+    try {
+      await assignPlantTask(plantTaskId, user?.id || '', staffId);
+      messageApi.success('Staff assigned successfully');
+      fetchPlantTasks();
+    } catch (error) {
+      console.error('Error assigning staff:', error);
+      messageApi.error('Failed to assign staff');
     }
   };
 
@@ -81,169 +114,6 @@ const PlantTaskList: React.FC = () => {
   const navigateToDetails = (plantTaskId: string) => {
     navigate(`/plant-tasks/${plantTaskId}`);
   };
-
-  const columns: TableProps<PlantTaskResponse>['columns'] = [
-    {
-      title: 'Title',
-      dataIndex: 'title',
-      key: 'title',
-      render: (text) => <div className="font-semibold">{text}</div>,
-      sorter: (a, b) => a.title.localeCompare(b.title),
-      width: '20%',
-    },
-    {
-      title: user?.role === StaffType.SUPERADMIN ? 'Park, Zone' : 'Zone',
-      render: (_, record) => (
-        <div>
-          {user?.role === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence.zone.park.name}</p>}
-          <div className="flex">
-            {user?.role === StaffType.SUPERADMIN && <p className="opacity-50 mr-2">Zone:</p>}
-            {record.occurrence.zone.name}
-          </div>
-        </div>
-      ),
-      sorter: (a, b) => {
-        if (user?.role === StaffType.SUPERADMIN) {
-          if (a.occurrence.zone.park.name && b.occurrence.zone.park.name) {
-            return a.occurrence.zone.park.name.localeCompare(b.occurrence.zone.park.name);
-          }
-        }
-        if (a.occurrence.zone.name && b.occurrence.zone.name) {
-          return a.occurrence.zone.name.localeCompare(b.occurrence.zone.name);
-        }
-        return a.occurrence.zone.id.toString().localeCompare(b.occurrence.zone.id.toString());
-      },
-      width: '15%',
-    },
-    {
-      title: 'Task Type',
-      dataIndex: 'taskType',
-      key: 'taskType',
-      render: (text) => (
-        <Flex justify="space-between" align="center">
-          {formatTaskType(text)}
-        </Flex>
-      ),
-      filters: Object.values(PlantTaskTypeEnum).map((type) => ({
-        text: formatTaskType(type),
-        value: type,
-      })),
-      onFilter: (value, record) => record.taskType === value,
-      width: '15%',
-    },
-    {
-      title: 'Urgency',
-      dataIndex: 'taskUrgency',
-      key: 'taskUrgency',
-      render: (text) => {
-        switch (text) {
-          case 'IMMEDIATE':
-            return (
-              <Tag color="red" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          case 'HIGH':
-            return (
-              <Tag color="orange" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          case 'NORMAL':
-            return (
-              <Tag color="blue" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          case 'LOW':
-            return (
-              <Tag color="green" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          default:
-            return <Tag>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
-        }
-      },
-      filters: [
-        { text: formatEnumLabelToRemoveUnderscores('IMMEDIATE'), value: 'IMMEDIATE' },
-        { text: formatEnumLabelToRemoveUnderscores('HIGH'), value: 'HIGH' },
-        { text: formatEnumLabelToRemoveUnderscores('NORMAL'), value: 'NORMAL' },
-        { text: formatEnumLabelToRemoveUnderscores('LOW'), value: 'LOW' },
-      ],
-      onFilter: (value, record) => record.taskUrgency === value,
-      width: '10%',
-    },
-    {
-      title: 'Due Date',
-      dataIndex: 'dueDate',
-      key: 'dueDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.dueDate).valueOf() - moment(b.dueDate).valueOf(),
-      width: '10%',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'taskStatus',
-      key: 'taskStatus',
-      render: (text) => {
-        switch (text) {
-          case 'OPEN':
-            return (
-              <Tag color="default" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          case 'IN_PROGRESS':
-            return (
-              <Tag color="blue" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          case 'COMPLETED':
-            return (
-              <Tag color="green" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          case 'CANCELLED':
-            return (
-              <Tag color="gray" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          default:
-            return <Tag>{text}</Tag>;
-        }
-      },
-      filters: [
-        { text: formatEnumLabelToRemoveUnderscores('OPEN'), value: 'OPEN' },
-        { text: formatEnumLabelToRemoveUnderscores('IN_PROGRESS'), value: 'IN_PROGRESS' },
-        { text: formatEnumLabelToRemoveUnderscores('COMPLETED'), value: 'COMPLETED' },
-        { text: formatEnumLabelToRemoveUnderscores('CANCELLED'), value: 'CANCELLED' },
-      ],
-      onFilter: (value, record) => record.taskStatus === value,
-      width: '10%',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Flex justify="center" gap={8}>
-          <Tooltip title="View Plant Task">
-            <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
-          </Tooltip>
-          <Tooltip title="Edit Plant Task">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/plant-tasks/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete Plant Task">
-            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-          </Tooltip>
-        </Flex>
-      ),
-      width: '10%',
-    },
-  ];
 
   const showDeleteModal = (plantTask: PlantTaskResponse) => {
     setDeleteModalOpen(true);
@@ -283,37 +153,70 @@ const PlantTaskList: React.FC = () => {
   ];
 
   const renderDashboardOverview = () => {
-    const openTasks = plantTasks.filter((task) => task.taskStatus === 'OPEN');
-    const urgentTasks = openTasks.filter((task) => task.taskUrgency === 'IMMEDIATE' || task.taskUrgency === 'HIGH');
-    const myTasks = plantTasks.filter((task) => task.assignedStaff?.id === user?.id);
-
     return (
-      <Card className="mb-4">
-        <Row gutter={16}>
-          <Col span={8}>
-            <Statistic title="Open Tasks" value={openTasks.length} valueStyle={{ color: '#1890ff' }} />
-          </Col>
-          <Col span={8}>
-            <Statistic title="Urgent Tasks" value={urgentTasks.length} valueStyle={{ color: '#ff4d4f' }} />
-          </Col>
-          <Col span={8}>
-            <Statistic title="My Tasks" value={myTasks.length} valueStyle={{ color: '#52c41a' }} />
-          </Col>
-        </Row>
+      <Collapse defaultActiveKey={['1']} className="mb-4 bg-white">
+        <Panel header="Task Dashboard" key="1">
+          <PlantTaskDashboard plantTasks={plantTasks} />
+        </Panel>
+      </Collapse>
+    );
+  };
+
+  const renderTableView = () => {
+    return (
+      <Card>
+        <PlantTaskTable
+          plantTasks={filteredPlantTasks}
+          loading={loading}
+          staffList={staffList}
+          tableViewType={tableViewType}
+          userRole={user?.role || ''}
+          handleAssignStaff={handleAssignStaff}
+          navigateToDetails={navigateToDetails}
+          navigate={navigate}
+          showDeleteModal={showDeleteModal}
+        />
       </Card>
     );
   };
 
+  const renderViewSelector = () => {
+    if (isSuperAdmin) {
+      return null;
+    }
+    return (
+      <Radio.Group
+        value={viewMode}
+        onChange={(e) => {
+          setViewMode(e.target.value);
+          if (e.target.value === 'categories') {
+            setTableViewType('all');
+          }
+        }}
+      >
+        <Radio.Button value="categories">Board View</Radio.Button>
+        <Radio.Button value="table">Table View</Radio.Button>
+      </Radio.Group>
+    );
+  };
+
   const renderContent = () => {
-    if (viewMode === 'categories') {
-      return (
-        <PlantTaskCategories open={open} inProgress={inProgress} completed={completed} cancelled={cancelled} setOpen={setOpen} setCompleted={setCompleted} setInProgress={setInProgress} setCancelled={setCancelled}/>
-      )
+    if (isSuperAdmin || viewMode === 'table') {
+      return renderTableView();
     } else {
       return (
-        <Card>
-          <Table dataSource={filteredPlantTasks} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
-        </Card>
+        <PlantTaskCategories
+          open={open}
+          inProgress={inProgress}
+          completed={completed}
+          cancelled={cancelled}
+          setOpen={setOpen}
+          setCompleted={setCompleted}
+          setInProgress={setInProgress}
+          setCancelled={setCancelled}
+          refreshData={fetchPlantTasks}
+          userRole={user?.role || ''}
+        />
       );
     }
   };
@@ -324,25 +227,33 @@ const PlantTaskList: React.FC = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {renderDashboardOverview()}
       <Flex justify="space-between" align="center" className="mb-4">
-        <Radio.Group value={viewMode} onChange={(e) => setViewMode(e.target.value)}>
-          <Radio.Button value="categories">Categories</Radio.Button>
-          <Radio.Button value="table">Table</Radio.Button>
-        </Radio.Group>
+        <Flex align="center">
+          {renderViewSelector()}
+          {(isSuperAdmin || viewMode === 'table') && (
+            <Select value={tableViewType} onChange={setTableViewType} style={{ width: 200, marginLeft: 16 }}>
+              <Select.Option value="all">All Tasks</Select.Option>
+              <Select.Option value="grouped-status">Grouped by Status</Select.Option>
+              <Select.Option value="grouped-urgency">Grouped by Urgency</Select.Option>
+            </Select>
+          )}
+        </Flex>
         <Flex gap={10}>
-          <Input
-            suffix={<FiSearch />}
-            placeholder="Search in Plant Tasks..."
-            className="bg-white"
-            variant="filled"
-            onChange={handleSearch}
-          />
+          {(isSuperAdmin || viewMode === 'table') && (
+            <Input
+              suffix={<FiSearch />}
+              placeholder="Search in Plant Tasks..."
+              className="bg-white"
+              variant="filled"
+              onChange={handleSearch}
+            />
+          )}
           <Button
             type="primary"
             onClick={() => {
               navigate('/plant-tasks/create');
             }}
           >
-            Create Plant Tak
+            Create Plant Task
           </Button>
         </Flex>
       </Flex>

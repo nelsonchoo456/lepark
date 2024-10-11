@@ -53,23 +53,23 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
       },
       width: '25%',
     },
-    {
-      title: 'Zone',
-      dataIndex: 'zoneName',
-      key: 'zoneName',
-      render: (text, record) => (
-        <Flex justify="space-between" align="center">
-          {text}
-        </Flex>
-      ),
-      sorter: (a, b) => {
-        if (a.zoneName && b.zoneName) {
-          return a.zoneName.localeCompare(b.zoneName);
-        }
-        return a.zoneId - b.zoneId;
-      },
-      width: '25%',
-    },
+    // {
+    //   title: 'Zone',
+    //   dataIndex: 'zoneName',
+    //   key: 'zoneName',
+    //   render: (text, record) => (
+    //     <Flex justify="space-between" align="center">
+    //       {text}
+    //     </Flex>
+    //   ),
+    //   sorter: (a, b) => {
+    //     if (a.zoneName && b.zoneName) {
+    //       return a.zoneName.localeCompare(b.zoneName);
+    //     }
+    //     return a.zoneId - b.zoneId;
+    //   },
+    //   width: '25%',
+    // },
     {
       title: 'Occurrence Status',
       dataIndex: 'occurrenceStatus',

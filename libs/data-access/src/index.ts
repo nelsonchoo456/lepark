@@ -52,3 +52,7 @@ export * from './lib/types/facility';
 
 export * from './lib/api/promotion';
 export * from './lib/types/promotion';
+
+
+export * from './lib/api/faq';
+export * from './lib/types/faq';

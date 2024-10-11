@@ -8,12 +8,14 @@ import {
   getDecarbonizationAreasByParkId,
   getOccurrencesByParkId,
   getParkById,
+  getZonesByParkId,
   OccurrenceResponse,
   ParkResponse,
   StaffResponse,
   StaffType,
+  ZoneResponse,
 } from '@lepark/data-access';
-import { TbEdit } from 'react-icons/tb';
+import { TbEdit, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import PictureMarker from '../../../components/map/PictureMarker';
@@ -60,11 +62,13 @@ const parseGeom = (geom: string) => {
 const MapTab = ({ decarbonizationArea }: MapTabProps) => {
   const { user } = useAuth<StaffResponse>();
   const [park, setPark] = useState<ParkResponse>();
+  const [zones, setZones] = useState<ZoneResponse[]>();
   const [showPark, setShowPark] = useState<boolean>(true);
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [parkDecarbAreas, setParkDecarbAreas] = useState<DecarbonizationAreaResponse[]>();
   const [showParkDecarbAreas, setShowParkDecarbAreas] = useState<boolean>(false);
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
+  const [showZones, setShowZones] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -88,6 +92,7 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
     if (!decarbonizationArea) return;
     fetchParkDecarbAreasData();
     fetchOccurrencesData();
+    fetchZones();
   }, [decarbonizationArea]);
 
   const fetchParkDecarbAreasData = async () => {
@@ -118,23 +123,52 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
     }
   };
 
+  const fetchZones = async () => {
+    const zonesRes = await getZonesByParkId(decarbonizationArea.parkId);
+    if (zonesRes.status === 200) {
+      const zonesData = zonesRes.data;
+      setZones(zonesData);
+    }
+  };
+
   return (
     <>
       <Card styles={{ body: { padding: 0 } }} className="px-4 py-3 mb-4">
         <Space size={20}>
           <div className="font-semibold">Display:</div>
           {park && (
-            <Checkbox onChange={(e) => setShowPark(e.target.checked)} checked={showPark}>
+            <Checkbox
+              onChange={(e) => setShowPark(e.target.checked)}
+              checked={showPark}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
               {park.name} (Park)
             </Checkbox>
           )}
+          {zones && zones.length > 0 && (
+            <Checkbox
+              onChange={(e) => setShowZones(e.target.checked)}
+              checked={showZones}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
+              Zones
+            </Checkbox>
+          )}
           {parkDecarbAreas && parkDecarbAreas.length > 0 && (
-            <Checkbox onChange={(e) => setShowParkDecarbAreas(e.target.checked)} checked={showParkDecarbAreas}>
+            <Checkbox
+              onChange={(e) => setShowParkDecarbAreas(e.target.checked)}
+              checked={showParkDecarbAreas}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
               Other Decarbonization Areas
             </Checkbox>
           )}
           {occurrences && (
-            <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+            <Checkbox
+              onChange={(e) => setShowOccurrences(e.target.checked)}
+              checked={showOccurrences}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
               Occurrences
             </Checkbox>
           )}
@@ -176,6 +210,24 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
                 color="green"
                 fillColor={'transparent'}
                 labelFields={{ color: 'green', textShadow: 'none' }}
+              />
+            ))}
+          {showZones &&
+            zones &&
+            zones.map((zone) => (
+              <PolygonWithLabel
+                key={zone.id}
+                entityId={zone.id}
+                geom={zone.geom}
+                polygonLabel={
+                  <div className="flex items-center gap-2">
+                    <TbTree className="text-xl" />
+                    {zone.name}
+                  </div>
+                }
+                color={COLORS.green[600]}
+                fillColor={'transparent'}
+                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
               />
             ))}
           {showOccurrences &&

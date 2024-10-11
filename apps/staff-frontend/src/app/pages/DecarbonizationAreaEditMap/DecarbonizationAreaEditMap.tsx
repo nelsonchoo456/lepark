@@ -13,6 +13,8 @@ import {
   getDecarbonizationAreasByParkId,
   getOccurrencesByParkId,
   OccurrenceResponse,
+  getZonesByParkId,
+  ZoneResponse,
 } from '@lepark/data-access';
 import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../components/map/functions/functions';
 import { StaffType } from '@lepark/data-access';
@@ -28,6 +30,7 @@ import polygon_image from '../../assets/mapFeatureManager/polygon.png';
 import edit_image from '../../assets/mapFeatureManager/edit.png';
 import PictureMarker from '../../components/map/PictureMarker';
 import { PiPlantFill } from 'react-icons/pi';
+import { TbTree } from 'react-icons/tb';
 
 const parseGeom = (geom: string) => {
   //console.log('Parsing geom:', geom); // Log the geom string
@@ -75,10 +78,12 @@ const DecarbonizationAreaEditMap = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const notificationShown = useRef(false);
+  const [zones, setZones] = useState<ZoneResponse[]>();
 
   const [showPark, setShowPark] = useState<boolean>(true);
   const [showParkDecarbAreas, setShowParkDecarbAreas] = useState<boolean>(false);
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
+  const [showZones, setShowZones] = useState<boolean>(false);
 
   useEffect(() => {
     if (!decarbonizationArea) return;
@@ -86,6 +91,7 @@ const DecarbonizationAreaEditMap = () => {
     const decarbonizationAreaGeom = parseGeom(decarbonizationArea.geom);
     fetchOccurrencesData();
     setPolygon(decarbonizationAreaGeom.coordinates);
+    fetchZones();
   }, [decarbonizationArea]);
 
   const fetchParkDecarbAreasData = async () => {
@@ -113,6 +119,15 @@ const DecarbonizationAreaEditMap = () => {
       }
     } catch (error) {
       // do nothing
+    }
+  };
+
+  const fetchZones = async () => {
+    if (!decarbonizationArea?.parkId) return;
+    const zonesRes = await getZonesByParkId(decarbonizationArea?.parkId);
+    if (zonesRes.status === 200) {
+      const zonesData = zonesRes.data;
+      setZones(zonesData);
     }
   };
 
@@ -232,17 +247,38 @@ const DecarbonizationAreaEditMap = () => {
             <Space size={30}>
               <div className="font-semibold">Display:</div>
               {park && (
-                <Checkbox onChange={(e) => setShowPark(e.target.checked)} checked={showPark}>
+                <Checkbox
+                  onChange={(e) => setShowPark(e.target.checked)}
+                  checked={showPark}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
                   {park.name} (Park)
                 </Checkbox>
               )}
+              {zones && zones.length > 0 && (
+                <Checkbox
+                  onChange={(e) => setShowZones(e.target.checked)}
+                  checked={showZones}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
+                  Zones
+                </Checkbox>
+              )}
               {parkDecarbAreas && parkDecarbAreas.length > 0 && (
-                <Checkbox onChange={(e) => setShowParkDecarbAreas(e.target.checked)} checked={showParkDecarbAreas}>
+                <Checkbox
+                  onChange={(e) => setShowParkDecarbAreas(e.target.checked)}
+                  checked={showParkDecarbAreas}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
                   Other Decarbonization Areas
                 </Checkbox>
               )}
               {occurrences && (
-                <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+                <Checkbox
+                  onChange={(e) => setShowOccurrences(e.target.checked)}
+                  checked={showOccurrences}
+                  className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+                >
                   Occurrences
                 </Checkbox>
               )}
@@ -283,6 +319,24 @@ const DecarbonizationAreaEditMap = () => {
                     color="green"
                     fillColor={'transparent'}
                     labelFields={{ color: 'green', textShadow: 'none' }}
+                  />
+                ))}
+              {showZones &&
+                zones &&
+                zones.map((zone) => (
+                  <PolygonWithLabel
+                    key={zone.id}
+                    entityId={zone.id}
+                    geom={zone.geom}
+                    polygonLabel={
+                      <div className="flex items-center gap-2">
+                        <TbTree className="text-xl" />
+                        {zone.name}
+                      </div>
+                    }
+                    color={COLORS.green[600]}
+                    fillColor={'transparent'}
+                    labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
                   />
                 ))}
               {showOccurrences &&
