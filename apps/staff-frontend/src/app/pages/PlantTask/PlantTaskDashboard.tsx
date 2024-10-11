@@ -42,17 +42,6 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
     return Object.entries(urgencyCounts).map(([name, value]) => ({ name, value }));
   };
 
-  const totalOpenTasks = plantTasks.filter((task) => task.taskStatus === 'OPEN').length;
-  const urgentTasks = plantTasks.filter(
-    (task) =>
-      (task.taskUrgency === 'HIGH' || task.taskUrgency === 'IMMEDIATE') &&
-      task.taskStatus !== 'COMPLETED' &&
-      task.taskStatus !== 'CANCELLED',
-  ).length;
-  const overdueTasks = plantTasks.filter(
-    (task) => moment(task.dueDate).isBefore(moment()) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
-  ).length;
-
   return (
     <Row gutter={16}>
       <Col span={12}>

@@ -21,9 +21,11 @@ import PlantTaskCategories from './PlantTaskCategories';
 import PlantTaskDashboard from './PlantTaskDashboard';
 import PlantTaskTable from './PlantTaskTable';
 import moment from 'moment';
-
+import { Tabs } from 'antd';
+import StaffWorkloadTable from './StaffWorkloadTable';
 
 const { Panel } = Collapse;
+const { TabPane } = Tabs;
 
 const PlantTaskList: React.FC = () => {
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
@@ -46,6 +48,8 @@ const PlantTaskList: React.FC = () => {
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
 
   const isSuperAdmin = user?.role === StaffType.SUPERADMIN;
+
+  const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPlantTasks();
@@ -156,7 +160,24 @@ const PlantTaskList: React.FC = () => {
     return (
       <Collapse defaultActiveKey={['1']} className="mb-4 bg-white">
         <Panel header="Task Dashboard" key="1">
-          <PlantTaskDashboard plantTasks={plantTasks} />
+          <Tabs defaultActiveKey="1">
+            <TabPane tab="Overview" key="1">
+              <PlantTaskDashboard plantTasks={plantTasks} />
+            </TabPane>
+            <TabPane tab="Staff Workload" key="2">
+              <StaffWorkloadTable
+                staffList={staffList}
+                plantTasks={plantTasks}
+                isSuperAdmin={isSuperAdmin}
+                selectedParkId={selectedParkId}
+                onParkChange={(parkId) => setSelectedParkId(parkId)}
+              />
+            </TabPane>
+            <TabPane tab="Chart 2" key="3">
+              {/* Add your second chart component here */}
+              <div>Chart 2 Content</div>
+            </TabPane>
+          </Tabs>
         </Panel>
       </Collapse>
     );
@@ -233,7 +254,7 @@ const PlantTaskList: React.FC = () => {
     );
   };
 
-  const renderContent = () => {
+  const renderBoard = () => {
     if (isSuperAdmin || viewMode === 'table') {
       return renderTableView();
     } else {
@@ -259,7 +280,7 @@ const PlantTaskList: React.FC = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {renderStatisticsOverview()}
-      {renderDashboardOverview()}
+      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
           {renderViewSelector()}
@@ -291,7 +312,7 @@ const PlantTaskList: React.FC = () => {
           </Button>
         </Flex>
       </Flex>
-      {renderContent()}
+      {renderBoard()}
       <ConfirmDeleteModal
         onConfirm={deletePlantTaskConfirmed}
         open={deleteModalOpen}
