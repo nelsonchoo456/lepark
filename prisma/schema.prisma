@@ -593,7 +593,8 @@ model Promotion {
 enum FAQStatusEnum {
   ACTIVE
   INACTIVE
-  STAFF_ONLY
+  DRAFT
+  ARCHIVED
 }
 
 enum FAQCategoryEnum {
@@ -601,6 +602,11 @@ enum FAQCategoryEnum {
   PARK_RULES
   FACILITIES
   EVENTS
+  SAFETY
+  ACCESSIBILITY
+  SERVICES
+  TICKETING
+  PARK_HISTORY
   OTHER
 }
 
