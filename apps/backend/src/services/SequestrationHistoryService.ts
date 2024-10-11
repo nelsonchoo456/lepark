@@ -134,6 +134,18 @@ public async getTotalSequestrationForParkAndDate(parkId: number, date: string): 
     return formattedData;
   }
 
+  public async getTotalSequestrationForParkAndYear(parkId: number, year: string): Promise<number> {
+  const parsedYear = parseInt(year, 10);
+  if (isNaN(parsedYear) || parsedYear < 1900 || parsedYear > 2100) {
+    throw new Error('Invalid year format');
+  }
+
+  console.log('Fetching total sequestration for park:', parkId, 'and year:', parsedYear);
+  const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndYear(parkId, parsedYear);
+  console.log('Total sequestration result:', result);
+  return result;
+}
+
 
 }
 

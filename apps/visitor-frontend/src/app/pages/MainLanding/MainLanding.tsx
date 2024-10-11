@@ -14,7 +14,8 @@ import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect, useState } from 'react';
-import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { getTotalSequestrationForParkAndYear } from '@lepark/data-access';
 import { FiExternalLink } from 'react-icons/fi';
 import { AiOutlinePercentage } from 'react-icons/ai';
 import { BiSolidDiscount } from 'react-icons/bi';
@@ -25,12 +26,13 @@ const MainLanding = () => {
   const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
   const [poweredDays, setPoweredDays] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
+useEffect(() => {
+    const fetchSequestration = async () => {
       if (selectedPark?.id) {
         try {
-          const currentDate = '2024-08-28'; // Hardcoded to 28 August 2024
-          const sequestration = await fetchTotalSequestration(selectedPark.id, currentDate);
+          const currentYear = new Date().getFullYear().toString();
+          const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
+          const sequestration = response.data.totalSequestration;
           setTotalSequestration(Math.round(sequestration));
           const days = calculateHDBPoweredDays(sequestration);
           setPoweredDays(days);
@@ -40,7 +42,7 @@ const MainLanding = () => {
       }
     };
 
-    fetchData();
+    fetchSequestration();
   }, [selectedPark]);
 
   return (
