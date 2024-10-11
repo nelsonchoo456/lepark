@@ -17,6 +17,7 @@ How to SSH into Raspberry Pi?
             1. arp -a (on Mac)
             2. Find the device with MAC address b8:27:eb. This is usually the Raspberry Pi.
             3. ssh pi@<ip address>
+        - If it says "REMOTE HOST IDENTIFICATION HAS CHANGED!", do `ssh-keygen -R <ip address of raspberry pi>`, then try again.
     b. password: password
 
 How to setup Raspberry Pi for IoT? (make sure you are in SSH)

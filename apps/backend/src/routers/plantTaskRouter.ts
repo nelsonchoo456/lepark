@@ -3,6 +3,7 @@ import PlantTaskService from '../services/PlantTaskService';
 import { PlantTaskSchemaType } from '../schemas/plantTaskSchema';
 import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 import multer from 'multer';
+import { PlantTaskStatusEnum } from '@prisma/client';
 
 const router = express.Router();
 const upload = multer();
@@ -68,6 +69,16 @@ router.get('/getAllPlantTasksByParkId/:parkId', authenticateJWTStaff, async (req
   }
 });
 
+router.get('/getAllAssignedPlantTasks/:staffId', authenticateJWTStaff, async (req, res) => {
+  try {
+    const staffId = req.params.staffId;
+    const plantTasks = await PlantTaskService.getAllAssignedPlantTasks(staffId);
+    res.status(200).json(plantTasks);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
@@ -84,7 +95,7 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   }
 });
 
-router.post('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+router.put('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const { assignerStaffId, staffId } = req.body;
     const plantTaskId = req.params.id;
@@ -95,7 +106,7 @@ router.post('/assignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   }
 });
 
-router.post('/unassignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
+router.put('/unassignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const { unassignerStaffId } = req.body;
     const plantTaskId = req.params.id;
@@ -138,4 +149,37 @@ router.post('/unacceptPlantTask/:id', authenticateJWTStaff, async (req, res) => 
   }
 });
 
+router.put('/updatePlantTaskStatus/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const plantTaskId = req.params.id;
+    const { newStatus } = req.body;
+    const updatedPlantTask = await PlantTaskService.updatePlantTaskStatus(plantTaskId, newStatus);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/updatePlantTaskPosition/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const plantTaskId = req.params.id;
+    const { newPosition } = req.body;
+    const updatedPlantTask = await PlantTaskService.updatePlantTaskPosition(plantTaskId, newPosition);
+    res.status(200).json(updatedPlantTask);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getPlantTasksByStatus/:status', authenticateJWTStaff, async (req, res) => {
+  try {
+    const status = req.params.status as PlantTaskStatusEnum;
+    const plantTasks = await PlantTaskService.getPlantTasksByStatus(status);
+    res.status(200).json(plantTasks);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
+

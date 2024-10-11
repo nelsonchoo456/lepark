@@ -19,6 +19,7 @@ import {
 } from '../schemas/staffSchema';
 import { fromZodError } from 'zod-validation-error';
 import ParkDao from '../dao/ParkDao';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 class StaffService {
   public async register(data: StaffSchemaType): Promise<Staff> {
@@ -65,14 +66,23 @@ class StaffService {
     }
   }
 
-  public async getAllStaffs(): Promise<Staff[]> {
-    return StaffDao.getAllStaffs();
+  public async getAllStaffs(): Promise<(Staff & { park: ParkResponseData })[]> {
+    const staffList = await StaffDao.getAllStaffs();
+    const parkList = await ParkDao.getAllParks();
+    return staffList.map((staff) => ({
+      ...staff,
+      park: parkList.find((park) => park.id === staff.parkId),
+    }));
   }
 
-  public async getAllStaffsByParkId(parkId: number): Promise<Staff[]> {
+  public async getAllStaffsByParkId(parkId: number): Promise<(Staff & { park: ParkResponseData })[]> {
     try {
-      const staffList = StaffDao.getAllStaffsByParkId(parkId);
-      return staffList;
+      const staffList = await StaffDao.getAllStaffsByParkId(parkId);
+      const parkList = await ParkDao.getAllParks();
+      return staffList.map((staff) => ({
+        ...staff,
+        park: parkList.find((park) => park.id === staff.parkId),
+      }));
     } catch (error) {
       throw new Error(`Unable to fetch staff list: ${error.message}`);
     }

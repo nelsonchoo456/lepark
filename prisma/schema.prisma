@@ -32,7 +32,7 @@ model Staff {
   contactNumber       String
   role                StaffRoleEnum
   isActive            Boolean
-  parkId              Int?
+  parkId              Int? 
   isFirstLogin        Boolean
   resetTokenUsed      Boolean       @default(false)
   resetToken          String?
@@ -295,7 +295,7 @@ model Hub {
   acquisitionDate          DateTime
   lastMaintenanceDate      DateTime?
   nextMaintenanceDate      DateTime?
-  dataTransmissionInterval Float?
+  dataTransmissionInterval Float? // might want to initialize this in pi during verifyInitialization
   supplier                 String
   supplierContactNumber    String
   ipAddress                String?
@@ -536,6 +536,7 @@ model PlantTask {
   assignedStaff     Staff?               @relation(name: "assignedStaff", fields: [assignedStaffId], references: [id])
   submittingStaffId String               @map("submittingStaffId") @db.Uuid
   submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id], onDelete: Cascade)
+  position          Int
 }
 
 model DecarbonizationArea {
@@ -585,5 +586,3 @@ model Promotion {
   isOneTime     Boolean
   visitors      Visitor[]       @relation("VisitorPromotionsRedeemed")
 }
-//   submittingStaff   Staff                @relation(name: "submittingStaff", fields: [submittingStaffId], references: [id])
-// }

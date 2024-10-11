@@ -264,7 +264,7 @@ class SensorService {
       } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
         throw new Error('Hub is under maintenance. It cannot be used.');
       }
-      
+
       if (!hub.zoneId) {
         throw new Error('Hub is not assigned to a zone. It must be assigned to a zone to add sensors.');
       }
@@ -324,7 +324,7 @@ class SensorService {
   }
 
   private generateIdentifierNumber(): string {
-    return `SENS-${uuidv4().substr(0, 8).toUpperCase()}`;
+    return `SE-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {

@@ -21,7 +21,7 @@ const s3 = new aws.S3({
 });
 
 const dateFormatter = (data: any) => {
-  const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const { acquisitionDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
   if (acquisitionDate) {
@@ -163,7 +163,6 @@ class HubService {
       }
 
       const updateData = formattedData as Prisma.HubUpdateInput;
-      console.log('updateDataHEREEEEEEEE', updateData);
       return HubDao.updateHubDetails(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -229,14 +228,6 @@ class HubService {
         throw new Error('Hub already has a hub secret');
       }
 
-      const generatedHubSecret = this.generateHubSecret();
-      let generatedRadioGroup = this.generateRandomRadioGroup();
-
-      while (await this.getHubByRadioGroup(generatedRadioGroup)) {
-        generatedRadioGroup = this.generateRandomRadioGroup();
-      }
-
-      // Add hubSecret and radioGroup to formattedData
       formattedData.hubStatus = 'ACTIVE';
 
       const updateData = formattedData as Prisma.HubUpdateInput;
@@ -351,6 +342,7 @@ class HubService {
       }
 
       const payload = JSON.parse(jsonPayloadString);
+      console.log('payload', payload);
 
       for (const sensorIdentifier of Object.keys(payload)) {
         for (const sensorData of payload[sensorIdentifier]) {
@@ -358,6 +350,7 @@ class HubService {
           if (!sensor) {
             throw new Error('Sensor not found');
           }
+
           await SensorReadingDao.createSensorReading({
             date: new Date(sensorData.readingDate),
             value: sensorData.reading,
@@ -375,6 +368,7 @@ class HubService {
       // After processing the sensor readings, update the list of sensors
       const updatedSensors = await this.updateHubSensors(hubIdentifierNumber);
 
+      console.log('Finished pushing sensor readings');
       return {
         sensors: updatedSensors,
         radioGroup: hub.radioGroup,
@@ -437,7 +431,7 @@ class HubService {
   }
 
   private generateIdentifierNumber(): string {
-    return `HUB-${uuidv4().substr(0, 8).toUpperCase()}`;
+    return `HB-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
 
   public async updateHubSensors(hubIdentifierNumber: string): Promise<string[]> {
@@ -447,7 +441,7 @@ class HubService {
     }
 
     const sensors = await this.getAllSensorsByHubId(hub.id);
-    return sensors.map(sensor => sensor.identifierNumber);
+    return sensors.map((sensor) => sensor.identifierNumber);
   }
 }
 
