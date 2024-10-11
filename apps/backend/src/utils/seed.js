@@ -15,6 +15,7 @@ const {
   sensorsData,
   decarbonizationAreasData,
   plantTasksData,
+  seqHistoriesData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -414,12 +415,12 @@ const plantTasksList = [];
 
   console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
 
-   const decarbonizationAreaList = [];
+  console.log('Seeding decarbonization areas...');
+  const decarbonizationAreaList = [];
   for (const area of decarbonizationAreasData) {
     try {
       const id = uuidv4();
-      const parsedGeom = parseEWKT(area.geom); // Parse the EWKT format to GeoJSON
-      const createdArea = await prisma.$executeRaw`
+      await prisma.$executeRaw`
         INSERT INTO "DecarbonizationArea" (id, geom, description, name, "parkId")
         VALUES (
           ${id}::uuid,
@@ -428,18 +429,74 @@ const plantTasksList = [];
           ${area.name},
           ${area.parkId}
         )
-        RETURNING id, name, description, geom, "parkId"
       `;
-      decarbonizationAreaList.push(createdArea[0]);
-      console.log(`Inserted area: ${area.name}`);
+
+      // Fetch the inserted data
+      const [insertedArea] = await prisma.$queryRaw`
+        SELECT id, name, description, geom::text as geom, "parkId"
+        FROM "DecarbonizationArea"
+        WHERE id = ${id}::uuid
+      `;
+
+      decarbonizationAreaList.push(insertedArea);
+      console.log(`Inserted area: ${insertedArea.name}`);
     } catch (error) {
       console.error(`Error inserting decarbonization area: ${area.name}`);
       console.error(error);
     }
   }
-
   console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
+
+  // Now create sequestration histories after all decarbonization areas are created
+  console.log('Creating sequestration histories...');
+  for (let i = 0; i < decarbonizationAreaList.length; i++) {
+    const area = decarbonizationAreaList[i];
+    await createSeqHistories(area.id, seqHistoriesData[i], i);
+  }
 }
+
+async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
+  console.log(`Creating sequestration histories for area with ID: ${decarbAreaId}`);
+  const seqHistories = [];
+
+  let currentSeqValue = baseSeqHistory.seqValue;
+  const interval = 0.2; // 0.2 kg interval
+
+  // Create entries for 2023 and 2024
+  for (let year = 2023; year <= 2024; year++) {
+    for (let i = 0; i < 7; i++) {
+      const newDate = new Date(baseSeqHistory.date);
+      newDate.setFullYear(year);
+      newDate.setDate(newDate.getDate() + i);
+
+      try {
+        const createdSeqHistory = await prisma.sequestrationHistory.create({
+          data: {
+            date: newDate,
+            seqValue: currentSeqValue,
+            decarbonizationAreaId: decarbAreaId
+          }
+        });
+        seqHistories.push(createdSeqHistory);
+        currentSeqValue += interval; // Increase by 0.2 kg for the next entry
+      } catch (error) {
+        console.error(`Error inserting sequestration history for date: ${newDate.toISOString()}`);
+        console.error(error);
+      }
+    }
+  }
+
+  console.log(`Sequestration histories created for area ${index + 1}:`);
+  seqHistories.forEach((history, i) => {
+    console.log(`History ${i + 1}:`);
+    console.log(`  ID: ${history.id}`);
+    console.log(`  Date: ${history.date}`);
+    console.log(`  Sequestration Value: ${history.seqValue.toFixed(3)}`);
+    console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
+    console.log('---');
+  });
+}
+
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {
