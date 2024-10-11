@@ -24,9 +24,7 @@ interface MapTabProps {
   decarbonizationArea: DecarbonizationAreaResponse;
 }
 
-const parseGeom = (geom: string) => {
-  console.log('Parsing geom:', geom); // Log the geom string
-
+export const parseGeom = (geom: string) => {
   // Check if the string is a GeoJSON format
   if (geom.startsWith('SRID=4326;')) {
     const wktString = geom.substring(10); // Remove the 'SRID=4326;' prefix

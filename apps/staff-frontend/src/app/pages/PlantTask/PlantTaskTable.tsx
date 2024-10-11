@@ -82,8 +82,8 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       render: (_, record) => (
         <div>
           {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence.zone.park.name}</p>}
-          <div className="flex">
-            {userRole === StaffType.SUPERADMIN && <p className="opacity-50 mr-2">Zone:</p>}
+          <div className="flex opacity-50">
+            {/* {userRole === StaffType.SUPERADMIN && <p className="opacity-50 mr-2">Zone:</p>} */}
             {record.occurrence.zone.name}
           </div>
         </div>
@@ -160,7 +160,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
         { text: formatEnumLabelToRemoveUnderscores('LOW'), value: 'LOW' },
       ],
       onFilter: (value, record) => record.taskUrgency === value,
-      width: '10%',
+      width: '1%',
     },
     {
       title: 'Created Date',
@@ -233,7 +233,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
         { text: formatEnumLabelToRemoveUnderscores('CANCELLED'), value: 'CANCELLED' },
       ],
       onFilter: (value, record) => record.taskStatus === value,
-      width: '10%',
+      width: '1%',
     },
     {
       title: 'Assigned Staff',
@@ -261,7 +261,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="center" gap={8}>
+        <Flex justify="center" >
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
@@ -273,7 +273,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
           </Tooltip>
         </Flex>
       ),
-      width: '10%',
+      width: '1%',
     },
   ];
 

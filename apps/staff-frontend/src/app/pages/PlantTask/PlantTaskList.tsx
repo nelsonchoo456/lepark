@@ -1,4 +1,4 @@
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Flex, message, Radio, Select, Collapse, Row, Col, Statistic } from 'antd';
 import { FiSearch } from 'react-icons/fi';
@@ -23,6 +23,7 @@ import PlantTaskTable from './PlantTaskTable';
 import moment from 'moment';
 import { Tabs } from 'antd';
 import StaffWorkloadTable from './StaffWorkloadTable';
+import { MdArrowBack } from 'react-icons/md';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -38,6 +39,7 @@ const PlantTaskList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [viewMode, setViewMode] = useState<'categories' | 'table'>('categories');
+  const [inDashboards, setInDashboards] = useState(false);
   const [tableViewType, setTableViewType] = useState<'all' | 'grouped-status' | 'grouped-urgency'>('all');
 
   const [open, setOpen] = useState<PlantTaskResponse[]>([]);
@@ -158,8 +160,9 @@ const PlantTaskList: React.FC = () => {
 
   const renderDashboardOverview = () => {
     return (
-      <Collapse defaultActiveKey={['1']} className="mb-4 bg-white">
-        <Panel header="Task Dashboard" key="1">
+      <>
+        {renderStatisticsOverview(true)}
+        <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
           <Tabs defaultActiveKey="1">
             <TabPane tab="Overview" key="1">
               <PlantTaskDashboard plantTasks={plantTasks} />
@@ -178,8 +181,8 @@ const PlantTaskList: React.FC = () => {
               <div>Chart 2 Content</div>
             </TabPane>
           </Tabs>
-        </Panel>
-      </Collapse>
+        </Card>
+      </>
     );
   };
 
@@ -195,25 +198,46 @@ const PlantTaskList: React.FC = () => {
     (task) => moment(task.dueDate).isBefore(moment()) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
   ).length;
 
-  const renderStatisticsOverview = () => {
-    return (
-      <Card title="Task Statistics (Unresolved)" className="mb-4 bg-white">
-        <Row gutter={16} className="mb-4" justify="center" align="middle">
-          <Col span={6} style={{ textAlign: 'center' }}>
-            <Statistic title="Open Tasks" value={totalOpenTasks} />
-          </Col>
-          <Col span={6} style={{ textAlign: 'center' }}>
-            <Statistic title="Task In Progress" value={inProgress.length} />
-          </Col>
-          <Col span={6} style={{ textAlign: 'center' }}>
-            <Statistic title="Urgent Tasks" value={urgentTasks} suffix={`of ${outstandingTasks}`} />
-          </Col>
-          <Col span={6} style={{ textAlign: 'center' }}>
-            <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
-          </Col>
-        </Row>
-      </Card>
-    );
+  const renderStatisticsOverview = (defaultOpen?: boolean) => {
+    return (<>
+      {inDashboards && (
+        <div className="flex items-center">
+          <Button className="text-wrap mb-2" icon={<MdArrowBack/>} type="link" onClick={() => setInDashboards(false)}>
+            Return
+          </Button>
+        </div>
+      )}
+      <Collapse defaultActiveKey={defaultOpen ? ['1'] : []} className="mb-4 bg-white" bordered={false} expandIconPosition="end">
+        <Panel header={<LogoText className="">Task Overview</LogoText>} key="1">
+          {/* <Row gutter={5}> */}
+          <Flex>
+            <Flex justify="space-evenly" className="w-full">
+              <Col style={{ textAlign: 'center' }}>
+                <Statistic title="Open Tasks" value={totalOpenTasks} />
+              </Col>
+              <Col style={{ textAlign: 'center' }}>
+                <Statistic title="Task In Progress" value={inProgress.length} />
+              </Col>
+              <Col style={{ textAlign: 'center' }}>
+                <Statistic title="Urgent Tasks" value={urgentTasks} suffix={`of ${outstandingTasks}`} />
+              </Col>
+              <Col style={{ textAlign: 'center' }}>
+                <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
+              </Col>
+            </Flex>
+            {!inDashboards && (
+              <div className="flex items-center">
+                <Button type="link" onClick={() => setInDashboards(true)}>
+                  View more
+                </Button>
+              </div>
+            )}
+          </Flex>
+          {/*  */}
+          {/* </Row> */}
+        </Panel>
+      </Collapse>
+    </>);
   };
 
   const renderTableView = () => {
@@ -247,6 +271,7 @@ const PlantTaskList: React.FC = () => {
             setTableViewType('all');
           }
         }}
+        className="mr-4"
       >
         <Radio.Button value="categories">Board View</Radio.Button>
         <Radio.Button value="table">Table View</Radio.Button>
@@ -275,17 +300,32 @@ const PlantTaskList: React.FC = () => {
     }
   };
 
+  if (inDashboards) {
+    return (
+      <ContentWrapperDark>
+        {contextHolder}
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
+      </ContentWrapperDark>
+    )
+  }
+
   return (
     <ContentWrapperDark>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {renderStatisticsOverview()}
-      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
+      {/* {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()} */}
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
           {renderViewSelector()}
           {(isSuperAdmin || viewMode === 'table') && (
-            <Select value={tableViewType} onChange={setTableViewType} style={{ width: 200, marginLeft: 16 }}>
+            <Select
+              value={tableViewType}
+              onChange={setTableViewType}
+              style={{ width: 200, backgroundColor: 'white', borderRadius: '0.35rem' }}
+              variant="borderless"
+            >
               <Select.Option value="all">All Tasks</Select.Option>
               <Select.Option value="grouped-status">Grouped by Status</Select.Option>
               <Select.Option value="grouped-urgency">Grouped by Urgency</Select.Option>

@@ -276,7 +276,6 @@ class SensorService {
       formattedData.sensorStatus = 'ACTIVE';
 
       const updateData = formattedData as Prisma.SensorUpdateInput;
-      console.log('updateData', updateData);
       return SensorDao.updateSensor(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -275,10 +275,10 @@ const PlantTaskCategories = ({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {'Type: '} {formatEnumLabelToRemoveUnderscores(task.taskType)}
+            {formatEnumLabelToRemoveUnderscores(task.taskType)}
           </Typography.Text>
           {!task.assignedStaffId && (
-            <Tag color="default" style={{ fontSize: '0.7rem' }}>
+            <Tag color="default" style={{ fontSize: '0.7rem' }} bordered={false}>
               UNASSIGNED
             </Tag>
           )}
@@ -286,43 +286,46 @@ const PlantTaskCategories = ({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
           <div>
             <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-              {`Urgency: `}
+              {`Priority: `}
             </Typography.Text>
             <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
               {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
             </Tag>
           </div>
-          {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="red" style={{ fontSize: '0.7rem' }}>
-              OVERDUE
-            </Tag>
-          )}
-          {isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="gold" style={{ fontSize: '0.7rem' }}>
-              DUE SOON
-            </Tag>
-          )}
+          
         </div>
         {userRole === StaffType.SUPERADMIN && (
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+            <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
               {`Park: ${task.occurrence?.zone?.park?.name}`}
             </Typography.Text>
           </div>
         )}
-        <div>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {`Zone: ${task.occurrence?.zone?.name}`}
-          </Typography.Text>
-        </div>
-        <div>
+
+        {/* <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+          {`Zone: ${task.occurrence?.zone?.name}`}
+        </Typography.Text> */}
+
+        {/* <div>
           <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
             {task.assignedStaffId ? `Assigned to: ${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : 'Unassigned'}
           </Typography.Text>
+        </div> */}
+        <div className='flex justify-between mt-1'>
+          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>
+            Due: {moment(task.dueDate).format('D MMM YY')}
+          </Typography.Text>
+          {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+            <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
+              OVERDUE
+            </Tag>
+          )}
+          {isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+            <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
+              DUE SOON
+            </Tag>
+          )}
         </div>
-        <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-          Due: {moment(task.dueDate).format('D MMM YY')}
-        </Typography.Text>
       </Card>
     );
   };
@@ -342,7 +345,7 @@ const PlantTaskCategories = ({
                 title={status.title}
                 styles={{
                   header: { backgroundColor: status.color, color: 'white' },
-                  body: { padding: '1rem', maxHeight: '60vh', overflowY: 'auto' },
+                  body: { padding: '1rem', overflowY: 'auto' },
                 }}
               >
                 <Droppable droppableId={status.value}>
