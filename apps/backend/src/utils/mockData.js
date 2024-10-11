@@ -1709,7 +1709,7 @@ const plantTasksData = [
     taskType: 'PRUNING_TRIMMING',
     taskUrgency: 'NORMAL',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-20T00:00:00Z',
+    dueDate: '2024-10-13T00:00:00Z',
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.tomorrowsharvest.com/wp-content/uploads/2017/08/pruning_clippers-how-to-prune-a-tree.jpg'],

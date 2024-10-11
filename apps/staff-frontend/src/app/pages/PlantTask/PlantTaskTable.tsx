@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse } from 'antd';
 import moment from 'moment';
-import { FiEye, FiAlertCircle } from 'react-icons/fi';
+import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks } from '@lepark/data-access';
@@ -178,10 +178,14 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
         const isOverdue = moment().isAfter(moment(text)) && 
           record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+        const isDueSoon = moment(text).isBetween(moment(), moment().add(3, 'days')) &&
+          record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+          record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
         return (
           <Flex align="center">
             {moment(text).format('D MMM YY')}
             {isOverdue && <FiAlertCircle className="ml-2 text-red-500" />}
+            {isDueSoon && <FiClock className="ml-2 text-yellow-500" />}
           </Flex>
         );
       },
@@ -312,11 +316,16 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
 
   const tableProps = {
     rowClassName: (record: PlantTaskResponse) => {
-      return moment().isAfter(moment(record.dueDate)) &&
+      const isOverdue = moment().isAfter(moment(record.dueDate)) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-        record.taskStatus !== PlantTaskStatusEnum.CANCELLED
-        ? 'overdue-row'
-        : '';
+        record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+      const isDueSoon = moment(record.dueDate).isBetween(moment(), moment().add(3, 'days')) &&
+        record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
+        record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+      
+      if (isOverdue) return 'overdue-row';
+      if (isDueSoon) return 'due-soon-row';
+      return '';
     },
   };
 

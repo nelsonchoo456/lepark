@@ -1,6 +1,6 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Flex, message, Radio, Select, Collapse } from 'antd';
+import { Button, Card, Input, Flex, message, Radio, Select, Collapse, Row, Col, Statistic } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
 import {
@@ -20,6 +20,8 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import PlantTaskCategories from './PlantTaskCategories';
 import PlantTaskDashboard from './PlantTaskDashboard';
 import PlantTaskTable from './PlantTaskTable';
+import moment from 'moment';
+
 
 const { Panel } = Collapse;
 
@@ -77,10 +79,8 @@ const PlantTaskList: React.FC = () => {
       } else if (user?.parkId) {
         staffResponse = await getAllStaffsByParkId(user.parkId);
       }
-      
-      const filteredStaff = staffResponse?.data.filter(staff => 
-        staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST
-      );
+
+      const filteredStaff = staffResponse?.data.filter((staff) => staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST);
       setStaffList(filteredStaff || []);
     } catch (error) {
       console.error('Error fetching plant tasks:', error);
@@ -162,6 +162,39 @@ const PlantTaskList: React.FC = () => {
     );
   };
 
+  const totalOpenTasks = plantTasks.filter((task) => task.taskStatus === 'OPEN').length;
+  const outstandingTasks = plantTasks.filter((task) => task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED').length;
+  const urgentTasks = plantTasks.filter(
+    (task) =>
+      (task.taskUrgency === 'HIGH' || task.taskUrgency === 'IMMEDIATE') &&
+      task.taskStatus !== 'COMPLETED' &&
+      task.taskStatus !== 'CANCELLED',
+  ).length;
+  const overdueTasks = plantTasks.filter(
+    (task) => moment(task.dueDate).isBefore(moment()) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
+  ).length;
+
+  const renderStatisticsOverview = () => {
+    return (
+      <Card title="Task Statistics (Unresolved)" className="mb-4 bg-white">
+        <Row gutter={16} className="mb-4" justify="center" align="middle">
+          <Col span={6} style={{ textAlign: 'center' }}>
+            <Statistic title="Open Tasks" value={totalOpenTasks} />
+          </Col>
+          <Col span={6} style={{ textAlign: 'center' }}>
+            <Statistic title="Task In Progress" value={inProgress.length} />
+          </Col>
+          <Col span={6} style={{ textAlign: 'center' }}>
+            <Statistic title="Urgent Tasks" value={urgentTasks} suffix={`of ${outstandingTasks}`} />
+          </Col>
+          <Col span={6} style={{ textAlign: 'center' }}>
+            <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
+          </Col>
+        </Row>
+      </Card>
+    );
+  };
+
   const renderTableView = () => {
     return (
       <Card>
@@ -225,6 +258,7 @@ const PlantTaskList: React.FC = () => {
     <ContentWrapperDark>
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      {renderStatisticsOverview()}
       {renderDashboardOverview()}
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">

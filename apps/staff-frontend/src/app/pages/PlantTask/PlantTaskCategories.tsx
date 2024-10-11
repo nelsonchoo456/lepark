@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { StaffRoleEnum } from '@prisma/client';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
+import { FiClock } from 'react-icons/fi';
 
 interface PlantTaskCategoriesProps {
   open: PlantTaskResponse[];
@@ -227,14 +228,23 @@ const PlantTaskCategories = ({
 
   const renderTaskCard = (task: PlantTaskResponse) => {
     const isOverdue = moment().isAfter(moment(task.dueDate));
-    const shouldHighlight =
+    const isDueSoon = moment(task.dueDate).isBetween(moment(), moment().add(3, 'days')); // Consider "due soon" if within 3 days
+    const shouldHighlightOverdue =
       isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+    const shouldHighlightDueSoon =
+      isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
 
     return (
       <Card
         size="small"
         className="mb-2"
-        style={shouldHighlight ? { backgroundColor: 'rgba(255, 0, 0, 0.1)' } : {}}
+        style={
+          shouldHighlightOverdue
+            ? { backgroundColor: 'rgba(255, 0, 0, 0.1)' }
+            : shouldHighlightDueSoon
+            ? { backgroundColor: 'rgba(255, 255, 0, 0.1)' }
+            : {}
+        }
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -285,6 +295,11 @@ const PlantTaskCategories = ({
           {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
             <Tag color="red" style={{ fontSize: '0.7rem' }}>
               OVERDUE
+            </Tag>
+          )}
+          {isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+            <Tag color="gold" style={{ fontSize: '0.7rem' }}>
+              DUE SOON
             </Tag>
           )}
         </div>
