@@ -5,7 +5,7 @@ export interface FAQCreateData {
   question: string;
   answer: string;
   status: FAQStatusEnum;
-  parkId: number;
+  parkId?: number;
   priority?: number;
 }
 

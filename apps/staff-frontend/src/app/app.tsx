@@ -87,6 +87,8 @@ import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import FAQList from './pages/FAQ/FAQList';
+import FAQCreate from './pages/FAQ/FAQCreate';
+
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -506,6 +508,7 @@ export function App() {
 
               <Route path="/faq">
                 <Route index element={<FAQList />} />
+              <Route path="create" element={<FAQCreate />} />
               </Route>
 
               {/* Catch-all for 404 */}
