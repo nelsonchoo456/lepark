@@ -15,27 +15,15 @@ const {
   sensorsData,
   decarbonizationAreasData,
   plantTasksData,
-  seqHistoriesData
+  seqHistoriesData,
+  faqsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
 
-const parseEWKT = (ewkt) => {
-  const match = ewkt.match(/SRID=(\d+);POLYGON\(\((.*?)\)\)/);
-  if (!match) {
-    throw new Error('Invalid EWKT format');
-  }
-  const coordinates = match[2].split(',').map((coord) => {
-    const [lng, lat] = coord.trim().split(' ').map(Number);
-    return [lng, lat];
-  });
-  return {
-    type: 'Polygon',
-    coordinates: [coordinates],
-  };
-};
+
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -209,6 +197,23 @@ async function createZone(data) {
 
   return zone[0];
 }
+
+async function seedFAQs() {
+  console.log('Seeding FAQs...');
+  const faqList = [];
+  for (const faq of faqsData) {
+    try {
+      const createdFAQ = await prisma.fAQ.create({
+        data: faq,
+      });
+      faqList.push(createdFAQ);
+    } catch (error) {
+      console.error(`Error creating FAQ: ${error.message}`);
+    }
+  }
+  console.log(`Total FAQs seeded: ${faqList.length}\n`);
+}
+
 
 async function seed() {
   const parks = [];
@@ -448,11 +453,14 @@ const plantTasksList = [];
   console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
 
   // Now create sequestration histories after all decarbonization areas are created
+  console.log('Seeding 14 sequestration histories per decarb area...');
 
   for (let i = 0; i < decarbonizationAreaList.length; i++) {
     const area = decarbonizationAreaList[i];
     await createSeqHistories(area.id, seqHistoriesData[i], i);
   }
+
+  await seedFAQs();
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -495,6 +503,9 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
     console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
     console.log('---');
   });*/
+
+  //faq'=
+
 }
 
 

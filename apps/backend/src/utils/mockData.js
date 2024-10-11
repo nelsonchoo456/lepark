@@ -2282,6 +2282,332 @@ const seqHistoriesData = [
 }
 ];
 
+const faqsData = [
+  // Park ID 1
+  {
+    category: "GENERAL",
+    question: "What are the park's opening hours?",
+    answer: "The park is open 24 hours daily.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "GENERAL",
+    question: "Is there an entrance fee?",
+    answer: "No, entrance to the park is free for all visitors.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "PARK_RULES",
+    question: "Are pets allowed in the park?",
+    answer: "Dogs on leashes are allowed in designated areas. Other pets are not permitted.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "PARK_RULES",
+    question: "Can I have a picnic in the park?",
+    answer: "Yes, picnics are allowed in designated areas. Please clean up after yourself.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "FACILITIES",
+    question: "Are there public restrooms available?",
+    answer: "Yes, public restrooms are available at various locations throughout the park.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "FACILITIES",
+    question: "Is there a playground for children?",
+    answer: "Yes, there are several playgrounds suitable for different age groups.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "EVENTS",
+    question: "How can I book an event at the park?",
+    answer: "Event bookings can be made through our website or by contacting our events team.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "EVENTS",
+    question: "Are there any upcoming events?",
+    answer: "Check our events calendar on the website for the latest information on upcoming events.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "SAFETY",
+    question: "What should I do in case of an emergency?",
+    answer: "In case of emergency, call 999 or alert the nearest park staff member.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "SAFETY",
+    question: "Are there first aid facilities available?",
+    answer: "Yes, first aid stations are located at key points throughout the park.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "ACCESSIBILITY",
+    question: "Is the park wheelchair accessible?",
+    answer: "Yes, most areas of the park are wheelchair accessible with paved paths.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "ACCESSIBILITY",
+    question: "Are there disabled parking spaces available?",
+    answer: "Yes, disabled parking spaces are available near the main entrance.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "SERVICES",
+    question: "Is there a lost and found service?",
+    answer: "Yes, lost items can be reported or retrieved at the Visitor Center.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "SERVICES",
+    question: "Are there guided tours available?",
+    answer: "Yes, guided tours are available daily. Check the schedule at the Visitor Center.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "TICKETING",
+    question: "Do I need tickets for any attractions within the park?",
+    answer: "Most attractions are free, but some special exhibits may require tickets.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "TICKETING",
+    question: "Where can I purchase tickets for paid attractions?",
+    answer: "Tickets can be purchased online or at the Visitor Center.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "PARK_HISTORY",
+    question: "When was the park established?",
+    answer: "The park was established in 1975 as part of the city's green initiative.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "PARK_HISTORY",
+    question: "What is the significance of the park's name?",
+    answer: "The park is named after a local environmental activist who championed its creation.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+  {
+    category: "OTHER",
+    question: "Can I volunteer at the park?",
+    answer: "Yes, we have various volunteer programs. Contact our administration for details.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 1
+  },
+  {
+    category: "OTHER",
+    question: "Is photography allowed in the park?",
+    answer: "Yes, photography is allowed for personal use. Commercial photography requires a permit.",
+    status: "ACTIVE",
+    parkId: 1,
+    priority: 2
+  },
+
+  // Park ID 2
+  {
+    category: "GENERAL",
+    question: "What are the best times to visit the park?",
+    answer: "The park is beautiful year-round, but spring and fall offer the most pleasant weather.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "GENERAL",
+    question: "Is there Wi-Fi available in the park?",
+    answer: "Free Wi-Fi is available in designated areas near the Visitor Center.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "PARK_RULES",
+    question: "Are drones allowed in the park?",
+    answer: "Drones are not permitted without prior authorization from park management.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "PARK_RULES",
+    question: "Can I ride my bicycle in the park?",
+    answer: "Bicycles are allowed on designated bike paths only.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "FACILITIES",
+    question: "Are there BBQ pits available?",
+    answer: "Yes, BBQ pits are available on a first-come, first-served basis in designated areas.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "FACILITIES",
+    question: "Is there a cafe or restaurant in the park?",
+    answer: "Yes, there's a cafe near the main entrance serving light refreshments and meals.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "EVENTS",
+    question: "Can I host a private event in the park?",
+    answer: "Yes, private events can be arranged. Contact our events team for more information.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "EVENTS",
+    question: "Are there any seasonal events in the park?",
+    answer: "We host various seasonal events throughout the year. Check our website for the latest schedule.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "SAFETY",
+    question: "Are there lifeguards at the park's water features?",
+    answer: "Lifeguards are on duty at the main lake during summer months only.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "SAFETY",
+    question: "What wildlife might I encounter in the park?",
+    answer: "You may see various birds, small mammals, and reptiles. Please do not feed the wildlife.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "ACCESSIBILITY",
+    question: "Are there audio guides available for visually impaired visitors?",
+    answer: "Yes, audio guides are available at the Visitor Center free of charge.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "ACCESSIBILITY",
+    question: "Are service animals allowed in the park?",
+    answer: "Yes, service animals are welcome throughout the park.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "SERVICES",
+    question: "Is there a bike rental service?",
+    answer: "Yes, bikes can be rented at the main entrance. Hourly and daily rates are available.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "SERVICES",
+    question: "Are there lockers available for storing personal items?",
+    answer: "Lockers are available near the Visitor Center for a small fee.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "TICKETING",
+    question: "Are there any discounts available for park attractions?",
+    answer: "Yes, we offer discounts for students, seniors, and groups. Inquire at the ticket office.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "TICKETING",
+    question: "Can I get a refund on unused tickets?",
+    answer: "Refunds are available for unused tickets within 30 days of purchase.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "PARK_HISTORY",
+    question: "What was this area before it became a park?",
+    answer: "This area was formerly industrial land that was reclaimed and transformed into a park in the 1980s.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "PARK_HISTORY",
+    question: "Are there any historical landmarks within the park?",
+    answer: "Yes, there's a preserved 19th-century farmhouse near the center of the park.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  },
+  {
+    category: "OTHER",
+    question: "Can I fish in the park's water bodies?",
+    answer: "Fishing is allowed with a valid permit in designated areas only.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 1
+  },
+  {
+    category: "OTHER",
+    question: "Are there any art installations in the park?",
+    answer: "Yes, we have several permanent and rotating art installations throughout the park.",
+    status: "ACTIVE",
+    parkId: 2,
+    priority: 2
+  }
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -2298,5 +2624,6 @@ module.exports = {
   sensorsData,
   decarbonizationAreasData,
   plantTasksData,
-  seqHistoriesData
+  seqHistoriesData,
+  faqsData
 };
