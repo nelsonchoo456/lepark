@@ -46,13 +46,52 @@ CAMERA_IDENTIFIER_NO = os.getenv("CAMERA_IDENTIFIER_NO")
 #####
 
 PAGE = """\
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>picamera2 MJPEG streaming demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picamera2 MJPEG Streaming</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }}
+        .container {{
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+        }}
+        h1 {{
+            color: #333;
+            margin-bottom: 10px;
+        }}
+        h2 {{
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }}
+        img {{
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }}
+    </style>
 </head>
 <body>
-<h1>Picamera2 MJPEG Streaming Demo</h1>
-<img src="stream.mjpg" width="640" height="480" />
+    <div class="container">
+        <h1>Picamera2 MJPEG Streaming</h1>
+        <h2>Viewing Camera: {camera_identifier}</h2>
+        <img src="stream.mjpg" alt="MJPEG Stream" />
+    </div>
 </body>
 </html>
 """
@@ -74,7 +113,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header('Location', '/index.html')
             self.end_headers()
         elif self.path == '/index.html':
-            content = PAGE.encode('utf-8')
+            content = PAGE.format(camera_identifier=CAMERA_IDENTIFIER_NO).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
             self.send_header('Content-Length', len(content))
