@@ -13,16 +13,17 @@ import {
   assignPlantTask,
   getAllStaffsByParkId,
   getAllStaffs,
+  getAllAssignedPlantTasks,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import PlantTaskCategories from './PlantTaskCategories';
-import PlantTaskDashboard from './PlantTaskDashboard';
-import PlantTaskTable from './PlantTaskTable';
+import PlantTaskBoardView from './PlantTaskBoardView';
+import PlantTaskDashboard from './PlantTaskDashboard/PlantTaskDashboard';
+import PlantTaskTableView from './PlantTaskTableView';
 import moment from 'moment';
 import { Tabs } from 'antd';
-import StaffWorkloadTable from './StaffWorkloadTable';
+import StaffWorkloadTable from './PlantTaskDashboard/components/StaffWorkloadTable';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -58,12 +59,10 @@ const PlantTaskList: React.FC = () => {
   const fetchPlantTasks = async () => {
     try {
       let response;
-      if (user?.role === StaffType.SUPERADMIN) {
-        response = await getAllPlantTasks();
-      } else if (user?.parkId) {
-        response = await getPlantTasksByParkId(user.parkId);
+      if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
+        response = user?.parkId ? await getPlantTasksByParkId(user.parkId) : await getAllPlantTasks();
       } else {
-        throw new Error('User does not have a parkId');
+        response = await getAllAssignedPlantTasks(user?.id || '');
       }
       setPlantTasks(response.data);
 
@@ -158,7 +157,7 @@ const PlantTaskList: React.FC = () => {
 
   const renderDashboardOverview = () => {
     return (
-      <Collapse defaultActiveKey={['1']} className="mb-4 bg-white">
+      <Collapse className="mb-4 bg-white">
         <Panel header="Task Dashboard" key="1">
           <Tabs defaultActiveKey="1">
             <TabPane tab="Overview" key="1">
@@ -219,7 +218,7 @@ const PlantTaskList: React.FC = () => {
   const renderTableView = () => {
     return (
       <Card>
-        <PlantTaskTable
+        <PlantTaskTableView
           plantTasks={filteredPlantTasks}
           loading={loading}
           staffList={staffList}
@@ -259,7 +258,7 @@ const PlantTaskList: React.FC = () => {
       return renderTableView();
     } else {
       return (
-        <PlantTaskCategories
+        <PlantTaskBoardView
           open={open}
           inProgress={inProgress}
           completed={completed}

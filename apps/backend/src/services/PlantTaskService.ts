@@ -94,7 +94,8 @@ class PlantTaskService {
   }
 
   public async getAllAssignedPlantTasks(staffId: string): Promise<PlantTask[]> {
-    return PlantTaskDao.getAllAssignedPlantTasks(staffId);
+    const plantTasks = await PlantTaskDao.getAllAssignedPlantTasks(staffId);
+    return this.addZoneAndParkInfo(plantTasks);
   }
 
   public async updatePlantTask(id: string, data: Partial<PlantTaskSchemaType>): Promise<PlantTask> {
@@ -355,12 +356,12 @@ class PlantTaskService {
     }
 
     const tasksInSameStatus = await PlantTaskDao.getPlantTasksByStatus(plantTask.taskStatus);
-    
+
     // Sort tasks by position
     tasksInSameStatus.sort((a, b) => a.position - b.position);
 
     // Find the current index of the task being moved
-    const currentIndex = tasksInSameStatus.findIndex(task => task.id === id);
+    const currentIndex = tasksInSameStatus.findIndex((task) => task.id === id);
     if (currentIndex === -1) {
       throw new Error('Task not found in the current status');
     }
@@ -374,13 +375,11 @@ class PlantTaskService {
     // Recalculate positions for all tasks
     const updatedTasks = tasksInSameStatus.map((task, index) => ({
       id: task.id,
-      position: (index + 1) * 1000
+      position: (index + 1) * 1000,
     }));
 
     // Update all task positions in the database
-    await Promise.all(updatedTasks.map(task => 
-      PlantTaskDao.updatePlantTask(task.id, { position: task.position })
-    ));
+    await Promise.all(updatedTasks.map((task) => PlantTaskDao.updatePlantTask(task.id, { position: task.position })));
 
     // Return the updated task
     return PlantTaskDao.getPlantTaskById(id);

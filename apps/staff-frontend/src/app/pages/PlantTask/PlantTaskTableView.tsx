@@ -15,7 +15,7 @@ const formatTaskType = (taskType: string) => {
   return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
-interface PlantTaskTableProps {
+interface PlantTaskTableViewProps {
   plantTasks: PlantTaskResponse[];
   loading: boolean;
   staffList: StaffResponse[];
@@ -27,7 +27,7 @@ interface PlantTaskTableProps {
   showDeleteModal: (plantTask: PlantTaskResponse) => void;
 }
 
-const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
+const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   plantTasks,
   loading,
   staffList,
@@ -48,9 +48,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   useEffect(() => {
     // Update active keys when tableViewType changes
     if (tableViewType === 'grouped-status' || tableViewType === 'grouped-urgency') {
-      const groupKeys = tableViewType === 'grouped-status'
-        ? ['OPEN', 'IN_PROGRESS']
-        : ['IMMEDIATE', 'HIGH'];
+      const groupKeys = tableViewType === 'grouped-status' ? ['OPEN', 'IN_PROGRESS'] : ['IMMEDIATE', 'HIGH'];
       setActiveKeys(groupKeys);
     }
   }, [tableViewType]);
@@ -58,9 +56,9 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   const fetchParks = async () => {
     try {
       const response = await getAllParks();
-      const parkOptions = response.data.map(park => ({
+      const parkOptions = response.data.map((park) => ({
         text: park.name,
-        value: park.id
+        value: park.id,
       }));
       setParks(parkOptions);
     } catch (error) {
@@ -81,23 +79,23 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       title: userRole === StaffType.SUPERADMIN ? 'Park, Zone' : 'Zone',
       render: (_, record) => (
         <div>
-          {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence.zone.park.name}</p>}
+          {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence?.zone?.park?.name}</p>}
           <div className="flex">
-            {userRole === StaffType.SUPERADMIN && <p className="opacity-50 mr-2">Zone:</p>}
-            {record.occurrence.zone.name}
+            {userRole !== StaffType.SUPERADMIN && <p className="opacity-50 mr-2"></p>}
+            {record.occurrence?.zone?.name}
           </div>
         </div>
       ),
       sorter: (a, b) => {
         if (userRole === StaffType.SUPERADMIN) {
-          if (a.occurrence.zone.park.name && b.occurrence.zone.park.name) {
-            return a.occurrence.zone.park.name.localeCompare(b.occurrence.zone.park.name);
+          if (a.occurrence?.zone?.park?.name && b.occurrence?.zone?.park?.name) {
+            return a.occurrence?.zone?.park?.name.localeCompare(b.occurrence?.zone?.park?.name);
           }
         }
-        if (a.occurrence.zone.name && b.occurrence.zone.name) {
-          return a.occurrence.zone.name.localeCompare(b.occurrence.zone.name);
+        if (a.occurrence?.zone?.name && b.occurrence?.zone?.name) {
+          return a.occurrence?.zone?.name.localeCompare(b.occurrence?.zone?.name);
         }
-        return a.occurrence.zone.id.toString().localeCompare(b.occurrence.zone.id.toString());
+        return a.occurrence?.zone?.id?.toString().localeCompare(b.occurrence?.zone?.id?.toString());
       },
       filters: parks,
       onFilter: (value, record) => record.occurrence.zone.park.id === value,
@@ -175,11 +173,13 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       dataIndex: 'dueDate',
       key: 'dueDate',
       render: (text, record) => {
-        const isOverdue = moment().isAfter(moment(text)) && 
-          record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+        const isOverdue =
+          moment().isAfter(moment(text)) &&
+          record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
-        const isDueSoon = moment(text).isBetween(moment(), moment().add(3, 'days')) &&
-          record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+        const isDueSoon =
+          moment(text).isBetween(moment(), moment().add(3, 'days')) &&
+          record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
         return (
           <Flex align="center">
@@ -244,11 +244,13 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
         } else {
           return record.taskStatus === PlantTaskStatusEnum.OPEN ? (
             <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
-              {staffList.filter(staff => staff.parkId === record.occurrence?.zone?.parkId).map((staff: StaffResponse) => (
-                <Select.Option key={staff.id} value={staff.id}>
-                  {`${staff.firstName} ${staff.lastName} - ${staff.role}`}
-                </Select.Option>
-              ))}
+              {staffList
+                .filter((staff) => staff.parkId === record.occurrence?.zone?.parkId)
+                .map((staff: StaffResponse) => (
+                  <Select.Option key={staff.id} value={staff.id}>
+                    {`${staff.firstName} ${staff.lastName} - ${staff.role}`}
+                  </Select.Option>
+                ))}
             </Select>
           ) : (
             <></>
@@ -294,10 +296,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
           };
 
     return (
-      <Collapse
-        activeKey={activeKeys}
-        onChange={(keys) => setActiveKeys(keys as string[])}
-      >
+      <Collapse activeKey={activeKeys} onChange={(keys) => setActiveKeys(keys as string[])}>
         {Object.entries(groupedTasks).map(([key, tasks]) => (
           <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
             <Table
@@ -316,13 +315,15 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
 
   const tableProps = {
     rowClassName: (record: PlantTaskResponse) => {
-      const isOverdue = moment().isAfter(moment(record.dueDate)) &&
+      const isOverdue =
+        moment().isAfter(moment(record.dueDate)) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
         record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
-      const isDueSoon = moment(record.dueDate).isBetween(moment(), moment().add(3, 'days')) &&
+      const isDueSoon =
+        moment(record.dueDate).isBetween(moment(), moment().add(3, 'days')) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
         record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
-      
+
       if (isOverdue) return 'overdue-row';
       if (isDueSoon) return 'due-soon-row';
       return '';
@@ -349,4 +350,4 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   }
 };
 
-export default PlantTaskTable;
+export default PlantTaskTableView;

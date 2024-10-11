@@ -23,7 +23,7 @@ import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
 
-interface PlantTaskCategoriesProps {
+interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
   inProgress: PlantTaskResponse[];
   completed: PlantTaskResponse[];
@@ -37,7 +37,7 @@ interface PlantTaskCategoriesProps {
   userRole: string;
 }
 
-const PlantTaskCategories = ({
+const PlantTaskBoardView = ({
   open,
   inProgress,
   completed,
@@ -48,7 +48,7 @@ const PlantTaskCategories = ({
   setCancelled,
   refreshData,
   userRole,
-}: PlantTaskCategoriesProps) => {
+}: PlantTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [isAssignModalVisible, setIsAssignModalVisible] = useState(false);
@@ -108,7 +108,7 @@ const PlantTaskCategories = ({
       // Update status and position in the backend
       try {
         // Unassign staff if the task is moved to "Open" status
-        if (destination.droppableId === PlantTaskStatusEnum.OPEN) {
+        if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER && destination.droppableId === PlantTaskStatusEnum.OPEN) {
           await unassignPlantTask(movedTask.id, user?.id || '');
           await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
           await updatePlantTaskPosition(movedTask.id, destination.index);
@@ -181,6 +181,9 @@ const PlantTaskCategories = ({
   };
 
   const handleAssignStaff = async (task: PlantTaskResponse) => {
+    if (userRole !== StaffType.SUPERADMIN && userRole !== StaffType.MANAGER) {
+      return; // Prevent non-superadmin/manager from assigning staff
+    }
     setSelectedTask(task);
     setSelectedTaskId(task.id);
     setIsAssignModalVisible(true);
@@ -254,17 +257,31 @@ const PlantTaskCategories = ({
               </Typography.Text>
             </div>
             <Dropdown
-              overlay={
-                <Menu>
-                  <Menu.Item key="1" onClick={() => handleViewDetails(task.id)}>
-                    View Details
-                  </Menu.Item>
-                  {!task.assignedStaffId && (
-                    <Menu.Item key="2" onClick={() => handleAssignStaff(task)}>
-                      Assign Staff
-                    </Menu.Item>
-                  )}
-                </Menu>
+              menu={
+                userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER
+                  ? {
+                      items: [
+                        {
+                    label: 'View Details',
+                    key: '1',
+                    onClick: () => handleViewDetails(task.id),
+                  },
+                  {
+                    label: 'Assign Staff',
+                    key: '2',
+                    onClick: () => handleAssignStaff(task),
+                  },
+                      ],
+                    }
+                  : {
+                      items: [
+                        {
+                          label: 'View Details',
+                          key: '1',
+                          onClick: () => handleViewDetails(task.id),
+                        },
+                      ],
+                    }
               }
               trigger={['click']}
             >
@@ -381,7 +398,7 @@ const PlantTaskCategories = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal title="Assign Staff" visible={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
+      <Modal title="Assign Staff" open={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
         <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>
@@ -394,4 +411,4 @@ const PlantTaskCategories = ({
   );
 };
 
-export default PlantTaskCategories;
+export default PlantTaskBoardView;
