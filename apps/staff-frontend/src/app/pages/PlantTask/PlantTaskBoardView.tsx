@@ -267,12 +267,15 @@ const PlantTaskBoardView = ({
         key: '1',
         onClick: () => handleViewDetails(task.id),
       },
-      {
+    ];
+
+    if (task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED) {
+      dropdownItems.push({
         label: 'Edit Details',
         key: '2',
         onClick: () => handleEditDetails(task),
-      },
-    ];
+      });
+    }
 
     if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && !task.assignedStaffId) {
       dropdownItems.push({

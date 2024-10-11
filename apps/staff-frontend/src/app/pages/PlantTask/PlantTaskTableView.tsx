@@ -307,13 +307,15 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="center" gap={8}>
+        <Flex justify="flex-start" gap={8}>
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Plant Task">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
-          </Tooltip>
+          {record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+            <Tooltip title="Edit Plant Task">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+            </Tooltip>
+          )}
           {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
             <Tooltip title="Delete Plant Task">
               <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
