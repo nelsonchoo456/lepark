@@ -17,7 +17,12 @@ router.post('/createHub', async (req, res) => {
 router.get('/getAllHubs', async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string) : null;
-    if (!parkId) {
+    const hubStatus = req.query.hubStatus ? req.query.hubStatus as string : null;
+    
+    if (hubStatus && parkId) {
+      const hubs = await HubService.getHubsFiltered(hubStatus, parkId);
+      res.status(200).json(hubs);
+    } else if (!parkId) {
       const hubs = await HubService.getAllHubs();
       res.status(200).json(hubs);
     } else {

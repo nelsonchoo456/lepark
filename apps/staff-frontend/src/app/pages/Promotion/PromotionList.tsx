@@ -44,7 +44,7 @@ const PromotionList = () => {
       {user?.role === StaffType.SUPERADMIN ? (
         <TabsNoBottomMargin items={promotionTabs} type="card" />
       ) : (
-        <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} />
+        <PromotionByTypeTab promotions={promotions} triggerFetch={triggerFetch} tableShowParks/>
       )}
     </ContentWrapperDark>
   );

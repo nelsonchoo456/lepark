@@ -1,6 +1,6 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty } from 'antd';
+import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty, Button } from 'antd';
 import moment from 'moment';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -9,12 +9,18 @@ import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { IoLocationOutline } from 'react-icons/io5';
+import { useNavigate } from 'react-router-dom';
+import ZoneTab from './components/ZoneTab';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
   const { hub, loading } = useRestrictHub(hubId);
   const { user } = useAuth<StaffResponse>();
   const { zones } = useFetchZones();
+  const navigate = useNavigate();
+
+  console.log(zones, hub?.zone)
 
   const breadcrumbItems = [
     {
@@ -42,48 +48,95 @@ const ViewHubDetails = () => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(hub?.hubStatus ?? '');
         switch (hub?.hubStatus) {
           case 'ACTIVE':
-            return <Tag color="green" bordered={false}>{formattedStatus}</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formattedStatus}
+              </Tag>
+            );
           case 'INACTIVE':
-            return <Tag color="blue" bordered={false}>{formattedStatus}</Tag>;
+            return (
+              <Tag color="blue" bordered={false}>
+                {formattedStatus}
+              </Tag>
+            );
           case 'UNDER_MAINTENANCE':
-            return <Tag color="yellow" bordered={false}>{formattedStatus}</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formattedStatus}
+              </Tag>
+            );
           case 'DECOMMISSIONED':
-            return <Tag color="red" bordered={false}>{formattedStatus}</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                {formattedStatus}
+              </Tag>
+            );
           default:
             return <Tag>{formattedStatus}</Tag>;
         }
       })(),
     },
-  /*  {
+    /*  {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
       children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
     },*/
-    ...(user?.role === StaffType.SUPERADMIN ? [
-      {
-        key: 'parkName',
-        label: 'Park Name',
-        children: hub?.park?.name ?? '-',
-      },
-    ] : []),
-    {
-      key: 'name',
-      label: 'Facility',
-      children: hub?.facility?.name,
-    },
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            key: 'parkName',
+            label: 'Park Name',
+            children: hub?.park?.name ?? '-',
+          },
+        ]
+      : []),
+    ...(hub?.zone
+      ? [
+          {
+            key: 'zone',
+            label: 'Zone Location',
+            children: hub?.zone?.name,
+          },
+        ]
+      : [
+          {
+            key: 'name',
+            label: 'Storage Location',
+            children: (
+              <div className="flex w-full items-start justify-between">
+                {hub?.facility?.name}{' '}
+                {hub?.hubStatus === "INACTIVE" && 
+                  <Button type="primary" icon={<IoLocationOutline />} onClick={() => navigate(`/hubs/${hub?.id}/place-in-zone`)} className="-mt-1">
+                    Place in Zone
+                  </Button>
+                }
+              </div>
+            ),
+          },
+        ]),
   ];
 
   const tabsItems = [
     {
       key: 'information',
-      label: 'Information',
+      label: 'Information & Actions',
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
     },
-    {
-      key: 'location',
-      label: 'Storeroom Location',
-      children: hub ? <LocationTab facility={hub.facility} park={hub.park} zones={zones} /> : <p>Loading hub data...</p>,
-    },
+    ...(hub?.zone && hub.lat && hub.long
+      ? [
+          {
+            key: 'zone',
+            label: 'Zone',
+            children: hub ? <ZoneTab hub={hub} lat={hub.lat} lng={hub.long} park={hub.park} zone={hub.zone} zones={zones} /> : <p>Loading hub data...</p>,
+          },
+        ]
+      : [
+          {
+            key: 'location',
+            label: 'Storeroom Location',
+            children: hub ? <LocationTab facility={hub.facility} park={hub.park} zones={zones} /> : <p>Loading hub data...</p>,
+          },
+        ]),
   ];
 
   if (loading) {
@@ -126,12 +179,7 @@ const ViewHubDetails = () => {
 
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{hub?.name}</LogoText>
-            <Descriptions
-              items={descriptionsItems}
-              column={1}
-              size="small"
-              className="mb-4"
-            />
+            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
           </div>
         </div>
 

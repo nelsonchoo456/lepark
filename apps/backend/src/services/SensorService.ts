@@ -29,7 +29,8 @@ class SensorService {
       }
 
       const formattedData = dateFormatter(data);
-
+      formattedData.sensorStatus = "INACTIVE";
+      
       // Validate input data using Zod
       SensorSchema.parse(formattedData);
 
@@ -275,7 +276,6 @@ class SensorService {
       formattedData.sensorStatus = 'ACTIVE';
 
       const updateData = formattedData as Prisma.SensorUpdateInput;
-      console.log('updateData', updateData);
       return SensorDao.updateSensor(id, updateData);
     } catch (error) {
       if (error instanceof z.ZodError) {

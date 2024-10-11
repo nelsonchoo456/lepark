@@ -3,13 +3,17 @@ import { getPromotionById, PromotionResponse, StaffResponse, StaffType } from '@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
+import dayjs from 'dayjs';
 
 export const useRestrictPromotions = (promotionId?: string) => {
   const [promotion, setPromotion] = useState<PromotionResponse | null>(null);
+  const [isArchived, setIsArchived] = useState(true);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
+  const [trigger, setTrigger] = useState(false);
+  const today = dayjs().endOf('day');
 
   useEffect(() => {
     if (!promotionId || promotionId === undefined) {
@@ -27,8 +31,9 @@ export const useRestrictPromotions = (promotionId?: string) => {
           const fetchedPromotion = promotionResponse.data;
 
           // Check if user has permission to view this plant task
-          if (user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && fetchedPromotion.parkId && fetchedPromotion.parkId === user?.parkId)) {
+          if (user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && fetchedPromotion.isNParksWide || (fetchedPromotion.parkId && fetchedPromotion.parkId === user?.parkId))) {
             setPromotion(fetchedPromotion);
+            setIsArchived(today.isAfter(fetchedPromotion.validUntil))
           } else {
             throw new Error('Access denied');
           }
@@ -51,11 +56,11 @@ export const useRestrictPromotions = (promotionId?: string) => {
     };
 
     fetchPromotion(promotionId);
-  }, [promotionId, navigate, user]);
+  }, [promotionId, navigate, user, trigger]);
 
-  const updatePromotion = async (promotion: PromotionResponse) => {
-    setPromotion(promotion);
+  const triggerFetch = async () => {
+    setTrigger((prev) => !prev);
   };
 
-  return { promotion, loading, updatePromotion };
+  return { promotion, isArchived, loading, triggerFetch };
 };

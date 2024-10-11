@@ -36,6 +36,29 @@ class PromotionDao {
     await prisma.promotion.delete({ where: { id } });
   }
 
+  async getPromotionsForNParksAndParkId(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
+    return prisma.promotion.findMany({
+      where: {
+        OR: [
+          { isNParksWide: true }, 
+          { parkId: parkId }    
+        ],
+        validUntil: archived ? { lt: new Date() } : { gte: new Date() },
+        status: enabled ? 'ENABLED' : undefined,
+      },
+    });
+  }
+
+  async getPromotionsForNParks(archived: boolean, enabled: boolean): Promise<Promotion[]> {
+    return prisma.promotion.findMany({
+      where: {
+        isNParksWide: true,
+        validUntil: archived ? { lt: new Date() } : { gte: new Date() },
+        status: enabled ? 'ENABLED' : undefined,
+      },
+    });
+  }
+
   async getPromotionsByParkId(parkId: number): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {

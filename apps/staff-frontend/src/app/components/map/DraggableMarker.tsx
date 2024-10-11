@@ -18,7 +18,7 @@ interface DraggableMarkerProps {
   backgroundColor?: string;
 }
 
-function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, circleWidth, backgroundColor }: DraggableMarkerProps) {
+function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, circleWidth = 32, backgroundColor }: DraggableMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
   const eventHandlers = useMemo(
     () => ({
@@ -35,8 +35,8 @@ function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, cir
 
   const getCustomIcon = () => {
     const iconHTML = renderToStaticMarkup(
-      <CustomMarker circleWidth={circleWidth} backgroundColor={backgroundColor}>
-        <CustomMarkerInner circleWidth={circleWidth} backgroundColor={backgroundColor}>
+      <CustomMarker $circleWidth={circleWidth} $backgroundColor={backgroundColor}>
+        <CustomMarkerInner $circleWidth={circleWidth} $backgroundColor={backgroundColor}>
         </CustomMarkerInner>
       </CustomMarker>
     )
@@ -48,7 +48,7 @@ function DraggableMarker({ lat = center.lat, lng = center.lng, adjustLatLng, cir
 		});
   }
 
-  return <Marker draggable={true} eventHandlers={eventHandlers} position={[lat, lng]} ref={markerRef} icon={getCustomIcon()}></Marker>;
+  return <Marker draggable={true} eventHandlers={eventHandlers} position={[lat, lng]} ref={markerRef} icon={getCustomIcon()} zIndexOffset={1000}></Marker>;
 }
 
 export default DraggableMarker;

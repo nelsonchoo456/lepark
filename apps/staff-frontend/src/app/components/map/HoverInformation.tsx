@@ -1,6 +1,7 @@
 import { Button, Empty } from 'antd';
 import { BiSolidCalendarEvent } from 'react-icons/bi';
 import { IoMdClose } from 'react-icons/io';
+import { PiPlant } from 'react-icons/pi';
 import { TbTicket } from 'react-icons/tb';
 
 export interface HoverItem {
@@ -47,6 +48,11 @@ const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
           <div className="h-10 rounded-full bg-green-400 flex items-center px-4">
             <TbTicket className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Occurrence</div>
+          </div>
+        ) : entityType === 'DECARBONIZATION' ? (
+          <div className="h-10 rounded-full bg-highlightGreen-400 flex items-center px-4">
+            <PiPlant className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Decarbonization Area</div>
           </div>
         ) : 
         <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">

@@ -11,6 +11,9 @@ export * from './lib/main-mobile/MobileContent';
 export * from './lib/main-mobile/MobileSidebar';
 
 // Utilities
+export * from './lib/qr-scanner/QrScanner';
+export * from './lib/qr-scanner/QrScanner2';
+export * from './lib/qr-scanner/QrScanner3';
 export * from './lib/map/marker';
 export * from './lib/input/ImageInput';
 export * from './lib/button/CustButton';

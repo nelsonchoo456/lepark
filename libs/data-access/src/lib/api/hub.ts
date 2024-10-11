@@ -42,6 +42,19 @@ export async function getAllHubs(): Promise<AxiosResponse<HubResponse[]>> {
   }
 }
 
+export async function getHubsFiltered(hubStatus?: string, parkId?: number): Promise<AxiosResponse<HubResponse[]>> {
+  try {
+    const response: AxiosResponse<HubResponse[]> = await client.get(`${URL}/getAllHubs?hubStatus=${hubStatus}&parkId=${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getHubsByParkId(parkId: number): Promise<AxiosResponse<HubResponse[]>> {
   try {
     const response: AxiosResponse<HubResponse[]> = await client.get(`${URL}/getAllHubs?parkId=${parkId}`);
@@ -83,6 +96,19 @@ export async function updateHubDetails(id: string, data: Partial<HubResponse>, f
     }
 
     const response: AxiosResponse<HubResponse> = await client.put(`${URL}/updateHubDetails/${id}`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function addHubToZone(id: string, data: Partial<HubResponse>): Promise<AxiosResponse<HubResponse>> {
+  try {
+    const response: AxiosResponse<HubResponse> = await client.put(`${URL}/addHubToZone/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

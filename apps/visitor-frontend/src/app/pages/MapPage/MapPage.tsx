@@ -50,7 +50,7 @@ const MapPage = () => {
   ) : (
     <div
       style={{
-        height: 'calc(100vh - 2rem)',
+        height: 'calc(100vh - 6.5rem)',
         width: `100vw`,
         position: 'relative'
       }}

@@ -70,6 +70,10 @@ class PlantTaskDao {
     await prisma.plantTask.delete({ where: { id } });
   }
 
+  async deleteTaskskByStatus(taskStatus: PlantTaskStatusEnum): Promise<void> {
+    await prisma.plantTask.deleteMany({ where: { taskStatus } });
+  }
+
   async assignPlantTask(id: string, assignedStaff: Staff): Promise<PlantTask> {
     return prisma.plantTask.update({
       where: { id },

@@ -181,5 +181,15 @@ router.get('/getPlantTasksByStatus/:status', authenticateJWTStaff, async (req, r
   }
 });
 
+router.delete('/deleteMany', async (req, res) => {
+  try {
+    const taskStatus = req.query.taskStatus ? req.query.taskStatus  as PlantTaskStatusEnum : null;
+    await PlantTaskService.deleteTaskskByStatus(taskStatus);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;
 

@@ -1316,7 +1316,7 @@ const sensorsData = [
     identifierNumber: 'SE-55555',
     sensorType: 'LIGHT',
     description: 'Light intensity sensor for shade-loving plants',
-    sensorStatus: 'ACTIVE',
+    sensorStatus: 'INACTIVE',
     acquisitionDate: new Date(),
     sensorUnit: 'LUX',
     supplier: 'BrightTech Innovations',

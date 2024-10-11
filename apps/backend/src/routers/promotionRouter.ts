@@ -19,12 +19,21 @@ router.post('/createPromotion', authenticateJWTStaff, async (req, res) => {
 router.get('/getAllPromotions', async (req, res) => {
   try {
     const parkId = req.query.parkId ? req.query.parkId as string : null;
+    const isNParksWide = req.query.nparks === 'true';
     const archived = req.query.archived === 'true';
     const enabled = req.query.enabled === 'true';
 
-    if (parkId) {
-      const zones = await PromotionService.getPromotionsByParkId(parkId, archived, enabled);
-      res.status(200).json(zones);
+    if (isNParksWide) {
+      if (parkId) {
+        const promotions = await PromotionService.getPromotionsForNParksAndParkId(parseInt(parkId), archived, enabled);
+        res.status(200).json(promotions);
+      } else {
+        const promotions = await PromotionService.getPromotionsForNParks(archived, enabled);
+        res.status(200).json(promotions);
+      }
+    } else if (parkId) {
+      const promotions = await PromotionService.getPromotionsByParkId(parkId, archived, enabled);
+      res.status(200).json(promotions);
     } else {
       const promotions = await PromotionService.getAllPromotions(archived, enabled);
       res.status(200).json(promotions);

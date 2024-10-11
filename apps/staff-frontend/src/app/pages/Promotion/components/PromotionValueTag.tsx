@@ -8,11 +8,11 @@ interface PromotionValueTag {
 const PromotionValueTag = ({ children, isPercentage }: PromotionValueTag) => {
   return isPercentage ? (
     <Tag bordered={false}>
-      <strong>{children}</strong> %
+      <strong>{children}</strong> <span className='text-green-500'>%</span>
     </Tag>
   ) : (
     <Tag bordered={false}>
-      $ <strong>{children}</strong>
+      <span className='text-green-500'>$</span> <strong>{children}</strong>
     </Tag>
   );
 };

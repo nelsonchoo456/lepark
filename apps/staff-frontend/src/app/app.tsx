@@ -72,12 +72,23 @@ import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
 import HubEdit from './pages/Hub/HubEdit';
+
+import DecarbonizationAreaDetails from './pages/DecarbonizationAreaDetails/DecarbonizationAreaDetails';
+import CreateDecarbonizationArea from './pages/DecarbonizationArea/CreateDecarbonizationArea';
+import DecarbonizationAreaEditMap from './pages/DecarbonizationAreaEditMap/DecarbonizationAreaEditMap';
+import DecarbonizationAreaEdit from './pages/DecarbonizationAreaEdit/DecarbonizationAreaEdit';
+import DecarbonizationAreaList from './pages/DecarbonizationArea/DecarbonizationAreaList';
 import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
+import DecarbonizationAreaChart from './pages/DecarbonizationArea/DecarbonizationAreaChart';
 import PromotionList from './pages/Promotion/PromotionList';
 import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
+import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
+import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
+import SensorAddToHub from './pages/Sensor/SensorAddToHub';
+import IotMap from './pages/IotMap/IotMap';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -388,6 +399,7 @@ export function App() {
 
                   <Route path="create" element={<HubCreate />} />
                   <Route path=":hubId/edit" element={<HubEdit />} />
+                  <Route path=":hubId/place-in-zone" element={<HubPlaceInZone />} />
                   {/* <Route path="edit"/> */}
                 </Route>
               </Route>
@@ -438,11 +450,45 @@ export function App() {
                   <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
+                  <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
+                  <Route path="map-view" element={<IotMap />} />
                 </Route>
+              </Route>
+
+              <Route path="/decarbonization-area">
+                <Route index element={<DecarbonizationAreaList />} />
+                <Route path="create" element={<CreateDecarbonizationArea />} />
+                <Route path="chart" element={<DecarbonizationAreaChart />} />
+                <Route path=":decarbonizationAreaId" element={<DecarbonizationAreaDetails />} />
+                <Route
+                  path=":id/edit-map"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <DecarbonizationAreaEditMap />
+                    </>
+                  }
+                />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <DecarbonizationAreaEdit />
+                    </>
+                  }
+                />
               </Route>
 
               <Route path="/promotion">
                 <Route index element={<PromotionList />} />
+                <Route path="archived" element={<ArchivedPromotionList />} />
                 <Route
                   path="create"
                   element={

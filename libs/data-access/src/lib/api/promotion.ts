@@ -74,7 +74,7 @@ export async function getPromotionsByParkId(parkId: string, archived?: boolean, 
       params.enabled = enabled; // Add `enabled` to the query if defined
     }
 
-    const response: AxiosResponse<PromotionResponse[]> = await client.get(`${URL}/getAllPromotions?parkId=${parkId}`, { params });
+    const response: AxiosResponse<PromotionResponse[]> = await client.get(`${URL}/getAllPromotions?parkId=${parkId}&nparks=true`, { params });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -99,7 +99,7 @@ export async function updatePromotionDetails(
       });
 
       const uploadedUrls = await client.post(`${URL}/upload`, formData);
-      data.images?.push(...uploadedUrls.data.uploadedUrls);
+      data?.images?.push(...uploadedUrls.data.uploadedUrls)
     }
 
     const response: AxiosResponse<PromotionResponse> = await client.put(`${URL}/updatePromotion/${id}`, data);

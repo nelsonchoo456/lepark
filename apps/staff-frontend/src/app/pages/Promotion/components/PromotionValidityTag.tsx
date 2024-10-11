@@ -15,11 +15,11 @@ const PromotionValidityTag: React.FC<PromotionValidityTagProps> = ({ validFrom, 
   let status: React.ReactNode;
 
   if (now.isBefore(startDate)) {
-    status = <Tag color="blue">Upcoming</Tag>;
+    status = <Tag color="blue" bordered={false}>Upcoming</Tag>;
   } else if (now.isAfter(startDate) && now.isBefore(endDate)) {
-    status = <Tag color="green">Ongoing</Tag>;
+    status = <Tag color="green" bordered={false}>Ongoing</Tag>;
   } else {
-    status = <Tag>Done</Tag>;
+    status = <Tag bordered={false}>Done</Tag>;
   }
 
   return (

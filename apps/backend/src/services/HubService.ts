@@ -54,7 +54,8 @@ class HubService {
   public async createHub(data: HubSchemaType): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);
-
+      formattedData.hubStatus = "INACTIVE";
+      
       // Validate input data using Zod
       HubSchema.parse(formattedData);
 
@@ -91,6 +92,10 @@ class HubService {
 
   public async getAllHubs(): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
     return HubDao.getAllHubs();
+  }
+
+  public async getHubsFiltered(hubStatus: string, parkId: number): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
+    return HubDao.getHubsFiltered(hubStatus, parkId);
   }
 
   public async getHubsByParkId(parkId: number): Promise<Hub[]> {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, message } from 'antd';
+import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, message, Tabs, Card } from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -11,8 +11,10 @@ import { CloseOutlined } from '@ant-design/icons';
 import { useAuth } from '@lepark/common-ui';
 import EditPlantTaskModal from './EditPlantTaskModal';
 import ViewPlantTaskModal from './ViewPlantTaskModal';
+import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 
 const { Panel } = Collapse;
+const { TabPane } = Tabs;
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
@@ -208,7 +210,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         { text: formatEnumLabelToRemoveUnderscores('LOW'), value: 'LOW' },
       ],
       onFilter: (value, record) => record.taskUrgency === value,
-      width: '10%',
+      width: '1%',
     },
     {
       title: 'Created Date',
@@ -283,7 +285,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         { text: formatEnumLabelToRemoveUnderscores('CANCELLED'), value: 'CANCELLED' },
       ],
       onFilter: (value, record) => record.taskStatus === value,
-      width: '10%',
+      width: '1%',
     },
     {
       title: 'Assigned Staff',
@@ -328,7 +330,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="flex-start" gap={8}>
+        <Flex justify="center" >
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
@@ -344,7 +346,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           )}
         </Flex>
       ),
-      width: '10%',
+      width: '1%',
     },
   ];
 
@@ -364,23 +366,23 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             LOW: plantTasks.filter((task) => task.taskUrgency === 'LOW'),
           };
 
-    const collapseItems = Object.entries(groupedTasks).map(([key, tasks]) => ({
-      key,
-      label: `${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`,
-      children: (
-        <Table
-          dataSource={tasks}
-          columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: SCREEN_LG }}
-          {...tableProps}
-        />
-      ),
-    }));
-
     return (
-      <Collapse activeKey={activeKeys} onChange={(keys) => setActiveKeys(keys as string[])} items={collapseItems} />
+      <TabsNoBottomMargin defaultActiveKey="1" type="card">
+        {Object.entries(groupedTasks).map(([key, tasks]) => (
+          <TabPane tab={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
+            <Card styles={{ body: { padding: 0 } }} className="p-4 border-t-0 rounded-tl-none">
+              <Table
+                dataSource={tasks}
+                columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
+                rowKey="id"
+                pagination={{ pageSize: 5 }}
+                scroll={{ x: SCREEN_LG }}
+                {...tableProps}
+              />
+            </Card>
+          </TabPane>
+        ))}
+      </TabsNoBottomMargin>
     );
   };
 
@@ -408,7 +410,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       return renderGroupedTasks('urgency', tableProps);
     default:
       return (
-        <>
+        <Card styles={{ body: { padding: "1rem" }}}>
           <Table
             dataSource={plantTasks}
             columns={columns}
@@ -431,7 +433,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             task={selectedTask}
             userRole={userRole as StaffType}
           />
-        </>
+        </Card>
       );
   }
 };

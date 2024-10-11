@@ -197,7 +197,7 @@ const SensorEdit = () => {
           </Form.Item>
           <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
             <Select placeholder="Select Sensor Status">
-              {Object.values(SensorStatusEnum).map((status) => (
+              {Object.values(SensorStatusEnum).filter((s) => s !== "ACTIVE").map((status) => (
                 <Select.Option key={status} value={status}>
                   {formatEnumLabelToRemoveUnderscores(status)}
                 </Select.Option>
