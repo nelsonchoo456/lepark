@@ -13,17 +13,19 @@ import {
   assignPlantTask,
   getAllStaffsByParkId,
   getAllStaffs,
+  getAllAssignedPlantTasks,
+  unassignPlantTask,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import PlantTaskCategories from './PlantTaskCategories';
-import PlantTaskDashboard from './PlantTaskDashboard';
-import PlantTaskTable from './PlantTaskTable';
+import PlantTaskBoardView from './PlantTaskBoardView';
+import PlantTaskDashboard from './PlantTaskDashboard/PlantTaskDashboard';
+import PlantTaskTableView from './PlantTaskTableView';
 import moment from 'moment';
 import { Tabs } from 'antd';
-import StaffWorkloadTable from './StaffWorkloadTable';
 import { MdArrowBack } from 'react-icons/md';
+import StaffWorkloadTable from './PlantTaskDashboard/components/StaffWorkloadTable';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -60,12 +62,10 @@ const PlantTaskList: React.FC = () => {
   const fetchPlantTasks = async () => {
     try {
       let response;
-      if (user?.role === StaffType.SUPERADMIN) {
-        response = await getAllPlantTasks();
-      } else if (user?.parkId) {
-        response = await getPlantTasksByParkId(user.parkId);
+      if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
+        response = user?.parkId ? await getPlantTasksByParkId(user.parkId) : await getAllPlantTasks();
       } else {
-        throw new Error('User does not have a parkId');
+        response = await getAllAssignedPlantTasks(user?.id || '');
       }
       setPlantTasks(response.data);
 
@@ -104,6 +104,18 @@ const PlantTaskList: React.FC = () => {
     } catch (error) {
       console.error('Error assigning staff:', error);
       messageApi.error('Failed to assign staff');
+    }
+  };
+
+  const handleUnassignStaff = async (plantTaskId: string, staffId: string) => {
+    try {
+      await unassignPlantTask(plantTaskId, staffId);
+      message.success('Staff unassigned successfully');
+      fetchPlantTasks();
+
+    } catch (error) {
+      console.error('Failed to unassign staff:', error);
+      message.error('Failed to unassign staff');
     }
   };
 
@@ -243,7 +255,7 @@ const PlantTaskList: React.FC = () => {
   const renderTableView = () => {
     return (
       <Card>
-        <PlantTaskTable
+        <PlantTaskTableView
           plantTasks={filteredPlantTasks}
           loading={loading}
           staffList={staffList}
@@ -253,6 +265,8 @@ const PlantTaskList: React.FC = () => {
           navigateToDetails={navigateToDetails}
           navigate={navigate}
           showDeleteModal={showDeleteModal}
+          handleUnassignStaff={handleUnassignStaff}
+          onTaskUpdated={fetchPlantTasks}
         />
       </Card>
     );
@@ -284,7 +298,7 @@ const PlantTaskList: React.FC = () => {
       return renderTableView();
     } else {
       return (
-        <PlantTaskCategories
+        <PlantTaskBoardView
           open={open}
           inProgress={inProgress}
           completed={completed}

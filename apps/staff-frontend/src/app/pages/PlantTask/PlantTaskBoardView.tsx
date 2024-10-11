@@ -10,6 +10,8 @@ import {
   getAllStaffs,
   updatePlantTaskPosition,
   unassignPlantTask,
+  updatePlantTaskDetails,
+  PlantTaskUpdateData,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
 import moment from 'moment';
@@ -22,8 +24,9 @@ import { StaffRoleEnum } from '@prisma/client';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
+import EditPlantTaskModal from './EditPlantTaskModal';
 
-interface PlantTaskCategoriesProps {
+interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
   inProgress: PlantTaskResponse[];
   completed: PlantTaskResponse[];
@@ -37,7 +40,7 @@ interface PlantTaskCategoriesProps {
   userRole: string;
 }
 
-const PlantTaskCategories = ({
+const PlantTaskBoardView = ({
   open,
   inProgress,
   completed,
@@ -48,7 +51,7 @@ const PlantTaskCategories = ({
   setCancelled,
   refreshData,
   userRole,
-}: PlantTaskCategoriesProps) => {
+}: PlantTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [isAssignModalVisible, setIsAssignModalVisible] = useState(false);
@@ -56,6 +59,8 @@ const PlantTaskCategories = ({
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -108,7 +113,7 @@ const PlantTaskCategories = ({
       // Update status and position in the backend
       try {
         // Unassign staff if the task is moved to "Open" status
-        if (destination.droppableId === PlantTaskStatusEnum.OPEN) {
+        if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER && destination.droppableId === PlantTaskStatusEnum.OPEN) {
           await unassignPlantTask(movedTask.id, user?.id || '');
           await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
           await updatePlantTaskPosition(movedTask.id, destination.index);
@@ -181,6 +186,9 @@ const PlantTaskCategories = ({
   };
 
   const handleAssignStaff = async (task: PlantTaskResponse) => {
+    if (userRole !== StaffType.SUPERADMIN && userRole !== StaffType.MANAGER) {
+      return; // Prevent non-superadmin/manager from assigning staff
+    }
     setSelectedTask(task);
     setSelectedTaskId(task.id);
     setIsAssignModalVisible(true);
@@ -226,6 +234,25 @@ const PlantTaskCategories = ({
     );
   };
 
+  const handleEditDetails = (task: PlantTaskResponse) => {
+    setEditingTask(task);
+    setEditModalVisible(true);
+  };
+
+  const handleEditSubmit = async (values: PlantTaskUpdateData) => {
+    if (editingTask) {
+      try {
+        await updatePlantTaskDetails(editingTask.id, values);
+        setEditModalVisible(false);
+        refreshData(); // Refresh the task list
+        message.success('Task updated successfully');
+      } catch (error) {
+        console.error('Error updating plant task:', error);
+        message.error('Failed to update task');
+      }
+    }
+  };
+
   const renderTaskCard = (task: PlantTaskResponse) => {
     const isOverdue = moment().isAfter(moment(task.dueDate));
     const isDueSoon = moment(task.dueDate).isBetween(moment(), moment().add(3, 'days')); // Consider "due soon" if within 3 days
@@ -233,6 +260,40 @@ const PlantTaskCategories = ({
       isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
     const shouldHighlightDueSoon =
       isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+
+    const dropdownItems = [
+      {
+        label: 'View Details',
+        key: '1',
+        onClick: () => handleViewDetails(task.id),
+      },
+    ];
+
+    if (task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED) {
+      dropdownItems.push({
+        label: 'Edit Details',
+        key: '2',
+        onClick: () => handleEditDetails(task),
+      });
+    }
+
+    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && !task.assignedStaffId) {
+      dropdownItems.push({
+        label: 'Assign Staff',
+        key: '3',
+        onClick: () => handleAssignStaff(task),
+      });
+    }
+
+    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && 
+        task.assignedStaffId && 
+        task.taskStatus === PlantTaskStatusEnum.OPEN) {
+      dropdownItems.push({
+        label: 'Unassign Staff',
+        key: '4',
+        onClick: () => handleUnassignStaff(task),
+      });
+    }
 
     return (
       <Card
@@ -254,18 +315,7 @@ const PlantTaskCategories = ({
               </Typography.Text>
             </div>
             <Dropdown
-              overlay={
-                <Menu>
-                  <Menu.Item key="1" onClick={() => handleViewDetails(task.id)}>
-                    View Details
-                  </Menu.Item>
-                  {!task.assignedStaffId && (
-                    <Menu.Item key="2" onClick={() => handleAssignStaff(task)}>
-                      Assign Staff
-                    </Menu.Item>
-                  )}
-                </Menu>
-              }
+              menu={{ items: dropdownItems }}
               trigger={['click']}
             >
               <MoreOutlined style={{ cursor: 'pointer' }} />
@@ -330,6 +380,21 @@ const PlantTaskCategories = ({
     );
   };
 
+  const handleUnassignStaff = async (task: PlantTaskResponse) => {
+    try {
+      await unassignPlantTask(task.id, user?.id || '');
+      message.success('Staff unassigned successfully');
+      refreshData();
+
+      // Update the local state
+      const updatedTask = { ...task, assignedStaffId: null };
+      updateTaskInList(updatedTask);
+    } catch (error) {
+      console.error('Failed to unassign staff:', error);
+      message.error('Failed to unassign staff');
+    }
+  };
+
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -384,7 +449,7 @@ const PlantTaskCategories = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal title="Assign Staff" visible={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
+      <Modal title="Assign Staff" open={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
         <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>
@@ -393,8 +458,14 @@ const PlantTaskCategories = ({
           ))}
         </Select>
       </Modal>
+      <EditPlantTaskModal
+        visible={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onSubmit={handleEditSubmit}
+        initialValues={editingTask}
+      />
     </>
   );
 };
 
-export default PlantTaskCategories;
+export default PlantTaskBoardView;

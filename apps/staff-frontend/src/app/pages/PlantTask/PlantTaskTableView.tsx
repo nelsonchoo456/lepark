@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse } from 'antd';
+import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker } from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
-import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks } from '@lepark/data-access';
+import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks, updatePlantTaskDetails, PlantTaskUpdateData } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { CloseOutlined } from '@ant-design/icons';
+import { useAuth } from '@lepark/common-ui';
+import EditPlantTaskModal from './EditPlantTaskModal';
 
 const { Panel } = Collapse;
 
@@ -15,7 +18,7 @@ const formatTaskType = (taskType: string) => {
   return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
-interface PlantTaskTableProps {
+interface PlantTaskTableViewProps {
   plantTasks: PlantTaskResponse[];
   loading: boolean;
   staffList: StaffResponse[];
@@ -25,9 +28,11 @@ interface PlantTaskTableProps {
   navigateToDetails: (plantTaskId: string) => void;
   navigate: (path: string) => void;
   showDeleteModal: (plantTask: PlantTaskResponse) => void;
+  handleUnassignStaff: (plantTaskId: string, staffId: string) => void;
+  onTaskUpdated: () => void; // Add this prop to refresh the task list after update
 }
 
-const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
+const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   plantTasks,
   loading,
   staffList,
@@ -37,9 +42,15 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   navigateToDetails,
   navigate,
   showDeleteModal,
+  handleUnassignStaff,
+  onTaskUpdated,
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
+  const { user } = useAuth<StaffResponse>();
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchParks();
@@ -48,9 +59,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   useEffect(() => {
     // Update active keys when tableViewType changes
     if (tableViewType === 'grouped-status' || tableViewType === 'grouped-urgency') {
-      const groupKeys = tableViewType === 'grouped-status'
-        ? ['OPEN', 'IN_PROGRESS']
-        : ['IMMEDIATE', 'HIGH'];
+      const groupKeys = tableViewType === 'grouped-status' ? ['OPEN', 'IN_PROGRESS'] : ['IMMEDIATE', 'HIGH'];
       setActiveKeys(groupKeys);
     }
   }, [tableViewType]);
@@ -58,13 +67,31 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
   const fetchParks = async () => {
     try {
       const response = await getAllParks();
-      const parkOptions = response.data.map(park => ({
+      const parkOptions = response.data.map((park) => ({
         text: park.name,
-        value: park.id
+        value: park.id,
       }));
       setParks(parkOptions);
     } catch (error) {
       console.error('Error fetching parks:', error);
+    }
+  };
+
+  const showEditModal = (task: PlantTaskResponse) => {
+    setEditingTask(task);
+    setEditModalVisible(true);
+  };
+
+  const handleEditSubmit = async (values: PlantTaskUpdateData) => {
+    if (editingTask) {
+      try {
+        await updatePlantTaskDetails(editingTask.id, values);
+        setEditModalVisible(false);
+        onTaskUpdated(); // Refresh the task list
+      } catch (error) {
+        console.error('Error updating plant task:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 
@@ -81,23 +108,23 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       title: userRole === StaffType.SUPERADMIN ? 'Park, Zone' : 'Zone',
       render: (_, record) => (
         <div>
-          {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence.zone.park.name}</p>}
-          <div className="flex opacity-50">
-            {/* {userRole === StaffType.SUPERADMIN && <p className="opacity-50 mr-2">Zone:</p>} */}
-            {record.occurrence.zone.name}
+          {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence?.zone?.park?.name}</p>}
+          <div className="flex">
+            {userRole !== StaffType.SUPERADMIN && <p className="opacity-50 mr-2"></p>}
+            {record.occurrence?.zone?.name}
           </div>
         </div>
       ),
       sorter: (a, b) => {
         if (userRole === StaffType.SUPERADMIN) {
-          if (a.occurrence.zone.park.name && b.occurrence.zone.park.name) {
-            return a.occurrence.zone.park.name.localeCompare(b.occurrence.zone.park.name);
+          if (a.occurrence?.zone?.park?.name && b.occurrence?.zone?.park?.name) {
+            return a.occurrence?.zone?.park?.name.localeCompare(b.occurrence?.zone?.park?.name);
           }
         }
-        if (a.occurrence.zone.name && b.occurrence.zone.name) {
-          return a.occurrence.zone.name.localeCompare(b.occurrence.zone.name);
+        if (a.occurrence?.zone?.name && b.occurrence?.zone?.name) {
+          return a.occurrence?.zone?.name.localeCompare(b.occurrence?.zone?.name);
         }
-        return a.occurrence.zone.id.toString().localeCompare(b.occurrence.zone.id.toString());
+        return a.occurrence?.zone?.id?.toString().localeCompare(b.occurrence?.zone?.id?.toString());
       },
       filters: parks,
       onFilter: (value, record) => record.occurrence.zone.park.id === value,
@@ -175,11 +202,13 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       dataIndex: 'dueDate',
       key: 'dueDate',
       render: (text, record) => {
-        const isOverdue = moment().isAfter(moment(text)) && 
-          record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+        const isOverdue =
+          moment().isAfter(moment(text)) &&
+          record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
-        const isDueSoon = moment(text).isBetween(moment(), moment().add(3, 'days')) &&
-          record.taskStatus !== PlantTaskStatusEnum.COMPLETED && 
+        const isDueSoon =
+          moment(text).isBetween(moment(), moment().add(3, 'days')) &&
+          record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
         return (
           <Flex align="center">
@@ -240,15 +269,32 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       key: 'assignedStaff',
       render: (_, record) => {
         if (record.assignedStaff) {
-          return `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`;
+          return (
+            <Flex align="center" justify="space-between">
+              <span>{`${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`}</span>
+              {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
+                record.taskStatus === PlantTaskStatusEnum.OPEN && (
+                  <Tooltip title="Unassign staff">
+                    <Button
+                    type="text"
+                    icon={<CloseOutlined />}
+                    onClick={() => handleUnassignStaff(record.id, user?.id || '')}
+                    size="small"
+                  />
+                </Tooltip>
+              )}
+            </Flex>
+          );
         } else {
           return record.taskStatus === PlantTaskStatusEnum.OPEN ? (
             <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
-              {staffList.filter(staff => staff.parkId === record.occurrence?.zone?.parkId).map((staff: StaffResponse) => (
-                <Select.Option key={staff.id} value={staff.id}>
-                  {`${staff.firstName} ${staff.lastName} - ${staff.role}`}
-                </Select.Option>
-              ))}
+              {staffList
+                .filter((staff) => staff.parkId === record.occurrence?.zone?.parkId)
+                .map((staff: StaffResponse) => (
+                  <Select.Option key={staff.id} value={staff.id}>
+                    {`${staff.firstName} ${staff.lastName} - ${staff.role}`}
+                  </Select.Option>
+                ))}
             </Select>
           ) : (
             <></>
@@ -265,12 +311,16 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          <Tooltip title="Edit Plant Task">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/plant-tasks/${record.id}/edit`)} />
-          </Tooltip>
-          <Tooltip title="Delete Plant Task">
-            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-          </Tooltip>
+          {record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+            <Tooltip title="Edit Plant Task">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+            </Tooltip>
+          )}
+          {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
+            <Tooltip title="Delete Plant Task">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+            </Tooltip>
+          )}
         </Flex>
       ),
       width: '1%',
@@ -294,10 +344,7 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
           };
 
     return (
-      <Collapse
-        activeKey={activeKeys}
-        onChange={(keys) => setActiveKeys(keys as string[])}
-      >
+      <Collapse activeKey={activeKeys} onChange={(keys) => setActiveKeys(keys as string[])}>
         {Object.entries(groupedTasks).map(([key, tasks]) => (
           <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
             <Table
@@ -316,13 +363,15 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
 
   const tableProps = {
     rowClassName: (record: PlantTaskResponse) => {
-      const isOverdue = moment().isAfter(moment(record.dueDate)) &&
+      const isOverdue =
+        moment().isAfter(moment(record.dueDate)) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
         record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
-      const isDueSoon = moment(record.dueDate).isBetween(moment(), moment().add(3, 'days')) &&
+      const isDueSoon =
+        moment(record.dueDate).isBetween(moment(), moment().add(3, 'days')) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
         record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
-      
+
       if (isOverdue) return 'overdue-row';
       if (isDueSoon) return 'due-soon-row';
       return '';
@@ -336,17 +385,25 @@ const PlantTaskTable: React.FC<PlantTaskTableProps> = ({
       return renderGroupedTasks('urgency', tableProps);
     default:
       return (
-        <Table
-          dataSource={plantTasks}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: SCREEN_LG }}
-          {...tableProps}
-        />
+        <>
+          <Table
+            dataSource={plantTasks}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: SCREEN_LG }}
+            {...tableProps}
+          />
+          <EditPlantTaskModal
+            visible={editModalVisible}
+            onCancel={() => setEditModalVisible(false)}
+            onSubmit={handleEditSubmit}
+            initialValues={editingTask}
+          />
+        </>
       );
   }
 };
 
-export default PlantTaskTable;
+export default PlantTaskTableView;

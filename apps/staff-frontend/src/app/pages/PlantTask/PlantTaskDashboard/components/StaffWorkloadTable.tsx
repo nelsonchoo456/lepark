@@ -7,7 +7,7 @@ interface StaffWorkloadTableProps {
   plantTasks: PlantTaskResponse[];
   isSuperAdmin: boolean;
   selectedParkId: string | null;
-  onParkChange: (parkId: string) => void;
+  onParkChange: (parkId: string | null) => void;
 }
 
 const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
@@ -19,7 +19,10 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
 }) => {
   const parkOptions = useMemo(() => {
     const uniqueParks = Array.from(new Set(staffList.map((staff) => staff.park?.name)));
-    return uniqueParks.map((parkName) => ({ value: parkName, label: parkName }));
+    return [
+      { value: null, label: 'All Parks' },
+      ...uniqueParks.map((parkName) => ({ value: parkName, label: parkName })),
+    ];
   }, [staffList]);
 
   const filteredStaffList = useMemo(() => {
@@ -35,16 +38,12 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
         key: staff.id,
         name: `${staff.firstName} ${staff.lastName}`,
         role: staff.role,
-        parkName: staff.park?.name,
+        parkName: staff.park?.name || 'N/A',
         totalTasks: staffTasks.length,
         openTasks: staffTasks.filter((task) => task.taskStatus === 'OPEN').length,
         inProgressTasks: staffTasks.filter((task) => task.taskStatus === 'IN_PROGRESS').length,
         completedTasks: staffTasks.filter((task) => task.taskStatus === 'COMPLETED').length,
         cancelledTasks: staffTasks.filter((task) => task.taskStatus === 'CANCELLED').length,
-        lowUrgency: staffTasks.filter((task) => task.taskUrgency === 'LOW').length,
-        mediumUrgency: staffTasks.filter((task) => task.taskUrgency === 'NORMAL').length,
-        highUrgency: staffTasks.filter((task) => task.taskUrgency === 'HIGH').length,
-        immediateUrgency: staffTasks.filter((task) => task.taskUrgency === 'IMMEDIATE').length,
       };
     });
   }, [filteredStaffList, plantTasks]);
@@ -58,10 +57,6 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
     { title: 'In Progress', dataIndex: 'inProgressTasks', key: 'inProgressTasks' },
     { title: 'Completed', dataIndex: 'completedTasks', key: 'completedTasks' },
     { title: 'Cancelled', dataIndex: 'cancelledTasks', key: 'cancelledTasks' },
-    { title: 'Low Urgency', dataIndex: 'lowUrgency', key: 'lowUrgency' },
-    { title: 'Medium Urgency', dataIndex: 'mediumUrgency', key: 'mediumUrgency' },
-    { title: 'High Urgency', dataIndex: 'highUrgency', key: 'highUrgency' },
-    { title: 'Immediate Urgency', dataIndex: 'immediateUrgency', key: 'immediateUrgency' },
   ];
 
   return (

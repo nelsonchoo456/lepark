@@ -55,6 +55,10 @@ class PlantTaskDao {
       where: {
         assignedStaffId: staffId,
       },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+      },
     });
   }
 
