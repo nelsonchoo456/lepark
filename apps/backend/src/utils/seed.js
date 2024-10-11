@@ -13,10 +13,26 @@ const {
   eventsData,
   parkAssetsData,
   sensorsData,
+  decarbonizationAreasData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
+const { v4: uuidv4 } = require('uuid');  // Add this import at the top of your file
+
+function ensureClosedRing(ewktString) {
+  const match = ewktString.match(/SRID=(\d+);POLYGON\(\((.*?)\)\)/);
+  if (match) {
+    const srid = match[1];
+    let coordinates = match[2].split(',').map(coord => coord.trim());
+    if (coordinates[0] !== coordinates[coordinates.length - 1]) {
+      coordinates.push(coordinates[0]);
+    }
+    return `SRID=${srid};POLYGON((${coordinates.join(', ')}))`;
+  }
+  return ewktString;
+}
+
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -368,7 +384,32 @@ async function seed() {
     });
     attractionList.push(createdAttraction);
   }
-  console.log(`Total attractions seeded: ${attractionList.length}\n`);
+   const decarbonizationAreaList = [];
+  for (const area of decarbonizationAreasData) {
+    try {
+      const id = uuidv4();
+      const createdArea = await prisma.$executeRaw`
+        INSERT INTO "DecarbonizationArea" (id, geom, description, name, "parkId")
+        VALUES (
+          ${id}::uuid,
+          ${area.geom},
+          ${area.description},
+          ${area.name},
+          ${area.parkId}
+        )
+        RETURNING id, name, description, geom, "parkId"
+      `;
+      decarbonizationAreaList.push(createdArea[0]);
+      console.log(`Inserted area: ${area.name}`);
+    } catch (error) {
+      console.error(`Error inserting decarbonization area: ${area.name}`);
+      console.error(error);
+    }
+  }
+
+  console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
+
+
 }
 
 // Utility function for Activity Logs and Status Logs
