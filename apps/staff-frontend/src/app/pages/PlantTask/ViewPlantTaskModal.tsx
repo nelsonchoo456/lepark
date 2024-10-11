@@ -79,7 +79,7 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
           <Typography.Paragraph>{task.description || 'No description provided'}</Typography.Paragraph>
         </Descriptions.Item>
         <Descriptions.Item label="Task Type">
-          <Tag>{formatEnumLabelToRemoveUnderscores(task.taskType)}</Tag>
+          <Tag bordered={false}>{formatEnumLabelToRemoveUnderscores(task.taskType)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Task Urgency">
           <Tag color={getUrgencyColor(task.taskUrgency)} bordered={false}>
@@ -91,7 +91,10 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
             {formatEnumLabelToRemoveUnderscores(task.taskStatus)}
           </Tag>
         </Descriptions.Item>
+        <Descriptions.Item label="Created Date">{dayjs(task.createdAt).format('D MMM YYYY')}</Descriptions.Item>
         <Descriptions.Item label="Due Date">{dayjs(task.dueDate).format('D MMM YYYY')}</Descriptions.Item>
+        <Descriptions.Item label="Last Updated">{dayjs(task.updatedAt).format('D MMM YYYY')}</Descriptions.Item>
+        <Descriptions.Item label="Completed Date">{task.completedDate ? dayjs(task.completedDate).format('D MMM YYYY') : '-'}</Descriptions.Item>
         <Descriptions.Item label="Assigned Staff">
           {task.assignedStaff ? `${task.assignedStaff.firstName} ${task.assignedStaff.lastName}` : '-'}
         </Descriptions.Item>

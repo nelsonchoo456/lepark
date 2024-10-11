@@ -69,7 +69,6 @@ import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
 import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
-import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
 import HubEdit from './pages/Hub/HubEdit';
 
@@ -276,10 +275,23 @@ export function App() {
 
               {/* Task Routes */}
               <Route path="/plant-tasks">
-                <Route index element={<PlantTaskList />} />
-                <Route path="create" element={<CreatePlantTask />} />
-                <Route path=":plantTaskId/edit" element={<PlantTaskEdit />} />
-                {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
+                <Route index element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]} redirectTo="/" />
+                      <PlantTaskList />
+                    </>
+                  }
+                />
+                <Route path="create" element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
+                        redirectTo="/"
+                      />
+                      <CreatePlantTask />
+                    </>
+                  }
+                />
               </Route>
 
               <Route path="/maintenance-tasks">

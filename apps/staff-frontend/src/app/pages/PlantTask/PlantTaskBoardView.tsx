@@ -233,6 +233,11 @@ const PlantTaskBoardView = ({
     );
   };
 
+  const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
+    // Refresh the task list or update the local state as needed
+    refreshData();
+  };
+
   const handleEditDetails = (task: PlantTaskResponse) => {
     setEditingTask(task);
     setEditModalVisible(true);
@@ -518,6 +523,7 @@ const PlantTaskBoardView = ({
         onSubmit={handleEditSubmit}
         initialValues={editingTask}
         userRole={userRole as StaffType}
+        onStatusChange={handleStatusChange}
       />
       <ViewPlantTaskModal
         visible={viewModalVisible}

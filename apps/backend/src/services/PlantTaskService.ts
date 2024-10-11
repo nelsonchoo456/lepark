@@ -113,6 +113,10 @@ class PlantTaskService {
         throw new Error('Only assigned tasks can be set to in progress or completed');
       }
 
+      if (existingPlantTask.taskStatus !== data.taskStatus && data.taskStatus === PlantTaskStatusEnum.COMPLETED) {
+        data.completedDate = new Date();
+      }
+
       const formattedData = dateFormatter(data);
 
       let mergedData = { ...existingPlantTask, ...formattedData };
@@ -236,6 +240,8 @@ class PlantTaskService {
       throw new Error('Only the assigned staff can complete the task');
     }
 
+    await this.updatePlantTask(id, { completedDate: new Date() });
+
     return PlantTaskDao.completePlantTask(id);
   }
 
@@ -350,6 +356,10 @@ class PlantTaskService {
     const plantTask = await PlantTaskDao.getPlantTaskById(id);
     if (!plantTask) {
       throw new Error('Plant task not found');
+    }
+
+    if (plantTask.taskStatus !== newStatus && newStatus === PlantTaskStatusEnum.COMPLETED) {
+      await this.updatePlantTask(id, { completedDate: new Date() });
     }
 
     const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);

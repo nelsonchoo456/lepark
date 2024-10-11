@@ -96,14 +96,22 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
         ]}
       >
         <Form form={form} layout="vertical">
-          {userRole === StaffType.SUPERADMIN && <Form.Item>Park: {initialValues?.occurrence?.zone.park.name}</Form.Item>}
-          <Form.Item>Zone: {initialValues?.occurrence?.zone.name}</Form.Item>
-          <Form.Item>
-            Occurrence: {initialValues?.occurrence?.title}
-            <Tooltip title="Go to Occurrence">
-              <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToOccurrence(initialValues?.occurrence?.id || '')} />
-            </Tooltip>
-          </Form.Item>
+          <div style={{ marginBottom: '16px' }}>
+            {userRole === StaffType.SUPERADMIN && (
+              <Form.Item style={{ marginBottom: '4px' }}>
+                Park: {initialValues?.occurrence?.zone.park.name}
+              </Form.Item>
+            )}
+            <Form.Item style={{ marginBottom: '4px' }}>
+              Zone: {initialValues?.occurrence?.zone.name}
+            </Form.Item>
+            <Form.Item style={{ marginBottom: '0' }}>
+              Occurrence: {initialValues?.occurrence?.title}
+              <Tooltip title="Go to Occurrence">
+                <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToOccurrence(initialValues?.occurrence?.id || '')} />
+              </Tooltip>
+            </Form.Item>
+          </div>
           <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Please enter the title' }]}>
             <Input />
           </Form.Item>
