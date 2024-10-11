@@ -150,19 +150,18 @@ const MainLanding = () => {
   </div>
           <br/>
 
-
   <div className="flex justify-between items-center h-48">
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <PiPlant className="text-4xl mb-2" />
+      <PiPlant className="text-4xl mb-2 text-green-500" />
       <div className="flex flex-row items-center">
-        <p>In the past year, this park has absorbed <span className="font-bold text-lg ml-1">{totalSequestration} kg</span> of CO2</p>
+        <p className="text-green-500">In the past year, this park has absorbed <span className="font-bold text-lg ml-1 text-green-500">{totalSequestration} kg</span> of CO2</p>
       </div>
     </div>
-    <div className="w-px h-full bg-gray-200 mx-4"></div>
+    <div className="w-px h-full bg-green-500 mx-4"></div>
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <BsHouseDoor className="text-4xl mb-2" />
-      <p>Equivalent to powering a 4 room HDB for</p>
-      <p className="font-bold text-lg">{poweredDays} days</p>
+      <BsHouseDoor className="text-4xl mb-2 text-green-500" />
+      <p className="text-green-500">Equivalent to powering a 4 room HDB for</p>
+      <p className="font-bold text-lg text-green-500">{poweredDays} days</p>
     </div>
   </div>
 
