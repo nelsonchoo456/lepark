@@ -105,6 +105,14 @@ class PlantTaskService {
         throw new Error('Plant task not found');
       }
 
+      if (existingPlantTask.taskStatus === PlantTaskStatusEnum.COMPLETED || existingPlantTask.taskStatus === PlantTaskStatusEnum.CANCELLED) {
+        throw new Error('Completed or cancelled tasks cannot be edited');
+      }
+
+      if (existingPlantTask.assignedStaffId === null && (data.taskStatus === PlantTaskStatusEnum.IN_PROGRESS || data.taskStatus === PlantTaskStatusEnum.COMPLETED)) {
+        throw new Error('Only assigned tasks can be set to in progress or completed');
+      }
+
       const formattedData = dateFormatter(data);
 
       let mergedData = { ...existingPlantTask, ...formattedData };

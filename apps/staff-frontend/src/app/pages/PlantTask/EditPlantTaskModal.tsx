@@ -1,8 +1,9 @@
 import React from 'react';
 import { Modal, Form, Input, DatePicker, Select, Button } from 'antd';
 import moment from 'moment';
-import { PlantTaskResponse, PlantTaskTypeEnum, PlantTaskUpdateData } from '@lepark/data-access';
+import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, PlantTaskUpdateData } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import dayjs from 'dayjs';
 
 interface EditPlantTaskModalProps {
   visible: boolean;
@@ -11,12 +12,7 @@ interface EditPlantTaskModalProps {
   initialValues: PlantTaskResponse | null;
 }
 
-const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
-  visible,
-  onCancel,
-  onSubmit,
-  initialValues,
-}) => {
+const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
 
   React.useEffect(() => {
@@ -25,6 +21,7 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
         title: initialValues.title,
         taskType: initialValues.taskType,
         taskUrgency: initialValues.taskUrgency,
+        taskStatus: initialValues.taskStatus,
         dueDate: moment(initialValues.dueDate),
         description: initialValues.description,
       });
@@ -37,12 +34,7 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
   };
 
   return (
-    <Modal
-      title="Edit Plant Task"
-      open={visible}
-      onCancel={onCancel}
-      footer={null}
-    >
+    <Modal title="Edit Plant Task" open={visible} onCancel={onCancel} footer={null}>
       <Form form={form} onFinish={handleSubmit} layout="vertical">
         <Form.Item name="title" label="Title" rules={[{ required: true }]}>
           <Input />
@@ -65,8 +57,17 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
             ))}
           </Select>
         </Form.Item>
+        <Form.Item name="taskStatus" label="Task Status" rules={[{ required: true }]}>
+          <Select>
+            {Object.values(PlantTaskStatusEnum).map((status) => (
+              <Select.Option key={status} value={status}>
+                {formatEnumLabelToRemoveUnderscores(status)}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
         <Form.Item name="dueDate" label="Due Date" rules={[{ required: true }]}>
-          <DatePicker />
+          <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().endOf('day')} />
         </Form.Item>
         <Form.Item name="description" label="Description">
           <Input.TextArea rows={4} />
