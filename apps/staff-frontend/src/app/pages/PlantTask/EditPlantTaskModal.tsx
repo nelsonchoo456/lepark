@@ -37,11 +37,12 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
       await onSubmit(values);
       // Success message and modal closing are now handled in the parent component
     } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message || 'Failed to update plant task');
-      } else {
-        message.error('An unexpected error occurred');
-      }
+        console.error('Error updating plant task:', error);
+        if (error instanceof Error) {
+          message.error(error.message || 'Failed to update plant task. Please try again.');
+        } else {
+          message.error('Failed to update plant task. Please try again.');
+        }
     } finally {
       setIsSubmitting(false);
     }
@@ -52,10 +53,10 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
   };
 
   return (
-    <Modal 
-      title="Edit Plant Task" 
-      open={visible} 
-      onCancel={onCancel} 
+    <Modal
+      title="Edit Plant Task"
+      open={visible}
+      onCancel={onCancel}
       footer={[
         <Button key="cancel" onClick={onCancel}>
           Cancel
@@ -66,14 +67,8 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
       ]}
     >
       <Form form={form} layout="vertical">
-        {userRole === StaffType.SUPERADMIN && (
-          <Form.Item>
-            Park: {initialValues?.occurrence?.zone.park.name}
-          </Form.Item>
-        )}
-        <Form.Item>
-          Zone: {initialValues?.occurrence?.zone.name}
-        </Form.Item>
+        {userRole === StaffType.SUPERADMIN && <Form.Item>Park: {initialValues?.occurrence?.zone.park.name}</Form.Item>}
+        <Form.Item>Zone: {initialValues?.occurrence?.zone.name}</Form.Item>
         <Form.Item>
           Occurrence: {initialValues?.occurrence?.title}
           <Tooltip title="Go to Occurrence">
@@ -82,6 +77,9 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
         </Form.Item>
         <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Please enter the title' }]}>
           <Input />
+        </Form.Item>
+        <Form.Item name="description" label="Description">
+          <Input.TextArea rows={4} />
         </Form.Item>
         <Form.Item name="taskType" label="Task Type" rules={[{ required: true, message: 'Please select the task type' }]}>
           <Select>
@@ -115,9 +113,6 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
             className="w-full" 
             disabledDate={(current) => current && current < dayjs().endOf('day')} 
           />
-        </Form.Item>
-        <Form.Item name="description" label="Description">
-          <Input.TextArea rows={4} />
         </Form.Item>
       </Form>
     </Modal>

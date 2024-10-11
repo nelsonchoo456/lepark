@@ -114,17 +114,9 @@ const PlantTaskBoardView = ({
 
       // Update status and position in the backend
       try {
-        // Unassign staff if the task is moved to "Open" status
-        if (userRole === StaffType.SUPERADMIN || (userRole === StaffType.MANAGER && destination.droppableId === PlantTaskStatusEnum.OPEN)) {
-          await unassignPlantTask(movedTask.id, user?.id || '');
-          await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
-          await updatePlantTaskPosition(movedTask.id, destination.index);
-          message.success('Task moved to Open and unassigned from staff');
-        } else {
-          await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
-          await updatePlantTaskPosition(movedTask.id, destination.index);
-          message.success('Task status updated successfully');
-        }
+        await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
+        await updatePlantTaskPosition(movedTask.id as string, destination.index);
+        message.success('Task status updated successfully');
       } catch (error) {
         console.error('Error updating task status, position, or unassigning:', error);
         message.error('Failed to update task status, position, or unassign');
@@ -189,6 +181,7 @@ const PlantTaskBoardView = ({
     }
     setSelectedTask(task);
     setSelectedTaskId(task.id);
+    setSelectedStaffId(null); // Reset the selected staff
     setIsAssignModalVisible(true);
     try {
       const response = await getAllStaffsByParkId(task.occurrence?.zone?.parkId);
@@ -452,8 +445,21 @@ const PlantTaskBoardView = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal title="Assign Staff" open={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
-        <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
+      <Modal
+        title="Assign Staff"
+        open={isAssignModalVisible}
+        onOk={handleAssignConfirm}
+        onCancel={() => {
+          setIsAssignModalVisible(false);
+          setSelectedStaffId(null); // Reset the selected staff when closing the modal
+        }}
+      >
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Select a staff member"
+          onChange={(value) => setSelectedStaffId(value)}
+          value={selectedStaffId} // Add this to control the select value
+        >
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>
               {staff.firstName} {staff.lastName} - {staff.role}

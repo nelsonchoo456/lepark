@@ -128,16 +128,27 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       sorter: (a, b) => {
         if (userRole === StaffType.SUPERADMIN) {
           if (a.occurrence?.zone?.park?.name && b.occurrence?.zone?.park?.name) {
-            return a.occurrence?.zone?.park?.name.localeCompare(b.occurrence?.zone?.park?.name);
+            return a.occurrence.zone.park.name.localeCompare(b.occurrence.zone.park.name);
           }
         }
         if (a.occurrence?.zone?.name && b.occurrence?.zone?.name) {
-          return a.occurrence?.zone?.name.localeCompare(b.occurrence?.zone?.name);
+          return a.occurrence.zone.name.localeCompare(b.occurrence.zone.name);
         }
-        return a.occurrence?.zone?.id?.toString().localeCompare(b.occurrence?.zone?.id?.toString());
+        return 0;
       },
-      filters: parks,
-      onFilter: (value, record) => record.occurrence.zone.park.id === value,
+      filters: userRole === StaffType.SUPERADMIN
+        ? parks
+        : plantTasks
+            .filter(task => task.occurrence?.zone?.parkId === user?.parkId)
+            .map(task => ({
+              text: task.occurrence?.zone?.name,
+              value: task.occurrence?.zone?.id
+            }))
+            .filter((v, i, a) => a.findIndex(t => t.value === v.value) === i), // Remove duplicates
+      onFilter: (value, record) => 
+        userRole === StaffType.SUPERADMIN
+          ? record.occurrence?.zone?.park?.id === value
+          : record.occurrence?.zone?.id === value,
       width: '15%',
     },
     {
@@ -353,21 +364,23 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             LOW: plantTasks.filter((task) => task.taskUrgency === 'LOW'),
           };
 
+    const collapseItems = Object.entries(groupedTasks).map(([key, tasks]) => ({
+      key,
+      label: `${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`,
+      children: (
+        <Table
+          dataSource={tasks}
+          columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
+          rowKey="id"
+          pagination={{ pageSize: 5 }}
+          scroll={{ x: SCREEN_LG }}
+          {...tableProps}
+        />
+      ),
+    }));
+
     return (
-      <Collapse activeKey={activeKeys} onChange={(keys) => setActiveKeys(keys as string[])}>
-        {Object.entries(groupedTasks).map(([key, tasks]) => (
-          <Panel header={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
-            <Table
-              dataSource={tasks}
-              columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
-              rowKey="id"
-              pagination={{ pageSize: 5 }}
-              scroll={{ x: SCREEN_LG }}
-              {...tableProps}
-            />
-          </Panel>
-        ))}
-      </Collapse>
+      <Collapse activeKey={activeKeys} onChange={(keys) => setActiveKeys(keys as string[])} items={collapseItems} />
     );
   };
 

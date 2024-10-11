@@ -169,9 +169,11 @@ const PlantTaskList: React.FC = () => {
   ];
 
   const renderDashboardOverview = () => {
-    return (
-      <Collapse className="mb-4 bg-white">
-        <Panel header="Task Dashboard" key="1">
+    const collapseItems = [
+      {
+        key: '1',
+        label: 'Task Dashboard',
+        children: (
           <Tabs defaultActiveKey="1">
             <TabPane tab="Overview" key="1">
               <PlantTaskDashboard plantTasks={plantTasks} />
@@ -190,8 +192,12 @@ const PlantTaskList: React.FC = () => {
               <div>Chart 2 Content</div>
             </TabPane>
           </Tabs>
-        </Panel>
-      </Collapse>
+        ),
+      },
+    ];
+
+    return (
+      <Collapse className="mb-4 bg-white" items={collapseItems} />
     );
   };
 
