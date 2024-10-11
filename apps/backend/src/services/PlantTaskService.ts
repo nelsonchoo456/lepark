@@ -26,8 +26,8 @@ class PlantTaskService {
         throw new Error('Staff not found');
       }
 
-      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
-        throw new Error('Only Superadmins, Botanists and Arborists can create plant tasks');
+      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.MANAGER && staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
+        throw new Error('Only Superadmins, Managers, Botanists and Arborists can create plant tasks');
       }
 
       const occurrence = await OccurrenceDao.getOccurrenceById(data.occurrenceId);

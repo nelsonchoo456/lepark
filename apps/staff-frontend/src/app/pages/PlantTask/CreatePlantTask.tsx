@@ -120,6 +120,11 @@ const CreatePlantTask = () => {
         return;
       }
 
+      if (selectedFiles.length > 3) {
+        messageApi.error('You can upload a maximum of 3 images.');
+        return;
+      }
+
       const { parkId, zoneId, hasDueDate, dueDate, ...plantTaskData } = values;
       const taskData = {
         ...plantTaskData,
@@ -256,11 +261,18 @@ const CreatePlantTask = () => {
                 />
               </Form.Item>
             )}
-            <Form.Item label="Upload Images" required tooltip="At least one image is required">
-              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            <Form.Item label="Upload Images" required tooltip="At least 1 image is required, maximum 3 images">
+              <ImageInput
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                accept="image/png, image/jpeg"
+                onClick={onInputClick}
+                disabled={selectedFiles.length >= 3}
+              />
             </Form.Item>
             {previewImages?.length > 0 && (
-              <Form.Item label="Image Previews">
+              <Form.Item label="Image Previews" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
                 <div className="flex flex-wrap gap-2">
                   {previewImages.map((imgSrc, index) => (
                     <img
@@ -272,6 +284,11 @@ const CreatePlantTask = () => {
                     />
                   ))}
                 </div>
+              </Form.Item>
+            )}
+            {selectedFiles.length >= 3 && (
+              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                <p className="text-yellow-500">Maximum number of images (3) reached.</p>
               </Form.Item>
             )}
 
@@ -289,10 +306,7 @@ const CreatePlantTask = () => {
             extra={[
               <Button key="back" onClick={() => navigate('/plant-tasks')}>
                 Back to Plant Task Management
-              </Button>,
-              <Button type="primary" key="view" onClick={() => navigate(`/plant-tasks/${createdPlantTask.id}`)}>
-                View new Plant Task
-              </Button>,
+              </Button>
             ]}
           />
         )}

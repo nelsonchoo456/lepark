@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker } from 'antd';
+import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, message } from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -10,6 +10,7 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { CloseOutlined } from '@ant-design/icons';
 import { useAuth } from '@lepark/common-ui';
 import EditPlantTaskModal from './EditPlantTaskModal';
+import ViewPlantTaskModal from './ViewPlantTaskModal';
 
 const { Panel } = Collapse;
 
@@ -51,6 +52,8 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
   const [form] = Form.useForm();
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -86,13 +89,20 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     if (editingTask) {
       try {
         await updatePlantTaskDetails(editingTask.id, values);
+        message.success('Task updated successfully');
         setEditModalVisible(false);
         onTaskUpdated(); // Refresh the task list
       } catch (error) {
         console.error('Error updating plant task:', error);
-        // Handle error (e.g., show error message to user)
+        throw new Error('Failed to update task.' + ' ' + error + '.');
+        // The modal will remain open as we're not calling setEditModalVisible(false) here
       }
     }
+  };
+
+  const showViewModal = (task: PlantTaskResponse) => {
+    setSelectedTask(task);
+    setViewModalVisible(true);
   };
 
   const columns: TableProps<PlantTaskResponse>['columns'] = [
@@ -309,7 +319,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       render: (_, record) => (
         <Flex justify="flex-start" gap={8}>
           <Tooltip title="View Plant Task">
-            <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
+            <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
           {record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
             <Tooltip title="Edit Plant Task">
@@ -400,6 +410,13 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             onCancel={() => setEditModalVisible(false)}
             onSubmit={handleEditSubmit}
             initialValues={editingTask}
+            userRole={userRole as StaffType}
+          />
+          <ViewPlantTaskModal
+            visible={viewModalVisible}
+            onCancel={() => setViewModalVisible(false)}
+            task={selectedTask}
+            userRole={userRole as StaffType}
           />
         </>
       );

@@ -25,6 +25,7 @@ import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
 import EditPlantTaskModal from './EditPlantTaskModal';
+import ViewPlantTaskModal from './ViewPlantTaskModal';
 
 interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
@@ -61,6 +62,7 @@ const PlantTaskBoardView = ({
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -113,7 +115,7 @@ const PlantTaskBoardView = ({
       // Update status and position in the backend
       try {
         // Unassign staff if the task is moved to "Open" status
-        if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER && destination.droppableId === PlantTaskStatusEnum.OPEN) {
+        if (userRole === StaffType.SUPERADMIN || (userRole === StaffType.MANAGER && destination.droppableId === PlantTaskStatusEnum.OPEN)) {
           await unassignPlantTask(movedTask.id, user?.id || '');
           await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
           await updatePlantTaskPosition(movedTask.id, destination.index);
@@ -181,10 +183,6 @@ const PlantTaskBoardView = ({
     }
   };
 
-  const handleViewDetails = (taskId: string) => {
-    navigate(`/plant-tasks/${taskId}`);
-  };
-
   const handleAssignStaff = async (task: PlantTaskResponse) => {
     if (userRole !== StaffType.SUPERADMIN && userRole !== StaffType.MANAGER) {
       return; // Prevent non-superadmin/manager from assigning staff
@@ -243,14 +241,19 @@ const PlantTaskBoardView = ({
     if (editingTask) {
       try {
         await updatePlantTaskDetails(editingTask.id, values);
+        message.success('Task updated successfully');
         setEditModalVisible(false);
         refreshData(); // Refresh the task list
-        message.success('Task updated successfully');
       } catch (error) {
         console.error('Error updating plant task:', error);
-        message.error('Failed to update task');
+        throw new Error('Failed to update task.' + ' ' + error + '.');
       }
     }
+  };
+
+  const showViewModal = (task: PlantTaskResponse) => {
+    setSelectedTask(task);
+    setViewModalVisible(true);
   };
 
   const renderTaskCard = (task: PlantTaskResponse) => {
@@ -265,7 +268,7 @@ const PlantTaskBoardView = ({
       {
         label: 'View Details',
         key: '1',
-        onClick: () => handleViewDetails(task.id),
+        onClick: () => showViewModal(task),
       },
     ];
 
@@ -277,7 +280,11 @@ const PlantTaskBoardView = ({
       });
     }
 
-    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && !task.assignedStaffId) {
+    if (
+      (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
+      !task.assignedStaffId &&
+      task.taskStatus === PlantTaskStatusEnum.OPEN
+    ) {
       dropdownItems.push({
         label: 'Assign Staff',
         key: '3',
@@ -285,9 +292,11 @@ const PlantTaskBoardView = ({
       });
     }
 
-    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && 
-        task.assignedStaffId && 
-        task.taskStatus === PlantTaskStatusEnum.OPEN) {
+    if (
+      (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
+      task.assignedStaffId &&
+      task.taskStatus === PlantTaskStatusEnum.OPEN
+    ) {
       dropdownItems.push({
         label: 'Unassign Staff',
         key: '4',
@@ -314,10 +323,7 @@ const PlantTaskBoardView = ({
                 {task.title}
               </Typography.Text>
             </div>
-            <Dropdown
-              menu={{ items: dropdownItems }}
-              trigger={['click']}
-            >
+            <Dropdown menu={{ items: dropdownItems }} trigger={['click']}>
               <MoreOutlined style={{ cursor: 'pointer' }} />
             </Dropdown>
           </div>
@@ -460,6 +466,13 @@ const PlantTaskBoardView = ({
         onCancel={() => setEditModalVisible(false)}
         onSubmit={handleEditSubmit}
         initialValues={editingTask}
+        userRole={userRole as StaffType}
+      />
+      <ViewPlantTaskModal
+        visible={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        task={selectedTask}
+        userRole={userRole as StaffType}
       />
     </>
   );
