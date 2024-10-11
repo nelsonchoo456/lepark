@@ -8,6 +8,7 @@ import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffRespons
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { CloseOutlined } from '@ant-design/icons';
+import { useAuth } from '@lepark/common-ui';
 
 const { Panel } = Collapse;
 
@@ -26,7 +27,7 @@ interface PlantTaskTableViewProps {
   navigateToDetails: (plantTaskId: string) => void;
   navigate: (path: string) => void;
   showDeleteModal: (plantTask: PlantTaskResponse) => void;
-  handleUnassignStaff: (plantTaskId: string) => void;
+  handleUnassignStaff: (plantTaskId: string, staffId: string) => void;
 }
 
 const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
@@ -43,6 +44,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
+  const { user } = useAuth<StaffResponse>();
 
   useEffect(() => {
     fetchParks();
@@ -252,7 +254,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
                     <Button
                     type="text"
                     icon={<CloseOutlined />}
-                    onClick={() => handleUnassignStaff(record.id)}
+                    onClick={() => handleUnassignStaff(record.id, user?.id || '')}
                     size="small"
                   />
                 </Tooltip>
@@ -288,9 +290,11 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           <Tooltip title="Edit Plant Task">
             <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/plant-tasks/${record.id}/edit`)} />
           </Tooltip>
-          <Tooltip title="Delete Plant Task">
-            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-          </Tooltip>
+          {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
+            <Tooltip title="Delete Plant Task">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+            </Tooltip>
+          )}
         </Flex>
       ),
       width: '10%',

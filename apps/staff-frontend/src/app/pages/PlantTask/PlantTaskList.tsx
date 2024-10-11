@@ -14,6 +14,7 @@ import {
   getAllStaffsByParkId,
   getAllStaffs,
   getAllAssignedPlantTasks,
+  unassignPlantTask,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
@@ -101,6 +102,18 @@ const PlantTaskList: React.FC = () => {
     } catch (error) {
       console.error('Error assigning staff:', error);
       messageApi.error('Failed to assign staff');
+    }
+  };
+
+  const handleUnassignStaff = async (plantTaskId: string, staffId: string) => {
+    try {
+      await unassignPlantTask(plantTaskId, staffId);
+      message.success('Staff unassigned successfully');
+      fetchPlantTasks();
+
+    } catch (error) {
+      console.error('Failed to unassign staff:', error);
+      message.error('Failed to unassign staff');
     }
   };
 
@@ -228,6 +241,7 @@ const PlantTaskList: React.FC = () => {
           navigateToDetails={navigateToDetails}
           navigate={navigate}
           showDeleteModal={showDeleteModal}
+          handleUnassignStaff={handleUnassignStaff}
         />
       </Card>
     );
