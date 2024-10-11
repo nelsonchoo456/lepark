@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Collapse, Button, Input, Row, Col, Pagination, Flex, App, Select } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -9,7 +9,6 @@ import { ContentWrapperDark } from '@lepark/common-ui';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
-const { Panel } = Collapse;
 const { Option } = Select;
 
 interface FAQTabProps {
@@ -25,6 +24,15 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
   const navigate = useNavigate();
   const { modal, message } = App.useApp();
   const [selectedStatuses, setSelectedStatuses] = useState<FAQStatusEnum[]>([]);
+  const [groupedFAQs, setGroupedFAQs] = useState<{ [key in FAQCategoryEnum]: FAQResponse[] }>({} as { [key in FAQCategoryEnum]: FAQResponse[] });
+
+  useEffect(() => {
+    const grouped: { [key in FAQCategoryEnum]: FAQResponse[] } = {} as { [key in FAQCategoryEnum]: FAQResponse[] };
+    Object.values(FAQCategoryEnum).forEach(category => {
+      grouped[category] = faqs.filter(faq => faq.category === category);
+    });
+    setGroupedFAQs(grouped);
+  }, [faqs]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -44,14 +52,6 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
       return matchesSearch && matchesStatus;
     });
   }, [faqs, searchQuery, selectedStatuses]);
-
-  const groupedFAQs = useMemo(() => {
-    const grouped: { [key in FAQCategoryEnum]: FAQResponse[] } = {} as { [key in FAQCategoryEnum]: FAQResponse[] };
-    Object.values(FAQCategoryEnum).forEach(category => {
-      grouped[category] = filteredFAQs.filter(faq => faq.category === category);
-    });
-    return grouped;
-  }, [filteredFAQs]);
 
   const categoriesPerPage = 6;
 
@@ -107,98 +107,100 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
   };
 
   const handleDragEnd = async (result: DropResult) => {
-  const { source, destination } = result;
+    const { source, destination } = result;
 
-  if (!destination || source.droppableId !== destination.droppableId) return;
+    if (!destination) return;
 
-  const sourceList = getList(source.droppableId as FAQCategoryEnum);
+    const sourceCategory = source.droppableId as FAQCategoryEnum;
+    const destCategory = destination.droppableId as FAQCategoryEnum;
 
-  // Reordering within the same list
-  const reorderedFAQs = Array.from(sourceList);
-  const [reorderedItem] = reorderedFAQs.splice(source.index, 1);
-  reorderedFAQs.splice(destination.index, 0, reorderedItem);
+    const newGroupedFAQs = { ...groupedFAQs };
+    const [movedFAQ] = newGroupedFAQs[sourceCategory].splice(source.index, 1);
 
-  // Update priority values based on new order
-  const updatedFAQs = reorderedFAQs.map((faq, index) => ({
-    ...faq,
-    priority: index + 1,
-  }));
+    // Update the category of the moved FAQ
+    movedFAQ.category = destCategory;
 
-  updateListState(source.droppableId as FAQCategoryEnum, updatedFAQs);
+    newGroupedFAQs[destCategory].splice(destination.index, 0, movedFAQ);
 
-  // Update position in the backend
-  try {
-    await updateFAQPriorities(updatedFAQs);
-    message.success('FAQ priorities updated successfully');
-  } catch (error) {
-    console.error('Error updating FAQ priorities:', error);
-    message.error('Failed to update FAQ priorities');
-  }
-};
+    // Update priorities for both source and destination categories
+    newGroupedFAQs[sourceCategory] = newGroupedFAQs[sourceCategory].map((faq, index) => ({
+      ...faq,
+      priority: index + 1,
+    }));
+    newGroupedFAQs[destCategory] = newGroupedFAQs[destCategory].map((faq, index) => ({
+      ...faq,
+      priority: index + 1,
+    }));
 
-  const getList = (category: FAQCategoryEnum) => {
-    return groupedFAQs[category];
-  };
+    setGroupedFAQs(newGroupedFAQs);
 
-  const updateListState = (category: FAQCategoryEnum, items: FAQResponse[]) => {
-    const updatedGroupedFAQs = {
-      ...groupedFAQs,
-      [category]: items,
-    };
-    // You might need to update the parent component's state here
-    // For now, we'll just trigger a re-fetch
+    // Prepare the updated FAQs for the backend
+    const updatedFAQs = [
+      ...newGroupedFAQs[sourceCategory],
+      ...newGroupedFAQs[destCategory],
+    ];
+
+    // Update position in the backend
+    try {
+      await updateFAQPriorities(updatedFAQs);
+      message.success('FAQ priorities and categories updated successfully');
+    } catch (error) {
+      console.error('Error updating FAQ priorities and categories:', error);
+      message.error('Failed to update FAQ priorities and categories');
+    }
+
     triggerFetch();
   };
 
   const renderFAQCard = (faq: FAQResponse, index: number) => (
-  <Draggable key={faq.id} draggableId={faq.id} index={index}>
-    {(provided, snapshot) => (
-      <div
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-        style={{
-          ...provided.draggableProps.style,
-          opacity: snapshot.isDragging ? 0.5 : 1,
-          marginBottom: '8px',
-        }}
-      >
-        <Collapse
-          items={[
-            {
-              key: faq.id,
-              label: truncateQuestion(faq.question),
-              children: (
-                <>
-                  <p>{faq.answer}</p>
-                  {showParkColumn && <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>}
-                  <Button
-                    type="link"
-                    icon={<RiEdit2Line />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/faqs/edit/${faq.id}`);
-                    }}
-                    style={{ marginRight: 8 }}
-                  />
-                  <Button
-                    type="link"
-                    icon={<MdDeleteOutline style={{ color: '#ff4d4f' }} />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(faq.id);
-                    }}
-                    danger
-                  />
-                </>
-              ),
-            },
-          ]}
-        />
-      </div>
-    )}
-  </Draggable>
-);
+    <Draggable key={faq.id} draggableId={faq.id} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          style={{
+            ...provided.draggableProps.style,
+            opacity: snapshot.isDragging ? 0.5 : 1,
+            marginBottom: '8px',
+          }}
+        >
+          <Collapse
+            items={[
+              {
+                key: faq.id,
+                label: truncateQuestion(faq.question),
+                children: (
+                  <>
+                    <p>{faq.answer}</p>
+                    {showParkColumn && <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>}
+                    <Button
+                      type="link"
+                      icon={<RiEdit2Line />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/faqs/edit/${faq.id}`);
+                      }}
+                      style={{ marginRight: 8 }}
+                    />
+                    <Button
+                      type="link"
+                      icon={<MdDeleteOutline style={{ color: '#ff4d4f' }} />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(faq.id);
+                      }}
+                      danger
+                    />
+                  </>
+                ),
+              },
+            ]}
+          />
+        </div>
+      )}
+    </Draggable>
+  );
 
   const truncateQuestion = (question: string) => {
     const maxLength = 50;
