@@ -27,6 +27,7 @@ import decarbonizationAreaRouter from './routers/decarbonizationAreaRouter';
 import sequestrationHistoryRouter from './routers/sequestrationHistoryRouter';
 import promotionRouter from './routers/promotionRouter';
 import { authenticateJWTStaff } from './middleware/authenticateJWT';
+import faqRouter from './routers/faqRouter';
 
 dotenv.config();
 const app = express();
@@ -78,6 +79,7 @@ app.use('/api/sequestrationhistory', sequestrationHistoryRouter);
 app.use('/api/planttasks', authenticateJWTStaff, plantTaskRouter);
 app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 app.use('/api/promotions', promotionRouter);
+app.use('/api/faq', faqRouter);
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {
