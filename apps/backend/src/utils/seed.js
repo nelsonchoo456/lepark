@@ -415,7 +415,7 @@ const plantTasksList = [];
 
   console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
 
-  console.log('Seeding decarbonization areas...');
+  //console.log('Seeding decarbonization areas...');
   const decarbonizationAreaList = [];
   for (const area of decarbonizationAreasData) {
     try {
@@ -439,7 +439,7 @@ const plantTasksList = [];
       `;
 
       decarbonizationAreaList.push(insertedArea);
-      console.log(`Inserted area: ${insertedArea.name}`);
+      //console.log(`Inserted area: ${insertedArea.name}`);
     } catch (error) {
       console.error(`Error inserting decarbonization area: ${area.name}`);
       console.error(error);
@@ -448,7 +448,7 @@ const plantTasksList = [];
   console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
 
   // Now create sequestration histories after all decarbonization areas are created
-  console.log('Creating sequestration histories...');
+
   for (let i = 0; i < decarbonizationAreaList.length; i++) {
     const area = decarbonizationAreaList[i];
     await createSeqHistories(area.id, seqHistoriesData[i], i);
@@ -456,7 +456,7 @@ const plantTasksList = [];
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
-  console.log(`Creating sequestration histories for area with ID: ${decarbAreaId}`);
+
   const seqHistories = [];
 
   let currentSeqValue = baseSeqHistory.seqValue;
@@ -486,15 +486,15 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
     }
   }
 
-  console.log(`Sequestration histories created for area ${index + 1}:`);
-  seqHistories.forEach((history, i) => {
+  console.log(`Total sequestration histories seeded: ${seqHistories.length}\n`);
+  /*seqHistories.forEach((history, i) => {
     console.log(`History ${i + 1}:`);
     console.log(`  ID: ${history.id}`);
     console.log(`  Date: ${history.date}`);
     console.log(`  Sequestration Value: ${history.seqValue.toFixed(3)}`);
     console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
     console.log('---');
-  });
+  });*/
 }
 
 
