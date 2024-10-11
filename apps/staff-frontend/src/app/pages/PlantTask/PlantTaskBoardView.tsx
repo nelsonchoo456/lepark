@@ -237,6 +237,32 @@ const PlantTaskBoardView = ({
     const shouldHighlightDueSoon =
       isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
 
+    const dropdownItems = [
+      {
+        label: 'View Details',
+        key: '1',
+        onClick: () => handleViewDetails(task.id),
+      },
+    ];
+
+    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && !task.assignedStaffId) {
+      dropdownItems.push({
+        label: 'Assign Staff',
+        key: '2',
+        onClick: () => handleAssignStaff(task),
+      });
+    }
+
+    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && 
+        task.assignedStaffId && 
+        task.taskStatus === PlantTaskStatusEnum.OPEN) {
+      dropdownItems.push({
+        label: 'Unassign Staff',
+        key: '3',
+        onClick: () => handleUnassignStaff(task),
+      });
+    }
+
     return (
       <Card
         size="small"
@@ -257,32 +283,7 @@ const PlantTaskBoardView = ({
               </Typography.Text>
             </div>
             <Dropdown
-              menu={
-                userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER
-                  ? {
-                      items: [
-                        {
-                    label: 'View Details',
-                    key: '1',
-                    onClick: () => handleViewDetails(task.id),
-                  },
-                  {
-                    label: 'Assign Staff',
-                    key: '2',
-                    onClick: () => handleAssignStaff(task),
-                  },
-                      ],
-                    }
-                  : {
-                      items: [
-                        {
-                          label: 'View Details',
-                          key: '1',
-                          onClick: () => handleViewDetails(task.id),
-                        },
-                      ],
-                    }
-              }
+              menu={{ items: dropdownItems }}
               trigger={['click']}
             >
               <MoreOutlined style={{ cursor: 'pointer' }} />
@@ -344,6 +345,21 @@ const PlantTaskBoardView = ({
     );
   };
 
+  const handleUnassignStaff = async (task: PlantTaskResponse) => {
+    try {
+      await unassignPlantTask(task.id, user?.id || '');
+      message.success('Staff unassigned successfully');
+      refreshData();
+
+      // Update the local state
+      const updatedTask = { ...task, assignedStaffId: null };
+      updateTaskInList(updatedTask);
+    } catch (error) {
+      console.error('Failed to unassign staff:', error);
+      message.error('Failed to unassign staff');
+    }
+  };
+
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -398,7 +414,7 @@ const PlantTaskBoardView = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal title="Assign Staff" open={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
+      <Modal title="Assign Staff" visible={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
         <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>

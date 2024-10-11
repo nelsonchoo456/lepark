@@ -203,8 +203,8 @@ class PlantTaskService {
       throw new Error('Only the superadmin can unassign other staffs tasks');
     }
 
-    if (plantTask.taskStatus !== PlantTaskStatusEnum.IN_PROGRESS) {
-      throw new Error('Only in progress tasks can be unassigned');
+    if (plantTask.taskStatus !== PlantTaskStatusEnum.OPEN) {
+      throw new Error('Only open tasks can be unassigned');
     }
 
     return PlantTaskDao.unassignPlantTask(id);

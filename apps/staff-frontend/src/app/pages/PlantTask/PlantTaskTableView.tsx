@@ -7,6 +7,7 @@ import { MdDeleteOutline } from 'react-icons/md';
 import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
+import { CloseOutlined } from '@ant-design/icons';
 
 const { Panel } = Collapse;
 
@@ -25,6 +26,7 @@ interface PlantTaskTableViewProps {
   navigateToDetails: (plantTaskId: string) => void;
   navigate: (path: string) => void;
   showDeleteModal: (plantTask: PlantTaskResponse) => void;
+  handleUnassignStaff: (plantTaskId: string) => void;
 }
 
 const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
@@ -37,6 +39,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   navigateToDetails,
   navigate,
   showDeleteModal,
+  handleUnassignStaff,
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
@@ -240,7 +243,22 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       key: 'assignedStaff',
       render: (_, record) => {
         if (record.assignedStaff) {
-          return `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`;
+          return (
+            <Flex align="center" justify="space-between">
+              <span>{`${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`}</span>
+              {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
+                record.taskStatus === PlantTaskStatusEnum.OPEN && (
+                  <Tooltip title="Unassign staff">
+                    <Button
+                    type="text"
+                    icon={<CloseOutlined />}
+                    onClick={() => handleUnassignStaff(record.id)}
+                    size="small"
+                  />
+                </Tooltip>
+              )}
+            </Flex>
+          );
         } else {
           return record.taskStatus === PlantTaskStatusEnum.OPEN ? (
             <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
