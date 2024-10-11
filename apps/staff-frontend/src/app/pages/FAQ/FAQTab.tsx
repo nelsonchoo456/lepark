@@ -1,14 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Collapse, Button, Input, Row, Col, Modal, Pagination, Flex, message, App, Select } from 'antd';
+import { Card, Collapse, Button, Input, Row, Col, Pagination, Flex, App, Select } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import { FAQResponse, deleteFAQ, FAQCategoryEnum, ParkResponse, FAQStatusEnum } from '@lepark/data-access';
+import { FAQResponse, deleteFAQ, FAQCategoryEnum, ParkResponse, FAQStatusEnum, updateFAQPriorities } from '@lepark/data-access';
 import { ContentWrapperDark } from '@lepark/common-ui';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 const { Panel } = Collapse;
+const { Option } = Select;
 
 interface FAQTabProps {
   faqs: FAQResponse[];
@@ -19,18 +21,17 @@ interface FAQTabProps {
 
 const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = false, parks }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [faqToBeDeleted, setFaqToBeDeleted] = useState<FAQResponse | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const navigate = useNavigate();
-   const { modal, message } = App.useApp();
-   const [selectedStatuses, setSelectedStatuses] = useState<FAQStatusEnum[]>([]);
+  const { modal, message } = App.useApp();
+  const [selectedStatuses, setSelectedStatuses] = useState<FAQStatusEnum[]>([]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
-const handleStatusFilter = (value: FAQStatusEnum[]) => {
+
+  const handleStatusFilter = (value: FAQStatusEnum[]) => {
     setSelectedStatuses(value);
     setCurrentPage(1);
   };
@@ -54,7 +55,6 @@ const handleStatusFilter = (value: FAQStatusEnum[]) => {
 
   const categoriesPerPage = 6;
 
-
   const formatCategoryName = (category: string) => {
     return category
       .toLowerCase()
@@ -75,13 +75,14 @@ const handleStatusFilter = (value: FAQStatusEnum[]) => {
     PARK_HISTORY: '#f5a623',
     OTHER: '#b8e986',
   };
+
   const getParkName = (parkId: number | null) => {
     if (!parkId) return 'All Parks';
     const park = parks?.find((p: { id: number }) => p.id === parkId);
     return park ? park.name : 'Unknown Park';
   };
 
-     const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string) => {
     try {
       const confirmed = await new Promise<boolean>((resolve) => {
         modal.confirm({
@@ -105,41 +106,99 @@ const handleStatusFilter = (value: FAQStatusEnum[]) => {
     }
   };
 
-  const renderFAQCard = (faq: FAQResponse) => {
-  const items = [
-    {
-      key: faq.id,
-      label: <strong>{truncateQuestion(faq.question)}</strong>,
-      children: (
-        <>
-          <p>{faq.answer}</p>
-          {showParkColumn && <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>}
-          <Button
-            type="link"
-            icon={<RiEdit2Line />}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/faqs/edit/${faq.id}`);
-            }}
-            style={{ marginRight: 8 }}
-          />
-          <Button
-          type="link"
-          icon={<MdDeleteOutline style={{ color: '#ff4d4f' }} />}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDelete(faq.id);
-          }}
-          danger
-        />
-        </>
-      ),
-    },
-  ];
+  const handleDragEnd = async (result: DropResult) => {
+  const { source, destination } = result;
 
-  return <Collapse items={items} />;
+  if (!destination || source.droppableId !== destination.droppableId) return;
+
+  const sourceList = getList(source.droppableId as FAQCategoryEnum);
+
+  // Reordering within the same list
+  const reorderedFAQs = Array.from(sourceList);
+  const [reorderedItem] = reorderedFAQs.splice(source.index, 1);
+  reorderedFAQs.splice(destination.index, 0, reorderedItem);
+
+  // Update priority values based on new order
+  const updatedFAQs = reorderedFAQs.map((faq, index) => ({
+    ...faq,
+    priority: index + 1,
+  }));
+
+  updateListState(source.droppableId as FAQCategoryEnum, updatedFAQs);
+
+  // Update position in the backend
+  try {
+    await updateFAQPriorities(updatedFAQs);
+    message.success('FAQ priorities updated successfully');
+  } catch (error) {
+    console.error('Error updating FAQ priorities:', error);
+    message.error('Failed to update FAQ priorities');
+  }
 };
 
+  const getList = (category: FAQCategoryEnum) => {
+    return groupedFAQs[category];
+  };
+
+  const updateListState = (category: FAQCategoryEnum, items: FAQResponse[]) => {
+    const updatedGroupedFAQs = {
+      ...groupedFAQs,
+      [category]: items,
+    };
+    // You might need to update the parent component's state here
+    // For now, we'll just trigger a re-fetch
+    triggerFetch();
+  };
+
+  const renderFAQCard = (faq: FAQResponse, index: number) => (
+  <Draggable key={faq.id} draggableId={faq.id} index={index}>
+    {(provided, snapshot) => (
+      <div
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+        style={{
+          ...provided.draggableProps.style,
+          opacity: snapshot.isDragging ? 0.5 : 1,
+          marginBottom: '8px',
+        }}
+      >
+        <Collapse
+          items={[
+            {
+              key: faq.id,
+              label: truncateQuestion(faq.question),
+              children: (
+                <>
+                  <p>{faq.answer}</p>
+                  {showParkColumn && <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>}
+                  <Button
+                    type="link"
+                    icon={<RiEdit2Line />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/faqs/edit/${faq.id}`);
+                    }}
+                    style={{ marginRight: 8 }}
+                  />
+                  <Button
+                    type="link"
+                    icon={<MdDeleteOutline style={{ color: '#ff4d4f' }} />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(faq.id);
+                    }}
+                    danger
+                  />
+                </>
+              ),
+            },
+          ]}
+        />
+      </div>
+    )}
+  </Draggable>
+);
 
   const truncateQuestion = (question: string) => {
     const maxLength = 50;
@@ -166,39 +225,44 @@ const handleStatusFilter = (value: FAQStatusEnum[]) => {
         </Button>
       </Flex>
       <Select
-  mode="multiple"
-  style={{ width: '100%', maxWidth: '100%', marginRight: '16px', marginBottom: '16px' }}
-  placeholder="Filter by status"
-  onChange={handleStatusFilter}
->
-  {Object.values(FAQStatusEnum).map((status) => (
-    <Select.Option key={status} value={status}>
-      {formatEnumLabelToRemoveUnderscores(status)}
-    </Select.Option>
-  ))}
-</Select>
-      <Row gutter={[16, 16]}>
-        {paginatedCategories.map(([category, categoryFaqs]) => (
-          <Col xs={24} md={24} lg={8} key={category}>
-            <Card
-              title={formatCategoryName(category)}
-              bordered={false}
-              styles={{
-                header: {
-                  backgroundColor: categoryColors[category as FAQCategoryEnum],
-                  color: 'white'
-                }
-              }}
-            >
-              {categoryFaqs.map(faq => (
-                <React.Fragment key={faq.id}>
-                  {renderFAQCard(faq)}
-                </React.Fragment>
-              ))}
-            </Card>
-          </Col>
+        mode="multiple"
+        style={{ width: '100%', maxWidth: '100%', marginRight: '16px', marginBottom: '16px' }}
+        placeholder="Filter by status"
+        onChange={handleStatusFilter}
+      >
+        {Object.values(FAQStatusEnum).map((status) => (
+          <Option key={status} value={status}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Option>
         ))}
-      </Row>
+      </Select>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Row gutter={[16, 16]}>
+          {paginatedCategories.map(([category, categoryFaqs]) => (
+            <Col xs={24} md={24} lg={8} key={category}>
+              <Droppable droppableId={category}>
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                    <Card
+                      title={formatCategoryName(category)}
+                      bordered={false}
+                      styles={{
+                        header: {
+                          backgroundColor: categoryColors[category as FAQCategoryEnum],
+                          color: 'white'
+                        }
+                      }}
+                    >
+                      {categoryFaqs.map((faq, index) => renderFAQCard(faq, index))}
+                      {provided.placeholder}
+                    </Card>
+                  </div>
+                )}
+              </Droppable>
+            </Col>
+          ))}
+        </Row>
+      </DragDropContext>
       <Pagination
         current={currentPage}
         total={Object.keys(groupedFAQs).filter(category => groupedFAQs[category as FAQCategoryEnum].length > 0).length}

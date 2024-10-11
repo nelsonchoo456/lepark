@@ -88,9 +88,11 @@ import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import FAQList from './pages/FAQ/FAQList';
 import FAQCreate from './pages/FAQ/FAQCreate';
+import { App as AntdApp } from 'antd';
 
 export function App() {
   return (
+    <AntdApp>
     <StaffAuthWrapper>
       <ConfigProvider
         theme={{
@@ -518,6 +520,7 @@ export function App() {
         </BrowserRouter>
       </ConfigProvider>
     </StaffAuthWrapper>
+    </AntdApp>
   );
 }
 
