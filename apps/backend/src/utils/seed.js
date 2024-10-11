@@ -13,6 +13,7 @@ const {
   eventsData,
   parkAssetsData,
   sensorsData,
+  plantTasksData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -369,6 +370,32 @@ async function seed() {
     attractionList.push(createdAttraction);
   }
   console.log(`Total attractions seeded: ${attractionList.length}\n`);
+
+  const plantTasksList = [];
+  for (const plantTask of plantTasksData) {
+    // Ensure we have valid staff and occurrence data
+    if (staffList.length > 0 && occurrenceList.length > 0) {
+      const randomStaffIndex = Math.floor(Math.random() * staffList.length);
+      const randomOccurrenceIndex = Math.floor(Math.random() * occurrenceList.length);
+
+      const createdPlantTask = await prisma.plantTask.create({
+        data: {
+          ...plantTask,
+          submittingStaff: {
+            connect: { id: staffList[randomStaffIndex].id },
+          },
+          occurrence: {
+            connect: { id: occurrenceList[randomOccurrenceIndex].id },
+          },
+        },
+      });
+      plantTasksList.push(createdPlantTask);
+    } else {
+      console.warn('Unable to create plant task: No staff or occurrences available');
+    }
+  }
+
+  console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
 }
 
 // Utility function for Activity Logs and Status Logs
