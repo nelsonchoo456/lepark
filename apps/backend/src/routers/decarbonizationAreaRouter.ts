@@ -56,7 +56,7 @@ router.get('/:parkId', async (req, res) => {
     const decarbonizationAreas = await DecarbonizationAreaService.getDecarbonizationAreasByParkId(parkId);
     res.status(200).json(decarbonizationAreas);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching decarbonization areas by park ID', error });
+    res.status(500).json({ message: 'Error fetching decarbonization areas by park ID: ', error });
   }
 });
 

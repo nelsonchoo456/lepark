@@ -64,6 +64,8 @@ const PlantTaskBoardView = ({
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [showLogPrompt, setShowLogPrompt] = useState(false);
+  const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -122,6 +124,11 @@ const PlantTaskBoardView = ({
         console.error('Error updating task status, position, or unassigning:', error);
         message.error('Failed to update task status, position, or unassign');
       }
+    }
+
+    if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
+      setCompletedTaskOccurrenceId(movedTask.occurrence?.id || null);
+      setShowLogPrompt(true);
     }
 
     refreshData(); // Call the refreshData function after updating the task
@@ -403,6 +410,24 @@ const PlantTaskBoardView = ({
     }
   }
 
+  const handleLogPromptOk = () => {
+    setShowLogPrompt(false);
+    if (completedTaskOccurrenceId) {
+      navigate(`/occurrences/${completedTaskOccurrenceId}`);
+    }
+  };
+
+  const handleLogPromptCancel = () => {
+    setShowLogPrompt(false);
+    // Proceed with updating the task status
+    if (completedTaskOccurrenceId) {
+      const movedTask = open.find(task => task.occurrence?.id === completedTaskOccurrenceId);
+      if (movedTask) {
+        updatePlantTaskStatus(movedTask.id, PlantTaskStatusEnum.COMPLETED);
+      }
+    }
+  };
+
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -500,6 +525,16 @@ const PlantTaskBoardView = ({
         task={selectedTask}
         userRole={userRole as StaffType}
       />
+      <Modal
+        title="Create Log"
+        open={showLogPrompt}
+        onOk={handleLogPromptOk}
+        onCancel={handleLogPromptCancel}
+        okText="Yes, create log"
+        cancelText="No, just complete the task"
+      >
+        <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
+      </Modal>
     </>
   );
 };

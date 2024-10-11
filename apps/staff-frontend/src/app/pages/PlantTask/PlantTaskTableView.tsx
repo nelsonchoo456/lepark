@@ -33,6 +33,7 @@ interface PlantTaskTableViewProps {
   showDeleteModal: (plantTask: PlantTaskResponse) => void;
   handleUnassignStaff: (plantTaskId: string, staffId: string) => void;
   onTaskUpdated: () => void; // Add this prop to refresh the task list after update
+  handleStatusChange: (newStatus: PlantTaskStatusEnum) => void;
 }
 
 const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
@@ -47,6 +48,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   showDeleteModal,
   handleUnassignStaff,
   onTaskUpdated,
+  handleStatusChange,
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
@@ -426,6 +428,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             onSubmit={handleEditSubmit}
             initialValues={editingTask}
             userRole={userRole as StaffType}
+            onStatusChange={handleStatusChange}
           />
           <ViewPlantTaskModal
             visible={viewModalVisible}

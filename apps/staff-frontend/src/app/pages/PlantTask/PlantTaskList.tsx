@@ -15,6 +15,7 @@ import {
   getAllStaffs,
   getAllAssignedPlantTasks,
   unassignPlantTask,
+  PlantTaskStatusEnum,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
@@ -266,6 +267,7 @@ const PlantTaskList: React.FC = () => {
         showDeleteModal={showDeleteModal}
         handleUnassignStaff={handleUnassignStaff}
         onTaskUpdated={fetchPlantTasks}
+        handleStatusChange={handleStatusChange}
       />
     );
   };
@@ -310,6 +312,11 @@ const PlantTaskList: React.FC = () => {
         />
       );
     }
+  };
+
+  const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
+    // Refresh the task list or update the local state as needed
+    fetchPlantTasks();
   };
 
   if (inDashboards) {
