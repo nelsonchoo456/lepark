@@ -19,21 +19,22 @@ const {
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
-const { v4: uuidv4 } = require('uuid');  // Add this import at the top of your file
+const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
 
-function ensureClosedRing(ewktString) {
-  const match = ewktString.match(/SRID=(\d+);POLYGON\(\((.*?)\)\)/);
-  if (match) {
-    const srid = match[1];
-    let coordinates = match[2].split(',').map(coord => coord.trim());
-    if (coordinates[0] !== coordinates[coordinates.length - 1]) {
-      coordinates.push(coordinates[0]);
-    }
-    return `SRID=${srid};POLYGON((${coordinates.join(', ')}))`;
+const parseEWKT = (ewkt) => {
+  const match = ewkt.match(/SRID=(\d+);POLYGON\(\((.*?)\)\)/);
+  if (!match) {
+    throw new Error('Invalid EWKT format');
   }
-  return ewktString;
-}
-
+  const coordinates = match[2].split(',').map((coord) => {
+    const [lng, lat] = coord.trim().split(' ').map(Number);
+    return [lng, lat];
+  });
+  return {
+    type: 'Polygon',
+    coordinates: [coordinates],
+  };
+};
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -417,6 +418,7 @@ const plantTasksList = [];
   for (const area of decarbonizationAreasData) {
     try {
       const id = uuidv4();
+      const parsedGeom = parseEWKT(area.geom); // Parse the EWKT format to GeoJSON
       const createdArea = await prisma.$executeRaw`
         INSERT INTO "DecarbonizationArea" (id, geom, description, name, "parkId")
         VALUES (
@@ -437,11 +439,6 @@ const plantTasksList = [];
   }
 
   console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
-
-
-
-
-
 }
 
 // Utility function for Activity Logs and Status Logs
