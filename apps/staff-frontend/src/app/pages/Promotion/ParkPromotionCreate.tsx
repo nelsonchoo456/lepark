@@ -24,6 +24,12 @@ const ParkPromotionCreate = () => {
   const [createdData, setCreatedData] = useState<PromotionResponse | null>();
   const discountType = Form.useWatch('discountType', form);
   const isNParksWide = Form.useWatch('isNParksWide', form);
+
+  const showMaximumUsage = Form.useWatch('showMaximumUsage', form);
+  const showMinimumAmount = Form.useWatch('showMinimumAmount', form);
+  const minimumAmount = Form.useWatch('minimumAmount', form);
+  const isOneTime = Form.useWatch('isOneTime', form);
+
   const terms = Form.useWatch('terms', form);
 
   useEffect(() => {
@@ -80,9 +86,9 @@ const ParkPromotionCreate = () => {
         discountValue = discountValueFixed;
       }
 
-      let inputTerms = []
+      let inputTerms = [];
       if (terms) {
-        inputTerms = terms
+        inputTerms = terms;
       }
       if (term1) {
         inputTerms.shift(term1);
@@ -217,38 +223,52 @@ const ParkPromotionCreate = () => {
             )}
 
             <Divider orientation="left">Redemption Rules</Divider>
-            <Form.Item name="maximumUsage" label="Maximum Redemptions">
-              <InputNumber min={0} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
-            </Form.Item>
-            <Form.Item name="isOneTime" label="One-Time Claim?" rules={[{ required: true }]}>
-              <Radio.Group options={isOneTimeOptioons} />
-            </Form.Item>
-
-            <Form.Item name="minimumAmount" label="Minimum Amount">
-              <InputNumber min={0} precision={0} placeholder="Leave empty if no minimum amount" className="w-full" />
+            <Form.Item
+              name="isOneTime"
+              label="Restrict to One-Time Claim?"
+              rules={[{ required: true, message: "Please indicate if it's a One-Time Claim" }]}
+            >
+              <Radio.Group options={isOneTimeOptioons} optionType="button" />
             </Form.Item>
 
             <Form.Item
-              label={"Terms"}
-              name={"term1"}
-              validateTrigger={['onChange', 'onBlur']}
-              rules={[
-                {
-                  validator: async (_, value) => {
-                    if ((terms && terms.length > 0) && (!value || value.trim().length === 0)) {
-                      return Promise.reject(new Error('Please enter a term'));
-                    }
-                  },
-                },
-              ]}
+              name="showMaximumUsage"
+              label="Add Total Redemption Limit"
+              rules={[{ required: true, message: "Please indicate if there's a Total Redemption Limit" }]}
             >
-              <Input placeholder="Enter a term" />
+              <Radio.Group options={isOneTimeOptioons} optionType="button" />
             </Form.Item>
-            <Form.List name="terms">
+            {showMaximumUsage && (
+              <Form.Item name="maximumUsage" label="Total Redemption Limit" rules={[{ required: true }]}>
+                <InputNumber min={0} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
+              </Form.Item>
+            )}
+
+            <Form.Item
+              name="showMinimumAmount"
+              label="Add Minimum Amount"
+              rules={[{ required: true, message: "Please indicate if there's a Minimum Amount" }]}
+            >
+              <Radio.Group options={isOneTimeOptioons} optionType="button" />
+            </Form.Item>
+            {showMinimumAmount && (
+              <Form.Item name="minimumAmount" label="Minimum Amount (SGD)" rules={[{ required: true }]}>
+                <InputNumber min={0} precision={0} placeholder="Minimum amount" className="w-full" />
+              </Form.Item>
+            )}
+
+            <Divider orientation="left">Terms and Conditions</Divider>
+            {/* <Form.Item
+              label={'Terms & Conditions'}
+              name={'term1'}
+              className="mb-2">
+              <Input placeholder="Enter a term" />
+            </Form.Item> */}
+            {/* <Form.List name="terms">
               {(fields, { add, remove }) => (
                 <>
                   {fields.map(({ key, name, fieldKey, ...restField }) => (
-                    <Form.Item label={' '} colon={false}>
+                    <Form.Item label={' '} colon={false} className="mb-2">
                       <Flex gap={10}>
                         <Form.Item
                           {...restField}
@@ -256,8 +276,7 @@ const ParkPromotionCreate = () => {
                           name={[name]}
                           noStyle
                           fieldKey={fieldKey !== undefined ? fieldKey : key}
-                          className="w-full"
-                          rules={[{ required: true, message: 'Please enter a term or remove this field' }]}
+                          className="w-full mb-2"
                         >
                           <Input placeholder="Enter a term" />
                         </Form.Item>
@@ -265,15 +284,173 @@ const ParkPromotionCreate = () => {
                       </Flex>
                     </Form.Item>
                   ))}
-                  <Form.Item label={' '} colon={false}>
+
+                  <Form.Item label={' '} colon={false} className='mb-2'>
                     <Button type="dashed" onClick={() => add()} block icon={<FiPlus />}>
-                      Add Term
+                      Add
                     </Button>
                   </Form.Item>
+
+                  {showMaximumUsage && (
+                    <Form.Item label={' '} colon={false} className='p-0 mb-2'>
+                      <Button
+                        type="dashed"
+                        onClick={() => add('This offer has a total redemption limit.')}
+                        block
+                        className="text-green-400 text-wrap"
+                        style={{
+                          display: 'block',
+                          textAlign: 'left',
+                          height: 'auto',
+                          lineHeight: 'normal',
+                        }}
+                      >
+                        <p>
+                          <span className="text-secondary italic text-green-600">Suggested: </span> This offer has a total redemption limit.
+                        </p>
+                      </Button>
+                    </Form.Item>
+                  )}
+                  {showMinimumAmount && minimumAmount && (
+                    <Form.Item label={' '} colon={false} className='p-0 mb-2'>
+                      <Button
+                        type="dashed"
+                        onClick={() => add(`A minimum purchase of SGD $${minimumAmount} is required.`)}
+                        block
+                        className="text-green-400 text-wrap"
+                        style={{
+                          display: 'block',
+                          textAlign: 'left',
+                          height: 'auto',
+                          lineHeight: 'normal',
+                        }}
+                      >
+                        <p>
+                          <span className="text-secondary italic text-green-600">Suggested: </span> A minimum purchase of SGD $
+                          {minimumAmount} is required.
+                        </p>
+                      </Button>
+                    </Form.Item>
+                  )}
+                  {isOneTime && (
+                    <Form.Item label={' '} colon={false} className='p-0'>
+                      <Button
+                        type="dashed"
+                        onClick={() => add('This offer is restricted to one claim per user.')}
+                        block
+                        className="text-green-400 text-wrap"
+                        style={{
+                          display: 'block',
+                          textAlign: 'left',
+                          height: 'auto',
+                          lineHeight: 'normal',
+                        }}
+                      >
+                        <p>
+                          <span className="text-secondary italic text-green-600">Suggested: </span> This offer is restricted to one claim
+                          per user.
+                        </p>
+                      </Button>
+                    </Form.Item>
+                  )}
                 </>
               )}
-            </Form.List>
+            </Form.List> */}
+            <Form.Item label={'Terms & Conditions'}>
+              <Form.List name="terms">
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map(({ key, name, fieldKey, ...restField }) => (
+                      <Form.Item colon={false} className="mb-2">
+                        <Flex gap={10}>
+                          <Form.Item
+                            {...restField}
+                            key={key}
+                            name={[name]}
+                            noStyle
+                            fieldKey={fieldKey !== undefined ? fieldKey : key}
+                            className="w-full mb-2"
+                          >
+                            <Input placeholder="Enter a term" />
+                          </Form.Item>
+                          <Button onClick={() => remove(name)} icon={<MdClose />} shape="circle" />
+                        </Flex>
+                      </Form.Item>
+                    ))}
 
+                    <Form.Item colon={false} className="mb-2">
+                      <Button type="dashed" onClick={() => add()} block icon={<FiPlus />}>
+                        Add
+                      </Button>
+                    </Form.Item>
+
+                    {showMaximumUsage && (
+                      <Form.Item colon={false} className="p-0 mb-2">
+                        <Button
+                          type="dashed"
+                          onClick={() => add('This offer has a total redemption limit.')}
+                          block
+                          className="text-green-400 text-wrap"
+                          style={{
+                            display: 'block',
+                            textAlign: 'left',
+                            height: 'auto',
+                            lineHeight: 'normal',
+                          }}
+                        >
+                          <p>
+                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer has a total redemption
+                            limit.
+                          </p>
+                        </Button>
+                      </Form.Item>
+                    )}
+                    {showMinimumAmount && minimumAmount && (
+                      <Form.Item colon={false} className="p-0 mb-2">
+                        <Button
+                          type="dashed"
+                          onClick={() => add(`A minimum purchase of SGD $${minimumAmount} is required.`)}
+                          block
+                          className="text-green-400 text-wrap"
+                          style={{
+                            display: 'block',
+                            textAlign: 'left',
+                            height: 'auto',
+                            lineHeight: 'normal',
+                          }}
+                        >
+                          <p>
+                            <span className="text-secondary italic text-green-600">Suggested: </span> A minimum purchase of SGD $
+                            {minimumAmount} is required.
+                          </p>
+                        </Button>
+                      </Form.Item>
+                    )}
+                    {isOneTime && (
+                      <Form.Item colon={false} className="p-0">
+                        <Button
+                          type="dashed"
+                          onClick={() => add('This offer is restricted to one claim per user.')}
+                          block
+                          className="text-green-400 text-wrap"
+                          style={{
+                            display: 'block',
+                            textAlign: 'left',
+                            height: 'auto',
+                            lineHeight: 'normal',
+                          }}
+                        >
+                          <p>
+                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer is restricted to one claim
+                            per user.
+                          </p>
+                        </Button>
+                      </Form.Item>
+                    )}
+                  </>
+                )}
+              </Form.List>
+            </Form.Item>
             <Form.Item label={' '} colon={false}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
                 Submit
