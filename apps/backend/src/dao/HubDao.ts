@@ -1,4 +1,4 @@
-import { PrismaClient, Hub, Prisma, Facility, Sensor, HubStatusEnum } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility, Sensor, HubStatusEnum, SensorStatusEnum } from '@prisma/client';
 import ParkDao from './ParkDao';
 import FacilityDao from './FacilityDao';
 import ZoneDao from './ZoneDao';
@@ -182,6 +182,10 @@ class HubDao {
       where: { hubId: { equals: hubId } },
     });
     return sensors;
+  }
+
+  public async getAllActiveSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hubId, sensorStatus: SensorStatusEnum.ACTIVE } });
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {

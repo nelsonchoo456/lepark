@@ -1,6 +1,7 @@
 import { FacilityResponse } from './facility';
 import { HubResponse } from './hub';
 import { ParkResponse } from './park';
+import { SensorReadingResponse } from './sensorreading';
 import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums';
 
 export interface SensorData {
@@ -47,6 +48,7 @@ export interface SensorResponse {
   facility?: FacilityResponse;
   park?: ParkResponse;
   parkName?: string;
+  sensorReadings?: SensorReadingResponse[];
 }
 
 export interface SensorUpdateData {

@@ -392,6 +392,10 @@ class HubService {
     return HubDao.getAllSensorsByHubId(hubId);
   }
 
+  public async getAllActiveSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return HubDao.getAllActiveSensorsByHubId(hubId);
+  }
+
   public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
@@ -449,7 +453,7 @@ class HubService {
       throw new HubNotFoundError('Hub not found');
     }
 
-    const sensors = await this.getAllSensorsByHubId(hub.id);
+    const sensors = await HubDao.getAllActiveSensorsByHubId(hub.id);
     return sensors.map((sensor) => sensor.identifierNumber);
   }
 }

@@ -6,7 +6,7 @@ import { FiHome, FiInbox, FiMap, FiSettings, FiUser, FiUsers } from 'react-icons
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate, TbDeviceAnalytics } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -184,7 +184,7 @@ const MainLayout = () => {
     userRole === StaffType.BOTANIST
       ? {
           key: 'iot',
-          label: 'IoT Assets',
+          label: 'IoT',
           icon: <MdSensors />,
           children: [
             {
@@ -200,6 +200,12 @@ const MainLayout = () => {
               onClick: () => navigate('/hubs'),
             },
             {
+              key: 'zones',
+              icon: <TbDeviceAnalytics />,
+              label: 'Zones Monitoring',
+              onClick: () => navigate('/iot/zones'),
+            },
+            {
               key: 'iot-map',
               icon: <FiMap />,
               label: 'Map View',
@@ -211,7 +217,7 @@ const MainLayout = () => {
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
-      label: 'Park Assets (non-IoT)',
+      label: 'Park Assets',
       onClick: () => navigate('/parkasset'),
     },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'

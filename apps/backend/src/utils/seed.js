@@ -14,6 +14,9 @@ const {
   parkAssetsData,
   sensorsData,
   plantTasksData,
+  sensorReadingsData,
+  newHub,
+  newSensors,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -336,6 +339,16 @@ async function seed() {
       data: sensor,
     });
     sensorList.push(createdSensor);
+
+    // Create sensor readings for this sensor
+    const readings = sensorReadingsData[createdSensor.sensorType].map(reading => ({
+      ...reading,
+      sensorId: createdSensor.id,
+    }));
+
+    await prisma.sensorReading.createMany({
+      data: readings,
+    });
   }
   console.log(`Total sensors seeded: ${sensorList.length}\n`);
 
@@ -396,6 +409,41 @@ async function seed() {
   }
 
   console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
+
+  // Create the new hub
+  const createdNewHub = await prisma.hub.create({
+    data: {
+      ...newHub,
+      facilityId: storeroomId, // or any other appropriate facilityId
+    },
+  });
+  console.log(`New hub created: ${createdNewHub.name}\n`);
+
+  // Create new sensors and associate them with the new hub
+  for (const sensor of newSensors) {
+    const createdSensor = await prisma.sensor.create({
+      data: {
+        ...sensor,
+        hubId: createdNewHub.id,
+        facilityId: storeroomId, // or any other appropriate facilityId
+      },
+    });
+    sensorList.push(createdSensor);
+  }
+  console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
+
+  // Generate and create sensor readings for all sensors
+  for (const sensor of sensorList) {
+    const readings = generateMockReadings(sensor.sensorType).map(reading => ({
+      ...reading,
+      sensorId: sensor.id,
+    }));
+
+    await prisma.sensorReading.createMany({
+      data: readings,
+    });
+  }
+  console.log(`Sensor readings created for all sensors\n`);
 }
 
 // Utility function for Activity Logs and Status Logs
@@ -403,6 +451,37 @@ const getRandomItems = (array, count) => {
   const shuffled = array.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 };
+
+// Add this function to generate mock readings
+function generateMockReadings(sensorType, count = 50) {
+  const readings = [];
+  const now = new Date();
+  for (let i = 0; i < count; i++) {
+    const readingDate = new Date(now.getTime() - i * 3600000); // One reading per hour
+    let value;
+    switch (sensorType) {
+      case 'SOIL_MOISTURE':
+        value = Math.random() * 100; // 0-100%
+        break;
+      case 'TEMPERATURE':
+        value = 20 + Math.random() * 15; // 20-35°C
+        break;
+      case 'HUMIDITY':
+        value = 60 + Math.random() * 30; // 60-90%
+        break;
+      case 'LIGHT':
+        value = Math.random() * 255; // 0-255 lux
+        break;
+      default:
+        value = Math.random() * 100;
+    }
+    readings.push({
+      date: readingDate,
+      value: parseFloat(value.toFixed(2)),
+    });
+  }
+  return readings;
+}
 
 seed()
   .catch((e) => {

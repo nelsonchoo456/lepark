@@ -2220,6 +2220,140 @@ const eventsData = [
   },
 ];
 
+// Add a new hub
+const newHub = {
+  serialNumber: 'IA21431241512554',
+  identifierNumber: 'HB-66666',
+  name: 'Raspberry Pi 4',
+  description: 'Hub for connecting various sensors in the tropical garden',
+  hubStatus: 'ACTIVE',
+  acquisitionDate: new Date(),
+  supplier: 'Supplier 4',
+  supplierContactNumber: '87654321',
+  images: [
+    'https://www.raspberrypi.com/app/uploads/2020/06/raspberrypi_4b-1536x1022.jpg',
+  ],
+  remarks: 'Newly installed and configured',
+  facilityId: '',
+  zoneId: 2, // Assuming we're adding this to Zone 1
+};
+
+// Add new sensors
+const newSensors = [
+  {
+    name: 'Soil Moisture Sensor 1',
+    identifierNumber: 'SE-66666',
+    serialNumber: 'STE9876543',
+    sensorType: 'SOIL_MOISTURE',
+    description: 'Soil moisture sensor for tropical plants',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    sensorUnit: 'VOLUMETRIC_WATER_CONTENT',
+    supplier: 'EcoSense Technologies',
+    supplierContactNumber: '98761234',
+    images: ['https://m.media-amazon.com/images/I/71rBE3r88DL._AC_UF894,1000_QL80_.jpg'],
+    remarks: 'Installed near the base of a large tropical tree',
+    facilityId: '',
+  },
+  {
+    name: 'Temperature Sensor 2',
+    identifierNumber: 'SE-77777',
+    serialNumber: 'STE1234567',
+    sensorType: 'TEMPERATURE',
+    description: 'Temperature sensor for monitoring tropical climate',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    sensorUnit: 'DEGREES_CELSIUS',
+    supplier: 'TechSense Inc.',
+    supplierContactNumber: '98765431',
+    images: ['https://sensorpartners.com/wp-content/uploads/2020/03/sensor-partners-i-tec-cube-serie-400x400.jpg'],
+    remarks: 'Installed at canopy level',
+    facilityId: '',
+  },
+  {
+    name: 'Humidity Sensor 2',
+    identifierNumber: 'SE-88888',
+    serialNumber: 'STE7654321',
+    sensorType: 'HUMIDITY',
+    description: 'Humidity sensor for tropical garden',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    sensorUnit: 'PERCENT',
+    supplier: 'HumidTech Solutions',
+    supplierContactNumber: '63456789',
+    images: ['https://res.cloudinary.com/rsc/image/upload/b_rgb:FFFFFF,c_pad,dpr_2.625,f_auto,h_214,q_auto,w_380/c_pad,h_214,w_380/Y2163753-01?pgw=1'],
+    remarks: 'Installed near water features',
+    facilityId: '',
+  },
+  {
+    name: 'Light Sensor 2',
+    identifierNumber: 'SE-99999',
+    serialNumber: 'STE3456789',
+    sensorType: 'LIGHT',
+    description: 'Light sensor for monitoring sunlight in tropical garden',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    sensorUnit: 'LUX',
+    supplier: 'BrightTech Innovations',
+    supplierContactNumber: '89004577',
+    images: ['https://dataloggerinc.com/wp-content/uploads/2018/12/2121-71.jpg'],
+    remarks: 'Installed in an open area',
+    facilityId: '',
+  },
+];
+
+// Generate mock sensor readings
+const generateMockReadings = (sensorType, count = 50) => {
+  const readings = [];
+  const now = new Date();
+  
+  // Generate readings for the past 4 hours (1 reading every 15 minutes)
+  for (let i = 0; i < 16; i++) {
+    const readingDate = new Date(now.getTime() - i * 15 * 60000);
+    readings.push(createReading(sensorType, readingDate));
+  }
+  
+  // Generate the rest of the readings for earlier times
+  for (let i = 16; i < count; i++) {
+    const readingDate = new Date(now.getTime() - (4 * 3600000 + i * 3600000)); // Start 4 hours ago, then one per hour
+    readings.push(createReading(sensorType, readingDate));
+  }
+  
+  return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
+};
+
+const createReading = (sensorType, date) => {
+  let value;
+  switch (sensorType) {
+    case 'SOIL_MOISTURE':
+      value = Math.random() * 100; // 0-100%
+      break;
+    case 'TEMPERATURE':
+      value = 20 + Math.random() * 15; // 20-35°C
+      break;
+    case 'HUMIDITY':
+      value = 60 + Math.random() * 30; // 60-90%
+      break;
+    case 'LIGHT':
+      value = Math.random() * 255; // 0-255 lux
+      break;
+    default:
+      value = Math.random() * 100;
+  }
+  return {
+    date,
+    value: parseFloat(value.toFixed(2)),
+  };
+};
+
+// Generate mock readings for each sensor type
+const sensorReadingsData = {
+  SOIL_MOISTURE: generateMockReadings('SOIL_MOISTURE'),
+  TEMPERATURE: generateMockReadings('TEMPERATURE'),
+  HUMIDITY: generateMockReadings('HUMIDITY'),
+  LIGHT: generateMockReadings('LIGHT'),
+};
+
 module.exports = {
   parksData,
   zonesData,
@@ -2235,4 +2369,7 @@ module.exports = {
   parkAssetsData,
   sensorsData,
   plantTasksData,
+  sensorReadingsData,
+  newHub,
+  newSensors,
 };

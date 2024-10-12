@@ -88,6 +88,7 @@ import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
 import SensorAddToHub from './pages/Sensor/SensorAddToHub';
 import IotMap from './pages/IotMap/IotMap';
+import ZoneIoTDashboard from './pages/IoT/ZoneIoTDashboard';
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -519,6 +520,10 @@ export function App() {
                     </>
                   }
                 />
+              </Route>
+
+              <Route path="/iot">
+                <Route path="zones" element={<ZoneIoTDashboard />} />
               </Route>
 
               {/* Catch-all for 404 */}

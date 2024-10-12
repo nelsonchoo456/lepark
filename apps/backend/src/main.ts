@@ -28,6 +28,7 @@ import sequestrationHistoryRouter from './routers/sequestrationHistoryRouter';
 import promotionRouter from './routers/promotionRouter';
 import { authenticateJWTStaff } from './middleware/authenticateJWT';
 import os from 'os';
+import sensorReadingRouter from './routers/sensorReadingRouter';
 
 dotenv.config();
 const app = express();
@@ -84,6 +85,7 @@ app.use('/api/sequestrationhistory', sequestrationHistoryRouter);
 app.use('/api/planttasks', authenticateJWTStaff, plantTaskRouter);
 app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 app.use('/api/promotions', promotionRouter);
+app.use('/api/sensorreadings', sensorReadingRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();

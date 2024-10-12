@@ -4,6 +4,8 @@ import { SensorReadingSchema, SensorReadingSchemaType } from '../schemas/sensorR
 import SensorReadingDao from '../dao/SensorReadingDao';
 import { fromZodError } from 'zod-validation-error';
 import SensorDao from '../dao/SensorDao';
+import ZoneDao from '../dao/ZoneDao';
+import ZoneService from './ZoneService';
 
 const dateFormatter = (data: any) => {
   const { timestamp, ...rest } = data;
@@ -48,6 +50,34 @@ class SensorReadingService {
 
   public async getSensorReadingsBySensorId(sensorId: string): Promise<SensorReading[]> {
     return SensorReadingDao.getSensorReadingsBySensorId(sensorId);
+  }
+
+  public async getSensorReadingsByZoneId(zoneId: number): Promise<SensorReading[]> {
+    const zone = await ZoneService.getZoneById(zoneId);
+    if (!zone) {
+      throw new Error('Zone not found');
+    }
+
+    const hub = zone.hub;
+    if (!hub) {
+      throw new Error('Hub not found');
+    }
+
+    const sensors = hub.sensors;
+
+    return SensorReadingDao.getSensorReadingsBySensorIds(sensors.map(s => s.id));
+  }
+
+  public async getLatestSensorReadingBySensorId(sensorId: string): Promise<SensorReading> {
+    return SensorReadingDao.getLatestSensorReadingBySensorId(sensorId);
+  }
+
+  public async getSensorReadingsByDateRange(sensorId: string, startDate: Date, endDate: Date): Promise<SensorReading[]> {
+    return SensorReadingDao.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+  }
+
+  public async getSensorReadingsAverageForPastFourHours(sensorId: string): Promise<SensorReading[]> {
+    return SensorReadingDao.getSensorReadingsAverageForPastFourHours(sensorId);
   }
 
   public async updateSensorReading(id: string, data: Partial<SensorReadingSchemaType>): Promise<SensorReading> {
