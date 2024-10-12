@@ -82,6 +82,14 @@ const SensorAddToHub = () => {
     }
   };
 
+  useEffect(() => {
+    if (sensor) {
+      form.setFieldsValue({
+        remarks: sensor.remarks
+      });
+    }
+  }, [sensor, form]);
+
   const handleSubmit = async () => {
     if (!sensor) return;
     try {
@@ -159,7 +167,7 @@ const SensorAddToHub = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {!createdData ? (
-          <Form className="w-full" form={form} layout="vertical">
+          <Form className="w-full" form={form} layout="vertical" initialValues={{ remarks: sensor?.remarks }}>
             <Steps
               direction="vertical"
               size="small"

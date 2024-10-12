@@ -9,7 +9,7 @@ import {
   DecarbonizationTypeEnum,
 } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import { Button, DatePicker, Divider, Flex, Form, FormInstance, Input, InputNumber, Select } from 'antd';
+import { Button, DatePicker, Divider, Flex, Form, FormInstance, Input, InputNumber, Select, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -46,7 +46,7 @@ const PlaceZoneDetailsStep = ({ handleCurrStep, handleSubmit, form }: PlaceZoneD
     >
       <Form.Item
         name="macAddress"
-        label="Mac Address"
+        label="MAC Address"
         rules={[
           { required: true },
           {
@@ -70,8 +70,10 @@ const PlaceZoneDetailsStep = ({ handleCurrStep, handleSubmit, form }: PlaceZoneD
             message: 'Interval must be between 1 and 1000 polls',
           },
         ]}
+        tooltip="How frequently the hub will send data to the backend in terms of polls"
       >
         <InputNumber min={1} placeholder="Interval of Data Transmission (in Polls)" className="w-full" />
+    
       </Form.Item>
 
       <Form.Item colon={false}>
