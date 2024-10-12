@@ -219,7 +219,12 @@ const HubPlaceInZone = () => {
               <Form.Item name="zoneId" label="Zone" rules={[{ required: true }]}>
                 <Select
                   placeholder="Select a Zone"
-                  options={zones?.map((zone) => ({ key: zone.id, value: zone.id, label: zone.name }))}
+                  options={zones?.map((zone) => ({
+                    key: zone.id,
+                    value: zone.id,
+                    label: zone.name + (zone.hub ? ' (Occupied)' : ''),
+                    disabled: !!zone.hub
+                  }))}
                 />
               </Form.Item>
             </Form>
