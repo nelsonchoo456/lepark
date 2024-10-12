@@ -89,7 +89,8 @@ import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import FAQList from './pages/FAQ/FAQList';
 import FAQCreate from './pages/FAQ/FAQCreate';
 import { App as AntdApp } from 'antd';
-
+import FAQView from './pages/FAQ/FAQView';
+import FAQEdit from './pages/FAQ/FAQEdit';
 export function App() {
   return (
     <AntdApp>
@@ -510,7 +511,9 @@ export function App() {
 
               <Route path="/faq">
                 <Route index element={<FAQList />} />
-              <Route path="create" element={<FAQCreate />} />
+                <Route path="create" element={<FAQCreate />} />
+                <Route path=":faqId" element={<FAQView />} />
+                <Route path=":faqId/edit" element={<FAQEdit />} />
               </Route>
 
               {/* Catch-all for 404 */}

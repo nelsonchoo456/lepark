@@ -157,7 +157,8 @@ export enum ZoneStatusEnum {
 export enum FAQStatusEnum {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  STAFF_ONLY = 'STAFF_ONLY',
+  DRAFT = 'DRAFT',
+  ARCHIVED = 'ARCHIVED',
 }
 
 export enum FAQCategoryEnum {
