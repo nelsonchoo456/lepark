@@ -63,7 +63,8 @@ class ZoneService {
   public async getZoneById(id: number): Promise<any> {
     const zone = await ZoneDao.getZoneById(id);
     console.log('zone', zone);
-    return this.addParkandHubAndSensorInfo([zone]);
+    const enhancedZone = await this.addParkandHubAndSensorInfo([zone]);
+    return enhancedZone[0];
   }
 
   public async getZonesByParkId(parkId: number): Promise<any> {
