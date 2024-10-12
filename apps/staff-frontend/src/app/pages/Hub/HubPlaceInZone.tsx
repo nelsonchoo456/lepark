@@ -205,7 +205,7 @@ const HubPlaceInZone = () => {
             },
             {
               title: 'Details',
-              description: 'Input Occurrence details',
+              description: 'Input more details',
             },
             {
               title: 'Complete',

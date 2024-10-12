@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useEffect, useState } from 'react';
+import { FiPlus } from 'react-icons/fi';
+import { MdClose } from 'react-icons/md';
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
 
@@ -22,6 +24,7 @@ const ParkPromotionCreate = () => {
   const [createdData, setCreatedData] = useState<PromotionResponse | null>();
   const discountType = Form.useWatch('discountType', form);
   const isNParksWide = Form.useWatch('isNParksWide', form);
+  const terms = Form.useWatch('terms', form);
 
   useEffect(() => {
     if (discountType) {
@@ -67,7 +70,7 @@ const ParkPromotionCreate = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const { dateRange, discountValueFixed, discountValuePercentage, ...rest } = values;
+      const { dateRange, discountValueFixed, discountValuePercentage, terms, term1, ...rest } = values;
       const validFrom = dateRange[0].toISOString();
       const validUntil = dateRange[1].toISOString();
       let discountValue;
@@ -77,14 +80,27 @@ const ParkPromotionCreate = () => {
         discountValue = discountValueFixed;
       }
 
+      let inputTerms = []
+      if (terms) {
+        inputTerms = terms
+      }
+      if (term1) {
+        inputTerms.shift(term1);
+      }
+
       const finalData = {
         ...rest,
         status: 'ENABLED',
-        terms: [],
+        terms: inputTerms,
         discountValue,
         validFrom,
         validUntil,
       };
+
+      if (user?.role !== StaffType.SUPERADMIN) {
+        finalData.parkId = user?.parkId;
+        finalData.isNParksWide = false;
+      }
 
       const response = await createPromotion(finalData, selectedFiles);
       if (response?.status && response.status === 201) {
@@ -205,12 +221,58 @@ const ParkPromotionCreate = () => {
               <InputNumber min={0} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
             </Form.Item>
             <Form.Item name="isOneTime" label="One-Time Claim?" rules={[{ required: true }]}>
-              <Radio.Group options={isOneTimeOptioons}/>
+              <Radio.Group options={isOneTimeOptioons} />
             </Form.Item>
 
             <Form.Item name="minimumAmount" label="Minimum Amount">
               <InputNumber min={0} precision={0} placeholder="Leave empty if no minimum amount" className="w-full" />
             </Form.Item>
+
+            <Form.Item
+              label={"Terms"}
+              name={"term1"}
+              validateTrigger={['onChange', 'onBlur']}
+              rules={[
+                {
+                  validator: async (_, value) => {
+                    if ((terms && terms.length > 0) && (!value || value.trim().length === 0)) {
+                      return Promise.reject(new Error('Please enter a term'));
+                    }
+                  },
+                },
+              ]}
+            >
+              <Input placeholder="Enter a term" />
+            </Form.Item>
+            <Form.List name="terms">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, fieldKey, ...restField }) => (
+                    <Form.Item label={' '} colon={false}>
+                      <Flex gap={10}>
+                        <Form.Item
+                          {...restField}
+                          key={key}
+                          name={[name]}
+                          noStyle
+                          fieldKey={fieldKey !== undefined ? fieldKey : key}
+                          className="w-full"
+                          rules={[{ required: true, message: 'Please enter a term or remove this field' }]}
+                        >
+                          <Input placeholder="Enter a term" />
+                        </Form.Item>
+                        <Button onClick={() => remove(name)} icon={<MdClose />} shape="circle" />
+                      </Flex>
+                    </Form.Item>
+                  ))}
+                  <Form.Item label={' '} colon={false}>
+                    <Button type="dashed" onClick={() => add()} block icon={<FiPlus />}>
+                      Add Term
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
 
             <Form.Item label={' '} colon={false}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
