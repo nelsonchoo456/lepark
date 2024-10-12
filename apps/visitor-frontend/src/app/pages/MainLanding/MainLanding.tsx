@@ -14,7 +14,8 @@ import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect, useState } from 'react';
-import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { getTotalSequestrationForParkAndYear } from '@lepark/data-access';
 import { FiExternalLink } from 'react-icons/fi';
 import { AiOutlinePercentage } from 'react-icons/ai';
 import { BiSolidDiscount } from 'react-icons/bi';
@@ -25,12 +26,13 @@ const MainLanding = () => {
   const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
   const [poweredDays, setPoweredDays] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
+useEffect(() => {
+    const fetchSequestration = async () => {
       if (selectedPark?.id) {
         try {
-          const currentDate = '2024-08-28'; // Hardcoded to 28 August 2024
-          const sequestration = await fetchTotalSequestration(selectedPark.id, currentDate);
+          const currentYear = new Date().getFullYear().toString();
+          const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
+          const sequestration = response.data.totalSequestration;
           setTotalSequestration(Math.round(sequestration));
           const days = calculateHDBPoweredDays(sequestration);
           setPoweredDays(days);
@@ -40,7 +42,7 @@ const MainLanding = () => {
       }
     };
 
-    fetchData();
+    fetchSequestration();
   }, [selectedPark]);
 
   return (
@@ -150,19 +152,18 @@ const MainLanding = () => {
   </div>
           <br/>
 
-
   <div className="flex justify-between items-center h-48">
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <PiPlant className="text-4xl mb-2" />
+      <PiPlant className="text-4xl mb-2 text-green-500" />
       <div className="flex flex-row items-center">
-        <p>In the past year, this park has absorbed <span className="font-bold text-lg ml-1">{totalSequestration} kg</span> of CO2</p>
+        <p className="text-green-500">In the past year, this park has absorbed <span className="font-bold text-lg ml-1 text-green-500">{totalSequestration} kg</span> of CO2</p>
       </div>
     </div>
-    <div className="w-px h-full bg-gray-200 mx-4"></div>
+    <div className="w-px h-full bg-green-500 mx-4"></div>
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <BsHouseDoor className="text-4xl mb-2" />
-      <p>Equivalent to powering a 4 room HDB for</p>
-      <p className="font-bold text-lg">{poweredDays} days</p>
+      <BsHouseDoor className="text-4xl mb-2 text-green-500" />
+      <p className="text-green-500">Equivalent to powering a 4 room HDB for</p>
+      <p className="font-bold text-lg text-green-500">{poweredDays} days</p>
     </div>
   </div>
 

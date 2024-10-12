@@ -2,11 +2,11 @@ import { ContentWrapper, ContentWrapperDark, Divider, LogoText, useAuth } from '
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
-import { FaTent } from 'react-icons/fa6';
+import { FaPlane, FaTent, FaTv } from 'react-icons/fa6';
 import { Badge, Card, Space, Input, Tag, Button, Tooltip } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
-import { getDecarbonizationAreasByParkId, DecarbonizationAreaResponse, VisitorResponse, getOccurrencesWithinDecarbonizationArea } from '@lepark/data-access';
+import { getDecarbonizationAreasByParkId, DecarbonizationAreaResponse, VisitorResponse, getOccurrencesWithinDecarbonizationArea, getTotalSequestrationForParkAndYear } from '@lepark/data-access';
 import { FiSearch } from 'react-icons/fi';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
@@ -20,9 +20,13 @@ import React from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import { Tabs } from 'antd';
+import { calculateA380FlightTime, calculateHDBPoweredDays, calculateNetflixHoursOffset, calculateSmartphoneChargesPerDay } from './DecarbFunctions';
+import { PiPlant } from 'react-icons/pi';
+import { BsHouseDoor, BsPhone } from 'react-icons/bs';
 
 // Register the required Chart.js components
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend);
+
 
 
 const DecarbViewAll = () => {
@@ -33,8 +37,11 @@ const DecarbViewAll = () => {
   const [fetchedAreas, setFetchedAreas] = useState<DecarbonizationAreaResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [areaDetails, setAreaDetails] = useState<{ [key: string]: { totalSequestration: number, occurrenceCount: number } }>({});
-
-
+  const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
+  const [poweredDays, setPoweredDays] = useState<number | null>(null);
+  const [netflixHours, setNetflixHours] = useState<number | null>(null);
+  const [a380FlightTime, setA380FlightTime] = useState<{ hours: number; minutes: number } | null>(null);
+  const [smartphoneChargesPerDay, setSmartphoneChargesPerDay] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchDecarbAreas = async () => {
@@ -73,6 +80,26 @@ const DecarbViewAll = () => {
     fetchDecarbAreas();
   }, [selectedPark]);
 
+  useEffect(() => {
+    const fetchSequestration = async () => {
+      if (selectedPark?.id) {
+        try {
+                  const currentYear = new Date().getFullYear().toString();
+          const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
+          const sequestration = response.data.totalSequestration;
+          setTotalSequestration(Math.round(sequestration));
+          setPoweredDays(calculateHDBPoweredDays(sequestration));
+          setNetflixHours(calculateNetflixHoursOffset(sequestration));
+          setA380FlightTime(calculateA380FlightTime(sequestration));
+          setSmartphoneChargesPerDay(calculateSmartphoneChargesPerDay(sequestration));
+        } catch (error) {
+          console.error('Error fetching sequestration data:', error);
+        }
+      }
+    };
+
+    fetchSequestration();
+  }, [selectedPark]);
   const navigateToDecarbArea = (areaId: string) => {
     navigate(`/decarb/${areaId}`);
   };
@@ -91,61 +118,56 @@ const DecarbViewAll = () => {
    const handleTooltipClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+  const funFacts = useMemo(() => {
+    if (!totalSequestration || !poweredDays || !netflixHours || !a380FlightTime) return [];
 
-   const donutChartData = {
-    labels: filteredAreas.map(area => area.name),
-    datasets: [
+    return [
       {
-        data: filteredAreas.map(area => areaDetails[area.id]?.totalSequestration || 0),
-        backgroundColor: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'],
-        hoverOffset: 4
-      }
-    ]
-  };
-
-  const totalSequestration = donutChartData.datasets[0].data.reduce((a, b) => a + b, 0);
-
-
-
-  const donutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
+        icon: <PiPlant className="text-4xl mb-2 text-green-500" />,
+        content: (
+          <p className="text-green-500">In the past year, this park has absorbed <span className="font-bold text-lg ml-1 text-green-500">{totalSequestration} kg</span> of CO2</p>
+        )
       },
-      tooltip: {
-        callbacks: {
-          label: (context: any) => {
-            const label = context.label || '';
-            const value = context.raw || 0;
-            const percentage = ((value / totalSequestration) * 100).toFixed(1);
-            return `${label}: ${percentage}% (${value.toFixed(2)} kg)`;
-          }
-        }
-      }
-    }
-  };
-
-  // Data for the line graph
-  const lineChartData = {
-    labels: ['2022', '2023', '2024'],
-    datasets: [
       {
-        label: 'Sequestration (kg)',
-        data: [900, 1239, 1349],
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
+        icon: <BsHouseDoor className="text-4xl mb-2 text-green-500" />,
+        content: (
+          <p className="text-green-500">This year, the park has offset <span className="font-bold text-lg ml-1 text-green-500">{poweredDays} days</span> of electricity bill for 1 family</p>
+        )
+      },
+      {
+        icon: <FaTv className="text-4xl mb-2 text-green-500" />,
+        content: (
+          <p className="text-green-500">Today, this park has offset <span className="font-bold text-lg ml-1 text-green-500">{netflixHours} hours</span> of Netflix streaming emissions</p>
+        )
+      },
+      {
+  icon: <BsPhone className="text-4xl mb-2 text-green-500" />,
+  content: (
+    <p className="text-green-500">
+      Daily, this park offsets <span className="font-bold text-lg ml-1 text-green-500">{smartphoneChargesPerDay}</span> smartphone charges
+    </p>
+  )
+},
+      {
+        icon: <FaPlane className="text-4xl mb-2 text-green-500" />,
+        content: (
+          <p className="text-green-500">
+            Annual offset equivalent to
+            {(a380FlightTime.hours > 0 || a380FlightTime.minutes > 0) && (
+              <span className="font-bold text-lg ml-1 text-green-500">
+                {a380FlightTime.hours > 0 && `${a380FlightTime.hours} hours`}
+                {a380FlightTime.minutes > 0 && ` ${a380FlightTime.minutes} min `}
+              </span>
+            )} of A380 flight time
+          </p>
+        )
       }
-    ]
-  };
+    ];
+  }, [totalSequestration, poweredDays, netflixHours, a380FlightTime]);
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-  };
-
+  const selectedFacts = useMemo(() => {
+    return funFacts.length >= 2 ? funFacts.sort(() => 0.5 - Math.random()).slice(0, 2) : [];
+  }, [funFacts]);
 
   return (
   <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
@@ -166,18 +188,21 @@ const DecarbViewAll = () => {
       </div>
     </ParkHeader>
 
-   {/* Visualization Area */}
-<div className="h-[35vh] p-4 flex">
-  {/* Doughnut Chart */}
-  <div className="w-full flex flex-col items-center justify-center">
-    <div className="w-full" style={{ height: '120px', position: 'relative' }}>
-      <Doughnut data={donutChartData} options={donutOptions} />
-    </div>
-    <div className="w-full" style={{ height: '120px', position: 'relative' }}>
-      <Line data={lineChartData} options={options} />
-    </div>
-  </div>
-</div>
+   {/* Fun Facts */}
+     {selectedFacts.length === 2 && (
+        <div className="flex justify-between items-center h-48 mx-4 mt-4 rounded-xl p-4">
+          {selectedFacts.map((fact, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && <div className="w-px h-full bg-green-500 mx-4"></div>}
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                {fact.icon}
+                {fact.content}
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
    <div className="flex flex-col overflow-hidden">
       <div className="pt-2 bg-green-50 backdrop-blur bg-white/10 mx-4 rounded-2xl px-4 md:mx-4">
         <Input

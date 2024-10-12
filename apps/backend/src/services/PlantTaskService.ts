@@ -62,6 +62,9 @@ class PlantTaskService {
       formattedData.submittingStaffId = submittingStaffId;
       PlantTaskSchema.parse(formattedData);
 
+      const maxPosition = await PlantTaskDao.getMaxPositionForStatus(taskStatus);
+      formattedData.position = maxPosition + 1;
+
       return PlantTaskDao.createPlantTask(formattedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -88,6 +91,10 @@ class PlantTaskService {
       throw new Error('Plant task not found');
     }
     return (await this.addZoneAndParkInfo([plantTask]))[0];
+  }
+
+  public async getAllAssignedPlantTasks(staffId: string): Promise<PlantTask[]> {
+    return PlantTaskDao.getAllAssignedPlantTasks(staffId);
   }
 
   public async updatePlantTask(id: string, data: Partial<PlantTaskSchemaType>): Promise<PlantTask> {
@@ -157,7 +164,14 @@ class PlantTaskService {
       throw new Error('Only open tasks can be assigned');
     }
 
-    return PlantTaskDao.assignPlantTask(id, staffId);
+    const assignedStaff = await StaffDao.getStaffById(staffId);
+    if (!assignedStaff) {
+      throw new Error('Assigned staff not found');
+    }
+
+    console.log('assignedStaff', assignedStaff.id);
+
+    return PlantTaskDao.assignPlantTask(id, assignedStaff);
   }
 
   public async unassignPlantTask(id: string, unassignerStaffId: string): Promise<PlantTask> {
@@ -317,6 +331,63 @@ class PlantTaskService {
     );
 
     return enhancedPlantTasks;
+  }
+
+  public async updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);
+    const updatedTask = await PlantTaskDao.updatePlantTask(id, {
+      taskStatus: newStatus,
+      position: maxPosition + 1000, // Add 1000 to ensure it's at the end
+    });
+
+    return updatedTask;
+  }
+
+  public async updatePlantTaskPosition(id: string, newPosition: number): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    const tasksInSameStatus = await PlantTaskDao.getPlantTasksByStatus(plantTask.taskStatus);
+    
+    // Sort tasks by position
+    tasksInSameStatus.sort((a, b) => a.position - b.position);
+
+    // Find the current index of the task being moved
+    const currentIndex = tasksInSameStatus.findIndex(task => task.id === id);
+    if (currentIndex === -1) {
+      throw new Error('Task not found in the current status');
+    }
+
+    // Remove the task from its current position
+    const [movedTask] = tasksInSameStatus.splice(currentIndex, 1);
+
+    // Insert the task at the new position
+    tasksInSameStatus.splice(newPosition, 0, movedTask);
+
+    // Recalculate positions for all tasks
+    const updatedTasks = tasksInSameStatus.map((task, index) => ({
+      id: task.id,
+      position: (index + 1) * 1000
+    }));
+
+    // Update all task positions in the database
+    await Promise.all(updatedTasks.map(task => 
+      PlantTaskDao.updatePlantTask(task.id, { position: task.position })
+    ));
+
+    // Return the updated task
+    return PlantTaskDao.getPlantTaskById(id);
+  }
+
+  public async getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<PlantTask[]> {
+    return PlantTaskDao.getPlantTasksByStatus(status);
   }
 }
 

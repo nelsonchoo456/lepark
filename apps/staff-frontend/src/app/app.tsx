@@ -86,8 +86,13 @@ import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
 import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
 import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
+import FAQList from './pages/FAQ/FAQList';
+import FAQCreate from './pages/FAQ/FAQCreate';
+import { App as AntdApp } from 'antd';
+
 export function App() {
   return (
+    <AntdApp>
     <StaffAuthWrapper>
       <ConfigProvider
         theme={{
@@ -503,6 +508,11 @@ export function App() {
                 />
               </Route>
 
+              <Route path="/faq">
+                <Route index element={<FAQList />} />
+              <Route path="create" element={<FAQCreate />} />
+              </Route>
+
               {/* Catch-all for 404 */}
               <Route path="*" element={<PageNotFound />} />
             </Route>
@@ -510,6 +520,7 @@ export function App() {
         </BrowserRouter>
       </ConfigProvider>
     </StaffAuthWrapper>
+    </AntdApp>
   );
 }
 
