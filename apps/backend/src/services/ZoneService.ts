@@ -5,6 +5,7 @@ import { ZoneCreateData, ZoneUpdateData } from '../schemas/zoneSchema';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
 import aws from 'aws-sdk';
+import HubDao from '../dao/HubDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -55,11 +56,13 @@ class ZoneService {
   }
 
   public async getAllZones(): Promise<any[]> {
-    return ZoneDao.getAllZones();
+    const zones = await ZoneDao.getAllZones();
+    return this.addHubAndSensorInfo(zones);
   }
 
   public async getZoneById(id: number): Promise<any> {
-    return ZoneDao.getZoneById(id);
+    const zone = await ZoneDao.getZoneById(id);
+    return this.addHubAndSensorInfo([zone]);
   }
 
   public async getZonesByParkId(parkId: number): Promise<any> {
@@ -69,7 +72,8 @@ class ZoneService {
         throw new Error('Park not found.');
       }
     }
-    return ZoneDao.getZonesByParkId(parkId);
+    const zones = await ZoneDao.getZonesByParkId(parkId);
+    return this.addHubAndSensorInfo(zones);
   }
 
   public async deleteZoneById(id: number): Promise<any> {
@@ -116,6 +120,18 @@ class ZoneService {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
     }
+  }
+
+  private async addHubAndSensorInfo(zones: any[]): Promise<any[]> {
+    return Promise.all(zones.map(async (zone) => {
+      const hub = await HubDao.getHubByZoneId(zone.id);
+      const sensors = await HubDao.getAllSensorsByHubId(hub?.id);
+      return {
+        ...zone,
+        hub,
+        sensors,
+      };
+    }));
   }
 }
 
