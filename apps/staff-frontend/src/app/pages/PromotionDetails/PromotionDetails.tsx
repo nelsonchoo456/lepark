@@ -58,6 +58,8 @@ const PromotionDetails = () => {
 
   const onFinish = async (values: any) => {
     try {
+      form.validateFields();
+
       if (!promotion) {
         throw new Error('Promotion not found.');
       } else if (!(user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN)) {
@@ -252,12 +254,14 @@ const PromotionDetails = () => {
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, fieldKey, ...restField }) => (
-                  <Flex gap={10}>
+                  <Flex gap={10} align="center">
                     <Form.Item
                       {...restField}
                       name={[name]}
                       fieldKey={fieldKey !== undefined ? fieldKey : key}
-                      rules={[{ required: true, message: 'Please input the term' }]}
+                      rules={[
+                        { required: true, message: 'Enter a term or delete this field' },
+                      ]}
                       className="w-full mb-2"
                     >
                       <Input placeholder="Enter a term" />
