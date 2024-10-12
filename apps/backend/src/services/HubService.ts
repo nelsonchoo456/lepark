@@ -137,6 +137,11 @@ class HubService {
     }
   }
 
+  public async getHubDataTransmissionRate(identifierNumber: string): Promise<number | null> {
+    const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
+    return hub?.dataTransmissionInterval || null;
+  }
+
   public async updateHubDetails(id: string, data: Partial<HubSchemaType>): Promise<Hub> {
     try {
       const formattedData = dateFormatter(data);

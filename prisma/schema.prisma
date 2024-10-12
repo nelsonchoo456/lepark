@@ -295,7 +295,7 @@ model Hub {
   acquisitionDate          DateTime
   lastMaintenanceDate      DateTime?
   nextMaintenanceDate      DateTime?
-  dataTransmissionInterval Float? // might want to initialize this in pi during verifyInitialization
+  dataTransmissionInterval Int? // might want to initialize this in pi during verifyInitialization
   supplier                 String
   supplierContactNumber    String
   ipAddress                String?

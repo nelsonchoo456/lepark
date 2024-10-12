@@ -17,9 +17,6 @@ BACKEND_IP = os.getenv("BACKEND_IP")
 BACKEND_PORT = os.getenv("BACKEND_PORT")
 COM_PORT = os.getenv("COM_PORT")
 
-# How often the hub will send data to the backend
-NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND = 5
-
 # Poll sensor data from micro:bits
 NEXT_POLL_IN_SECONDS = 5
 
@@ -68,6 +65,17 @@ def clear_serial_buffer():
     if ser is not None:
         ser.reset_input_buffer()
         ser.reset_output_buffer()
+
+# Global variables
+global NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND
+NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND = 5  # Default value
+
+def get_data_transmission_rate():
+    global NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND
+    response = requests.get(BASE_URL + f"/hubs/getHubDataTransmissionRate/{HUB_IDENTIFIER_NO}", timeout=5).json()
+    print(response)
+    NUMBER_OF_POLLS_BEFORE_UPDATE_BACKEND = response
+    return response
 
 def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
     if len(valid_sensors) == 0:
@@ -275,6 +283,9 @@ def main_function():
         return  # Exit the main_function
     print("Valid sensors fetched: ", valid_sensors)
     print()
+    
+    response = get_data_transmission_rate()
+    print("Data Transmission Rate (Polls) is: " + str(response))
     try:
         polls = 0
         last_poll_time = datetime.now()

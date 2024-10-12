@@ -74,6 +74,15 @@ router.get('/getHubByRadioGroup/:radioGroup', async (req, res) => {
   }
 });
 
+router.get('/getHubDataTransmissionRate/:identifierNumber', async (req, res) => {
+  try {
+    const dataTransmissionRate = await HubService.getHubDataTransmissionRate(req.params.identifierNumber);
+    res.status(200).json(dataTransmissionRate);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/updateHubDetails/:id', async (req, res) => {
   try {
     const hub = await HubService.updateHubDetails(req.params.id, req.body);
