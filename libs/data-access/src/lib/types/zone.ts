@@ -1,4 +1,5 @@
 import { HubResponse } from "./hub";
+import { ParkResponse } from "./park";
 import { SensorResponse } from "./sensor";
 
 export interface ZoneData {
@@ -26,6 +27,7 @@ export interface ZoneResponse {
   parkId: number;
   parkName: string;
   parkDescription: string;
+  park?: ParkResponse;
   hub?: HubResponse;
   sensors?: SensorResponse[];
 }

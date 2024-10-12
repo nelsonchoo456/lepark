@@ -25,7 +25,7 @@ class ZoneService {
         }
       }
 
-      const errors: string[] = []
+      const errors: string[] = [];
       if (!data.name || data.name.length < 3) {
         errors.push('Valid name is required');
       }
@@ -43,7 +43,7 @@ class ZoneService {
       }
 
       if (errors.length !== 0) {
-        throw new Error(`Validation errors: ${errors.join('; ')}`)
+        throw new Error(`Validation errors: ${errors.join('; ')}`);
       }
       return ZoneDao.createZone(data);
     } catch (error) {
@@ -57,12 +57,13 @@ class ZoneService {
 
   public async getAllZones(): Promise<any[]> {
     const zones = await ZoneDao.getAllZones();
-    return this.addHubAndSensorInfo(zones);
+    return this.addParkandHubAndSensorInfo(zones);
   }
 
   public async getZoneById(id: number): Promise<any> {
     const zone = await ZoneDao.getZoneById(id);
-    return this.addHubAndSensorInfo([zone]);
+    console.log('zone', zone);
+    return this.addParkandHubAndSensorInfo([zone]);
   }
 
   public async getZonesByParkId(parkId: number): Promise<any> {
@@ -73,7 +74,7 @@ class ZoneService {
       }
     }
     const zones = await ZoneDao.getZonesByParkId(parkId);
-    return this.addHubAndSensorInfo(zones);
+    return this.addParkandHubAndSensorInfo(zones);
   }
 
   public async deleteZoneById(id: number): Promise<any> {
@@ -112,7 +113,7 @@ class ZoneService {
       Body: fileBuffer,
       ContentType: mimeType,
     };
-    
+
     try {
       const data = await s3.upload(params).promise();
       return data.Location;
@@ -122,16 +123,22 @@ class ZoneService {
     }
   }
 
-  private async addHubAndSensorInfo(zones: any[]): Promise<any[]> {
-    return Promise.all(zones.map(async (zone) => {
-      const hub = await HubDao.getHubByZoneId(zone.id);
-      const sensors = await HubDao.getAllSensorsByHubId(hub?.id);
-      return {
-        ...zone,
-        hub,
-        sensors,
-      };
-    }));
+  private async addParkandHubAndSensorInfo(zones: any[]): Promise<any[]> {
+    return Promise.all(
+      zones.map(async (zone) => {
+        const park = await ParkDao.getParkById(zone.parkId);
+        const hub = await HubDao.getHubByZoneId(zone.id);
+        console.log('hub', hub);
+        const sensors = await HubDao.getAllSensorsByHubId(hub?.id);
+        // console.log("sensors", sensors)
+        return {
+          ...zone,
+          park,
+          hub,
+          sensors,
+        };
+      }),
+    );
   }
 }
 

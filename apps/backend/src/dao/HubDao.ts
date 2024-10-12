@@ -175,7 +175,13 @@ class HubDao {
   }
 
   public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
-    return prisma.sensor.findMany({ where: { hubId } });
+    if (!hubId) {
+      return [];
+    }
+    const sensors = await prisma.sensor.findMany({
+      where: { hubId: { equals: hubId } },
+    });
+    return sensors;
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
