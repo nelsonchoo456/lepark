@@ -137,6 +137,10 @@ class HubService {
     }
   }
 
+  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
+    return HubDao.getHubByZoneId(zoneId);
+  }
+
   public async getHubDataTransmissionRate(identifierNumber: string): Promise<number | null> {
     const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
     return hub?.dataTransmissionInterval || null;

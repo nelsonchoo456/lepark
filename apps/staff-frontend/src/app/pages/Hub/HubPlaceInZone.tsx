@@ -65,7 +65,7 @@ const HubPlaceInZone = () => {
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
       try {
-        const values = await form.validateFields(); // Get form data
+        
         setCurrStep(0); 
       } catch (error) {
         // console.error('Validation failed:', error);
@@ -205,7 +205,7 @@ const HubPlaceInZone = () => {
             },
             {
               title: 'Details',
-              description: 'Input Occurrence details',
+              description: 'Input Hub\'s configuration',
             },
             {
               title: 'Complete',

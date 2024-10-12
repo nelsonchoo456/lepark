@@ -66,12 +66,12 @@ const PlaceZoneDetailsStep = ({ handleCurrStep, handleSubmit, form }: PlaceZoneD
           {
             type: 'number',
             min: 1,
-            max: 86400,
-            message: 'Interval must be between 1 and 86 400 minutes',
+            max: 1000,
+            message: 'Interval must be between 1 and 1000 polls',
           },
         ]}
       >
-        <InputNumber min={1} placeholder="Interval of Data Transmission" className="w-full" />
+        <InputNumber min={1} placeholder="Interval of Data Transmission (in Polls)" className="w-full" />
       </Form.Item>
 
       <Form.Item colon={false}>
