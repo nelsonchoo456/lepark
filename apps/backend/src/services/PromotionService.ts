@@ -129,10 +129,13 @@ class PromotionService {
     if (data.promoCode) {
       data.promoCode = data.promoCode.trim();
       const existingPromotion = await prisma.promotion.findFirst({
-        where: { promoCode: {
-          equals: data.promoCode,
-          mode: 'insensitive',
-        }, },
+        where: {
+          promoCode: {
+            equals: data.promoCode,
+            mode: 'insensitive',
+          },
+          id: { not: id },
+        },
       });
 
       if (existingPromotion) {

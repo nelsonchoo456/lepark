@@ -25,8 +25,7 @@ const ParkPromotionCreate = () => {
   const discountType = Form.useWatch('discountType', form);
   const isNParksWide = Form.useWatch('isNParksWide', form);
 
-  const showMaximumUsage = Form.useWatch('showMaximumUsage', form);
-  const showMinimumAmount = Form.useWatch('showMinimumAmount', form);
+  const maximumUsage = Form.useWatch('maximumUsage', form);
   const minimumAmount = Form.useWatch('minimumAmount', form);
   const isOneTime = Form.useWatch('isOneTime', form);
 
@@ -208,7 +207,7 @@ const ParkPromotionCreate = () => {
                 label="Discount Percentage (%)"
                 rules={[{ required: true, message: 'Please enter a Percentage' }]}
               >
-                <InputNumber min={0.01} max={100} precision={2} defaultValue={0.01} />
+                <InputNumber min={0.10} max={100} precision={2} defaultValue={0.10} />
               </Form.Item>
             )}
 
@@ -218,7 +217,7 @@ const ParkPromotionCreate = () => {
                 label="Discount Amount ($)"
                 rules={[{ required: true, message: 'Please enter an Amount' }]}
               >
-                <InputNumber min={0.01} max={500} precision={2} defaultValue={0.01} />
+                <InputNumber min={0.10} max={500} precision={2} defaultValue={0.10} />
               </Form.Item>
             )}
 
@@ -231,31 +230,13 @@ const ParkPromotionCreate = () => {
               <Radio.Group options={isOneTimeOptioons} optionType="button" />
             </Form.Item>
 
-            <Form.Item
-              name="showMaximumUsage"
-              label="Add Total Redemption Limit"
-              rules={[{ required: true, message: "Please indicate if there's a Total Redemption Limit" }]}
-            >
-              <Radio.Group options={isOneTimeOptioons} optionType="button" />
+            <Form.Item name="maximumUsage" label="Total Redemption Limit">
+              <InputNumber min={1} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
             </Form.Item>
-            {showMaximumUsage && (
-              <Form.Item name="maximumUsage" label="Total Redemption Limit" rules={[{ required: true }]}>
-                <InputNumber min={0} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
-              </Form.Item>
-            )}
 
-            <Form.Item
-              name="showMinimumAmount"
-              label="Add Minimum Amount"
-              rules={[{ required: true, message: "Please indicate if there's a Minimum Amount" }]}
-            >
-              <Radio.Group options={isOneTimeOptioons} optionType="button" />
+            <Form.Item name="minimumAmount" label="Minimum Amount (SGD)">
+              <InputNumber min={0.10} precision={2} placeholder="Leave empty if no minimum amount" className="w-full" />
             </Form.Item>
-            {showMinimumAmount && (
-              <Form.Item name="minimumAmount" label="Minimum Amount (SGD)" rules={[{ required: true }]}>
-                <InputNumber min={0} precision={0} placeholder="Minimum amount" className="w-full" />
-              </Form.Item>
-            )}
 
             <Divider orientation="left">Terms and Conditions</Divider>
             {/* <Form.Item
@@ -384,11 +365,11 @@ const ParkPromotionCreate = () => {
                       </Button>
                     </Form.Item>
 
-                    {showMaximumUsage && (
+                    {maximumUsage !== undefined && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
-                          onClick={() => add('This offer has a total redemption limit.')}
+                          onClick={() => add(`This offer is limited to the first ${maximumUsage} users`)}
                           block
                           className="text-green-400 text-wrap"
                           style={{
@@ -399,13 +380,12 @@ const ParkPromotionCreate = () => {
                           }}
                         >
                           <p>
-                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer has a total redemption
-                            limit.
+                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer is limited to the first {maximumUsage} users.
                           </p>
                         </Button>
                       </Form.Item>
                     )}
-                    {showMinimumAmount && minimumAmount && (
+                    {minimumAmount !== undefined && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
