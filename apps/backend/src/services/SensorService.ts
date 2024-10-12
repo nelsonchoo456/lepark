@@ -221,6 +221,7 @@ class SensorService {
 
       const formattedData = dateFormatter(data);
       SensorSchema.partial().parse(formattedData);
+      console.log(formattedData);
 
       if (!formattedData.hubId) {
         throw new Error('Hub ID is required');

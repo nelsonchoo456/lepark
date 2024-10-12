@@ -106,6 +106,8 @@ const SensorAddToHub = () => {
         long: lng,
         hubId: selectedHub.id,
       };
+
+      console.log("Failure here")
       const response = await addSensorToHub(sensor.id, finalData);
 
       if (response.status === 200) {
@@ -113,6 +115,7 @@ const SensorAddToHub = () => {
         setCurrStep(2)
       }
     } catch (error) {
+      console.log(error)
       if (
         error === 'Sensor not found' ||
         error === 'Hub ID is required' ||

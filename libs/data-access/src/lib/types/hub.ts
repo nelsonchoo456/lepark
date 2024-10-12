@@ -48,7 +48,7 @@ export interface HubResponse {
   images?: string[];
   lat?: number;
   long?: number;
-  remarks?: string;
+  remarks?: string | null;
   zoneId?: number;
   facilityId?: string;
   park: ParkResponse;

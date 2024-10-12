@@ -159,6 +159,7 @@ const HubPlaceInZone = () => {
           handleCurrStep={handleCurrStep}
           handleSubmit={handleSubmit}
           form={form}
+          hubId={hubId || ''}
         />
       ),
     },

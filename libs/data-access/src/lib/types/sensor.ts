@@ -40,7 +40,7 @@ export interface SensorResponse {
   images?: string[];
   lat?: number;
   long?: number;
-  remarks?: string;
+  remarks?: string | null;
   hubId?: string;
   facilityId?: string;
   hub?: HubResponse;
