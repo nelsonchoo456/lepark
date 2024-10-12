@@ -62,7 +62,6 @@ class ZoneService {
 
   public async getZoneById(id: number): Promise<any> {
     const zone = await ZoneDao.getZoneById(id);
-    console.log('zone', zone);
     const enhancedZone = await this.addParkandHubAndSensorInfo([zone]);
     return enhancedZone[0];
   }
@@ -129,9 +128,7 @@ class ZoneService {
       zones.map(async (zone) => {
         const park = await ParkDao.getParkById(zone.parkId);
         const hub = await HubDao.getHubByZoneId(zone.id);
-        console.log('hub', hub);
         const sensors = await HubDao.getAllSensorsByHubId(hub?.id);
-        // console.log("sensors", sensors)
         return {
           ...zone,
           park,
