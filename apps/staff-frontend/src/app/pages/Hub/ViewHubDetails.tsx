@@ -120,14 +120,14 @@ const ViewHubDetails = () => {
   const tabsItems = [
     {
       key: 'information',
-      label: 'Information & Actions',
+      label: 'Information',
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
     },
     ...(hub?.zone && hub.lat && hub.long
       ? [
           {
             key: 'zone',
-            label: 'Zone',
+            label: 'Zone Location',
             children: hub ? <ZoneTab hub={hub} lat={hub.lat} lng={hub.long} park={hub.park} zone={hub.zone} zones={zones} /> : <p>Loading hub data...</p>,
           },
         ]

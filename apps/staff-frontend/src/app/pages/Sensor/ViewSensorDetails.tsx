@@ -148,7 +148,7 @@ const ViewSensorDetails = () => {
       ? [
           {
             key: 'zone',
-            label: 'Zone',
+            label: 'Zone & Hub',
             children: <ZoneTab hub={sensor.hub} sensor={sensor} lat={sensor.lat} lng={sensor.long} park={sensor.park} zones={zones} />,
           },
         ]
