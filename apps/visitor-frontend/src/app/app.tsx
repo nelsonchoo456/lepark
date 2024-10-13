@@ -30,6 +30,9 @@ import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
 import PromotionViewAll from './pages/Promotions/PromotionViewAll';
 import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
+import FAQList from './pages/FAQ/FAQList';
+import FAQView from './pages/FAQ/FAQView';
+
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -112,6 +115,10 @@ export function App() {
                 <Route path="/promotions">
                   <Route index element={<PromotionViewAll/>}/>
                   <Route path=":promotionId" element={<PromotionViewDetails/>}/>
+                </Route>
+                <Route path="/faq">
+                  <Route index element={<FAQList/>}/>
+                  <Route path=":faqId" element={<FAQView/>}/>
                 </Route>
               </Route>
             </Routes>
