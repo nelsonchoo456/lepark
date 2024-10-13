@@ -28,6 +28,9 @@ import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import ViewAttractionTicketListings from './pages/Attractions/ViewAttractionListings';
 import PaymentPage from './pages/Attractions/PaymentPage';
+import ViewAttractionTransactions from './pages/Profile/ViewAttractionTransactions';
+import AttractionTransactionDetails from './pages/Profile/ViewAttractionTransactionDetails';
+import AttractionTicketDetails from './pages/Profile/AttractionTicketDetails';
 
 export function App() {
   return (
@@ -78,6 +81,28 @@ export function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                <Route
+                  path="/attraction-transaction"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <ViewAttractionTransactions />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route path="/attraction-transaction/:transactionId" element={
+                  <ProtectedRoute redirectTo="/login">
+                    <AttractionTransactionDetails />
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/attraction-transaction/:transactionId/tickets" element={
+                  <ProtectedRoute redirectTo="/login">
+                    <AttractionTicketDetails />
+                  </ProtectedRoute>
+                } />
+
                 <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/park">
                   <Route index element={<SelectParkPage />} />

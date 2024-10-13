@@ -105,13 +105,29 @@ class AttractionTicketService {
     return { ...transaction, visitor, attraction };
   }
 
-  public async getAttractionTicketTransactionsByVisitorId(visitorId: string): Promise<AttractionTicketTransaction[]> {
+  public async getAttractionTicketTransactionsByVisitorId(
+    visitorId: string
+  ): Promise<(AttractionTicketTransaction & { visitor: Visitor; attraction: Attraction })[]> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
     if (!visitor) {
       throw new Error('Visitor not found');
     }
-
-    return AttractionTicketDao.getAttractionTicketTransactionsByVisitorId(visitorId);
+  
+    const transactions = await AttractionTicketDao.getAttractionTicketTransactionsByVisitorId(visitorId);
+    
+    // Fetch attraction details for each transaction
+    const transactionsWithDetails = await Promise.all(
+      transactions.map(async (transaction) => {
+        const attraction = await AttractionDao.getAttractionById(transaction.attractionId);
+        return {
+          ...transaction,
+          visitor,
+          attraction,
+        };
+      })
+    );
+  
+    return transactionsWithDetails;
   }
 
   public async getAttractionTicketTransactionsByAttractionId(attractionId: string): Promise<AttractionTicketTransaction[]> {
@@ -191,7 +207,18 @@ class AttractionTicketService {
   }
 
   public async getAttractionTicketsByTransactionId(transactionId: string): Promise<AttractionTicket[]> {
-    return AttractionTicketDao.getAttractionTicketsByTransactionId(transactionId);
+    const tickets = await AttractionTicketDao.getAttractionTicketsByTransactionId(transactionId);
+    
+    // Fetch the associated ticket listings
+    const ticketsWithListings = await Promise.all(tickets.map(async (ticket) => {
+      const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+      return {
+        ...ticket,
+        attractionTicketListing: listing
+      };
+    }));
+  
+    return ticketsWithListings;
   }
 
   public async getAttractionTicketsByListingId(listingId: string): Promise<AttractionTicket[]> {
