@@ -41,7 +41,6 @@ const ZoneIoTDashboard: React.FC = () => {
             return { type: sensor.sensorType, value: 0 };
           }
         }));
-        console.log(sensorMetrics);
 
         const avgTemperature =
           sensorMetrics.filter((m) => m.type === SensorTypeEnum.TEMPERATURE).reduce((sum, m) => sum + m.value, 0) /
