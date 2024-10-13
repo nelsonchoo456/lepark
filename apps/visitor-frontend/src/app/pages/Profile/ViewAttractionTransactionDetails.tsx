@@ -96,14 +96,14 @@ const AttractionTransactionDetails: React.FC = () => {
             className="rounded-lg w-full max-h-[300px] object-cover"
             preview={false}
           />
-          <div className="flex justify-between items-center">
-            <div>
-              <Title className="mb-0" level={3}>
+          <div>
+            <div className="flex items-center mb-1">
+              <Title className="mb-0 mr-2" level={3}>
                 {transaction?.attraction?.title}
               </Title>
-              <Text>@ {park?.name}</Text>
+              <Button type="link" icon={<LinkOutlined />} onClick={handleViewAttractionDetails} />
             </div>
-            <Button type="link" icon={<LinkOutlined />} onClick={handleViewAttractionDetails}></Button>
+            <Text>@ {park?.name}</Text>
           </div>
           <div className="bg-gray-200 p-4 rounded-lg">
             <Text strong className="block mb-2">
