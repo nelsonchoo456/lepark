@@ -9,7 +9,22 @@ import { FAQResponse, FAQCategoryEnum, StaffResponse } from '@lepark/data-access
 import styled from 'styled-components';
 import { RiEyeLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
+
 const { Panel } = Collapse;
+
+const ScrollableContentWrapper = styled(ContentWrapperDark)`
+  overflow-y: auto;
+  height: calc(100vh - 160px);
+  margin-top: 0;
+  padding-top: 16px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+`;
 
 const FAQList: React.FC = () => {
   const { selectedPark } = usePark();
@@ -59,29 +74,14 @@ const FAQList: React.FC = () => {
     OTHER: '#b8e986',
   };
 
-  const ScrollableContentWrapper = styled(ContentWrapperDark)`
-  overflow-y: auto;
-  height: calc(100vh - 160px); // Reduced from 200px to 160px
-  margin-top: 0; // Ensure no top margin is added
-  padding-top: 16px; // Add some padding inside the wrapper instead
-
-  // Hide scrollbar for Chrome, Safari and Opera
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  // Hide scrollbar for IE, Edge and Firefox
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-`;
-
   const renderFAQCard = (faq: FAQResponse) => (
-    <Collapse key={faq.id}>
-      <Panel header={faq.question} key={faq.id}
-
-      >
-        <p>{faq.answer}</p>
-        <Button
+    <Collapse key={faq.id} items={[{
+      key: faq.id,
+      label: faq.question,
+      children: (
+        <>
+          <p>{faq.answer}</p>
+          <Button
             type="link"
             icon={<RiEyeLine />}
             onClick={(e) => {
@@ -91,8 +91,9 @@ const FAQList: React.FC = () => {
           >
             Tap to view
           </Button>
-      </Panel>
-    </Collapse>
+        </>
+      )
+    }]} />
   );
 
   return (
