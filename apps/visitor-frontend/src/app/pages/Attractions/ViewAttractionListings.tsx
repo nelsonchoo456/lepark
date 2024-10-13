@@ -108,6 +108,7 @@ const ViewAttractionTicketListings = () => {
     navigate('/payment', {
       state: {
         attractionName: attraction?.title || '',
+        attractionId: attractionId,
         selectedDate: selectedDate?.format('DD/MM/YYYY'),
         ticketDetails: selectedTickets,
         totalPayable: finalTotalPayable,

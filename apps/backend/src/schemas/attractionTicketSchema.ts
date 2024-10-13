@@ -12,7 +12,6 @@ export const AttractionTicketSchema = z.object({
 export const AttractionTicketTransactionSchema = z.object({
   attractionDate: z.date(),
   purchaseDate: z.date(),
-  quantity: z.number().int().positive(),
   totalAmount: z.number().positive(),
   attractionId: z.string().uuid(),
   visitorId: z.string().uuid(),

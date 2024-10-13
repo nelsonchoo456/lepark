@@ -11,6 +11,7 @@ const { Title, Text } = Typography;
 
 interface PaymentPageProps {
   attractionName: string;
+  attractionId: string;
   selectedDate: string;
   ticketDetails: {
     id: string;
@@ -23,7 +24,7 @@ interface PaymentPageProps {
 
 const PaymentPage: React.FC = () => {
   const location = useLocation();
-  const { attractionName, selectedDate, ticketDetails, totalPayable } = location.state as PaymentPageProps;
+  const { attractionName, attractionId, selectedDate, ticketDetails, totalPayable } = location.state as PaymentPageProps;
 
   const [stripePromise, setStripePromise] = useState<Stripe | null>(null);
   const [clientSecret, setClientSecret] = useState<string>('');
@@ -94,6 +95,7 @@ const PaymentPage: React.FC = () => {
             attractionName={attractionName}
             selectedDate={selectedDate}
             paymentIntentId={paymentIntentId}
+            attractionId={attractionId}
           />
         </Elements>
       )}

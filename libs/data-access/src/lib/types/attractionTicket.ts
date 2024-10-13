@@ -1,3 +1,6 @@
+import { AttractionResponse, AttractionTicketListingResponse } from './attraction';
+import { VisitorResponse } from './visitor';
+
 export enum AttractionTicketStatusEnum {
   VALID = 'VALID',
   INVALID = 'INVALID',
@@ -6,34 +9,37 @@ export enum AttractionTicketStatusEnum {
 
 export interface AttractionTicketTransactionResponse {
   id: string;
+  attractionDate: Date;
+  purchaseDate: Date;
+  totalAmount: number;
   visitorId: string;
   attractionId: string;
-  totalAmount: number;
-  transactionDate: Date;
-  paymentStatus: string;
-  tickets: AttractionTicketResponse[];
+  attractionTickets: AttractionTicketResponse[];
+  visitor?: VisitorResponse;
+  attraction?: AttractionResponse;
 }
 
 export interface CreateAttractionTicketTransactionData {
+  attractionDate: Date;
+  purchaseDate: Date;
+  totalAmount: number;
   visitorId: string;
   attractionId: string;
-  totalAmount: number;
   tickets: CreateAttractionTicketData[];
 }
 
 export interface AttractionTicketResponse {
   id: string;
-  transactionId: string;
-  listingId: string;
   status: AttractionTicketStatusEnum;
-  validFrom: Date;
-  validTo: Date;
+  attractionTicketListingId: string;
+  attractionTicketTransactionId: string;
+  attractionTicketListing?: AttractionTicketListingResponse;
+  attractionTicketTransaction?: AttractionTicketTransactionResponse;
 }
 
 export interface CreateAttractionTicketData {
   listingId: string;
-  validFrom: Date;
-  validTo: Date;
+  quantity: number;
 }
 
 export interface UpdateAttractionTicketStatusData {

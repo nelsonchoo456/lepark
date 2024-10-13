@@ -237,10 +237,7 @@ enum AttractionTicketStatusEnum {
 
 model AttractionTicket {
   id              String    @id @default(uuid()) @db.Uuid
-  attractionDate  DateTime
   status          AttractionTicketStatusEnum
-  price           Float
-  // attractionId    String    @db.Uuid
   attractionTicketListingId String    @db.Uuid
   attractionTicketTransactionId String @db.Uuid
 
@@ -251,7 +248,6 @@ model AttractionTicketTransaction {
   id              String    @id @default(uuid()) @db.Uuid
   attractionDate  DateTime
   purchaseDate    DateTime
-  quantity        Float
   totalAmount     Float
   visitorId       String    @db.Uuid
   attractionId    String    @db.Uuid

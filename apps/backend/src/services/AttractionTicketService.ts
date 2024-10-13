@@ -1,4 +1,13 @@
-import { Prisma, AttractionTicketTransaction, AttractionTicket, AttractionTicketStatusEnum } from '@prisma/client';
+import {
+  Prisma,
+  AttractionTicketTransaction,
+  AttractionTicket,
+  AttractionTicketStatusEnum,
+  PrismaClient,
+  Visitor,
+  Attraction,
+  AttractionTicketListing,
+} from '@prisma/client';
 import { z } from 'zod';
 import {
   AttractionTicketSchema,
@@ -10,6 +19,13 @@ import AttractionTicketDao from '../dao/AttractionTicketDao';
 import AttractionDao from '../dao/AttractionDao';
 import VisitorDao from '../dao/VisitorDao';
 import { fromZodError } from 'zod-validation-error';
+import { AttractionResponse, VisitorResponse } from '@lepark/data-access';
+
+const prisma = new PrismaClient();
+interface TicketInput {
+  listingId: string;
+  quantity: number;
+}
 
 class AttractionTicketService {
   public async createAttractionTicketTransaction(data: AttractionTicketTransactionSchemaType): Promise<AttractionTicketTransaction> {
@@ -27,14 +43,38 @@ class AttractionTicketService {
       }
 
       const formattedData = dateFormatter(data);
-      AttractionTicketTransactionSchema.parse(formattedData);
+      const { tickets, ...transactionData } = formattedData;
+      // AttractionTicketTransactionSchema.parse(formattedData);
 
-      const transactionData = ensureAllFieldsPresent(formattedData);
+      // const transactionData = ensureAllFieldsPresent(formattedData);
 
       // Additional business logic can be added here
       // For example, checking if the attraction is open, if there are available tickets, etc.
 
-      return AttractionTicketDao.createAttractionTicketTransaction(transactionData);
+      const result = await prisma.$transaction(async (prismaClient) => {
+        // Create the transaction
+        const createdTransaction = await prismaClient.attractionTicketTransaction.create({
+          data: {
+            ...transactionData,
+            attractionTickets: {
+              create: tickets.flatMap((ticket) =>
+                Array(ticket.quantity).fill({
+                  status: AttractionTicketStatusEnum.VALID,
+                  attractionTicketListingId: ticket.listingId,
+                }),
+              ),
+            },
+          },
+          include: {
+            attractionTickets: true,
+          },
+        });
+
+        return createdTransaction;
+      });
+
+      // return AttractionTicketDao.createAttractionTicketTransaction(transactionData);
+      return result;
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -48,12 +88,21 @@ class AttractionTicketService {
     return AttractionTicketDao.getAllAttractionTicketTransactions();
   }
 
-  public async getAttractionTicketTransactionById(id: string): Promise<AttractionTicketTransaction> {
+  public async getAttractionTicketTransactionById(
+    id: string,
+  ): Promise<AttractionTicketTransaction & { visitor: Visitor; attraction: Attraction }> {
     const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(id);
     if (!transaction) {
       throw new Error('Attraction ticket transaction not found');
     }
-    return transaction;
+
+    const visitor = await VisitorDao.getVisitorById(transaction.visitorId);
+    if (!visitor) return null;
+
+    const attraction = await AttractionDao.getAttractionById(transaction.attractionId);
+    if (!attraction) return null;
+
+    return { ...transaction, visitor, attraction };
   }
 
   public async getAttractionTicketTransactionsByVisitorId(visitorId: string): Promise<AttractionTicketTransaction[]> {
@@ -110,12 +159,23 @@ class AttractionTicketService {
     }
   }
 
-  public async getAttractionTicketById(id: string): Promise<AttractionTicket> {
+  public async getAttractionTicketById(
+    id: string,
+  ): Promise<
+    AttractionTicket & { attractionTicketListing: AttractionTicketListing; attractionTicketTransaction: AttractionTicketTransaction }
+  > {
     const ticket = await AttractionTicketDao.getAttractionTicketById(id);
     if (!ticket) {
       throw new Error('Attraction ticket not found');
     }
-    return ticket;
+
+    const attractionTicketListing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+    if (!attractionTicketListing) return null;
+
+    const attractionTicketTransaction = await AttractionTicketDao.getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
+    if (!attractionTicketTransaction) return null;
+
+    return { ...ticket, attractionTicketListing, attractionTicketTransaction };
   }
 
   public async getAllAttractionTickets(): Promise<AttractionTicket[]> {
@@ -148,7 +208,7 @@ class AttractionTicketService {
 }
 
 function ensureAllFieldsPresent(data: AttractionTicketTransactionSchemaType): Prisma.AttractionTicketTransactionCreateInput {
-  if (!data.attractionDate || !data.purchaseDate || !data.quantity || !data.totalAmount || !data.attractionId || !data.visitorId) {
+  if (!data.attractionDate || !data.purchaseDate || !data.totalAmount || !data.attractionId || !data.visitorId) {
     throw new Error('Missing required fields for attraction ticket transaction creation');
   }
 
@@ -156,7 +216,7 @@ function ensureAllFieldsPresent(data: AttractionTicketTransactionSchemaType): Pr
 }
 
 function ensureAllTicketFieldsPresent(data: AttractionTicketSchemaType): Prisma.AttractionTicketCreateInput {
-  if (!data.attractionDate || !data.status || !data.price || !data.attractionTicketListingId || !data.attractionTicketTransactionId) {
+  if (!data.status || !data.attractionTicketListingId || !data.attractionTicketTransactionId) {
     throw new Error('Missing required fields for attraction ticket transaction creation');
   }
 
