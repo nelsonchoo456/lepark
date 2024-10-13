@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Collapse, Button, Input, Row, Col, Pagination, Flex, App, Select } from 'antd';
 import { FiSearch } from 'react-icons/fi';
-import { RiEdit2Line } from 'react-icons/ri';
+import { RiEdit2Line, RiEyeLine } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import { FAQResponse, deleteFAQ, FAQCategoryEnum, ParkResponse, FAQStatusEnum, updateFAQPriorities } from '@lepark/data-access';
-import { ContentWrapperDark } from '@lepark/common-ui';
+import { FAQResponse, deleteFAQ, FAQCategoryEnum, ParkResponse, FAQStatusEnum, updateFAQPriorities, StaffType, StaffResponse } from '@lepark/data-access';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
@@ -25,14 +25,9 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
   const { modal, message } = App.useApp();
   const [selectedStatuses, setSelectedStatuses] = useState<FAQStatusEnum[]>([]);
   const [groupedFAQs, setGroupedFAQs] = useState<{ [key in FAQCategoryEnum]: FAQResponse[] }>({} as { [key in FAQCategoryEnum]: FAQResponse[] });
+  const { user } = useAuth<StaffResponse>();
 
-  useEffect(() => {
-    const grouped: { [key in FAQCategoryEnum]: FAQResponse[] } = {} as { [key in FAQCategoryEnum]: FAQResponse[] };
-    Object.values(FAQCategoryEnum).forEach(category => {
-      grouped[category] = faqs.filter(faq => faq.category === category);
-    });
-    setGroupedFAQs(grouped);
-  }, [faqs]);
+
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -49,9 +44,19 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
       const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(faq.status);
-      return matchesSearch && matchesStatus;
+      const matchesPark = faq.parkId === null || user?.role === StaffType.SUPERADMIN || faq.parkId === user?.parkId;
+      return matchesSearch && matchesStatus && matchesPark;
     });
-  }, [faqs, searchQuery, selectedStatuses]);
+  }, [faqs, searchQuery, selectedStatuses, user?.role, user?.parkId]);
+
+
+  useEffect(() => {
+    const grouped: { [key in FAQCategoryEnum]: FAQResponse[] } = {} as { [key in FAQCategoryEnum]: FAQResponse[] };
+    Object.values(FAQCategoryEnum).forEach(category => {
+      grouped[category] = filteredFAQs.filter(faq => faq.category === category);
+    });
+    setGroupedFAQs(grouped);
+  }, [filteredFAQs]);
 
   const categoriesPerPage = 6;
 
@@ -76,9 +81,9 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
     OTHER: '#b8e986',
   };
 
-  const getParkName = (parkId: number | null) => {
-    if (!parkId) return 'All Parks';
-    const park = parks?.find((p: { id: number }) => p.id === parkId);
+const getParkName = (parkId: number | null) => {
+    if (parkId === null) return 'All Parks';
+    const park = parks?.find((p) => p.id === parkId);
     return park ? park.name : 'Unknown Park';
   };
 
@@ -106,6 +111,7 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
     }
   };
 
+
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
 
@@ -117,12 +123,10 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
     const newGroupedFAQs = { ...groupedFAQs };
     const [movedFAQ] = newGroupedFAQs[sourceCategory].splice(source.index, 1);
 
-    // Update the category of the moved FAQ
     movedFAQ.category = destCategory;
 
     newGroupedFAQs[destCategory].splice(destination.index, 0, movedFAQ);
 
-    // Update priorities for both source and destination categories
     newGroupedFAQs[sourceCategory] = newGroupedFAQs[sourceCategory].map((faq, index) => ({
       ...faq,
       priority: index + 1,
@@ -134,25 +138,29 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
 
     setGroupedFAQs(newGroupedFAQs);
 
-    // Prepare the updated FAQs for the backend
-    const updatedFAQs = [
-      ...newGroupedFAQs[sourceCategory],
-      ...newGroupedFAQs[destCategory],
-    ];
-
-    // Update position in the backend
     try {
-      await updateFAQPriorities(updatedFAQs);
-      message.success('FAQ priorities and categories updated successfully');
+      const updatedFAQs = [
+        ...newGroupedFAQs[sourceCategory],
+        ...newGroupedFAQs[destCategory],
+      ];
+
+      await updateFAQPriorities(updatedFAQs.map(faq => ({
+        id: faq.id,
+        category: faq.category,
+        priority: faq.priority,
+        question: faq.question,
+        answer: faq.answer,
+        status: faq.status,
+        parkId: faq.parkId,
+      })));
+
+      message.success('FAQ order updated successfully');
     } catch (error) {
-      console.error('Error updating FAQ priorities and categories:', error);
-      message.error('Failed to update FAQ priorities and categories');
+      console.error('Error updating FAQ priorities:', error);
+      message.error('Failed to update FAQ order. Please try again.');
     }
-
-    triggerFetch();
   };
-
-  const renderFAQCard = (faq: FAQResponse, index: number) => (
+    const renderFAQCard = (faq: FAQResponse, index: number) => (
     <Draggable key={faq.id} draggableId={faq.id} index={index}>
       {(provided, snapshot) => (
         <div
@@ -173,24 +181,37 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
                 children: (
                   <>
                     <p>{faq.answer}</p>
-                    {showParkColumn && <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>}
+                    <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>
+
+                    {(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+                      <>
+                        <Button
+                          type="link"
+                          icon={<RiEdit2Line />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/faq/${faq.id}/edit`);
+                          }}
+                          style={{ marginRight: 8 }}
+                        />
+                        <Button
+                          type="link"
+                          icon={<MdDeleteOutline style={{ color: '#ff4d4f' }} />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(faq.id);
+                          }}
+                          danger
+                        />
+                      </>
+                    )}
                     <Button
                       type="link"
-                      icon={<RiEdit2Line />}
+                      icon={<RiEyeLine />}
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/faqs/edit/${faq.id}`);
+                        navigate(`/faq/${faq.id}`);
                       }}
-                      style={{ marginRight: 8 }}
-                    />
-                    <Button
-                      type="link"
-                      icon={<MdDeleteOutline style={{ color: '#ff4d4f' }} />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(faq.id);
-                      }}
-                      danger
                     />
                   </>
                 ),
@@ -213,8 +234,9 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
     return categories.slice(startIndex, startIndex + categoriesPerPage);
   }, [groupedFAQs, currentPage]);
 
-  return (
+   return (
     <>
+
       <Flex justify="space-between" align="center" style={{ marginBottom: '16px', marginTop: '16px' }}>
         <Input
           suffix={<FiSearch />}
@@ -275,5 +297,6 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
     </>
   );
 };
+
 
 export default FAQTab;
