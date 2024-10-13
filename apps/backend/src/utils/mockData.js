@@ -2302,58 +2302,6 @@ const newSensors = [
   },
 ];
 
-// Generate mock sensor readings
-const generateMockReadings = (sensorType, count = 50) => {
-  const readings = [];
-  const now = new Date();
-  
-  // Generate readings for the past 4 hours (1 reading every 15 minutes)
-  for (let i = 0; i < 16; i++) {
-    const readingDate = new Date(now.getTime() - i * 15 * 60000);
-    readings.push(createReading(sensorType, readingDate));
-  }
-  
-  // Generate the rest of the readings for earlier times
-  for (let i = 16; i < count; i++) {
-    const readingDate = new Date(now.getTime() - (4 * 3600000 + i * 3600000)); // Start 4 hours ago, then one per hour
-    readings.push(createReading(sensorType, readingDate));
-  }
-  
-  return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
-};
-
-const createReading = (sensorType, date) => {
-  let value;
-  switch (sensorType) {
-    case 'SOIL_MOISTURE':
-      value = Math.random() * 100; // 0-100%
-      break;
-    case 'TEMPERATURE':
-      value = 20 + Math.random() * 15; // 20-35°C
-      break;
-    case 'HUMIDITY':
-      value = 60 + Math.random() * 30; // 60-90%
-      break;
-    case 'LIGHT':
-      value = Math.random() * 255; // 0-255 lux
-      break;
-    default:
-      value = Math.random() * 100;
-  }
-  return {
-    date,
-    value: parseFloat(value.toFixed(2)),
-  };
-};
-
-// Generate mock readings for each sensor type
-const sensorReadingsData = {
-  SOIL_MOISTURE: generateMockReadings('SOIL_MOISTURE'),
-  TEMPERATURE: generateMockReadings('TEMPERATURE'),
-  HUMIDITY: generateMockReadings('HUMIDITY'),
-  LIGHT: generateMockReadings('LIGHT'),
-};
-
 module.exports = {
   parksData,
   zonesData,
@@ -2369,7 +2317,6 @@ module.exports = {
   parkAssetsData,
   sensorsData,
   plantTasksData,
-  sensorReadingsData,
   newHub,
   newSensors,
 };

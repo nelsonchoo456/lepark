@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { Card, Input, Row, Col, Statistic, Tag, Button, Flex, Tooltip, Typography, Progress, Space } from 'antd';
 import { FiSearch, FiEye } from 'react-icons/fi';
-import { StaffResponse, ZoneResponse, HubResponse, SensorResponse, SensorStatusEnum } from '@lepark/data-access';
+import { StaffResponse, ZoneResponse, HubResponse, SensorResponse, SensorStatusEnum, SensorTypeEnum } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -33,22 +33,28 @@ const ZoneIoTDashboard: React.FC = () => {
           try {
             const response = await getSensorReadingsAverageForPastFourHours(sensor.id);
             console.log(response.data);
-            return { type: sensor.sensorType, value: response.data[0]?.value || 0 };
+            // Calculate average of all readings in the past 4 hours
+            const averageValue = response.data.reduce((sum, reading) => sum + reading.value, 0) / response.data.length;
+            return { type: sensor.sensorType, value: averageValue };
           } catch (error) {
             console.error(`Error fetching data for sensor ${sensor.id}:`, error);
             return { type: sensor.sensorType, value: 0 };
           }
         }));
+        console.log(sensorMetrics);
 
-        const avgTemperature = sensorMetrics.filter(m => m.type === 'TEMPERATURE').reduce((sum, m) => sum + m.value, 0) / 
-          (sensorMetrics.filter(m => m.type === 'TEMPERATURE').length || 1);
-        const avgMoisture = sensorMetrics.filter(m => m.type === 'SOIL_MOISTURE').reduce((sum, m) => sum + m.value, 0) / 
-          (sensorMetrics.filter(m => m.type === 'SOIL_MOISTURE').length || 1);
-        const avgLight = sensorMetrics.filter(m => m.type === 'LIGHT').reduce((sum, m) => sum + m.value, 0) / 
-          (sensorMetrics.filter(m => m.type === 'LIGHT').length || 1);
-        const avgHumidity = sensorMetrics.filter(m => m.type === 'HUMIDITY').reduce((sum, m) => sum + m.value, 0) / 
-          (sensorMetrics.filter(m => m.type === 'HUMIDITY').length || 1);
-
+        const avgTemperature =
+          sensorMetrics.filter((m) => m.type === SensorTypeEnum.TEMPERATURE).reduce((sum, m) => sum + m.value, 0) /
+          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.TEMPERATURE).length || 1);
+        const avgMoisture =
+          sensorMetrics.filter((m) => m.type === SensorTypeEnum.SOIL_MOISTURE).reduce((sum, m) => sum + m.value, 0) /
+          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.SOIL_MOISTURE).length || 1);
+        const avgLight =
+          sensorMetrics.filter((m) => m.type === SensorTypeEnum.LIGHT).reduce((sum, m) => sum + m.value, 0) /
+          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.LIGHT).length || 1);
+        const avgHumidity =
+          sensorMetrics.filter((m) => m.type === SensorTypeEnum.HUMIDITY).reduce((sum, m) => sum + m.value, 0) /
+          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.HUMIDITY).length || 1);
         metrics[zone.id] = { totalDevices, activeDevices, avgTemperature, avgMoisture, avgLight, avgHumidity };
       }
       setZoneMetrics(metrics);
