@@ -11,6 +11,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { useAuth } from '@lepark/common-ui';
 import EditPlantTaskModal from './EditPlantTaskModal';
 import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
+import { COLORS } from '../../config/colors';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -231,19 +232,19 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         switch (text) {
           case 'OPEN':
             return (
-              <Tag color="default" bordered={false}>
+              <Tag color={COLORS.sky[400]} bordered={false}>
                 {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'IN_PROGRESS':
             return (
-              <Tag color="blue" bordered={false}>
+              <Tag color={COLORS.mustard[400]} bordered={false}>
                 {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'COMPLETED':
             return (
-              <Tag color="green" bordered={false}>
+              <Tag color={COLORS.green[400]} bordered={false}>
                 {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );

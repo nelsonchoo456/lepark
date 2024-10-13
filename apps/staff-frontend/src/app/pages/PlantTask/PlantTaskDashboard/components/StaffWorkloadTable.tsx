@@ -10,6 +10,10 @@ interface StaffWorkloadTableProps {
   onParkChange: (parkId: string | null) => void;
 }
 
+export const colouredTaskCount = (count: number) => {
+  return <strong className={count < 4 ? "text-green-500" : count < 7 ? "text-warning" : "text-error"}>{count}</strong>
+}
+
 const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
   staffList,
   plantTasks,
@@ -52,9 +56,9 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
     { title: 'Name', dataIndex: 'name', key: 'name' },
     { title: 'Role', dataIndex: 'role', key: 'role' },
     { title: 'Park', dataIndex: 'parkName', key: 'parkName' },
-    { title: 'Total Tasks', dataIndex: 'totalTasks', key: 'totalTasks' },
-    { title: 'Open', dataIndex: 'openTasks', key: 'openTasks' },
-    { title: 'In Progress', dataIndex: 'inProgressTasks', key: 'inProgressTasks' },
+    { title: 'Total Tasks', dataIndex: 'totalTasks', key: 'totalTasks', render: (text: any) => colouredTaskCount(text) },
+    { title: 'Open', dataIndex: 'openTasks', key: 'openTasks', render: (text: any) => colouredTaskCount(text) },
+    { title: 'In Progress', dataIndex: 'inProgressTasks', key: 'inProgressTasks', render: (text: any) => colouredTaskCount(text) },
     { title: 'Completed', dataIndex: 'completedTasks', key: 'completedTasks' },
     { title: 'Cancelled', dataIndex: 'cancelledTasks', key: 'cancelledTasks' },
   ];
