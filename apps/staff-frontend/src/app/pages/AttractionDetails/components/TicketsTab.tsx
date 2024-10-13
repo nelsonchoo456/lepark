@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tooltip, TableProps, Tag, Flex, Input, Modal, Form, Select, message } from 'antd';
+import { Table, Button, Tooltip, TableProps, Tag, Flex, Input, Modal, Form, Select, message, Checkbox } from 'antd';
 import { FiEdit, FiEye, FiSearch, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
 import TextArea from 'antd/es/input/TextArea';
+import { InfoCircleOutlined } from '@ant-design/icons';
 // import TicketPurchaseChart from './TicketPurchaseChart';
 
 interface TicketsTabProps {
@@ -37,6 +38,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
   const [promptModalVisible, setPromptModalVisible] = useState(false);
   const [existingListing, setExistingListing] = useState<AttractionTicketListingResponse | null>(null);
   const [newListingValues, setNewListingValues] = useState<any>(null);
+  const [isFree, setIsFree] = useState(false);
 
   const canAddOrDelete = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
 
@@ -311,7 +313,21 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
           <Form.Item name="description" label="Description" rules={[{ required: true, message: 'Please enter a description' }]}>
             <TextArea placeholder="Describe the ticket listing" autoSize={{ minRows: 3, maxRows: 5 }} />
           </Form.Item>
-          <Form.Item name="price" label="Price" rules={[{ required: true, message: 'Please enter a price' }]}>
+
+          <Form.Item name="isFree" valuePropName="checked">
+            <Checkbox
+              onChange={(e) => {
+                setIsFree(e.target.checked);
+                if (e.target.checked) {
+                  form.setFieldsValue({ price: '0' });
+                }
+              }}
+            >
+              Free ticket
+            </Checkbox>
+          </Form.Item>
+
+          <Form.Item name="price" label="Price" rules={[{ required: !isFree, message: 'Please enter a price' }]} hidden={isFree}>
             <Input
               placeholder="Enter ticket listing price"
               type="number"
@@ -329,7 +345,19 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
               }}
             />
           </Form.Item>
-          <Form.Item name="isActive" label="Status" initialValue={true} valuePropName="checked">
+          <Form.Item
+            name="isActive"
+            label={
+              <>
+                Status
+                <Tooltip title="New listings are always set to active">
+                  <InfoCircleOutlined style={{ marginLeft: '4px', color: '#8c8c8c' }} />
+                </Tooltip>
+              </>
+            }
+            initialValue={true}
+            valuePropName="checked"
+          >
             <Input value="Active" readOnly />
           </Form.Item>
           <Form.Item>
