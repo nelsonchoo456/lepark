@@ -208,6 +208,7 @@ CREATE TABLE "AttractionTicketListing" (
     "id" UUID NOT NULL,
     "category" "AttractionTicketCategoryEnum" NOT NULL,
     "nationality" "AttractionTicketNationalityEnum" NOT NULL,
+    "description" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "isActive" BOOLEAN NOT NULL,
     "attractionId" UUID NOT NULL,
@@ -218,9 +219,7 @@ CREATE TABLE "AttractionTicketListing" (
 -- CreateTable
 CREATE TABLE "AttractionTicket" (
     "id" UUID NOT NULL,
-    "attractionDate" TIMESTAMP(3) NOT NULL,
     "status" "AttractionTicketStatusEnum" NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
     "attractionTicketListingId" UUID NOT NULL,
     "attractionTicketTransactionId" UUID NOT NULL,
 
@@ -232,7 +231,6 @@ CREATE TABLE "AttractionTicketTransaction" (
     "id" UUID NOT NULL,
     "attractionDate" TIMESTAMP(3) NOT NULL,
     "purchaseDate" TIMESTAMP(3) NOT NULL,
-    "quantity" DOUBLE PRECISION NOT NULL,
     "totalAmount" DOUBLE PRECISION NOT NULL,
     "visitorId" UUID NOT NULL,
     "attractionId" UUID NOT NULL,

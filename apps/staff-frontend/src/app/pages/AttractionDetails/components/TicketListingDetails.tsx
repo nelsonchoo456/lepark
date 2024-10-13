@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Typography, Tag, message, Button, Input, Select, Modal } from 'antd';
+import { Card, Descriptions, Typography, Tag, message, Button, Input, Select, Modal, DatePicker } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import {
   getAttractionTicketListingById,
@@ -8,6 +8,8 @@ import {
   getAttractionById,
   UpdateAttractionTicketListingData,
   getAttractionTicketListingsByAttractionId,
+  getAttractionTicketsByListingId,
+  getAttractionTicketTransactionById,
 } from '@lepark/data-access';
 import {
   AttractionTicketListingResponse,
@@ -20,6 +22,14 @@ import { StaffType, StaffResponse } from '@lepark/data-access';
 import PageHeader2 from '../../../components/main/PageHeader2';
 import { useRestrictAttractionTicketListing } from '../../../hooks/Attractions/useRestrictAttractionTicketListing';
 import TextArea from 'antd/es/input/TextArea';
+import moment from 'moment';
+import GraphContainer from './GraphContainer';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+
+dayjs.extend(isBetween);
+
+const { RangePicker } = DatePicker;
 
 const TicketListingDetails: React.FC = () => {
   const { ticketListingId } = useParams<{ ticketListingId: string }>();
@@ -28,6 +38,8 @@ const TicketListingDetails: React.FC = () => {
   const [inEditMode, setInEditMode] = useState(false);
   const [promptModalVisible, setPromptModalVisible] = useState(false);
   const [existingActiveListing, setExistingActiveListing] = useState<AttractionTicketListingResponse | null>(null);
+  const [ticketSalesData, setTicketSalesData] = useState<any>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(30, 'days'), dayjs()]);
 
   const { user } = useAuth<StaffResponse>();
 
@@ -39,6 +51,63 @@ const TicketListingDetails: React.FC = () => {
     }
   }, [ticketListing]);
 
+  useEffect(() => {
+    if (ticketListingId) {
+      fetchTicketSalesData();
+    }
+  }, [ticketListingId, dateRange]);
+
+  const fetchTicketSalesData = async () => {
+    try {
+      const response = await getAttractionTicketsByListingId(ticketListingId as string);
+      const tickets = response.data;
+
+      const ticketData = await Promise.all(
+        tickets.map(async (ticket) => {
+          const transactionResponse = await getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
+          return {
+            ...ticket,
+            purchaseDate: transactionResponse.data.purchaseDate,
+          };
+        }),
+      );
+
+      const filteredTickets = ticketData.filter((ticket) => {
+        const ticketDate = dayjs(ticket.purchaseDate);
+        return ticketDate.isBetween(dateRange[0], dateRange[1], 'day', '[]');
+      });
+
+      const groupedData = filteredTickets.reduce((acc, ticket) => {
+        const date = dayjs(ticket.purchaseDate).format('YYYY-MM-DD');
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const labels = Object.keys(groupedData).sort();
+      const data = labels.map((date) => groupedData[date]);
+
+      setTicketSalesData({
+        labels,
+        datasets: [
+          {
+            label: 'Tickets Sold',
+            data,
+            fill: false,
+            borderColor: '#a3d4c7',
+            backgroundColor: '#a3d4c7',
+            tension: 0.1,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Error fetching ticket sales data:', error);
+    }
+  };
+
+  const handleDateRangeChange = (dates: any) => {
+    setDateRange(dates);
+  };
+
   const toggleEditMode = () => {
     if (inEditMode) {
       setEditedTicketListing(ticketListing);
@@ -49,7 +118,7 @@ const TicketListingDetails: React.FC = () => {
   const handleInputChange = (key: string, value: any) => {
     setEditedTicketListing((prev) => {
       if (prev === null) return null;
-  
+
       // Handle price input
       if (key === 'price') {
         const regex = /^\d*\.?\d{0,2}$/;
@@ -61,14 +130,14 @@ const TicketListingDetails: React.FC = () => {
         }
         return prev;
       }
-  
+
       // Handle all other inputs, including description
       return {
         ...prev,
         [key]: value,
       };
     });
-  
+
     // Check for existing active listing when changing to active
     if (key === 'isActive' && value === true) {
       checkExistingActiveListing();
@@ -204,24 +273,24 @@ const TicketListingDetails: React.FC = () => {
           <span className="mr-2">$</span>
           <Input
             type="number"
-          value={editedTicketListing?.price}
-          onChange={(e) => {
-            const value = e.target.value;
-            const regex = /^(\d+(\.\d{0,2})?)?$/;
-            if (regex.test(value)) {
-              handleInputChange('price', value);
-            } else {
-              e.target.value = value.replace(/[^\d.]/g, '');
-              const parts = e.target.value.split('.');
-              if (parts[1] && parts[1].length > 2) {
-                parts[1] = parts[1].slice(0, 2);
+            value={editedTicketListing?.price}
+            onChange={(e) => {
+              const value = e.target.value;
+              const regex = /^(\d+(\.\d{0,2})?)?$/;
+              if (regex.test(value)) {
+                handleInputChange('price', value);
+              } else {
+                e.target.value = value.replace(/[^\d.]/g, '');
+                const parts = e.target.value.split('.');
+                if (parts[1] && parts[1].length > 2) {
+                  parts[1] = parts[1].slice(0, 2);
+                }
+                const newValue = parts.join('.');
+                handleInputChange('price', newValue);
               }
-              const newValue = parts.join('.');
-              handleInputChange('price', newValue);
-            }
-          }}
-          step="0.01"
-          min="0"
+            }}
+            step="0.01"
+            min="0"
             style={{ width: '100%' }}
           />
         </div>
@@ -287,44 +356,85 @@ const TicketListingDetails: React.FC = () => {
     }
 
     return (
-      <ContentWrapperDark>
-        <PageHeader2 breadcrumbItems={breadcrumbItems} />
-        <Card>
-          <Descriptions
-            labelStyle={{ width: '30%' }}
-            bordered
-            column={1}
-            size="middle"
-            items={getDescriptionItems()}
-            title={
-              <div className="w-full flex justify-between">
-                {!inEditMode ? (
-                  <>
-                    <div>Ticket Listing Details</div>
-                    {canEdit && <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />}
-                  </>
-                ) : (
-                  <>
-                    <Button icon={<RiArrowLeftLine className="text-lg" />} type="text" onClick={toggleEditMode}>
-                      Return
-                    </Button>
-                    <div className="text-secondary">Edit Ticket Listing</div>
-                    <Button type="primary" onClick={handleSave}>
-                      Save
-                    </Button>
-                  </>
-                )}
-              </div>
-            }
-          />
-        </Card>
-      </ContentWrapperDark>
+        <><PageHeader2 breadcrumbItems={breadcrumbItems} /><Card>
+        <Descriptions
+          labelStyle={{ width: '30%' }}
+          bordered
+          column={1}
+          size="middle"
+          items={getDescriptionItems()}
+          title={<div className="w-full flex justify-between">
+            {!inEditMode ? (
+              <>
+                <div>Ticket Listing Details</div>
+                {canEdit && <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />}
+              </>
+            ) : (
+              <>
+                <Button icon={<RiArrowLeftLine className="text-lg" />} type="text" onClick={toggleEditMode}>
+                  Return
+                </Button>
+                <div className="text-secondary">Edit Ticket Listing</div>
+                <Button type="primary" onClick={handleSave}>
+                  Save
+                </Button>
+              </>
+            )}
+          </div>} />
+      </Card></>
     );
   };
 
   return (
     <>
-      {renderContent()}
+      <ContentWrapperDark>
+        {renderContent()}
+        <Card title="Ticket Sales Over Time">
+          <RangePicker value={dateRange} onChange={handleDateRangeChange} style={{ marginBottom: '20px' }} />
+          <div className="flex flex-col items-center justify-center w-full sm:w-5/6 md:w-3/4 lg:w-2/3 mx-auto">
+          {ticketSalesData && (
+            <GraphContainer
+              title="Tickets Sold Over Time"
+              data={ticketSalesData}
+              type="line"
+              options={{
+                maintainAspectRatio: true,
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    title: {
+                      display: true,
+                      text: 'Number of Tickets',
+                    },
+                    ticks: {
+                      stepSize: 1,
+                      precision: 0,
+                    },
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Purchase Date',
+                    },
+                    ticks: {
+                      maxRotation: 45,
+                      minRotation: 45,
+                    },
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'top',
+                  },
+                },
+              }}
+            />
+          )}
+          </div>
+        </Card>
+      </ContentWrapperDark>
       <Modal
         title="Duplicate Active Listing"
         open={promptModalVisible}

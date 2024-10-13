@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { Axios, AxiosPromise, AxiosResponse } from 'axios';
 import {
   AttractionTicketTransactionResponse,
   CreateAttractionTicketTransactionData,
@@ -191,6 +191,21 @@ export async function getStripePublishableKey(): Promise<string> {
   try {
     const response: AxiosResponse<StripeKeyResponse> = await client.get(`${URL}/stripe-key`);
     return response.data.publishableKey;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAttractionTicketsByAttractionId(attractionId: string): Promise<AxiosResponse<AttractionTicketResponse[]>> {
+  try {
+    const response: AxiosResponse<AttractionTicketResponse[]> = await client.get(
+      `${URL}/getAttractionTicketsByAttractionId/${attractionId}`
+    );
+    return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw error.response?.data.error || error.message;

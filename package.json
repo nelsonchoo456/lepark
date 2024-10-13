@@ -8,6 +8,7 @@
     "@ant-design/colors": "^7.1.0",
     "@geoman-io/leaflet-geoman-free": "^2.17.0",
     "@hello-pangea/dnd": "^17.0.0",
+    "@lepark/data-utility": "file:../../libs/data-utility",
     "@prisma/client": "^5.19.0",
     "@stripe/react-stripe-js": "^2.8.1",
     "@stripe/stripe-js": "^4.8.0",
@@ -54,8 +55,7 @@
     "tailwindcss": "^3.4.10",
     "tslib": "^2.3.0",
     "zod": "^3.23.8",
-    "zod-validation-error": "^3.3.1",
-    "@lepark/data-utility": "file:../../libs/data-utility"
+    "zod-validation-error": "^3.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",

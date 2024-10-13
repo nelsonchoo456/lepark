@@ -12,6 +12,7 @@ import {
   AttractionTicketCategoryEnum,
   AttractionTicketNationalityEnum,
   updateAttractionTicketListingDetails,
+  getAttractionTicketsByListingId,
 } from '@lepark/data-access';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType, StaffResponse } from '@lepark/data-access';
@@ -24,10 +25,14 @@ interface TicketsTabProps {
   onTicketListingCreated: () => void;
 }
 
+interface ExtendedAttractionTicketListingResponse extends AttractionTicketListingResponse {
+  ticketsSold?: number;
+}
+
 const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCreated }) => {
   const navigate = useNavigate();
-  const [ticketListings, setTicketListings] = useState<AttractionTicketListingResponse[]>([]);
-  const [filteredListings, setFilteredListings] = useState<AttractionTicketListingResponse[]>([]);
+  const [ticketListings, setTicketListings] = useState<ExtendedAttractionTicketListingResponse[]>([]);
+  const [filteredListings, setFilteredListings] = useState<ExtendedAttractionTicketListingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -39,26 +44,34 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
   const [existingListing, setExistingListing] = useState<AttractionTicketListingResponse | null>(null);
   const [newListingValues, setNewListingValues] = useState<any>(null);
   const [isFree, setIsFree] = useState(false);
+  const [inactivateModalVisible, setInactivateModalVisible] = useState(false);
+  const [listingToInactivate, setListingToInactivate] = useState<ExtendedAttractionTicketListingResponse | null>(null);
 
   const canAddOrDelete = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
-
+ 
   useEffect(() => {
-    const fetchTicketListings = async () => {
-      if (attraction?.id) {
-        try {
-          const response = await getAttractionTicketListingsByAttractionId(attraction.id);
-          setTicketListings(response.data);
-          setFilteredListings(response.data);
-        } catch (error) {
-          console.error('Error fetching ticket listings:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
     fetchTicketListings();
   }, [attraction]);
+
+  const fetchTicketListings = async () => {
+    if (attraction?.id) {
+      try {
+        const response = await getAttractionTicketListingsByAttractionId(attraction.id);
+        const listingsWithSales: ExtendedAttractionTicketListingResponse[] = await Promise.all(
+          response.data.map(async (listing) => {
+            const salesResponse = await getAttractionTicketsByListingId(listing.id);
+            return { ...listing, ticketsSold: salesResponse.data.length };
+          })
+        );
+        setTicketListings(listingsWithSales);
+        setFilteredListings(listingsWithSales);
+      } catch (error) {
+        console.error('Error fetching ticket listings:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
     const searchTerms = searchTerm
@@ -124,9 +137,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
     setIsModalVisible(false);
     form.resetFields();
     // Refresh ticket listings
-    const response = await getAttractionTicketListingsByAttractionId(attraction!.id);
-    setTicketListings(response.data);
-    setFilteredListings(response.data);
+    fetchTicketListings();
     onTicketListingCreated();
   };
 
@@ -157,10 +168,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         form.resetFields();
 
         // Refresh ticket listings
-        const response = await getAttractionTicketListingsByAttractionId(attraction.id);
-        setTicketListings(response.data);
-        setFilteredListings(response.data);
-        onTicketListingCreated();
+        fetchTicketListings();
       } catch (error) {
         console.error('Error updating and creating ticket listings:', error);
         message.error('Failed to update and create ticket listings');
@@ -174,9 +182,43 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
     setNewListingValues(null);
   };
 
-  const showDeleteConfirm = (id: string) => {
-    setTicketListingToDelete(id);
-    setDeleteModalVisible(true);
+  const showDeleteConfirm = (listing: ExtendedAttractionTicketListingResponse) => {
+    if (listing.ticketsSold && listing.ticketsSold > 0) {
+      setListingToInactivate(listing);
+      setInactivateModalVisible(true);
+    } else {
+      setTicketListingToDelete(listing.id);
+      setDeleteModalVisible(true);
+    }
+  };
+
+  const handleInactivateConfirm = async () => {
+    if (listingToInactivate) {
+      try {
+        await updateAttractionTicketListingDetails(listingToInactivate.id, {
+          category: listingToInactivate.category,
+          nationality: listingToInactivate.nationality,
+          description: listingToInactivate.description,
+          price: listingToInactivate.price,
+          attractionId: listingToInactivate.attractionId,
+          isActive: false,
+        });
+        message.success('Ticket listing set to inactive successfully');
+        // Refresh ticket listings
+        fetchTicketListings();
+      } catch (error) {
+        console.error('Error inactivating ticket listing:', error);
+        message.error('Failed to inactivate ticket listing');
+      } finally {
+        setInactivateModalVisible(false);
+        setListingToInactivate(null);
+      }
+    }
+  };
+
+  const handleInactivateCancel = () => {
+    setInactivateModalVisible(false);
+    setListingToInactivate(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -185,10 +227,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         await deleteAttractionTicketListing(ticketListingToDelete);
         message.success('Ticket listing deleted successfully');
         // Refresh ticket listings
-        if (attraction?.id) {
-          const response = await getAttractionTicketListingsByAttractionId(attraction.id);
-          setTicketListings(response.data);
-        }
+        fetchTicketListings();
       } catch (error) {
         console.error('Error deleting ticket listing:', error);
         message.error('Failed to delete ticket listing');
@@ -204,7 +243,7 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
     setTicketListingToDelete(null);
   };
 
-  const columns: TableProps<AttractionTicketListingResponse>['columns'] = [
+  const columns: TableProps<ExtendedAttractionTicketListingResponse>['columns'] = [
     {
       title: 'Nationality',
       dataIndex: 'nationality',
@@ -244,6 +283,18 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
       onFilter: (value, record) => record.isActive === value,
     },
     {
+      title: 'Tickets Sold',
+      key: 'ticketsSold',
+      dataIndex: 'ticketsSold',
+      render: (ticketsSold: number) => ticketsSold || 0,
+      sorter: (a, b) => {
+        const aSold = typeof a.ticketsSold === 'number' ? a.ticketsSold : 0;
+        const bSold = typeof b.ticketsSold === 'number' ? b.ticketsSold : 0;
+        return aSold - bSold;
+      },
+      width: '15%',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
@@ -252,8 +303,13 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`ticketlisting/${record.id}`)} />
           </Tooltip>
           {canAddOrDelete && (
-            <Tooltip title="Delete">
-              <Button danger type="link" icon={<FiTrash2 className="text-error" />} onClick={() => showDeleteConfirm(record.id)} />
+            <Tooltip title={record.ticketsSold && record.ticketsSold > 0 ? "Set Inactive" : "Delete"}>
+              <Button
+                danger
+                type="link"
+                icon={<FiTrash2 className="text-error" />}
+                onClick={() => showDeleteConfirm(record)}
+              />
             </Tooltip>
           )}
         </Flex>
@@ -378,6 +434,18 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
         okButtonProps={{ danger: true }}
       >
         <p>Are you sure you want to delete this ticket listing? This action cannot be undone.</p>
+      </Modal>
+
+      <Modal
+        title="Set Listing to Inactive"
+        open={inactivateModalVisible}
+        onOk={handleInactivateConfirm}
+        onCancel={handleInactivateCancel}
+        okText="Set Inactive"
+        cancelText="Cancel"
+      >
+        <p>This ticket listing has sold tickets and cannot be deleted.</p>
+        <p>Would you like to set it to inactive instead?</p>
       </Modal>
 
       <Modal

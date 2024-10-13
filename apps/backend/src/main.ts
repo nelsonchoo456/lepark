@@ -28,7 +28,6 @@ import sensorRouter from './routers/sensorRouter';
 import decarbonizationAreaRouter from './routers/decarbonizationAreaRouter';
 import sequestrationHistoryRouter from './routers/sequestrationHistoryRouter';
 import promotionRouter from './routers/promotionRouter';
-import { authenticateJWTStaff } from './middleware/authenticateJWT';
 import os from 'os';
 import faqRouter from './routers/faqRouter';
 

@@ -12,6 +12,8 @@ import LocationTab from './components/LocationTab';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 import TicketsTab from './components/TicketsTab';
 import { useLocation } from 'react-router-dom';
+import DashboardTab from './components/DashboardTab';
+import TicketSalesTab from './components/TicketSalesTab';
 
 const AttractionDetails = () => {
   const { user } = useAuth<StaffResponse>();
@@ -70,13 +72,18 @@ const AttractionDetails = () => {
     },
     {
       key: 'tickets',
-      label: 'Tickets',
+      label: 'Ticket Listings',
       children: attraction ? <TicketsTab attraction={attraction} onTicketListingCreated={triggerFetch} /> : <></>,
     },
     {
-      key: 'occupancy',
-      label: 'Occupancy',
-      children: <Empty description={'Occupancy Coming Soon'}></Empty>,
+      key: 'ticketSales',
+      label: 'Ticket Sales',
+      children: attraction ? <TicketSalesTab attraction={attraction} /> : <></>,
+    },
+    {
+      key: 'dashboard',
+      label: 'Dashboard',
+      children: attraction ? <DashboardTab attractionId={attraction.id} /> : <></>,
     },
   ];
 

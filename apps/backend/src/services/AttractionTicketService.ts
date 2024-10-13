@@ -232,6 +232,28 @@ class AttractionTicketService {
     }
     return AttractionTicketDao.updateAttractionTicketStatus(id, status);
   }
+
+  public async getAttractionTicketsByAttractionId(
+    attractionId: string,
+  ): Promise<(AttractionTicket & { attractionTicketListing: AttractionTicketListing })[]> {
+    const attraction = await AttractionDao.getAttractionById(attractionId);
+    if (!attraction) {
+      throw new Error('Attraction not found');
+    }
+
+    const tickets = await AttractionTicketDao.getAttractionTicketsByAttractionId(attractionId);
+
+    // Fetch the associated ticket listings
+    const ticketsWithListings = await Promise.all(tickets.map(async (ticket) => {
+      const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+      return {
+        ...ticket,
+        attractionTicketListing: listing,
+      };
+    }));
+
+    return ticketsWithListings;
+  }
 }
 
 function ensureAllFieldsPresent(data: AttractionTicketTransactionSchemaType): Prisma.AttractionTicketTransactionCreateInput {

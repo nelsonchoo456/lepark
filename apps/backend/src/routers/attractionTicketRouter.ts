@@ -169,3 +169,12 @@ router.get('/stripe-key', (_, res) => {
 });
 
 export default router;
+
+router.get('/getAttractionTicketsByAttractionId/:attractionId', async (req, res) => {
+  try {
+    const tickets = await AttractionTicketService.getAttractionTicketsByAttractionId(req.params.attractionId);
+    res.status(200).json(tickets);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});

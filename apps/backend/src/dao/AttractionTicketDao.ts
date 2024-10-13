@@ -61,6 +61,19 @@ class AttractionTicketDao {
       data: { status },
     });
   }
+
+  async getAttractionTicketsByAttractionId(attractionId: string): Promise<AttractionTicket[]> {
+    return prisma.attractionTicket.findMany({
+      where: {
+        attractionTicketTransaction: {
+          attractionId: attractionId,
+        },
+      },
+      include: {
+        attractionTicketTransaction: true,
+      },
+    });
+  }
 }
 
 export default new AttractionTicketDao();
