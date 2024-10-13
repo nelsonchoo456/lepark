@@ -167,6 +167,19 @@ useEffect(() => {
     </div>
   </div>
 
+<br/>
+   <div className="flex justify-between items-center">
+     <LogoText className="font-bold text-lg">FAQs</LogoText>
+     <Link to="/faq" className="text-green-600 hover:text-green-700 flex items-center">
+       <Space>
+         View All
+         <FiExternalLink />
+       </Space>
+     </Link>
+   </div>
+   <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
+<br/>
+<br/>
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
@@ -179,6 +192,8 @@ useEffect(() => {
             </div>
           </Card>
         </Badge.Ribbon>
+
+
       </ContentWrapper>
     </div>
     // </MainLayout>
