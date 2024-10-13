@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Sensor, Hub, Facility } from '@prisma/client';
+import { PrismaClient, Prisma, Sensor, Hub, Facility, SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
 import HubDao from './HubDao';
 import ParkDao from './ParkDao';
 import { ParkResponseData } from '../schemas/parkSchema';
@@ -120,6 +120,18 @@ class SensorDao {
 
   async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
     return prisma.sensor.findUnique({ where: { serialNumber } });
+  }
+
+  async getSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hub: { zoneId } } });
+  }
+
+  async getSensorsByZoneIdAndType(zoneId: number, sensorType: SensorTypeEnum): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hub: { zoneId }, sensorType } });
+  }
+
+  async getSensorsByHubIdAndType(hubId: string, sensorType: SensorTypeEnum): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hubId, sensorType } });
   }
 
   async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {

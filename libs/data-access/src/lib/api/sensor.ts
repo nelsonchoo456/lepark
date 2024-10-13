@@ -60,6 +60,33 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
     }
   }
 }
+
+export async function getSensorsByHubId(hubId: string): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByHubId/${hubId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getSensorsByZoneId(zoneId: number): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByZoneId/${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updateSensorDetails(
   id: string,
   data: Partial<SensorResponse>,

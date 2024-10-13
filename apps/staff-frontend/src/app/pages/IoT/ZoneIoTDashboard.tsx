@@ -2,13 +2,25 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { Card, Input, Row, Col, Statistic, Tag, Button, Flex, Tooltip, Typography, Progress, Space } from 'antd';
 import { FiSearch, FiEye } from 'react-icons/fi';
-import { StaffResponse, ZoneResponse, HubResponse, SensorResponse, SensorStatusEnum, SensorTypeEnum } from '@lepark/data-access';
+import {
+  StaffResponse,
+  ZoneResponse,
+  HubResponse,
+  SensorResponse,
+  SensorStatusEnum,
+  SensorTypeEnum,
+  getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo,
+  getZoneTrendForSensorType,
+  getActiveZoneSensorCount,
+  getAverageDifferenceBetweenPeriodsBySensorType,
+} from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import { getSensorReadingsAverageForPastFourHours } from '@lepark/data-access';
+
+import { ArrowDownOutlined, ArrowUpOutlined, ArrowRightOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -18,56 +30,41 @@ const ZoneIoTDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const [zoneMetrics, setZoneMetrics] = useState<{ [key: number]: any }>({});
+  const [zoneDifferences, setZoneDifferences] = useState<{ [key: number]: any }>({});
+  const [activeSensorCounts, setActiveSensorCounts] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     const fetchZoneMetrics = async () => {
       const metrics: { [key: number]: any } = {};
+      const differences: { [key: number]: any } = {};
+      const activeCounts: { [key: number]: number } = {};
       for (const zone of zones) {
-        const hub = zone.hub;
-        const sensors = zone.sensors || [];
-        const totalDevices = (hub ? 1 : 0) + sensors.length;
-        const activeDevices = (hub?.hubStatus === 'ACTIVE' ? 1 : 0) + 
-          sensors.filter(s => s.sensorStatus === SensorStatusEnum.ACTIVE).length;
+        try {
+          const averageReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(zone.id, 4);
+          metrics[zone.id] = averageReadings.data;
 
-        const sensorMetrics = await Promise.all(sensors.map(async (sensor) => {
-          try {
-            const response = await getSensorReadingsAverageForPastFourHours(sensor.id);
-            console.log(response.data);
-            // Calculate average of all readings in the past 4 hours
-            const averageValue = response.data.reduce((sum, reading) => sum + reading.value, 0) / response.data.length;
-            return { type: sensor.sensorType, value: averageValue };
-          } catch (error) {
-            console.error(`Error fetching data for sensor ${sensor.id}:`, error);
-            return { type: sensor.sensorType, value: 0 };
-          }
-        }));
+          const avgDifferences = await getAverageDifferenceBetweenPeriodsBySensorType(zone.id, 4);
+          differences[zone.id] = avgDifferences.data;
 
-        const avgTemperature =
-          sensorMetrics.filter((m) => m.type === SensorTypeEnum.TEMPERATURE).reduce((sum, m) => sum + m.value, 0) /
-          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.TEMPERATURE).length || 1);
-        const avgMoisture =
-          sensorMetrics.filter((m) => m.type === SensorTypeEnum.SOIL_MOISTURE).reduce((sum, m) => sum + m.value, 0) /
-          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.SOIL_MOISTURE).length || 1);
-        const avgLight =
-          sensorMetrics.filter((m) => m.type === SensorTypeEnum.LIGHT).reduce((sum, m) => sum + m.value, 0) /
-          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.LIGHT).length || 1);
-        const avgHumidity =
-          sensorMetrics.filter((m) => m.type === SensorTypeEnum.HUMIDITY).reduce((sum, m) => sum + m.value, 0) /
-          (sensorMetrics.filter((m) => m.type === SensorTypeEnum.HUMIDITY).length || 1);
-        metrics[zone.id] = { totalDevices, activeDevices, avgTemperature, avgMoisture, avgLight, avgHumidity };
+          const activeCount = await getActiveZoneSensorCount(zone.id);
+          activeCounts[zone.id] = activeCount.data.count;
+        } catch (error) {
+          console.error(`Error fetching data for zone ${zone.id}:`, error);
+          metrics[zone.id] = {};
+          differences[zone.id] = {};
+          activeCounts[zone.id] = 0;
+        }
       }
       setZoneMetrics(metrics);
+      setZoneDifferences(differences);
+      setActiveSensorCounts(activeCounts);
     };
 
     fetchZoneMetrics();
   }, [zones]);
 
   const filteredZones = useMemo(() => {
-    return zones.filter((zone) =>
-      Object.values(zone).some((value) => 
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
+    return zones.filter((zone) => Object.values(zone).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
   }, [searchQuery, zones]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,11 +77,16 @@ const ZoneIoTDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'OPEN': return 'green';
-      case 'UNDER_CONSTRUCTION': return 'orange';
-      case 'LIMITED_ACCESS': return 'yellow';
-      case 'CLOSED': return 'red';
-      default: return 'default';
+      case 'OPEN':
+        return 'green';
+      case 'UNDER_CONSTRUCTION':
+        return 'orange';
+      case 'LIMITED_ACCESS':
+        return 'yellow';
+      case 'CLOSED':
+        return 'red';
+      default:
+        return 'default';
     }
   };
 
@@ -97,23 +99,31 @@ const ZoneIoTDashboard: React.FC = () => {
     },
   ];
 
+  const renderDifference = (sensorType: SensorTypeEnum, zoneId: number) => {
+    const difference = zoneDifferences[zoneId]?.[sensorType]?.difference;
+    if (difference === undefined) return null;
+
+    const icon = difference >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />;
+    return (
+      <Tooltip title="Change from previous 4-hour period">
+        <Text type="secondary" style={{ marginLeft: 8 }}>
+          {icon} {Math.abs(difference).toFixed(2)}
+        </Text>
+      </Tooltip>
+    );
+  };
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Flex justify="end" className="mb-4">
-        <Input 
-          suffix={<FiSearch />} 
-          placeholder="Search zones..." 
-          className="bg-white" 
-          style={{ width: 250 }}
-          onChange={handleSearch}
-        />
+        <Input suffix={<FiSearch />} placeholder="Search zones..." className="bg-white" style={{ width: 250 }} onChange={handleSearch} />
       </Flex>
 
       <Row gutter={[16, 16]}>
         {filteredZones.map((zone) => {
           const metrics = zoneMetrics[zone.id] || {};
-          const { totalDevices, activeDevices, avgTemperature, avgMoisture, avgLight, avgHumidity } = metrics;
+          const activeSensorCount = activeSensorCounts[zone.id] || 0;
           return (
             <Col xs={24} sm={12} lg={8} key={zone.id}>
               <Card
@@ -130,24 +140,66 @@ const ZoneIoTDashboard: React.FC = () => {
                 }
               >
                 <Flex vertical gap="small">
-                  <Statistic title="IoT Devices" value={totalDevices} />
-                  <Statistic title="Active Devices" value={activeDevices} suffix={`/ ${totalDevices}`} />
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Statistic title="Avg. Soil Moisture" value={avgMoisture?.toFixed(2) || 0} suffix="%" />
+                      <Statistic
+                        title="Avg. Soil Moisture"
+                        value={metrics[SensorTypeEnum.SOIL_MOISTURE]?.toFixed(2) || 0}
+                        suffix={
+                          <>
+                            %
+                            {renderDifference(SensorTypeEnum.SOIL_MOISTURE, zone.id)}
+                          </>
+                        }
+                      />
                     </Col>
                     <Col span={12}>
-                      <Statistic title="Avg. Light" value={avgLight?.toFixed(2) || 0} suffix="Lux" />
+                      <Statistic
+                        title="Avg. Light"
+                        value={metrics[SensorTypeEnum.LIGHT]?.toFixed(2) || 0}
+                        suffix={
+                          <>
+                            Lux
+                            {renderDifference(SensorTypeEnum.LIGHT, zone.id)}
+                          </>
+                        }
+                      />
                     </Col>
                   </Row>
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Statistic title="Avg. Temperature" value={avgTemperature?.toFixed(2) || 0} suffix="°C" />
+                      <Statistic
+                        title="Avg. Temperature"
+                        value={metrics[SensorTypeEnum.TEMPERATURE]?.toFixed(2) || 0}
+                        suffix={
+                          <>
+                            °C
+                            {renderDifference(SensorTypeEnum.TEMPERATURE, zone.id)}
+                          </>
+                        }
+                      />
                     </Col>
                     <Col span={12}>
-                      <Statistic title="Avg. Humidity" value={avgHumidity?.toFixed(2) || 0} suffix="%" />
+                      <Statistic
+                        title="Avg. Humidity"
+                        value={metrics[SensorTypeEnum.HUMIDITY]?.toFixed(2) || 0}
+                        suffix={
+                          <>
+                            %
+                            {renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}
+                          </>
+                        }
+                      />
                     </Col>
                   </Row>
+                  <Statistic
+                    title="Active Sensors"
+                    value={activeSensorCount}
+                    suffix="sensors"
+                  />
+                  <Typography.Text type="secondary">
+                    Average readings for the past 4 hours
+                  </Typography.Text>
                 </Flex>
               </Card>
             </Col>

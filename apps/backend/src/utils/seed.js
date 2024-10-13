@@ -443,20 +443,14 @@ const getRandomItems = (array, count) => {
 };
 
 // Generate mock sensor readings
-const generateMockReadings = (sensorType, count = 50) => {
+const generateMockReadings = (sensorType) => {
   const readings = [];
   const now = new Date();
+  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
   
-  // Generate readings for the past 4 hours (1 reading every 15 minutes)
-  for (let i = 0; i < 16; i++) {
-    const readingDate = new Date(now.getTime() - i * 15 * 60000);
-    readings.push(createReading(sensorType, readingDate));
-  }
-  
-  // Generate the rest of the readings for earlier times
-  for (let i = 16; i < count; i++) {
-    const readingDate = new Date(now.getTime() - (4 * 3600000 + i * 3600000)); // Start 4 hours ago, then one per hour
-    readings.push(createReading(sensorType, readingDate));
+  // Generate readings every 15 minutes from now till 8 hours ago
+  for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
+    readings.push(createReading(sensorType, time));
   }
   
   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first

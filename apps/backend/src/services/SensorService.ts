@@ -178,6 +178,10 @@ class SensorService {
     return SensorDao.getAllSensorsByFacilityId(hub.facilityId);
   }
 
+  public async getSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return SensorDao.getSensorsByZoneId(zoneId);
+  }
+
   public async getSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
     return SensorDao.getAllSensorsByFacilityId(facilityId);
   }
