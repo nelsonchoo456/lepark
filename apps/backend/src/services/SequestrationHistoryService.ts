@@ -140,9 +140,9 @@ public async getTotalSequestrationForParkAndDate(parkId: number, date: string): 
     throw new Error('Invalid year format');
   }
 
-  console.log('Fetching total sequestration for park:', parkId, 'and year:', parsedYear);
+
   const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndYear(parkId, parsedYear);
-  console.log('Total sequestration result:', result);
+
   return result;
 }
 

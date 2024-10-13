@@ -73,7 +73,6 @@ class SequestrationHistoryDao {
         }
       }
     });
-    console.log('Aggregation result:', result);
     return result._sum.seqValue || 0;
   }
 
@@ -101,7 +100,7 @@ class SequestrationHistoryDao {
   });
 
   const totalSequestration = result._sum.seqValue || 0;
-  console.log(`Total sequestration for ${parkId === 0 ? 'all parks' : `park ${parkId}`} in year ${year}:`, totalSequestration);
+
   return totalSequestration;
   }
 }
