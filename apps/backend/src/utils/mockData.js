@@ -2605,7 +2605,78 @@ const faqsData = [
     status: "ACTIVE",
     parkId: 2,
     priority: 2
-  }
+  },
+  // General FAQs without parkId
+{
+  category: "GENERAL",
+  question: "What is the purpose of urban parks?",
+  answer: "Urban parks serve multiple purposes including providing green spaces for recreation, improving air quality, and enhancing the overall quality of life in cities.",
+  status: "ACTIVE",
+  priority: 1
+},
+{
+  category: "PARK_RULES",
+  question: "Are there general rules that apply to all parks?",
+  answer: "Yes, common rules include respecting wildlife, properly disposing of trash, and following posted signs and regulations specific to each park.",
+  status: "DRAFT",
+  priority: 1
+},
+{
+  category: "FACILITIES",
+  question: "What types of facilities are commonly found in parks?",
+  answer: "Common park facilities include playgrounds, picnic areas, walking trails, sports fields, and restrooms. Specific amenities vary by park.",
+  status: "ACTIVE",
+  priority: 1
+},
+{
+  category: "EVENTS",
+  question: "Do parks typically host public events?",
+  answer: "Many parks host public events such as concerts, festivals, and educational programs. Check individual park schedules for specific events.",
+  status: "INACTIVE",
+  priority: 1
+},
+{
+  category: "SAFETY",
+  question: "What general safety tips should I follow when visiting a park?",
+  answer: "Stay on designated paths, be aware of your surroundings, carry water, and inform someone of your plans if going to a remote area.",
+  status: "ACTIVE",
+  priority: 1
+},
+{
+  category: "ACCESSIBILITY",
+  question: "Are parks generally accessible to people with disabilities?",
+  answer: "Many parks strive to be accessible, but features vary. Check with specific parks for details on accessible facilities and trails.",
+  status: "ARCHIVED",
+  priority: 1
+},
+{
+  category: "SERVICES",
+  question: "What services are typically offered in parks?",
+  answer: "Common services include visitor information centers, guided tours, educational programs, and sometimes rentals for recreational equipment.",
+  status: "ACTIVE",
+  priority: 1
+},
+{
+  category: "TICKETING",
+  question: "Do all parks require entrance fees?",
+  answer: "Entrance fees vary by park. Many urban parks are free, while some national or state parks may charge fees. Always check before visiting.",
+  status: "DRAFT",
+  priority: 1
+},
+{
+  category: "PARK_HISTORY",
+  question: "Why is understanding park history important?",
+  answer: "Park history provides context for conservation efforts, helps visitors appreciate the area's significance, and often reveals interesting local stories.",
+  status: "ACTIVE",
+  priority: 1
+},
+{
+  category: "OTHER",
+  question: "How can I contribute to park conservation efforts?",
+  answer: "You can contribute by following park rules, participating in volunteer programs, supporting conservation organizations, and practicing Leave No Trace principles.",
+  status: "INACTIVE",
+  priority: 1
+}
 ];
 
 module.exports = {
