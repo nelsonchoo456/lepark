@@ -11,6 +11,7 @@ import {
   PlantTaskTypeEnum,
   PlantTaskUrgencyEnum,
   ZoneResponse,
+  PlantTaskUpdateData,
 } from '@lepark/data-access';
 import { Button, Card, Form, Input, message, Select, DatePicker, Divider } from 'antd';
 import dayjs from 'dayjs';
@@ -58,13 +59,14 @@ const PlantTaskEdit = () => {
       const formValues = await form.validateFields();
       if (!plantTask) return;
 
-      const changedData: Partial<PlantTaskResponse> = Object.keys(formValues).reduce((acc, key) => {
-        const typedKey = key as keyof PlantTaskResponse; // Cast key to the correct type
+      const changedData: Partial<PlantTaskUpdateData> = Object.keys(formValues).reduce((acc, key) => {
+        const typedKey = key as keyof PlantTaskUpdateData; // Cast key to the correct type
         if (JSON.stringify(formValues[typedKey]) !== JSON.stringify(plantTask?.[typedKey])) {
           acc[typedKey] = formValues[typedKey];
         }
         return acc;
-      }, {} as Partial<PlantTaskResponse>);
+      }, {} as Partial<PlantTaskUpdateData>);
+      changedData.dueDate = formValues.dueDate ? dayjs(formValues.dueDate).toISOString() : null;
 
       changedData.images = currentImages;
       const response = await updatePlantTaskDetails(plantTask.id, changedData, selectedFiles);
@@ -130,7 +132,8 @@ const PlantTaskEdit = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" onFinish={handleSubmit}>
-          <Form.Item label="Zone">{plantTask?.zoneName}</Form.Item>
+          {user?.role === 'SUPERADMIN' ? <Form.Item label="Park">{plantTask?.occurrence?.zone.park.name}</Form.Item> : null}
+          <Form.Item label="Zone">{plantTask?.occurrence?.zone.name}</Form.Item>
           <Form.Item label="Occurrence">{plantTask?.occurrence?.title}</Form.Item>
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
             <Input placeholder="Enter Plant Task title" />
@@ -143,6 +146,9 @@ const PlantTaskEdit = () => {
           </Form.Item>
           <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
             <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
+          </Form.Item>
+          <Form.Item name="dueDate" label="Due Date" rules={[{ required: true, message: 'Please select a due date' }]}>
+            <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().endOf('day')} />
           </Form.Item>
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />

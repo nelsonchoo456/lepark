@@ -15,7 +15,7 @@ import {
   getOccurrencesByParkId,
   StaffType,
 } from '@lepark/data-access';
-import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker } from 'antd';
+import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker, Switch, Radio } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
@@ -40,6 +40,8 @@ const CreatePlantTask = () => {
 
   const [isZoneDisabled, setIsZoneDisabled] = useState(true);
   const [isOccurrenceDisabled, setIsOccurrenceDisabled] = useState(true);
+
+  const [showDueDate, setShowDueDate] = useState(false);
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
@@ -118,10 +120,11 @@ const CreatePlantTask = () => {
         return;
       }
 
-      const { parkId, zoneId, ...plantTaskData } = values;
+      const { parkId, zoneId, hasDueDate, dueDate, ...plantTaskData } = values;
       const taskData = {
         ...plantTaskData,
-        submittingStaffId: user.id,
+        dueDate: hasDueDate ? dayjs(dueDate).toISOString() : null,
+        submittingStaffId: user.id
       };
       console.log('plantTaskData', taskData);
 
@@ -131,6 +134,14 @@ const CreatePlantTask = () => {
     } catch (error) {
       console.error('Error creating Plant Task:', error);
       messageApi.error('Failed to create Plant Task. Please try again.');
+    }
+  };
+
+  const handleDueDateToggle = (value: string) => {
+    const checked = value === 'yes';
+    setShowDueDate(checked);
+    if (!checked) {
+      form.setFieldsValue({ dueDate: null });
     }
   };
 
@@ -213,19 +224,38 @@ const CreatePlantTask = () => {
             <Form.Item
               name="title"
               label="Title"
-              rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }]}
+              rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }, { max: 100, message: 'Valid title must be at most 100 characters long' }]}
             >
               <Input placeholder="Give this Plant Task a title!" />
-            </Form.Item>
-            <Form.Item name="taskType" label="Task Type" rules={[{ required: true }]}>
-              <Select placeholder="Select a Task Type" options={taskTypeOptions} />
             </Form.Item>
             <Form.Item name="description" label="Description" rules={[{ required: true }]}>
               <TextArea placeholder="Describe the Plant Task" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
+            <Form.Item name="taskType" label="Task Type" rules={[{ required: true}]}>
+              <Select placeholder="Select a Task Type" options={taskTypeOptions} />
+            </Form.Item>
             <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
+              
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
+            <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
+              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType='button' defaultValue="no">
+                <Radio value="yes">Yes</Radio>
+                <Radio value="no">No</Radio>
+              </Radio.Group>
+            </Form.Item>
+            {showDueDate && (
+              <Form.Item
+                name="dueDate"
+                label="Due Date"
+                rules={[{ required: true, message: 'Please select a due date' }]}
+              >
+                <DatePicker
+                  className="w-full"
+                  disabledDate={(current) => current && current < dayjs().endOf('day')}
+                />
+              </Form.Item>
+            )}
             <Form.Item label="Upload Images" required tooltip="At least one image is required">
               <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
             </Form.Item>

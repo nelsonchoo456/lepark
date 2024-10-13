@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -14,6 +14,8 @@ import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
+import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
+import { AiOutlinePercentage } from 'react-icons/ai';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -33,7 +35,6 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
-      console.log(user)
       setUserRole(role);
     }
   };
@@ -43,15 +44,13 @@ const MainLayout = () => {
       const fetchPark = async () => {
         const parkRes = await getParkById(user.parkId as number);
         if (parkRes.status === 200) {
-          const parkData = parkRes.data
+          const parkData = parkRes.data;
           setPark(parkData);
         }
       };
       fetchPark();
     }
-  
-  }, [user])
-  
+  }, [user]);
 
   // Resizing
   useEffect(() => {
@@ -171,29 +170,38 @@ const MainLayout = () => {
           onClick: () => navigate('/occurrences'),
           label: 'Occurrences',
         },
-      ]
+      ],
     },
-    userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.ARBORIST || userRole === StaffType.BOTANIST
+    {
+      key: 'decarbonizationarea',
+      icon: <GiTreehouse />,
+      label: 'Decarbonization Areas',
+      onClick: () => navigate('/decarbonization-area'),
+    },
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.MANAGER ||
+    userRole === StaffType.ARBORIST ||
+    userRole === StaffType.BOTANIST
       ? {
           key: 'iot',
           label: 'IoT Assets',
-      icon: <MdSensors />,
-      children: [
-        {
-          key: 'sensor',
           icon: <MdSensors />,
-          label: 'Sensors',
-          onClick: () => navigate('/sensor'),
-        },
-        {
-          key: 'hubs',
-          icon: <FaNetworkWired />,
-          label: 'Hubs',
-          onClick: () => navigate('/hubs'),
-        },
-      ],
-    }
-    : null,
+          children: [
+            {
+              key: 'sensor',
+              icon: <MdSensors />,
+              label: 'Sensors',
+              onClick: () => navigate('/sensor'),
+            },
+            {
+              key: 'hubs',
+              icon: <FaNetworkWired />,
+              label: 'Hubs',
+              onClick: () => navigate('/hubs'),
+            },
+          ],
+        }
+      : null,
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
@@ -202,44 +210,61 @@ const MainLayout = () => {
     },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
-          key: 'attraction',
+          key: 'attractionEvents',
           icon: <TbTicket />,
-          label: 'Attractions',
-          onClick: () => navigate('/attraction'),
+          label: 'Attractions & Events',
+          children: [
+            {
+              key: 'attraction',
+              icon: <TbTicket />,
+              label: 'Attractions',
+              onClick: () => navigate('/attraction'),
+            },
+            {
+              key: 'event',
+              icon: <TbCalendarEvent />,
+              label: 'Events',
+              onClick: () => navigate('/event'),
+            },
+            {
+              key: 'promotion',
+              icon: <AiOutlinePercentage />,
+              label: 'Promotions',
+              onClick: () => navigate('/promotion'),
+            },
+          ],
         }
       : null,
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+    userRole === 'MANAGER' ||
+    userRole === 'SUPERADMIN' ||
+    userRole === 'BOTANIST' ||
+    userRole === 'ARBORIST' ||
+    userRole === 'PARK_RANGER' ||
+    userRole === 'VENDOR_MANAGER'
       ? {
-          key: 'event',
-          icon: <TbCalendarEvent />,
-          label: 'Events',
-          onClick: () => navigate('/event'),
+          key: 'task',
+          icon: <FiInbox />,
+          label: 'Tasks',
+          children: [
+            {
+              key: 'plant-tasks',
+              label: 'Plant Tasks',
+              onClick: () => navigate('/plant-tasks'),
+            },
+            {
+              key: 'maintenance-tasks',
+              label: 'Maintenance Tasks',
+              onClick: () => navigate('/maintenance-tasks'),
+            },
+          ],
         }
       : null,
-    // userRole === 'MANAGER' ||
-    // userRole === 'SUPERADMIN' ||
-    // userRole === 'BOTANIST' ||
-    // userRole === 'ARBORIST' ||
-    // userRole === 'PARK_RANGER' ||
-    // userRole === 'VENDOR_MANAGER'
-    //   ? {
-    //       key: 'task',
-    //       icon: <FiInbox />,
-    //       label: 'Tasks',
-    //       children: [
-    //         {
-    //           key: 'plant-tasks',
-    //           label: 'Plant Tasks',
-    //           onClick: () => navigate('/plant-tasks'),
-    //         },
-    //         {
-    //           key: 'maintenance-tasks',
-    //           label: 'Maintenance Tasks',
-    //           onClick: () => navigate('/maintenance-tasks'),
-    //         },
-    //       ],
-    //     }
-    //   : null,
+     {
+      key: 'faq',
+      icon: <FiHelpCircle />,
+      label: 'FAQ',
+      onClick: () => navigate('/faq'),
+    },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',

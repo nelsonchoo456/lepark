@@ -24,6 +24,7 @@ export const HubSchema = z.object({
   remarks: z.string().optional(),
   zoneId: z.number().int().optional(),
   facilityId: z.string().uuid().optional(),
+  lastDataUpdateDate: z.date().optional(),
 });
 
 export type HubSchemaType = z.infer<typeof HubSchema>;

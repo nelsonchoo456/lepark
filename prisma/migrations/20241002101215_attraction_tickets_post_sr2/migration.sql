@@ -76,6 +76,18 @@ CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIM
 -- CreateEnum
 CREATE TYPE "PlantTaskUrgencyEnum" AS ENUM ('IMMEDIATE', 'HIGH', 'NORMAL', 'LOW');
 
+-- CreateEnum
+CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT');
+
+-- CreateEnum
+CREATE TYPE "PromotionStatus" AS ENUM ('ENABLED', 'DISABLED');
+
+-- CreateEnum
+CREATE TYPE "FAQStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'DRAFT', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "FAQCategoryEnum" AS ENUM ('GENERAL', 'PARK_RULES', 'FACILITIES', 'EVENTS', 'SAFETY', 'ACCESSIBILITY', 'SERVICES', 'TICKETING', 'PARK_HISTORY', 'OTHER');
+
 -- CreateTable
 CREATE TABLE "Staff" (
     "id" UUID NOT NULL,
@@ -285,7 +297,8 @@ CREATE TABLE "Hub" (
     "long" DOUBLE PRECISION,
     "remarks" TEXT,
     "zoneId" INTEGER,
-    "facilityId" UUID NOT NULL,
+    "facilityId" UUID,
+    "lastDataUpdateDate" TIMESTAMP(3),
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
 );
@@ -300,11 +313,8 @@ CREATE TABLE "Sensor" (
     "description" TEXT,
     "sensorStatus" "SensorStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "lastCalibratedDate" TIMESTAMP(3),
-    "calibrationFrequencyDays" INTEGER,
     "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
-    "dataFrequencyMinutes" INTEGER,
     "sensorUnit" "SensorUnitEnum" NOT NULL,
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
@@ -316,6 +326,16 @@ CREATE TABLE "Sensor" (
     "facilityId" UUID,
 
     CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SensorReading" (
+    "id" UUID NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "value" DOUBLE PRECISION NOT NULL,
+    "sensorId" UUID NOT NULL,
+
+    CONSTRAINT "SensorReading_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -350,17 +370,6 @@ CREATE TABLE "MaintenanceHistory" (
     "description" TEXT NOT NULL,
 
     CONSTRAINT "MaintenanceHistory_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "CalibrationHistory" (
-    "id" UUID NOT NULL,
-    "hubId" UUID,
-    "sensorId" UUID,
-    "calibrationDate" TIMESTAMP(3) NOT NULL,
-    "description" TEXT NOT NULL,
-
-    CONSTRAINT "CalibrationHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -406,12 +415,75 @@ CREATE TABLE "PlantTask" (
     "occurrenceId" UUID NOT NULL,
     "assignedStaffId" UUID,
     "submittingStaffId" UUID NOT NULL,
+    "position" INTEGER NOT NULL,
 
     CONSTRAINT "PlantTask_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "DecarbonizationArea" (
+    "id" UUID NOT NULL,
+    "geom" TEXT NOT NULL,
+    "description" TEXT,
+    "name" TEXT NOT NULL,
+    "parkId" INTEGER NOT NULL,
+
+    CONSTRAINT "DecarbonizationArea_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SequestrationHistory" (
+    "id" UUID NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "seqValue" DOUBLE PRECISION NOT NULL,
+    "decarbonizationAreaId" UUID NOT NULL,
+
+    CONSTRAINT "SequestrationHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Promotion" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "discountType" "DiscountType" NOT NULL,
+    "promoCode" TEXT,
+    "isNParksWide" BOOLEAN NOT NULL,
+    "parkId" INTEGER,
+    "images" TEXT[],
+    "discountValue" DOUBLE PRECISION NOT NULL,
+    "validFrom" TIMESTAMP(3) NOT NULL,
+    "validUntil" TIMESTAMP(3) NOT NULL,
+    "status" "PromotionStatus" NOT NULL,
+    "terms" TEXT[],
+    "maximumUsage" INTEGER,
+    "minimumAmount" DOUBLE PRECISION,
+    "isOneTime" BOOLEAN NOT NULL,
+
+    CONSTRAINT "Promotion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "FAQ" (
+    "id" UUID NOT NULL,
+    "category" "FAQCategoryEnum" NOT NULL,
+    "question" TEXT NOT NULL,
+    "answer" TEXT NOT NULL,
+    "status" "FAQStatusEnum" NOT NULL,
+    "parkId" INTEGER,
+    "priority" INTEGER,
+
+    CONSTRAINT "FAQ_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_VisitorfavoriteSpecies" (
+    "A" UUID NOT NULL,
+    "B" UUID NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_VisitorPromotionsRedeemed" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
 );
@@ -459,10 +531,19 @@ CREATE UNIQUE INDEX "ParkAsset_serialNumber_key" ON "ParkAsset"("serialNumber");
 CREATE INDEX "Facility_parkId_idx" ON "Facility"("parkId");
 
 -- CreateIndex
+CREATE INDEX "FAQ_parkId_idx" ON "FAQ"("parkId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_VisitorfavoriteSpecies_AB_unique" ON "_VisitorfavoriteSpecies"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_VisitorfavoriteSpecies_B_index" ON "_VisitorfavoriteSpecies"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_VisitorPromotionsRedeemed_AB_unique" ON "_VisitorPromotionsRedeemed"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_VisitorPromotionsRedeemed_B_index" ON "_VisitorPromotionsRedeemed"("B");
 
 -- AddForeignKey
 ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_speciesId_fkey" FOREIGN KEY ("speciesId") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -495,6 +576,9 @@ ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") RE
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "SensorReading" ADD CONSTRAINT "SensorReading_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -507,19 +591,25 @@ ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_sensorId_fke
 ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "ParkAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CalibrationHistory" ADD CONSTRAINT "CalibrationHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_assignedStaffId_fkey" FOREIGN KEY ("assignedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_submittingStaffId_fkey" FOREIGN KEY ("submittingStaffId") REFERENCES "Staff"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_submittingStaffId_fkey" FOREIGN KEY ("submittingStaffId") REFERENCES "Staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SequestrationHistory" ADD CONSTRAINT "SequestrationHistory_decarbonizationAreaId_fkey" FOREIGN KEY ("decarbonizationAreaId") REFERENCES "DecarbonizationArea"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_VisitorPromotionsRedeemed" ADD CONSTRAINT "_VisitorPromotionsRedeemed_A_fkey" FOREIGN KEY ("A") REFERENCES "Promotion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_VisitorPromotionsRedeemed" ADD CONSTRAINT "_VisitorPromotionsRedeemed_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;

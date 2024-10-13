@@ -14,10 +14,17 @@ const {
   parkAssetsData,
   sensorsData,
   attractionTicketListingsData,
+  decarbonizationAreasData,
+  plantTasksData,
+  seqHistoriesData,
+  faqsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
+const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
+
+
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -191,6 +198,23 @@ async function createZone(data) {
 
   return zone[0];
 }
+
+async function seedFAQs() {
+  console.log('Seeding FAQs...');
+  const faqList = [];
+  for (const faq of faqsData) {
+    try {
+      const createdFAQ = await prisma.fAQ.create({
+        data: faq,
+      });
+      faqList.push(createdFAQ);
+    } catch (error) {
+      console.error(`Error creating FAQ: ${error.message}`);
+    }
+  }
+  console.log(`Total FAQs seeded: ${faqList.length}\n`);
+}
+
 
 async function seed() {
   const parks = [];
@@ -382,7 +406,121 @@ async function seed() {
     attractionTicketListingsList.push(createdAttraction);
   }
   console.log(`Total attractions listings seeded: ${attractionTicketListingsList.length}\n`);
+  
+const plantTasksList = [];
+  for (const plantTask of plantTasksData) {
+    // Ensure we have valid staff and occurrence data
+    if (staffList.length > 0 && occurrenceList.length > 0) {
+      const randomStaffIndex = Math.floor(Math.random() * staffList.length);
+      const randomOccurrenceIndex = Math.floor(Math.random() * occurrenceList.length);
+
+      const createdPlantTask = await prisma.plantTask.create({
+        data: {
+          ...plantTask,
+          submittingStaff: {
+            connect: { id: staffList[randomStaffIndex].id },
+          },
+          occurrence: {
+            connect: { id: occurrenceList[randomOccurrenceIndex].id },
+          },
+        },
+      });
+      plantTasksList.push(createdPlantTask);
+    } else {
+      console.warn('Unable to create plant task: No staff or occurrences available');
+    }
+  }
+
+  console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
+
+  //console.log('Seeding decarbonization areas...');
+  const decarbonizationAreaList = [];
+  for (const area of decarbonizationAreasData) {
+    try {
+      const id = uuidv4();
+      await prisma.$executeRaw`
+        INSERT INTO "DecarbonizationArea" (id, geom, description, name, "parkId")
+        VALUES (
+          ${id}::uuid,
+          ${area.geom},
+          ${area.description},
+          ${area.name},
+          ${area.parkId}
+        )
+      `;
+
+      // Fetch the inserted data
+      const [insertedArea] = await prisma.$queryRaw`
+        SELECT id, name, description, geom::text as geom, "parkId"
+        FROM "DecarbonizationArea"
+        WHERE id = ${id}::uuid
+      `;
+
+      decarbonizationAreaList.push(insertedArea);
+      //console.log(`Inserted area: ${insertedArea.name}`);
+    } catch (error) {
+      console.error(`Error inserting decarbonization area: ${area.name}`);
+      console.error(error);
+    }
+  }
+  console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
+
+  // Now create sequestration histories after all decarbonization areas are created
+  console.log('Seeding 14 sequestration histories per decarb area...');
+
+  for (let i = 0; i < decarbonizationAreaList.length; i++) {
+    const area = decarbonizationAreaList[i];
+    await createSeqHistories(area.id, seqHistoriesData[i], i);
+  }
+
+  await seedFAQs();
 }
+
+async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
+
+  const seqHistories = [];
+
+  let currentSeqValue = baseSeqHistory.seqValue;
+  const interval = 0.2; // 0.2 kg interval
+
+  // Create entries for 2023 and 2024
+  for (let year = 2023; year <= 2024; year++) {
+    for (let i = 0; i < 7; i++) {
+      const newDate = new Date(baseSeqHistory.date);
+      newDate.setFullYear(year);
+      newDate.setDate(newDate.getDate() + i);
+
+      try {
+        const createdSeqHistory = await prisma.sequestrationHistory.create({
+          data: {
+            date: newDate,
+            seqValue: currentSeqValue,
+            decarbonizationAreaId: decarbAreaId
+          }
+        });
+        seqHistories.push(createdSeqHistory);
+        currentSeqValue += interval; // Increase by 0.2 kg for the next entry
+      } catch (error) {
+        console.error(`Error inserting sequestration history for date: ${newDate.toISOString()}`);
+        console.error(error);
+      }
+    }
+  }
+
+  console.log(`Total sequestration histories seeded: ${seqHistories.length}\n`);
+  /*seqHistories.forEach((history, i) => {
+    console.log(`History ${i + 1}:`);
+    console.log(`  ID: ${history.id}`);
+    console.log(`  Date: ${history.date}`);
+    console.log(`  Sequestration Value: ${history.seqValue.toFixed(3)}`);
+    console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
+    console.log('---');
+  });*/
+
+  //faq'=
+
+}
+
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {

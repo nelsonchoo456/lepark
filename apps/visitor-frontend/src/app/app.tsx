@@ -7,6 +7,7 @@ import NxWelcome from './nx-welcome';
 import MainLanding from './pages/MainLanding/MainLanding';
 import MapPage from './pages/MapPage/MapPage';
 import MainLayout from './components/main/MainLayout';
+import DecarbViewDetails from './pages/Decarb/DecarbViewDetails';
 import Login from './pages/Login/Login';
 import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
@@ -32,6 +33,9 @@ import ViewAttractionTransactions from './pages/Profile/ViewAttractionTransactio
 import AttractionTransactionDetails from './pages/Profile/ViewAttractionTransactionDetails';
 import AttractionTicketDetails from './pages/Profile/AttractionTicketDetails';
 
+import DecarbViewAll from './pages/Decarb/DecarbViewAll';
+import PromotionViewAll from './pages/Promotions/PromotionViewAll';
+import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -122,6 +126,14 @@ export function App() {
                   <Route path="park/:parkId" element={<AttractionsPerPark />} />
                   <Route path=":attractionId" element={<VisitorViewAttractionDetails />} />
                   <Route path=":attractionId/listings" element={<ViewAttractionTicketListings />} />
+                </Route>
+                <Route path="/decarb">
+                  <Route index element={<DecarbViewAll />} />
+                  <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
+                </Route>
+                <Route path="/promotions">
+                  <Route index element={<PromotionViewAll/>}/>
+                  <Route path=":promotionId" element={<PromotionViewDetails/>}/>
                 </Route>
               </Route>
             </Routes>

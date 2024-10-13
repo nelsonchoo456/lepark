@@ -42,8 +42,20 @@ export * from './lib/types/parkasset';
 
 export * from './lib/api/sensor';
 export * from './lib/types/sensor';
+
+export * from './lib/api/decarbonizationarea';
+export * from './lib/types/decarbonizationarea';
+export * from './lib/api/sequestrationhistory';
+export * from './lib/types/sequestrationhistory';
 export * from './lib/api/facility';
 export * from './lib/types/facility';
 
 export * from './lib/api/attractionTicket';
 export * from './lib/types/attractionTicket';
+
+export * from './lib/api/promotion';
+export * from './lib/types/promotion';
+
+
+export * from './lib/api/faq';
+export * from './lib/types/faq';

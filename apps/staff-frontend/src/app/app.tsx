@@ -73,10 +73,27 @@ import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 import TicketListingDetails from './pages/AttractionDetails/components/TicketListingDetails';
 
 import HubEdit from './pages/Hub/HubEdit';
+
+import DecarbonizationAreaDetails from './pages/DecarbonizationAreaDetails/DecarbonizationAreaDetails';
+import CreateDecarbonizationArea from './pages/DecarbonizationArea/CreateDecarbonizationArea';
+import DecarbonizationAreaEditMap from './pages/DecarbonizationAreaEditMap/DecarbonizationAreaEditMap';
+import DecarbonizationAreaEdit from './pages/DecarbonizationAreaEdit/DecarbonizationAreaEdit';
+import DecarbonizationAreaList from './pages/DecarbonizationArea/DecarbonizationAreaList';
 import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
+import DecarbonizationAreaChart from './pages/DecarbonizationArea/DecarbonizationAreaChart';
+import PromotionList from './pages/Promotion/PromotionList';
+import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
+import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
+import FAQList from './pages/FAQ/FAQList';
+import FAQCreate from './pages/FAQ/FAQCreate';
+import { App as AntdApp } from 'antd';
+
 export function App() {
   return (
+    <AntdApp>
     <StaffAuthWrapper>
       <ConfigProvider
         theme={{
@@ -330,6 +347,7 @@ export function App() {
                   }
                 />
               </Route>
+
               {/* Attraction Routes */}
               <Route
                 element={
@@ -367,7 +385,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -413,7 +437,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -426,6 +456,65 @@ export function App() {
                 </Route>
               </Route>
 
+              <Route path="/decarbonization-area">
+                <Route index element={<DecarbonizationAreaList />} />
+                <Route path="create" element={<CreateDecarbonizationArea />} />
+                <Route path="chart" element={<DecarbonizationAreaChart />} />
+                <Route path=":decarbonizationAreaId" element={<DecarbonizationAreaDetails />} />
+                <Route
+                  path=":id/edit-map"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <DecarbonizationAreaEditMap />
+                    </>
+                  }
+                />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        redirectTo="/"
+                      />
+                      <DecarbonizationAreaEdit />
+                    </>
+                  }
+                />
+              </Route>
+
+              <Route path="/promotion">
+                <Route index element={<PromotionList />} />
+                <Route path="archived" element={<ArchivedPromotionList />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <ParkPromotionCreate />
+                    </>
+                  }
+                />
+                <Route
+                  path=":promotionId"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <PromotionDetails />
+                    </>
+                  }
+                />
+              </Route>
+
+              <Route path="/faq">
+                <Route index element={<FAQList />} />
+              <Route path="create" element={<FAQCreate />} />
+              </Route>
+
               {/* Catch-all for 404 */}
               <Route path="*" element={<PageNotFound />} />
             </Route>
@@ -433,6 +522,7 @@ export function App() {
         </BrowserRouter>
       </ConfigProvider>
     </StaffAuthWrapper>
+    </AntdApp>
   );
 }
 
