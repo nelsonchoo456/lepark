@@ -1,11 +1,14 @@
-import { FacilityResponse, HubResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import { FacilityResponse, HubResponse, ParkResponse, ZoneResponse, StaffResponse, StaffType,  } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { TbBuildingEstate, TbTree } from 'react-icons/tb';
+import { TbBuildingEstate, TbEdit, TbTree } from 'react-icons/tb';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
 import { MdOutlineHub } from 'react-icons/md';
+import { useAuth } from '@lepark/common-ui';
+import { Button, Tooltip } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 interface MapTabProps {
   lat: number,
@@ -17,7 +20,11 @@ interface MapTabProps {
 }
 
 const ZoneTab = ({ lat, lng, hub, park, zone, zones }: MapTabProps) => {
+  const { user } = useAuth<StaffResponse>();
+  const navigate = useNavigate();
 
+  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
+  
   return (
     <div
       style={{
@@ -68,6 +75,15 @@ const ZoneTab = ({ lat, lng, hub, park, zone, zones }: MapTabProps) => {
           
         )}
       </MapContainer>
+      {canActivateEdit && (
+        <div className="absolute top-4 right-3 z-[1000]">
+          <Tooltip title="Edit Location">
+            <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/hubs/${hub.id}/edit-location`)}>
+              Edit Location
+            </Button>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 };

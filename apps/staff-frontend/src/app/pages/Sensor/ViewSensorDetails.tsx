@@ -144,13 +144,6 @@ const ViewSensorDetails = () => {
       label: 'Information',
       children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
-    // sensor && sensor.facility
-    //   ? {
-    //       key: 'location',
-    //       label: 'Storeroom Location',
-    //       children: <LocationTab facility={sensor.facility} park={sensor.park} zones={zones} />,
-    //     }
-    //   : null,
     ...(sensor?.hub && sensor.lat && sensor.long
       ? [
           {

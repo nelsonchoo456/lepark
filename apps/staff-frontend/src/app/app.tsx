@@ -89,6 +89,9 @@ import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
 import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
 import SensorAddToHub from './pages/Sensor/SensorAddToHub';
 import IotMap from './pages/IotMap/IotMap';
+import HubUpdateLocation from './pages/Hub/HubUpdateLocation';
+import SensorUpdateLocation from './pages/Sensor/SensorUpdateLocation';
+
 export function App() {
   return (
     <StaffAuthWrapper>
@@ -399,6 +402,7 @@ export function App() {
 
                   <Route path="create" element={<HubCreate />} />
                   <Route path=":hubId/edit" element={<HubEdit />} />
+                  <Route path=":hubId/edit-location" element={<HubUpdateLocation />} />
                   <Route path=":hubId/place-in-zone" element={<HubPlaceInZone />} />
                   {/* <Route path="edit"/> */}
                 </Route>
@@ -450,6 +454,7 @@ export function App() {
                   <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
+                  <Route path=":sensorId/edit-location" element={<SensorUpdateLocation />} />
                   <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
                   <Route path="map-view" element={<IotMap />} />
                 </Route>

@@ -1,12 +1,15 @@
-import { FacilityResponse, HubResponse, ParkResponse, SensorResponse, ZoneResponse } from '@lepark/data-access';
+import { FacilityResponse, HubResponse, ParkResponse, SensorResponse, StaffResponse, StaffType, ZoneResponse } from '@lepark/data-access';
 import { Circle, MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { TbBuildingEstate, TbTree } from 'react-icons/tb';
+import { TbBuildingEstate, TbEdit, TbTree } from 'react-icons/tb';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
 import { MdOutlineHub, MdSensors } from 'react-icons/md';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@lepark/common-ui';
+import { Button, Tooltip } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 interface MapTabProps {
   lat: number,
@@ -18,7 +21,11 @@ interface MapTabProps {
 }
 
 const ZoneTab = ({ lat, lng, sensor, hub, park, zones }: MapTabProps) => {
+  const { user } = useAuth<StaffResponse>();
   const [zone, setZone] = useState<ZoneResponse>();
+  const navigate = useNavigate();
+
+  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER
 
   useEffect(() => {
     if (hub.zoneId && zones?.length > 0) {
@@ -27,6 +34,7 @@ const ZoneTab = ({ lat, lng, sensor, hub, park, zones }: MapTabProps) => {
     }
   }, [hub, zones])
   return (
+
     <div
       style={{
         height: '60vh',
@@ -89,6 +97,15 @@ const ZoneTab = ({ lat, lng, sensor, hub, park, zones }: MapTabProps) => {
           
         )}
       </MapContainer>
+      {canActivateEdit && (
+        <div className="absolute top-4 right-3 z-[1000]">
+          <Tooltip title="Edit Location">
+            <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/sensor/${sensor.id}/edit-location`)}>
+              Edit Location
+            </Button>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 };

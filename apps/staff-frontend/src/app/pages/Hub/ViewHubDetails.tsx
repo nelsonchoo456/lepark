@@ -20,7 +20,7 @@ const ViewHubDetails = () => {
   const { zones } = useFetchZones();
   const navigate = useNavigate();
 
-  console.log(zones, hub?.zone)
+  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER
 
   const breadcrumbItems = [
     {
@@ -105,9 +105,10 @@ const ViewHubDetails = () => {
             children: (
               <div className="flex w-full items-start justify-between">
                 {hub?.facility?.name}{' '}
-                {hub?.hubStatus === "INACTIVE" && 
+                {hub?.hubStatus === "INACTIVE" && canActivateEdit
+             &&
                   <Button type="primary" icon={<IoLocationOutline />} onClick={() => navigate(`/hubs/${hub?.id}/place-in-zone`)} className="-mt-1">
-                    Place in Zone
+                    Activate
                   </Button>
                 }
               </div>

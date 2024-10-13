@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { addHubToZone, createOccurrence, getZonesByParkId, HubResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import {
+  addHubToZone,
+  createOccurrence,
+  getHubsFiltered,
+  getZonesByParkId,
+  HubResponse,
+  StaffResponse,
+  StaffType,
+} from '@lepark/data-access';
 import { Button, Card, Flex, Form, Input, Result, Select, Steps, message } from 'antd';
 import CreateDetailsStep from './components/PlaceZoneDetailsStep';
 import CreateMapStep from './components/PlaceZoneMapStep';
@@ -26,7 +34,7 @@ const HubPlaceInZone = () => {
   const [currStep, setCurrStep] = useState<number>(0);
   const [createdData, setCreatedData] = useState<HubResponse | null>();
   // const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
-  
+
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -38,17 +46,27 @@ const HubPlaceInZone = () => {
   const [lat, setLat] = useState(center.lat);
   const [lng, setLng] = useState(center.lng);
 
-  const [zones, setZones] = useState<ZoneResponse[]>();
-  const [selectedZone, setSelectedZone] = useState<ZoneResponse>()
+  const [zones, setZones] = useState<(ZoneResponse & { hubId?: string })[]>();
+  const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
 
   useEffect(() => {
     if (!hub) return;
+    let zonesNoHubs: (ZoneResponse & { hubId?: string })[] = [];
     const fetchZones = async () => {
       try {
         const zonesRes = await getZonesByParkId(hub?.facility.parkId);
         if (zonesRes.status === 200) {
-          setZones(zonesRes.data);
+          zonesNoHubs = zonesRes.data;
         }
+
+        const hubsRes = await getHubsFiltered('ACTIVE', hub?.facility.parkId);
+        if (hubsRes.status === 200) {
+          hubsRes.data.forEach((assignedHub) => {
+            const z = zonesNoHubs.find((z) => z.id === assignedHub.zoneId);
+            if (z) z.hubId = assignedHub.id;
+          });
+        }
+        setZones(zonesNoHubs);
       } catch (error) {
         message.error('Unable to fetch Zones for this Park');
       }
@@ -58,24 +76,23 @@ const HubPlaceInZone = () => {
 
   useEffect(() => {
     if (zones && zones?.length > 0 && zoneId) {
-      setSelectedZone(zones.find((z) => z.id === zoneId))
+      setSelectedZone(zones.find((z) => z.id === zoneId));
     }
-  }, [zones, zoneId])
+  }, [zones, zoneId]);
 
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
       try {
         const values = await form.validateFields(); // Get form data
-        setCurrStep(0); 
+        setCurrStep(0);
       } catch (error) {
         // console.error('Validation failed:', error);
       }
-      
     } else if (step === 1) {
       if (!zoneId || !lat) {
-        message.error("Please select a Zone and place the Hub");
+        message.error('Please select a Zone and place the Hub');
       } else {
-        setCurrStep(1); 
+        setCurrStep(1);
       }
     } else {
       return;
@@ -95,7 +112,7 @@ const HubPlaceInZone = () => {
     if (!hub) return;
     try {
       if (!selectedZone) {
-        message.error("Please select a Zone");
+        message.error('Please select a Zone');
         return;
       }
 
@@ -105,24 +122,25 @@ const HubPlaceInZone = () => {
         ...values,
         lat,
         long: lng,
-        zoneId: selectedZone.id
+        zoneId: selectedZone.id,
       };
       const response = await addHubToZone(hub.id, finalData);
 
       if (response.status === 200) {
-        setCreatedData(response.data)
-        setCurrStep(2)
+        setCreatedData(response.data);
+        setCurrStep(2);
       }
     } catch (error) {
-      if (error === "Zone not found" 
-        || error === "Zone already has a hub assigned"
-        || error === "Hub and zone are in different parks"
-        || error === "Hub already has a zone"
-        || error === "Hub must be inactive to be added to a zone"
-        || error === "Hub is decommissioned. It cannot be used."
-        || error === "Hub is under maintenance. It cannot be used."
-        || error === "Hub already has a radio group"
-        || error === "Hub already has a hub secret"
+      if (
+        error === 'Zone not found' ||
+        error === 'Zone already has a hub assigned' ||
+        error === 'Hub and zone are in different parks' ||
+        error === 'Hub already has a zone' ||
+        error === 'Hub must be inactive to be added to a zone' ||
+        error === 'Hub is decommissioned. It cannot be used.' ||
+        error === 'Hub is under maintenance. It cannot be used.' ||
+        error === 'Hub already has a radio group' ||
+        error === 'Hub already has a hub secret'
       ) {
         messageApi.open({
           type: 'error',
@@ -140,7 +158,7 @@ const HubPlaceInZone = () => {
   const content = [
     {
       key: 'location',
-      children: (hub && 
+      children: hub && (
         <CreateMapStep
           adjustLatLng={adjustLatLng}
           lat={lat}
@@ -154,13 +172,7 @@ const HubPlaceInZone = () => {
     },
     {
       key: 'details',
-      children: (
-        <CreateDetailsStep
-          handleCurrStep={handleCurrStep}
-          handleSubmit={handleSubmit}
-          form={form}
-        />
-      ),
+      children: <CreateDetailsStep handleCurrStep={handleCurrStep} handleSubmit={handleSubmit} form={form} />,
     },
     {
       key: 'complete',
@@ -179,16 +191,21 @@ const HubPlaceInZone = () => {
       pathKey: `/hubs/${hub?.id}`,
     },
     {
-      title: "Place in Zone",
+      title: 'Activate',
       pathKey: `/hubs/${hub?.id}/place-in-zone`,
       isCurrent: true,
     },
   ];
 
-  if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.MANAGER && user?.role !== StaffType.BOTANIST && user?.role !== StaffType.ARBORIST) {
-    return <></>
+  if (
+    user?.role !== StaffType.SUPERADMIN &&
+    user?.role !== StaffType.MANAGER &&
+    user?.role !== StaffType.BOTANIST &&
+    user?.role !== StaffType.ARBORIST
+  ) {
+    return <></>;
   }
-  
+
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -219,32 +236,40 @@ const HubPlaceInZone = () => {
               <Form.Item name="zoneId" label="Zone" rules={[{ required: true }]}>
                 <Select
                   placeholder="Select a Zone"
-                  options={zones?.map((zone) => ({ key: zone.id, value: zone.id, label: zone.name }))}
+                  options={zones?.map((zone) => ({
+                    key: zone.id,
+                    value: zone.id,
+                    label: (
+                      <div className="flex justify-between">
+                        {zone.name} {zone.hubId && <div>Has a Hub</div>}
+                      </div>
+                    ),
+                    disabled: !!zone.hubId,
+                  }))}
                 />
               </Form.Item>
             </Form>
             {content[0].children}
             <Flex className="w-full max-w-[600px] mx-auto pb-4" gap={10}>
               <div className="flex-1">
-                Latitude: <Input value={lat} disabled={!zoneId}/>
+                Latitude: <Input value={lat} disabled={!zoneId} />
               </div>
               <div className="flex-1">
-                Latitude: <Input value={lng} disabled={!zoneId}/>
+                Latitude: <Input value={lng} disabled={!zoneId} />
               </div>
             </Flex>
             <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
-            <Button type="primary" className="w-full max-w-[300px] mx-auto" onClick={() => handleCurrStep(1)}>
-              Next
-            </Button>
-          </Flex>
+              <Button type="primary" className="w-full max-w-[300px] mx-auto" onClick={() => handleCurrStep(1)}>
+                Next
+              </Button>
+            </Flex>
           </>
         )}
 
-
         {currStep === 1 && (
           <>
-          {content[1].children}
-          {/* <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
+            {content[1].children}
+            {/* <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
             <Button type="default" className="w-full" onClick={() => handleCurrStep(0)}>
               Previous
             </Button>
@@ -259,7 +284,7 @@ const HubPlaceInZone = () => {
           <Flex justify="center" className="py-4">
             <Result
               status="success"
-              title={selectedZone ? `Placed Hub in Zone: ${selectedZone.name}` : "Placed Hub in Zone"}
+              title={selectedZone ? `Placed Hub in Zone: ${selectedZone.name}` : 'Placed Hub in Zone'}
               subTitle={createdData && <>Hub Name: {createdData.name}</>}
               extra={[
                 <Button key="back" onClick={() => navigate(`/hubs/${createdData?.id}`)}>
