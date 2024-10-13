@@ -62,6 +62,15 @@ class SensorDao {
     });
   }
 
+  async getSensorsByHubId(hubId: string): Promise<Sensor[]> {
+
+    return await prisma.sensor.findMany({
+      where: {
+        hubId,
+      },
+    });
+  }
+
   async getAllSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
     const sensors = await prisma.sensor.findMany({
       where: {

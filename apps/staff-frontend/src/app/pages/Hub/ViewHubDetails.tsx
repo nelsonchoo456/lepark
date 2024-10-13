@@ -1,5 +1,5 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { FacilityResponse, getFacilityById, getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { FacilityResponse, getFacilityById, getParkById, getSensorsByHubId, ParkResponse, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty, Button } from 'antd';
 import moment from 'moment';
 import { useParams } from 'react-router';
@@ -12,6 +12,8 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { IoLocationOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import ZoneTab from './components/ZoneTab';
+import { useEffect, useState } from 'react';
+import SensorsTab from './components/SensorsTab';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
@@ -19,6 +21,25 @@ const ViewHubDetails = () => {
   const { user } = useAuth<StaffResponse>();
   const { zones } = useFetchZones();
   const navigate = useNavigate();
+
+  const [sensors, setSensors] = useState<SensorResponse[]>();
+
+  useEffect(() => {
+    if (hub) {
+      fetchSensors(hub.id);
+    }
+  }, [hub])
+
+  const fetchSensors = async (hubId: string) => {
+    try {
+      const sensorsRes = await getSensorsByHubId(hubId);
+      if (sensorsRes.status === 200) {
+        setSensors(sensorsRes.data)
+      }
+    } catch (e) {
+      //
+    }
+  }
 
   const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER
 
@@ -128,7 +149,12 @@ const ViewHubDetails = () => {
           {
             key: 'zone',
             label: 'Zone Location',
-            children: hub ? <ZoneTab hub={hub} lat={hub.lat} lng={hub.long} park={hub.park} zone={hub.zone} zones={zones} /> : <p>Loading hub data...</p>,
+            children: hub ? <ZoneTab hub={hub} lat={hub.lat} lng={hub.long} park={hub.park} zone={hub.zone} zones={zones} sensors={sensors}/> : <p>Loading hub data...</p>,
+          },
+          {
+            key: 'sensors',
+            label: 'Connected Sensors',
+            children: hub ? <SensorsTab hub={hub} zone={hub.zone} sensors={sensors}/> : <p>Loading Sensors data...</p>,
           },
         ]
       : [

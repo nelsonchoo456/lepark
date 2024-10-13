@@ -158,6 +158,19 @@ export async function getMaintenanceHistoryBySensorId(sensorId: string): Promise
   }
 }
 
+export async function getSensorsByHubId(hubId: string): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByHubId/${hubId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getSensorsByParkId(parkId: number): Promise<AxiosResponse<SensorResponse[]>> {
   try {
     const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByParkId/${parkId}`);
