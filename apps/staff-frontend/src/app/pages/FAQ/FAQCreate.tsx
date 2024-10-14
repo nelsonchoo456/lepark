@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
 import {
@@ -11,7 +11,7 @@ import {
   getAllParks,
   StaffType,
 } from '@lepark/data-access';
-import { Button, Card, Form, Input, Select, message, Result, Spin, InputNumber, Divider } from 'antd';
+import { Button, Card, Form, Input, Select, message, Result, Spin, InputNumber, Divider, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
@@ -29,6 +29,7 @@ const FAQCreate: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
+  const notificationShown = useRef(false);
 
   const [form] = Form.useForm();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -62,6 +63,22 @@ const FAQCreate: React.FC = () => {
     fetchParks();
   }, []);
 
+  useEffect(() => {
+    // Check if the user has permission to create FAQs
+    if (user?.role !== StaffType.SUPERADMIN &&
+        user?.role !== StaffType.PARK_RANGER &&
+        user?.role !== StaffType.MANAGER) {
+      if (!notificationShown.current) {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You do not have permission to access this resource.',
+        });
+        notificationShown.current = true;
+      }
+      navigate('/faq');
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (values: any) => {
     setIsSubmitting(true);
     try {
@@ -73,8 +90,13 @@ const FAQCreate: React.FC = () => {
         priority: values.priority,
       };
 
-      if (values.parkId && values.parkId !== -1) {
-        faqData.parkId = values.parkId;
+      if (user?.role === StaffType.SUPERADMIN) {
+        if (values.parkId && values.parkId !== -1) {
+          faqData.parkId = values.parkId;
+        }
+      } else {
+        // For PARK_RANGER and MANAGER, always set their parkId
+        faqData.parkId = user?.parkId;
       }
 
       const response = await createFAQ(faqData);

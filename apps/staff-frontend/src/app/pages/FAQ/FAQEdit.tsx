@@ -14,7 +14,7 @@ import { Button, Card, Form, Input, Select, message, Result, Spin, InputNumber, 
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import { useRestrictFAQs } from '../../hooks/FAQ/useRestrictFAQs';
+import { useRestrictFAQsEdit } from '../../hooks/FAQ/useRestrictFAQsEdit';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 
 const { TextArea } = Input;
@@ -28,7 +28,7 @@ const FAQEdit: React.FC = () => {
   const navigate = useNavigate();
   const [updatedFAQ, setUpdatedFAQ] = useState<any | null>();
   const { user } = useAuth<StaffResponse>();
-  const { faq, loading: faqLoading } = useRestrictFAQs(faqId);
+  const { faq, loading: faqLoading } = useRestrictFAQsEdit(faqId);
   const { parks, loading: parksLoading } = useFetchParks();
   const [selectedParkId, setSelectedParkId] = useState<number | null>(null);
 
