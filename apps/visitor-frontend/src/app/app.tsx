@@ -31,6 +31,8 @@ import PaymentPage from './pages/Attractions/PaymentPage';
 import ViewAttractionTransactions from './pages/Profile/ViewAttractionTransactions';
 import AttractionTransactionDetails from './pages/Profile/ViewAttractionTransactionDetails';
 import AttractionTicketDetails from './pages/Profile/AttractionTicketDetails';
+import CompletionPage from './pages/Attractions/CompletionPage';
+import SuccessPage from './pages/Attractions/SuccessPage';
 
 export function App() {
   return (
@@ -91,19 +93,27 @@ export function App() {
                   }
                 />
 
-                <Route path="/attraction-transaction/:transactionId" element={
-                  <ProtectedRoute redirectTo="/login">
-                    <AttractionTransactionDetails />
-                  </ProtectedRoute>
-                } />
+                <Route
+                  path="/attraction-transaction/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <AttractionTransactionDetails />
+                    </ProtectedRoute>
+                  }
+                />
 
-                <Route path="/attraction-transaction/:transactionId/tickets" element={
-                  <ProtectedRoute redirectTo="/login">
-                    <AttractionTicketDetails />
-                  </ProtectedRoute>
-                } />
+                <Route
+                  path="/attraction-transaction/:transactionId/tickets"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <AttractionTicketDetails />
+                    </ProtectedRoute>
+                  }
+                />
 
                 <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/payment-completion/:transactionId" element={<CompletionPage />} />
+                <Route path="/success" element={<SuccessPage />} />
                 <Route path="/park">
                   <Route index element={<SelectParkPage />} />
                   <Route path=":parkId" element={<VisitorParkViewDetails />} />

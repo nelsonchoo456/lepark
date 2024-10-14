@@ -168,4 +168,49 @@ router.get('/stripe-key', (_, res) => {
   });
 });
 
+router.get('/fetchPayment/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(id);
+
+    // let paymentType = 'UNKNOWN';
+    // if (paymentIntent.payment_method) {
+    //   const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
+    //   paymentType = paymentMethod.type.toUpperCase();
+    // } else if (paymentIntent.payment_method_types.includes('paynow')) {
+    //   paymentType = 'PAYNOW';
+    // }
+
+    res.status(200).json({
+      amount: paymentIntent.amount,
+      // type: paymentType,
+      description: paymentIntent.description,
+      status: paymentIntent.status,
+      secret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error('Error fetching payment:', error);
+    if (error instanceof Stripe.errors.StripeError) {
+      return res.status(error.statusCode || 500).json({ error: error.message });
+    }
+    return res.status(500).json({ error: 'An unexpected error occurred while fetching payment information' });
+  }
+});
+
+router.post('/sendAttractionTicketEmail', async (req, res) => {
+  try {
+    const { transactionId, recipientEmail } = req.body;
+
+    if (!transactionId || !recipientEmail) {
+      return res.status(400).json({ error: 'Transaction ID and recipient email are required' });
+    }
+
+    await AttractionTicketService.sendAttractionTicketEmail(transactionId, recipientEmail);
+    res.status(200).json({ message: 'Attraction ticket email sent successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

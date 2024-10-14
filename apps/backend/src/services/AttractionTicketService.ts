@@ -20,6 +20,7 @@ import AttractionDao from '../dao/AttractionDao';
 import VisitorDao from '../dao/VisitorDao';
 import { fromZodError } from 'zod-validation-error';
 import { AttractionResponse, VisitorResponse } from '@lepark/data-access';
+import EmailUtil from '../utils/EmailUtil';
 
 const prisma = new PrismaClient();
 interface TicketInput {
@@ -231,6 +232,19 @@ class AttractionTicketService {
       throw new Error('Attraction ticket not found');
     }
     return AttractionTicketDao.updateAttractionTicketStatus(id, status);
+  }
+
+  public async sendAttractionTicketEmail(transactionId: string, recipientEmail: string): Promise<void> {
+    try {
+      const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(transactionId);
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+
+      await EmailUtil.sendAttractionTicketEmail(recipientEmail, transaction);
+    } catch (error) {
+      throw new Error(`Failed to send attraction ticket email: ${error.message}`);
+    }
   }
 }
 

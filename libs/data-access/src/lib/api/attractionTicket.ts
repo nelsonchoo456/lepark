@@ -6,6 +6,8 @@ import {
   UpdateAttractionTicketStatusData,
   CreatePaymentIntentResponse,
   StripeKeyResponse,
+  FetchPaymentResponse,
+  SendAttractionTicketEmailData,
 } from '../types/attractionTicket';
 import client from './client';
 
@@ -78,18 +80,18 @@ export async function getAttractionTicketTransactionsByAttractionId(
   }
 }
 
-// export async function deleteAttractionTicketTransaction(id: string): Promise<AxiosResponse<void>> {
-//   try {
-//     const response: AxiosResponse<void> = await client.delete(`${URL}/deleteAttractionTicketTransaction/${id}`);
-//     return response;
-//   } catch (error) {
-//     if (axios.isAxiosError(error)) {
-//       throw error.response?.data.error || error.message;
-//     } else {
-//       throw error;
-//     }
-//   }
-// }
+export async function deleteAttractionTicketTransaction(id: string): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteAttractionTicketTransaction/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
 
 // export async function createAttractionTicket(data: CreateAttractionTicketData): Promise<AxiosResponse<AttractionTicketResponse>> {
 //   try {
@@ -191,6 +193,32 @@ export async function getStripePublishableKey(): Promise<string> {
   try {
     const response: AxiosResponse<StripeKeyResponse> = await client.get(`${URL}/stripe-key`);
     return response.data.publishableKey;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function fetchPayment(paymentIntentId: string): Promise<AxiosResponse<FetchPaymentResponse>> {
+  try {
+    const response: AxiosResponse<FetchPaymentResponse> = await client.get(`${URL}/fetchPayment/${paymentIntentId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function sendAttractionTicketEmail(data: SendAttractionTicketEmailData): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.post(`${URL}/sendAttractionTicketEmail`, data);
+    return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw error.response?.data.error || error.message;

@@ -3,7 +3,7 @@ import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
-import { createAttractionTicketTransaction, VisitorResponse } from '@lepark/data-access';
+import { createAttractionTicketTransaction, deleteAttractionTicketTransaction, VisitorResponse } from '@lepark/data-access';
 
 interface StripeFormProps {
   ticketDetails: {
@@ -42,6 +42,7 @@ const StripeForm: React.FC<StripeFormProps> = ({
 
       const purchaseDate = new Date();
 
+      console.log(paymentIntentId);
       console.log(attractionDate);
       console.log(purchaseDate);
 
@@ -83,18 +84,18 @@ const StripeForm: React.FC<StripeFormProps> = ({
     try {
       const transactionId = await handleProcessing();
 
+      console.log(transactionId);
+
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/payment-completion/${transactionId}/${paymentIntentId}`,
+          return_url: `${window.location.origin}/payment-completion/${transactionId}`,
         },
       });
 
       if (error) {
+        await deleteAttractionTicketTransaction(transactionId);
         message.error(error.message);
-      } else {
-        message.success('Your payment has been successfully completed!');
-        navigate('/payment-success');
       }
     } catch (error) {
       console.error(error);
