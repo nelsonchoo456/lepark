@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, DatePicker, Spin, message, Checkbox } from 'antd';
+import { Card, Row, Col, DatePicker, Spin, message, Checkbox, Typography } from 'antd';
 import moment from 'moment';
 import {
   getAttractionTicketsByAttractionId,
@@ -11,6 +11,7 @@ import GraphContainer from './GraphContainer';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
 interface DashboardTabProps {
   attractionId: string;
@@ -107,20 +108,20 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
       [AttractionTicketCategoryEnum.SENIOR]: 0,
       [AttractionTicketCategoryEnum.STUDENT]: 0,
     };
-  
+
     ticketsData.forEach((ticket) => {
       const category = ticket.attractionTicketListing?.category;
       if (category && category in categoryCounts) {
         categoryCounts[category as keyof typeof categoryCounts] += 1;
       }
     });
-  
+
     return Object.entries(categoryCounts).map(([key, value]) => ({ key, value }));
   };
 
   const prepareTimeSeriesData = () => {
     const dailyCounts: { [key: string]: { [category: string]: number } } = {};
-  
+
     const allDates = [];
     let currentDate = dayjs(startDate);
     const endDateObj = dayjs(endDate);
@@ -138,12 +139,12 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
       };
       currentDate = currentDate.add(1, 'day');
     }
-  
+
     ticketsData.forEach((ticket) => {
       const date = dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD');
       if (dailyCounts.hasOwnProperty(date)) {
         dailyCounts[date].All += 1;
-        
+
         // Increment nationality count
         const nationality = ticket.attractionTicketListing?.nationality || 'Standard';
         if (nationality === AttractionTicketNationalityEnum.LOCAL) {
@@ -151,7 +152,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
         } else {
           dailyCounts[date].Standard += 1;
         }
-        
+
         // Increment category count
         const category = ticket.attractionTicketListing?.category;
         if (category) {
@@ -172,12 +173,12 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
         }
       }
     });
-  
+
     const result = allDates.map((date) => ({
       date,
       ...dailyCounts[date],
     }));
-  
+
     return result;
   };
 
@@ -187,9 +188,9 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
 
   const nationalityColors = ['#0d47a1', '#2196f3'];
   const categoryColors = ['#e65100', '#ff9800', '#ffc107', '#ffe082'];
-  
+
   const colors = {
-    All: '#a3d4c7',  // A distinct green for 'All'
+    All: '#a3d4c7', // A distinct green for 'All'
     Local: '#0d47a1', // Dark blue
     Standard: '#2196f3', // Light blue
     Adult: '#e65100', // Dark orange
@@ -229,7 +230,6 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
     })),
   };
 
-
   const handleCategoryChange = (checkedValues: string[]) => {
     setSelectedCategories(checkedValues.length > 0 ? checkedValues : ['All']);
   };
@@ -239,12 +239,15 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
       {startDate && endDate ? (
         <Row gutter={12} style={{ marginBottom: '10px', justifyContent: 'right' }}>
           <Col>
-            <RangePicker
-              onChange={handleDateChange}
-              defaultValue={[dayjs(startDate), dayjs(endDate)]}
-              value={[dayjs(startDate), dayjs(endDate)]}
-              style={{ marginLeft: '16px' }}
-            />
+            <div className="flex items-center">
+              <Text className="mr-1">Purchase Date: </Text>
+              <RangePicker
+                onChange={handleDateChange}
+                defaultValue={[dayjs(startDate), dayjs(endDate)]}
+                value={[dayjs(startDate), dayjs(endDate)]}
+                style={{ marginLeft: '16px' }}
+              />
+            </div>
           </Col>
         </Row>
       ) : (

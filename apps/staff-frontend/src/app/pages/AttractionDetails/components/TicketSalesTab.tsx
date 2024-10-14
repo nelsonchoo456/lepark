@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Table, Card, DatePicker, Spin, Tag, Flex, Input, message } from 'antd';
+import { Table, Card, DatePicker, Spin, Tag, Flex, Input, message, Typography } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import {
   AttractionResponse,
@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { FiSearch } from 'react-icons/fi';
 
 const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
 interface TicketSalesTabProps {
   attraction: AttractionResponse;
@@ -131,47 +132,47 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
       onFilter: (value, record) => record.attractionTicketListing?.category === value,
     },
     {
-        title: 'Purchase Date',
-        dataIndex: ['attractionTicketTransaction', 'purchaseDate'],
-        key: 'purchaseDate',
-        render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
-        sorter: (a, b) =>
+      title: 'Purchase Date',
+      dataIndex: ['attractionTicketTransaction', 'purchaseDate'],
+      key: 'purchaseDate',
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      sorter: (a, b) =>
         dayjs(a.attractionTicketTransaction?.purchaseDate).unix() - dayjs(b.attractionTicketTransaction?.purchaseDate).unix(),
     },
-    { 
-        title: 'Visit Date',
-        dataIndex: ['attractionTicketTransaction', 'attractionDate'],
-        key: 'attractionDate',
-        render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
-        sorter: (a, b) =>
+    {
+      title: 'Visit Date',
+      dataIndex: ['attractionTicketTransaction', 'attractionDate'],
+      key: 'attractionDate',
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      sorter: (a, b) =>
         dayjs(a.attractionTicketTransaction?.attractionDate).unix() - dayjs(b.attractionTicketTransaction?.attractionDate).unix(),
     },
     {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status: AttractionTicketStatusEnum) => {
-          let color = 'default';
-          switch (status) {
-            case AttractionTicketStatusEnum.VALID:
-              color = 'green';
-              break;
-            case AttractionTicketStatusEnum.USED:
-              color = 'blue';
-              break;
-            case AttractionTicketStatusEnum.INVALID:
-              color = 'red';
-              break;
-            // Add more cases if needed
-          }
-          return <Tag color={color}>{status}</Tag>;
-        },
-        filters: Object.values(AttractionTicketStatusEnum).map((value) => ({
-          text: value,
-          value: value,
-        })),
-        onFilter: (value, record) => record.status === value,
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: AttractionTicketStatusEnum) => {
+        let color = 'default';
+        switch (status) {
+          case AttractionTicketStatusEnum.VALID:
+            color = 'green';
+            break;
+          case AttractionTicketStatusEnum.USED:
+            color = 'blue';
+            break;
+          case AttractionTicketStatusEnum.INVALID:
+            color = 'red';
+            break;
+          // Add more cases if needed
+        }
+        return <Tag color={color}>{status}</Tag>;
       },
+      filters: Object.values(AttractionTicketStatusEnum).map((value) => ({
+        text: value,
+        value: value,
+      })),
+      onFilter: (value, record) => record.status === value,
+    },
   ];
 
   return (
@@ -187,11 +188,14 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: '300px' }}
           />
-          <RangePicker
-            onChange={handleDateChange}
-            defaultValue={[dayjs(startDate), dayjs(endDate)]}
-            value={[dayjs(startDate), dayjs(endDate)]}
-          />
+          <div className="flex items-center">
+            <Text className="mr-2">Purchase Date: </Text>
+            <RangePicker
+              onChange={handleDateChange}
+              defaultValue={[dayjs(startDate), dayjs(endDate)]}
+              value={[dayjs(startDate), dayjs(endDate)]}
+            />
+          </div>
         </Flex>
       ) : (
         loading && <Spin />
@@ -203,7 +207,7 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
       ) : (
         <Table columns={columns} dataSource={filteredTickets} rowKey="id" pagination={{ pageSize: 10 }} />
       )}
-        </>
+    </>
   );
 };
 
