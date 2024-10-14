@@ -1,4 +1,4 @@
-import { Prisma, Species } from '@prisma/client';
+import { LightTypeEnum, Prisma, Species } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
@@ -182,6 +182,26 @@ class SpeciesService {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
     }
+  }
+
+  public async getSpeciesIdealConditions(speciesId: string): Promise<{
+    lightType: LightTypeEnum;
+    waterRequirement: number;
+    idealHumidity: number;
+    minTemp: number;
+    maxTemp: number;
+  }> {
+    const species = await SpeciesDao.getSpeciesById(speciesId);
+    if (!species) {
+      throw new Error('Species not found');
+    }
+    return {
+      lightType: species.lightType,
+      waterRequirement: species.waterRequirement,
+      idealHumidity: species.idealHumidity,
+      minTemp: species.minTemp,
+      maxTemp: species.maxTemp,
+    };
   }
 }
 

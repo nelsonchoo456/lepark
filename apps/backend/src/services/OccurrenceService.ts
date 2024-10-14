@@ -1,4 +1,4 @@
-import { Prisma, Occurrence, OccurrenceStatusEnum } from '@prisma/client';
+import { Prisma, Occurrence, OccurrenceStatusEnum, Species } from '@prisma/client';
 import { z } from 'zod';
 import { OccurrenceSchema, OccurrenceSchemaType } from '../schemas/occurrenceSchema';
 import OccurrenceDao from '../dao/OccurrenceDao';
@@ -7,12 +7,22 @@ import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
 import ZoneDao from '../dao/ZoneDao';
 import aws from 'aws-sdk';
+import ParkDao from '../dao/ParkDao';
+import { ZoneResponseData } from '../schemas/zoneSchema';
+import { ParkResponseData } from '../schemas/parkSchema';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: 'ap-southeast-1',
 });
+
+// Add this type definition
+export type OccurrenceWithDetails = Occurrence & {
+  species: Species;
+  zone: ZoneResponseData;
+  park: ParkResponseData;
+};
 
 class OccurrenceService {
   public async createOccurrence(data: OccurrenceSchemaType): Promise<Occurrence> {
@@ -54,8 +64,20 @@ class OccurrenceService {
     return OccurrenceDao.getAllOccurrences();
   }
 
-  public async getAllOccurrenceByZoneId(zoneId: number): Promise<Occurrence[]> {
-    return OccurrenceDao.getAllOccurrencesByZoneId(zoneId);
+  public async getAllOccurrenceByZoneId(zoneId: number): Promise<OccurrenceWithDetails[]> {
+    const occurrences = await OccurrenceDao.getAllOccurrencesByZoneId(zoneId);
+    const occurrencesWithDetails = await Promise.all(occurrences.map(async (occurrence) => {
+      const species = await SpeciesDao.getSpeciesById(occurrence.speciesId);
+      const zone = await ZoneDao.getZoneById(occurrence.zoneId);
+      const park = await ParkDao.getParkById(zone.parkId);
+      return {
+        ...occurrence,
+        species,
+        zone: zone as ZoneResponseData,
+        park: park as ParkResponseData,
+      };
+    }));
+    return occurrencesWithDetails;
   }
 
   public async getAllOccurrenceByParkId(parkId: number): Promise<Occurrence[]> {

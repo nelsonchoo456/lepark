@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Occurrence } from '@prisma/client';
+import { PrismaClient, Prisma, Occurrence, Species } from '@prisma/client';
 import ZoneDao from './ZoneDao';
 
 const prisma = new PrismaClient();
@@ -43,28 +43,11 @@ class OccurrenceDao {
         zoneId,
       },
       include: {
-        species: {
-          select: {
-            id: true,
-            speciesName: true,
-          },
-        },
+        species: true,
       },
     });
-  
-    const zones = await ZoneDao.getAllZones();
-    const zone = zones.find((z: any) => z.id === zoneId);
-  
-    return occurrences.map((occurrence) => ({
-      ...occurrence,
-      speciesId: occurrence.species?.id,
-      speciesName: occurrence.species?.speciesName,
-      zoneId: zone?.id,
-      zoneName: zone?.name,
-      parkId: zone?.parkId,
-      parkName: zone?.parkName,
-      parkDescription: zone?.parkDescription,
-    }));
+
+    return occurrences;
   }
 
   async getAllOccurrencesByParkId(parkId: number): Promise<Occurrence[]> {
@@ -102,7 +85,7 @@ class OccurrenceDao {
     // Get all zones associated with the parkId
     const zones = await ZoneDao.getAllZones();
     const zoneIds = zones.filter((zone: any) => zone.parkId === parkId).map((zone: any) => zone.id);
-  
+
     // Group by speciesId and count the number of unique species
     const uniqueSpecies = await prisma.occurrence.groupBy({
       by: ['speciesId'],
@@ -112,11 +95,10 @@ class OccurrenceDao {
         },
       },
     });
-  
+
     // The length of the grouped result will be the number of unique species
     return uniqueSpecies.length;
   }
-  
 
   async getOccurrenceById(id: string): Promise<Occurrence> {
     return prisma.occurrence.findUnique({ where: { id } });

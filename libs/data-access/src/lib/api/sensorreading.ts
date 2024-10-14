@@ -409,3 +409,16 @@ export async function getActiveZoneSensorCount(zoneId: number, hoursAgo = 1): Pr
     }
   }
 }
+
+export async function getUnhealthyOccurrences(zoneId: number): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/getUnhealthyOccurrences/${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
