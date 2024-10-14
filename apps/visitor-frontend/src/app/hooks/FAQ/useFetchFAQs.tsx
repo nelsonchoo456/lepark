@@ -18,7 +18,7 @@ export const useFetchFAQs = (selectedParkId?: number) => {
 
     const fetchAndFilterFAQs = async () => {
       await fetchAllFAQs();
-      setFAQs(prevFAQs => prevFAQs.filter(faq => faq.parkId === selectedParkId || faq.parkId === null));
+      setFAQs(prevFAQs => prevFAQs.filter(faq => (faq.parkId === selectedParkId || faq.parkId === null) && faq.status === 'ACTIVE'));
     };
 
     fetchAndFilterFAQs();
