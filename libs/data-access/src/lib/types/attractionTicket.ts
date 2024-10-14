@@ -54,3 +54,15 @@ export interface CreatePaymentIntentResponse {
 export interface StripeKeyResponse {
   publishableKey: string;
 }
+
+export interface FetchPaymentResponse {
+  amount: number;
+  description: string;
+  status: string;
+  secret: string;
+}
+
+export interface SendAttractionTicketEmailData {
+  transactionId: string;
+  recipientEmail: string;
+}

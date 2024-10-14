@@ -9,7 +9,12 @@ class AttractionTicketDao {
   }
 
   async getAttractionTicketTransactionById(id: string): Promise<AttractionTicketTransaction | null> {
-    return prisma.attractionTicketTransaction.findUnique({ where: { id } });
+    return prisma.attractionTicketTransaction.findUnique({
+      where: { id },
+      include: {
+        attractionTickets: true,
+      },
+    });
   }
 
   async getAllAttractionTicketTransactions(): Promise<AttractionTicketTransaction[]> {

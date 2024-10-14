@@ -20,6 +20,7 @@ import AttractionDao from '../dao/AttractionDao';
 import VisitorDao from '../dao/VisitorDao';
 import { fromZodError } from 'zod-validation-error';
 import { AttractionResponse, VisitorResponse } from '@lepark/data-access';
+import EmailUtil from '../utils/EmailUtil';
 
 const prisma = new PrismaClient();
 interface TicketInput {
@@ -106,15 +107,15 @@ class AttractionTicketService {
   }
 
   public async getAttractionTicketTransactionsByVisitorId(
-    visitorId: string
+    visitorId: string,
   ): Promise<(AttractionTicketTransaction & { visitor: Visitor; attraction: Attraction })[]> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
     if (!visitor) {
       throw new Error('Visitor not found');
     }
-  
+
     const transactions = await AttractionTicketDao.getAttractionTicketTransactionsByVisitorId(visitorId);
-    
+
     // Fetch attraction details for each transaction
     const transactionsWithDetails = await Promise.all(
       transactions.map(async (transaction) => {
@@ -124,9 +125,9 @@ class AttractionTicketService {
           visitor,
           attraction,
         };
-      })
+      }),
     );
-  
+
     return transactionsWithDetails;
   }
 
@@ -208,16 +209,18 @@ class AttractionTicketService {
 
   public async getAttractionTicketsByTransactionId(transactionId: string): Promise<AttractionTicket[]> {
     const tickets = await AttractionTicketDao.getAttractionTicketsByTransactionId(transactionId);
-    
+
     // Fetch the associated ticket listings
-    const ticketsWithListings = await Promise.all(tickets.map(async (ticket) => {
-      const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
-      return {
-        ...ticket,
-        attractionTicketListing: listing
-      };
-    }));
-  
+    const ticketsWithListings = await Promise.all(
+      tickets.map(async (ticket) => {
+        const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+        return {
+          ...ticket,
+          attractionTicketListing: listing,
+        };
+      }),
+    );
+
     return ticketsWithListings;
   }
 
@@ -244,15 +247,30 @@ class AttractionTicketService {
     const tickets = await AttractionTicketDao.getAttractionTicketsByAttractionId(attractionId);
 
     // Fetch the associated ticket listings
-    const ticketsWithListings = await Promise.all(tickets.map(async (ticket) => {
-      const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
-      return {
-        ...ticket,
-        attractionTicketListing: listing,
-      };
-    }));
+    const ticketsWithListings = await Promise.all(
+      tickets.map(async (ticket) => {
+        const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+        return {
+          ...ticket,
+          attractionTicketListing: listing,
+        };
+      }),
+    );
 
     return ticketsWithListings;
+  }
+
+  public async sendAttractionTicketEmail(transactionId: string, recipientEmail: string): Promise<void> {
+    try {
+      const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(transactionId);
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+
+      await EmailUtil.sendAttractionTicketEmail(recipientEmail, transaction);
+    } catch (error) {
+      throw new Error(`Failed to send attraction ticket email: ${error.message}`);
+    }
   }
 }
 
