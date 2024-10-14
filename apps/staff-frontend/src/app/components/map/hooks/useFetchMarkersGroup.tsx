@@ -55,6 +55,7 @@ export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
 
   const fetchOccurrences = async () => {
     const occurrenceRes = await getOccurrencesByZoneId(zone.id);
+    console.log(occurrenceRes.data);
     if (occurrenceRes.status === 200) {
       setOccurrences(occurrenceRes.data);
     }

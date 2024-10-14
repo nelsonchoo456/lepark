@@ -1,8 +1,12 @@
 import React from 'react';
-import { Row, Col } from 'antd';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Row, Col, Card } from 'antd';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
 import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskUrgencyEnum, PlantTaskTypeEnum } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, ChartDataLabels);
 
 interface PlantTaskDashboardProps {
   plantTasks: PlantTaskResponse[];
@@ -34,7 +38,27 @@ const TASK_TYPE_COLORS = {
   [PlantTaskTypeEnum.OTHERS]: '#20aaff',                // Sky Blue
 };
 
+const URGENCY_ORDER = [
+  PlantTaskUrgencyEnum.LOW,
+  PlantTaskUrgencyEnum.NORMAL,
+  PlantTaskUrgencyEnum.HIGH,
+  PlantTaskUrgencyEnum.IMMEDIATE,
+];
+
 const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) => {
+  const getChartData = (dataFunction: () => { name: string; value: number; color: string }[]) => {
+    const data = dataFunction();
+    return {
+      labels: data.map(item => item.name),
+      datasets: [{
+        data: data.map(item => item.value),
+        backgroundColor: data.map(item => item.color),
+        borderColor: data.map(item => item.color),
+        borderWidth: 1,
+      }],
+    };
+  };
+
   const getStatusData = () => {
     const statusCounts = plantTasks.reduce((acc, task) => {
       acc[task.taskStatus] = (acc[task.taskStatus] || 0) + 1;
@@ -49,20 +73,22 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
   };
 
   const getUrgencyData = () => {
-    const urgencyCounts = plantTasks.reduce((acc, task) => {
-      acc[task.taskUrgency] = (acc[task.taskUrgency] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const urgencyCounts = plantTasks
+      .filter(task => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
+      .reduce((acc, task) => {
+        acc[task.taskUrgency] = (acc[task.taskUrgency] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
-    return Object.entries(urgencyCounts).map(([urgency, value]) => ({
+    return URGENCY_ORDER.map(urgency => ({
       name: formatEnumLabelToRemoveUnderscores(urgency),
-      value,
+      value: urgencyCounts[urgency] || 0,
       color: URGENCY_COLORS[urgency as PlantTaskUrgencyEnum],
     }));
   };
 
   const getTaskTypeData = () => {
-    const typeCounts = plantTasks.reduce((acc, task) => {
+    const typeCounts = plantTasks.filter(task => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS).reduce((acc, task) => {
       acc[task.taskType] = (acc[task.taskType] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -74,101 +100,78 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
     }));
   };
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: { cx: number, cy: number, midAngle: number, innerRadius: number, outerRadius: number, percent: number, index: number, name: string }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = outerRadius * 1.2; // Increase this value to add more gap
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    const sin = Math.sin(-midAngle * RADIAN);
-    const cos = Math.cos(-midAngle * RADIAN);
-    const sx = cx + (outerRadius + 10) * cos;
-    const sy = cy + (outerRadius + 10) * sin;
-    const mx = cx + (outerRadius + 30) * cos;
-    const my = cy + (outerRadius + 30) * sin;
-    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-    const ey = my;
-    const textAnchor = cos >= 0 ? 'start' : 'end';
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const label = context.label || '';
+            const value = context.parsed.y || context.parsed || 0;
+            const dataset = context.dataset;
+            const total = dataset.data.reduce((acc: number, current: number) => acc + current, 0);
+            const percentage = ((value / total) * 100).toFixed(0);
+            return `${label}: ${value} (${percentage}%)`;
+          },
+        },
+      },
+      datalabels: {
+        color: '#000',
+        font: {
+          weight: 'bold',
+          size: 12,
+        },
+        formatter: (value: number, context: any) => {
+          const dataset = context.dataset;
+          const total = dataset.data.reduce((acc: number, current: number) => acc + current, 0);
+          const percentage = ((value / total) * 100).toFixed(0);
+          return `${value}\n(${percentage}%)`;
+        },
+      },
+    },
+  };
 
-    return (
-      <g>
-        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="#888" fill="none" />
-        <circle cx={ex} cy={ey} r={2} fill="#888" stroke="none" />
-        <text
-          x={ex + (cos >= 0 ? 1 : -1) * 12}
-          y={ey}
-          textAnchor={textAnchor}
-          fill="#333"
-          dominantBaseline="central"
-        >
-          {`${name} (${(percent * 100).toFixed(0)}%)`}
-        </text>
-      </g>
-    );
+  const barOptions = {
+    ...chartOptions,
+    plugins: {
+      ...chartOptions.plugins,
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
   };
 
   return (
     <Row gutter={[16, 16]}>
       <Col span={12}>
-        <h3>Tasks by Status</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={getStatusData()}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {getStatusData().map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <Card title="Tasks by Status">
+          <div style={{ height: '300px' }}>
+            <Pie data={getChartData(getStatusData)} options={chartOptions} />
+          </div>
+        </Card>
       </Col>
       <Col span={12}>
-        <h3>Tasks by Urgency</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={getUrgencyData()}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="value" fill="#8884d8">
-              {getUrgencyData().map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <Card title="Tasks by Urgency">
+          <div style={{ height: '300px' }}>
+            <Bar data={getChartData(getUrgencyData)} options={barOptions} />
+          </div>
+        </Card>
       </Col>
       <Col span={24}>
-        <h3>Task Distribution by Type</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <PieChart>
-            <Pie
-              data={getTaskTypeData()}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={120}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {getTaskTypeData().map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <Card title="Task Distribution by Type">
+          <div style={{ height: '400px' }}>
+            <Pie data={getChartData(getTaskTypeData)} options={chartOptions} />
+          </div>
+        </Card>
       </Col>
     </Row>
   );
