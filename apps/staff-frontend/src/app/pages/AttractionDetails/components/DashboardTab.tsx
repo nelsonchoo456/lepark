@@ -86,7 +86,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
     }
   
     ticketsData.forEach((ticket) => {
-      const date = ticket.purchaseDate.format('YYYY-MM-DD');
+      const date = ticket[dateField].format('YYYY-MM-DD');
       if (dailyCounts.hasOwnProperty(date)) {
         dailyCounts[date].All += 1;
         
