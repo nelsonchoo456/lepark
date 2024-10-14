@@ -53,6 +53,7 @@ const SensorEdit = () => {
       setCurrentImages(sensor.images || []);
 
       form.setFieldsValue(finalData);
+      form.setFieldValue('sensorStatus', formatEnumLabelToRemoveUnderscores(sensor.sensorStatus));
 
       if (sensor.facilityId) {
         fetchFacilityDetails(sensor.facilityId);
@@ -195,15 +196,17 @@ const SensorEdit = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
-            <Select placeholder="Select Sensor Status">
-              {Object.values(SensorStatusEnum).map((status) => (
+          {sensor?.sensorStatus !== SensorStatusEnum.ACTIVE && (
+            <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
+              <Select placeholder="Select Sensor Status">
+                {Object.values(SensorStatusEnum).filter((s) => s !== "ACTIVE").map((status) => (
                 <Select.Option key={status} value={status}>
                   {formatEnumLabelToRemoveUnderscores(status)}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
+          )}
           <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
             <Select placeholder="Select Sensor Unit">
               {Object.values(SensorUnitEnum).map((unit) => (

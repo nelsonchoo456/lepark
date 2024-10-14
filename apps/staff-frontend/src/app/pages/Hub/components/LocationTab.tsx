@@ -15,8 +15,6 @@ interface MapTabProps {
 const LocationTab = ({ facility, park, zones }: MapTabProps) => {
   const selectedParkId = park?.id;
 
-  console.log(selectedParkId);
-  console.log(zones.map((zone) => zone.parkId));
   return (
     <div
       style={{

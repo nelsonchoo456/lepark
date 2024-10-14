@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContentWrapperDark, ImageInput, useAuth } from '@lepark/common-ui';
-import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData, checkHubDuplicateSerialNumber } from '@lepark/data-access';
+import { updateHubDetails, StaffResponse, StaffType, HubResponse, getFacilityById, FacilityResponse, HubUpdateData, checkHubDuplicateSerialNumber, HubStatusEnum } from '@lepark/data-access';
 import {
   Button,
   Card,
@@ -59,6 +59,7 @@ const HubEdit = () => {
       setCurrentImages(hub.images || []);
 
       form.setFieldsValue(finalData);
+      form.setFieldValue('hubStatus', formatEnumLabelToRemoveUnderscores(hub.hubStatus));
 
       // Fetch facility details to get parkId and filter facilities
       if (hub.facilityId) {
@@ -137,10 +138,10 @@ const HubEdit = () => {
   };
 
   const hubStatusOptions = [
-    {
-      value: 'ACTIVE',
-      label: formatEnumLabelToRemoveUnderscores('ACTIVE'),
-    },
+    // {
+    //   value: 'ACTIVE',
+    //   label: formatEnumLabelToRemoveUnderscores('ACTIVE'),
+    // },
     {
       value: 'INACTIVE',
       label: formatEnumLabelToRemoveUnderscores('INACTIVE'),
@@ -229,10 +230,12 @@ const HubEdit = () => {
           </Form.Item>
           <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
               <Input placeholder="Enter Serial Number" />
-            </Form.Item>
-          <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
-            <Select placeholder="Select Hub Status" options={hubStatusOptions} />
           </Form.Item>
+          {hub?.hubStatus !== HubStatusEnum.ACTIVE && (
+            <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
+              <Select placeholder="Select Hub Status" options={hubStatusOptions} />
+            </Form.Item>
+          )}
           <Form.Item
             name="acquisitionDate"
             label="Acquisition Date"

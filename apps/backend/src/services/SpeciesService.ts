@@ -1,4 +1,4 @@
-import { Prisma, Species } from '@prisma/client';
+import { LightTypeEnum, Prisma, Species } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
@@ -183,6 +183,26 @@ class SpeciesService {
       throw new Error('Error uploading image to S3');
     }
   }
+
+  public async getSpeciesIdealConditions(speciesId: string): Promise<{
+    lightType: LightTypeEnum;
+    soilMoisture: number;
+    idealHumidity: number;
+    minTemp: number;
+    maxTemp: number;
+  }> {
+    const species = await SpeciesDao.getSpeciesById(speciesId);
+    if (!species) {
+      throw new Error('Species not found');
+    }
+    return {
+      lightType: species.lightType,
+      soilMoisture: species.soilMoisture,
+      idealHumidity: species.idealHumidity,
+      minTemp: species.minTemp,
+      maxTemp: species.maxTemp,
+    };
+  }
 }
 
 // Utility function to ensure all required fields are present
@@ -202,7 +222,7 @@ function ensureAllFieldsPresent(data: SpeciesSchemaType): Prisma.SpeciesCreateIn
     !data.lightType ||
     !data.soilType ||
     !data.fertiliserType ||
-    !data.waterRequirement ||
+    !data.soilMoisture ||
     !data.fertiliserRequirement ||
     !data.idealHumidity ||
     !data.minTemp ||

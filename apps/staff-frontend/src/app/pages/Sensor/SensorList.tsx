@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { deleteSensor, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { FiEye, FiSearch } from 'react-icons/fi';
-import { RiEdit2Line } from 'react-icons/ri';
+import { RiEdit2Line, RiExternalLinkLine } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { ColumnsType } from 'antd/es/table';
 import { SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
@@ -73,7 +73,7 @@ const SensorManagementPage: React.FC = () => {
       width: '20%',
     },
     {
-      title: 'Facility',
+      title: 'Storage Facility',
       render: (text, record) => (
         <Flex justify="space-between" align="center">
           {record.facility?.name}
@@ -106,13 +106,21 @@ const SensorManagementPage: React.FC = () => {
       key: 'sensorStatus',
       filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
-      render: (status: string) => {
+      render: (status: string, record) => {
         switch (status) {
           case SensorStatusEnum.ACTIVE:
             return (
-              <Tag color="green" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(status)}
-              </Tag>
+              <>
+                <Tag color="green" bordered={false}>
+                  {formatEnumLabelToRemoveUnderscores(status)}
+                </Tag>
+                {record.hub?.name && (
+                  <div className="flex">
+                    <p className="opacity-50 mr-2">Hub:</p>
+                    {record.hub?.name}
+                  </div>
+                )}
+              </>
             );
           case SensorStatusEnum.INACTIVE:
             return (
@@ -190,15 +198,20 @@ const SensorManagementPage: React.FC = () => {
       width: '20%',
     },
     {
-      title: 'Park, Facility',
+      title: 'Storage Facility',
       render: (_, record) => (
-        <div>
+        record.sensorStatus === SensorStatusEnum.ACTIVE ? (
+          '-'
+        ) : (
+          <div>
           <p className="font-semibold">{record.park?.name}</p>
           <div className="flex">
             <p className="opacity-50 mr-2">Facility:</p>
             {record.facility?.name}
           </div>
         </div>
+        )
+        
       ),
       sorter: (a, b) => {
         if (a.park?.name && b.park?.name) {
@@ -227,13 +240,21 @@ const SensorManagementPage: React.FC = () => {
       key: 'sensorStatus',
       filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
-      render: (status: string) => {
+      render: (status: string, record) => {
         switch (status) {
           case SensorStatusEnum.ACTIVE:
             return (
-              <Tag color="green" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(status)}
-              </Tag>
+              <>
+                <Tag color="green" bordered={false}>
+                  {formatEnumLabelToRemoveUnderscores(status)}
+                </Tag>
+                {record.hub && (
+                  <p>
+                    <span className="opacity-50 mr-2">Hub:</span>
+                    {record.hub?.name}
+                  </p>
+                )}
+              </>
             );
           case SensorStatusEnum.INACTIVE:
             return (

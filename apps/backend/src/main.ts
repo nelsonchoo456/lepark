@@ -22,8 +22,14 @@ import parkAssetRouter from './routers/parkAssetRouter';
 import facilityRouter from './routers/facilityRouter';
 import eventRouter from './routers/eventRouter';
 import plantTaskRouter from './routers/plantTaskRouter';
-import { authenticateJWTStaff } from './middleware/authenticateJWT';
 import sensorRouter from './routers/sensorRouter';
+import decarbonizationAreaRouter from './routers/decarbonizationAreaRouter';
+import sequestrationHistoryRouter from './routers/sequestrationHistoryRouter';
+import promotionRouter from './routers/promotionRouter';
+import { authenticateJWTStaff } from './middleware/authenticateJWT';
+import os from 'os';
+import sensorReadingRouter from './routers/sensorReadingRouter';
+import faqRouter from './routers/faqRouter';
 
 dotenv.config();
 const app = express();
@@ -36,6 +42,11 @@ app.use(
 
       // You could add a list of allowed origins and check against that too
       if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+        return callback(null, true);
+      }
+
+      // To allow Capacitor simulators
+      if (origin.startsWith('capacitor')) {
         return callback(null, true);
       }
 
@@ -66,14 +77,25 @@ app.use('/api/occurrences', occurrenceRouter);
 app.use('/api/activitylogs', authenticateJWTStaff, activityLogRouter);
 app.use('/api/statuslogs', authenticateJWTStaff, statusLogRouter);
 app.use('/api/attractions', attractionRouter);
-app.use('/api/hubs', authenticateJWTStaff, hubRouter);
+app.use('/api/hubs', hubRouter);
 app.use('/api/parkassets', authenticateJWTStaff, parkAssetRouter);
 app.use('/api/facilities', facilityRouter);
 app.use('/api/events', eventRouter);
+app.use('/api/decarbonizationarea', decarbonizationAreaRouter);
+app.use('/api/sequestrationhistory', sequestrationHistoryRouter);
 app.use('/api/planttasks', authenticateJWTStaff, plantTaskRouter);
 app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
+app.use('/api/promotions', promotionRouter);
+app.use('/api/sensorreadings', sensorReadingRouter);
+app.use('/api/faq', faqRouter);
 
 const port = process.env.PORT || 3333;
+const networkInterfaces = os.networkInterfaces();
+const serverIp = Object.values(networkInterfaces)
+  .flat()
+  .find((iface) => iface?.family === 'IPv4' && !iface.internal)?.address;
+
+console.log(`Server IP address: ${serverIp}`);
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });

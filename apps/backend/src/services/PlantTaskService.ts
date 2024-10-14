@@ -8,6 +8,9 @@ import StaffDao from '../dao/StaffDao';
 import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
 import aws from 'aws-sdk';
+import { ZoneResponseData } from '../schemas/zoneSchema';
+import { ParkResponseData } from '../schemas/parkSchema';
+import ParkDao from '../dao/ParkDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -23,8 +26,8 @@ class PlantTaskService {
         throw new Error('Staff not found');
       }
 
-      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
-        throw new Error('Only Superadmins, Botanists and Arborists can create plant tasks');
+      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.MANAGER && staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
+        throw new Error('Only Superadmins, Managers, Botanists and Arborists can create plant tasks');
       }
 
       const occurrence = await OccurrenceDao.getOccurrenceById(data.occurrenceId);
@@ -47,14 +50,20 @@ class PlantTaskService {
 
       // Calculate due date based on urgency
       const createdAt = new Date();
-      const dueDate = this.calculateDueDate(createdAt, formattedData.taskUrgency);
+      if (!formattedData.dueDate) {
+        const dueDate = this.calculateDueDate(createdAt, formattedData.taskUrgency);
+        formattedData.dueDate = dueDate;
+      }
+
       const taskStatus = PlantTaskStatusEnum.OPEN;
 
       formattedData.createdAt = createdAt;
-      formattedData.dueDate = dueDate;
       formattedData.taskStatus = taskStatus;
       formattedData.submittingStaffId = submittingStaffId;
       PlantTaskSchema.parse(formattedData);
+
+      const maxPosition = await PlantTaskDao.getMaxPositionForStatus(taskStatus);
+      formattedData.position = maxPosition + 1;
 
       return PlantTaskDao.createPlantTask(formattedData);
     } catch (error) {
@@ -67,7 +76,13 @@ class PlantTaskService {
   }
 
   public async getAllPlantTasks(): Promise<PlantTask[]> {
-    return PlantTaskDao.getAllPlantTasks();
+    const plantTasks = await PlantTaskDao.getAllPlantTasks();
+    return this.addZoneAndParkInfo(plantTasks);
+  }
+
+  public async getAllPlantTasksByParkId(parkId: number): Promise<PlantTask[]> {
+    const plantTasks = await PlantTaskDao.getAllPlantTasksByParkId(parkId);
+    return this.addZoneAndParkInfo(plantTasks);
   }
 
   public async getPlantTaskById(id: string): Promise<PlantTask> {
@@ -75,7 +90,12 @@ class PlantTaskService {
     if (!plantTask) {
       throw new Error('Plant task not found');
     }
-    return plantTask;
+    return (await this.addZoneAndParkInfo([plantTask]))[0];
+  }
+
+  public async getAllAssignedPlantTasks(staffId: string): Promise<PlantTask[]> {
+    const plantTasks = await PlantTaskDao.getAllAssignedPlantTasks(staffId);
+    return this.addZoneAndParkInfo(plantTasks);
   }
 
   public async updatePlantTask(id: string, data: Partial<PlantTaskSchemaType>): Promise<PlantTask> {
@@ -83,6 +103,18 @@ class PlantTaskService {
       const existingPlantTask = await PlantTaskDao.getPlantTaskById(id);
       if (!existingPlantTask) {
         throw new Error('Plant task not found');
+      }
+
+      if (existingPlantTask.taskStatus === PlantTaskStatusEnum.COMPLETED || existingPlantTask.taskStatus === PlantTaskStatusEnum.CANCELLED) {
+        throw new Error('Completed or cancelled tasks cannot be edited');
+      }
+
+      if (existingPlantTask.assignedStaffId === null && (data.taskStatus === PlantTaskStatusEnum.IN_PROGRESS || data.taskStatus === PlantTaskStatusEnum.COMPLETED)) {
+        throw new Error('Only assigned tasks can be set to in progress or completed');
+      }
+
+      if (existingPlantTask.taskStatus !== data.taskStatus && data.taskStatus === PlantTaskStatusEnum.COMPLETED) {
+        data.completedDate = new Date();
       }
 
       const formattedData = dateFormatter(data);
@@ -113,8 +145,129 @@ class PlantTaskService {
     await PlantTaskDao.deletePlantTask(id);
   }
 
-  public async getPlantTasksByParkId(parkId: number): Promise<PlantTask[]> {
-    return PlantTaskDao.getPlantTasksByParkId(parkId);
+  public async deleteTaskskByStatus(taskStatus: PlantTaskStatusEnum): Promise<void> {
+    await PlantTaskDao.deleteTaskskByStatus(taskStatus);
+  }
+
+  public async assignPlantTask(id: string, assignerStaffId: string, staffId: string): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    const assigner = await StaffDao.getStaffById(assignerStaffId);
+    if (!assigner) {
+      throw new Error('Assigning staff not found');
+    }
+
+    const staff = await StaffDao.getStaffById(staffId);
+    if (!staff) {
+      throw new Error('Assigned staff not found');
+    }
+
+    if (assigner.role !== StaffRoleEnum.SUPERADMIN && assigner.role !== StaffRoleEnum.MANAGER) {
+      throw new Error('Only Superadmins and Managers can assign tasks');
+    }
+
+    if (staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
+      throw new Error('Only Botanists and Arborists can be assigned tasks');
+    }
+
+    if (assigner.role !== StaffRoleEnum.SUPERADMIN && staff.parkId !== assigner.parkId) {
+      throw new Error('Only staff in the same park can be assigned tasks');
+    }
+
+    if (plantTask.taskStatus !== PlantTaskStatusEnum.OPEN) {
+      throw new Error('Only open tasks can be assigned');
+    }
+
+    const assignedStaff = await StaffDao.getStaffById(staffId);
+    if (!assignedStaff) {
+      throw new Error('Assigned staff not found');
+    }
+
+    console.log('assignedStaff', assignedStaff.id);
+
+    return PlantTaskDao.assignPlantTask(id, assignedStaff);
+  }
+
+  public async unassignPlantTask(id: string, unassignerStaffId: string): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    if (plantTask.assignedStaffId === null) {
+      throw new Error('Task is not assigned to any staff');
+    }
+
+    const unassigner = await StaffDao.getStaffById(unassignerStaffId);
+    if (!unassigner) {
+      throw new Error('Unassigning staff not found');
+    }
+
+    if (unassigner.role !== StaffRoleEnum.SUPERADMIN && unassigner.role !== StaffRoleEnum.MANAGER) {
+      throw new Error('Only Superadmins and Managers can unassign tasks');
+    }
+
+    const assignedStaff = await StaffDao.getStaffById(plantTask.assignedStaffId);
+    if (!assignedStaff) {
+      throw new Error('Assigned staff not found');
+    }
+
+    if (unassigner.role !== StaffRoleEnum.SUPERADMIN && assignedStaff.parkId !== unassigner.parkId) {
+      throw new Error('Only the superadmin can unassign other staffs tasks');
+    }
+
+    if (plantTask.taskStatus !== PlantTaskStatusEnum.OPEN) {
+      throw new Error('Only open tasks can be unassigned');
+    }
+
+    return PlantTaskDao.unassignPlantTask(id);
+  }
+
+  public async completePlantTask(id: string, staffId: string): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    if (plantTask.taskStatus !== PlantTaskStatusEnum.IN_PROGRESS) {
+      throw new Error('Only in progress tasks can be completed');
+    }
+
+    if (plantTask.assignedStaffId !== staffId) {
+      throw new Error('Only the assigned staff can complete the task');
+    }
+
+    await this.updatePlantTask(id, { completedDate: new Date() });
+
+    return PlantTaskDao.completePlantTask(id);
+  }
+
+  public async acceptPlantTask(staffId: string, id: string): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    if (plantTask.taskStatus !== PlantTaskStatusEnum.OPEN) {
+      throw new Error('Only open tasks can be accepted');
+    }
+    return PlantTaskDao.acceptPlantTask(staffId, id);
+  }
+
+  public async unacceptPlantTask(id: string): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    if (plantTask.taskStatus !== PlantTaskStatusEnum.IN_PROGRESS) {
+      throw new Error('Only in progress tasks can be unaccepted');
+    }
+
+    return PlantTaskDao.unacceptPlantTask(id);
   }
 
   public async uploadImages(files: Express.Multer.File[]): Promise<string[]> {
@@ -164,14 +317,108 @@ class PlantTaskService {
     }
     return dueDate;
   };
+
+  private async addZoneAndParkInfo(plantTasks: PlantTask[]): Promise<PlantTask[]> {
+    const enhancedPlantTasks = await Promise.all(
+      plantTasks.map(async (plantTask) => {
+        const occurrence = await OccurrenceDao.getOccurrenceById(plantTask.occurrenceId);
+        if (!occurrence) {
+          throw new Error(`Occurrence not found for plant task ${plantTask.id}`);
+        }
+
+        const zone = await ZoneDao.getZoneById(occurrence.zoneId);
+        if (!zone) {
+          throw new Error(`Zone not found for occurrence ${occurrence.id}`);
+        }
+
+        const park = await ParkDao.getParkById(zone.parkId);
+        if (!park) {
+          throw new Error(`Park not found for zone ${zone.id}`);
+        }
+
+        return {
+          ...plantTask,
+          occurrence: {
+            ...occurrence,
+            zone: {
+              ...zone,
+              park,
+            },
+          },
+        };
+      }),
+    );
+
+    return enhancedPlantTasks;
+  }
+
+  public async updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    if (plantTask.taskStatus !== newStatus && newStatus === PlantTaskStatusEnum.COMPLETED) {
+      await this.updatePlantTask(id, { completedDate: new Date() });
+    }
+
+    const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);
+    const updatedTask = await PlantTaskDao.updatePlantTask(id, {
+      taskStatus: newStatus,
+      position: maxPosition + 1000, // Add 1000 to ensure it's at the end
+    });
+
+    return updatedTask;
+  }
+
+  public async updatePlantTaskPosition(id: string, newPosition: number): Promise<PlantTask> {
+    const plantTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!plantTask) {
+      throw new Error('Plant task not found');
+    }
+
+    const tasksInSameStatus = await PlantTaskDao.getPlantTasksByStatus(plantTask.taskStatus);
+
+    // Sort tasks by position
+    tasksInSameStatus.sort((a, b) => a.position - b.position);
+
+    // Find the current index of the task being moved
+    const currentIndex = tasksInSameStatus.findIndex((task) => task.id === id);
+    if (currentIndex === -1) {
+      throw new Error('Task not found in the current status');
+    }
+
+    // Remove the task from its current position
+    const [movedTask] = tasksInSameStatus.splice(currentIndex, 1);
+
+    // Insert the task at the new position
+    tasksInSameStatus.splice(newPosition, 0, movedTask);
+
+    // Recalculate positions for all tasks
+    const updatedTasks = tasksInSameStatus.map((task, index) => ({
+      id: task.id,
+      position: (index + 1) * 1000,
+    }));
+
+    // Update all task positions in the database
+    await Promise.all(updatedTasks.map((task) => PlantTaskDao.updatePlantTask(task.id, { position: task.position })));
+
+    // Return the updated task
+    return PlantTaskDao.getPlantTaskById(id);
+  }
+
+  public async getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<PlantTask[]> {
+    return PlantTaskDao.getPlantTasksByStatus(status);
+  }
 }
 
 const dateFormatter = (data: any) => {
-  const { createdAt, updatedAt, completedDate, ...rest } = data;
+  const { createdAt, updatedAt, completedDate, dueDate, ...rest } = data;
   const formattedData = { ...rest };
 
   if (createdAt) formattedData.createdAt = new Date(createdAt);
   if (updatedAt) formattedData.updatedAt = new Date(updatedAt);
+  if (dueDate) formattedData.dueDate = new Date(dueDate);
   if (completedDate) formattedData.completedDate = new Date(completedDate);
 
   return formattedData;

@@ -168,7 +168,7 @@ class ParkAssetService {
 
   private generateIdentifierNumber(assetType: ParkAssetTypeEnum): string {
     const prefix = this.getAssetTypePrefix(assetType);
-    return `${prefix}-${uuidv4().substr(0, 8).toUpperCase()}`;
+    return `${prefix}-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
 
   private getAssetTypePrefix(assetType: ParkAssetTypeEnum): string {

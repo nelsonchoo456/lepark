@@ -62,6 +62,28 @@ const ZoneCreate = () => {
       fetchZones();
     }
   }, [parks, formValues.parkId]);
+
+  useEffect(() => {
+    if (parks?.length > 0 && user?.parkId && user?.role !== StaffType.SUPERADMIN) {
+      if (selectedPark && selectedPark.id !== user?.parkId) {
+        // check if there is a previously selected park, if so, reset polygon
+        setPolygon([]);
+      }
+      
+      const currSelectedPark = parks.find((z) => z.id === user?.parkId);
+      setSelectedPark(currSelectedPark);
+
+      const fetchZones = async () => {
+        if (!user.parkId) return;
+        const zonesRes = await getZonesByParkId(user.parkId);
+        if (zonesRes.status === 200) {
+          const zonesData = zonesRes.data;
+          setSelectedParkZones(zonesData);
+        }
+      }
+      fetchZones();
+    }
+  }, [parks, user]);
   
   const handleCurrStep = async (step: number) => {
     if (step === 0) {

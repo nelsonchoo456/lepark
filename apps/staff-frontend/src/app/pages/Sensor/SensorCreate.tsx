@@ -164,9 +164,9 @@ const SensorCreate = () => {
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
               <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
             </Form.Item>
-            <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
+            {/* <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
               <Select placeholder="Select Sensor Status" options={sensorStatusOptions} />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
               <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
             </Form.Item>

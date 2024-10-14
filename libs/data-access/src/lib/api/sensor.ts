@@ -60,6 +60,46 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
     }
   }
 }
+
+export async function getSensorsByHubId(hubId: string): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByHubId/${hubId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getPlantSensorsByZoneId(zoneId: number): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getPlantSensorsByZoneId/${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getSensorsByZoneId(zoneId: number): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByZoneId/${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updateSensorDetails(
   id: string,
   data: Partial<SensorResponse>,
@@ -103,19 +143,6 @@ export async function deleteSensor(id: string): Promise<AxiosResponse<void>> {
   }
 }
 
-export async function getSensorsNeedingCalibration(): Promise<AxiosResponse<SensorResponse[]>> {
-  try {
-    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsNeedingCalibration`);
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
 export async function getSensorsNeedingMaintenance(): Promise<AxiosResponse<SensorResponse[]>> {
   try {
     const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsNeedingMaintenance`);
@@ -142,9 +169,12 @@ export async function updateSensorStatus(id: string, newStatus: string): Promise
   }
 }
 
-export async function getMaintenanceHistoryBySensorId(sensorId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
+export async function addSensorToHub(
+  id: string,
+  data: Partial<SensorResponse>,
+): Promise<AxiosResponse<SensorResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${sensorId}`);
+    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/addSensorToHub/${id}`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -155,9 +185,24 @@ export async function getMaintenanceHistoryBySensorId(sensorId: string): Promise
   }
 }
 
-export async function getCalibrationHistoryBySensorId(sensorId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
+export async function removeSensorFromHub(
+  id: string,
+): Promise<AxiosResponse<SensorResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getCalibrationHistory/${sensorId}`);
+    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/removeSensorFromHub/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getMaintenanceHistoryBySensorId(sensorId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
+  try {
+    const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${sensorId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
