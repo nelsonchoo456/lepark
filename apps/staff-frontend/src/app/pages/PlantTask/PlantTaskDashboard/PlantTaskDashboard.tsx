@@ -122,7 +122,6 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
       datalabels: {
         color: '#000',
         font: {
-          weight: 'bold',
           size: 12,
         },
         formatter: (value: number, context: any) => {
