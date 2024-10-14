@@ -71,14 +71,14 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
   const categoryColors: { [key in FAQCategoryEnum]: string } = {
     GENERAL: '#4a90e2',
     PARK_RULES: '#7ed321',
-    FACILITIES: '#f8e71c',
+    FACILITIES: '#d5c300',
     EVENTS: '#bd10e0',
     SAFETY: '#d0021b',
     ACCESSIBILITY: '#50e3c2',
     SERVICES: '#9013fe',
     TICKETING: '#4a90e2',
     PARK_HISTORY: '#f5a623',
-    OTHER: '#b8e986',
+    OTHER: '#037d50',
   };
 
 const getParkName = (parkId: number | null) => {
