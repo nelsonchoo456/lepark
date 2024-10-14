@@ -148,9 +148,9 @@ const ZoneIoTDetailsPage: React.FC = () => {
   const renderTrendAnalysis = (sensorType: string, trend: any) => {
     if (!trend) return 'N/A';
 
-    const getArrow = (value: number) => {
-      if (value > 0) return <ArrowUpOutlined style={{ color: 'green' }} />;
-      if (value < 0) return <ArrowDownOutlined style={{ color: 'red' }} />;
+    const getArrow = (value: string) => {
+      if (value.includes('-')) return <ArrowDownOutlined style={{ color: 'red' }} />;
+      if (value.includes('+')) return <ArrowUpOutlined style={{ color: 'green' }} />;
       return null;
     };
 
@@ -158,15 +158,18 @@ const ZoneIoTDetailsPage: React.FC = () => {
       <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
         <li>Trend: {trend.trendDescription}</li>
         <li>
-          Average rate of change: {getArrow(parseFloat(trend.averageRateOfChange))} {trend.averageRateOfChange} {trend.unit}/hour
+          Direction: {trend.directionOfChange} ({trend.magnitudeOfChange})
         </li>
         <li>
-          Average % change: {getArrow(parseFloat(trend.averagePercentageChange))} {trend.averagePercentageChange}%
+          Absolute change: {getArrow(trend.absoluteChange)} {trend.absoluteChange}
         </li>
         <li>
-          Overall change: {getArrow(parseFloat(trend.overallChange))} {trend.overallChange}%
+          Rate of change: {getArrow(trend.rateOfChange)} {trend.rateOfChange}
         </li>
         <li>Readings analyzed: {trend.readingsCount}</li>
+        <li>
+          <Text strong>Insight:</Text> {trend.actionableInsight}
+        </li>
       </ul>
     );
   };

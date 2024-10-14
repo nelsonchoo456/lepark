@@ -255,9 +255,11 @@ class SensorReadingService {
     hours: number,
   ): Promise<{
     trendDescription: string;
-    averageRateOfChange: string;
-    averagePercentageChange: string;
-    overallChange: string;
+    absoluteChange: string;
+    rateOfChange: string;
+    directionOfChange: string;
+    magnitudeOfChange: string;
+    actionableInsight: string;
     readingsCount: number;
     unit: string;
   }> {
@@ -272,65 +274,64 @@ class SensorReadingService {
       if (readings.length < 2) {
         return {
           trendDescription: 'Insufficient readings to determine a trend.',
-          averageRateOfChange: 'N/A',
-          averagePercentageChange: 'N/A',
-          overallChange: 'N/A',
-          readingsCount: 0,
-          unit: 'N/A',
+          absoluteChange: 'N/A',
+          rateOfChange: 'N/A',
+          directionOfChange: 'N/A',
+          magnitudeOfChange: 'N/A',
+          actionableInsight: 'Collect more data to analyze trends.',
+          readingsCount: readings.length,
+          unit: this.getSensorUnit(sensorType),
         };
       }
 
       // Sort readings by date in ascending order
       readings.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-      const timeSpan = (readings[readings.length - 1].date.getTime() - readings[0].date.getTime()) / (1000 * 60 * 60);
-      if (timeSpan < hours * 0.5) {
+      const oldestReading = readings[0];
+      const latestReading = readings[readings.length - 1];
+      const timeSpanHours = (latestReading.date.getTime() - oldestReading.date.getTime()) / (1000 * 60 * 60);
+
+      if (timeSpanHours < hours * 0.5) {
         return {
           trendDescription: 'Insufficient time span for analysis',
-          averageRateOfChange: 'N/A',
-          averagePercentageChange: 'N/A',
-          overallChange: 'N/A',
+          absoluteChange: 'N/A',
+          rateOfChange: 'N/A',
+          directionOfChange: 'N/A',
+          magnitudeOfChange: 'N/A',
+          actionableInsight: 'Ensure sensors are reporting data regularly.',
           readingsCount: readings.length,
           unit: this.getSensorUnit(sensorType),
         };
       }
 
-      const slopes: number[] = [];
-      let totalPercentageChange = 0;
+      const absoluteChange = latestReading.value - oldestReading.value;
+      const rateOfChange = absoluteChange / timeSpanHours;
+      const percentageChange = (absoluteChange / oldestReading.value) * 100;
 
-      for (let i = 1; i < readings.length; i++) {
-        const timeDiff = (readings[i].date.getTime() - readings[i - 1].date.getTime()) / (1000 * 60 * 60); // Time difference in hours
-        const valueDiff = readings[i].value - readings[i - 1].value;
-
-        if (readings[i - 1].value === 0) continue; // Avoid division by zero
-
-        const slope = valueDiff / timeDiff;
-        slopes.push(slope);
-
-        const percentageChange = (valueDiff / readings[i - 1].value) * 100;
-        totalPercentageChange += percentageChange;
-      }
-
-      const avgSlope = slopes.reduce((sum, slope) => sum + slope, 0) / slopes.length;
-      const avgPercentageChange = totalPercentageChange / (readings.length - 1);
-      const latestReading = readings[readings.length - 1].value;
-      const oldestReading = readings[0].value;
-      const overallChange = ((latestReading - oldestReading) / oldestReading) * 100;
-
-      let trendDescription = '';
-      if (Math.abs(avgSlope) < 0.1 && Math.abs(avgPercentageChange) < 1) {
-        trendDescription = 'Stable';
-      } else if (avgSlope > 0) {
-        trendDescription = avgPercentageChange > 5 ? 'Rapidly increasing' : 'Gradually increasing';
+      const directionOfChange = absoluteChange > 0 ? 'Increasing' : absoluteChange < 0 ? 'Decreasing' : 'Stable';
+      
+      let magnitudeOfChange: string;
+      if (Math.abs(percentageChange) < 1) {
+        magnitudeOfChange = 'Minimal';
+      } else if (Math.abs(percentageChange) < 5) {
+        magnitudeOfChange = 'Small';
+      } else if (Math.abs(percentageChange) < 10) {
+        magnitudeOfChange = 'Moderate';
       } else {
-        trendDescription = avgPercentageChange < -5 ? 'Rapidly decreasing' : 'Gradually decreasing';
+        magnitudeOfChange = 'Large';
       }
+
+      const trendDescription = `${magnitudeOfChange} ${directionOfChange.toLowerCase()}`;
+
+      const actionableInsight = this.getActionableInsight(sensorType, trendDescription, absoluteChange, rateOfChange, timeSpanHours);
 
       return {
         trendDescription,
-        averageRateOfChange: avgSlope.toFixed(2),
-        averagePercentageChange: avgPercentageChange.toFixed(2),
-        overallChange: overallChange.toFixed(2),
+        absoluteChange: `${absoluteChange.toFixed(2)}${this.getSensorUnit(sensorType)}`,
+        rateOfChange: `${rateOfChange.toFixed(2)}${this.getSensorUnit(sensorType)} per hour`,
+        directionOfChange,
+        magnitudeOfChange,
+        actionableInsight,
         readingsCount: readings.length,
         unit: this.getSensorUnit(sensorType),
       };
@@ -338,13 +339,74 @@ class SensorReadingService {
       console.error('Error getting zone trend for sensor type:', error);
       return {
         trendDescription: 'Error getting zone trend for sensor type',
-        averageRateOfChange: 'N/A',
-        averagePercentageChange: 'N/A',
-        overallChange: 'N/A',
+        absoluteChange: 'N/A',
+        rateOfChange: 'N/A',
+        directionOfChange: 'N/A',
+        magnitudeOfChange: 'N/A',
+        actionableInsight: 'Check system for errors and try again.',
         readingsCount: 0,
         unit: 'N/A',
       };
     }
+  }
+
+  private getActionableInsight(
+    sensorType: SensorTypeEnum,
+    trendDescription: string,
+    absoluteChange: number,
+    rateOfChange: number,
+    timeSpanHours: number
+  ): string {
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)}°C over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)}°C/hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange)}`;
+      case SensorTypeEnum.HUMIDITY:
+        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)}% over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)}%/hour). ${this.getHumidityInsight(absoluteChange, rateOfChange)}`;
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)}% over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)}%/hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange)}`;
+      case SensorTypeEnum.LIGHT:
+        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)} Lux over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)} Lux/hour). ${this.getLightInsight(absoluteChange, rateOfChange)}`;
+      default:
+        return `The sensor readings have shown a ${trendDescription} trend. Monitor the situation and adjust conditions if necessary.`;
+    }
+  }
+
+  private getTemperatureInsight(absoluteChange: number, rateOfChange: number): string {
+    if (Math.abs(absoluteChange) > 5) {
+      return `This is a significant temperature change. Check environmental controls and adjust if necessary.`;
+    } else if (Math.abs(rateOfChange) > 1) {
+      return `Temperature is changing rapidly. Monitor closely and prepare to intervene if the trend continues.`;
+    }
+    return `Current temperature changes are within normal range. Continue regular monitoring.`;
+  }
+
+  private getHumidityInsight(absoluteChange: number, rateOfChange: number): string {
+    if (Math.abs(absoluteChange) > 15) {
+      return `This is a substantial humidity change. Check for leaks, ventilation issues, or malfunctioning humidifiers/dehumidifiers.`;
+    } else if (Math.abs(rateOfChange) > 3) {
+      return `Humidity is changing quickly. Investigate possible causes and adjust environmental controls if needed.`;
+    }
+    return `Humidity changes are moderate. Ensure plants are not showing signs of stress.`;
+  }
+
+  private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number): string {
+    if (absoluteChange < -10) {
+      return `Soil is drying out significantly. Consider adjusting irrigation schedule or checking for drainage issues.`;
+    } else if (absoluteChange > 10) {
+      return `Soil moisture has increased substantially. Check for overwatering or poor drainage.`;
+    } else if (Math.abs(rateOfChange) > 2) {
+      return `Soil moisture is changing rapidly. Monitor closely and adjust watering practices if needed.`;
+    }
+    return `Soil moisture changes are within expected range. Continue regular monitoring and maintenance.`;
+  }
+
+  private getLightInsight(absoluteChange: number, rateOfChange: number): string {
+    if (Math.abs(absoluteChange) > 1000) {
+      return `Light levels have changed dramatically. Check for obstructions, changes in artificial lighting, or seasonal effects.`;
+    } else if (Math.abs(rateOfChange) > 200) {
+      return `Light levels are fluctuating rapidly. Investigate possible causes and consider adjusting light sources or shading.`;
+    }
+    return `Light level changes are moderate. Ensure plants are receiving appropriate light for their needs.`;
   }
 
   // Compare 4 hours to 8 hours ago (for example)

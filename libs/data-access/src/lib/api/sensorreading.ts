@@ -395,9 +395,11 @@ export async function getZoneTrendForSensorType(
 ): Promise<
   AxiosResponse<{
     trendDescription: string;
-    averageRateOfChange: string;
-    averagePercentageChange: string;
-    overallChange: string;
+    absoluteChange: string;
+    rateOfChange: string;
+    directionOfChange: string;
+    magnitudeOfChange: string;
+    actionableInsight: string;
     readingsCount: number;
     unit: string;
   }>
