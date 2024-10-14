@@ -408,6 +408,7 @@ class SensorReadingService {
     }
   }
 
+  // Get the latest sensor reading for an occurrence (based on nearest sensor)
   public async getLatestSensorReadingForOccurrence(
     zoneId: number,
     sensorType: SensorTypeEnum,
