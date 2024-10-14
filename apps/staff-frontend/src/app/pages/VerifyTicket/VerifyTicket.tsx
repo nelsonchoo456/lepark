@@ -10,36 +10,31 @@ import {
   getAttractionById,
 } from '@lepark/data-access';
 import dayjs from 'dayjs';
+import { useRestrictVerifyAttractionTicket } from '../../hooks/Attractions/useRestrictVerifyAttractionTicket';
 
 const { Text, Title } = Typography;
 
 const VerifyTicket: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
+  const { ticket, attraction, loading, error } = useRestrictVerifyAttractionTicket(ticketId);
   const [status, setStatus] = useState<'verifying' | 'valid' | 'invalid'>('verifying');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [ticketDetails, setTicketDetails] = useState<AttractionTicketResponse | null>(null);
-  const [attractionDetails, setAttractionDetails] = useState<AttractionResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const verificationAttempted = useRef(false);
 
   useEffect(() => {
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+
     if (!ticketId || verificationAttempted.current) {
       return;
     }
 
     verificationAttempted.current = true;
-    setIsLoading(true);
 
     const fetchTicketDetails = async () => {
       try {
-        const ticketResponse = await getAttractionTicketById(ticketId);
-        setTicketDetails(ticketResponse.data);
-
-        if (ticketResponse.data.attractionTicketListing?.attractionId) {
-          const attractionResponse = await getAttractionById(ticketResponse.data.attractionTicketListing.attractionId);
-          setAttractionDetails(attractionResponse.data);
-        }
-
         const verificationResponse = await verifyAttractionTicket(ticketId);
         if (verificationResponse.data.isValid) {
           setStatus('valid');
@@ -52,15 +47,13 @@ const VerifyTicket: React.FC = () => {
         const errorMessage = error.message || error.toString();
         setStatus('invalid');
         setErrorMessage(error.response?.data?.message || errorMessage || 'An unknown error occurred');
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchTicketDetails();
   }, [ticketId]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Card className="h-screen flex items-center justify-center">
         <Spin size="large" />
@@ -80,19 +73,19 @@ const VerifyTicket: React.FC = () => {
     <Space direction="vertical" size="small" className="w-full">
       <Text>
         <Text strong>Attraction: </Text>
-        {attractionDetails?.title}
+        {attraction?.title}
       </Text>
       <Text>
         <Text strong>Date: </Text>
-        {dayjs(ticketDetails?.attractionTicketTransaction?.attractionDate || '').format('DD MMMM YYYY')}
+        {dayjs(ticket?.attractionTicketTransaction?.attractionDate || '').format('DD MMMM YYYY')}
       </Text>
       <Text>
         <Text strong>Ticket Type: </Text>
-        {ticketDetails?.attractionTicketListing?.nationality} {ticketDetails?.attractionTicketListing?.category}
+        {ticket?.attractionTicketListing?.nationality} {ticket?.attractionTicketListing?.category}
       </Text>
       <Text>
         <Text strong>Ticket ID: </Text>
-        {ticketDetails?.id}
+        {ticket?.id}
       </Text>
     </Space>
   );
@@ -102,7 +95,7 @@ const VerifyTicket: React.FC = () => {
       <Title level={2} className="text-center">
         Verifying Attraction Ticket for
         <br />
-        {attractionDetails?.title || 'Unknown Attraction'}
+        {attraction?.title || 'Unknown Attraction'}
       </Title>
       <Card className="w-full max-w-md">
         {status === 'valid' ? (
@@ -127,7 +120,7 @@ const VerifyTicket: React.FC = () => {
             icon={<CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 72 }} />}
             title="Invalid Ticket"
             subTitle={errorMessage || 'This ticket is not valid or has already been used.'}
-            extra={ticketDetails && renderTicketDetails()}
+            extra={ticket && renderTicketDetails()}
             className="py-4"
           />
         )}
