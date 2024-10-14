@@ -142,13 +142,19 @@ useEffect(() => {
         </div>
         <br />
       <div className="flex justify-between items-center">
-    <LogoText className="font-bold text-lg">Sustainability</LogoText>
-    <Link to="/decarb" className="text-green-600 hover:text-green-700 flex items-center">
-      <Space>
-        Learn More
-        <FiExternalLink />
-      </Space>
-    </Link>
+    <LogoText className="text-xl">Sustainability</LogoText>
+    <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+      <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+      <Link to="/decarb">
+        <Button
+          icon={<MdArrowForward className="text-2xl" />}
+          shape="circle"
+          type="primary"
+          size="large"
+          className="md:bg-transparent md:text-green-500 md:shadow-none"
+        />
+      </Link>
+    </div>
   </div>
           <br/>
 
@@ -170,12 +176,18 @@ useEffect(() => {
 <br/>
    <div className="flex justify-between items-center">
      <LogoText className="font-bold text-lg">FAQs</LogoText>
-     <Link to="/faq" className="text-green-600 hover:text-green-700 flex items-center">
-       <Space>
-         View All
-         <FiExternalLink />
-       </Space>
-     </Link>
+     <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+       <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+       <Link to="/faq">
+         <Button
+           icon={<MdArrowForward className="text-2xl" />}
+           shape="circle"
+           type="primary"
+           size="large"
+           className="md:bg-transparent md:text-green-500 md:shadow-none"
+         />
+       </Link>
+     </div>
    </div>
    <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
 <br/>
