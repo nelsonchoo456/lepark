@@ -200,7 +200,6 @@ class SensorReadingService {
 
     return averages;
   }
-  
 
   public async getSensorReadingsByZoneIdAndSensorTypeByDateRange(
     zoneId: number,
@@ -215,14 +214,14 @@ class SensorReadingService {
     return SensorReadingDao.getLatestSensorReadingByZoneIdAndSensorType(zoneId, sensorType);
   }
 
-  public async getActiveZoneSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
-    return SensorReadingDao.getActiveZoneSensorCount(zoneId, hoursAgo);
+  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
+    return SensorReadingDao.getActiveZonePlantSensorCount(zoneId, hoursAgo);
   }
 
   public async getZoneTrendForSensorType(
     zoneId: number,
     sensorType: SensorTypeEnum,
-    hours: number
+    hours: number,
   ): Promise<{
     trendDescription: string;
     averageRateOfChange: string;
@@ -236,9 +235,9 @@ class SensorReadingService {
       if (!zone) {
         throw new Error('Zone not found');
       }
-      
+
       const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
-      
+
       if (readings.length < 2) {
         return {
           trendDescription: 'Insufficient readings to determine a trend.',
@@ -249,10 +248,10 @@ class SensorReadingService {
           unit: 'N/A',
         };
       }
-  
+
       // Sort readings by date in ascending order
       readings.sort((a, b) => a.date.getTime() - b.date.getTime());
-      
+
       const timeSpan = (readings[readings.length - 1].date.getTime() - readings[0].date.getTime()) / (1000 * 60 * 60);
       if (timeSpan < hours * 0.5) {
         return {
@@ -264,29 +263,29 @@ class SensorReadingService {
           unit: this.getSensorUnit(sensorType),
         };
       }
-  
+
       const slopes: number[] = [];
       let totalPercentageChange = 0;
-  
+
       for (let i = 1; i < readings.length; i++) {
         const timeDiff = (readings[i].date.getTime() - readings[i - 1].date.getTime()) / (1000 * 60 * 60); // Time difference in hours
         const valueDiff = readings[i].value - readings[i - 1].value;
-  
+
         if (readings[i - 1].value === 0) continue; // Avoid division by zero
-  
+
         const slope = valueDiff / timeDiff;
         slopes.push(slope);
-  
+
         const percentageChange = (valueDiff / readings[i - 1].value) * 100;
         totalPercentageChange += percentageChange;
       }
-  
+
       const avgSlope = slopes.reduce((sum, slope) => sum + slope, 0) / slopes.length;
       const avgPercentageChange = totalPercentageChange / (readings.length - 1);
       const latestReading = readings[readings.length - 1].value;
       const oldestReading = readings[0].value;
       const overallChange = ((latestReading - oldestReading) / oldestReading) * 100;
-  
+
       let trendDescription = '';
       if (Math.abs(avgSlope) < 0.1 && Math.abs(avgPercentageChange) < 1) {
         trendDescription = 'Stable';
@@ -295,7 +294,7 @@ class SensorReadingService {
       } else {
         trendDescription = avgPercentageChange < -5 ? 'Rapidly decreasing' : 'Gradually decreasing';
       }
-  
+
       return {
         trendDescription,
         averageRateOfChange: avgSlope.toFixed(2),
@@ -328,7 +327,10 @@ class SensorReadingService {
   // Get unhealthy occurrences that exceed their ideal conditions
   public async getUnhealthyOccurrences(zoneId: number): Promise<{ occurrenceId: string; speciesName: string; issues: string[] }[]> {
     const occurrences: OccurrenceWithDetails[] = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
-    console.log('Occurrences:', occurrences);
+    console.log(
+      'Occurrences:',
+      occurrences.map((occurrence) => occurrence.title),
+    );
     const unhealthyOccurrences = [];
 
     for (const occurrence of occurrences) {
@@ -337,7 +339,10 @@ class SensorReadingService {
 
       // Check temperature
       const latestTemperature = await this.getLatestSensorReadingByZoneIdAndSensorType(zoneId, SensorTypeEnum.TEMPERATURE);
-      if (latestTemperature && (latestTemperature.value < speciesConditions.minTemp || latestTemperature.value > speciesConditions.maxTemp)) {
+      if (
+        latestTemperature &&
+        (latestTemperature.value < speciesConditions.minTemp || latestTemperature.value > speciesConditions.maxTemp)
+      ) {
         issues.push(`Temperature out of range: ${latestTemperature.value}°C`);
       }
 
@@ -364,7 +369,7 @@ class SensorReadingService {
 
       if (issues.length > 0) {
         unhealthyOccurrences.push({
-          occurrenceId: occurrence.id,
+          occurrenceName: occurrence.title,
           speciesName: occurrence.species.speciesName, // Now you can access species directly
           issues,
         });

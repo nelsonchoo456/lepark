@@ -74,6 +74,19 @@ export async function getSensorsByHubId(hubId: string): Promise<AxiosResponse<Se
   }
 }
 
+export async function getPlantSensorsByZoneId(zoneId: number): Promise<AxiosResponse<SensorResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getPlantSensorsByZoneId/${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getSensorsByZoneId(zoneId: number): Promise<AxiosResponse<SensorResponse[]>> {
   try {
     const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByZoneId/${zoneId}`);

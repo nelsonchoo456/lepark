@@ -11,9 +11,9 @@ import {
   SensorTypeEnum,
   getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo,
   getZoneTrendForSensorType,
-  getActiveZoneSensorCount,
+  getActiveZonePlantSensorCount,
   getAverageDifferenceBetweenPeriodsBySensorType,
-  getSensorsByZoneId,
+  getPlantSensorsByZoneId,
 } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
@@ -21,7 +21,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
-import { ArrowDownOutlined, ArrowUpOutlined} from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -49,10 +49,10 @@ const ZoneIoTDashboard: React.FC = () => {
           const avgDifferences = await getAverageDifferenceBetweenPeriodsBySensorType(zone.id, 4);
           differences[zone.id] = avgDifferences.data;
 
-          const activeCount = await getActiveZoneSensorCount(zone.id);
+          const activeCount = await getActiveZonePlantSensorCount(zone.id);
           activeCounts[zone.id] = activeCount.data.count;
 
-          const totalSensorsCount = await getSensorsByZoneId(zone.id);
+          const totalSensorsCount = await getPlantSensorsByZoneId(zone.id);
           totalSensors[zone.id] = totalSensorsCount.data.length;
         } catch (error) {
           console.error(`Error fetching data for zone ${zone.id}:`, error);
@@ -106,6 +106,8 @@ const ZoneIoTDashboard: React.FC = () => {
     },
   ];
 
+  const filteredSensorTypes = [SensorTypeEnum.SOIL_MOISTURE, SensorTypeEnum.TEMPERATURE, SensorTypeEnum.LIGHT, SensorTypeEnum.HUMIDITY];
+
   const renderDifference = (sensorType: SensorTypeEnum, zoneId: number) => {
     const difference = zoneDifferences[zoneId]?.[sensorType]?.difference;
     if (difference === undefined) return null;
@@ -152,12 +154,7 @@ const ZoneIoTDashboard: React.FC = () => {
                       <Statistic
                         title="Avg. Soil Moisture"
                         value={metrics[SensorTypeEnum.SOIL_MOISTURE]?.toFixed(2) || 0}
-                        suffix={
-                          <>
-                            %
-                            {renderDifference(SensorTypeEnum.SOIL_MOISTURE, zone.id)}
-                          </>
-                        }
+                        suffix={<>%{renderDifference(SensorTypeEnum.SOIL_MOISTURE, zone.id)}</>}
                       />
                     </Col>
                     <Col span={12}>
@@ -190,12 +187,7 @@ const ZoneIoTDashboard: React.FC = () => {
                       <Statistic
                         title="Avg. Humidity"
                         value={metrics[SensorTypeEnum.HUMIDITY]?.toFixed(2) || 0}
-                        suffix={
-                          <>
-                            %
-                            {renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}
-                          </>
-                        }
+                        suffix={<>%{renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}</>}
                       />
                     </Col>
                   </Row>
@@ -208,9 +200,7 @@ const ZoneIoTDashboard: React.FC = () => {
                     value={activeSensorCount}
                     suffix={`/ ${zoneTotalSensors[zone.id]} sensors`}
                   />
-                  <Typography.Text type="secondary">
-                    Average readings for the past 4 hours
-                  </Typography.Text>
+                  <Typography.Text type="secondary">Average readings for the past 4 hours</Typography.Text>
                 </Flex>
               </Card>
             </Col>

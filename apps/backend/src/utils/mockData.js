@@ -2241,7 +2241,7 @@ const newHub = {
 // Add new sensors
 const newSensors = [
   {
-    name: 'Soil Moisture Sensor 1',
+    name: 'Soil Moisture VMax 1020',
     identifierNumber: 'SE-66666',
     serialNumber: 'STE9876543',
     sensorType: 'SOIL_MOISTURE',
@@ -2256,7 +2256,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Temperature Sensor 2',
+    name: 'Temperature Sensor VMax 1030',
     identifierNumber: 'SE-77777',
     serialNumber: 'STE1234567',
     sensorType: 'TEMPERATURE',
@@ -2271,7 +2271,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Humidity Sensor 2',
+    name: 'Humidity Sensor WP-1010',
     identifierNumber: 'SE-88888',
     serialNumber: 'STE7654321',
     sensorType: 'HUMIDITY',
@@ -2286,7 +2286,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Light Sensor 2',
+    name: 'Light Sensor MTY-102',
     identifierNumber: 'SE-99999',
     serialNumber: 'STE3456789',
     sensorType: 'LIGHT',

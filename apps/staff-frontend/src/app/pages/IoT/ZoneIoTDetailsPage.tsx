@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Progress, Space} from 'antd';
+import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Progress, Space, List } from 'antd';
 import { FiThermometer, FiDroplet, FiSun, FiWind } from 'react-icons/fi';
-import { ArrowDownOutlined, ArrowUpOutlined} from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
   ZoneResponse,
@@ -15,6 +15,7 @@ import {
   getLatestSensorReadingBySensorId,
   getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo,
   getZoneTrendForSensorType,
+  getUnhealthyOccurrences,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
@@ -30,6 +31,14 @@ const ZoneIoTDetailsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [averageReadings, setAverageReadings] = useState<{ [key: string]: number }>({});
   const [trends, setTrends] = useState<{ [key: string]: any }>({});
+  const [unhealthyOccurrences, setUnhealthyOccurrences] = useState<any[]>([]);
+
+  const filteredSensorTypes = [
+    SensorTypeEnum.SOIL_MOISTURE,
+    SensorTypeEnum.TEMPERATURE,
+    SensorTypeEnum.LIGHT,
+    SensorTypeEnum.HUMIDITY
+  ];
 
   useEffect(() => {
     const fetchZoneDetails = async () => {
@@ -39,17 +48,22 @@ const ZoneIoTDetailsPage: React.FC = () => {
         setZone(zoneResponse.data);
 
         const sensorsResponse = await getSensorsByZoneId(Number(zoneId));
-        setSensors(sensorsResponse.data);
+        setSensors(sensorsResponse.data.filter((sensor) => sensor.sensorType !== SensorTypeEnum.CAMERA));
 
         const avgReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(Number(zoneId), 4);
         setAverageReadings(avgReadings.data);
 
-        const trendPromises = Object.values(SensorTypeEnum).map(async (sensorType) => {
+        const trendPromises = filteredSensorTypes.map(async (sensorType) => {
           const trend = await getZoneTrendForSensorType(Number(zoneId), sensorType, 1);
           return { [sensorType]: trend.data };
         });
         const trendResults = await Promise.all(trendPromises);
         setTrends(Object.assign({}, ...trendResults));
+
+        // Fetch unhealthy occurrences
+        const unhealthyResponse = await getUnhealthyOccurrences(Number(zoneId));
+        setUnhealthyOccurrences(unhealthyResponse.data);
+        console.log('Unhealthy occurrences:', unhealthyResponse.data);
 
         setLoading(false);
       } catch (error) {
@@ -171,20 +185,48 @@ const ZoneIoTDetailsPage: React.FC = () => {
               <Tag color="blue">4-Hour Average</Tag>
             </Space>
           </Col>
-          {Object.entries(averageReadings).map(([sensorType, value]) => (
-            <Col xs={24} sm={12} md={6} key={sensorType}>
-              <Statistic
-                title={formatEnumLabelToRemoveUnderscores(sensorType as SensorTypeEnum)}
-                value={value.toFixed(2)}
-                prefix={getSensorIcon(sensorType as SensorTypeEnum)}
-                suffix={getSensorUnit(sensorType as SensorTypeEnum)}
-              />
-              <Text type="secondary">4h Trend:</Text>
-              {renderTrendAnalysis(sensorType, trends[sensorType])}
-            </Col>
-          ))}
+          {Object.entries(averageReadings)
+            .filter(([sensorType]) => filteredSensorTypes.includes(sensorType as SensorTypeEnum))
+            .map(([sensorType, value]) => (
+              <Col xs={24} sm={12} md={6} key={sensorType}>
+                <Statistic
+                  title={formatEnumLabelToRemoveUnderscores(sensorType as SensorTypeEnum)}
+                  value={value.toFixed(2)}
+                  prefix={getSensorIcon(sensorType as SensorTypeEnum)}
+                  suffix={getSensorUnit(sensorType as SensorTypeEnum)}
+                />
+                <Text type="secondary">4h Trend:</Text>
+                {renderTrendAnalysis(sensorType, trends[sensorType])}
+              </Col>
+            ))}
         </Row>
       </Card>
+
+      {/* New section for unhealthy occurrences */}
+      {unhealthyOccurrences.length > 0 && (
+        <Card style={{ marginTop: 16 }}>
+          <Title level={4}>
+            <WarningOutlined style={{ color: '#faad14' }} /> Potential Issues
+          </Title>
+          <List
+            dataSource={unhealthyOccurrences}
+            renderItem={(item) => (
+              <List.Item>
+                <List.Item.Meta
+                  title={`${item.speciesName} (Occurrence Name: ${item.occurrenceName})`}
+                  description={
+                    <ul>
+                      {item.issues.map((issue: string, index: number) => (
+                        <li key={index}>{issue}</li>
+                      ))}
+                    </ul>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        </Card>
+      )}
 
       <Card style={{ marginTop: 16 }}>
         <Tabs defaultActiveKey="0">

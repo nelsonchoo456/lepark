@@ -51,11 +51,21 @@ class SensorReadingDao {
     return prisma.sensorReading.findMany({ where: { sensor: { hubId, sensorType: sensorType } } });
   }
 
-  public async getSensorReadingsByHubIdAndSensorTypeForHoursAgo(hubId: string, sensorType: SensorTypeEnum, hours: number): Promise<SensorReading[]> {
-    return prisma.sensorReading.findMany({ where: { sensor: { hubId, sensorType: sensorType }, date: { gte: new Date(Date.now() - hours * 60 * 60 * 1000) } } });
+  public async getSensorReadingsByHubIdAndSensorTypeForHoursAgo(
+    hubId: string,
+    sensorType: SensorTypeEnum,
+    hours: number,
+  ): Promise<SensorReading[]> {
+    return prisma.sensorReading.findMany({
+      where: { sensor: { hubId, sensorType: sensorType }, date: { gte: new Date(Date.now() - hours * 60 * 60 * 1000) } },
+    });
   }
 
-  public async getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(hubId: string, sensorType: SensorTypeEnum, hours: number): Promise<number> {
+  public async getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(
+    hubId: string,
+    sensorType: SensorTypeEnum,
+    hours: number,
+  ): Promise<number> {
     const readings = await this.getSensorReadingsByHubIdAndSensorTypeForHoursAgo(hubId, sensorType, hours);
     if (readings.length === 0) {
       return 0;
@@ -63,7 +73,12 @@ class SensorReadingDao {
     return readings.reduce((sum, reading) => sum + reading.value, 0) / readings.length;
   }
 
-  public async getSensorReadingsByHubIdAndSensorTypeByDateRange(hubId: string, sensorType: SensorTypeEnum, startDate: Date, endDate: Date): Promise<SensorReading[]> {
+  public async getSensorReadingsByHubIdAndSensorTypeByDateRange(
+    hubId: string,
+    sensorType: SensorTypeEnum,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<SensorReading[]> {
     return prisma.sensorReading.findMany({ where: { sensor: { hubId, sensorType: sensorType }, date: { gte: startDate, lte: endDate } } });
   }
 
@@ -76,11 +91,21 @@ class SensorReadingDao {
     return prisma.sensorReading.findMany({ where: { sensor: { hub: { zoneId }, sensorType: sensorType } } });
   }
 
-  public async getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId: number, sensorType: SensorTypeEnum, hours: number): Promise<SensorReading[]> {
-    return prisma.sensorReading.findMany({ where: { sensor: { hub: { zoneId }, sensorType: sensorType }, date: { gte: new Date(Date.now() - hours * 60 * 60 * 1000) } } });
+  public async getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(
+    zoneId: number,
+    sensorType: SensorTypeEnum,
+    hours: number,
+  ): Promise<SensorReading[]> {
+    return prisma.sensorReading.findMany({
+      where: { sensor: { hub: { zoneId }, sensorType: sensorType }, date: { gte: new Date(Date.now() - hours * 60 * 60 * 1000) } },
+    });
   }
 
-  public async getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo(zoneId: number, sensorType: SensorTypeEnum, hours: number): Promise<number> {
+  public async getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo(
+    zoneId: number,
+    sensorType: SensorTypeEnum,
+    hours: number,
+  ): Promise<number> {
     const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
     if (readings.length === 0) {
       return 0;
@@ -88,25 +113,34 @@ class SensorReadingDao {
     return readings.reduce((sum, reading) => sum + reading.value, 0) / readings.length;
   }
 
-  public async getSensorReadingsByZoneIdAndSensorTypeByDateRange(zoneId: number, sensorType: SensorTypeEnum, startDate: Date, endDate: Date): Promise<SensorReading[]> {
-    return prisma.sensorReading.findMany({ where: { sensor: { hub: { zoneId }, sensorType: sensorType }, date: { gte: startDate, lte: endDate } } });
+  public async getSensorReadingsByZoneIdAndSensorTypeByDateRange(
+    zoneId: number,
+    sensorType: SensorTypeEnum,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<SensorReading[]> {
+    return prisma.sensorReading.findMany({
+      where: { sensor: { hub: { zoneId }, sensorType: sensorType }, date: { gte: startDate, lte: endDate } },
+    });
   }
 
   public async getLatestSensorReadingByZoneIdAndSensorType(zoneId: number, sensorType: SensorTypeEnum): Promise<SensorReading | null> {
     return prisma.sensorReading.findFirst({ where: { sensor: { hub: { zoneId }, sensorType: sensorType } }, orderBy: { date: 'desc' } });
   }
 
-  public async getActiveZoneSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
+  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
+    const sensorTypes = [SensorTypeEnum.SOIL_MOISTURE, SensorTypeEnum.TEMPERATURE, SensorTypeEnum.LIGHT, SensorTypeEnum.HUMIDITY];
     const date = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
     const activeSensors = await prisma.sensor.count({
       where: {
         hub: { zoneId },
+        sensorType: { in: sensorTypes },
         sensorReadings: {
           some: {
-            date: { gte: date }
-          }
-        }
-      }
+            date: { gte: date },
+          },
+        },
+      },
     });
     return activeSensors;
   }
@@ -127,16 +161,16 @@ class SensorReadingDao {
           _avg: { value: true },
           where: {
             sensor: { hub: { zoneId }, sensorType },
-            date: { gte: startDate, lt: midDate }
-          }
+            date: { gte: startDate, lt: midDate },
+          },
         }),
         prisma.sensorReading.aggregate({
           _avg: { value: true },
           where: {
             sensor: { hub: { zoneId }, sensorType },
-            date: { gte: midDate, lte: endDate }
-          }
-        })
+            date: { gte: midDate, lte: endDate },
+          },
+        }),
       ]);
 
       const firstAvg = firstPeriodAvg._avg.value || 0;
@@ -145,7 +179,7 @@ class SensorReadingDao {
       result[sensorType] = {
         firstPeriodAvg: firstAvg,
         secondPeriodAvg: secondAvg,
-        difference: secondAvg - firstAvg
+        difference: secondAvg - firstAvg,
       };
     }
 

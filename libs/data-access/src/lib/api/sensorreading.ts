@@ -374,17 +374,19 @@ export async function getLatestSensorReadingByZoneIdAndSensorType(
 }
 
 export async function getZoneTrendForSensorType(
-  zoneId: number, 
-  sensorType: SensorTypeEnum, 
-  hours: number
-): Promise<AxiosResponse<{
-  trendDescription: string;
-  averageRateOfChange: string;
-  averagePercentageChange: string;
-  overallChange: string;
-  readingsCount: number;
-  unit: string;
-}>> {
+  zoneId: number,
+  sensorType: SensorTypeEnum,
+  hours: number,
+): Promise<
+  AxiosResponse<{
+    trendDescription: string;
+    averageRateOfChange: string;
+    averagePercentageChange: string;
+    overallChange: string;
+    readingsCount: number;
+    unit: string;
+  }>
+> {
   try {
     const response = await client.get(`${URL}/getZoneTrendForSensorType/${zoneId}/${sensorType}/${hours}`);
     return response;
@@ -397,9 +399,9 @@ export async function getZoneTrendForSensorType(
   }
 }
 
-export async function getActiveZoneSensorCount(zoneId: number, hoursAgo = 1): Promise<AxiosResponse<any>> {
+export async function getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<AxiosResponse<any>> {
   try {
-    const response: AxiosResponse<any> = await client.get(`${URL}/getActiveZoneSensorCount/${zoneId}/${hoursAgo}`);
+    const response: AxiosResponse<any> = await client.get(`${URL}/getActiveZonePlantSensorCount/${zoneId}/${hoursAgo}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

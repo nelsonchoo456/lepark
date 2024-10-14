@@ -153,4 +153,3 @@ export enum ZoneStatusEnum {
   LIMITED_ACCESS = 'LIMITED_ACCESS',
   CLOSED = 'CLOSED',
 }
-

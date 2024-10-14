@@ -126,6 +126,10 @@ class SensorDao {
     return prisma.sensor.findMany({ where: { hub: { zoneId } } });
   }
 
+  async getPlantSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hub: { zoneId }, sensorType: { in: [SensorTypeEnum.SOIL_MOISTURE, SensorTypeEnum.TEMPERATURE, SensorTypeEnum.LIGHT, SensorTypeEnum.HUMIDITY] } } });
+  }
+
   async getSensorsByZoneIdAndType(zoneId: number, sensorType: SensorTypeEnum): Promise<Sensor[]> {
     return prisma.sensor.findMany({ where: { hub: { zoneId }, sensorType } });
   }

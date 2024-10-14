@@ -76,7 +76,7 @@ router.get('/getSensorReadingsByDateRange/:sensorId', async (req, res) => {
     const readings = await SensorReadingService.getSensorReadingsByDateRange(
       req.params.sensorId,
       new Date(startDate as string),
-      new Date(endDate as string)
+      new Date(endDate as string),
     );
     res.status(200).json(readings);
   } catch (error) {
@@ -105,7 +105,10 @@ router.get('/getSensorReadingTrendWithSlope/:sensorId/:hours', async (req, res) 
 // Hub-specific routes
 router.get('/getAllSensorReadingsByHubIdAndSensorType/:hubId/:sensorType', async (req, res) => {
   try {
-    const readings = await SensorReadingService.getAllSensorReadingsByHubIdAndSensorType(req.params.hubId, req.params.sensorType as SensorTypeEnum);
+    const readings = await SensorReadingService.getAllSensorReadingsByHubIdAndSensorType(
+      req.params.hubId,
+      req.params.sensorType as SensorTypeEnum,
+    );
     res.status(200).json(readings);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -117,7 +120,7 @@ router.get('/getSensorReadingsByHubIdAndSensorTypeForHoursAgo/:hubId/:sensorType
     const readings = await SensorReadingService.getSensorReadingsByHubIdAndSensorTypeForHoursAgo(
       req.params.hubId,
       req.params.sensorType as SensorTypeEnum,
-      parseInt(req.params.hours)
+      parseInt(req.params.hours),
     );
     res.status(200).json(readings);
   } catch (error) {
@@ -130,7 +133,7 @@ router.get('/getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo/:hubId/:se
     const average = await SensorReadingService.getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(
       req.params.hubId,
       req.params.sensorType as SensorTypeEnum,
-      parseInt(req.params.hours)
+      parseInt(req.params.hours),
     );
     res.status(200).json({ average });
   } catch (error) {
@@ -145,7 +148,7 @@ router.get('/getSensorReadingsByHubIdAndSensorTypeByDateRange/:hubId/:sensorType
       req.params.hubId,
       req.params.sensorType as SensorTypeEnum,
       new Date(startDate as string),
-      new Date(endDate as string)
+      new Date(endDate as string),
     );
     res.status(200).json(readings);
   } catch (error) {
@@ -157,7 +160,7 @@ router.get('/getLatestSensorReadingByHubIdAndSensorType/:hubId/:sensorType', asy
   try {
     const reading = await SensorReadingService.getLatestSensorReadingByHubIdAndSensorType(
       req.params.hubId,
-      req.params.sensorType as SensorTypeEnum
+      req.params.sensorType as SensorTypeEnum,
     );
     res.status(200).json(reading);
   } catch (error) {
@@ -170,7 +173,7 @@ router.get('/getAllSensorReadingsByZoneIdAndSensorType/:zoneId/:sensorType', asy
   try {
     const readings = await SensorReadingService.getAllSensorReadingsByZoneIdAndSensorType(
       parseInt(req.params.zoneId),
-      req.params.sensorType as SensorTypeEnum
+      req.params.sensorType as SensorTypeEnum,
     );
     res.status(200).json(readings);
   } catch (error) {
@@ -183,7 +186,7 @@ router.get('/getSensorReadingsByZoneIdAndSensorTypeForHoursAgo/:zoneId/:sensorTy
     const readings = await SensorReadingService.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(
       parseInt(req.params.zoneId),
       req.params.sensorType as SensorTypeEnum,
-      parseInt(req.params.hours)
+      parseInt(req.params.hours),
     );
     res.status(200).json(readings);
   } catch (error) {
@@ -196,7 +199,7 @@ router.get('/getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo/:zoneId/:
     const average = await SensorReadingService.getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo(
       parseInt(req.params.zoneId),
       req.params.sensorType as SensorTypeEnum,
-      parseInt(req.params.hours)
+      parseInt(req.params.hours),
     );
     res.status(200).json({ average });
   } catch (error) {
@@ -208,7 +211,7 @@ router.get('/getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo/:zoneId/
   try {
     const averages = await SensorReadingService.getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(
       parseInt(req.params.zoneId),
-      parseInt(req.params.hours)
+      parseInt(req.params.hours),
     );
     res.status(200).json(averages);
   } catch (error) {
@@ -220,7 +223,7 @@ router.get('/getAverageDifferenceBetweenPeriodsBySensorType/:zoneId/:duration', 
   try {
     const changes = await SensorReadingService.getAverageDifferenceBetweenPeriodsBySensorType(
       parseInt(req.params.zoneId),
-      parseInt(req.params.duration)
+      parseInt(req.params.duration),
     );
     res.status(200).json(changes);
   } catch (error) {
@@ -235,7 +238,7 @@ router.get('/getSensorReadingsByZoneIdAndSensorTypeByDateRange/:zoneId/:sensorTy
       parseInt(req.params.zoneId),
       req.params.sensorType as SensorTypeEnum,
       new Date(startDate as string),
-      new Date(endDate as string)
+      new Date(endDate as string),
     );
     res.status(200).json(readings);
   } catch (error) {
@@ -247,7 +250,7 @@ router.get('/getLatestSensorReadingByZoneIdAndSensorType/:zoneId/:sensorType', a
   try {
     const reading = await SensorReadingService.getLatestSensorReadingByZoneIdAndSensorType(
       parseInt(req.params.zoneId),
-      req.params.sensorType as SensorTypeEnum
+      req.params.sensorType as SensorTypeEnum,
     );
     res.status(200).json(reading);
   } catch (error) {
@@ -260,7 +263,7 @@ router.get('/getZoneTrendForSensorType/:zoneId/:sensorType/:hours', async (req, 
     const trend = await SensorReadingService.getZoneTrendForSensorType(
       parseInt(req.params.zoneId),
       req.params.sensorType as SensorTypeEnum,
-      parseInt(req.params.hours)
+      parseInt(req.params.hours),
     );
     res.status(200).json(trend);
   } catch (error) {
@@ -268,12 +271,22 @@ router.get('/getZoneTrendForSensorType/:zoneId/:sensorType/:hours', async (req, 
   }
 });
 
-router.get('/getActiveZoneSensorCount/:zoneId/:hoursAgo?', async (req, res) => {
+router.get('/getActiveZonePlantSensorCount/:zoneId/:hoursAgo?', async (req, res) => {
   try {
     const zoneId = parseInt(req.params.zoneId);
     const hoursAgo = req.params.hoursAgo ? parseInt(req.params.hoursAgo) : 1;
-    const count = await SensorReadingService.getActiveZoneSensorCount(zoneId, hoursAgo);
+    const count = await SensorReadingService.getActiveZonePlantSensorCount(zoneId, hoursAgo);
     res.status(200).json({ count });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getUnhealthyOccurrences/:zoneId', async (req, res) => {
+  try {
+    const zoneId = parseInt(req.params.zoneId);
+    const occurrences = await SensorReadingService.getUnhealthyOccurrences(zoneId);
+    res.status(200).json(occurrences);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

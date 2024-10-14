@@ -182,6 +182,10 @@ class SensorService {
     return SensorDao.getSensorsByZoneId(zoneId);
   }
 
+  public async getPlantSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return SensorDao.getPlantSensorsByZoneId(zoneId);
+  }
+
   public async getSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
     return SensorDao.getAllSensorsByFacilityId(facilityId);
   }
