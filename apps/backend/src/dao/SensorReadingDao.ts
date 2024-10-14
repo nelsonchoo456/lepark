@@ -81,9 +81,7 @@ class SensorReadingDao {
   }
 
   public async getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo(zoneId: number, sensorType: SensorTypeEnum, hours: number): Promise<number> {
-    console.log("Getting average sensor readings for zoneId", zoneId, "sensorType", sensorType, "hours", hours);
     const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
-    console.log("Readings", readings);
     if (readings.length === 0) {
       return 0;
     }

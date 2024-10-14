@@ -262,7 +262,7 @@ router.get('/getZoneTrendForSensorType/:zoneId/:sensorType/:hours', async (req, 
       req.params.sensorType as SensorTypeEnum,
       parseInt(req.params.hours)
     );
-    res.status(200).json({ trend });
+    res.status(200).json(trend);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

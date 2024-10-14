@@ -13,6 +13,7 @@ import {
   getZoneTrendForSensorType,
   getActiveZoneSensorCount,
   getAverageDifferenceBetweenPeriodsBySensorType,
+  getSensorsByZoneId,
 } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
@@ -20,7 +21,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
-import { ArrowDownOutlined, ArrowUpOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined} from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -32,12 +33,14 @@ const ZoneIoTDashboard: React.FC = () => {
   const [zoneMetrics, setZoneMetrics] = useState<{ [key: number]: any }>({});
   const [zoneDifferences, setZoneDifferences] = useState<{ [key: number]: any }>({});
   const [activeSensorCounts, setActiveSensorCounts] = useState<{ [key: number]: number }>({});
+  const [zoneTotalSensors, setZoneTotalSensors] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     const fetchZoneMetrics = async () => {
       const metrics: { [key: number]: any } = {};
       const differences: { [key: number]: any } = {};
       const activeCounts: { [key: number]: number } = {};
+      const totalSensors: { [key: number]: number } = {};
       for (const zone of zones) {
         try {
           const averageReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(zone.id, 4);
@@ -48,6 +51,9 @@ const ZoneIoTDashboard: React.FC = () => {
 
           const activeCount = await getActiveZoneSensorCount(zone.id);
           activeCounts[zone.id] = activeCount.data.count;
+
+          const totalSensorsCount = await getSensorsByZoneId(zone.id);
+          totalSensors[zone.id] = totalSensorsCount.data.length;
         } catch (error) {
           console.error(`Error fetching data for zone ${zone.id}:`, error);
           metrics[zone.id] = {};
@@ -58,6 +64,7 @@ const ZoneIoTDashboard: React.FC = () => {
       setZoneMetrics(metrics);
       setZoneDifferences(differences);
       setActiveSensorCounts(activeCounts);
+      setZoneTotalSensors(totalSensors);
     };
 
     fetchZoneMetrics();
@@ -72,7 +79,7 @@ const ZoneIoTDashboard: React.FC = () => {
   };
 
   const navigateToZoneDetails = (zoneId: number) => {
-    navigate(`/zone/${zoneId}`);
+    navigate(`/iot/zones/${zoneId}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -193,9 +200,13 @@ const ZoneIoTDashboard: React.FC = () => {
                     </Col>
                   </Row>
                   <Statistic
-                    title="Active Sensors"
+                    title={
+                      <Tooltip title="Active sensors are those that have sent data within the past hour">
+                        <span>Active Sensors</span>
+                      </Tooltip>
+                    }
                     value={activeSensorCount}
-                    suffix="sensors"
+                    suffix={`/ ${zoneTotalSensors[zone.id]} sensors`}
                   />
                   <Typography.Text type="secondary">
                     Average readings for the past 4 hours

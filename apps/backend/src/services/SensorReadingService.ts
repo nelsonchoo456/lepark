@@ -216,64 +216,124 @@ class SensorReadingService {
     return SensorReadingDao.getActiveZoneSensorCount(zoneId, hoursAgo);
   }
 
-  public async;
-
-  // Not sure if working as expected
-  public async getZoneTrendForSensorType(zoneId: number, sensorType: SensorTypeEnum, hours: number): Promise<string> {
-    const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
-
-    if (readings.length < 2) {
-      return 'Insufficient data: Not enough readings to determine a trend.';
+  public async getZoneTrendForSensorType(
+    zoneId: number,
+    sensorType: SensorTypeEnum,
+    hours: number
+  ): Promise<{
+    trendDescription: string;
+    averageRateOfChange: string;
+    averagePercentageChange: string;
+    overallChange: string;
+    readingsCount: number;
+    unit: string;
+  }> {
+    try {
+      const zone = await ZoneDao.getZoneById(zoneId);
+      if (!zone) {
+        throw new Error('Zone not found');
+      }
+      
+      const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
+      
+      if (readings.length < 2) {
+        return {
+          trendDescription: 'Insufficient readings to determine a trend.',
+          averageRateOfChange: 'N/A',
+          averagePercentageChange: 'N/A',
+          overallChange: 'N/A',
+          readingsCount: 0,
+          unit: 'N/A',
+        };
+      }
+  
+      // Sort readings by date in ascending order
+      readings.sort((a, b) => a.date.getTime() - b.date.getTime());
+      
+      const timeSpan = (readings[readings.length - 1].date.getTime() - readings[0].date.getTime()) / (1000 * 60 * 60);
+      if (timeSpan < hours * 0.5) {
+        return {
+          trendDescription: 'Insufficient time span for analysis',
+          averageRateOfChange: 'N/A',
+          averagePercentageChange: 'N/A',
+          overallChange: 'N/A',
+          readingsCount: readings.length,
+          unit: this.getSensorUnit(sensorType),
+        };
+      }
+  
+      const slopes: number[] = [];
+      let totalPercentageChange = 0;
+  
+      for (let i = 1; i < readings.length; i++) {
+        const timeDiff = (readings[i].date.getTime() - readings[i - 1].date.getTime()) / (1000 * 60 * 60); // Time difference in hours
+        const valueDiff = readings[i].value - readings[i - 1].value;
+  
+        if (readings[i - 1].value === 0) continue; // Avoid division by zero
+  
+        const slope = valueDiff / timeDiff;
+        slopes.push(slope);
+  
+        const percentageChange = (valueDiff / readings[i - 1].value) * 100;
+        totalPercentageChange += percentageChange;
+      }
+  
+      const avgSlope = slopes.reduce((sum, slope) => sum + slope, 0) / slopes.length;
+      const avgPercentageChange = totalPercentageChange / (readings.length - 1);
+      const latestReading = readings[readings.length - 1].value;
+      const oldestReading = readings[0].value;
+      const overallChange = ((latestReading - oldestReading) / oldestReading) * 100;
+  
+      let trendDescription = '';
+      if (Math.abs(avgSlope) < 0.1 && Math.abs(avgPercentageChange) < 1) {
+        trendDescription = 'Stable';
+      } else if (avgSlope > 0) {
+        trendDescription = avgPercentageChange > 5 ? 'Rapidly increasing' : 'Gradually increasing';
+      } else {
+        trendDescription = avgPercentageChange < -5 ? 'Rapidly decreasing' : 'Gradually decreasing';
+      }
+  
+      return {
+        trendDescription,
+        averageRateOfChange: avgSlope.toFixed(2),
+        averagePercentageChange: avgPercentageChange.toFixed(2),
+        overallChange: overallChange.toFixed(2),
+        readingsCount: readings.length,
+        unit: this.getSensorUnit(sensorType),
+      };
+    } catch (error) {
+      console.error('Error getting zone trend for sensor type:', error);
+      return {
+        trendDescription: 'Error getting zone trend for sensor type',
+        averageRateOfChange: 'N/A',
+        averagePercentageChange: 'N/A',
+        overallChange: 'N/A',
+        readingsCount: 0,
+        unit: 'N/A',
+      };
     }
-
-    // Sort readings by date in ascending order
-    readings.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-    const slopes: number[] = [];
-    let totalPercentageChange = 0;
-
-    for (let i = 1; i < readings.length; i++) {
-      const timeDiff = (readings[i].date.getTime() - readings[i - 1].date.getTime()) / (1000 * 60 * 60); // Time difference in hours
-      const valueDiff = readings[i].value - readings[i - 1].value;
-
-      const slope = valueDiff / timeDiff;
-      slopes.push(slope);
-
-      const percentageChange = ((readings[i].value - readings[i - 1].value) / readings[i - 1].value) * 100;
-      totalPercentageChange += percentageChange;
-    }
-
-    const avgSlope = slopes.reduce((sum, slope) => sum + slope, 0) / slopes.length;
-    const avgPercentageChange = totalPercentageChange / (readings.length - 1);
-
-    const latestReading = readings[readings.length - 1].value;
-    const oldestReading = readings[0].value;
-    const overallChange = ((latestReading - oldestReading) / oldestReading) * 100;
-
-    let trendDescription = '';
-    if (Math.abs(avgSlope) < 0.1 && Math.abs(avgPercentageChange) < 1) {
-      trendDescription = 'Stable';
-    } else if (avgSlope > 0) {
-      trendDescription = avgPercentageChange > 5 ? 'Rapidly increasing' : 'Gradually increasing';
-    } else {
-      trendDescription = avgPercentageChange < -5 ? 'Rapidly decreasing' : 'Gradually decreasing';
-    }
-
-    return `
-      Trend analysis for ${sensorType} in Zone ${zoneId} over the past ${hours} hours:
-      - ${trendDescription}
-      - Average rate of change: ${avgSlope.toFixed(2)} units per hour
-      - Average percentage change between readings: ${avgPercentageChange.toFixed(2)}%
-      - Overall change from oldest to latest reading: ${overallChange.toFixed(2)}%
-      - Number of readings analyzed: ${readings.length}
-    `;
   }
 
+  // Compare 4 hours to 8 hours ago (for example)
   public async getAverageDifferenceBetweenPeriodsBySensorType(
     zoneId: number,
     duration: number,
   ): Promise<{ [sensorType in SensorTypeEnum]: { firstPeriodAvg: number; secondPeriodAvg: number; difference: number } }> {
     return SensorReadingDao.getAverageDifferenceBetweenPeriodsBySensorType(zoneId, duration);
+  }
+
+  private getSensorUnit(sensorType: SensorTypeEnum): string {
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return '°C';
+      case SensorTypeEnum.HUMIDITY:
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return '%';
+      case SensorTypeEnum.LIGHT:
+        return 'Lux';
+      default:
+        return '';
+    }
   }
 }
 

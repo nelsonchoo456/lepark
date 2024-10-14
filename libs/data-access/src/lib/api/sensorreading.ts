@@ -373,9 +373,20 @@ export async function getLatestSensorReadingByZoneIdAndSensorType(
   }
 }
 
-export async function getZoneTrendForSensorType(zoneId: number, sensorType: SensorTypeEnum, hours: number): Promise<AxiosResponse<string>> {
+export async function getZoneTrendForSensorType(
+  zoneId: number, 
+  sensorType: SensorTypeEnum, 
+  hours: number
+): Promise<AxiosResponse<{
+  trendDescription: string;
+  averageRateOfChange: string;
+  averagePercentageChange: string;
+  overallChange: string;
+  readingsCount: number;
+  unit: string;
+}>> {
   try {
-    const response: AxiosResponse<string> = await client.get(`${URL}/getZoneTrendForSensorType/${zoneId}/${sensorType}/${hours}`);
+    const response = await client.get(`${URL}/getZoneTrendForSensorType/${zoneId}/${sensorType}/${hours}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
