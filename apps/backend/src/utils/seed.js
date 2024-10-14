@@ -18,14 +18,13 @@ const {
   plantTasksData,
   seqHistoriesData,
   faqsData,
-  visitorsData
+  visitorsData,
+  promotionsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
-
-
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -215,7 +214,6 @@ async function seedFAQs() {
   }
   console.log(`Total FAQs seeded: ${faqList.length}\n`);
 }
-
 
 async function seed() {
   const parks = [];
@@ -407,8 +405,8 @@ async function seed() {
     attractionTicketListingsList.push(createdAttraction);
   }
   console.log(`Total attractions listings seeded: ${attractionTicketListingsList.length}\n`);
-  
-const plantTasksList = [];
+
+  const plantTasksList = [];
   for (const plantTask of plantTasksData) {
     // Ensure we have valid staff and occurrence data
     if (staffList.length > 0 && occurrenceList.length > 0) {
@@ -487,10 +485,18 @@ const plantTasksList = [];
     visitorList.push(createdVisitor);
   }
   console.log(`Total visitors seeded: ${visitorList.length}\n`);
+  
+  const promotionList = [];
+  for (const promotion of promotionsData) {
+    const createdPromotion = await prisma.promotion.create({
+      data: promotion,
+    });
+    promotionList.push(createdPromotion);
+  }
+  console.log(`Total promotions seeded: ${promotionList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
-
   const seqHistories = [];
 
   let currentSeqValue = baseSeqHistory.seqValue;
@@ -508,8 +514,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
           data: {
             date: newDate,
             seqValue: currentSeqValue,
-            decarbonizationAreaId: decarbAreaId
-          }
+            decarbonizationAreaId: decarbAreaId,
+          },
         });
         seqHistories.push(createdSeqHistory);
         currentSeqValue += interval; // Increase by 0.2 kg for the next entry
@@ -531,9 +537,7 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   });*/
 
   //faq'=
-
 }
-
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {
