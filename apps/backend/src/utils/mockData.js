@@ -1441,6 +1441,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727501914845-butterfly%20sanctuary%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.361387363945382,
     lng: 103.84889960289,
     parkId: 1,
@@ -1472,6 +1474,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727502147258-green%20heritage%20museum%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.359806129037598,
     lng: 103.8503265380859,
     parkId: 1,
@@ -1503,6 +1507,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727461825726-flower-dome-02.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.318784621302434,
     lng: 103.8187140486642,
     parkId: 2,
@@ -1534,6 +1540,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462129284-Centre%20for%20ethnobotany%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.319492692641653,
     lng: 103.816557581536,
     parkId: 2,
@@ -1562,6 +1570,8 @@ const attractionsData = [
     ],
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462391534-National_Biodiversity_Centre_Building.jpg'],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.316473506270394,
     lng: 103.8178771734238,
     parkId: 2,
@@ -1593,6 +1603,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462642918-botanical%20art%20gallery%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.314601354444774,
     lng: 103.80999147892,
     parkId: 2,
@@ -1624,6 +1636,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462925669-Forest%20Discovery%20Centre%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.313818486250098,
     lng: 103.8106995820999,
     parkId: 2,
@@ -2139,6 +2153,8 @@ const eventsData = [
     startTime: '2024-10-07T00:00:00.000Z',
     endTime: '2024-10-11T09:00:00.000Z',
     maxCapacity: 300,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727628906708-wildlife%20protection%20seminar%20event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2154,6 +2170,8 @@ const eventsData = [
     startTime: '2024-11-08T02:00:00.000Z',
     endTime: '2024-11-12T11:00:00.000Z',
     maxCapacity: 200,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629019586-stand%20up%20comedy.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2169,6 +2187,8 @@ const eventsData = [
     startTime: '2024-10-18T02:00:00.000Z',
     endTime: '2024-10-21T12:00:00.000Z',
     maxCapacity: 300,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629125264-jazz%20festival%20event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2184,6 +2204,8 @@ const eventsData = [
     startTime: '2024-10-10T01:00:00.000Z',
     endTime: '2024-10-12T09:00:00.000Z',
     maxCapacity: 30,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629271719-eco%20friendly%20craft%20workshop%201.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2199,6 +2221,8 @@ const eventsData = [
     startTime: '2024-10-01T01:00:00.000Z',
     endTime: '2024-10-01T11:00:00.000Z',
     maxCapacity: 25,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629353517-treasure%20hunt%20event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2214,6 +2238,8 @@ const eventsData = [
     startTime: '2024-10-01T02:00:00.000Z',
     endTime: '2024-10-04T09:00:00.000Z',
     maxCapacity: 30,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629448629-obstacle%20course%20challenge%201.jpg'],
     status: 'UPCOMING',
     facilityId: '',

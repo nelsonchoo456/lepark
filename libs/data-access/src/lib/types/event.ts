@@ -38,6 +38,7 @@ export interface EventResponse {
   startTime: any;
   endTime: any;
   maxCapacity: number;
+  ticketingPolicy: string;
   images?: string[];
   status: EventStatusEnum;
   facilityId: string;
@@ -55,6 +56,7 @@ export interface CreateEventData {
     startTime: any;
     endTime: any;
     maxCapacity: number;
+    ticketingPolicy: string;
     images?: string[];
     status: EventStatusEnum;
     facilityId: string;
@@ -70,6 +72,7 @@ export interface UpdateEventData {
     startTime?: any;
     endTime?: any;
     maxCapacity?: number;
+    ticketingPolicy?: string;
     images?: string[];
     status?: EventStatusEnum;
     facilityId?: string;
