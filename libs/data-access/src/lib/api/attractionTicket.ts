@@ -255,3 +255,16 @@ export async function sendRequestedAttractionTicketEmail(data: SendAttractionTic
     }
   }
 }
+
+export async function verifyAttractionTicket(ticketId: string): Promise<AxiosResponse<{ isValid: boolean }>> {
+  try {
+    const response: AxiosResponse<{ isValid: boolean }> = await client.get(`${URL}/verify-attraction-ticket/${ticketId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}

@@ -21,6 +21,7 @@ import VisitorDao from '../dao/VisitorDao';
 import { fromZodError } from 'zod-validation-error';
 import { AttractionResponse, VisitorResponse } from '@lepark/data-access';
 import EmailUtil from '../utils/EmailUtil';
+import dayjs from 'dayjs';
 
 const prisma = new PrismaClient();
 interface TicketInput {
@@ -186,17 +187,22 @@ class AttractionTicketService {
       throw new Error('Attraction ticket not found');
     }
 
-    const attractionTicketListing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+    const updatedTicket = await this.updateTicketStatusIfExpired(ticket);
+
+    const attractionTicketListing = await AttractionDao.getAttractionTicketListingById(updatedTicket.attractionTicketListingId);
     if (!attractionTicketListing) return null;
 
-    const attractionTicketTransaction = await AttractionTicketDao.getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
+    const attractionTicketTransaction = await AttractionTicketDao.getAttractionTicketTransactionById(
+      updatedTicket.attractionTicketTransactionId,
+    );
     if (!attractionTicketTransaction) return null;
 
-    return { ...ticket, attractionTicketListing, attractionTicketTransaction };
+    return { ...updatedTicket, attractionTicketListing, attractionTicketTransaction };
   }
 
   public async getAllAttractionTickets(): Promise<AttractionTicket[]> {
-    return AttractionTicketDao.getAllAttractionTickets();
+    const tickets = await AttractionTicketDao.getAllAttractionTickets();
+    return Promise.all(tickets.map((ticket) => this.updateTicketStatusIfExpired(ticket)));
   }
 
   public async deleteAttractionTicket(id: string): Promise<void> {
@@ -210,9 +216,11 @@ class AttractionTicketService {
   public async getAttractionTicketsByTransactionId(transactionId: string): Promise<AttractionTicket[]> {
     const tickets = await AttractionTicketDao.getAttractionTicketsByTransactionId(transactionId);
 
+    const updatedTickets = await Promise.all(tickets.map((ticket) => this.updateTicketStatusIfExpired(ticket)));
+
     // Fetch the associated ticket listings
     const ticketsWithListings = await Promise.all(
-      tickets.map(async (ticket) => {
+      updatedTickets.map(async (ticket) => {
         const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
         return {
           ...ticket,
@@ -232,9 +240,11 @@ class AttractionTicketService {
 
     const tickets = await AttractionTicketDao.getAttractionTicketsByListingId(listingId);
 
+    const updatedTickets = await Promise.all(tickets.map((ticket) => this.updateTicketStatusIfExpired(ticket)));
+
     // Fetch the associated ticket transactions
     const ticketsWithTransactions = await Promise.all(
-      tickets.map(async (ticket) => {
+      updatedTickets.map(async (ticket) => {
         const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
         return {
           ...ticket,
@@ -264,9 +274,11 @@ class AttractionTicketService {
 
     const tickets = await AttractionTicketDao.getAttractionTicketsByAttractionId(attractionId);
 
+    const updatedTickets = await Promise.all(tickets.map(ticket => this.updateTicketStatusIfExpired(ticket)));
+
     // Fetch the associated ticket listings
     const ticketsWithListings = await Promise.all(
-      tickets.map(async (ticket) => {
+      updatedTickets.map(async (ticket) => {
         const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
         return {
           ...ticket,
@@ -301,6 +313,52 @@ class AttractionTicketService {
       await EmailUtil.sendRequestedAttractionTicketEmail(recipientEmail, transaction);
     } catch (error) {
       throw new Error(`Failed to send requested attraction ticket email: ${error.message}`);
+    }
+  }
+
+  private async updateTicketStatusIfExpired(
+    ticket: AttractionTicket & { attractionTicketTransaction?: AttractionTicketTransaction },
+  ): Promise<AttractionTicket> {
+    if (!ticket.attractionTicketTransaction) {
+      ticket.attractionTicketTransaction = await AttractionTicketDao.getAttractionTicketTransactionById(
+        ticket.attractionTicketTransactionId,
+      );
+    }
+
+    const attractionDate = new Date(ticket.attractionTicketTransaction.attractionDate);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (ticket.status === AttractionTicketStatusEnum.VALID && attractionDate < yesterday) {
+      return this.updateAttractionTicketStatus(ticket.id, AttractionTicketStatusEnum.INVALID);
+    }
+
+    return ticket;
+  }
+
+  public async verifyAttractionTicket(ticketId: string): Promise<boolean> {
+    const ticket = await AttractionTicketDao.getAttractionTicketById(ticketId);
+    const updatedTicket = await this.updateTicketStatusIfExpired(ticket);
+    if (!updatedTicket) {
+      throw new Error('Ticket not found');
+    }
+
+    const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(updatedTicket.attractionTicketTransactionId);
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    if (updatedTicket.status === AttractionTicketStatusEnum.INVALID) {
+      throw new Error('Ticket has expired and is no longer valid.');
+    } else if (updatedTicket.status === AttractionTicketStatusEnum.USED) {
+      throw new Error('Ticket has already been used and is no longer valid.');
+    } else if (transaction.attractionDate > new Date()) {
+      throw new Error(`Ticket is not yet valid, it is only valid on ${dayjs(transaction.attractionDate).format('DD MMMM YYYY')}.`);
+    } else if (updatedTicket.status === AttractionTicketStatusEnum.VALID) {
+      await AttractionTicketDao.updateAttractionTicketStatus(updatedTicket.id, AttractionTicketStatusEnum.USED);
+      return true;
+    } else {
+      throw new Error('Ticket is not valid');
     }
   }
 }
