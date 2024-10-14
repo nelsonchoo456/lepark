@@ -225,7 +225,25 @@ class AttractionTicketService {
   }
 
   public async getAttractionTicketsByListingId(listingId: string): Promise<AttractionTicket[]> {
-    return AttractionTicketDao.getAttractionTicketsByListingId(listingId);
+    const listing = await AttractionDao.getAttractionTicketListingById(listingId);
+    if (!listing) {
+      throw new Error('Listing not found');
+    }
+
+    const tickets = await AttractionTicketDao.getAttractionTicketsByListingId(listingId);
+
+    // Fetch the associated ticket transactions
+    const ticketsWithTransactions = await Promise.all(
+      tickets.map(async (ticket) => {
+        const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
+        return {
+          ...ticket,
+          attractionTicketTransaction: transaction,
+        };
+      }),
+    );
+
+    return ticketsWithTransactions;
   }
 
   public async updateAttractionTicketStatus(id: string, status: AttractionTicketStatusEnum): Promise<AttractionTicket> {

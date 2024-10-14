@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Typography, Tag, message, Button, Input, Select, Modal, DatePicker } from 'antd';
+import { Card, Descriptions, Typography, Tag, message, Button, Input, Select, Modal, DatePicker, Empty, Tabs, Row, Col } from 'antd';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import {
   getAttractionTicketListingById,
@@ -23,13 +23,16 @@ import PageHeader2 from '../../../components/main/PageHeader2';
 import { useRestrictAttractionTicketListing } from '../../../hooks/Attractions/useRestrictAttractionTicketListing';
 import TextArea from 'antd/es/input/TextArea';
 import moment from 'moment';
-import GraphContainer from './GraphContainer';
+import GraphContainer from '../components/GraphContainer';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import TicketListingTicketSalesTable from './TicketListingTicketSalesTable';
 
 dayjs.extend(isBetween);
 
 const { RangePicker } = DatePicker;
+const { TabPane } = Tabs;
+const { Text } = Typography;
 
 const TicketListingDetails: React.FC = () => {
   const { ticketListingId } = useParams<{ ticketListingId: string }>();
@@ -39,25 +42,63 @@ const TicketListingDetails: React.FC = () => {
   const [promptModalVisible, setPromptModalVisible] = useState(false);
   const [existingActiveListing, setExistingActiveListing] = useState<AttractionTicketListingResponse | null>(null);
   const [ticketSalesData, setTicketSalesData] = useState<any>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(30, 'days'), dayjs()]);
+  const [purchaseDateRange, setPurchaseDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [attractionDateRange, setAttractionDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [ticketData, setTicketData] = useState<any[]>([]);
+  const [attractionDateSalesData, setAttractionDateSalesData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('1');
 
   const { user } = useAuth<StaffResponse>();
 
   const canEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
 
   useEffect(() => {
-    if (ticketListing) {
-      setEditedTicketListing(ticketListing);
+    if (ticketListingId) {
+      fetchInitialData();
     }
-  }, [ticketListing]);
+  }, [ticketListingId]);
 
   useEffect(() => {
-    if (ticketListingId) {
+    if (purchaseDateRange && attractionDateRange) {
       fetchTicketSalesData();
+      fetchAttractionDateSalesData();
     }
-  }, [ticketListingId, dateRange]);
+  }, [purchaseDateRange, attractionDateRange]);
+
+  const fetchInitialData = async () => {
+    try {
+      const response = await getAttractionTicketsByListingId(ticketListingId as string);
+      const tickets = response.data;
+
+      const ticketData = await Promise.all(
+        tickets.map(async (ticket) => {
+          const transactionResponse = await getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
+          return {
+            ...ticket,
+            purchaseDate: dayjs(transactionResponse.data.purchaseDate),
+            attractionDate: dayjs(transactionResponse.data.attractionDate),
+          };
+        })
+      );
+
+      ticketData.sort((a: any, b: any) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+      setTicketData(ticketData);
+
+      if (ticketData.length > 0) {
+        setPurchaseDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
+        ticketData.sort((a: any, b: any) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime());
+        setAttractionDateRange([ticketData[0].attractionDate, ticketData[ticketData.length - 1].attractionDate]);
+      }
+
+      fetchTicketSalesData();
+      fetchAttractionDateSalesData();
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    }
+  };
 
   const fetchTicketSalesData = async () => {
+    if (!purchaseDateRange) return;
     try {
       const response = await getAttractionTicketsByListingId(ticketListingId as string);
       const tickets = response.data;
@@ -74,7 +115,7 @@ const TicketListingDetails: React.FC = () => {
 
       const filteredTickets = ticketData.filter((ticket) => {
         const ticketDate = dayjs(ticket.purchaseDate);
-        return ticketDate.isBetween(dateRange[0], dateRange[1], 'day', '[]');
+        return ticketDate.isBetween(purchaseDateRange[0], purchaseDateRange[1], 'day', '[]');
       });
 
       const groupedData = filteredTickets.reduce((acc, ticket) => {
@@ -104,8 +145,60 @@ const TicketListingDetails: React.FC = () => {
     }
   };
 
-  const handleDateRangeChange = (dates: any) => {
-    setDateRange(dates);
+  const fetchAttractionDateSalesData = async () => {
+    if (!attractionDateRange) return;
+    try {
+      const response = await getAttractionTicketsByListingId(ticketListingId as string);
+      const tickets = response.data;
+
+      const ticketData = await Promise.all(
+        tickets.map(async (ticket) => {
+          const transactionResponse = await getAttractionTicketTransactionById(ticket.attractionTicketTransactionId);
+          return {
+            ...ticket,
+            attractionDate: transactionResponse.data.attractionDate,
+          };
+        }),
+      );
+
+      const filteredTickets = ticketData.filter((ticket) => {
+        const attractionDate = dayjs(ticket.attractionDate);
+        return attractionDate.isBetween(attractionDateRange[0], attractionDateRange[1], 'day', '[]');
+      });
+
+      const groupedData = filteredTickets.reduce((acc, ticket) => {
+        const date = dayjs(ticket.attractionDate).format('YYYY-MM-DD');
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const labels = Object.keys(groupedData).sort();
+      const data = labels.map((date) => groupedData[date]);
+
+      setAttractionDateSalesData({
+        labels,
+        datasets: [
+          {
+            label: 'Tickets Sold',
+            data,
+            fill: false,
+            borderColor: '#f6c23e',
+            backgroundColor: '#f6c23e',
+            tension: 0.1,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Error fetching attraction date sales data:', error);
+    }
+  };
+
+  const handlePurchaseDateRangeChange = (dates: any) => {
+    setPurchaseDateRange(dates);
+  };
+
+  const handleAttractionDateRangeChange = (dates: any) => {
+    setAttractionDateRange(dates);
   };
 
   const toggleEditMode = () => {
@@ -356,32 +449,38 @@ const TicketListingDetails: React.FC = () => {
     }
 
     return (
-        <><PageHeader2 breadcrumbItems={breadcrumbItems} /><Card>
-        <Descriptions
-          labelStyle={{ width: '30%' }}
-          bordered
-          column={1}
-          size="middle"
-          items={getDescriptionItems()}
-          title={<div className="w-full flex justify-between">
-            {!inEditMode ? (
-              <>
-                <div>Ticket Listing Details</div>
-                {canEdit && <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />}
-              </>
-            ) : (
-              <>
-                <Button icon={<RiArrowLeftLine className="text-lg" />} type="text" onClick={toggleEditMode}>
-                  Return
-                </Button>
-                <div className="text-secondary">Edit Ticket Listing</div>
-                <Button type="primary" onClick={handleSave}>
-                  Save
-                </Button>
-              </>
-            )}
-          </div>} />
-      </Card></>
+      <>
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
+        <Card>
+          <Descriptions
+            labelStyle={{ width: '30%' }}
+            bordered
+            column={1}
+            size="middle"
+            items={getDescriptionItems()}
+            title={
+              <div className="w-full flex justify-between">
+                {!inEditMode ? (
+                  <>
+                    <div>Ticket Listing Details</div>
+                    {canEdit && <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />}
+                  </>
+                ) : (
+                  <>
+                    <Button icon={<RiArrowLeftLine className="text-lg" />} type="text" onClick={toggleEditMode}>
+                      Return
+                    </Button>
+                    <div className="text-secondary">Edit Ticket Listing</div>
+                    <Button type="primary" onClick={handleSave}>
+                      Save
+                    </Button>
+                  </>
+                )}
+              </div>
+            }
+          />
+        </Card>
+      </>
     );
   };
 
@@ -389,63 +488,127 @@ const TicketListingDetails: React.FC = () => {
     <>
       <ContentWrapperDark>
         {renderContent()}
-        <Card title="Ticket Sales Over Time">
-          <RangePicker value={dateRange} onChange={handleDateRangeChange} style={{ marginBottom: '20px' }} />
-          <div className="flex flex-col items-center justify-center w-full sm:w-5/6 md:w-3/4 lg:w-2/3 mx-auto">
-          {ticketSalesData && (
-            <GraphContainer
-              title="Tickets Sold Over Time"
-              data={ticketSalesData}
-              type="line"
-              options={{
-                maintainAspectRatio: true,
-                responsive: true,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    title: {
-                      display: true,
-                      text: 'Number of Tickets',
-                    },
-                    ticks: {
-                      stepSize: 1,
-                      precision: 0,
-                    },
-                  },
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Purchase Date',
-                    },
-                    ticks: {
-                      maxRotation: 45,
-                      minRotation: 45,
-                    },
-                  },
-                },
-                plugins: {
-                  legend: {
-                    display: true,
-                    position: 'top',
-                  },
-                },
-              }}
-            />
-          )}
-          </div>
+        <Card>
+          <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
+            <TabPane tab="Ticket Sales Over Time" key="1">
+              <Row gutter={[16, 16]}>
+                <Col xs={24} lg={12}>
+                  <div className="flex justify-start">
+                    <Text className="mr-2 pt-1">Purchase Date: </Text>
+                    {purchaseDateRange && (
+                      <RangePicker
+                        value={purchaseDateRange}
+                        onChange={handlePurchaseDateRangeChange}
+                        style={{ marginBottom: '20px' }}
+                      />
+                    )}
+                  </div>
+                  {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 ? (
+                    <GraphContainer
+                      title="Tickets Sold Over Time (Purchase Date)"
+                      data={ticketSalesData}
+                      type="line"
+                      options={{
+                        maintainAspectRatio: true,
+                        responsive: true,
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            title: {
+                              display: true,
+                              text: 'Number of Tickets',
+                            },
+                            ticks: {
+                              stepSize: 1,
+                              precision: 0,
+                            },
+                          },
+                          x: {
+                            title: {
+                              display: true,
+                              text: 'Purchase Date',
+                            },
+                            ticks: {
+                              maxRotation: 45,
+                              minRotation: 45,
+                            },
+                          },
+                        },
+                        plugins: {
+                          legend: {
+                            display: true,
+                            position: 'top',
+                          },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No ticket sales data available for this ticket listing" />
+                  )}
+                </Col>
+                <Col xs={24} lg={12}>
+                  <div className="flex justify-start">
+                    <Text className="mr-2 pt-1">Visit Date: </Text>
+                    {attractionDateRange && (
+                      <RangePicker
+                        value={attractionDateRange}
+                        onChange={handleAttractionDateRangeChange}
+                        style={{ marginBottom: '20px' }}
+                      />
+                    )}
+                  </div>
+                  {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 ? (
+                    <GraphContainer
+                      title="Tickets Sold Over Time (Attraction Visit Date)"
+                      data={attractionDateSalesData}
+                      type="line"
+                      options={{
+                        maintainAspectRatio: true,
+                        responsive: true,
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            title: {
+                              display: true,
+                              text: 'Number of Tickets',
+                            },
+                            ticks: {
+                              stepSize: 1,
+                              precision: 0,
+                            },
+                          },
+                          x: {
+                            title: {
+                              display: true,
+                              text: 'Visit Date',
+                            },
+                            ticks: {
+                              maxRotation: 45,
+                              minRotation: 45,
+                            },
+                          },
+                        },
+                        plugins: {
+                          legend: {
+                            display: true,
+                            position: 'top',
+                          },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No visit date sales data available for this ticket listing" />
+                  )}
+                </Col>
+              </Row>
+            </TabPane>
+            <TabPane tab="Ticket Sales Table" key="2">
+              <TicketListingTicketSalesTable ticketListingId={ticketListingId as string} />
+            </TabPane>
+          </Tabs>
         </Card>
       </ContentWrapperDark>
-      <Modal
-        title="Duplicate Active Listing"
-        open={promptModalVisible}
-        onOk={handleMakeInactiveAndUpdate}
-        onCancel={handleCancelPrompt}
-        okText="Make Inactive and Update"
-        cancelText="Cancel"
-      >
-        <p>An active ticket listing with this category and nationality already exists.</p>
-        <p>Would you like to make the existing listing inactive and update this one to active?</p>
-      </Modal>
+      {/* ... existing Modal ... */}
     </>
   );
 };

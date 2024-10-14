@@ -22,8 +22,10 @@ interface TicketSalesTabProps {
 const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
   const [tickets, setTickets] = useState<AttractionTicketResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [purchaseStartDate, setPurchaseStartDate] = useState<string | null>(null);
+  const [purchaseEndDate, setPurchaseEndDate] = useState<string | null>(null);
+  const [attractionStartDate, setAttractionStartDate] = useState<string | null>(null);
+  const [attractionEndDate, setAttractionEndDate] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -31,10 +33,10 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
   }, []);
 
   useEffect(() => {
-    if (startDate && endDate) {
+    if (purchaseStartDate && purchaseEndDate && attractionStartDate && attractionEndDate) {
       fetchTicketsData();
     }
-  }, [startDate, endDate]);
+  }, [purchaseStartDate, purchaseEndDate, attractionStartDate, attractionEndDate]);
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -43,13 +45,16 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
       const formattedData = response.data.map((ticket: AttractionTicketResponse) => ({
         ...ticket,
         purchaseDate: dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD'),
+        attractionDate: dayjs(ticket.attractionTicketTransaction?.attractionDate).format('YYYY-MM-DD'),
       }));
       formattedData.sort((a: any, b: any) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
       setTickets(formattedData);
 
       if (formattedData.length > 0) {
-        setStartDate(formattedData[0].purchaseDate);
-        setEndDate(formattedData[formattedData.length - 1].purchaseDate);
+        setPurchaseStartDate(formattedData[0].purchaseDate);
+        setPurchaseEndDate(formattedData[formattedData.length - 1].purchaseDate);
+        setAttractionStartDate(formattedData[0].attractionDate);
+        setAttractionEndDate(formattedData[formattedData.length - 1].attractionDate);
       }
     } catch (error) {
       message.error('Error fetching initial tickets data.');
@@ -61,22 +66,27 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
   const fetchTicketsData = async () => {
     setLoading(true);
     try {
-      if (startDate && endDate) {
-        const response = await getAttractionTicketsByAttractionId(attraction.id);
-        const formattedData = response.data.map((ticket: AttractionTicketResponse) => ({
-          ...ticket,
-          purchaseDate: dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD'),
-        }));
+      const response = await getAttractionTicketsByAttractionId(attraction.id);
+      const formattedData = response.data.map((ticket: AttractionTicketResponse) => ({
+        ...ticket,
+        purchaseDate: dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD'),
+        attractionDate: dayjs(ticket.attractionTicketTransaction?.attractionDate).format('YYYY-MM-DD'),
+      }));
 
-        // Filter the data based on the selected date range
-        const filteredData = formattedData.filter((ticket) => {
-          const ticketDate = dayjs(ticket.purchaseDate);
-          return ticketDate.isAfter(dayjs(startDate).subtract(1, 'day')) && ticketDate.isBefore(dayjs(endDate).add(1, 'day'));
-        });
+      // Filter the data based on the selected date ranges
+      const filteredData = formattedData.filter((ticket) => {
+        const ticketPurchaseDate = dayjs(ticket.purchaseDate);
+        const ticketAttractionDate = dayjs(ticket.attractionDate);
+        return (
+          ticketPurchaseDate.isAfter(dayjs(purchaseStartDate).subtract(1, 'day')) &&
+          ticketPurchaseDate.isBefore(dayjs(purchaseEndDate).add(1, 'day')) &&
+          ticketAttractionDate.isAfter(dayjs(attractionStartDate).subtract(1, 'day')) &&
+          ticketAttractionDate.isBefore(dayjs(attractionEndDate).add(1, 'day'))
+        );
+      });
 
-        filteredData.sort((a: any, b: any) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
-        setTickets(filteredData);
-      }
+      filteredData.sort((a: any, b: any) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+      setTickets(filteredData);
     } catch (error) {
       message.error('Error fetching tickets data.');
     } finally {
@@ -84,9 +94,14 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
     }
   };
 
-  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
-    setStartDate(dayjs(dateStrings[0]).format('YYYY-MM-DD'));
-    setEndDate(dayjs(dateStrings[1]).format('YYYY-MM-DD'));
+  const handlePurchaseDateChange = (dates: any, dateStrings: [string, string]) => {
+    setPurchaseStartDate(dayjs(dateStrings[0]).format('YYYY-MM-DD'));
+    setPurchaseEndDate(dayjs(dateStrings[1]).format('YYYY-MM-DD'));
+  };
+
+  const handleAttractionDateChange = (dates: any, dateStrings: [string, string]) => {
+    setAttractionStartDate(dayjs(dateStrings[0]).format('YYYY-MM-DD'));
+    setAttractionEndDate(dayjs(dateStrings[1]).format('YYYY-MM-DD'));
   };
 
   const filteredTickets = useMemo(() => {
@@ -95,8 +110,8 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
         ${ticket.id}
         ${ticket.attractionTicketListing?.nationality}
         ${ticket.attractionTicketListing?.category}
-        ${dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD HH:mm')}
-        ${dayjs(ticket.attractionTicketTransaction?.attractionDate).format('YYYY-MM-DD HH:mm')}
+        ${dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD')}
+        ${dayjs(ticket.attractionTicketTransaction?.attractionDate).format('YYYY-MM-DD')}
         ${ticket.status}
       `.toLowerCase();
       return searchString.includes(searchTerm.toLowerCase());
@@ -135,7 +150,7 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
       title: 'Purchase Date',
       dataIndex: ['attractionTicketTransaction', 'purchaseDate'],
       key: 'purchaseDate',
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
       sorter: (a, b) =>
         dayjs(a.attractionTicketTransaction?.purchaseDate).unix() - dayjs(b.attractionTicketTransaction?.purchaseDate).unix(),
     },
@@ -143,7 +158,7 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
       title: 'Visit Date',
       dataIndex: ['attractionTicketTransaction', 'attractionDate'],
       key: 'attractionDate',
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
       sorter: (a, b) =>
         dayjs(a.attractionTicketTransaction?.attractionDate).unix() - dayjs(b.attractionTicketTransaction?.attractionDate).unix(),
     },
@@ -177,26 +192,38 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ attraction }) => {
 
   return (
     <>
-      {startDate && endDate ? (
-        <Flex justify="space-between" align="center" className="mb-4">
-          <Input
-            suffix={<FiSearch />}
-            placeholder="Search in Tickets..."
-            className="bg-white"
-            variant="filled"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '300px' }}
-          />
-          <div className="flex items-center">
-            <Text className="mr-2">Purchase Date: </Text>
-            <RangePicker
-              onChange={handleDateChange}
-              defaultValue={[dayjs(startDate), dayjs(endDate)]}
-              value={[dayjs(startDate), dayjs(endDate)]}
+      {purchaseStartDate && purchaseEndDate && attractionStartDate && attractionEndDate ? (
+        <>
+          <Flex justify="space-between" align="center" className="mb-4">
+            <Input
+              suffix={<FiSearch />}
+              placeholder="Search in Tickets..."
+              className="bg-white"
+              variant="filled"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '300px' }}
             />
-          </div>
-        </Flex>
+            <div className="flex items-center">
+              <Text className="mr-2">Purchase Date: </Text>
+              <RangePicker
+                onChange={handlePurchaseDateChange}
+                defaultValue={[dayjs(purchaseStartDate), dayjs(purchaseEndDate)]}
+                value={[dayjs(purchaseStartDate), dayjs(purchaseEndDate)]}
+              />
+            </div>
+          </Flex>
+          <Flex justify="flex-end" align="center" className="mb-4">
+            <div className="flex items-center">
+              <Text className="mr-2">Visit Date: </Text>
+              <RangePicker
+                onChange={handleAttractionDateChange}
+                defaultValue={[dayjs(attractionStartDate), dayjs(attractionEndDate)]}
+                value={[dayjs(attractionStartDate), dayjs(attractionEndDate)]}
+              />
+            </div>
+          </Flex>
+        </>
       ) : (
         loading && <Spin />
       )}

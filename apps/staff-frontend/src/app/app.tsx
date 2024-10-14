@@ -70,7 +70,7 @@ import EventEdit from './pages/EventEdit/EventEdit';
 import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
-import TicketListingDetails from './pages/AttractionDetails/components/TicketListingDetails';
+import TicketListingDetails from './pages/AttractionDetails/TicketListingDetails/TicketListingDetails';
 
 import HubEdit from './pages/Hub/HubEdit';
 

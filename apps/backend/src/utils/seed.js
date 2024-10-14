@@ -17,7 +17,8 @@ const {
   decarbonizationAreasData,
   plantTasksData,
   seqHistoriesData,
-  faqsData
+  faqsData,
+  visitorsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -474,6 +475,18 @@ const plantTasksList = [];
   }
 
   await seedFAQs();
+
+  const visitorList = [];
+  for (const visitor of visitorsData) {
+    const hashedPassword = await bcrypt.hash(visitor.password, 10);
+    visitor.password = hashedPassword;
+
+    const createdVisitor = await prisma.visitor.create({
+      data: visitor,
+    });
+    visitorList.push(createdVisitor);
+  }
+  console.log(`Total visitors seeded: ${visitorList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
