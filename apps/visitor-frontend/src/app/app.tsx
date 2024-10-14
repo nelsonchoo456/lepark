@@ -29,6 +29,8 @@ import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import AnnouncementsList from './pages/Announcements/AnnouncementsList';
 import FacilitiesPerPark from './pages/Facilities/FacilitiesPerPark';
 import VisitorViewFacilityDetails from './pages/Facilities/VisitorViewFacilityDetails';
+import EventsPerPark from './pages/Events/EventsPerPark';
+import VisitorViewEventDetails from './pages/Events/VisitorViewEventDetails';
 
 export function App() {
   return (
@@ -111,6 +113,10 @@ export function App() {
                 <Route path="/facility">
                   <Route path="park/:parkId" element={<FacilitiesPerPark />} />
                   <Route path=":facilityId" element={<VisitorViewFacilityDetails />} />
+                </Route>
+                <Route path="/event">
+                  <Route path="park/:parkId" element={<EventsPerPark />} />
+                  <Route path=":eventId" element={<VisitorViewEventDetails />} />
                 </Route>
               </Route>
             </Routes>

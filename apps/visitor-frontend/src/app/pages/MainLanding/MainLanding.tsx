@@ -68,7 +68,13 @@ const MainLanding = () => {
         >
           Venues
         </NavButton>
-        <NavButton key="tickets" icon={<PiTicketFill />}>
+        <NavButton
+          key="tickets"
+          icon={<PiTicketFill />}
+          onClick={() => {
+            navigate(`/event/park/${selectedPark?.id}`);
+          }}
+        >
           Tickets
         </NavButton>
       </div>
