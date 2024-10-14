@@ -586,3 +586,35 @@ model Promotion {
   isOneTime     Boolean
   visitors      Visitor[]       @relation("VisitorPromotionsRedeemed")
 }
+
+enum FAQStatusEnum {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum FAQCategoryEnum {
+  GENERAL
+  PARK_RULES
+  FACILITIES
+  EVENTS
+  SAFETY
+  ACCESSIBILITY
+  SERVICES
+  TICKETING
+  PARK_HISTORY
+  OTHER
+}
+
+model FAQ {
+  id          String         @id @default(uuid()) @db.Uuid
+  category    FAQCategoryEnum
+  question    String
+  answer      String
+  status      FAQStatusEnum
+  parkId      Int?            
+  priority    Int?
+
+  @@index([parkId])
+}

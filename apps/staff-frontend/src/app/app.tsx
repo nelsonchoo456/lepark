@@ -92,8 +92,14 @@ import ZoneIoTDashboard from './pages/IoT/ZoneIoTDashboard';
 import ZoneIoTDetailsPage from './pages/IoT/ZoneIoTDetailsPage';
 
 
+import FAQList from './pages/FAQ/FAQList';
+import FAQCreate from './pages/FAQ/FAQCreate';
+import { App as AntdApp } from 'antd';
+import FAQView from './pages/FAQ/FAQView';
+import FAQEdit from './pages/FAQ/FAQEdit';
 export function App() {
   return (
+    <AntdApp>
     <StaffAuthWrapper>
       <ConfigProvider
         theme={{
@@ -530,6 +536,13 @@ export function App() {
                 <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
               </Route>
 
+              <Route path="/faq">
+                <Route index element={<FAQList />} />
+                <Route path="create" element={<FAQCreate />} />
+                <Route path=":faqId" element={<FAQView />} />
+                <Route path=":faqId/edit" element={<FAQEdit />} />
+              </Route>
+
               {/* Catch-all for 404 */}
               <Route path="*" element={<PageNotFound />} />
             </Route>
@@ -537,6 +550,7 @@ export function App() {
         </BrowserRouter>
       </ConfigProvider>
     </StaffAuthWrapper>
+    </AntdApp>
   );
 }
 

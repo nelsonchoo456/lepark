@@ -55,3 +55,7 @@ export * from './lib/types/promotion';
 
 export * from './lib/api/sensorreading';
 export * from './lib/types/sensorreading';
+
+
+export * from './lib/api/faq';
+export * from './lib/types/faq';
