@@ -145,6 +145,21 @@ export async function addSensorToHub(
   }
 }
 
+export async function removeSensorFromHub(
+  id: string,
+): Promise<AxiosResponse<SensorResponse>> {
+  try {
+    const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/removeSensorFromHub/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getMaintenanceHistoryBySensorId(sensorId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
   try {
     const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${sensorId}`);

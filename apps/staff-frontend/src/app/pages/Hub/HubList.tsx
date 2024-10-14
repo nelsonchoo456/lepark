@@ -1,5 +1,5 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { HubResponse, StaffResponse, StaffType, deleteHub } from '@lepark/data-access';
+import { HubResponse, HubStatusEnum, StaffResponse, StaffType, deleteHub } from '@lepark/data-access';
 import { Button, Card, Flex, Input, Table, TableProps, Tag, Tooltip, message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { FiEye, FiSearch } from 'react-icons/fi';
@@ -54,7 +54,7 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Facility',
+      title: 'Storage Facility',
       dataIndex: 'facilityName',
       key: 'facilityName',
       render: (text, record) => (
@@ -74,15 +74,19 @@ const HubList: React.FC = () => {
       title: 'Hub Status',
       dataIndex: 'hubStatus',
       key: 'hubStatus',
-      render: (text) => {
+      render: (text, record) => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
-            return (
+            return (<>
               <Tag color="green" bordered={false}>
                 {formattedStatus}
               </Tag>
-            );
+              {record.zone?.name && <div className='flex'>
+                <p className="opacity-50 mr-2">Zone:</p>
+                {record.zone?.name}
+              </div>}
+            </>);
           case 'INACTIVE':
             return (
               <Tag color="blue" bordered={false}>
@@ -110,9 +114,15 @@ const HubList: React.FC = () => {
         { text: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED'), value: 'DECOMMISSIONED' },
       ],
       onFilter: (value, record) => record.hubStatus === value,
+      sorter: (a, b) => {
+        if (a.hubStatus === HubStatusEnum.ACTIVE && b.hubStatus === HubStatusEnum.ACTIVE && a.zone?.name && b.zone?.name) {
+          return a.zone.name.localeCompare(b.zone.name);
+        }
+        return (a.hubStatus ?? '').localeCompare(b.hubStatus ?? '');
+      },
       width: '15%',
     },
- /*   {
+    /*   {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
@@ -164,14 +174,20 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Park, Facility',
+      title: 'Storage Facility',
       render: (_, record) => (
         <div>
-          <p className="font-semibold">{record.park.name}</p>
-          <div className="flex">
-            <p className="opacity-50 mr-2">Facility:</p>
-            {record.facility.name}
-          </div>
+          {record.hubStatus === HubStatusEnum.ACTIVE ? (
+            '-'
+          ) : (
+            <>
+              <p className="font-semibold">{record.park.name}</p>
+              <div className="flex">
+                <p className="opacity-50 mr-2">Facility:</p>
+                {record.facility.name}
+              </div>
+            </>
+          )}
         </div>
       ),
       sorter: (a, b) => {
@@ -190,15 +206,19 @@ const HubList: React.FC = () => {
       title: 'Hub Status',
       dataIndex: 'hubStatus',
       key: 'hubStatus',
-      render: (text) => {
+      render: (text, record) => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
-            return (
+            return (<>
               <Tag color="green" bordered={false}>
                 {formattedStatus}
-              </Tag>
-            );
+              </Tag><br/>
+              <div className='flex'>
+                <p className="opacity-50 mr-2">Zone:</p>
+                {record.zone?.name && record.zone?.name}
+              </div>
+            </>);
           case 'INACTIVE':
             return (
               <Tag color="blue" bordered={false}>
@@ -228,7 +248,7 @@ const HubList: React.FC = () => {
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
     },
-   /* {
+    /* {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',

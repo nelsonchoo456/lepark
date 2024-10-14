@@ -119,6 +119,19 @@ export async function addHubToZone(id: string, data: Partial<HubResponse>): Prom
   }
 }
 
+export async function removeHubFromZone(id: string): Promise<AxiosResponse<HubResponse>> {
+  try {
+    const response: AxiosResponse<HubResponse> = await client.put(`${URL}/removeHubFromZone/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function deleteHub(id: string): Promise<AxiosResponse<void>> {
   try {
     const response: AxiosResponse<void> = await client.delete(`${URL}/deleteHub/${id}`);

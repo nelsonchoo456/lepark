@@ -1,6 +1,17 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { FacilityResponse, getFacilityById, getParkById, getSensorsByHubId, ParkResponse, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty, Button } from 'antd';
+import {
+  FacilityResponse,
+  getFacilityById,
+  getParkById,
+  getSensorsByHubId,
+  HubResponse,
+  ParkResponse,
+  removeHubFromZone,
+  SensorResponse,
+  StaffResponse,
+  StaffType,
+} from '@lepark/data-access';
+import { Card, Descriptions, Spin, Tabs, Tag, Carousel, Empty, Button, message, Alert, Flex, Result } from 'antd';
 import moment from 'moment';
 import { useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -14,34 +25,91 @@ import { useNavigate } from 'react-router-dom';
 import ZoneTab from './components/ZoneTab';
 import { useEffect, useState } from 'react';
 import SensorsTab from './components/SensorsTab';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
+import { MdError } from 'react-icons/md';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
-  const { hub, loading } = useRestrictHub(hubId);
+  const { hub, loading, triggerFetch } = useRestrictHub(hubId);
   const { user } = useAuth<StaffResponse>();
   const { zones } = useFetchZones();
   const navigate = useNavigate();
+  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [updatedData, setUpdatedData] = useState<HubResponse>();
 
   const [sensors, setSensors] = useState<SensorResponse[]>();
+
+  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
 
   useEffect(() => {
     if (hub) {
       fetchSensors(hub.id);
     }
-  }, [hub])
+  }, [hub]);
 
   const fetchSensors = async (hubId: string) => {
     try {
       const sensorsRes = await getSensorsByHubId(hubId);
       if (sensorsRes.status === 200) {
-        setSensors(sensorsRes.data)
+        setSensors(sensorsRes.data);
       }
     } catch (e) {
       //
     }
-  }
+  };
 
-  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER
+  // Deactivate utility
+  const cancelDeactivate = () => {
+    setDeactivateModalOpen(false);
+  };
+
+  const showDeactivateModal = () => {
+    setDeactivateModalOpen(true);
+  };
+
+  const handleDeactivateHub = async () => {
+    try {
+      if (!hub) {
+        throw new Error('Unable to deactivate Hub a this time.');
+      }
+      const hubRes = await removeHubFromZone(hub.id);
+
+      if (hubRes.status === 200) {
+        setUpdatedData(hubRes.data);
+        
+        setTimeout(() => {
+          setDeactivateModalOpen(false);
+          triggerFetch();
+        }, 2000);
+      }
+    } catch (error) {
+      console.log(error);
+      if (
+        error === 'Hub is not assigned to any zone' ||
+        error === 'Hub must be active to be removed from a zone' ||
+        error === 'Hub not found'
+      ) {
+        messageApi.open({
+          type: 'error',
+          content: error,
+        });
+        setDeactivateModalOpen(false);
+      } else if (error === 'Hub has sensors assigned to it. Remove the sensors first.') {
+        messageApi.open({
+          type: 'error',
+          content: error,
+        });
+        setDeactivateModalOpen(false);
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: `Unable to deactivate Hub at this time. Please try again later.`,
+        });
+        setDeactivateModalOpen(false);
+      }
+    }
+  };
 
   const breadcrumbItems = [
     {
@@ -70,9 +138,16 @@ const ViewHubDetails = () => {
         switch (hub?.hubStatus) {
           case 'ACTIVE':
             return (
-              <Tag color="green" bordered={false}>
-                {formattedStatus}
-              </Tag>
+              <div className="flex w-full items-start justify-between">
+                <Tag color="green" bordered={false}>
+                  {formattedStatus}
+                </Tag>
+                {canActivateEdit && (
+                  <Button type="primary" onClick={() => showDeactivateModal()} className="-mt-1" danger>
+                    Deactivate
+                  </Button>
+                )}
+              </div>
             );
           case 'INACTIVE':
             return (
@@ -97,11 +172,6 @@ const ViewHubDetails = () => {
         }
       })(),
     },
-    /*  {
-      key: 'nextMaintenanceDate',
-      label: 'Next Maintenance Date',
-      children: hub?.nextMaintenanceDate ? moment(hub.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },*/
     ...(user?.role === StaffType.SUPERADMIN
       ? [
           {
@@ -126,12 +196,16 @@ const ViewHubDetails = () => {
             children: (
               <div className="flex w-full items-start justify-between">
                 {hub?.facility?.name}{' '}
-                {hub?.hubStatus === "INACTIVE" && canActivateEdit
-             &&
-                  <Button type="primary" icon={<IoLocationOutline />} onClick={() => navigate(`/hubs/${hub?.id}/place-in-zone`)} className="-mt-1">
+                {hub?.hubStatus === 'INACTIVE' && canActivateEdit && (
+                  <Button
+                    type="primary"
+                    icon={<IoLocationOutline />}
+                    onClick={() => navigate(`/hubs/${hub?.id}/place-in-zone`)}
+                    className="-mt-1"
+                  >
                     Activate
                   </Button>
-                }
+                )}
               </div>
             ),
           },
@@ -149,12 +223,16 @@ const ViewHubDetails = () => {
           {
             key: 'zone',
             label: 'Zone Location',
-            children: hub ? <ZoneTab hub={hub} lat={hub.lat} lng={hub.long} park={hub.park} zone={hub.zone} zones={zones} sensors={sensors}/> : <p>Loading hub data...</p>,
+            children: hub ? (
+              <ZoneTab hub={hub} lat={hub.lat} lng={hub.long} park={hub.park} zone={hub.zone} zones={zones} sensors={sensors} />
+            ) : (
+              <p>Loading hub data...</p>
+            ),
           },
           {
             key: 'sensors',
             label: 'Connected Sensors',
-            children: hub ? <SensorsTab hub={hub} zone={hub.zone} sensors={sensors}/> : <p>Loading Sensors data...</p>,
+            children: hub ? <SensorsTab hub={hub} zone={hub.zone} sensors={sensors} fetchSensors={() => fetchSensors(hub.id)}/> : <p>Loading Sensors data...</p>,
           },
         ]
       : [
@@ -177,6 +255,47 @@ const ViewHubDetails = () => {
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      {contextHolder}
+      {sensors && sensors.length > 0 ? (
+        <ConfirmDeleteModal
+          okText="Confirm Deactivate"
+          onConfirm={handleDeactivateHub}
+          open={deactivateModalOpen}
+          onCancel={cancelDeactivate}
+          // Restrict if have Sensors
+          title="Unable to deactivate Hub"
+          footer={null}
+          description={
+            <p>
+              {' '}
+              <MdError className="text-error inline mr-2 text-lg" />
+              This Hub has <strong className="text-error">{sensors.length}</strong> Sensor(s) assigned to it. Please deactivate the
+              Sensor(s) first.
+            </p>
+          }
+        ></ConfirmDeleteModal>
+      ) : (
+        <ConfirmDeleteModal
+          okText="Confirm Deactivate"
+          onConfirm={handleDeactivateHub}
+          open={deactivateModalOpen}
+          onCancel={cancelDeactivate}
+          title="Deactivation of Hub"
+          
+          // For Success
+          description={updatedData ? undefined : "Deactivating a Hub will remove the Hub from its current Zone."}
+          footer={updatedData && null}
+          closable={!updatedData}
+        >
+          {/* For Success */}
+          {updatedData && <Result
+            status="success"
+            title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Hub'}
+            subTitle="Returning to Hub Details Page..."
+          />}
+        </ConfirmDeleteModal>
+      )}
+
       <Card>
         <div className="md:flex w-full gap-4">
           <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">

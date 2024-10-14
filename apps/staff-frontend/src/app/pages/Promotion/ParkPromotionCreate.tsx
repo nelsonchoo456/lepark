@@ -275,7 +275,7 @@ const ParkPromotionCreate = () => {
                       </Button>
                     </Form.Item>
 
-                    {maximumUsage !== undefined && (
+                    {maximumUsage !== undefined && typeof maximumUsage === "number" && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
@@ -296,7 +296,7 @@ const ParkPromotionCreate = () => {
                         </Button>
                       </Form.Item>
                     )}
-                    {minimumAmount !== undefined && (
+                    {minimumAmount !== undefined && typeof minimumAmount === "number" && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
