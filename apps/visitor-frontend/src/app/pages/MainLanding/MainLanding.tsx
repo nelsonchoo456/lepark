@@ -59,7 +59,13 @@ const MainLanding = () => {
         >
           Attractions
         </NavButton>
-        <NavButton key="venues" icon={<FaTent />}>
+        <NavButton
+          key="venues"
+          icon={<FaTent />}
+          onClick={() => {
+            navigate(`/facility/park/${selectedPark?.id}`);
+          }}
+        >
           Venues
         </NavButton>
         <NavButton key="tickets" icon={<PiTicketFill />}>
