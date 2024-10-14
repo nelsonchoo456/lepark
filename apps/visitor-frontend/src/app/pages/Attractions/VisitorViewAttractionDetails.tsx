@@ -64,7 +64,7 @@ const VisitorViewAttractionDetails = () => {
           <div className="hidden md:flex items-start">
             <div className="flex-0">
               <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{attraction?.title}</LogoText>
-              <Typography.Paragraph
+              {/* <Typography.Paragraph
                 ellipsis={{
                   rows: 3,
                   expandable: true,
@@ -72,7 +72,7 @@ const VisitorViewAttractionDetails = () => {
                 }}
               >
                 {attraction?.description}
-              </Typography.Paragraph>
+              </Typography.Paragraph> */}
               {attraction && (
                 <div className="mb-4 hidden md:block">
                   <Tag color={attraction.status === 'OPEN' ? 'green' : 'red'}>{attraction.status}</Tag>
