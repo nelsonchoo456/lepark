@@ -213,17 +213,25 @@ const ViewAttractionTicketListings = () => {
   };
 
   return (
-    <div className="p-4 h-full overflow-auto">
-      <LogoText className="text-2xl font-semibold mb-4">
-        {step === 'select-tickets' ? 'Select Listing' : step === 'select-date' ? 'Select Date' : 'Order Review'}
-      </LogoText>
-      {loading ? (
-        <div className="flex justify-center items-center h-full">
-          <Spin size="large" />
+    <div className="md:p-4 md:h-screen md:overflow-hidden">
+      <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
+        <div className="flex-1 flex-col flex md:h-full md:overflow-x-auto">
+          <div className="sticky top-0 bg-white z-10 p-4">
+            <LogoText className="text-2xl font-semibold">
+              {step === 'select-tickets' ? 'Select Listing' : step === 'select-date' ? 'Select Date' : 'Order Review'}
+            </LogoText>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            {loading ? (
+              <div className="flex justify-center items-center h-full">
+                <Spin size="large" />
+              </div>
+            ) : (
+              renderContent()
+            )}
+          </div>
         </div>
-      ) : (
-        renderContent()
-      )}
+      </div>
     </div>
   );
 };
