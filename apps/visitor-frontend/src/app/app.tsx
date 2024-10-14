@@ -115,9 +115,30 @@ export function App() {
                   }
                 />
 
-                <Route path="/payment" element={<PaymentPage />} />
-                <Route path="/payment-completion/:transactionId" element={<CompletionPage />} />
-                <Route path="/success" element={<SuccessPage />} />
+                <Route
+                  path="/payment"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <PaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payment-completion/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <CompletionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/success"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <SuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/park">
                   <Route index element={<SelectParkPage />} />
                   <Route path=":parkId" element={<VisitorParkViewDetails />} />
@@ -142,8 +163,8 @@ export function App() {
                   <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
                 </Route>
                 <Route path="/promotions">
-                  <Route index element={<PromotionViewAll/>}/>
-                  <Route path=":promotionId" element={<PromotionViewDetails/>}/>
+                  <Route index element={<PromotionViewAll />} />
+                  <Route path=":promotionId" element={<PromotionViewDetails />} />
                 </Route>
               </Route>
             </Routes>
