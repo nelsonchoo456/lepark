@@ -16,6 +16,7 @@ import {
   getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo,
   getZoneTrendForSensorType,
   getUnhealthyOccurrences,
+  SensorReadingResponse,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
@@ -250,13 +251,13 @@ const ZoneIoTDetailsPage: React.FC = () => {
 };
 
 const SensorDetails: React.FC<{ sensor: SensorResponse }> = ({ sensor }) => {
-  const [latestReading, setLatestReading] = useState<number | null>(null);
+  const [latestReading, setLatestReading] = useState<SensorReadingResponse | null>(null);
 
   useEffect(() => {
     const fetchLatestReading = async () => {
       try {
         const response = await getLatestSensorReadingBySensorId(sensor.id);
-        setLatestReading(response.data?.value || null);
+        setLatestReading(response.data || null);
       } catch (error) {
         console.error('Error fetching latest sensor reading:', error);
       }
@@ -274,11 +275,13 @@ const SensorDetails: React.FC<{ sensor: SensorResponse }> = ({ sensor }) => {
         </Space>
       </Col>
       <Col span={24}>
-        <Statistic
-          title="Last Reported Value"
-          value={latestReading !== null ? latestReading.toFixed(2) : 'N/A'}
-          suffix={getSensorUnit(sensor.sensorType)}
-        />
+        <Space direction="vertical">
+          <Statistic
+            title={`Last reported value at ${latestReading?.date ? new Date(latestReading.date).toLocaleString() : 'N/A'}`}
+            value={latestReading !== null ? latestReading.value.toFixed(2) : 'N/A'}
+            suffix={getSensorUnit(sensor.sensorType)}
+          />
+        </Space>
       </Col>
       {/* <Col span={24}>
         <Text type="secondary">Last Update: {sensor.lastDataUpdateDate ? new Date(sensor.lastDataUpdateDate).toLocaleString() : 'N/A'}</Text>
