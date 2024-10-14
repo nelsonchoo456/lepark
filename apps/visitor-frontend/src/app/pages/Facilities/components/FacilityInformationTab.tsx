@@ -34,6 +34,7 @@ const FacilityInformationTab = ({ facility }: { facility: FacilityResponse }) =>
     'isPublic',
     'name',
     'rulesAndRegulations',
+    'isBookable',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(facility)
