@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Typography, Card, Row, Col, Button, Checkbox, Spin } from 'antd';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { LogoText } from '@lepark/common-ui';
 import dayjs, { Dayjs } from 'dayjs';
 import {
@@ -26,6 +27,7 @@ const ViewAttractionTicketListings = () => {
   const [discount, setDiscount] = useState(0);
   const [finalTotalPayable, setFinalTotalPayable] = useState<number>(0);
   const navigate = useNavigate();
+  const [localResidentChecked, setLocalResidentChecked] = useState(false);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -47,7 +49,7 @@ const ViewAttractionTicketListings = () => {
   }, [attractionId]);
 
   const groupedListings = listings.reduce((acc, listing) => {
-    const key = listing.nationality === 'LOCAL' ? 'Local Resident?' : 'Foreign Resident?';
+    const key = listing.nationality === 'LOCAL' ? 'Local Resident' : 'Standard';
     if (!acc[key]) acc[key] = [];
     acc[key].push(listing);
     return acc;
@@ -149,8 +151,8 @@ const ViewAttractionTicketListings = () => {
             {Object.entries(groupedListings).map(([nationality, listings]) => (
               <Card key={nationality} className="mb-4 shadow-sm">
                 <Title level={4}>{nationality}</Title>
-                {nationality === 'Local Resident?' && (
-                  <Checkbox className="mb-4 text-sm">
+                {nationality === 'Local Resident' && (
+                  <Checkbox className="mb-4 text-sm" checked={localResidentChecked} onChange={handleLocalResidentCheckbox}>
                     I understand that I will not be permitted from entering if I could not prove my identity at the admission gate
                   </Checkbox>
                 )}
@@ -162,7 +164,7 @@ const ViewAttractionTicketListings = () => {
                 type="primary"
                 className="w-full h-12 text-lg"
                 onClick={handleProceedToDateSelection}
-                disabled={Object.values(ticketCounts).every((count) => count === 0)}
+                disabled={Object.values(ticketCounts).every((count) => count === 0) || (hasLocalResidentTickets() && !localResidentChecked)}
               >
                 Proceed to Date Selection
               </Button>
@@ -210,6 +212,14 @@ const ViewAttractionTicketListings = () => {
       default:
         return null;
     }
+  };
+
+  const handleLocalResidentCheckbox = (e: CheckboxChangeEvent) => {
+    setLocalResidentChecked(e.target.checked);
+  };
+
+  const hasLocalResidentTickets = () => {
+    return listings.some((listing) => listing.nationality === 'LOCAL' && ticketCounts[listing.id] > 0);
   };
 
   return (
