@@ -326,58 +326,66 @@ class SensorReadingService {
   }
 
   // Get unhealthy occurrences that exceed their ideal conditions (based on nearest sensor whenever available)
-  public async getUnhealthyOccurrences(zoneId: number): Promise<{ occurrenceId: string; speciesName: string; issues: string[] }[]> {
+  public async getUnhealthyOccurrences(zoneId: number): Promise<{ occurrenceId: string; occurrenceName: string; speciesName: string; issues: string[] }[]> {
     const occurrences: OccurrenceWithDetails[] = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
-    console.log(
-      'Occurrences:',
-      occurrences.map((occurrence) => occurrence.title),
-    );
     const unhealthyOccurrences = [];
 
     for (const occurrence of occurrences) {
       const speciesConditions = await SpeciesService.getSpeciesIdealConditions(occurrence.speciesId);
       const issues = [];
 
-      // Check temperature
-      const latestTemperature = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.TEMPERATURE, occurrence.id);
-      if (
-        latestTemperature &&
-        (latestTemperature.value < speciesConditions.minTemp || latestTemperature.value > speciesConditions.maxTemp)
-      ) {
-        issues.push(`Temperature out of range: ${latestTemperature.value}°C`);
-      }
+      const sensorTypes = [SensorTypeEnum.TEMPERATURE, SensorTypeEnum.HUMIDITY, SensorTypeEnum.SOIL_MOISTURE, SensorTypeEnum.LIGHT];
+      let hasRecentReading = false;
 
-      // Check humidity
-      const latestHumidity = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.HUMIDITY, occurrence.id);
-      if (latestHumidity && Math.abs(latestHumidity.value - speciesConditions.idealHumidity) > 10) {
-        issues.push(`Humidity not ideal: ${latestHumidity.value}%`);
-      }
-
-      // Check soil moisture (as an approximation for water requirement)
-      const latestSoilMoisture = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.SOIL_MOISTURE, occurrence.id);
-      if (latestSoilMoisture && Math.abs(latestSoilMoisture.value - speciesConditions.soilMoisture) > 10) {
-        issues.push(`Soil moisture not ideal: ${latestSoilMoisture.value}%`);
-      }
-
-      // Check light (this is more complex and might require additional logic)
-      const latestLight = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.LIGHT, occurrence.id);
-      if (latestLight) {
-        const lightIssue = this.checkLightCondition(latestLight.value, speciesConditions.lightType);
-        if (lightIssue) {
-          issues.push(lightIssue);
+      for (const sensorType of sensorTypes) {
+        const latestReading = await this.getLatestSensorReadingForOccurrence(zoneId, sensorType, occurrence.id);
+        
+        if (latestReading && this.isReadingRecent(latestReading)) {
+          hasRecentReading = true;
+          
+          switch (sensorType) {
+            case SensorTypeEnum.TEMPERATURE:
+              if (latestReading.value < speciesConditions.minTemp || latestReading.value > speciesConditions.maxTemp) {
+                issues.push(`Temperature out of range: ${latestReading.value}°C`);
+              }
+              break;
+            case SensorTypeEnum.HUMIDITY:
+              if (Math.abs(latestReading.value - speciesConditions.idealHumidity) > 10) {
+                issues.push(`Humidity not ideal: ${latestReading.value}%`);
+              }
+              break;
+            case SensorTypeEnum.SOIL_MOISTURE:
+              if (Math.abs(latestReading.value - speciesConditions.soilMoisture) > 10) {
+                issues.push(`Soil moisture not ideal: ${latestReading.value}%`);
+              }
+              break;
+            case SensorTypeEnum.LIGHT: {
+              const lightIssue = this.checkLightCondition(latestReading.value, speciesConditions.lightType);
+              if (lightIssue) {
+                issues.push(lightIssue);
+              }
+              break;
+            }
+          }
         }
       }
 
-      if (issues.length > 0) {
+      if (hasRecentReading && issues.length > 0) {
         unhealthyOccurrences.push({
+          occurrenceId: occurrence.id,
           occurrenceName: occurrence.title,
-          speciesName: occurrence.species.speciesName, // Now you can access species directly
+          speciesName: occurrence.species.speciesName,
           issues,
         });
       }
     }
 
     return unhealthyOccurrences;
+  }
+
+  private isReadingRecent(reading: SensorReading): boolean {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    return reading.date >= oneHourAgo;
   }
 
   private checkLightCondition(lightValue: number, idealLightType: LightTypeEnum): string | null {

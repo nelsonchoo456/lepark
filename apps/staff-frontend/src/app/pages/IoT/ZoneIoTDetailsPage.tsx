@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Progress, Space, List } from 'antd';
-import { FiThermometer, FiDroplet, FiSun, FiWind } from 'react-icons/fi';
+import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Progress, Space, List, Tooltip, Button } from 'antd';
+import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink } from 'react-icons/fi';
 import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
@@ -209,12 +209,26 @@ const ZoneIoTDetailsPage: React.FC = () => {
           <Title level={4}>
             <WarningOutlined style={{ color: '#faad14' }} /> Potential Issues
           </Title>
+          <Text type="secondary" style={{ marginBottom: 16, display: 'block' }}>
+            Showing issues based on sensor readings from the last hour only.
+          </Text>
           <List
             dataSource={unhealthyOccurrences}
             renderItem={(item) => (
               <List.Item>
                 <List.Item.Meta
-                  title={`${item.speciesName} (Occurrence Name: ${item.occurrenceName})`}
+                  title={
+                    <Space>
+                      {`${item.speciesName} (Occurrence Name: ${item.occurrenceName})`}
+                      <Tooltip title="View Occurrence Details">
+                        <Button
+                          type="link"
+                          icon={<FiExternalLink />}
+                          onClick={() => window.open(`/occurrences/${item.occurrenceId}`, '_blank')}
+                        />
+                      </Tooltip>
+                    </Space>
+                  }
                   description={
                     <ul>
                       {item.issues.map((issue: string, index: number) => (
@@ -277,15 +291,12 @@ const SensorDetails: React.FC<{ sensor: SensorResponse }> = ({ sensor }) => {
       <Col span={24}>
         <Space direction="vertical">
           <Statistic
-            title={`Last reported value at ${latestReading?.date ? new Date(latestReading.date).toLocaleString() : 'N/A'}`}
+            title={`Last reported: ${latestReading?.date ? new Date(latestReading.date).toLocaleString() : 'N/A'}`}
             value={latestReading !== null ? latestReading.value.toFixed(2) : 'N/A'}
             suffix={getSensorUnit(sensor.sensorType)}
           />
         </Space>
       </Col>
-      {/* <Col span={24}>
-        <Text type="secondary">Last Update: {sensor.lastDataUpdateDate ? new Date(sensor.lastDataUpdateDate).toLocaleString() : 'N/A'}</Text>
-      </Col> */}
     </Row>
   );
 };
