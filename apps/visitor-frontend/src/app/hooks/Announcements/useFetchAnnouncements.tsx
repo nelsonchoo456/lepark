@@ -6,11 +6,16 @@ export const useFetchAnnouncements = (parkId?: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const filterActiveAnnouncements = (announcements: AnnouncementResponse[]) => {
+    return announcements.filter(announcement => announcement.status === 'ACTIVE');
+  };
+
   const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllAnnouncements();
-      setAnnouncements(response.data);
+      const activeAnnouncements = filterActiveAnnouncements(response.data);
+      setAnnouncements(activeAnnouncements);
       setError(null);
     } catch (err) {
       setError('Failed to fetch announcements');
@@ -25,7 +30,9 @@ export const useFetchAnnouncements = (parkId?: number) => {
       setLoading(true);
       const response = await getAnnouncementsByParkId(parkId);
       const response2 = await getNParksAnnouncements();
-      setAnnouncements([...response.data, ...response2.data]);
+      const combinedAnnouncements = [...response.data, ...response2.data];
+      const activeAnnouncements = filterActiveAnnouncements(combinedAnnouncements);
+      setAnnouncements(activeAnnouncements);
       setError(null);
     } catch (err) {
       setError('Failed to fetch announcements');
