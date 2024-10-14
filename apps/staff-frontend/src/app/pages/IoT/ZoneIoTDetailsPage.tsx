@@ -54,7 +54,7 @@ const ZoneIoTDetailsPage: React.FC = () => {
         setAverageReadings(avgReadings.data);
 
         const trendPromises = filteredSensorTypes.map(async (sensorType) => {
-          const trend = await getZoneTrendForSensorType(Number(zoneId), sensorType, 1);
+          const trend = await getZoneTrendForSensorType(Number(zoneId), sensorType, 4);
           return { [sensorType]: trend.data };
         });
         const trendResults = await Promise.all(trendPromises);

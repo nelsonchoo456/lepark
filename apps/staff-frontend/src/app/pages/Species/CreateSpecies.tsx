@@ -103,7 +103,7 @@ const CreateSpecies = () => {
         soilType: values.soilTypeInput as SoilTypeEnum,
         fertiliserType: values.fertiliserType as string,
         images: [] as string[],
-        waterRequirement: values.waterRequirement as number,
+        soilMoisture: values.soilMoisture as number,
         fertiliserRequirement: values.fertiliserRequirement as number,
         idealHumidity: values.idealHumidity as number,
         minTemp: values.tempRange[0] as number,
@@ -185,274 +185,324 @@ const CreateSpecies = () => {
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-      {!showSuccessAlert && (
-        <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
-          <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              onChange={onPhylumChange}
-              placeholder="Select a phylum"
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {Object.keys(plantTaxonomy).map((phylum) => (
-                <Select.Option key={phylum} value={phylum} label={phylum}>
-                  {phylum}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              onChange={onClassChange}
-              placeholder="Select a class"
-              disabled={classes.length === 0}
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {classes.map((classItem) => (
-                <Select.Option key={classItem} value={classItem} label={classItem}>
-                  {classItem}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              placeholder="Select an order"
-              disabled={!orders || orders.length === 0}
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {orders && orders.length > 0 ? (
-                orders.map((order) => (
-                  <Select.Option key={order} value={order} label={order}>
-                    {order}
+        {!showSuccessAlert && (
+          <Form {...layout} form={form} name="control-hooks" onFinish={onFinish} disabled={isSubmitting} className="max-w-[600px] mx-auto">
+            <Form.Item name="phylum" label="Phylum" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                onChange={onPhylumChange}
+                placeholder="Select a phylum"
+                optionFilterProp="label"
+                filterOption={filterOption}
+              >
+                {Object.keys(plantTaxonomy).map((phylum) => (
+                  <Select.Option key={phylum} value={phylum} label={phylum}>
+                    {phylum}
                   </Select.Option>
-                ))
-              ) : (
-                <Select.Option value="" disabled>
-                  No orders available
-                </Select.Option>
-              )}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="familyInput" label="Family" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="genusInput" label="Genus" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="speciesInput" label="Scientific Name" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="commonNameInput" label="Common Name" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-
-          <Form.Item name="speciesDescriptionInput" label="Species Description" rules={[{ required: true }]}>
-            <TextArea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="Share more details!"
-              autoSize={{ minRows: 3, maxRows: 5 }}
-            />
-          </Form.Item>
-
-          <Form.Item name="regionOfOriginInput" label="Region of Origin" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              style={{ width: 400 }}
-              placeholder="Select a region"
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {regions.map((region) => (
-                <Select.Option key={region} value={region} label={region}>
-                  {region}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="lightTypeInput" label="Light Type" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              style={{ width: 400 }}
-              placeholder="Select a light type"
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {lightType.map((type) => (
-                <Select.Option key={type} value={type} label={type === 'FULL_SUN' ? 'Full Sun' : type === 'PARTIAL_SHADE' ? 'Partial Shade' : type === 'FULL_SHADE' ? 'Full Shade' : type}>
-                  {type === 'FULL_SUN' ? 'Full Sun' : type === 'PARTIAL_SHADE' ? 'Partial Shade' : type === 'FULL_SHADE' ? 'Full Shade' : type}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="soilTypeInput" label="Soil Type" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              style={{ width: 400 }}
-              placeholder="Select a soil type"
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {soilType.map((type) => (
-                <Select.Option key={type} value={type} label={type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}>
-                  {type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="conservationStatusInput" label="Conservation Status" rules={[{ required: true }]}>
-            <Select
-              showSearch
-              style={{ width: 400 }}
-              placeholder="Select a conservation status"
-              optionFilterProp="label"
-              filterOption={filterOption}
-            >
-              {conservationStatus.map((status) => (
-                <Select.Option key={status} value={status} label={status === 'NEAR_THREATENED' ? 'Near Threatened' : status === 'LEAST_CONCERN' ? 'Least Concern' : status === 'VULNERABLE' ? 'Vulnerable' : status === 'ENDANGERED' ? 'Endangered' : status === 'CRITICALLY_ENDANGERED' ? 'Critically Endangered' : status === 'EXTINCT_IN_THE_WILD' ? 'Extinct in the Wild' : status === 'EXTINCT' ? 'Extinct' : status}>
-                  {status === 'NEAR_THREATENED' ? 'Near Threatened' : status === 'LEAST_CONCERN' ? 'Least Concern' : status === 'VULNERABLE' ? 'Vulnerable' : status === 'ENDANGERED' ? 'Endangered' : status === 'CRITICALLY_ENDANGERED' ? 'Critically Endangered' : status === 'EXTINCT_IN_THE_WILD' ? 'Extinct in the Wild' : status === 'EXTINCT' ? 'Extinct' : status}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="plantCharacteristics" label="Plant Characteristics" rules={[{ required: false }]} initialValue={[]}>
-            <Select
-              mode="multiple"
-              style={{ width: '100%' }}
-              placeholder="Select plant characteristics"
-              options={[
-                { value: 'slowGrowing', label: 'Slow Growing' },
-                { value: 'edible', label: 'Edible' },
-                { value: 'toxic', label: 'Toxic' },
-                { value: 'evergreen', label: 'Evergreen' },
-                { value: 'fragrant', label: 'Fragrant' },
-                { value: 'droughtTolerant', label: 'Drought Tolerant' },
-                { value: 'deciduous', label: 'Deciduous' },
-                { value: 'fastGrowing', label: 'Fast Growing' },
-              ]}
-              optionFilterProp="label"
-            />
-          </Form.Item>
-
-          <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}>
-            <InputNumber min={1} max={100} />
-          </Form.Item>
-
-          <Form.Item name="fertiliserRequirement" label="Fertiliser Requirement" rules={[{ required: true }]}>
-            <InputNumber min={1} max={100} onChange={(value) => console.log('Fertiliser Requirement:', value)} />
-          </Form.Item>
-          <Form.Item name="fertiliserType" label="Fertiliser Type" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="idealHumidity" label="Ideal Humidity (%)" rules={[{ required: true }]}>
-            <InputNumber min={1} max={100} />
-          </Form.Item>
-          <Form.Item name="tempRange" label="Min and Max Temp (°C)" rules={[{ required: true }]}>
-            <Slider
-              range
-              min={1}
-              max={50}
-              step={0.1}
-              value={tempRange}
-              onChange={(newValue) => {
-                if (Array.isArray(newValue) && newValue.length === 2) {
-                  setTempRange(newValue);
-                  form.setFieldsValue({ tempRange: newValue });
-
-                  // Adjust ideal temp if it's outside the new range
-                  if (idealTemp < newValue[0] || idealTemp > newValue[1]) {
-                    const newIdealTemp = Math.min(Math.max(idealTemp, newValue[0]), newValue[1]);
-                    setIdealTemp(newIdealTemp);
-                    form.setFieldsValue({ idealTemp: newIdealTemp });
-                  }
-                }
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item name="idealTemp" label="Ideal Temp (°C)" rules={[{ required: true }]}>
-            <InputNumber
-              min={tempRange[0]}
-              max={tempRange[1]}
-              step={0.1}
-              value={idealTemp}
-              onChange={(value) => {
-                if (value !== null) {
-                  setIdealTemp(value);
-                  form.setFieldsValue({ idealTemp: value });
-                }
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item label="Temperature Values">
-            <Space>
-              <span>Min: {tempRange[0]}°C</span>
-              <span>Max: {tempRange[1]}°C</span>
-              <span>Ideal: {idealTemp}°C</span>
-            </Space>
-          </Form.Item>
-
-          <Form.Item label="Upload Images" required tooltip="At least one image is required">
-            <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
-          </Form.Item>
-
-          {previewImages.length > 0 && (
-            <Form.Item label="Image Previews">
-              <div className="flex flex-wrap gap-2">
-                {previewImages.map((imgSrc, index) => (
-                  <img
-                    key={index}
-                    src={imgSrc}
-                    alt={`Preview ${index}`}
-                    className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                    onClick={() => removeImage(index)}
-                  />
                 ))}
-              </div>
+              </Select>
             </Form.Item>
-          )}
 
-          <Form.Item {...tailLayout}>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                Submit
-              </Button>
-              <Button htmlType="button" onClick={onReset}>
-                Reset
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      )}
-      {showSuccessAlert && (
-        <Result
-          status="success"
-          title="Created new Species"
-          subTitle={createdSpeciesName && <>Species name: {createdSpeciesName}</>}
-          extra={[
-            <Button key="back" onClick={() => navigate('/species')}>
-              Back to Species Management
-            </Button>,
-            <Button type="primary" key="view" onClick={() => navigate(`/species/${createdSpecies?.id}`)}>
-              View new Species
-            </Button>,
-          ]}
-        />
-      )}
+            <Form.Item name="classInput" label="Class" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                onChange={onClassChange}
+                placeholder="Select a class"
+                disabled={classes.length === 0}
+                optionFilterProp="label"
+                filterOption={filterOption}
+              >
+                {classes.map((classItem) => (
+                  <Select.Option key={classItem} value={classItem} label={classItem}>
+                    {classItem}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="orderInput" label="Order" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                placeholder="Select an order"
+                disabled={!orders || orders.length === 0}
+                optionFilterProp="label"
+                filterOption={filterOption}
+              >
+                {orders && orders.length > 0 ? (
+                  orders.map((order) => (
+                    <Select.Option key={order} value={order} label={order}>
+                      {order}
+                    </Select.Option>
+                  ))
+                ) : (
+                  <Select.Option value="" disabled>
+                    No orders available
+                  </Select.Option>
+                )}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="familyInput" label="Family" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="genusInput" label="Genus" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="speciesInput" label="Scientific Name" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="commonNameInput" label="Common Name" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+
+            <Form.Item name="speciesDescriptionInput" label="Species Description" rules={[{ required: true }]}>
+              <TextArea
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="Share more details!"
+                autoSize={{ minRows: 3, maxRows: 5 }}
+              />
+            </Form.Item>
+
+            <Form.Item name="regionOfOriginInput" label="Region of Origin" rules={[{ required: true }]}>
+              <Select showSearch style={{ width: 400 }} placeholder="Select a region" optionFilterProp="label" filterOption={filterOption}>
+                {regions.map((region) => (
+                  <Select.Option key={region} value={region} label={region}>
+                    {region}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="lightTypeInput" label="Light Type" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                style={{ width: 400 }}
+                placeholder="Select a light type"
+                optionFilterProp="label"
+                filterOption={filterOption}
+              >
+                {lightType.map((type) => (
+                  <Select.Option
+                    key={type}
+                    value={type}
+                    label={
+                      type === 'FULL_SUN'
+                        ? 'Full Sun'
+                        : type === 'PARTIAL_SHADE'
+                        ? 'Partial Shade'
+                        : type === 'FULL_SHADE'
+                        ? 'Full Shade'
+                        : type
+                    }
+                  >
+                    {type === 'FULL_SUN'
+                      ? 'Full Sun'
+                      : type === 'PARTIAL_SHADE'
+                      ? 'Partial Shade'
+                      : type === 'FULL_SHADE'
+                      ? 'Full Shade'
+                      : type}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="soilTypeInput" label="Soil Type" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                style={{ width: 400 }}
+                placeholder="Select a soil type"
+                optionFilterProp="label"
+                filterOption={filterOption}
+              >
+                {soilType.map((type) => (
+                  <Select.Option
+                    key={type}
+                    value={type}
+                    label={type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}
+                  >
+                    {type === 'SANDY' ? 'Sandy' : type === 'CLAYEY' ? 'Clayey' : type === 'LOAMY' ? 'Loamy' : type}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="conservationStatusInput" label="Conservation Status" rules={[{ required: true }]}>
+              <Select
+                showSearch
+                style={{ width: 400 }}
+                placeholder="Select a conservation status"
+                optionFilterProp="label"
+                filterOption={filterOption}
+              >
+                {conservationStatus.map((status) => (
+                  <Select.Option
+                    key={status}
+                    value={status}
+                    label={
+                      status === 'NEAR_THREATENED'
+                        ? 'Near Threatened'
+                        : status === 'LEAST_CONCERN'
+                        ? 'Least Concern'
+                        : status === 'VULNERABLE'
+                        ? 'Vulnerable'
+                        : status === 'ENDANGERED'
+                        ? 'Endangered'
+                        : status === 'CRITICALLY_ENDANGERED'
+                        ? 'Critically Endangered'
+                        : status === 'EXTINCT_IN_THE_WILD'
+                        ? 'Extinct in the Wild'
+                        : status === 'EXTINCT'
+                        ? 'Extinct'
+                        : status
+                    }
+                  >
+                    {status === 'NEAR_THREATENED'
+                      ? 'Near Threatened'
+                      : status === 'LEAST_CONCERN'
+                      ? 'Least Concern'
+                      : status === 'VULNERABLE'
+                      ? 'Vulnerable'
+                      : status === 'ENDANGERED'
+                      ? 'Endangered'
+                      : status === 'CRITICALLY_ENDANGERED'
+                      ? 'Critically Endangered'
+                      : status === 'EXTINCT_IN_THE_WILD'
+                      ? 'Extinct in the Wild'
+                      : status === 'EXTINCT'
+                      ? 'Extinct'
+                      : status}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="plantCharacteristics" label="Plant Characteristics" rules={[{ required: false }]} initialValue={[]}>
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Select plant characteristics"
+                options={[
+                  { value: 'slowGrowing', label: 'Slow Growing' },
+                  { value: 'edible', label: 'Edible' },
+                  { value: 'toxic', label: 'Toxic' },
+                  { value: 'evergreen', label: 'Evergreen' },
+                  { value: 'fragrant', label: 'Fragrant' },
+                  { value: 'droughtTolerant', label: 'Drought Tolerant' },
+                  { value: 'deciduous', label: 'Deciduous' },
+                  { value: 'fastGrowing', label: 'Fast Growing' },
+                ]}
+                optionFilterProp="label"
+              />
+            </Form.Item>
+
+            <Form.Item name="soilMoisture" label="Soil Moisture (%)" rules={[{ required: true }]}>
+              <InputNumber min={1} max={100} />
+            </Form.Item>
+
+            <Form.Item name="fertiliserRequirement" label="Fertiliser Requirement" rules={[{ required: true }]}>
+              <InputNumber min={1} max={100} onChange={(value) => console.log('Fertiliser Requirement:', value)} />
+            </Form.Item>
+            <Form.Item name="fertiliserType" label="Fertiliser Type" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="idealHumidity" label="Ideal Humidity (%)" rules={[{ required: true }]}>
+              <InputNumber min={1} max={100} />
+            </Form.Item>
+            <Form.Item name="tempRange" label="Min and Max Temp (°C)" rules={[{ required: true }]}>
+              <Slider
+                range
+                min={1}
+                max={50}
+                step={0.1}
+                value={tempRange}
+                onChange={(newValue) => {
+                  if (Array.isArray(newValue) && newValue.length === 2) {
+                    setTempRange(newValue);
+                    form.setFieldsValue({ tempRange: newValue });
+
+                    // Adjust ideal temp if it's outside the new range
+                    if (idealTemp < newValue[0] || idealTemp > newValue[1]) {
+                      const newIdealTemp = Math.min(Math.max(idealTemp, newValue[0]), newValue[1]);
+                      setIdealTemp(newIdealTemp);
+                      form.setFieldsValue({ idealTemp: newIdealTemp });
+                    }
+                  }
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item name="idealTemp" label="Ideal Temp (°C)" rules={[{ required: true }]}>
+              <InputNumber
+                min={tempRange[0]}
+                max={tempRange[1]}
+                step={0.1}
+                value={idealTemp}
+                onChange={(value) => {
+                  if (value !== null) {
+                    setIdealTemp(value);
+                    form.setFieldsValue({ idealTemp: value });
+                  }
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item label="Temperature Values">
+              <Space>
+                <span>Min: {tempRange[0]}°C</span>
+                <span>Max: {tempRange[1]}°C</span>
+                <span>Ideal: {idealTemp}°C</span>
+              </Space>
+            </Form.Item>
+
+            <Form.Item label="Upload Images" required tooltip="At least one image is required">
+              <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
+            </Form.Item>
+
+            {previewImages.length > 0 && (
+              <Form.Item label="Image Previews">
+                <div className="flex flex-wrap gap-2">
+                  {previewImages.map((imgSrc, index) => (
+                    <img
+                      key={index}
+                      src={imgSrc}
+                      alt={`Preview ${index}`}
+                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      onClick={() => removeImage(index)}
+                    />
+                  ))}
+                </div>
+              </Form.Item>
+            )}
+
+            <Form.Item {...tailLayout}>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  Submit
+                </Button>
+                <Button htmlType="button" onClick={onReset}>
+                  Reset
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        )}
+        {showSuccessAlert && (
+          <Result
+            status="success"
+            title="Created new Species"
+            subTitle={createdSpeciesName && <>Species name: {createdSpeciesName}</>}
+            extra={[
+              <Button key="back" onClick={() => navigate('/species')}>
+                Back to Species Management
+              </Button>,
+              <Button type="primary" key="view" onClick={() => navigate(`/species/${createdSpecies?.id}`)}>
+                View new Species
+              </Button>,
+            ]}
+          />
+        )}
       </Card>
     </ContentWrapperDark>
   );

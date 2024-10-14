@@ -9,6 +9,7 @@ import ZoneService from './ZoneService';
 import SpeciesService from './SpeciesService';
 import OccurrenceService from './OccurrenceService';
 import { OccurrenceWithDetails } from './OccurrenceService';
+import OccurrenceDao from '../dao/OccurrenceDao';
 
 const dateFormatter = (data: any) => {
   const { timestamp, ...rest } = data;
@@ -324,7 +325,7 @@ class SensorReadingService {
     return SensorReadingDao.getAverageDifferenceBetweenPeriodsBySensorType(zoneId, duration);
   }
 
-  // Get unhealthy occurrences that exceed their ideal conditions
+  // Get unhealthy occurrences that exceed their ideal conditions (based on nearest sensor whenever available)
   public async getUnhealthyOccurrences(zoneId: number): Promise<{ occurrenceId: string; speciesName: string; issues: string[] }[]> {
     const occurrences: OccurrenceWithDetails[] = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
     console.log(
@@ -338,7 +339,7 @@ class SensorReadingService {
       const issues = [];
 
       // Check temperature
-      const latestTemperature = await this.getLatestSensorReadingByZoneIdAndSensorType(zoneId, SensorTypeEnum.TEMPERATURE);
+      const latestTemperature = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.TEMPERATURE, occurrence.id);
       if (
         latestTemperature &&
         (latestTemperature.value < speciesConditions.minTemp || latestTemperature.value > speciesConditions.maxTemp)
@@ -347,19 +348,19 @@ class SensorReadingService {
       }
 
       // Check humidity
-      const latestHumidity = await this.getLatestSensorReadingByZoneIdAndSensorType(zoneId, SensorTypeEnum.HUMIDITY);
+      const latestHumidity = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.HUMIDITY, occurrence.id);
       if (latestHumidity && Math.abs(latestHumidity.value - speciesConditions.idealHumidity) > 10) {
         issues.push(`Humidity not ideal: ${latestHumidity.value}%`);
       }
 
       // Check soil moisture (as an approximation for water requirement)
-      const latestSoilMoisture = await this.getLatestSensorReadingByZoneIdAndSensorType(zoneId, SensorTypeEnum.SOIL_MOISTURE);
-      if (latestSoilMoisture && Math.abs(latestSoilMoisture.value - speciesConditions.waterRequirement) > 10) {
+      const latestSoilMoisture = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.SOIL_MOISTURE, occurrence.id);
+      if (latestSoilMoisture && Math.abs(latestSoilMoisture.value - speciesConditions.soilMoisture) > 10) {
         issues.push(`Soil moisture not ideal: ${latestSoilMoisture.value}%`);
       }
 
       // Check light (this is more complex and might require additional logic)
-      const latestLight = await this.getLatestSensorReadingByZoneIdAndSensorType(zoneId, SensorTypeEnum.LIGHT);
+      const latestLight = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.LIGHT, occurrence.id);
       if (latestLight) {
         const lightIssue = this.checkLightCondition(latestLight.value, speciesConditions.lightType);
         if (lightIssue) {
@@ -405,6 +406,60 @@ class SensorReadingService {
       default:
         return '';
     }
+  }
+
+  public async getLatestSensorReadingForOccurrence(
+    zoneId: number,
+    sensorType: SensorTypeEnum,
+    occurrenceId: string
+  ): Promise<SensorReading | null> {
+    try {
+      // Get the occurrence details
+      const occurrence = await OccurrenceDao.getOccurrenceById(occurrenceId);
+      if (!occurrence) {
+        throw new Error('Occurrence not found');
+      }
+
+      // Get all sensors of the specified type in the zone
+      const sensors = await SensorDao.getSensorsByZoneIdAndType(zoneId, sensorType);
+      if (sensors.length === 0) {
+        return null; // No sensors of this type in the zone
+      }
+
+      // Calculate distances and find the nearest sensor
+      const nearestSensor = sensors.reduce((nearest, sensor) => {
+        const distance = this.calculateDistance(
+          occurrence.lat,
+          occurrence.lng,
+          sensor.lat,
+          sensor.long
+        );
+        return distance < nearest.distance ? { sensor, distance } : nearest;
+      }, { sensor: sensors[0], distance: Infinity }).sensor;
+
+      // Get the latest reading for the nearest sensor
+      return SensorReadingDao.getLatestSensorReadingBySensorId(nearestSensor.id);
+    } catch (error) {
+      console.error('Error getting latest sensor reading for occurrence:', error);
+      throw error;
+    }
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    // Haversine formula to calculate distance between two points on a sphere
+    const R = 6371; // Radius of the Earth in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
   }
 }
 

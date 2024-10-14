@@ -108,7 +108,7 @@ CREATE TABLE "Species" (
     "soilType" "SoilTypeEnum" NOT NULL,
     "fertiliserType" TEXT NOT NULL,
     "images" TEXT[],
-    "waterRequirement" INTEGER NOT NULL,
+    "soilMoisture" INTEGER NOT NULL,
     "fertiliserRequirement" INTEGER NOT NULL,
     "idealHumidity" DOUBLE PRECISION NOT NULL,
     "minTemp" DOUBLE PRECISION NOT NULL,

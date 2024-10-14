@@ -186,7 +186,7 @@ class SpeciesService {
 
   public async getSpeciesIdealConditions(speciesId: string): Promise<{
     lightType: LightTypeEnum;
-    waterRequirement: number;
+    soilMoisture: number;
     idealHumidity: number;
     minTemp: number;
     maxTemp: number;
@@ -197,7 +197,7 @@ class SpeciesService {
     }
     return {
       lightType: species.lightType,
-      waterRequirement: species.waterRequirement,
+      soilMoisture: species.soilMoisture,
       idealHumidity: species.idealHumidity,
       minTemp: species.minTemp,
       maxTemp: species.maxTemp,
@@ -222,7 +222,7 @@ function ensureAllFieldsPresent(data: SpeciesSchemaType): Prisma.SpeciesCreateIn
     !data.lightType ||
     !data.soilType ||
     !data.fertiliserType ||
-    !data.waterRequirement ||
+    !data.soilMoisture ||
     !data.fertiliserRequirement ||
     !data.idealHumidity ||
     !data.minTemp ||

@@ -32,7 +32,7 @@ model Staff {
   contactNumber       String
   role                StaffRoleEnum
   isActive            Boolean
-  parkId              Int? 
+  parkId              Int?
   isFirstLogin        Boolean
   resetTokenUsed      Boolean       @default(false)
   resetToken          String?
@@ -78,7 +78,7 @@ model Species {
   soilType              SoilTypeEnum
   fertiliserType        String
   images                String[]
-  waterRequirement      Int
+  soilMoisture          Int
   fertiliserRequirement Int
   idealHumidity         Float
   minTemp               Float
@@ -309,7 +309,7 @@ model Hub {
   zoneId                   Int?
   facilityId               String?       @db.Uuid
   facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  lastDataUpdateDate       DateTime?     // Add this line
+  lastDataUpdateDate       DateTime? // Add this line
 
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
@@ -344,29 +344,29 @@ enum SensorUnitEnum {
 }
 
 model Sensor {
-  id                       String               @id @default(uuid()) @db.Uuid
-  name                     String
-  identifierNumber         String               @unique
-  serialNumber             String               @unique
-  sensorType               SensorTypeEnum
-  description              String?
-  sensorStatus             SensorStatusEnum
-  acquisitionDate          DateTime
-  lastMaintenanceDate      DateTime?
-  nextMaintenanceDate      DateTime?
-  sensorUnit               SensorUnitEnum
-  supplier                 String
-  supplierContactNumber    String
-  images                   String[]
-  lat                      Float?
-  long                     Float?
-  remarks                  String?
-  hubId                    String?              @db.Uuid
-  hub                      Hub?                 @relation(fields: [hubId], references: [id])
-  facilityId               String?              @db.Uuid
-  facility                 Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  maintenanceHistory       MaintenanceHistory[]
-  sensorReadings           SensorReading[]
+  id                    String               @id @default(uuid()) @db.Uuid
+  name                  String
+  identifierNumber      String               @unique
+  serialNumber          String               @unique
+  sensorType            SensorTypeEnum
+  description           String?
+  sensorStatus          SensorStatusEnum
+  acquisitionDate       DateTime
+  lastMaintenanceDate   DateTime?
+  nextMaintenanceDate   DateTime?
+  sensorUnit            SensorUnitEnum
+  supplier              String
+  supplierContactNumber String
+  images                String[]
+  lat                   Float?
+  long                  Float?
+  remarks               String?
+  hubId                 String?              @db.Uuid
+  hub                   Hub?                 @relation(fields: [hubId], references: [id])
+  facilityId            String?              @db.Uuid
+  facility              Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  maintenanceHistory    MaintenanceHistory[]
+  sensorReadings        SensorReading[]
 }
 
 model SensorReading {
