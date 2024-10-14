@@ -1,25 +1,95 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { Button, Input, Space, Table, Layout, Row, Col, Dropdown, Modal, Flex, Tag, notification, message, Tooltip, Card } from 'antd';
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { useNavigate } from 'react-router-dom';
-import { deleteSensor, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { SCREEN_LG } from '../../config/breakpoints';
-import { FiEye, FiSearch } from 'react-icons/fi';
-import { RiEdit2Line, RiExternalLinkLine } from 'react-icons/ri';
+import {
+  HubResponse,
+  ZoneResponse,
+  StaffResponse,
+  StaffType,
+  SensorResponse,
+  deleteSensor,
+  SensorStatusEnum,
+  SensorTypeEnum,
+  removeSensorFromHub,
+} from '@lepark/data-access';
 import { MdDeleteOutline } from 'react-icons/md';
-import { ColumnsType } from 'antd/es/table';
-import { SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
-import { useFetchSensors } from '../../hooks/Sensors/useFetchSensors';
-import moment from 'moment';
-import PageHeader2 from '../../components/main/PageHeader2';
+import { useAuth } from '@lepark/common-ui';
+import { Button, Flex, Input, message, Modal, Tag, Tooltip, Table, Result } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { useMemo, useRef, useState } from 'react';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { ColumnsType } from 'antd/es/table';
+import { FiEye, FiSearch } from 'react-icons/fi';
+import { RiEdit2Line } from 'react-icons/ri';
+import { SCREEN_LG } from '../../../config/breakpoints';
+import ConfirmDeleteModal from '../../../components/modal/ConfirmDeleteModal';
+import { LuUnplug } from "react-icons/lu";
 
-const SensorManagementPage: React.FC = () => {
+interface SensorsTabProps {
+  hub: HubResponse;
+  zone: ZoneResponse;
+  sensors?: SensorResponse[];
+  fetchSensors: () => void; // callback function
+}
+
+const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const notificationShown = useRef(false);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const { sensors, loading, fetchSensors, triggerFetch } = useFetchSensors();
+  const [sensorToBeDeactivated, setSensorToBeDeactivated] = useState<SensorResponse | null>(null);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
+  const [updatedData, setUpdatedData] = useState<SensorResponse>();
+
+  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER
+
+  // Deactivate utility
+  const cancelDeactivate = () => {
+    setSensorToBeDeactivated(null);
+    setDeactivateModalOpen(false);
+  };
+
+  const showDeactivateModal = (sensor: SensorResponse) => {
+    setSensorToBeDeactivated(sensor);
+    setDeactivateModalOpen(true);
+  };
+
+  const handleDeactivateSensor = async () => {
+    try {
+      if (!sensorToBeDeactivated) {
+        throw new Error('Unable to deactivate Sensor a this time.');
+      }
+      const sensorRes = await removeSensorFromHub(sensorToBeDeactivated.id);
+      if (sensorRes.status === 200) {
+        setUpdatedData(sensorRes.data);
+        
+        setTimeout(() => {
+          setDeactivateModalOpen(false);
+          // triggerFetch();
+          fetchSensors();
+        }, 2000);
+      }
+      
+    } catch (error) {
+      console.log(error);
+      if (
+        error === 'Sensor is not assigned to any hub' ||
+        error === 'Sensor must be active to be removed from a hub' ||
+        error === 'Sensor not found'
+      ) {
+        messageApi.open({
+          type: 'error',
+          content: error,
+        });
+        setDeactivateModalOpen(false);
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: `Unable to deactivate Sensor at this time. Please try again later.`,
+        });
+        setDeactivateModalOpen(false);
+      }
+      
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -38,7 +108,6 @@ const SensorManagementPage: React.FC = () => {
 
       await deleteSensor(id);
       message.success('Sensor deleted successfully');
-      triggerFetch(); // Refresh the sensor list
     } catch (error) {
       console.error('Error deleting sensor:', error);
       message.error('Failed to delete sensor. Please try again.');
@@ -46,7 +115,7 @@ const SensorManagementPage: React.FC = () => {
   };
 
   const filteredSensors = useMemo(() => {
-    return sensors.filter((sensor) => {
+    return sensors?.filter((sensor) => {
       return Object.values(sensor).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()));
     });
   }, [sensors, searchQuery]);
@@ -73,7 +142,7 @@ const SensorManagementPage: React.FC = () => {
       width: '20%',
     },
     {
-      title: 'Storage Facility',
+      title: 'Facility',
       render: (text, record) => (
         <Flex justify="space-between" align="center">
           {record.facility?.name}
@@ -106,21 +175,13 @@ const SensorManagementPage: React.FC = () => {
       key: 'sensorStatus',
       filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
-      render: (status: string, record) => {
+      render: (status: string) => {
         switch (status) {
           case SensorStatusEnum.ACTIVE:
             return (
-              <>
-                <Tag color="green" bordered={false}>
-                  {formatEnumLabelToRemoveUnderscores(status)}
-                </Tag>
-                {record.hub?.name && (
-                  <div className="flex">
-                    <p className="opacity-50 mr-2">Hub:</p>
-                    {record.hub?.name}
-                  </div>
-                )}
-              </>
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(status)}
+              </Tag>
             );
           case SensorStatusEnum.INACTIVE:
             return (
@@ -150,14 +211,6 @@ const SensorManagementPage: React.FC = () => {
       },
       width: '15%',
     },
-    // {
-    //   title: 'Next Maintenance Date',
-    //   dataIndex: 'nextMaintenanceDate',
-    //   key: 'nextMaintenanceDate',
-    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
-    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
-    //   width: '15%',
-    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -166,14 +219,17 @@ const SensorManagementPage: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
           </Tooltip>
-            <>
-              <Tooltip title="Edit Sensor">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
-              </Tooltip>
-              <Tooltip title="Delete Sensor">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
-            </>
+          {canActivateEdit && <>
+            <Tooltip title="Edit Sensor">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
+            </Tooltip>
+            <Tooltip title="Delete Sensor">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+            </Tooltip>
+            <Tooltip title="Deactivate Sensor">
+              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeactivateModal(record)} />
+            </Tooltip>
+          </>}
         </Flex>
       ),
       width: '20%',
@@ -198,34 +254,6 @@ const SensorManagementPage: React.FC = () => {
       width: '20%',
     },
     {
-      title: 'Storage Facility',
-      render: (_, record) => (
-        record.sensorStatus === SensorStatusEnum.ACTIVE ? (
-          '-'
-        ) : (
-          <div>
-          <p className="font-semibold">{record.park?.name}</p>
-          <div className="flex">
-            <p className="opacity-50 mr-2">Facility:</p>
-            {record.facility?.name}
-          </div>
-        </div>
-        )
-        
-      ),
-      sorter: (a, b) => {
-        if (a.park?.name && b.park?.name) {
-          return a.park.name.localeCompare(b.park.name);
-        }
-        if (a.name && b.name) {
-          return a.name.localeCompare(b.name);
-        }
-        return (a.facilityId ?? '').localeCompare(b.facilityId ?? '');
-      },
-
-      width: '15%',
-    },
-    {
       title: 'Sensor Type',
       dataIndex: 'sensorType',
       key: 'sensorType',
@@ -240,21 +268,13 @@ const SensorManagementPage: React.FC = () => {
       key: 'sensorStatus',
       filters: Object.values(SensorStatusEnum).map((status) => ({ text: formatEnumLabelToRemoveUnderscores(status), value: status })),
       onFilter: (value, record) => record.sensorStatus === value,
-      render: (status: string, record) => {
+      render: (status: string) => {
         switch (status) {
           case SensorStatusEnum.ACTIVE:
             return (
-              <>
-                <Tag color="green" bordered={false}>
-                  {formatEnumLabelToRemoveUnderscores(status)}
-                </Tag>
-                {record.hub && (
-                  <p>
-                    <span className="opacity-50 mr-2">Hub:</span>
-                    {record.hub?.name}
-                  </p>
-                )}
-              </>
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(status)}
+              </Tag>
             );
           case SensorStatusEnum.INACTIVE:
             return (
@@ -284,14 +304,6 @@ const SensorManagementPage: React.FC = () => {
       },
       width: '15%',
     },
-    // {
-    //   title: 'Next Maintenance Date',
-    //   dataIndex: 'nextMaintenanceDate',
-    //   key: 'nextMaintenanceDate',
-    //   render: (date: string) => (date ? moment(date).format('D MMM YY') : '-'),
-    //   sorter: (a, b) => moment(a.nextMaintenanceDate || '').valueOf() - moment(b.nextMaintenanceDate || '').valueOf(),
-    //   width: '15%',
-    // },
     {
       title: 'Actions',
       key: 'actions',
@@ -308,6 +320,9 @@ const SensorManagementPage: React.FC = () => {
               <Tooltip title="Delete Sensor">
                 <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
               </Tooltip>
+              <Tooltip title="Deactivate Sensor">
+                <Button danger type="link" icon={<LuUnplug className="text-error" />} onClick={() => showDeactivateModal(record)} />
+              </Tooltip>
             </>
           )}
         </Flex>
@@ -316,43 +331,38 @@ const SensorManagementPage: React.FC = () => {
     },
   ];
 
-  const breadcrumbItems = [
-    {
-      title: 'Sensors Management',
-      pathKey: '/sensor',
-      isMain: true,
-      isCurrent: true,
-    },
-  ];
-
   return (
-    <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <Flex justify="end" gap={10}>
-        <Input
-          suffix={<FiSearch />}
-          placeholder="Search in Sensors..."
-          onChange={handleSearchBar}
-          className="mb-4 bg-white"
-          variant="filled"
-        />
+    <>
+      <ConfirmDeleteModal
+        title="Deactivation of Sensor"
+        okText="Confirm Deactivate"
+        onConfirm={handleDeactivateSensor}
+        open={deactivateModalOpen}
+        onCancel={cancelDeactivate}
 
-        <Button type="primary" onClick={() => navigate('create')}>
-          Create Sensor
-        </Button>
-      </Flex>
-      <Card>
-        <Table
-          columns={user?.role === StaffType.SUPERADMIN ? superAdminColumns : columns}
-          dataSource={filteredSensors}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: SCREEN_LG }}
-        />
-      </Card>
-    </ContentWrapperDark>
+        // For Success
+        description={updatedData ? undefined : "Deactivating a Sensor will disconnect it from its assigned Hub and remove it from the Zone."}
+        footer={updatedData && null}
+        closable={!updatedData}
+      >
+        {/* For Success */}
+        {updatedData && <Result
+          status="success"
+          title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Sensor'}
+          subTitle="Returning to Sensors Tab..."
+        />}
+      </ConfirmDeleteModal>
+      <Input suffix={<FiSearch />} placeholder="Search in Sensors..." onChange={handleSearchBar} className="mb-4" variant="filled" />
+      <Table
+        columns={user?.role === StaffType.SUPERADMIN ? superAdminColumns : columns}
+        dataSource={filteredSensors}
+        rowKey="id"
+        // loading={loading}
+        pagination={{ pageSize: 10 }}
+        scroll={{ x: SCREEN_LG }}
+      />
+    </>
   );
 };
 
-export default SensorManagementPage;
+export default SensorsTab;

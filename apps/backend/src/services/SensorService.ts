@@ -175,7 +175,7 @@ class SensorService {
     if (!hub) {
       throw new Error('Hub not found.');
     }
-    return SensorDao.getAllSensorsByFacilityId(hub.facilityId);
+    return SensorDao.getSensorsByHubId(hubId);
   }
 
   public async getSensorsByZoneId(zoneId: number): Promise<Sensor[]> {

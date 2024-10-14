@@ -1,34 +1,18 @@
 import { ContentWrapperDark, ImageInput, Logo, LogoText, useAuth } from '@lepark/common-ui';
-import {
-  Descriptions,
-  Card,
-  Button,
-  Input,
-  Tooltip,
-  Tag,
-  message,
-  Switch,
-  notification,
-  Spin,
-  Divider,
-  Space,
-  Empty,
-  Typography,
-  Image,
-} from 'antd';
+import { Descriptions, Card, Button, Input, Tag, message, Switch, Spin, Space, Empty, Typography, Image, Form, Flex } from 'antd';
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
-import { useEffect, useRef, useState } from 'react';
-import { ParkResponse, PromotionResponse, StaffResponse, StaffType, updatePromotionDetails } from '@lepark/data-access';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { PromotionResponse, StaffResponse, StaffType, updatePromotionDetails } from '@lepark/data-access';
+import { useParams, useSearchParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictPromotions } from '../../hooks/Promotions/useRestrictPromotions';
 import PromotionValueTag from '../Promotion/components/PromotionValueTag';
 import PromotionValidityTag from '../Promotion/components/PromotionValidityTag';
-import { FiInfo } from 'react-icons/fi';
+import { FiInfo, FiPlus } from 'react-icons/fi';
 import useUploadImages from '../../hooks/Images/useUploadImages';
+import { MdClose } from 'react-icons/md';
 
 const { TextArea } = Input;
-const { Title } = Typography;
 
 const PromotionDetails = () => {
   const { promotionId = '' } = useParams();
@@ -42,6 +26,8 @@ const PromotionDetails = () => {
   };
   const [inEditMode, setInEditMode] = useState(isArchived ? false : editableRbac() && searchParams.get('editMode') === 'true');
   const [editedPromotion, setEditedPromotion] = useState<Partial<PromotionResponse>>();
+
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (promotion?.images) {
@@ -65,23 +51,30 @@ const PromotionDetails = () => {
   };
 
   const handleCurrentImageClick = (index: number) => {
-    const newImages = currentImages.filter((_, i) => i !== index)
+    const newImages = currentImages.filter((_, i) => i !== index);
     setCurrentImages((prevImages) => newImages);
     setEditedPromotion((promotion) => ({ ...promotion, images: newImages }));
   };
 
   const onFinish = async (values: any) => {
     try {
+      form.validateFields();
+
       if (!promotion) {
         throw new Error('Promotion not found.');
       } else if (!(user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN)) {
         throw new Error('Not allowed to edit Promotion details.');
       }
 
+      const terms = form.getFieldValue('terms')
+
       const finalData = {
         ...values,
         images: currentImages,
       };
+      if (terms) {
+        finalData.terms = terms;
+      }
       setPreviewImages([]);
 
       const updateRes = await updatePromotionDetails(promotion.id, finalData, selectedFiles);
@@ -205,7 +198,7 @@ const PromotionDetails = () => {
       key: 'images',
       label: 'Cover Image',
       children: !inEditMode ? (
-        (promotion && promotion.images && promotion.images.length > 0 ? (
+        promotion && promotion.images && promotion.images.length > 0 ? (
           <Space size="large" wrap>
             {promotion.images.map((image, index) => (
               <Image key={index} height={150} src={image} className="rounded-md" />
@@ -215,7 +208,7 @@ const PromotionDetails = () => {
           <div className="h-32 flex items-center justify-center rounded-lg">
             <Empty description="No Images" imageStyle={{ height: '50px' }} />
           </div>
-        ))
+        )
       ) : (
         <>
           <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
@@ -240,6 +233,51 @@ const PromotionDetails = () => {
             ))}
           </div>
         </>
+      ),
+    },
+    {
+      key: 'terms',
+      label: 'Terms & Conditions',
+      children: !inEditMode ? (
+        promotion && promotion.terms && promotion.terms.length > 0 ? (
+          <ol className="list-decimal pl-5">
+            {promotion.terms.map((term, index) => (
+              <li key={index}>{term}</li>
+            ))}
+          </ol>
+        ) : (
+          <p className="text-secondary">No Terms & Conditions</p>
+        )
+      ) : (
+        <Form form={form} name="promotionTermsForm" initialValues={{ terms: promotion?.terms || [] }}>
+          <Form.List name="terms">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, fieldKey, ...restField }) => (
+                  <Flex gap={10} align="center">
+                    <Form.Item
+                      {...restField}
+                      name={[name]}
+                      fieldKey={fieldKey !== undefined ? fieldKey : key}
+                      rules={[
+                        { required: true, message: 'Enter a term or delete this field' },
+                      ]}
+                      className="w-full mb-2"
+                    >
+                      <Input placeholder="Enter a term" />
+                    </Form.Item>
+                    <MdClose onClick={() => remove(name)} />
+                  </Flex>
+                ))}
+                <Form.Item className="w-full mb-2">
+                  <Button type="dashed" onClick={() => add()} block icon={<FiPlus />}>
+                    Add Term
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
+        </Form>
       ),
     },
   ];
@@ -369,7 +407,6 @@ const PromotionDetails = () => {
                   <Button
                     type="primary"
                     onClick={() => onFinish(editedPromotion)}
-                    disabled={(editedPromotion === null || editedPromotion === undefined) && (selectedFiles?.length === 0)}
                   >
                     Save
                   </Button>
@@ -402,14 +439,14 @@ const PromotionDetails = () => {
           title={
             inEditMode ? (
               <div className="flex justify-between">
-                Terms
+                Rules
                 <p className="flex gap-2 mt-2 items-center text-sm text-secondary">
                   <FiInfo className="shrink-0" />
-                  Terms cannot be changed.
+                  Rules cannot be changed.
                 </p>{' '}
               </div>
             ) : (
-              'Terms'
+              'Rules'
             )
           }
           className={inEditMode ? 'opacity-60' : ''}

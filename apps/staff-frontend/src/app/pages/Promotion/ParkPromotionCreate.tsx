@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useEffect, useState } from 'react';
+import { FiPlus } from 'react-icons/fi';
+import { MdClose } from 'react-icons/md';
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
 
@@ -23,9 +25,15 @@ const ParkPromotionCreate = () => {
   const discountType = Form.useWatch('discountType', form);
   const isNParksWide = Form.useWatch('isNParksWide', form);
 
+  const maximumUsage = Form.useWatch('maximumUsage', form);
+  const minimumAmount = Form.useWatch('minimumAmount', form);
+  const isOneTime = Form.useWatch('isOneTime', form);
+
+  const terms = Form.useWatch('terms', form);
+
   useEffect(() => {
     if (discountType) {
-      form.setFieldsValue({ discountValuePercentage: 0.01, discountValueFixed: 0.01 });
+      form.setFieldsValue({ discountValuePercentage: 0.1, discountValueFixed: 0.1 });
     }
   }, [discountType]);
 
@@ -67,7 +75,7 @@ const ParkPromotionCreate = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const { dateRange, discountValueFixed, discountValuePercentage, ...rest } = values;
+      const { dateRange, discountValueFixed, discountValuePercentage, terms, ...rest } = values;
       const validFrom = dateRange[0].toISOString();
       const validUntil = dateRange[1].toISOString();
       let discountValue;
@@ -77,14 +85,24 @@ const ParkPromotionCreate = () => {
         discountValue = discountValueFixed;
       }
 
+      let inputTerms = [];
+      if (terms) {
+        inputTerms = terms.filter((t: any) => t !== null && t !== undefined && typeof t === 'string' && t.trim().length > 0);
+      }
+
       const finalData = {
         ...rest,
         status: 'ENABLED',
-        terms: [],
+        terms: inputTerms,
         discountValue,
         validFrom,
         validUntil,
       };
+
+      if (user?.role !== StaffType.SUPERADMIN) {
+        finalData.parkId = user?.parkId;
+        finalData.isNParksWide = false;
+      }
 
       const response = await createPromotion(finalData, selectedFiles);
       if (response?.status && response.status === 201) {
@@ -186,7 +204,7 @@ const ParkPromotionCreate = () => {
                 label="Discount Percentage (%)"
                 rules={[{ required: true, message: 'Please enter a Percentage' }]}
               >
-                <InputNumber min={0.01} max={100} precision={2} defaultValue={0.01} />
+                <InputNumber min={0.1} max={100} precision={2} defaultValue={0.1} />
               </Form.Item>
             )}
 
@@ -196,22 +214,134 @@ const ParkPromotionCreate = () => {
                 label="Discount Amount ($)"
                 rules={[{ required: true, message: 'Please enter an Amount' }]}
               >
-                <InputNumber min={0.01} max={500} precision={2} defaultValue={0.01} />
+                <InputNumber min={0.1} max={500} precision={2} defaultValue={0.1} />
               </Form.Item>
             )}
 
             <Divider orientation="left">Redemption Rules</Divider>
-            <Form.Item name="maximumUsage" label="Maximum Redemptions">
-              <InputNumber min={0} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
-            </Form.Item>
-            <Form.Item name="isOneTime" label="One-Time Claim?" rules={[{ required: true }]}>
-              <Radio.Group options={isOneTimeOptioons}/>
-            </Form.Item>
-
-            <Form.Item name="minimumAmount" label="Minimum Amount">
-              <InputNumber min={0} precision={0} placeholder="Leave empty if no minimum amount" className="w-full" />
+            <Form.Item
+              name="isOneTime"
+              label="Restrict to One-Time Claim?"
+              rules={[{ required: true, message: "Please indicate if it's a One-Time Claim" }]}
+            >
+              <Radio.Group options={isOneTimeOptioons} optionType="button" />
             </Form.Item>
 
+            <Form.Item name="maximumUsage" label="Total Redemption Limit">
+              <InputNumber min={1} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
+            </Form.Item>
+
+            <Form.Item name="minimumAmount" label="Minimum Amount (SGD)">
+              <InputNumber min={0.1} precision={2} placeholder="Leave empty if no minimum amount" className="w-full" />
+            </Form.Item>
+
+            <Divider orientation="left">Terms and Conditions</Divider>
+            <Form.Item label={'Terms & Conditions'}>
+              <Form.List name="terms">
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map(({ key, name, fieldKey, ...restField }) => (
+                      <Form.Item colon={false} className="mb-2">
+                        <Flex gap={10}>
+                          <Form.Item
+                            {...restField}
+                            key={key}
+                            name={[name]}
+                            noStyle
+                            fieldKey={fieldKey !== undefined ? fieldKey : key}
+                            className="w-full mb-2"
+                            rules={[
+                              { required: true, message: 'Enter a term or delete this field' },
+                              {
+                                validator: (_, value) => {
+                                  if (value && value.trim().length === 0) {
+                                    return Promise.reject('Enter a term or delete this field');
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter a term" />
+                          </Form.Item>
+                          <Button onClick={() => remove(name)} icon={<MdClose />} shape="circle" />
+                        </Flex>
+                      </Form.Item>
+                    ))}
+
+                    <Form.Item colon={false} className="mb-2">
+                      <Button type="dashed" onClick={() => add()} block icon={<FiPlus />}>
+                        Add
+                      </Button>
+                    </Form.Item>
+
+                    {maximumUsage !== undefined && typeof maximumUsage === "number" && (
+                      <Form.Item colon={false} className="p-0 mb-2">
+                        <Button
+                          type="dashed"
+                          onClick={() => add(`This offer is limited to the first ${maximumUsage} users`)}
+                          block
+                          className="text-green-400 text-wrap"
+                          style={{
+                            display: 'block',
+                            textAlign: 'left',
+                            height: 'auto',
+                            lineHeight: 'normal',
+                          }}
+                        >
+                          <p>
+                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer is limited to the first{' '}
+                            {maximumUsage} users.
+                          </p>
+                        </Button>
+                      </Form.Item>
+                    )}
+                    {minimumAmount !== undefined && typeof minimumAmount === "number" && (
+                      <Form.Item colon={false} className="p-0 mb-2">
+                        <Button
+                          type="dashed"
+                          onClick={() => add(`A minimum purchase of SGD $${minimumAmount} is required.`)}
+                          block
+                          className="text-green-400 text-wrap"
+                          style={{
+                            display: 'block',
+                            textAlign: 'left',
+                            height: 'auto',
+                            lineHeight: 'normal',
+                          }}
+                        >
+                          <p>
+                            <span className="text-secondary italic text-green-600">Suggested: </span> A minimum purchase of SGD $
+                            {minimumAmount} is required.
+                          </p>
+                        </Button>
+                      </Form.Item>
+                    )}
+                    {isOneTime && (
+                      <Form.Item colon={false} className="p-0">
+                        <Button
+                          type="dashed"
+                          onClick={() => add('This offer is restricted to one claim per user.')}
+                          block
+                          className="text-green-400 text-wrap"
+                          style={{
+                            display: 'block',
+                            textAlign: 'left',
+                            height: 'auto',
+                            lineHeight: 'normal',
+                          }}
+                        >
+                          <p>
+                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer is restricted to one claim
+                            per user.
+                          </p>
+                        </Button>
+                      </Form.Item>
+                    )}
+                  </>
+                )}
+              </Form.List>
+            </Form.Item>
             <Form.Item label={' '} colon={false}>
               <Button type="primary" className="w-full" onClick={handleSubmit}>
                 Submit

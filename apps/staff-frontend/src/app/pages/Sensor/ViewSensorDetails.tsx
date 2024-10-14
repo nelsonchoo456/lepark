@@ -10,10 +10,11 @@ import {
   getFacilityById,
   getParkById,
   getSensorById,
+  removeSensorFromHub,
 } from '@lepark/data-access';
 import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty, Button } from 'antd';
+import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty, Button, message, Modal, Result, Tooltip } from 'antd';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
@@ -22,6 +23,9 @@ import { useFetchZones } from '../../hooks/Zones/useFetchZones';
 import LocationTab from './components/LocationTab';
 import { MdOutlineHub } from 'react-icons/md';
 import ZoneTab from './components/ZoneTab';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
+import { LuUnplug } from 'react-icons/lu';
+import { RiExternalLinkLine } from 'react-icons/ri';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -32,12 +36,60 @@ const formatSensorType = (type: string): string => {
 
 const ViewSensorDetails = () => {
   const { sensorId } = useParams<{ sensorId: string }>();
-  const { sensor, loading } = useRestrictSensors(sensorId);
+  const { sensor, loading, triggerFetch } = useRestrictSensors(sensorId);
   const { user } = useAuth<StaffResponse>();
   const { zones } = useFetchZones();
   const navigate = useNavigate();
+  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [updatedData, setUpdatedData] = useState<SensorResponse>();
 
-  console.log(sensor)
+  const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
+
+  // Deactivate utility
+  const cancelDeactivate = () => {
+    setDeactivateModalOpen(false);
+  };
+
+  const showDeactivateModal = () => {
+    setDeactivateModalOpen(true);
+  };
+
+  const handleDeactivateSensor = async () => {
+    try {
+      if (!sensor) {
+        throw new Error('Unable to deactivate Sensor a this time.');
+      }
+      const sensorRes = await removeSensorFromHub(sensor.id);
+      if (sensorRes.status === 200) {
+        setUpdatedData(sensorRes.data);
+
+        setTimeout(() => {
+          setDeactivateModalOpen(false);
+          triggerFetch();
+        }, 2000);
+      }
+    } catch (error) {
+      console.log(error);
+      if (
+        error === 'Sensor is not assigned to any hub' ||
+        error === 'Sensor must be active to be removed from a hub' ||
+        error === 'Sensor not found'
+      ) {
+        messageApi.open({
+          type: 'error',
+          content: error,
+        });
+        setDeactivateModalOpen(false);
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: `Unable to deactivate Sensor at this time. Please try again later.`,
+        });
+        setDeactivateModalOpen(false);
+      }
+    }
+  };
 
   const breadcrumbItems = [
     {
@@ -65,9 +117,16 @@ const ViewSensorDetails = () => {
         switch (sensor?.sensorStatus) {
           case 'ACTIVE':
             return (
-              <Tag color="green" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
-              </Tag>
+              <div className="flex w-full items-start justify-between">
+                <Tag color="green" bordered={false}>
+                  {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
+                </Tag>
+                {canActivateEdit && (
+                  <Button type="primary" onClick={() => showDeactivateModal()} className="-mt-1" danger icon={<LuUnplug />}>
+                    Deactivate
+                  </Button>
+                )}
+              </div>
             );
           case 'INACTIVE':
             return (
@@ -112,7 +171,19 @@ const ViewSensorDetails = () => {
           {
             key: 'hub',
             label: 'Hub',
-            children: sensor?.hub?.name,
+            children: (
+              <p>
+                {sensor.hub?.name}
+                <Tooltip title="View Hub Details">
+                  <Button
+                    icon={<RiExternalLinkLine />}
+                    type="link"
+                    className="inline -mt-2"
+                    onClick={() => navigate(`/hubs/${sensor.hub?.id}`)}
+                  />
+                </Tooltip>
+              </p>
+            ),
           },
         ]
       : [
@@ -122,7 +193,7 @@ const ViewSensorDetails = () => {
             children: (
               <div className="flex w-full items-start justify-between">
                 {sensor?.facility?.name}{' '}
-                {sensor?.sensorStatus === 'INACTIVE' && (
+                {canActivateEdit && sensor?.sensorStatus === 'INACTIVE' && (
                   <Button
                     type="primary"
                     icon={<MdOutlineHub />}
@@ -144,18 +215,11 @@ const ViewSensorDetails = () => {
       label: 'Information',
       children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
-    // sensor && sensor.facility
-    //   ? {
-    //       key: 'location',
-    //       label: 'Storeroom Location',
-    //       children: <LocationTab facility={sensor.facility} park={sensor.park} zones={zones} />,
-    //     }
-    //   : null,
     ...(sensor?.hub && sensor.lat && sensor.long
       ? [
           {
             key: 'zone',
-            label: 'Zone',
+            label: 'Zone & Hub',
             children: <ZoneTab hub={sensor.hub} sensor={sensor} lat={sensor.lat} lng={sensor.long} park={sensor.park} zones={zones} />,
           },
         ]
@@ -181,6 +245,29 @@ const ViewSensorDetails = () => {
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      {contextHolder}
+      <ConfirmDeleteModal
+        title="Deactivation of Sensor"
+        okText="Confirm Deactivate"
+        onConfirm={handleDeactivateSensor}
+        open={deactivateModalOpen}
+        onCancel={cancelDeactivate}
+        // For Success
+        description={
+          updatedData ? undefined : 'Deactivating a Sensor will disconnect it from its assigned Hub and remove it from the Zone.'
+        }
+        footer={updatedData && null}
+        closable={!updatedData}
+      >
+        {/* For Success */}
+        {updatedData && (
+          <Result
+            status="success"
+            title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Sensor'}
+            subTitle="Returning to Sensor Details Page..."
+          />
+        )}
+      </ConfirmDeleteModal>
       <Card>
         <div className="md:flex w-full gap-4">
           <div className="h-64 flex-1 max-w-full overflow-hidden rounded-lg shadow-lg">

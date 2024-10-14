@@ -5,25 +5,49 @@ import { PiWarningCircleFill } from 'react-icons/pi';
 interface ConfirmDeleteModalProps {
   open: boolean;
   confirmLoading?: boolean;
+  okText?: string;
   title?: string;
-  description?: string;
+  description?: string | JSX.Element;
   onConfirm: () => void;
   onCancel: () => void;
+  children?: string | JSX.Element;
+
+  [key: string]: any;
 }
 
-const ConfirmDeleteModal = ({ open, confirmLoading, title, description, onConfirm, onCancel }: ConfirmDeleteModalProps) => {
-
+const ConfirmDeleteModal = ({
+  open,
+  confirmLoading,
+  title,
+  description,
+  onConfirm,
+  onCancel,
+  okText,
+  children,
+  ...otherFields
+}: ConfirmDeleteModalProps) => {
   return (
     <Modal
-      title={title ? title : <Flex gap={8}><PiWarningCircleFill className='text-mustard-400 text-2xl'/>Confirm Deletion?</Flex>}
+      title={
+        title ? (
+          title
+        ) : (
+          <Flex gap={8}>
+            <PiWarningCircleFill className="text-mustard-400 text-2xl" />
+            Confirm Deletion?
+          </Flex>
+        )
+      }
       open={open}
       onOk={onConfirm}
-      okText="Confirm Delete"
+      okText={okText ? okText : 'Confirm Delete'}
       okButtonProps={{ danger: true }}
       confirmLoading={confirmLoading}
       onCancel={onCancel}
+      {...otherFields}
     >
-      <p>{description}</p>
+      <div>{description}</div>
+      {children}
     </Modal>
   );
 };

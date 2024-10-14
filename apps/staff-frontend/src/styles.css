@@ -20,6 +20,9 @@ a {
   .text-warning {
     @apply text-orange-500
   }
+  .text-success {
+    @apply text-green-500
+  }
   .text-secondary {
     @apply opacity-50
   }
