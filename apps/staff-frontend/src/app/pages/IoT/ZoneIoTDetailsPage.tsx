@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Progress, Space, List, Tooltip, Button } from 'antd';
+import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Progress, Space, List, Tooltip, Button, Select } from 'antd';
 import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink } from 'react-icons/fi';
 import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined } from '@ant-design/icons';
 import {
@@ -17,9 +17,22 @@ import {
   getZoneTrendForSensorType,
   getUnhealthyOccurrences,
   SensorReadingResponse,
+  getSensorReadingsByDateRange,
+  getHourlyAverageSensorReadingsByDateRange,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title as ChartTitle, Tooltip as ChartTooltip, Legend } from 'chart.js';
+import { DatePicker } from 'antd';
+import { RangePickerProps } from 'antd/es/date-picker';
+import dayjs from 'dayjs';
+
+const { RangePicker } = DatePicker;
+const { Option } = Select;
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, ChartTooltip, Legend);
 
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
@@ -266,6 +279,13 @@ const ZoneIoTDetailsPage: React.FC = () => {
 
 const SensorDetails: React.FC<{ sensor: SensorResponse }> = ({ sensor }) => {
   const [latestReading, setLatestReading] = useState<SensorReadingResponse | null>(null);
+  const [readings, setReadings] = useState<SensorReadingResponse[]>([]);
+  const [hourlyAverages, setHourlyAverages] = useState<{ date: Date; average: number }[]>([]);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().subtract(1, 'days'),
+    dayjs(),
+  ]);
+  const [displayMode, setDisplayMode] = useState<'individual' | 'hourly'>('individual');
 
   useEffect(() => {
     const fetchLatestReading = async () => {
@@ -277,8 +297,112 @@ const SensorDetails: React.FC<{ sensor: SensorResponse }> = ({ sensor }) => {
       }
     };
 
+    const fetchReadings = async () => {
+      try {
+        const response = await getSensorReadingsByDateRange(
+          sensor.id,
+          dateRange[0].toDate(),
+          dateRange[1].toDate()
+        );
+        setReadings(response.data);
+      } catch (error) {
+        console.error('Error fetching sensor readings:', error);
+      }
+    };
+
+    const fetchHourlyAverages = async () => {
+      try {
+        const response = await getHourlyAverageSensorReadingsByDateRange(
+          sensor.id,
+          dateRange[0].toDate(),
+          dateRange[1].toDate()
+        );
+        setHourlyAverages(response.data);
+      } catch (error) {
+        console.error('Error fetching hourly average sensor readings:', error);
+      }
+    };
+
     fetchLatestReading();
-  }, [sensor.id]);
+    fetchReadings();
+    fetchHourlyAverages();
+  }, [sensor.id, dateRange]);
+
+  const handleDateRangeChange: RangePickerProps['onChange'] = (dates) => {
+    if (dates) {
+      setDateRange([dates[0] as dayjs.Dayjs, dates[1] as dayjs.Dayjs]);
+    }
+  };
+
+  const handleDisplayModeChange = (value: 'individual' | 'hourly') => {
+    setDisplayMode(value);
+  };
+
+  const sortedReadings = [...readings].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sortedHourlyAverages = [...hourlyAverages].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const chartData = {
+    labels: displayMode === 'individual'
+      ? sortedReadings.map(reading => dayjs(reading.date).format('YYYY-MM-DD HH:mm'))
+      : sortedHourlyAverages.map(reading => dayjs(reading.date).format('YYYY-MM-DD HH:mm')),
+    datasets: [
+      {
+        label: formatEnumLabelToRemoveUnderscores(sensor.sensorType),
+        data: displayMode === 'individual'
+          ? sortedReadings.map(reading => reading.value)
+          : sortedHourlyAverages.map(reading => reading.average),
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: `${formatEnumLabelToRemoveUnderscores(sensor.sensorType)} Readings`,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += displayMode === 'individual'
+                ? context.parsed.y.toFixed(2)
+                : context.parsed.y;
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: getSensorUnit(sensor.sensorType),
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Date',
+        },
+        ticks: {
+          maxTicksLimit: 10,
+        },
+      },
+    },
+  };
 
   return (
     <Row gutter={[16, 16]}>
@@ -291,11 +415,28 @@ const SensorDetails: React.FC<{ sensor: SensorResponse }> = ({ sensor }) => {
       <Col span={24}>
         <Space direction="vertical">
           <Statistic
-            title={`Last reported: ${latestReading?.date ? new Date(latestReading.date).toLocaleString() : 'N/A'}`}
+            title={`Last reported: ${latestReading?.date ? dayjs(latestReading.date).format('YYYY-MM-DD HH:mm:ss') : 'N/A'}`}
             value={latestReading !== null ? latestReading.value.toFixed(2) : 'N/A'}
             suffix={getSensorUnit(sensor.sensorType)}
           />
         </Space>
+      </Col>
+      <Col span={24}>
+        <Row justify="end" style={{ marginBottom: 16 }}>
+          <Col>
+            <Space>
+              <RangePicker
+                value={dateRange}
+                onChange={handleDateRangeChange}
+              />
+              <Select defaultValue="individual" style={{ width: 160 }} onChange={handleDisplayModeChange}>
+                <Option value="individual">Individual</Option>
+                <Option value="hourly">Hourly Average</Option>
+              </Select>
+            </Space>
+          </Col>
+        </Row>
+        <Line height={120} data={chartData} options={chartOptions} />
       </Col>
     </Row>
   );

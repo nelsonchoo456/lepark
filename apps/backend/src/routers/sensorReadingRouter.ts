@@ -102,6 +102,20 @@ router.get('/getSensorReadingTrendWithSlope/:sensorId/:hours', async (req, res) 
   }
 });
 
+router.get('/getHourlyAverageSensorReadingsByDateRange/:sensorId', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const hourlyAverages = await SensorReadingService.getHourlyAverageSensorReadingsByDateRange(
+      req.params.sensorId,
+      new Date(startDate as string),
+      new Date(endDate as string),
+    );
+    res.status(200).json(hourlyAverages);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Hub-specific routes
 router.get('/getAllSensorReadingsByHubIdAndSensorType/:hubId/:sensorType', async (req, res) => {
   try {

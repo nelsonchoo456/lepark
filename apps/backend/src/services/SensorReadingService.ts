@@ -78,7 +78,11 @@ class SensorReadingService {
   }
 
   public async getSensorReadingsByDateRange(sensorId: string, startDate: Date, endDate: Date): Promise<SensorReading[]> {
-    return SensorReadingDao.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+    // Adjust the end date to include the entire day
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    return SensorReadingDao.getSensorReadingsByDateRange(sensorId, startDate, adjustedEndDate);
   }
 
   public async getLatestSensorReadingBySensorId(sensorId: string): Promise<SensorReading | null> {
@@ -122,6 +126,32 @@ class SensorReadingService {
     } else {
       return 'Fluctuating trend: Mixed slope and changes detected.';
     }
+  }
+
+  public async getHourlyAverageSensorReadingsByDateRange(
+    sensorId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ date: string; average: number }[]> {
+    const readings = await this.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+
+    const hourlyAverages = new Map<string, { sum: number; count: number }>();
+
+    readings.forEach((reading) => {
+      const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z'; // Group by year, month, day, hour
+      const current = hourlyAverages.get(hourKey) || { sum: 0, count: 0 };
+      hourlyAverages.set(hourKey, {
+        sum: current.sum + reading.value,
+        count: current.count + 1,
+      });
+    });
+
+    return Array.from(hourlyAverages.entries())
+      .map(([hourKey, { sum, count }]) => ({
+        date: hourKey,
+        average: Number((sum / count).toFixed(2)), // Round to 2 decimal places
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
   // Hub
@@ -326,7 +356,9 @@ class SensorReadingService {
   }
 
   // Get unhealthy occurrences that exceed their ideal conditions (based on nearest sensor whenever available)
-  public async getUnhealthyOccurrences(zoneId: number): Promise<{ occurrenceId: string; occurrenceName: string; speciesName: string; issues: string[] }[]> {
+  public async getUnhealthyOccurrences(
+    zoneId: number,
+  ): Promise<{ occurrenceId: string; occurrenceName: string; speciesName: string; issues: string[] }[]> {
     const occurrences: OccurrenceWithDetails[] = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
     const unhealthyOccurrences = [];
 
@@ -339,10 +371,10 @@ class SensorReadingService {
 
       for (const sensorType of sensorTypes) {
         const latestReading = await this.getLatestSensorReadingForOccurrence(zoneId, sensorType, occurrence.id);
-        
+
         if (latestReading && this.isReadingRecent(latestReading)) {
           hasRecentReading = true;
-          
+
           switch (sensorType) {
             case SensorTypeEnum.TEMPERATURE:
               if (latestReading.value < speciesConditions.minTemp || latestReading.value > speciesConditions.maxTemp) {
@@ -420,7 +452,7 @@ class SensorReadingService {
   public async getLatestSensorReadingForOccurrence(
     zoneId: number,
     sensorType: SensorTypeEnum,
-    occurrenceId: string
+    occurrenceId: string,
   ): Promise<SensorReading | null> {
     try {
       // Get the occurrence details
@@ -436,15 +468,13 @@ class SensorReadingService {
       }
 
       // Calculate distances and find the nearest sensor
-      const nearestSensor = sensors.reduce((nearest, sensor) => {
-        const distance = this.calculateDistance(
-          occurrence.lat,
-          occurrence.lng,
-          sensor.lat,
-          sensor.long
-        );
-        return distance < nearest.distance ? { sensor, distance } : nearest;
-      }, { sensor: sensors[0], distance: Infinity }).sensor;
+      const nearestSensor = sensors.reduce(
+        (nearest, sensor) => {
+          const distance = this.calculateDistance(occurrence.lat, occurrence.lng, sensor.lat, sensor.long);
+          return distance < nearest.distance ? { sensor, distance } : nearest;
+        },
+        { sensor: sensors[0], distance: Infinity },
+      ).sensor;
 
       // Get the latest reading for the nearest sensor
       return SensorReadingDao.getLatestSensorReadingBySensorId(nearestSensor.id);
@@ -461,8 +491,7 @@ class SensorReadingService {
     const dLon = this.deg2rad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in km
   }
