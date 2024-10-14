@@ -146,7 +146,11 @@ const TicketsTab: React.FC<TicketsTabProps> = ({ attraction, onTicketListingCrea
       try {
         // Make the existing listing inactive
         await updateAttractionTicketListingDetails(existingListing.id, {
-          ...existingListing,
+          category: existingListing.category,
+          nationality: existingListing.nationality,
+          description: existingListing.description,
+          price: existingListing.price,
+          attractionId: existingListing.attractionId,
           isActive: false,
         });
 

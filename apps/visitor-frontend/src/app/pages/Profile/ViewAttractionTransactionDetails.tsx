@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Card, Typography, Image, Space, Tag, Spin, Button } from 'antd';
+import { Card, Typography, Image, Space, Tag, Spin, Button, message } from 'antd';
 import {
   AttractionTicketCategoryEnum,
   AttractionTicketNationalityEnum,
@@ -10,6 +10,9 @@ import {
   getAttractionTicketTransactionById,
   getParkById,
   ParkResponse,
+  sendAttractionTicketEmail,
+  sendRequestedAttractionTicketEmail,
+  viewVisitorDetails,
 } from '@lepark/data-access';
 import { ContentWrapper, LogoText } from '@lepark/common-ui';
 import dayjs from 'dayjs';
@@ -24,6 +27,7 @@ const AttractionTransactionDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [tickets, setTickets] = useState<AttractionTicketResponse[]>([]);
   const [park, setPark] = useState<ParkResponse | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
   const groupTickets = (tickets: AttractionTicketResponse[]) => {
@@ -75,6 +79,26 @@ const AttractionTransactionDetails: React.FC = () => {
   const handleViewAttractionDetails = () => {
     if (transaction?.attractionId) {
       navigate(`/attractions/${transaction.attractionId}`);
+    }
+  };
+
+  const handleRequestPDFEmail = async () => {
+    if (transaction && !emailSent) {
+      try {
+        const visitor = await viewVisitorDetails(transaction.visitorId);
+
+        const emailTicketsData = {
+          transactionId: transaction.id,
+          recipientEmail: visitor.data.email,
+        };
+
+        await sendRequestedAttractionTicketEmail(emailTicketsData);
+        message.success('PDF of tickets have been sent to your email');
+        setEmailSent(true);
+      } catch (error) {
+        console.error('Error requesting PDF email:', error);
+        message.error('Error sending PDF to email');
+      }
     }
   };
 
@@ -130,9 +154,16 @@ const AttractionTransactionDetails: React.FC = () => {
           <div className="bg-gray-100 p-4 rounded-lg">
             <Text className="block mb-2">Total paid: ${transaction?.totalAmount.toFixed(2)}</Text>
             <Text className="block mb-2">Purchase date: {dayjs(transaction?.purchaseDate).format('MMMM D, YYYY')}</Text>
-            <Text type="secondary" className="block">
+            <Text type="secondary" className="block mb-2">
               Transaction ID: {transaction?.id}
             </Text>
+            {!emailSent ? (
+              <Button onClick={handleRequestPDFEmail}>Request PDF</Button>
+            ) : (
+              <Button disabled>
+                PDF sent
+              </Button>
+            )}
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
             <Text className="block mb-2">Cancellation policy</Text>

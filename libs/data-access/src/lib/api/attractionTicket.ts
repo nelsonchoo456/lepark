@@ -242,3 +242,16 @@ export async function sendAttractionTicketEmail(data: SendAttractionTicketEmailD
     }
   }
 }
+
+export async function sendRequestedAttractionTicketEmail(data: SendAttractionTicketEmailData): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.post(`${URL}/sendRequestedAttractionTicketEmail`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

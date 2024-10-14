@@ -213,7 +213,20 @@ router.post('/sendAttractionTicketEmail', async (req, res) => {
   }
 });
 
-export default router;
+router.post('/sendRequestedAttractionTicketEmail', async (req, res) => {
+  try {
+    const { transactionId, recipientEmail } = req.body;
+
+    if (!transactionId || !recipientEmail) {
+      return res.status(400).json({ error: 'Transaction ID and recipient email are required' });
+    }
+
+    await AttractionTicketService.sendRequestedAttractionTicketEmail(transactionId, recipientEmail);
+    res.status(200).json({ message: 'Attraction ticket email sent successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.get('/getAttractionTicketsByAttractionId/:attractionId', async (req, res) => {
   try {
@@ -223,3 +236,5 @@ router.get('/getAttractionTicketsByAttractionId/:attractionId', async (req, res)
     res.status(400).json({ error: error.message });
   }
 });
+
+export default router;

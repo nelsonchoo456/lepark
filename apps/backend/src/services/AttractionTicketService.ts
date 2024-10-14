@@ -272,6 +272,19 @@ class AttractionTicketService {
       throw new Error(`Failed to send attraction ticket email: ${error.message}`);
     }
   }
+
+  public async sendRequestedAttractionTicketEmail(transactionId: string, recipientEmail: string): Promise<void> {
+    try {
+      const transaction = await AttractionTicketDao.getAttractionTicketTransactionById(transactionId);
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+
+      await EmailUtil.sendRequestedAttractionTicketEmail(recipientEmail, transaction);
+    } catch (error) {
+      throw new Error(`Failed to send requested attraction ticket email: ${error.message}`);
+    }
+  }
 }
 
 function ensureAllFieldsPresent(data: AttractionTicketTransactionSchemaType): Prisma.AttractionTicketTransactionCreateInput {
