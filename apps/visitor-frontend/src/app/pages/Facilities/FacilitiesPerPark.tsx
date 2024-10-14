@@ -1,14 +1,29 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePark } from '../../park-context/ParkContext';
-import { getFacilitiesByParkId, FacilityResponse } from '@lepark/data-access';
-import { Card, Tag, Input, Select } from 'antd';
+import { getFacilitiesByParkId, FacilityResponse, FacilityTypeEnum, FacilityStatusEnum } from '@lepark/data-access';
+import { Card, Tag, Input, TreeSelect } from 'antd';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import dayjs from 'dayjs';
 
-const { Option } = Select;
+const { SHOW_PARENT } = TreeSelect;
+
+const formatEnumLabel = (label: string) => {
+  const specialCases = {
+    BBQ_PIT: 'BBQ Pit',
+    AED: 'AED',
+  };
+  if (specialCases[label]) {
+    return specialCases[label];
+  }
+  return label
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 const FacilitiesPerPark: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +31,7 @@ const FacilitiesPerPark: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -45,18 +60,75 @@ const FacilitiesPerPark: React.FC = () => {
     setSearchQuery(value);
   };
 
-  const handleStatusChange = (value: string) => {
-    setSelectedStatus(value);
+  const handleFilterChange = (value: string[]) => {
+    setSelectedFilters(value);
   };
+
+  const treeData = useMemo(() => {
+    return [
+      {
+        title: 'Status',
+        value: 'status',
+        key: 'status',
+        selectable: false,
+        children: [
+          { title: 'Open', value: 'status-OPEN', key: 'status-OPEN' },
+          { title: 'Closed', value: 'status-CLOSED', key: 'status-CLOSED' },
+          { title: 'Under Maintenance', value: 'status-UNDER_MAINTENANCE', key: 'status-UNDER_MAINTENANCE' },
+        ],
+      },
+      {
+        title: 'Type',
+        value: 'type',
+        key: 'type',
+        selectable: false,
+        children: Object.values(FacilityTypeEnum).map((type) => ({
+          title: formatEnumLabel(type),
+          value: `type-${type}`,
+          key: `type-${type}`,
+        })),
+      },
+    ];
+  }, []);
 
   const filteredFacilities = useMemo(() => {
     if (loading) return [];
     return facilities.filter((facility) => {
       const matchesSearchQuery = facility.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = selectedStatus ? facility.facilityStatus === selectedStatus : true;
-      return matchesSearchQuery && matchesStatus;
+      const matchesFilters = selectedFilters.every((filter) => {
+        const [category, value] = filter.split('-');
+        if (category === 'status') return facility.facilityStatus === value;
+        if (category === 'type') return facility.facilityType === value;
+        return true;
+      });
+      return matchesSearchQuery && matchesFilters;
     });
-  }, [facilities, searchQuery, selectedStatus, loading]);
+  }, [facilities, searchQuery, selectedFilters, loading]);
+
+  const renderFacilityStatus = (status: FacilityStatusEnum) => {
+    switch (status) {
+      case FacilityStatusEnum.OPEN:
+        return (
+          <Tag color="green" bordered={false}>
+            {formatEnumLabel(status)}
+          </Tag>
+        );
+      case FacilityStatusEnum.UNDER_MAINTENANCE:
+        return (
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabel(status)}
+          </Tag>
+        );
+      case FacilityStatusEnum.CLOSED:
+        return (
+          <Tag color="red" bordered={false}>
+            {formatEnumLabel(status)}
+          </Tag>
+        );
+      default:
+        return <Tag>{status}</Tag>;
+    }
+  };
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
@@ -78,21 +150,18 @@ const FacilitiesPerPark: React.FC = () => {
           onChange={(e) => handleSearch(e.target.value)}
           className="w-full mb-2 md:flex-[3] "
         />
-        {selectedStatus && <div className="text-sm text-white/50 mb-1 ml-1 md:text-white/75"></div>}
-        <Select
-          placeholder={<div className="md:text-white/75 text-green-700">{`Filter by Status`}</div>}
-          value={selectedStatus}
-          onChange={handleStatusChange}
+        <TreeSelect
+          treeData={treeData}
+          value={selectedFilters}
+          onChange={handleFilterChange}
+          treeCheckable={true}
+          showCheckedStrategy={SHOW_PARENT}
+          placeholder={<div className="md:text-white/75 text-green-700">{`Filter by Status, Type`}</div>}
           className="w-full cursor-pointer md:flex-1 md:min-w-[260px] mb-2"
           variant="borderless"
           suffixIcon={<IoIosArrowDown className="md:text-gray-400 text-green-700 text-lg cursor-pointer" />}
-        >
-          <Option value={null}>All</Option>
-          <Option value="OPEN">Open</Option>
-          <Option value="CLOSED">Closed</Option>
-          <Option value="UNDER_MAINTENANCE">Under Maintenance</Option>
-        </Select>
-        {selectedStatus && <div className="h-[1px] w-full bg-black/5" />}
+        />
+        {selectedFilters.length > 0 && <div className="h-[1px] w-full bg-black/5" />}
       </div>
 
       {!filteredFacilities || filteredFacilities.length === 0 ? (
@@ -125,7 +194,8 @@ const FacilitiesPerPark: React.FC = () => {
                 </div>
                 <div className="h-full flex-1">
                   <div className="text-lg font-semibold text-green-700">{facility.name}</div>
-                  <div className="-mt-[2px] text-green-700/80 italic">{facility.facilityStatus}</div>
+                  <div className="-mt-[2px] text-green-700/80">{renderFacilityStatus(facility.facilityStatus)}</div>
+                  <div className="text-sm text-gray-500">Type: {formatEnumLabel(facility.facilityType)}</div>
                 </div>
                 <div className="h-full flex-1 hidden lg:block">
                   <div className="text-sm text-gray-500">{facility.description}</div>

@@ -35,6 +35,7 @@ const FacilityInformationTab = ({ facility }: { facility: FacilityResponse }) =>
     'name',
     'rulesAndRegulations',
     'isBookable',
+    'facilityType',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(facility)
@@ -77,6 +78,15 @@ const FacilityInformationTab = ({ facility }: { facility: FacilityResponse }) =>
                   return <Tag>{facility?.facilityStatus}</Tag>;
               }
             })(),
+          },
+          {
+            key: 'facilityType',
+            label: 'Facility Type',
+            children: (
+              <Tag color="blue" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityType)}
+              </Tag>
+            ),
           },
           {
             key: 'rulesAndRegulations',
