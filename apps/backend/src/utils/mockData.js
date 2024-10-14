@@ -2222,7 +2222,7 @@ const eventsData = [
 
 const promotionsData = [
   {
-    name: "Hari Raya Family Special",
+    name: "Hari Raya Family Special 2025",
     description: "Celebrate Hari Raya with your loved ones! Enjoy 15% off on park tours and family-friendly attractions.",
     discountType: "PERCENTAGE",
     promoCode: "HARIRAYA15",
@@ -2232,8 +2232,8 @@ const promotionsData = [
       "https://1.bp.blogspot.com/-HmL0WIcshng/XS2IMWA1ZeI/AAAAAAAAA2A/HVAuaox8l7w793GIzrV7H4cXMPulpxyCwCLcBGAs/s1600/DSC_1666.JPG",
     ],
     discountValue: 15,
-    validFrom: '2024-04-10T08:00:00+08:00',
-    validUntil: '2024-04-30T23:59:59+08:00',
+    validFrom: '2025-04-10T08:00:00+08:00',
+    validUntil: '2025-04-30T23:59:59+08:00',
     status: "ENABLED",
     terms: [
       "This offer is restricted to one claim per user.",
@@ -2245,7 +2245,7 @@ const promotionsData = [
     isOneTime: true
   },
   {
-    name: "Sustainability Weekend at the Park",
+    name: "Sustainability Fortnight at the Park",
     description: "Join us for Sustainability Weekend! Get $5 off on workshops about eco-friendly living and urban gardening.",
     discountType: "FIXED_AMOUNT",
     promoCode: "SUSTAIN5",
@@ -2255,8 +2255,8 @@ const promotionsData = [
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEjCRB0Hx2nfMKmB2EcScuzjf8_uX6e8XZ4uTSxOvvzT4BhdbxjTfh9dH5GgfN71NIrZ8&usqp=CAU"
     ],
     discountValue: 5,
-    validFrom: '2024-06-05T08:00:00+08:00',
-    validUntil: '2024-06-10T23:59:59+08:00',
+    validFrom: '2024-10-21T08:00:00+08:00',
+    validUntil: '2024-11-04T23:59:59+08:00',
     status: "ENABLED",
     terms: [
       "Limited slots available."
@@ -2276,8 +2276,8 @@ const promotionsData = [
     ],
     discountValue: 10,
     minimumAmount: 50,
-    validFrom: '2024-10-01T08:00:00+08:00',
-    validUntil: '2024-10-01T23:59:59+08:00',
+    validFrom: '2024-11-22T08:00:00+08:00',
+    validUntil: '2024-11-29T23:59:59+08:00',
     status: "ENABLED",
     terms: [
       "Available only at the Singapore Botanic Gardens.",
@@ -2315,8 +2315,8 @@ const promotionsData = [
       "https://www.nparks.gov.sg/-/media/nparks-real-content/nparks-buzz/nparks-buzz-2021/t_henderson-rd.jpg?h=213&w=400"
     ],
     discountValue: 10,
-    validFrom: '2024-04-22T08:00:00+08:00',
-    validUntil: '2024-04-22T23:59:59+08:00',
+    validFrom: '2024-10-21T08:00:00+08:00',
+    validUntil: '2024-10-26T23:59:59+08:00',
     status: "ENABLED",
     terms: [
       "Valid for Earth Day only.",
