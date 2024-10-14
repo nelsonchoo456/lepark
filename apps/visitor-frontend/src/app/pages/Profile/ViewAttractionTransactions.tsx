@@ -36,26 +36,27 @@ const ViewAttractionTransactions: React.FC = () => {
 
   const sortAndFilterTransactions = (transactionsToSort: AttractionTicketTransactionResponse[], sort: string, searchValue: string) => {
     let sorted = [...transactionsToSort];
-
+  
+    // Always sort by closest date first
+    sorted = sorted.sort((a, b) => dayjs(a.attractionDate).diff(dayjs(b.attractionDate)));
+  
     switch (sort) {
       case 'upcoming':
-        sorted = sorted.filter(t => dayjs(t.attractionDate).isAfter(dayjs())).sort((a, b) => dayjs(a.attractionDate).diff(dayjs(b.attractionDate)));
+        sorted = sorted.filter((t) => dayjs(t.attractionDate).isAfter(dayjs()));
         break;
       case 'past':
-        sorted = sorted.filter(t => dayjs(t.attractionDate).isBefore(dayjs())).sort((a, b) => dayjs(b.attractionDate).diff(dayjs(a.attractionDate)));
+        sorted = sorted.filter((t) => dayjs(t.attractionDate).isBefore(dayjs()));
         break;
       case 'all':
       default:
-        sorted = sorted.sort((a, b) => dayjs(b.purchaseDate).diff(dayjs(a.purchaseDate)));
+        // No additional filtering needed for 'all'
         break;
     }
-
+  
     if (searchValue) {
-      sorted = sorted.filter((transaction) =>
-        transaction.attraction?.title.toLowerCase().includes(searchValue.toLowerCase())
-      );
+      sorted = sorted.filter((transaction) => transaction.attraction?.title.toLowerCase().includes(searchValue.toLowerCase()));
     }
-
+  
     setFilteredTransactions(sorted);
   };
 
@@ -74,18 +75,13 @@ const ViewAttractionTransactions: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="sticky top-0 bg-white z-10 shadow-md">
-        <ContentWrapper>
+    <>
+      <div className="flex flex-col h-full m-4">
+        <div className="sticky top-0 bg-white z-10 shadow-md">
           <div className="pb-4 pl-4 pr-4">
             <LogoText className="text-2xl font-semibold mb-3">My Attraction Bookings</LogoText>
             <Space className="w-full">
-              <Input
-                placeholder="Search attractions"
-                onChange={handleSearch}
-                className="flex-grow"
-                prefix={<SearchOutlined />}
-              />
+              <Input placeholder="Search attractions" onChange={handleSearch} className="flex-grow" prefix={<SearchOutlined />} />
               <Select defaultValue="all" onChange={handleSort} style={{ width: 120 }}>
                 <Option value="all">All</Option>
                 <Option value="upcoming">Upcoming</Option>
@@ -93,10 +89,8 @@ const ViewAttractionTransactions: React.FC = () => {
               </Select>
             </Space>
           </div>
-        </ContentWrapper>
-      </div>
-      <div className="flex-grow overflow-auto pl-4 pr-4">
-        <ContentWrapper>
+        </div>
+        <div className="flex-grow overflow-auto pl-4 pr-4 mt-4 mb-4">
           <div>
             {filteredTransactions.length > 0 ? (
               filteredTransactions.map((transaction) => (
@@ -110,9 +104,9 @@ const ViewAttractionTransactions: React.FC = () => {
               <Empty description="No transactions found" />
             )}
           </div>
-        </ContentWrapper>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

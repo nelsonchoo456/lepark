@@ -83,8 +83,8 @@ const AttractionTransactionDetails: React.FC = () => {
   }
 
   return (
-    <ContentWrapper>
-      <div className="flex items-center mb-4">
+    <>
+      <div className="flex items-center m-4">
         <Button icon={<ArrowLeftOutlined />} onClick={handleBack} className="mr-4 text-green-500" type="text" />
         <LogoText className="text-2xl font-semibold">Attraction Booking Details</LogoText>
       </div>
@@ -139,15 +139,15 @@ const AttractionTransactionDetails: React.FC = () => {
             <Text className="block">No refunds will be issued for cancellations. Tickets are non-transferable.</Text>
           </div>
           {/* <div className="bg-gray-100 p-4 rounded-lg">
-            <Text className="block mb-2">Getting there</Text>
-          </div> */}
+      <Text className="block mb-2">Getting there</Text>
+    </div> */}
           <div className="bg-gray-100 p-4 rounded-lg">
             <Text className="block mb-2">Need help?</Text>
             <Text className="block">Contact customer support at admin@lepark.com</Text>
           </div>
         </Space>
       </Card>
-    </ContentWrapper>
+    </>
   );
 };
 

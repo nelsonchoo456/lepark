@@ -5,6 +5,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { ContentWrapper, LogoText, useAuth } from '@lepark/common-ui';
 import { AttractionTicketResponse, getAttractionTicketsByTransactionId, VisitorResponse, AttractionResponse, getAttractionById, AttractionTicketTransactionResponse, getAttractionTicketTransactionById } from '@lepark/data-access';
 import dayjs from 'dayjs';
+import QRCode from 'qrcode';
 
 const { Text, Title } = Typography;
 
@@ -17,6 +18,7 @@ const AttractionTicketDetails: React.FC = () => {
   const { user, updateUser, logout } = useAuth<VisitorResponse>();
   const [attraction, setAttraction] = useState<AttractionResponse | null>(null);
   const navigate = useNavigate();
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -41,12 +43,27 @@ const AttractionTicketDetails: React.FC = () => {
     fetchTickets();
   }, [transactionId]);
 
+  useEffect(() => {
+    generateQRCode();
+  }, [tickets, currentTicketIndex]);
+
   const handlePrevTicket = () => {
     setCurrentTicketIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : tickets.length - 1));
   };
 
   const handleNextTicket = () => {
     setCurrentTicketIndex((prevIndex) => (prevIndex < tickets.length - 1 ? prevIndex + 1 : 0));
+  };
+
+  const generateQRCode = async () => {
+    if (tickets[currentTicketIndex]) {
+      try {
+        const url = await QRCode.toDataURL(`http://localhost:4200/verify-ticket/${tickets[currentTicketIndex].id}`);
+        setQrCodeUrl(url);
+      } catch (error) {
+        console.error('Error generating QR Code:', error);
+      }
+    }
   };
 
   if (loading) {
@@ -60,17 +77,14 @@ const AttractionTicketDetails: React.FC = () => {
   const currentTicket = tickets[currentTicketIndex];
 
   return (
-    <ContentWrapper>
-      <div className="flex items-center mb-4">
-        <Button
-          icon={<LeftOutlined />}
-          onClick={() => navigate(`/attraction-transaction/${transactionId}`)}
-          className="mr-4 text-green-500"
-          type="text"
-        />
-        <LogoText className="text-2xl font-semibold">Ticket Details</LogoText>
-      </div>
-      <Card>
+      <><div className="flex items-center m-4">
+      <Button
+        icon={<LeftOutlined />}
+        onClick={() => navigate(`/attraction-transaction/${transactionId}`)}
+        className="mr-4 text-green-500"
+        type="text" />
+      <LogoText className="text-2xl font-semibold">Ticket Details</LogoText>
+    </div><Card>
         <div className="flex justify-between items-center mb-4">
           <Button icon={<LeftOutlined />} onClick={handlePrevTicket} disabled={tickets.length <= 1} />
           <Title level={4}>
@@ -103,11 +117,20 @@ const AttractionTicketDetails: React.FC = () => {
           <Text strong>Ticket ID:</Text>
           <Text> {currentTicket.id}</Text>
         </div>
-        
-        {/* TODO: Add QR code display */}
-        
-      </Card>
-    </ContentWrapper>
+
+        {qrCodeUrl && (
+          <div className="mb-4">
+            <div className="mt-2 flex justify-center">
+              <img src={qrCodeUrl} alt="Ticket QR Code" className="w-32 h-32" />
+            </div>
+          </div>
+        )}
+
+        <div className="mb-4 text-center">
+          <Text>Present this ticket at the attraction entrance to gain entry.</Text>
+        </div>
+
+      </Card></>
   );
 };
 
