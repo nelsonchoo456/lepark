@@ -37,6 +37,7 @@ const ViewAttractionTicketListings = () => {
   const navigate = useNavigate();
   const [localResidentChecked, setLocalResidentChecked] = useState(false);
   const [appliedPromotion, setAppliedPromotion] = useState<PromotionResponse | null>(null);
+  const [subtotal, setSubtotal] = useState(0);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -103,8 +104,10 @@ const ViewAttractionTicketListings = () => {
     setAppliedPromotion(promotion);
   };
 
-  const handleProceedToPayment = (totalPayable: number) => {
+  const handleProceedToPayment = (totalPayable: number, calculatedSubtotal: number, calculatedDiscount: number) => {
     setFinalTotalPayable(totalPayable);
+    setSubtotal(calculatedSubtotal);
+    setDiscount(calculatedDiscount);
     setStep('payment');
   };
 
@@ -127,6 +130,8 @@ const ViewAttractionTicketListings = () => {
         attractionId: attractionId,
         selectedDate: selectedDate?.format('DD/MM/YYYY'),
         ticketDetails: selectedTickets,
+        subtotal: subtotal,
+        discount: discount,
         totalPayable: finalTotalPayable,
       },
     });
@@ -221,7 +226,7 @@ const ViewAttractionTicketListings = () => {
             appliedPromotion={appliedPromotion}
             onApplyPromotion={handleApplyPromotion}
             onBack={handleBackToDateSelection}
-            onNext={handleProceedToPayment}
+            onNext={(totalPayable, subtotal, discount) => handleProceedToPayment(totalPayable, subtotal, discount)}
           />
         );
       case 'payment':

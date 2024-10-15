@@ -26,7 +26,7 @@ interface OrderReviewProps {
   appliedPromotion: PromotionResponse | null;
   onApplyPromotion: (promotion: PromotionResponse | null) => void;
   onBack: () => void;
-  onNext: (totalPayable: number) => void;
+  onNext: (totalPayable: number, subtotal: number, discount: number) => void;
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -128,7 +128,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   };
 
   const handleNext = () => {
-    onNext(totalPayable);
+    onNext(totalPayable, subtotal, discount);
   };
 
   return (

@@ -19,12 +19,15 @@ interface PaymentPageProps {
     quantity: number;
     price: number;
   }[];
+  subtotal: number;
+  discount: number;
   totalPayable: number;
 }
 
 const PaymentPage: React.FC = () => {
   const location = useLocation();
-  const { attractionName, attractionId, selectedDate, ticketDetails, totalPayable } = location.state as PaymentPageProps;
+  const { attractionName, attractionId, selectedDate, ticketDetails, subtotal, discount, totalPayable } =
+    location.state as PaymentPageProps;
 
   const [stripePromise, setStripePromise] = useState<Stripe | null>(null);
   const [clientSecret, setClientSecret] = useState<string>('');
@@ -83,6 +86,8 @@ const PaymentPage: React.FC = () => {
             {detail.quantity} x {detail.description} - S${(detail.price * detail.quantity).toFixed(2)}
           </Text>
         ))}
+        <Text className="block mt-4">Subtotal: S${subtotal.toFixed(2)}</Text>
+        {discount > 0 && <Text className="block text-green-600">Discount: -S${discount.toFixed(2)}</Text>}
         <Title level={4} className="mt-4">
           Total Payable: S${totalPayable.toFixed(2)}
         </Title>
