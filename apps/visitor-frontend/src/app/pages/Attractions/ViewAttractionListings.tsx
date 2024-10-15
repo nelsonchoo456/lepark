@@ -99,7 +99,7 @@ const ViewAttractionTicketListings = () => {
     setStep('select-date');
   };
 
-  const handleApplyPromotion = (promotion: PromotionResponse) => {
+  const handleApplyPromotion = (promotion: PromotionResponse | null) => {
     setAppliedPromotion(promotion);
   };
 

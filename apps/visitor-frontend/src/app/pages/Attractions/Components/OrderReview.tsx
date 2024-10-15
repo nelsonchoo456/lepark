@@ -3,6 +3,13 @@ import { Card, Typography, Button, Row, Col, Input, message } from 'antd';
 import { LogoText } from '@lepark/common-ui';
 import { Dayjs } from 'dayjs';
 import { PromotionResponse, DiscountTypeEnum, getAllPromotions } from '@lepark/data-access';
+import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
+// Extend dayjs with the plugins
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 const { Title, Text } = Typography;
 
@@ -17,7 +24,7 @@ interface OrderReviewProps {
   selectedDate: Dayjs;
   ticketDetails: TicketDetail[];
   appliedPromotion: PromotionResponse | null;
-  onApplyPromotion: (promotion: PromotionResponse) => void;
+  onApplyPromotion: (promotion: PromotionResponse | null) => void;
   onBack: () => void;
   onNext: (totalPayable: number) => void;
 }
@@ -52,7 +59,13 @@ const OrderReview: React.FC<OrderReviewProps> = ({
       setLoading(true);
       try {
         const response = await getAllPromotions(false, true);
-        setPromotions(response.data);
+        const currentDate = dayjs();
+        const validPromotions = response.data.filter((promotion) => {
+          const validFrom = dayjs(promotion.validFrom);
+          const validUntil = dayjs(promotion.validUntil);
+          return currentDate.isSameOrAfter(validFrom, 'day') && currentDate.isSameOrBefore(validUntil, 'day');
+        });
+        setPromotions(validPromotions);
       } catch (error) {
         console.error('Error fetching promotions:', error);
         message.error('Failed to load promotions');
@@ -65,12 +78,17 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   }, []);
 
   const handleApplyPromotion = (promotion: PromotionResponse) => {
-    onApplyPromotion(promotion);
+    if (appliedPromotion?.id === promotion.id) {
+      // If the same promotion is clicked again, unapply it
+      onApplyPromotion(null);
+    } else {
+      // Apply the new promotion
+      onApplyPromotion(promotion);
+    }
   };
 
   const renderPromotionCard = (promotion: PromotionResponse) => {
     const isApplied = appliedPromotion?.id === promotion.id;
-    const isDisabled = appliedPromotion !== null && !isApplied;
 
     const discountValue =
       promotion.discountType === DiscountTypeEnum.FIXED_AMOUNT ? `$${promotion.discountValue} OFF` : `${promotion.discountValue}% OFF`;
@@ -84,9 +102,15 @@ const OrderReview: React.FC<OrderReviewProps> = ({
             <Text className="block text-green-600">{discountValue}</Text>
           </Col>
           <Col>
-            <Button type={isApplied ? 'primary' : 'default'} onClick={() => handleApplyPromotion(promotion)} disabled={isDisabled}>
-              {isApplied ? 'Applied' : 'Apply'}
-            </Button>
+            {isApplied ? (
+              <Button type="primary" onClick={() => handleApplyPromotion(promotion)}>
+                Unapply
+              </Button>
+            ) : (
+              <Button onClick={() => handleApplyPromotion(promotion)} disabled={appliedPromotion !== null}>
+                Apply
+              </Button>
+            )}
           </Col>
         </Row>
       </Card>
