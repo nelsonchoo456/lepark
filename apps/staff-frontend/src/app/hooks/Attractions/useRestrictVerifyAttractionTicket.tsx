@@ -78,5 +78,3 @@ export const useRestrictVerifyAttractionTicket = (ticketId?: string) => {
 
   return { ticket, attraction, loading, error };
 };
-
-export default useRestrictVerifyAttractionTicket;
