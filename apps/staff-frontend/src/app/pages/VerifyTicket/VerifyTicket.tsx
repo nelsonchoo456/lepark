@@ -10,13 +10,13 @@ import {
   getAttractionById,
 } from '@lepark/data-access';
 import dayjs from 'dayjs';
-import { useRestrictVerifyAttractionTicket } from '../../hooks/Attractions/useRestrictVerifyAttractionTicket';
+import { useRestrictVerifyAttractionTickets } from '../../hooks/Attractions/useRestrictVerifyAttractionTickets';
 
 const { Text, Title } = Typography;
 
 const VerifyTicket: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
-  const { ticket, attraction, loading, error: accessError } = useRestrictVerifyAttractionTicket(ticketId);
+  const { ticket, attraction, loading, error: accessError } = useRestrictVerifyAttractionTickets(ticketId);
   const [status, setStatus] = useState<'verifying' | 'valid' | 'invalid' | 'not-found'>('verifying');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const verificationAttempted = useRef(false);

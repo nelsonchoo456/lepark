@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
 
-export const useRestrictVerifyAttractionTicket = (ticketId?: string) => {
+export const useRestrictVerifyAttractionTickets = (ticketId?: string) => {
   const [ticket, setTicket] = useState<AttractionTicketResponse | null>(null);
   const [attraction, setAttraction] = useState<AttractionResponse | null>(null);
   const [loading, setLoading] = useState(true);
