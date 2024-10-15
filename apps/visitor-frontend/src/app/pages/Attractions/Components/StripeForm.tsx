@@ -17,6 +17,7 @@ interface StripeFormProps {
   selectedDate: string;
   paymentIntentId: string;
   attractionId: string;
+  isFreeTicket?: boolean;
 }
 
 const StripeForm: React.FC<StripeFormProps> = ({
@@ -26,9 +27,10 @@ const StripeForm: React.FC<StripeFormProps> = ({
   selectedDate,
   paymentIntentId,
   attractionId,
+  isFreeTicket = false,
 }) => {
-  const stripe = useStripe();
-  const elements = useElements();
+  const stripe = isFreeTicket ? null : useStripe();
+  const elements = isFreeTicket ? null : useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<VisitorResponse>();
@@ -74,7 +76,25 @@ const StripeForm: React.FC<StripeFormProps> = ({
     }
   };
 
+  const handleFreeTicket = async () => {
+    setIsProcessing(true);
+    try {
+      const transactionId = await handleProcessing();
+      navigate(`/payment-completion/${transactionId}`);
+    } catch (error) {
+      console.error(error);
+      message.error('An error occurred while processing your free ticket.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handlePayment = async () => {
+    if (isFreeTicket) {
+      await handleFreeTicket();
+      return;
+    }
+
     if (!stripe || !elements) {
       return;
     }
@@ -107,10 +127,11 @@ const StripeForm: React.FC<StripeFormProps> = ({
 
   return (
     <div>
-      <PaymentElement />
+      {!isFreeTicket && <PaymentElement />}
+      {isFreeTicket && <div className="mb-4">This is a free ticket. Click the button below to confirm your order.</div>}
       <div className="mt-5 flex w-full justify-end">
         <Button type="primary" onClick={handlePayment} disabled={isProcessing} className="w-full md:w-1/5 lg:w-1/5">
-          {isProcessing ? 'Processing...' : 'Pay'}
+          {isProcessing ? 'Processing...' : isFreeTicket ? 'Confirm Free Ticket' : 'Pay'}
         </Button>
       </div>
     </div>

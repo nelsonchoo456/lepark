@@ -53,8 +53,8 @@ const PaymentPage: React.FC = () => {
         console.log(publishableKey);
         setStripePromise(await loadStripe(publishableKey));
 
-        // Create payment intent
-        if (totalPayable) {
+        // Create payment intent only if totalPayable is greater than 0
+        if (totalPayable > 0) {
           const response = await createPaymentIntent(totalPayable);
           setClientSecret(response.data.clientSecret);
           setPaymentIntentId(response.data.id);
@@ -87,17 +87,31 @@ const PaymentPage: React.FC = () => {
           Total Payable: S${totalPayable.toFixed(2)}
         </Title>
       </Card>
-      {stripePromise && clientSecret && (
-        <Elements options={options} stripe={stripePromise}>
-          <StripeForm
-            ticketDetails={ticketDetails}
-            totalPayable={totalPayable}
-            attractionName={attractionName}
-            selectedDate={selectedDate}
-            paymentIntentId={paymentIntentId}
-            attractionId={attractionId}
-          />
-        </Elements>
+      {totalPayable > 0 ? (
+        stripePromise && clientSecret ? (
+          <Elements options={options} stripe={stripePromise}>
+            <StripeForm
+              ticketDetails={ticketDetails}
+              totalPayable={totalPayable}
+              attractionName={attractionName}
+              selectedDate={selectedDate}
+              paymentIntentId={paymentIntentId}
+              attractionId={attractionId}
+            />
+          </Elements>
+        ) : (
+          <div></div>
+        )
+      ) : (
+        <StripeForm
+          ticketDetails={ticketDetails}
+          totalPayable={totalPayable}
+          attractionName={attractionName}
+          selectedDate={selectedDate}
+          paymentIntentId=""
+          attractionId={attractionId}
+          isFreeTicket={true}
+        />
       )}
     </div>
   );

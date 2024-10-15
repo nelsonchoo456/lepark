@@ -13,16 +13,8 @@ import {
   VisitorResponse,
 } from '@lepark/data-access';
 
-interface PaymentData {
-  amount: number;
-  time: Date;
-  paymentType: string;
-  transactionId: string;
-  description: string;
-}
-
 const CompletionPage: React.FC = () => {
-  const { transactionId } = useParams<{ transactionId: string; paymentIntentId: string }>();
+  const { transactionId } = useParams<{ transactionId: string }>();
   const [searchParams] = useSearchParams();
   const paymentIntentId = searchParams.get('payment_intent') || '';
   const [error, setError] = useState<boolean | null>(null);
@@ -46,7 +38,7 @@ const CompletionPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const handleFetchPayment = async () => {
+    const handleCompletion = async () => {
       if (paymentProcessed.current) {
         return;
       }
@@ -54,59 +46,55 @@ const CompletionPage: React.FC = () => {
       paymentProcessed.current = true;
 
       try {
-        console.log(paymentIntentId);
-        const response = await fetchPayment(paymentIntentId);
+        const transaction = await getAttractionTicketTransactionById(transactionId || '');
 
-        console.log(response);
+        if (transaction.data.totalAmount > 0) {
+          // Paid ticket
+          if (!paymentIntentId) {
+            throw new Error('Payment intent ID is missing for a paid ticket');
+          }
 
-        if (response.data.status === 'succeeded') {
-          //   const payment: PaymentData = {
-          //     amount: res.amount / 100,
-          //     time: new Date(),
-          //     paymentType: res.type,
-          //     transactionId: paymentIntentId,
-          //     description: res.description,
-          //   };
+          const response = await fetchPayment(paymentIntentId);
 
-          //   await apiJson.post(`/api/attractionTickets/completePayment/${transactionId}`, { payment });
-          const transaction = await getAttractionTicketTransactionById(transactionId || '');
-          const visitor = await viewVisitorDetails(transaction.data.visitorId);
-
-          const emailTicketsData = {
-            transactionId: transactionId || '',
-            recipientEmail: visitor.data.email,
-          };
-
-          await sendAttractionTicketEmail(emailTicketsData);
-
-          setError(false);
-          navigate('/success');
-        } else {
-          setError(true);
-          setClientSecret(response.data.secret);
+          if (response.data.status !== 'succeeded') {
+            setError(true);
+            setClientSecret(response.data.secret);
+            return;
+          }
         }
+
+        // At this point, either it's a free ticket or the payment has succeeded
+        const visitor = await viewVisitorDetails(transaction.data.visitorId);
+
+        const emailTicketsData = {
+          transactionId: transactionId || '',
+          recipientEmail: visitor.data.email,
+        };
+
+        await sendAttractionTicketEmail(emailTicketsData);
+
+        setError(false);
+        navigate('/success');
       } catch (error) {
-        console.error('Error fetching payment:', error);
+        console.error('Error processing completion:', error);
         setError(true);
-        message.error('An error occurred while processing your payment');
+        message.error('An error occurred while processing your order');
       }
     };
 
-    if (transactionId && paymentIntentId) {
-      handleFetchPayment();
+    if (transactionId) {
+      handleCompletion();
     }
   }, [transactionId, paymentIntentId, navigate]);
 
   if (error === null) {
-    return <div className="flex justify-center pt-50 text-2xl">Processing your payment...</div>;
+    return <div className="flex justify-center pt-50 text-2xl">Processing your order...</div>;
   }
 
   if (error === true && clientSecret && stripePromise) {
     return (
-      //   <Elements stripe={stripePromise} options={{ clientSecret }}>
-      //     <RetryForm transactionId={transactionId} paymentIntentId={paymentIntentId} />
-      //   </Elements>
-      <></>
+      // Implement your retry logic here
+      <div>Payment failed. Please try again.</div>
     );
   }
 
