@@ -269,9 +269,39 @@ class SensorReadingService {
         throw new Error('Zone not found');
       }
 
-      const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
+      const sensors = await SensorDao.getSensorsByZoneIdAndType(zoneId, sensorType);
+      if (sensors.length === 0) {
+        throw new Error('No sensors found for this zone and sensor type');
+      }
 
-      if (readings.length < 2) {
+      let totalAbsoluteChange = 0;
+      let totalRateOfChange = 0;
+      let totalReadings = 0;
+      let validSensorsCount = 0;
+      let totalTimeSpanHours = 0;
+
+      for (const sensor of sensors) {
+        const readings = await this.getSensorReadingsHoursAgo(sensor.id, hours);
+
+        if (readings.length >= 2) {
+          readings.sort((a, b) => a.date.getTime() - b.date.getTime());
+          const oldestReading = readings[0];
+          const latestReading = readings[readings.length - 1];
+          const timeSpanHours = (latestReading.date.getTime() - oldestReading.date.getTime()) / (1000 * 60 * 60);
+          totalTimeSpanHours += timeSpanHours;
+          if (timeSpanHours >= hours * 0.5) {
+            const absoluteChange = latestReading.value - oldestReading.value;
+            const rateOfChange = absoluteChange / timeSpanHours;
+
+            totalAbsoluteChange += absoluteChange;
+            totalRateOfChange += rateOfChange;
+            totalReadings += readings.length;
+            validSensorsCount++;
+          }
+        }
+      }
+
+      if (validSensorsCount === 0) {
         return {
           trendDescription: 'Insufficient readings to determine a trend.',
           absoluteChange: 'N/A',
@@ -279,36 +309,19 @@ class SensorReadingService {
           directionOfChange: 'N/A',
           magnitudeOfChange: 'N/A',
           actionableInsight: 'Collect more data to analyze trends.',
-          readingsCount: readings.length,
+          readingsCount: totalReadings,
           unit: this.getSensorUnit(sensorType),
         };
       }
 
-      // Sort readings by date in ascending order
-      readings.sort((a, b) => a.date.getTime() - b.date.getTime());
+      const averageAbsoluteChange = totalAbsoluteChange / validSensorsCount;
+      const averageRateOfChange = totalRateOfChange / validSensorsCount;
+      const averageTimeSpanHours = totalTimeSpanHours / validSensorsCount;
 
-      const oldestReading = readings[0];
-      const latestReading = readings[readings.length - 1];
-      const timeSpanHours = (latestReading.date.getTime() - oldestReading.date.getTime()) / (1000 * 60 * 60);
+      // Calculate percentage change based on the average absolute change
+      const percentageChange = (averageAbsoluteChange / 100) * 100; // Assuming a base value of 100 for percentage calculation
 
-      if (timeSpanHours < hours * 0.5) {
-        return {
-          trendDescription: 'Insufficient time span for analysis',
-          absoluteChange: 'N/A',
-          rateOfChange: 'N/A',
-          directionOfChange: 'N/A',
-          magnitudeOfChange: 'N/A',
-          actionableInsight: 'Ensure sensors are reporting data regularly.',
-          readingsCount: readings.length,
-          unit: this.getSensorUnit(sensorType),
-        };
-      }
-
-      const absoluteChange = latestReading.value - oldestReading.value;
-      const rateOfChange = absoluteChange / timeSpanHours;
-      const percentageChange = (absoluteChange / oldestReading.value) * 100;
-
-      const directionOfChange = absoluteChange > 0 ? 'Increasing' : absoluteChange < 0 ? 'Decreasing' : 'Stable';
+      const directionOfChange = averageAbsoluteChange > 0 ? 'Increasing' : averageAbsoluteChange < 0 ? 'Decreasing' : 'Stable';
       
       let magnitudeOfChange: string;
       if (Math.abs(percentageChange) < 1) {
@@ -323,16 +336,16 @@ class SensorReadingService {
 
       const trendDescription = `${magnitudeOfChange} ${directionOfChange.toLowerCase()}`;
 
-      const actionableInsight = this.getActionableInsight(sensorType, trendDescription, absoluteChange, rateOfChange, timeSpanHours);
+      const actionableInsight = this.getActionableInsight(sensorType, trendDescription, averageAbsoluteChange, averageRateOfChange, averageTimeSpanHours);
 
       return {
         trendDescription,
-        absoluteChange: `${absoluteChange.toFixed(2)}${this.getSensorUnit(sensorType)}`,
-        rateOfChange: `${rateOfChange.toFixed(2)}${this.getSensorUnit(sensorType)} per hour`,
+        absoluteChange: `${averageAbsoluteChange.toFixed(2)} ${this.getSensorUnit(sensorType)}`,
+        rateOfChange: `${averageRateOfChange.toFixed(2)} ${this.getSensorUnit(sensorType)} per hour`,
         directionOfChange,
         magnitudeOfChange,
         actionableInsight,
-        readingsCount: readings.length,
+        readingsCount: totalReadings,
         unit: this.getSensorUnit(sensorType),
       };
     } catch (error) {
@@ -359,13 +372,13 @@ class SensorReadingService {
   ): string {
     switch (sensorType) {
       case SensorTypeEnum.TEMPERATURE:
-        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)}°C over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)}°C/hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange)}`;
+        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange)}`;
       case SensorTypeEnum.HUMIDITY:
-        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)}% over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)}%/hour). ${this.getHumidityInsight(absoluteChange, rateOfChange)}`;
+        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange)}`;
       case SensorTypeEnum.SOIL_MOISTURE:
-        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)}% over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)}%/hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange)}`;
+        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange)}`;
       case SensorTypeEnum.LIGHT:
-        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(1)} Lux over ${timeSpanHours.toFixed(1)} hours (${rateOfChange.toFixed(2)} Lux/hour). ${this.getLightInsight(absoluteChange, rateOfChange)}`;
+        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(absoluteChange, rateOfChange)}`;
       default:
         return `The sensor readings have shown a ${trendDescription} trend. Monitor the situation and adjust conditions if necessary.`;
     }
@@ -401,9 +414,9 @@ class SensorReadingService {
   }
 
   private getLightInsight(absoluteChange: number, rateOfChange: number): string {
-    if (Math.abs(absoluteChange) > 1000) {
+    if (Math.abs(absoluteChange) > 150) {
       return `Light levels have changed dramatically. Check for obstructions, changes in artificial lighting, or seasonal effects.`;
-    } else if (Math.abs(rateOfChange) > 200) {
+    } else if (Math.abs(rateOfChange) > 100) {
       return `Light levels are fluctuating rapidly. Investigate possible causes and consider adjusting light sources or shading.`;
     }
     return `Light level changes are moderate. Ensure plants are receiving appropriate light for their needs.`;

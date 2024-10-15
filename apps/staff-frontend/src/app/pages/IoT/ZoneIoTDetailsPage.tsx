@@ -149,8 +149,11 @@ const ZoneIoTDetailsPage: React.FC = () => {
     if (!trend) return 'N/A';
 
     const getArrow = (value: string) => {
-      if (value.includes('-')) return <ArrowDownOutlined style={{ color: 'red' }} />;
-      if (value.includes('+')) return <ArrowUpOutlined style={{ color: 'green' }} />;
+      const numberValue = parseFloat(value);
+      console.log('numberValue', numberValue);
+      if (isNaN(numberValue)) return null;
+      if (numberValue < 0) return <ArrowDownOutlined style={{ color: 'red' }} />;
+      if (numberValue > 0) return <ArrowUpOutlined style={{ color: 'green' }} />;
       return null;
     };
 
@@ -212,7 +215,6 @@ const ZoneIoTDetailsPage: React.FC = () => {
                   prefix={getSensorIcon(sensorType as SensorTypeEnum)}
                   suffix={getSensorUnit(sensorType as SensorTypeEnum)}
                 />
-                <Text type="secondary">4h Trend:</Text>
                 {renderTrendAnalysis(sensorType, trends[sensorType])}
               </Col>
             ))}

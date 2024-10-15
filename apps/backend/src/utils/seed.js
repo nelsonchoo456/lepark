@@ -571,7 +571,7 @@ const createReading = (sensorType, date) => {
   let value;
   switch (sensorType) {
     case 'SOIL_MOISTURE':
-      value = Math.random() * 100; // 0-100%
+      value = 30 + Math.random() * 70; // 30-70%
       break;
     case 'TEMPERATURE':
       value = 20 + Math.random() * 15; // 20-35°C
