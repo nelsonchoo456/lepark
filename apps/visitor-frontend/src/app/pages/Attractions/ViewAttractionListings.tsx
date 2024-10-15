@@ -37,7 +37,9 @@ const ViewAttractionTicketListings = () => {
       if (attractionId) {
         try {
           const response = await getAttractionTicketListingsByAttractionId(attractionId);
-          setListings(response.data);
+          // Filter active listings
+          const activeListings = response.data.filter((listing) => listing.isActive);
+          setListings(activeListings);
 
           const attractionResponse = await getAttractionById(attractionId);
           setAttraction(attractionResponse.data);
