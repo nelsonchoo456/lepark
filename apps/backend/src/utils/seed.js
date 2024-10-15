@@ -392,20 +392,17 @@ async function seed() {
     });
     attractionList.push(createdAttraction);
   }
-  console.log(`Total attractions seeded: ${attractionList.length}\n`);
 
-  const flowerDomeId = attractionList[2].id;
-
-  const attractionTicketListingsList = [];
-  for (const listing of attractionTicketListingsData) {
-    listing.attractionId = flowerDomeId;
-    const createdAttraction = await prisma.attractionTicketListing.create({
-      data: listing,
-    });
-    attractionTicketListingsList.push(createdAttraction);
+  for (const attraction of attractionList) {
+    for (const listing of attractionTicketListingsData) {
+      listing.attractionId = attraction.id;
+      await prisma.attractionTicketListing.create({
+        data: listing,
+      });
+    }
   }
-  console.log(`Total attractions listings seeded: ${attractionTicketListingsList.length}\n`);
-
+  console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
+  
   const plantTasksList = [];
   for (const plantTask of plantTasksData) {
     // Ensure we have valid staff and occurrence data

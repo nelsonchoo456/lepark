@@ -16,26 +16,36 @@ const { Text, Title } = Typography;
 
 const VerifyTicket: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
-  const { ticket, attraction, loading, error } = useRestrictVerifyAttractionTicket(ticketId);
-  const [status, setStatus] = useState<'verifying' | 'valid' | 'invalid'>('verifying');
+  const { ticket, attraction, loading, error: accessError } = useRestrictVerifyAttractionTicket(ticketId);
+  const [status, setStatus] = useState<'verifying' | 'valid' | 'invalid' | 'not-found'>('verifying');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const verificationAttempted = useRef(false);
 
   useEffect(() => {
-    if (error) {
-      setErrorMessage(error);
+    if (loading) {
+      console.log('loading', loading);
       return;
     }
 
-    if (!ticketId || verificationAttempted.current) {
+    if (!ticket) {
+      setStatus('not-found');
+      setErrorMessage('Ticket not found');
       return;
     }
+
+    if (accessError) {
+      setStatus('invalid');
+      setErrorMessage(accessError);
+      return;
+    }
+
+    if (verificationAttempted.current) return;
 
     verificationAttempted.current = true;
 
-    const fetchTicketDetails = async () => {
+    const verifyTicket = async () => {
       try {
-        const verificationResponse = await verifyAttractionTicket(ticketId);
+        const verificationResponse = await verifyAttractionTicket(ticket.id);
         if (verificationResponse.data.isValid) {
           setStatus('valid');
         } else {
@@ -50,10 +60,11 @@ const VerifyTicket: React.FC = () => {
       }
     };
 
-    fetchTicketDetails();
-  }, [ticketId]);
+    verifyTicket();
+  }, [ticketId, accessError, loading, ticket, attraction]);
 
   if (loading) {
+    console.log('loading', loading);
     return (
       <Card className="h-screen flex items-center justify-center">
         <Spin size="large" />
@@ -62,6 +73,7 @@ const VerifyTicket: React.FC = () => {
   }
 
   if (status === 'verifying') {
+    console.log('status', status);
     return (
       <Card className="h-screen flex items-center justify-center">
         <Spin size="large" />
@@ -93,9 +105,13 @@ const VerifyTicket: React.FC = () => {
   return (
     <div className="p-4 h-screen flex flex-col items-center justify-center">
       <Title level={2} className="text-center">
+        {status === 'not-found' ? 'Verifying Attraction Ticket' :
+        <>
         Verifying Attraction Ticket for
         <br />
         {attraction?.title || 'Unknown Attraction'}
+        </>
+      }
       </Title>
       <Card className="w-full max-w-md">
         {status === 'valid' ? (
@@ -115,14 +131,25 @@ const VerifyTicket: React.FC = () => {
             />
           </>
         ) : (
-          <Result
-            status="error"
-            icon={<CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 72 }} />}
-            title="Invalid Ticket"
-            subTitle={errorMessage || 'This ticket is not valid or has already been used.'}
-            extra={ticket && renderTicketDetails()}
-            className="py-4"
-          />
+          <>
+            {status === 'not-found' ? (
+              <Result
+                status="error"
+                icon={<CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 72 }} />}
+                title="Invalid Ticket"
+                subTitle="This ticket is not valid or does not exist."
+              />
+            ) : (
+              <Result
+                status="error"
+                icon={<CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 72 }} />}
+                title="Invalid Ticket"
+                subTitle={errorMessage || 'This ticket is not valid or has already been used.'}
+                extra={ticket && renderTicketDetails()}
+                className="py-4"
+              />
+            )}
+          </>
         )}
       </Card>
     </div>

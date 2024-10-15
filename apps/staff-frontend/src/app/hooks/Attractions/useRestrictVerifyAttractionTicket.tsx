@@ -1,5 +1,12 @@
 import { useAuth } from '@lepark/common-ui';
-import { getAttractionTicketById, getAttractionById, AttractionTicketResponse, AttractionResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import {
+  getAttractionTicketById,
+  getAttractionById,
+  AttractionTicketResponse,
+  AttractionResponse,
+  StaffResponse,
+  StaffType,
+} from '@lepark/data-access';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
@@ -16,6 +23,7 @@ export const useRestrictVerifyAttractionTicket = (ticketId?: string) => {
   useEffect(() => {
     if (!ticketId || ticketId === undefined) {
       navigate('/');
+      setLoading(false);
       return;
     }
 
@@ -25,10 +33,11 @@ export const useRestrictVerifyAttractionTicket = (ticketId?: string) => {
       setAttraction(null);
       try {
         const ticketResponse = await getAttractionTicketById(ticketId);
-
+        console.log('ticketResponse', ticketResponse);
         if (ticketResponse.status === 200) {
           const fetchedTicket = ticketResponse.data;
           const attractionResponse = await getAttractionById(fetchedTicket.attractionTicketListing?.attractionId || '');
+          console.log('attractionResponse', attractionResponse);
           const fetchedAttraction = attractionResponse.data;
 
           // Check if user has permission to verify this ticket
@@ -45,16 +54,20 @@ export const useRestrictVerifyAttractionTicket = (ticketId?: string) => {
         } else {
           throw new Error('Ticket not found');
         }
-    } catch (error: any) {
-        setError(error.message || 'An error occurred');
-        if (!notificationShown.current) {
-          notification.error({
-            message: 'Access Denied',
-            description: 'You do not have permission to verify this ticket.',
-          });
-          notificationShown.current = true;
+      } catch (error: any) {
+        if (error.message === 'Access denied') {
+          setError(error.message || 'An error occurred');
+          if (!notificationShown.current) {
+            notification.error({
+              message: 'Access Denied',
+              description: 'You do not have permission to verify this ticket.',
+            });
+            notificationShown.current = true;
+          }
+          navigate('/');
+        } else {
+          setError(error.message || 'An error occurred');
         }
-        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -65,3 +78,5 @@ export const useRestrictVerifyAttractionTicket = (ticketId?: string) => {
 
   return { ticket, attraction, loading, error };
 };
+
+export default useRestrictVerifyAttractionTicket;

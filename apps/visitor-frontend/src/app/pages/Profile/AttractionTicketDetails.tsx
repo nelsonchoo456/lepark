@@ -178,6 +178,8 @@ const AttractionTicketDetails: React.FC = () => {
           )}
           <div className="mb-2 text-center">
             <Text>Present this ticket at the attraction entrance to gain entry.</Text>
+            <br />
+            <Text>Proof of identification (e.g. NRIC, Student ID) may be required for admission.</Text>
           </div>
         </div>
         <div className="flex justify-center mt-2">
