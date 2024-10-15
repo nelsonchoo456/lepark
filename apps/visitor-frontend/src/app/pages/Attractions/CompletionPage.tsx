@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Elements } from '@stripe/react-stripe-js';
 import { Stripe, loadStripe } from '@stripe/stripe-js';
@@ -29,6 +29,7 @@ const CompletionPage: React.FC = () => {
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [clientSecret, setClientSecret] = useState<string | undefined>();
   const navigate = useNavigate();
+  const paymentProcessed = useRef(false);
 
   useEffect(() => {
     const initializeStripe = async () => {
@@ -46,6 +47,12 @@ const CompletionPage: React.FC = () => {
 
   useEffect(() => {
     const handleFetchPayment = async () => {
+      if (paymentProcessed.current) {
+        return;
+      }
+
+      paymentProcessed.current = true;
+
       try {
         console.log(paymentIntentId);
         const response = await fetchPayment(paymentIntentId);
