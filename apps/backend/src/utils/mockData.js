@@ -2067,6 +2067,74 @@ const eventsData = [
   },
 ];
 
+const announcementsData = [
+  {
+    title: 'Closure of Therapeutic Gardens',
+    content:
+      'A section of the Therapeutic Gardens (raised planters) will be closed for maintenance works from 6 dec to 16 dec 2024. ',
+    updatedAt: '2024-10-15T08:49:23.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2024-12-16T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 1,
+  },
+  {
+    title: 'Oil Spill Incident Update',
+    content: 'The National Environment Agency (NEA) has shared that the water quality at our parks has returned to normal levels and stabilised since the oil spill.',
+    updatedAt: '2024-10-15T08:50:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: null,
+  },
+  {
+    title: 'Advisory on Water Quality',
+    content: 'The water quality at our parks are unsafe for swimming and other water activities. Please do not enter the water until further notice.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
+    status: 'INACTIVE',
+    parkId: null,
+  },
+  {
+    title: 'Temporary closure of park entrance',
+    content:
+      'The park entrance at Ang Mo Kio Ave 1 and Marymount Road junction will be closed from 21 December 2020 until further notice.\n\nYou may use the new entrance along Ang Mo Kio Ave 1 to access the park.',
+    updatedAt: '2024-10-15T08:50:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 1,
+  },
+  {
+    title: 'Advisory on Flooding',
+    content: 'Some areas of Bishan-Ang Mo Kio Park may be flooded due to higher tides and bad weather. For your safety, do not enter when the area is flooded.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2024-10-16T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 1,
+  },
+  {
+    title: 'Hot Spring - Permit Application for large groups',
+    content: 'No permit is required for groups smaller than 20 people. For groups larger than 20 people, please submit a permit application before visiting the park.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-10-14T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 2,
+  },
+  {
+    title: 'Dog run lighting hours',
+    content: 'The lights in the dog runs are switched off at 10.30pm daily.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-10-14T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 2,
+  },
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -2081,4 +2149,5 @@ module.exports = {
   eventsData,
   parkAssetsData,
   sensorsData,
+  announcementsData,
 };
