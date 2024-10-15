@@ -156,7 +156,14 @@ export function App() {
                 <Route path="/attractions">
                   <Route path="park/:parkId" element={<AttractionsPerPark />} />
                   <Route path=":attractionId" element={<VisitorViewAttractionDetails />} />
-                  <Route path=":attractionId/listings" element={<ViewAttractionTicketListings />} />
+                  <Route
+                    path=":attractionId/listings"
+                    element={
+                      <ProtectedRoute redirectTo="/login">
+                        <ViewAttractionTicketListings />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
                 <Route path="/decarb">
                   <Route index element={<DecarbViewAll />} />

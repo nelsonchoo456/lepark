@@ -7,8 +7,10 @@ import dayjs, { Dayjs } from 'dayjs';
 import {
   AttractionResponse,
   AttractionTicketListingResponse,
+  DiscountTypeEnum,
   getAttractionById,
   getAttractionTicketListingsByAttractionId,
+  PromotionResponse,
 } from '@lepark/data-access';
 import SelectDateAndReview from './Components/SelectDateAndReview';
 import OrderReview from './Components/OrderReview';
@@ -28,6 +30,7 @@ const ViewAttractionTicketListings = () => {
   const [finalTotalPayable, setFinalTotalPayable] = useState<number>(0);
   const navigate = useNavigate();
   const [localResidentChecked, setLocalResidentChecked] = useState(false);
+  const [appliedPromotion, setAppliedPromotion] = useState<PromotionResponse | null>(null);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -79,14 +82,8 @@ const ViewAttractionTicketListings = () => {
     setStep('select-date');
   };
 
-  const handleApplyPromotion = async (code: string) => {
-    // Implement the logic to apply promotion code
-    // This is a placeholder implementation
-    console.log('Applying promotion code:', code);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Set a sample discount (replace with actual logic)
-    setDiscount(5);
+  const handleApplyPromotion = (promotion: PromotionResponse) => {
+    setAppliedPromotion(promotion);
   };
 
   const handleProceedToPayment = (totalPayable: number) => {
@@ -200,7 +197,7 @@ const ViewAttractionTicketListings = () => {
                 price: listing?.price || 0,
               };
             })}
-            discount={discount}
+            appliedPromotion={appliedPromotion}
             onApplyPromotion={handleApplyPromotion}
             onBack={handleBackToDateSelection}
             onNext={handleProceedToPayment}

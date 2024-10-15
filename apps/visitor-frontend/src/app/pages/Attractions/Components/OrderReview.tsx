@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Typography, Button, Row, Col, Input, message } from 'antd';
 import { LogoText } from '@lepark/common-ui';
 import { Dayjs } from 'dayjs';
+import { PromotionResponse, DiscountTypeEnum, getAllPromotions } from '@lepark/data-access';
 
 const { Title, Text } = Typography;
 
@@ -15,8 +16,8 @@ interface OrderReviewProps {
   attractionName: string;
   selectedDate: Dayjs;
   ticketDetails: TicketDetail[];
-  discount: number;
-  onApplyPromotion: (code: string) => Promise<void>;
+  appliedPromotion: PromotionResponse | null;
+  onApplyPromotion: (promotion: PromotionResponse) => void;
   onBack: () => void;
   onNext: (totalPayable: number) => void;
 }
@@ -25,31 +26,71 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   attractionName,
   selectedDate,
   ticketDetails,
-  discount,
+  appliedPromotion,
   onApplyPromotion,
   onBack,
   onNext,
 }) => {
-  const [promoCode, setPromoCode] = useState('');
-  const [applyingPromo, setApplyingPromo] = useState(false);
+  const [promotions, setPromotions] = useState<PromotionResponse[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const subtotal = ticketDetails.reduce((sum, detail) => sum + detail.price * detail.quantity, 0);
+  const subtotal = useMemo(() => ticketDetails.reduce((sum, detail) => sum + detail.price * detail.quantity, 0), [ticketDetails]);
+
+  const discount = useMemo(() => {
+    if (!appliedPromotion) return 0;
+    if (appliedPromotion.discountType === DiscountTypeEnum.FIXED_AMOUNT) {
+      return appliedPromotion.discountValue;
+    } else {
+      return subtotal * (appliedPromotion.discountValue / 100);
+    }
+  }, [appliedPromotion, subtotal]);
+
   const totalPayable = subtotal - discount;
 
-  const handleApplyPromotion = async () => {
-    if (!promoCode.trim()) {
-      message.error('Please enter a promotion code');
-      return;
-    }
-    setApplyingPromo(true);
-    try {
-      await onApplyPromotion(promoCode);
-      message.success('Promotion code applied successfully');
-    } catch (error) {
-      message.error('Failed to apply promotion code');
-    } finally {
-      setApplyingPromo(false);
-    }
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      setLoading(true);
+      try {
+        const response = await getAllPromotions(false, true);
+        setPromotions(response.data);
+      } catch (error) {
+        console.error('Error fetching promotions:', error);
+        message.error('Failed to load promotions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
+
+  const handleApplyPromotion = (promotion: PromotionResponse) => {
+    onApplyPromotion(promotion);
+  };
+
+  const renderPromotionCard = (promotion: PromotionResponse) => {
+    const isApplied = appliedPromotion?.id === promotion.id;
+    const isDisabled = appliedPromotion !== null && !isApplied;
+
+    const discountValue =
+      promotion.discountType === DiscountTypeEnum.FIXED_AMOUNT ? `$${promotion.discountValue} OFF` : `${promotion.discountValue}% OFF`;
+
+    return (
+      <Card key={promotion.id} className="mb-4">
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Title level={5}>{promotion.name}</Title>
+            <Text>{promotion.description}</Text>
+            <Text className="block text-green-600">{discountValue}</Text>
+          </Col>
+          <Col>
+            <Button type={isApplied ? 'primary' : 'default'} onClick={() => handleApplyPromotion(promotion)} disabled={isDisabled}>
+              {isApplied ? 'Applied' : 'Apply'}
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+    );
   };
 
   const handleNext = () => {
@@ -58,7 +99,6 @@ const OrderReview: React.FC<OrderReviewProps> = ({
 
   return (
     <div className="p-4 h-full overflow-auto">
-      {/* <LogoText className="text-2xl font-semibold mb-4">Order Review</LogoText> */}
       <Card className="mb-4">
         <Title level={4}>Total Payable: S${totalPayable.toFixed(2)}</Title>
         <Text>Subtotal: S${subtotal.toFixed(2)}</Text>
@@ -74,21 +114,11 @@ const OrderReview: React.FC<OrderReviewProps> = ({
           </Text>
         ))}
       </Card>
-      <Card className="mb-4">
-        <Title level={5}>Promotion Code</Title>
-        <Input.Group compact>
-          <Input
-            style={{ width: 'calc(100% - 80px)' }}
-            placeholder="Enter promotion code"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-          />
-          <Button type="primary" onClick={handleApplyPromotion} loading={applyingPromo} style={{ width: '80px' }}>
-            Apply
-          </Button>
-        </Input.Group>
-      </Card>
-      <Row gutter={16}>
+
+      <Title level={5}>Available Promotions</Title>
+      {loading ? <div>Loading promotions...</div> : promotions.map(renderPromotionCard)}
+
+      <Row gutter={16} className="mt-4">
         <Col span={12}>
           <Button onClick={onBack} className="w-full">
             Back
