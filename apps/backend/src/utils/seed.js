@@ -568,23 +568,44 @@ const generateMockReadings = (sensorType) => {
 };
 
 const createReading = (sensorType, date) => {
+  const hour = date.getHours();
   let value;
+
   switch (sensorType) {
     case 'SOIL_MOISTURE':
-      value = 30 + Math.random() * 70; // 30-70%
+      // Simulate watering at 6 AM and 6 PM
+      if (hour === 6 || hour === 18) {
+        value = 70 + Math.random() * 10; // 70-80%
+      } else if (hour >= 12 && hour <= 16) {
+        // Greater decrease from 12 PM to 4 PM
+        const hoursFrom12 = hour - 12;
+        value = 65 - hoursFrom12 * 4 + Math.random() * 5; // Steeper decline
+      } else {
+        // Gradual decrease in moisture for other hours
+        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5;
+      }
       break;
     case 'TEMPERATURE':
-      value = 20 + Math.random() * 15; // 20-35°C
+      // Simulate daily temperature cycle
+      value = 22 + Math.sin((hour - 6) * Math.PI / 12) * 5 + Math.random() * 2;
       break;
     case 'HUMIDITY':
-      value = 60 + Math.random() * 30; // 60-90%
+      // Inverse relationship with temperature
+      value = 70 - Math.sin((hour - 6) * Math.PI / 12) * 10 + Math.random() * 5;
       break;
     case 'LIGHT':
-      value = Math.random() * 255; // 0-255 lux
+      if (hour >= 6 && hour < 18) {
+        // Daylight hours
+        value = Math.sin((hour - 6) * Math.PI / 12) * 200 + Math.random() * 50;
+      } else {
+        // Night time
+        value = Math.random() * 5; // Very low light at night
+      }
       break;
     default:
       value = Math.random() * 100;
   }
+
   return {
     date,
     value: parseFloat(value.toFixed(2)),
