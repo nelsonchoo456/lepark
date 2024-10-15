@@ -135,8 +135,9 @@ class EmailUtility {
         .text(`Category: ${ticket.attractionTicketListing.category}`, 70, yPosition + 20)
         .text(`Nationality: ${ticket.attractionTicketListing.nationality}`, 70, yPosition + 45)
         .text(`Ticket ID: ${ticket.id}`, 70, yPosition + 70)
+        .text(`Price: $${ticket.price}`, 70, yPosition + 90)
         .fontSize(10)
-        .text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', 70, yPosition + 95);
+        .text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', 70, yPosition + 120);
 
       // QR Code
       doc.image(qrCodePath, 450, yPosition + 35, { fit: [80, 80] });

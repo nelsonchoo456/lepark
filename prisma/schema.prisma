@@ -238,6 +238,7 @@ enum AttractionTicketStatusEnum {
 
 model AttractionTicket {
   id                            String                     @id @default(uuid()) @db.Uuid
+  price                         Float
   status                        AttractionTicketStatusEnum
   attractionTicketListingId     String                     @db.Uuid
   attractionTicketTransactionId String                     @db.Uuid

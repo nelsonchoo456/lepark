@@ -81,19 +81,19 @@ const AttractionTicketDetails: React.FC = () => {
       console.error('Ticket element not found');
       return;
     }
-  
+
     html2canvas(ticketElement)
       .then((canvas) => {
         try {
           const image = canvas.toDataURL('image/png');
           const link = document.createElement('a');
           link.href = image;
-          
+
           // Create a sanitized file name
           const attractionTitle = attraction?.title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'unknown_attraction';
           const attractionDate = dayjs(transaction?.attractionDate).format('YYYY-MM-DD');
           const fileName = `${attractionTitle}_${attractionDate}_ticket_${currentTicket.id}.png`;
-          
+
           link.download = fileName;
           document.body.appendChild(link);
           link.click();
@@ -102,7 +102,7 @@ const AttractionTicketDetails: React.FC = () => {
           console.error('Error processing ticket image:', error);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error generating canvas:', error);
       });
   };
@@ -159,6 +159,10 @@ const AttractionTicketDetails: React.FC = () => {
               {' '}
               1 x {currentTicket.attractionTicketListing?.nationality} {currentTicket.attractionTicketListing?.category}
             </Text>
+          </div>
+          <div className="mb-2">
+            <Text strong>Price: $</Text>
+            <Text> {currentTicket.price}</Text>
           </div>
           <div className="mb-2">
             <Text strong>Status:</Text>

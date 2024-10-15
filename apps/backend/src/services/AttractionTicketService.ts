@@ -54,17 +54,31 @@ class AttractionTicketService {
       // For example, checking if the attraction is open, if there are available tickets, etc.
 
       const result = await prisma.$transaction(async (prismaClient) => {
+        // Fetch all required listings in one query
+        const listingIds = tickets.map((ticket) => ticket.listingId);
+        const listings = await prismaClient.attractionTicketListing.findMany({
+          where: { id: { in: listingIds } },
+        });
+
+        // Create a map for quick price lookup
+        const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
         // Create the transaction
         const createdTransaction = await prismaClient.attractionTicketTransaction.create({
           data: {
             ...transactionData,
             attractionTickets: {
-              create: tickets.flatMap((ticket) =>
-                Array(ticket.quantity).fill({
+              create: tickets.flatMap((ticket) => {
+                const price = listingPriceMap.get(ticket.listingId);
+                if (price === undefined) {
+                  throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+                }
+                return Array(ticket.quantity).fill({
+                  price: price,
                   status: AttractionTicketStatusEnum.VALID,
                   attractionTicketListingId: ticket.listingId,
-                }),
-              ),
+                });
+              }),
             },
           },
           include: {
@@ -75,7 +89,6 @@ class AttractionTicketService {
         return createdTransaction;
       });
 
-      // return AttractionTicketDao.createAttractionTicketTransaction(transactionData);
       return result;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -274,7 +287,7 @@ class AttractionTicketService {
 
     const tickets = await AttractionTicketDao.getAttractionTicketsByAttractionId(attractionId);
 
-    const updatedTickets = await Promise.all(tickets.map(ticket => this.updateTicketStatusIfExpired(ticket)));
+    const updatedTickets = await Promise.all(tickets.map((ticket) => this.updateTicketStatusIfExpired(ticket)));
 
     // Fetch the associated ticket listings
     const ticketsWithListings = await Promise.all(

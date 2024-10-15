@@ -30,6 +30,7 @@ export interface CreateAttractionTicketTransactionData {
 
 export interface AttractionTicketResponse {
   id: string;
+  price: number;
   status: AttractionTicketStatusEnum;
   attractionTicketListingId: string;
   attractionTicketTransactionId: string;
