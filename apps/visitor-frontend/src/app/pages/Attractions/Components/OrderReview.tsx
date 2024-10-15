@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Typography, Button, Row, Col, Input, message } from 'antd';
+import { Card, Typography, Button, Row, Col, Input, message, Spin } from 'antd';
 import { LogoText } from '@lepark/common-ui';
 import { Dayjs } from 'dayjs';
 import { PromotionResponse, DiscountTypeEnum, getAllPromotions } from '@lepark/data-access';
@@ -45,11 +45,14 @@ const OrderReview: React.FC<OrderReviewProps> = ({
 
   const discount = useMemo(() => {
     if (!appliedPromotion) return 0;
+    let calculatedDiscount;
     if (appliedPromotion.discountType === DiscountTypeEnum.FIXED_AMOUNT) {
-      return appliedPromotion.discountValue;
+      calculatedDiscount = appliedPromotion.discountValue;
     } else {
-      return subtotal * (appliedPromotion.discountValue / 100);
+      calculatedDiscount = subtotal * (appliedPromotion.discountValue / 100);
     }
+    // Ensure discount doesn't exceed subtotal
+    return Math.min(calculatedDiscount, subtotal);
   }, [appliedPromotion, subtotal]);
 
   const totalPayable = subtotal - discount;
@@ -91,28 +94,35 @@ const OrderReview: React.FC<OrderReviewProps> = ({
     const isApplied = appliedPromotion?.id === promotion.id;
 
     const discountValue =
-      promotion.discountType === DiscountTypeEnum.FIXED_AMOUNT ? `$${promotion.discountValue} OFF` : `${promotion.discountValue}% OFF`;
+      promotion.discountType === DiscountTypeEnum.FIXED_AMOUNT
+        ? `S$${promotion.discountValue.toFixed(2)} OFF`
+        : `${promotion.discountValue}% OFF`;
+
+    const validityPeriod = `Valid from ${dayjs(promotion.validFrom).format('DD MMM YYYY')} to ${dayjs(promotion.validUntil).format(
+      'DD MMM YYYY',
+    )}`;
 
     return (
       <Card key={promotion.id} className="mb-4">
-        <Row justify="space-between" align="middle">
-          <Col>
+        <div className="flex flex-col h-full">
+          <div className="flex-grow">
             <Title level={5}>{promotion.name}</Title>
             <Text>{promotion.description}</Text>
-            <Text className="block text-green-600">{discountValue}</Text>
-          </Col>
-          <Col>
-            {isApplied ? (
-              <Button type="primary" onClick={() => handleApplyPromotion(promotion)}>
-                Unapply
-              </Button>
-            ) : (
-              <Button onClick={() => handleApplyPromotion(promotion)} disabled={appliedPromotion !== null}>
-                Apply
-              </Button>
-            )}
-          </Col>
-        </Row>
+          </div>
+          <div className="mt-4 flex justify-between items-end">
+            <div>
+              <Text className="block text-green-600 font-semibold">{discountValue}</Text>
+              <Text className="block text-xs text-gray-500">{validityPeriod}</Text>
+            </div>
+            <Button
+              type={isApplied ? 'primary' : 'default'}
+              onClick={() => handleApplyPromotion(promotion)}
+              disabled={!isApplied && appliedPromotion !== null}
+            >
+              {isApplied ? 'Applied' : 'Apply'}
+            </Button>
+          </div>
+        </div>
       </Card>
     );
   };
@@ -139,10 +149,19 @@ const OrderReview: React.FC<OrderReviewProps> = ({
         ))}
       </Card>
 
-      <Title level={5}>Available Promotions</Title>
-      {loading ? <div>Loading promotions...</div> : promotions.map(renderPromotionCard)}
+      <Title level={5} className="mt-6 mb-4">
+        Available Promotions
+      </Title>
+      {loading ? (
+        <div className="text-center">
+          <Spin size="large" />
+          <Text className="block mt-2">Loading promotions...</Text>
+        </div>
+      ) : (
+        promotions.map(renderPromotionCard)
+      )}
 
-      <Row gutter={16} className="mt-4">
+      <Row gutter={16} className="mt-6">
         <Col span={12}>
           <Button onClick={onBack} className="w-full">
             Back
