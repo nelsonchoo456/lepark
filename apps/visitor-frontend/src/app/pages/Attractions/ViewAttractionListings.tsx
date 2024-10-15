@@ -18,6 +18,12 @@ import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
+interface TicketDetail {
+  description: string;
+  quantity: number;
+  price: number;
+}
+
 const ViewAttractionTicketListings = () => {
   const { attractionId } = useParams<{ attractionId: string }>();
   const [listings, setListings] = useState<AttractionTicketListingResponse[]>([]);
@@ -71,7 +77,16 @@ const ViewAttractionTicketListings = () => {
     setStep('select-date');
   };
 
-  const handleBackToTicketSelection = () => {
+  const handleBackToTicketSelection = (currentTickets: TicketDetail[]) => {
+    const updatedTicketCounts = currentTickets.reduce((acc, ticket) => {
+      const listing = listings.find((l) => `${l.nationality} · ${l.category}` === ticket.description);
+      if (listing) {
+        acc[listing.id] = ticket.quantity;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    setTicketCounts(updatedTicketCounts);
     setStep('select-tickets');
   };
 
@@ -174,14 +189,16 @@ const ViewAttractionTicketListings = () => {
         return (
           <SelectDateAndReview
             attractionName={attraction?.title || ''}
-            ticketDetails={Object.entries(ticketCounts).map(([id, quantity]) => {
-              const listing = listings.find((l) => l.id === id);
-              return {
-                description: `${listing?.nationality} · ${listing?.category}` || '',
-                quantity,
-                price: listing?.price || 0,
-              };
-            })}
+            ticketDetails={Object.entries(ticketCounts)
+              .filter(([_, quantity]) => quantity > 0)
+              .map(([id, quantity]) => {
+                const listing = listings.find((l) => l.id === id);
+                return {
+                  description: `${listing?.nationality} · ${listing?.category}` || '',
+                  quantity,
+                  price: listing?.price || 0,
+                };
+              })}
             onBack={handleBackToTicketSelection}
             onNext={handleDateSelected}
           />
@@ -191,14 +208,16 @@ const ViewAttractionTicketListings = () => {
           <OrderReview
             attractionName={attraction?.title || ''}
             selectedDate={selectedDate!}
-            ticketDetails={Object.entries(ticketCounts).map(([id, quantity]) => {
-              const listing = listings.find((l) => l.id === id);
-              return {
-                description: `${listing?.nationality} · ${listing?.category}` || '',
-                quantity,
-                price: listing?.price || 0,
-              };
-            })}
+            ticketDetails={Object.entries(ticketCounts)
+              .filter(([_, quantity]) => quantity > 0)
+              .map(([id, quantity]) => {
+                const listing = listings.find((l) => l.id === id);
+                return {
+                  description: `${listing?.nationality} · ${listing?.category}` || '',
+                  quantity,
+                  price: listing?.price || 0,
+                };
+              })}
             appliedPromotion={appliedPromotion}
             onApplyPromotion={handleApplyPromotion}
             onBack={handleBackToDateSelection}
