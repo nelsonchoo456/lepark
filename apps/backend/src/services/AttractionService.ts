@@ -5,6 +5,7 @@ import AttractionDao from '../dao/AttractionDao';
 import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
+import AttractionTicketDao from '../dao/AttractionTicketDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -149,7 +150,14 @@ class AttractionService {
   }
 
   public async deleteAttraction(id: string): Promise<void> {
-    await AttractionDao.deleteAttraction(id);
+    // check if attraction has any transactions
+    const attraction = await AttractionDao.getAttractionById(id);
+    const transactions = await AttractionTicketDao.getAttractionTicketTransactionsByAttractionId(id);
+    if (transactions.length > 0) {
+      throw new Error('Attraction has existing visitor transactions and cannot be deleted');
+    } else {
+      await AttractionDao.deleteAttraction(id);
+    }
   }
 
   public async uploadImageToS3(fileBuffer, fileName, mimeType) {

@@ -1,6 +1,6 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message } from 'antd';
+import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, message, Modal } from 'antd';
 import moment from 'moment';
 import { FiArchive, FiExternalLink, FiEye, FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
@@ -11,6 +11,7 @@ import {
   StaffResponse,
   deleteAttraction,
   AttractionStatusEnum,
+  updateAttractionDetails,
 } from '@lepark/data-access';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -30,6 +31,7 @@ const AttractionList: React.FC = () => {
   const [attractionToBeDeleted, setAttractionToBeDeleted] = useState<AttractionResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { parks } = useFetchParks();
+  const [closeAttractionModalOpen, setCloseAttractionModalOpen] = useState(false);
 
   const statusConfig: Record<AttractionStatusEnum, { color: string; label: string }> = {
     [AttractionStatusEnum.OPEN]: { color: 'green', label: formatEnumLabelToRemoveUnderscores(AttractionStatusEnum.OPEN) },
@@ -161,14 +163,48 @@ const AttractionList: React.FC = () => {
         type: 'success',
         content: `Deleted Attraction: ${attractionToBeDeleted.title}.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      setAttractionToBeDeleted(null);
-      setDeleteModalOpen(false);
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('Attraction has existing visitor transactions and cannot be deleted')) {
+        // messageApi.open({
+        //   type: 'error',
+        //   content: `Attraction has existing visitor transactions and cannot be deleted.`,
+        // });
+        if (attractionToBeDeleted) {
+          setDeleteModalOpen(false);
+          setCloseAttractionModalOpen(true);
+        }
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: `Unable to delete Attraction at this time. Please try again later.`,
+        });
+        setAttractionToBeDeleted(null);
+        setDeleteModalOpen(false);
+      }
+    }
+  };
+
+  const handleSetAttractionAsClosed = async () => {
+    try {
+      if (!attractionToBeDeleted) return;
+      
+      await updateAttractionDetails(attractionToBeDeleted.id, { status: AttractionStatusEnum.CLOSED });
+      triggerFetch();
+      messageApi.open({
+        type: 'success',
+        content: `Attraction "${attractionToBeDeleted.title}" has been closed.`,
+      });
+    } catch (error) {
+      console.error(error);
       messageApi.open({
         type: 'error',
-        content: `Unable to delete Attraction at this time. Please try again later.`,
+        content: 'Failed to close the attraction. Please try again later.',
       });
+    } finally {
+      setCloseAttractionModalOpen(false);
+      setAttractionToBeDeleted(null);
     }
   };
 
@@ -214,6 +250,19 @@ const AttractionList: React.FC = () => {
       <Card>
         <Table dataSource={filteredAttractions} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
       </Card>
+
+      <Modal
+        title="Close Attraction"
+        open={closeAttractionModalOpen}
+        onOk={handleSetAttractionAsClosed}
+        onCancel={() => {
+          setCloseAttractionModalOpen(false);
+          setAttractionToBeDeleted(null);
+        }}
+      >
+        <p>This attraction cannot be deleted because it has existing visitor ticket transactions.</p>
+        <p>Would you like to close the attraction instead?</p>
+      </Modal>
     </ContentWrapperDark>
   );
 };
