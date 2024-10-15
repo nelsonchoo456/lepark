@@ -14,7 +14,7 @@ interface TicketDetail {
 interface SelectDateAndReviewProps {
   attractionName: string;
   ticketDetails: TicketDetail[];
-  onBack: () => void;
+  onBack: (currentTickets: TicketDetail[]) => void;
   onNext: (selectedDate: Dayjs) => void;
 }
 
@@ -44,6 +44,10 @@ const SelectDateAndReview: React.FC<SelectDateAndReviewProps> = ({ attractionNam
     if (date.isSame(today, 'month') || date.isSame(thirtyDaysLater, 'month')) {
       setCurrentMonth(date);
     }
+  };
+
+  const handleBack = () => {
+    onBack(ticketDetails);
   };
 
   return (
@@ -96,7 +100,7 @@ const SelectDateAndReview: React.FC<SelectDateAndReviewProps> = ({ attractionNam
       </Card>
       <Row gutter={16} className="mt-4">
         <Col span={12}>
-          <Button onClick={onBack} className="w-full">
+          <Button onClick={handleBack} className="w-full">
             Back
           </Button>
         </Col>

@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import { getAttractionTicketById } from '@lepark/data-access';
+import { getAttractionTicketById, viewVisitorDetails } from '@lepark/data-access';
 
 class EmailUtility {
   async sendPasswordResetEmail(recipientEmail: string, resetLink: string) {
@@ -99,6 +99,9 @@ class EmailUtility {
     const pdfDirectory = path.join(__dirname, '..', '..', '..', '..', 'temp', 'pdfs', 'attraction-tickets');
     const pdfPath = path.join(pdfDirectory, `AttractionTicket-${transaction.id}.pdf`);
 
+    const visitorResponse = await viewVisitorDetails(transaction.visitorId);
+    const visitor = visitorResponse.data;
+
     // Ensure the directory exists
     await fs.promises.mkdir(pdfDirectory, { recursive: true });
 
@@ -110,10 +113,11 @@ class EmailUtility {
 
     // Add transaction details
     doc
-      .fontSize(10)
-      .text(`Customer: ${transaction.visitorId}`, { align: 'right' })
-      .text(`Order #: ${transaction.id}`, { align: 'right' })
-      .text(`VALID ON ${new Date(transaction.attractionDate).toDateString()}`, { align: 'right' });
+      .fontSize(12)
+      .text(`Purchased by: ${visitor.firstName} ${visitor.lastName}`, { align: 'left' })
+      .text(`Order Number: ${transaction.id}`, { align: 'left' })
+      .text(`Purchase Date: ${new Date(transaction.purchaseDate).toDateString()}`, { align: 'left' })
+      .text(`Visit Date: ${new Date(transaction.attractionDate).toDateString()}`, { align: 'left' });
 
     doc.moveDown(2); // Add more space before tickets
 
