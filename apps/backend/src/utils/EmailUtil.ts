@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import { getAttractionTicketById } from '@lepark/data-access';
 
 class EmailUtility {
   async sendPasswordResetEmail(recipientEmail: string, resetLink: string) {
@@ -94,7 +95,7 @@ class EmailUtility {
   }
 
   async generatePDF(transaction: any): Promise<string> {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ size: 'A4' });
     const pdfDirectory = path.join(__dirname, '..', '..', '..', '..', 'temp', 'pdfs', 'attraction-tickets');
     const pdfPath = path.join(pdfDirectory, `AttractionTicket-${transaction.id}.pdf`);
 
@@ -103,30 +104,45 @@ class EmailUtility {
 
     doc.pipe(fs.createWriteStream(pdfPath));
 
-    // Add logo
-    // doc.image('path/to/logo.png', 25, 30, { fit: [80, 50] });
+    // Add header
+    doc.font('Helvetica-Bold').fontSize(18).text('Lepark Attraction Ticket', { align: 'center' });
+    doc.moveDown();
 
     // Add transaction details
-    doc.font('Helvetica-Bold').fontSize(12).text('Lepark', 25, 100);
-    doc.fontSize(12).text(`Customer: ${transaction.visitorId}`, 320, 100);
-    doc.fontSize(12).text(`Order #: ${transaction.id}`, 320, 115);
-    doc.fontSize(12).text('Attraction Ticket', 25, 115);
-    doc.fontSize(12).text(`VALID ON ${new Date(transaction.attractionDate).toDateString()}`);
+    doc
+      .fontSize(10)
+      .text(`Customer: ${transaction.visitorId}`, { align: 'right' })
+      .text(`Order #: ${transaction.id}`, { align: 'right' })
+      .text(`VALID ON ${new Date(transaction.attractionDate).toDateString()}`, { align: 'right' });
+
+    doc.moveDown(2); // Add more space before tickets
 
     // Add tickets
     let yPosition = 180;
-    for (const ticket of transaction.attractionTickets) {
+    for (const ticketData of transaction.attractionTickets) {
+      const response = await getAttractionTicketById(ticketData.id);
+      const ticket = response.data;
+
       const qrCodePath = await this.generateQRCode(`http://localhost:4200/verify-ticket/${ticket.id}`);
 
-      doc.rect(25, yPosition, 560, 115).fillColor('darkgreen').fill();
+      // Green box for the ticket
+      doc.rect(50, yPosition, 500, 150).fillColor('darkgreen').fill();
+
+      // Ticket details
       doc
         .fillColor('white')
-        .fontSize(14)
-        .text(ticket.listingId, 230, yPosition + 15);
-      doc.fontSize(10).text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', 165, yPosition + 40);
-      doc.image(qrCodePath, 260, yPosition + 60, { fit: [80, 80] });
+        .fontSize(12)
+        .text(`Category: ${ticket.attractionTicketListing.category}`, 70, yPosition + 20)
+        .text(`Nationality: ${ticket.attractionTicketListing.nationality}`, 70, yPosition + 45)
+        .text(`Ticket ID: ${ticket.id}`, 70, yPosition + 70)
+        .fontSize(10)
+        .text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', 70, yPosition + 95);
 
-      yPosition += 130;
+      // QR Code
+      doc.image(qrCodePath, 450, yPosition + 35, { fit: [80, 80] });
+
+      yPosition += 170; // Adjust spacing between tickets
+
       if (yPosition > 700) {
         doc.addPage();
         yPosition = 50;
@@ -134,7 +150,10 @@ class EmailUtility {
     }
 
     // Add terms and conditions
-    doc.fillColor('black').fontSize(8).text('Terms and conditions...', 25, yPosition);
+    doc
+      .fillColor('black')
+      .fontSize(8)
+      .text('Terms and conditions...', 50, yPosition + 20);
 
     doc.end();
     return pdfPath;
