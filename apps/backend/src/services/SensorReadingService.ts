@@ -322,7 +322,7 @@ class SensorReadingService {
       const percentageChange = (averageAbsoluteChange / 100) * 100; // Assuming a base value of 100 for percentage calculation
 
       const directionOfChange = averageAbsoluteChange > 0 ? 'Increasing' : averageAbsoluteChange < 0 ? 'Decreasing' : 'Stable';
-      
+
       let magnitudeOfChange: string;
       if (Math.abs(percentageChange) < 1) {
         magnitudeOfChange = 'Minimal';
@@ -336,7 +336,13 @@ class SensorReadingService {
 
       const trendDescription = `${magnitudeOfChange} ${directionOfChange.toLowerCase()}`;
 
-      const actionableInsight = this.getActionableInsight(sensorType, trendDescription, averageAbsoluteChange, averageRateOfChange, averageTimeSpanHours);
+      const actionableInsight = this.getActionableInsight(
+        sensorType,
+        trendDescription,
+        averageAbsoluteChange,
+        averageRateOfChange,
+        averageTimeSpanHours,
+      );
 
       return {
         trendDescription,
@@ -370,56 +376,122 @@ class SensorReadingService {
     rateOfChange: number,
     timeSpanHours: number
   ): string {
+    const currentTime = new Date(); // Get the current time
+
     switch (sensorType) {
       case SensorTypeEnum.TEMPERATURE:
-        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange)}`;
+        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.HUMIDITY:
-        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange)}`;
+        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.SOIL_MOISTURE:
-        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange)}`;
+        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.LIGHT:
-        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(absoluteChange, rateOfChange)}`;
+        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(absoluteChange, rateOfChange, currentTime)}`;
       default:
         return `The sensor readings have shown a ${trendDescription} trend. Monitor the situation and adjust conditions if necessary.`;
     }
   }
 
-  private getTemperatureInsight(absoluteChange: number, rateOfChange: number): string {
-    if (Math.abs(absoluteChange) > 5) {
-      return `This is a significant temperature change. Check environmental controls and adjust if necessary.`;
-    } else if (Math.abs(rateOfChange) > 1) {
-      return `Temperature is changing rapidly. Monitor closely and prepare to intervene if the trend continues.`;
+  private getTemperatureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < 0) {
+        return `Unexpected morning temperature drop. Monitor for any sudden weather changes or shading issues.`;
+      } else if (rateOfChange > 2) {
+        return `Temperature rising quickly. Ensure plants are protected from heat stress as the day warms up.`;
+      }
+      return `Temperature rising normally for morning hours. Keep an eye on any sudden heat spikes.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (Math.abs(rateOfChange) > 1) {
+        return `Significant temperature fluctuations during peak heat. Ensure plants have adequate shade and hydration.`;
+      }
+      return `Temperature stable during the afternoon heat. Watch for signs of heat stress, especially in exposed areas.`;
+    } else {
+      if (rateOfChange > 0) {
+        return `Unusual temperature rise in the evening. Investigate potential heat sources or malfunctioning equipment.`;
+      } else if (rateOfChange < -2) {
+        return `Rapid temperature drop in the evening. Ensure plants sensitive to temperature changes are protected.`;
+      }
+      return `Temperature cooling down as expected. No immediate action required.`;
     }
-    return `Current temperature changes are within normal range. Continue regular monitoring.`;
-  }
+}
 
-  private getHumidityInsight(absoluteChange: number, rateOfChange: number): string {
-    if (Math.abs(absoluteChange) > 15) {
-      return `This is a substantial humidity change. Check for leaks, ventilation issues, or malfunctioning humidifiers/dehumidifiers.`;
-    } else if (Math.abs(rateOfChange) > 3) {
-      return `Humidity is changing quickly. Investigate possible causes and adjust environmental controls if needed.`;
+private getHumidityInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < -2) {
+        return `Humidity dropping quickly this morning. Consider light misting for moisture-sensitive plants.`;
+      }
+      return `Morning humidity changes are typical. No immediate action needed.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (rateOfChange < -1) {
+        return `Humidity decreasing during peak hours. Ensure plants have adequate water to cope with the heat.`;
+      }
+      return `Humidity levels are stable for midday. Continue regular monitoring.`;
+    } else {
+      if (rateOfChange > 2) {
+        return `Humidity increasing rapidly in the evening. Monitor for potential fungal growth in sensitive plants.`;
+      }
+      return `Evening humidity levels are typical. Watch for signs of excess moisture on foliage.`;
     }
-    return `Humidity changes are moderate. Ensure plants are not showing signs of stress.`;
-  }
+}
 
-  private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number): string {
-    if (absoluteChange < -10) {
-      return `Soil is drying out significantly. Consider adjusting irrigation schedule or checking for drainage issues.`;
-    } else if (absoluteChange > 10) {
-      return `Soil moisture has increased substantially. Check for overwatering or poor drainage.`;
-    } else if (Math.abs(rateOfChange) > 2) {
-      return `Soil moisture is changing rapidly. Monitor closely and adjust watering practices if needed.`;
+private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < -2) {
+        return `Soil moisture decreasing faster than usual this morning. Check for drainage issues or adjust watering schedules.`;
+      }
+      return `Morning soil moisture levels are stable. Continue regular irrigation checks.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (rateOfChange < -3) {
+        return `Rapid soil moisture loss during peak heat. Increase watering for plants in sunny or high-traffic areas.`;
+      }
+      return `Soil moisture stable during peak hours. Monitor plants in exposed areas for signs of stress.`;
+    } else {
+      if (rateOfChange > 2 && absoluteChange > 10) {
+        return `Unexpected increase in soil moisture this evening. Check for overwatering or potential irrigation system issues.`;
+      }
+      return `Evening soil moisture levels are normal. Adjust irrigation schedules if necessary.`;
     }
-    return `Soil moisture changes are within expected range. Continue regular monitoring and maintenance.`;
-  }
+}
 
-  private getLightInsight(absoluteChange: number, rateOfChange: number): string {
-    if (Math.abs(absoluteChange) > 150) {
-      return `Light levels have changed dramatically. Check for obstructions, changes in artificial lighting, or seasonal effects.`;
-    } else if (Math.abs(rateOfChange) > 100) {
-      return `Light levels are fluctuating rapidly. Investigate possible causes and consider adjusting light sources or shading.`;
+private getLightInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < 50) {
+        return `Morning light levels rising slower than expected. Check for cloud cover or shading.`;
+      }
+      return `Light levels increasing as expected. Protect shade-loving plants from morning sun.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (Math.abs(rateOfChange) > 100) {
+        return `Midday light fluctuating significantly. Check for sudden weather changes or intermittent shading.`;
+      }
+      return `Midday light levels are stable. Monitor plants sensitive to intense sunlight.`;
+    } else {
+      if (hour < 21 && rateOfChange > -50) {
+        return `Light levels decreasing slowly in the evening. Check for artificial lighting that may disrupt plant cycles.`;
+      }
+      return `Evening light levels dropping as expected. Ensure any artificial lights are adjusted for plant photoperiods.`;
     }
-    return `Light level changes are moderate. Ensure plants are receiving appropriate light for their needs.`;
+}
+
+  private getSensorUnit(sensorType: SensorTypeEnum): string {
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return '°C';
+      case SensorTypeEnum.HUMIDITY:
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return '%';
+      case SensorTypeEnum.LIGHT:
+        return 'Lux';
+      default:
+        return '';
+    }
   }
 
   // Compare 4 hours to 8 hours ago (for example)
@@ -506,20 +578,6 @@ class SensorReadingService {
         return lightValue > 50 ? 'Light level too high for full shade species' : null;
       default:
         return null;
-    }
-  }
-
-  private getSensorUnit(sensorType: SensorTypeEnum): string {
-    switch (sensorType) {
-      case SensorTypeEnum.TEMPERATURE:
-        return '°C';
-      case SensorTypeEnum.HUMIDITY:
-      case SensorTypeEnum.SOIL_MOISTURE:
-        return '%';
-      case SensorTypeEnum.LIGHT:
-        return 'Lux';
-      default:
-        return '';
     }
   }
 
