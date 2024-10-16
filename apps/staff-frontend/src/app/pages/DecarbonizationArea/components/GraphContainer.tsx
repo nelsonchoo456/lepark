@@ -22,11 +22,24 @@ const GraphContainer: React.FC<GraphContainerProps> = ({ title, data, type, opti
     return null;
   }
 
+  // Customize options to disable datalabels
+  const customOptions = {
+    ...options,
+    plugins: {
+      ...options.plugins,
+      datalabels: {
+        display: false,
+      },
+    },
+  };
+
   return (
     <div className={containerClass}>
       <div className="graph-title">{title}</div>
       <div className="graph-wrapper">
-        <div className="graph">{type === 'line' ? <Line data={data} options={options} /> : <Bar data={data} options={options} />}</div>
+        <div className="graph">
+          {type === 'line' ? <Line data={data} options={customOptions} /> : <Bar data={data} options={customOptions} />}
+        </div>
       </div>
     </div>
   );
