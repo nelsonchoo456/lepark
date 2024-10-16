@@ -73,8 +73,35 @@ class SequestrationHistoryDao {
         }
       }
     });
-    console.log('Aggregation result:', result);
     return result._sum.seqValue || 0;
+  }
+
+    async getTotalSequestrationForParkAndYear(parkId: number, year: number): Promise<number> {
+  const startOfYear = new Date(year, 0, 1); // January 1st of the given year
+  const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999); // December 31st of the given year
+
+  const whereClause = {
+    date: {
+      gte: startOfYear,
+      lte: endOfYear
+    }
+  };
+
+  // If parkId is not 0, add it to the where clause
+  if (parkId !== 0) {
+    whereClause['decarbonizationArea'] = { parkId: parkId };
+  }
+
+  const result = await prisma.sequestrationHistory.aggregate({
+    _sum: {
+      seqValue: true
+    },
+    where: whereClause
+  });
+
+  const totalSequestration = result._sum.seqValue || 0;
+
+  return totalSequestration;
   }
 }
 

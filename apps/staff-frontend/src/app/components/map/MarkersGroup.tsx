@@ -81,7 +81,7 @@ const MarkersGroup = ({
                           className="text-green-600 cursor-pointer hover:text-green-900"
                           onClick={() => navigate(`/zone/${occurrence.zoneId}`)}
                         >
-                          @ {occurrence.zoneName}
+                          @ {occurrence.zone.name}
                         </p>
                       </Tooltip>
                     </div>

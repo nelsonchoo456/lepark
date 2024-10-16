@@ -39,6 +39,7 @@ export interface PlantTaskResponse {
   assignedStaff?: StaffResponse;
   submittingStaffId: string;
   submittingStaff: StaffResponse;
+  position: number; // Add this line
 }
 
 export interface PlantTaskUpdateData {
@@ -48,4 +49,5 @@ export interface PlantTaskUpdateData {
   taskUrgency?: PlantTaskUrgencyEnum;
   dueDate?: string | null;
   images?: string[];
+  position?: number; // Add this line
 }

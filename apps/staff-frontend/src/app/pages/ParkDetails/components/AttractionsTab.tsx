@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card, List, Typography, Button, Empty, Col, Row } from 'antd';
-import { AttractionResponse, AttractionStatusEnum, getAttractionsByParkId } from '@lepark/data-access';
+import { AttractionResponse, AttractionStatusEnum, getAttractionsByParkId, StaffResponse, StaffType } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import AttractionStatusTag from '../../AttractionDetails/components/AttractionStatusTag';
 import { FiExternalLink } from 'react-icons/fi';
+import { useAuth } from '@lepark/common-ui';
 
 const { Text, Title } = Typography;
 
@@ -13,6 +14,7 @@ interface AttractionsTabProps {
 
 const AttractionsTab: React.FC<AttractionsTabProps> = ({ parkId }) => {
   const [attractions, setAttractions] = useState<AttractionResponse[]>([]);
+  const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -49,11 +51,13 @@ const AttractionsTab: React.FC<AttractionsTabProps> = ({ parkId }) => {
 
   return (
     <>
+      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && (
       <div className="mb-4 flex justify-end">
         <Button type="link" icon={<FiExternalLink />} onClick={handleViewAllAttractions}>
           View All Attractions
-        </Button>
-      </div>
+          </Button>
+        </div>
+      )}
       <Row gutter={[16, 16]}>
         {attractions.map((attraction) => (
           <Col xs={24} sm={12} md={8} key={attraction.id}>

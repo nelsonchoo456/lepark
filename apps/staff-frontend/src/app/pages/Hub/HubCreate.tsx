@@ -168,9 +168,9 @@ const HubCreate = () => {
             <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
               <Input placeholder="Enter Serial Number" />
             </Form.Item>
-            <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
+            {/* <Form.Item name="hubStatus" label="Hub Status" rules={[{ required: true, message: 'Please select Hub Status' }]}>
               <Select placeholder="Select Hub Status" options={hubStatusOptions} />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"

@@ -13,6 +13,9 @@ import {
   EventResponse,
   FacilityWithEvents,
   getEventsByFacilityId,
+  getDecarbonizationAreasByParkId,
+  DecarbonizationAreaResponse,
+  getOccurrencesWithinDecarbonizationArea,
 } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
@@ -31,6 +34,7 @@ import { MdArrowOutward } from 'react-icons/md';
 import ParkStatusTag from './ParkStatusTag';
 import { SCREEN_LG } from '../../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { parseGeom } from '../../DecarbonizationAreaDetails/components/MapTab';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -44,12 +48,14 @@ const MapTab = ({ park }: MapTabProps) => {
   const [events, setEvents] = useState<EventResponse[]>();
   const [facilityEvents, setFacilityEvents] = useState<FacilityWithEvents[]>();
   const [facilities, setFacilities] = useState<FacilityWithEvents[]>();
+  const [decarbAreas, setDecarbAreas] = useState<(DecarbonizationAreaResponse & { occurrences?: OccurrenceResponse[] })[]>();
 
   const [showZones, setShowZones] = useState<boolean>(false);
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
   const [showAttractions, setShowAttractions] = useState<boolean>(false);
   const [showEvents, setShowEvents] = useState<boolean>(false);
   const [showFacilities, setShowFacilities] = useState<boolean>(false);
+  const [showDecarb, setShowDecarb] = useState<boolean>(false);
 
   const [hovered, setHovered] = useState<HoverItem | null>(null); // Shared hover state
   
@@ -75,6 +81,7 @@ const MapTab = ({ park }: MapTabProps) => {
       fetchAttractions();
       fetchEvents();
       fetchFacilities();
+      fetchDecarbonisationAreas();
     }
   }, [park]);
 
@@ -150,24 +157,72 @@ const MapTab = ({ park }: MapTabProps) => {
     }
   };
 
+  const fetchDecarbonisationAreas = async () => {
+    const decarbRes = await getDecarbonizationAreasByParkId(park.id);
+    if (decarbRes.status === 200) {
+      const decarbData = decarbRes.data;
+      setDecarbAreas(decarbData);
+      const decarbWithOccurrences = await Promise.all(
+        decarbData.map(async (decarb) => {
+          try {
+            const occurrencesRes = await getOccurrencesWithinDecarbonizationArea(decarb.id);
+
+            return { ...decarb, occurrences: occurrencesRes.data }; // Append events to the facility
+          } catch (error) {
+            return { ...decarb, occurrences: [] };
+          }
+        }),
+      );
+      console.log(decarbWithOccurrences)
+      setDecarbAreas(decarbWithOccurrences);
+    }
+  };
+
   return (
     <>
       <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
-        <Space size={16} className='flex-wrap'>
+        <Space size={16} className="flex-wrap">
           <div className="font-semibold">Display:</div>
-          <Checkbox onChange={(e) => setShowZones(e.target.checked)} checked={showZones} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+          <Checkbox
+            onChange={(e) => setShowZones(e.target.checked)}
+            checked={showZones}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
             Zones
           </Checkbox>
-          <Checkbox onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+          <Checkbox
+            onChange={(e) => setShowDecarb(e.target.checked)}
+            checked={showDecarb}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
+            Decarbonization Areas
+          </Checkbox>
+          <Checkbox
+            onChange={(e) => setShowOccurrences(e.target.checked)}
+            checked={showOccurrences}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
             Occurrences
           </Checkbox>
-          <Checkbox onChange={(e) => setShowAttractions(e.target.checked)} checked={showAttractions} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+          <Checkbox
+            onChange={(e) => setShowAttractions(e.target.checked)}
+            checked={showAttractions}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
             Attractions
           </Checkbox>
-          <Checkbox onChange={(e) => setShowEvents(e.target.checked)} checked={showEvents} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+          <Checkbox
+            onChange={(e) => setShowEvents(e.target.checked)}
+            checked={showEvents}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
             Events
           </Checkbox>
-          <Checkbox onChange={(e) => setShowFacilities(e.target.checked)} checked={showFacilities} className='border-gray-200 border-[1px] px-4 py-1 rounded-full'>
+          <Checkbox
+            onChange={(e) => setShowFacilities(e.target.checked)}
+            checked={showFacilities}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
             Facilities
           </Checkbox>
         </Space>
@@ -179,17 +234,48 @@ const MapTab = ({ park }: MapTabProps) => {
         }}
         className="rounded-xl md:overflow-hidden"
       >
-        <MapContainer
-          key="park-map-tab"
-          center={[1.287953, 103.851784]}
-          zoom={11}
-          className="leaflet-mapview-container h-full w-full"
-        >
+        <MapContainer key="park-map-tab" center={[1.287953, 103.851784]} zoom={11} className="leaflet-mapview-container h-full w-full">
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }} />
+          <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />
+          {showDecarb &&
+            decarbAreas &&
+            decarbAreas.map((decarb) => (
+              <PolygonWithLabel
+                key={decarb.id}
+                entityId={decarb.id}
+                geom={parseGeom(decarb.geom)}
+                polygonLabel={<div className="flex items-center gap-2 text-highlightGreen-600">{decarb.name}</div>}
+                color={`transparent`}
+                fillColor={COLORS.highlightGreen[200]}
+                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+                handlePolygonClick={() =>
+                  setHovered({
+                    id: decarb.id,
+                    image: park && park.images && park.images.length > 0 ? park.images[0] : null,
+                    title: (
+                      <div className="flex justify-between items-center w-full">
+                        <div>{decarb.name}</div>
+                        <Tooltip title="View Details">
+                          <Button icon={<MdArrowOutward />} shape="circle" type="primary" onClick={() => navigate(`/decarbonization-area/${decarb.id}`)}/>
+                        </Tooltip>
+                      </div>
+                    ),
+                    entityType: 'DECARBONIZATION',
+                    children: decarb.occurrences ? (
+                      <div className="text-green-600">
+                        Number of Occurrences: <strong>{decarb.occurrences.length}</strong>
+                      </div>
+                    ) : (
+                      <div className="text-green-600 opacity-50 italic">No occurrences</div>
+                    ),
+                  })
+                }
+              />
+            ))}
+
           {showZones &&
             zones &&
             zones.map((zone) => (
@@ -203,11 +289,13 @@ const MapTab = ({ park }: MapTabProps) => {
                     {zone.name}
                   </div>
                 }
-                color={COLORS.green[600]}
-                fillColor={'transparent'}
+                // color={COLORS.green[600]}
+                color={`transparent`}
+                fillColor={COLORS.green[200]}
                 labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
               />
             ))}
+
           {showOccurrences &&
             occurrences &&
             occurrences.map((occurrence) => (

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiMap, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
-import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate } from 'react-icons/tb';
+import { TbTrees, TbTree, TbTicket, TbCalendarEvent, TbBuildingEstate, TbDeviceAnalytics } from 'react-icons/tb';
 import { Menu, message } from 'antd';
 import Logo from '../logo/Logo';
 import { PiPottedPlant } from 'react-icons/pi';
@@ -15,7 +15,7 @@ import type { MenuProps } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
-
+import { AiOutlinePercentage } from 'react-icons/ai';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -35,7 +35,6 @@ const MainLayout = () => {
       return;
     } else {
       const role = await user.role;
-      console.log(user);
       setUserRole(role);
     }
   };
@@ -185,7 +184,7 @@ const MainLayout = () => {
     userRole === StaffType.BOTANIST
       ? {
           key: 'iot',
-          label: 'IoT Assets',
+          label: 'IoT',
           icon: <MdSensors />,
           children: [
             {
@@ -200,29 +199,52 @@ const MainLayout = () => {
               label: 'Hubs',
               onClick: () => navigate('/hubs'),
             },
+            {
+              key: 'zones',
+              icon: <TbDeviceAnalytics />,
+              label: 'Zones Monitoring',
+              onClick: () => navigate('/iot/zones'),
+            },
+            {
+              key: 'iot-map',
+              icon: <FiMap />,
+              label: 'Map View',
+              onClick: () => navigate('/sensor/map-view'),
+            },
           ],
         }
       : null,
     {
       key: 'parkasset',
       icon: <PiToolboxBold />,
-      label: 'Park Assets (non-IoT)',
+      label: 'Park Assets',
       onClick: () => navigate('/parkasset'),
     },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
-          key: 'attraction',
+          key: 'attractionEvents',
           icon: <TbTicket />,
-          label: 'Attractions',
-          onClick: () => navigate('/attraction'),
-        }
-      : null,
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
-      ? {
-          key: 'event',
-          icon: <TbCalendarEvent />,
-          label: 'Events',
-          onClick: () => navigate('/event'),
+          label: 'Attractions & Events',
+          children: [
+            {
+              key: 'attraction',
+              icon: <TbTicket />,
+              label: 'Attractions',
+              onClick: () => navigate('/attraction'),
+            },
+            {
+              key: 'event',
+              icon: <TbCalendarEvent />,
+              label: 'Events',
+              onClick: () => navigate('/event'),
+            },
+            {
+              key: 'promotion',
+              icon: <AiOutlinePercentage />,
+              label: 'Promotions',
+              onClick: () => navigate('/promotion'),
+            },
+          ],
         }
       : null,
     userRole === 'MANAGER' ||
@@ -249,6 +271,12 @@ const MainLayout = () => {
           ],
         }
       : null,
+     {
+      key: 'faq',
+      icon: <FiHelpCircle />,
+      label: 'FAQ',
+      onClick: () => navigate('/faq'),
+    },
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',

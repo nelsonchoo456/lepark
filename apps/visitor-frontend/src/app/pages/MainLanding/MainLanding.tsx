@@ -1,4 +1,4 @@
-import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
+import { ContentWrapper, Divider, LogoText, QrScanner2 } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
@@ -14,8 +14,11 @@ import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect, useState } from 'react';
-import { fetchTotalSequestration, calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { getTotalSequestrationForParkAndYear } from '@lepark/data-access';
 import { FiExternalLink } from 'react-icons/fi';
+import { AiOutlinePercentage } from 'react-icons/ai';
+import { BiSolidDiscount } from 'react-icons/bi';
 
 const MainLanding = () => {
     const navigate = useNavigate();
@@ -23,12 +26,13 @@ const MainLanding = () => {
   const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
   const [poweredDays, setPoweredDays] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
+useEffect(() => {
+    const fetchSequestration = async () => {
       if (selectedPark?.id) {
         try {
-          const currentDate = '2024-08-28'; // Hardcoded to 28 August 2024
-          const sequestration = await fetchTotalSequestration(selectedPark.id, currentDate);
+          const currentYear = new Date().getFullYear().toString();
+          const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
+          const sequestration = response.data.totalSequestration;
           setTotalSequestration(Math.round(sequestration));
           const days = calculateHDBPoweredDays(sequestration);
           setPoweredDays(days);
@@ -38,7 +42,7 @@ const MainLanding = () => {
       }
     };
 
-    fetchData();
+    fetchSequestration();
   }, [selectedPark]);
 
   return (
@@ -77,12 +81,19 @@ const MainLanding = () => {
         <NavButton key="venues" icon={<FaTent />}>
           Venues
         </NavButton>
-        <NavButton key="tickets" icon={<PiTicketFill />}>
-          Tickets
+        <NavButton
+          key="promotions"
+          icon={<BiSolidDiscount />}
+          onClick={() => {
+            navigate(`/promotions`);
+          }}
+        >
+          Promotions
         </NavButton>
       </div>
 
       {/* </div> */}
+      <QrScanner2/>
       <ContentWrapper>
         <div className="flex items-center">
           <LogoText className="text-xl">Our Events</LogoText>
@@ -132,32 +143,56 @@ const MainLanding = () => {
         </div>
         <br />
       <div className="flex justify-between items-center">
-    <LogoText className="font-bold text-lg">Sustainability & Decarbonisation</LogoText>
-    <Link to="/decarb" className="text-green-600 hover:text-green-700 flex items-center">
-      <Space>
-        Learn More
-        <FiExternalLink />
-      </Space>
-    </Link>
+    <LogoText className="text-xl">Sustainability</LogoText>
+    <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+      <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+      <Link to="/decarb">
+        <Button
+          icon={<MdArrowForward className="text-2xl" />}
+          shape="circle"
+          type="primary"
+          size="large"
+          className="md:bg-transparent md:text-green-500 md:shadow-none"
+        />
+      </Link>
+    </div>
   </div>
           <br/>
 
-
   <div className="flex justify-between items-center h-48">
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <PiPlant className="text-4xl mb-2" />
-      <p>This park has absorbed CO2 mass of</p>
-      <p className="font-bold text-lg">{totalSequestration} kg </p>
+      <PiPlant className="text-4xl mb-2 text-green-500" />
+      <div className="flex flex-row items-center">
+        <p className="text-green-500">In the past year, this park has absorbed <span className="font-bold text-lg ml-1 text-green-500">{totalSequestration} kg</span> of CO2</p>
+      </div>
     </div>
-    <div className="w-px h-full bg-gray-200 mx-4"></div>
+    <div className="w-px h-full bg-green-500 mx-4"></div>
     <div className="flex-1 flex flex-col items-center justify-center text-center">
-      <BsHouseDoor className="text-4xl mb-2" />
-      <p>Equivalent to powering a</p>
-      <p>4 room HDB for</p>
-      <p className="font-bold text-lg">{poweredDays} days</p>
+      <BsHouseDoor className="text-4xl mb-2 text-green-500" />
+      <p className="text-green-500">Equivalent to powering a 4 room HDB for</p>
+      <p className="font-bold text-lg text-green-500">{poweredDays} days</p>
     </div>
   </div>
 
+<br/>
+   <div className="flex justify-between items-center">
+     <LogoText className="font-bold text-lg">FAQs</LogoText>
+     <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+       <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+       <Link to="/faq">
+         <Button
+           icon={<MdArrowForward className="text-2xl" />}
+           shape="circle"
+           type="primary"
+           size="large"
+           className="md:bg-transparent md:text-green-500 md:shadow-none"
+         />
+       </Link>
+     </div>
+   </div>
+   <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
+<br/>
+<br/>
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
@@ -170,6 +205,8 @@ const MainLanding = () => {
             </div>
           </Card>
         </Badge.Ribbon>
+
+
       </ContentWrapper>
     </div>
     // </MainLayout>

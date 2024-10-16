@@ -69,7 +69,6 @@ import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
 import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
-import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 
 import HubEdit from './pages/Hub/HubEdit';
 
@@ -81,8 +80,29 @@ import DecarbonizationAreaList from './pages/DecarbonizationArea/Decarbonization
 import SensorCreate from './pages/Sensor/SensorCreate';
 import AssetListSummary from './pages/Asset/AssetListSummary';
 import DecarbonizationAreaChart from './pages/DecarbonizationArea/DecarbonizationAreaChart';
+import PromotionList from './pages/Promotion/PromotionList';
+import PromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import ParkPromotionCreate from './pages/Promotion/ParkPromotionCreate';
+import PromotionDetails from './pages/PromotionDetails/PromotionDetails';
+import ArchivedPromotionList from './pages/Promotion/ArchivedPromotionList';
+import HubPlaceInZone from './pages/Hub/HubPlaceInZone';
+import SensorAddToHub from './pages/Sensor/SensorAddToHub';
+import IotMap from './pages/IotMap/IotMap';
+import HubUpdateLocation from './pages/Hub/HubUpdateLocation';
+import SensorUpdateLocation from './pages/Sensor/SensorUpdateLocation';
+
+import ZoneIoTDashboard from './pages/IoT/ZoneIoTDashboard';
+import ZoneIoTDetailsPage from './pages/IoT/ZoneIoTDetailsPage';
+
+
+import FAQList from './pages/FAQ/FAQList';
+import FAQCreate from './pages/FAQ/FAQCreate';
+import { App as AntdApp } from 'antd';
+import FAQView from './pages/FAQ/FAQView';
+import FAQEdit from './pages/FAQ/FAQEdit';
 export function App() {
   return (
+    <AntdApp>
     <StaffAuthWrapper>
       <ConfigProvider
         theme={{
@@ -268,10 +288,23 @@ export function App() {
 
               {/* Task Routes */}
               <Route path="/plant-tasks">
-                <Route index element={<PlantTaskList />} />
-                <Route path="create" element={<CreatePlantTask />} />
-                <Route path=":plantTaskId/edit" element={<PlantTaskEdit />} />
-                {/* <Route path=":plantTaskId" element={<PlantTaskDetails />} /> */}
+                <Route index element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]} redirectTo="/" />
+                      <PlantTaskList />
+                    </>
+                  }
+                />
+                <Route path="create" element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
+                        redirectTo="/"
+                      />
+                      <CreatePlantTask />
+                    </>
+                  }
+                />
               </Route>
 
               <Route path="/maintenance-tasks">
@@ -336,6 +369,7 @@ export function App() {
                   }
                 />
               </Route>
+
               {/* Attraction Routes */}
               <Route
                 element={
@@ -372,7 +406,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -384,6 +424,8 @@ export function App() {
 
                   <Route path="create" element={<HubCreate />} />
                   <Route path=":hubId/edit" element={<HubEdit />} />
+                  <Route path=":hubId/edit-location" element={<HubUpdateLocation />} />
+                  <Route path=":hubId/place-in-zone" element={<HubPlaceInZone />} />
                   {/* <Route path="edit"/> */}
                 </Route>
               </Route>
@@ -418,7 +460,13 @@ export function App() {
               <Route
                 element={
                   <RoleProtectedRoute
-                    allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST, StaffType.VENDOR_MAANGER]}
+                    allowedRoles={[
+                      StaffType.SUPERADMIN,
+                      StaffType.MANAGER,
+                      StaffType.ARBORIST,
+                      StaffType.BOTANIST,
+                      StaffType.VENDOR_MAANGER,
+                    ]}
                     redirectTo="/"
                   />
                 }
@@ -428,6 +476,9 @@ export function App() {
                   <Route path=":sensorId" element={<ViewSensorDetails />} />
                   <Route path="create" element={<SensorCreate />} />
                   <Route path=":sensorId/edit" element={<SensorEdit />} />
+                  <Route path=":sensorId/edit-location" element={<SensorUpdateLocation />} />
+                  <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
+                  <Route path="map-view" element={<IotMap />} />
                 </Route>
               </Route>
 
@@ -462,6 +513,41 @@ export function App() {
                 />
               </Route>
 
+              <Route path="/promotion">
+                <Route index element={<PromotionList />} />
+                <Route path="archived" element={<ArchivedPromotionList />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <ParkPromotionCreate />
+                    </>
+                  }
+                />
+                <Route
+                  path=":promotionId"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER]} redirectTo="/" />
+                      <PromotionDetails />
+                    </>
+                  }
+                />
+              </Route>
+
+              <Route path="/iot">
+                <Route path="zones" element={<ZoneIoTDashboard />} />
+                <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
+              </Route>
+
+              <Route path="/faq">
+                <Route index element={<FAQList />} />
+                <Route path="create" element={<FAQCreate />} />
+                <Route path=":faqId" element={<FAQView />} />
+                <Route path=":faqId/edit" element={<FAQEdit />} />
+              </Route>
+
               {/* Catch-all for 404 */}
               <Route path="*" element={<PageNotFound />} />
             </Route>
@@ -469,6 +555,7 @@ export function App() {
         </BrowserRouter>
       </ConfigProvider>
     </StaffAuthWrapper>
+    </AntdApp>
   );
 }
 

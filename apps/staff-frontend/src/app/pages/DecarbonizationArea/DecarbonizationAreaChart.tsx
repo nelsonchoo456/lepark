@@ -194,7 +194,6 @@ const DecarbonizationAreaChart: React.FC = () => {
   const toggleSingleColumn = () => {
     setIsSingleColumn((prev) => !prev);
   };
-
   const renderGraphs = () => {
     const graphs = [];
 
@@ -205,19 +204,6 @@ const DecarbonizationAreaChart: React.FC = () => {
           title="Sequestration Amount (kg)"
           data={lineChartData}
           type="line"
-          options={chartOptions}
-          isSingleColumn={isSingleColumn}
-        />,
-      );
-    }
-
-    if (barChartDataConfig && barChartDataConfig.labels) {
-      graphs.push(
-        <GraphContainer
-          key="barChart"
-          title="Total Sequestration by Area (kg)"
-          data={barChartDataConfig}
-          type="bar"
           options={chartOptions}
           isSingleColumn={isSingleColumn}
         />,
@@ -256,6 +242,19 @@ const DecarbonizationAreaChart: React.FC = () => {
           key="yearlyChart"
           title="Yearly Sequestration Amount (kg)"
           data={yearlyChartData}
+          type="bar"
+          options={chartOptions}
+          isSingleColumn={isSingleColumn}
+        />,
+      );
+    }
+
+    if (barChartDataConfig && barChartDataConfig.labels) {
+      graphs.push(
+        <GraphContainer
+          key="barChart"
+          title="Total Sequestration by Area (kg)"
+          data={barChartDataConfig}
           type="bar"
           options={chartOptions}
           isSingleColumn={isSingleColumn}
@@ -324,22 +323,22 @@ const DecarbonizationAreaChart: React.FC = () => {
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Row gutter={16} justify="end" align="middle">
+        <Row gutter={16} justify="end" align="middle" wrap={true}>
           {data.length > 0 && (
-            <Col>
+            <Col flex="none" style={{ marginBottom: '16px' }}>
               <Switch checkedChildren="Expanded" unCheckedChildren="Compact" checked={isSingleColumn} onChange={toggleSingleColumn} />
               {/* <span style={{ marginLeft: '8px' }}>Enlarge Visualizations</span> */}
             </Col>
           )}
           {data.length > 0 && (
-            <Col>
+            <Col flex="none" style={{ marginBottom: '16px' }}>
               <Button disabled={isSingleColumn} type="primary" onClick={generateReport} icon={<FileTextOutlined />}>
                 Generate Report
               </Button>
             </Col>
           )}
           {user?.role === StaffType.SUPERADMIN && (
-            <Col>
+            <Col flex="none" style={{ marginBottom: '16px' }}>
               <Select value={selectedParkId} onChange={handleParkChange} style={{ width: 300 }} placeholder="Select Park">
                 {parks.map((park) => (
                   <Option key={park.id} value={park.id}>
@@ -349,7 +348,7 @@ const DecarbonizationAreaChart: React.FC = () => {
               </Select>
             </Col>
           )}
-          <Col>
+          <Col flex="none" style={{ marginBottom: '16px' }}>
             <Select value={selectedArea} onChange={handleAreaChange} style={{ width: 300 }} placeholder="Select Area">
               <Option value="all">All Areas</Option>
               {filteredDecarbonizationAreas.map((area) => (
@@ -359,7 +358,7 @@ const DecarbonizationAreaChart: React.FC = () => {
               ))}
             </Select>
           </Col>
-          <Col>
+          <Col flex="none" style={{ marginBottom: '16px' }}>
             <RangePicker onChange={handleDateChange} defaultValue={[dayjs().subtract(1, 'month'), dayjs()]} />
           </Col>
         </Row>

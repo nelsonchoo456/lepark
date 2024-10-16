@@ -28,6 +28,11 @@ import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttract
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
+import PromotionViewAll from './pages/Promotions/PromotionViewAll';
+import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
+import DecarbViewAllMap from './pages/Decarb/DecarbViewAllMap';
+import FAQList from './pages/FAQ/FAQList';
+import FAQView from './pages/FAQ/FAQView';
 
 export function App() {
   return (
@@ -106,7 +111,16 @@ export function App() {
                 </Route>
                 <Route path="/decarb">
                   <Route index element={<DecarbViewAll />} />
+                  <Route path="map-view" element={<DecarbViewAllMap />} />
                   <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
+                </Route>
+                <Route path="/promotions">
+                  <Route index element={<PromotionViewAll/>}/>
+                  <Route path=":promotionId" element={<PromotionViewDetails/>}/>
+                </Route>
+                <Route path="/faq">
+                  <Route index element={<FAQList/>}/>
+                  <Route path=":faqId" element={<FAQView/>}/>
                 </Route>
               </Route>
             </Routes>

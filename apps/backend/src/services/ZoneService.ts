@@ -5,6 +5,7 @@ import { ZoneCreateData, ZoneUpdateData } from '../schemas/zoneSchema';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
 import aws from 'aws-sdk';
+import HubDao from '../dao/HubDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -24,7 +25,7 @@ class ZoneService {
         }
       }
 
-      const errors: string[] = []
+      const errors: string[] = [];
       if (!data.name || data.name.length < 3) {
         errors.push('Valid name is required');
       }
@@ -42,7 +43,7 @@ class ZoneService {
       }
 
       if (errors.length !== 0) {
-        throw new Error(`Validation errors: ${errors.join('; ')}`)
+        throw new Error(`Validation errors: ${errors.join('; ')}`);
       }
       return ZoneDao.createZone(data);
     } catch (error) {
@@ -55,11 +56,14 @@ class ZoneService {
   }
 
   public async getAllZones(): Promise<any[]> {
-    return ZoneDao.getAllZones();
+    const zones = await ZoneDao.getAllZones();
+    return this.addParkandHubAndSensorInfo(zones);
   }
 
   public async getZoneById(id: number): Promise<any> {
-    return ZoneDao.getZoneById(id);
+    const zone = await ZoneDao.getZoneById(id);
+    const enhancedZone = await this.addParkandHubAndSensorInfo([zone]);
+    return enhancedZone[0];
   }
 
   public async getZonesByParkId(parkId: number): Promise<any> {
@@ -69,7 +73,8 @@ class ZoneService {
         throw new Error('Park not found.');
       }
     }
-    return ZoneDao.getZonesByParkId(parkId);
+    const zones = await ZoneDao.getZonesByParkId(parkId);
+    return this.addParkandHubAndSensorInfo(zones);
   }
 
   public async deleteZoneById(id: number): Promise<any> {
@@ -108,7 +113,7 @@ class ZoneService {
       Body: fileBuffer,
       ContentType: mimeType,
     };
-    
+
     try {
       const data = await s3.upload(params).promise();
       return data.Location;
@@ -116,6 +121,22 @@ class ZoneService {
       console.error('Error uploading image to S3:', error);
       throw new Error('Error uploading image to S3');
     }
+  }
+
+  private async addParkandHubAndSensorInfo(zones: any[]): Promise<any[]> {
+    return Promise.all(
+      zones.map(async (zone) => {
+        const park = await ParkDao.getParkById(zone.parkId);
+        const hub = await HubDao.getHubByZoneId(zone.id);
+        const sensors = await HubDao.getAllSensorsByHubId(hub?.id);
+        return {
+          ...zone,
+          park,
+          hub,
+          sensors,
+        };
+      }),
+    );
   }
 }
 

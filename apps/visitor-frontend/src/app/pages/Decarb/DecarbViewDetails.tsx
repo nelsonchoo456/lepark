@@ -300,12 +300,12 @@ const DecarbViewDetails: React.FC = () => {
               <div key={index}>
                 <img
                   src={image}
-                  alt={`Park image ${index + 1}`}
+                  alt={`Park ${index + 1}`}
                   style={{
                     width: '100%',
                     objectFit: 'cover',
                   }}
-                  className="h-96 md:h-[16rem]"
+                  className="h-36 md:h-[16rem]"
                 />
               </div>
             ))}
@@ -319,7 +319,7 @@ const DecarbViewDetails: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            className="h-96 md:h-[16rem]"
+            className="h-36 md:h-[16rem]"
           >
             <PiPlantFill className="text-6xl text-green-500" />
           </div>

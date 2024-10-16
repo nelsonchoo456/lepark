@@ -1,5 +1,5 @@
-import { OccurrenceResponse } from "./occurrence";
-import { ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from "./sharedenums";
+import { OccurrenceResponse } from './occurrence';
+import { ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from './sharedenums';
 // Define the Species interface
 export interface SpeciesResponse {
   id: string;
@@ -17,7 +17,7 @@ export interface SpeciesResponse {
   soilType: SoilTypeEnum;
   fertiliserType: string;
   images: string[];
-  waterRequirement: number;
+  soilMoisture: number;
   fertiliserRequirement: number;
   idealHumidity: number;
   minTemp: number;
@@ -48,7 +48,7 @@ export interface CreateSpeciesData {
   soilType: SoilTypeEnum;
   fertiliserType: string;
   images: string[];
-  waterRequirement: number;
+  soilMoisture: number;
   fertiliserRequirement: number;
   idealHumidity: number;
   minTemp: number;
@@ -63,7 +63,6 @@ export interface CreateSpeciesData {
   isToxic: boolean;
   isFragrant: boolean;
 }
-
 
 /* redundant
 export interface GetAllSpeciesResponse {

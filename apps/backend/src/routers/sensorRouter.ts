@@ -63,19 +63,30 @@ router.get('/getSensorsByHubId/:hubId', async (req, res) => {
   }
 });
 
-router.get('/getSensorsByFacilityId/:facilityId', async (req, res) => {
+router.get('/getSensorsByZoneId/:zoneId', async (req, res) => {
   try {
-    const facilityId = req.params.facilityId;
-    const sensors = await SensorService.getSensorsByFacilityId(facilityId);
+    const zoneId = parseInt(req.params.zoneId);
+    const sensors = await SensorService.getSensorsByZoneId(zoneId);
     res.status(200).json(sensors);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get('/getSensorsNeedingCalibration', async (_, res) => {
+router.get('/getPlantSensorsByZoneId/:zoneId', async (req, res) => {
   try {
-    const sensors = await SensorService.getSensorsNeedingCalibration();
+    const zoneId = parseInt(req.params.zoneId);
+    const sensors = await SensorService.getPlantSensorsByZoneId(zoneId);
+    res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getSensorsByFacilityId/:facilityId', async (req, res) => {
+  try {
+    const facilityId = req.params.facilityId;
+    const sensors = await SensorService.getSensorsByFacilityId(facilityId);
     res.status(200).json(sensors);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -125,6 +136,16 @@ router.get('/getSensorsByParkId/:parkId', async (req, res) => {
   }
 });
 
+router.get('/getSensorByIdentifierNumber/:identifierNumber', async (req, res) => {
+  try {
+    const identifierNumber = req.params.identifierNumber;
+    const sensor = await SensorService.getSensorByIdentifierNumber(identifierNumber);
+    res.status(200).json(sensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getSensorsBySerialNumber/:serialNumber', async (req, res) => {
   try {
     const serialNumber = req.params.serialNumber;
@@ -143,6 +164,24 @@ router.get('/checkDuplicateSerialNumber', async (req, res) => {
     }
     const isDuplicate = await SensorService.isSerialNumberDuplicate(serialNumber as string, sensorId as string);
     res.status(200).json({ isDuplicate });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/addSensorToHub/:id', async (req, res) => {
+  try {
+    const updatedSensor = await SensorService.addSensorToHub(req.params.id, req.body);
+    res.status(200).json(updatedSensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/removeSensorFromHub/:id', async (req, res) => {
+  try {
+    const updatedSensor = await SensorService.removeSensorFromHub(req.params.id);
+    res.status(200).json(updatedSensor);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

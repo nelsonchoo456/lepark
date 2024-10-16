@@ -20,6 +20,7 @@ export const useRestrictSensors = (sensorId?: string) => {
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [facility, setFacility] = useState<FacilityResponse | null>(null);
+  const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
     if (!sensorId || sensorId === undefined) {
@@ -27,7 +28,7 @@ export const useRestrictSensors = (sensorId?: string) => {
       return;
     }
     fetchSensor(sensorId);
-  }, [sensorId, navigate]);
+  }, [sensorId, navigate, trigger]);
 
   const fetchSensor = async (sensorId: string) => {
     setLoading(true);
@@ -68,5 +69,9 @@ export const useRestrictSensors = (sensorId?: string) => {
     }
   };
 
-  return { sensor, loading, facility };
+  const triggerFetch = () => {
+    setTrigger((prev) => !prev);
+  };
+
+  return { sensor, loading, facility, triggerFetch };
 };

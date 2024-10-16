@@ -6,7 +6,10 @@
 //   REMOVED = 'REMOVED',
 // }
 
+import { ParkResponse } from './park';
 import { DecarbonizationTypeEnum, OccurrenceStatusEnum } from './sharedenums';
+import { SpeciesResponse } from './species';
+import { ZoneResponse } from './zone';
 
 export interface OccurrenceData {
   lat: number;
@@ -42,6 +45,9 @@ export interface OccurrenceResponse {
   images: string[];
   occurrenceStatus?: OccurrenceStatusEnum;
   decarbonizationType: DecarbonizationTypeEnum;
+  park: ParkResponse;
+  zone: ZoneResponse;
+  species: SpeciesResponse;
 }
 
 export interface OccurrenceUpdateData {

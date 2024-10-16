@@ -21,6 +21,8 @@ export const useRestrictHub = (hubId?: string) => {
   const { user } = useAuth<StaffResponse>();
   const notificationShown = useRef(false);
 
+  const [trigger, setTrigger] = useState(false);
+
   useEffect(() => {
     if (!hubId || hubId === undefined) {
       navigate('/');
@@ -70,7 +72,11 @@ export const useRestrictHub = (hubId?: string) => {
     };
 
     fetchHub(hubId);
-  }, [hubId, navigate, user]);
+  }, [hubId, navigate, user, trigger]);
 
-  return { hub, facility, loading };
+  const triggerFetch = () => {
+    setTrigger((prev) => !prev);
+  };
+
+  return { hub, facility, loading, triggerFetch };
 };
