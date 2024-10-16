@@ -2431,37 +2431,32 @@ const decarbonizationAreasData = [
 ];
 
 const seqHistoriesData = [
-  {
-    //PVN
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 380.213123,
-    decarbonizationAreaId: '',
-  },
-  {
-    //East Area
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 409.213123,
-    decarbonizationAreaId: '',
-  },
-  {
-    //West Area
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 509.213123,
-    decarbonizationAreaId: '',
-  },
+{ //PVN
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 8,
+  decarbonizationAreaId: ""
+},
+{ //East Area
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 21,
+  decarbonizationAreaId: ""
+},
+{ //West Area
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 15,
+  decarbonizationAreaId: ""
+},
 
-  {
-    //PVC
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 509.213123,
-    decarbonizationAreaId: '',
-  },
-  {
-    //PVS
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 109.213123,
-    decarbonizationAreaId: '',
-  },
+{ //PVC
+  date: "2024-10-02T05:33:56.000Z",
+  seqValue: 509.213123,
+  decarbonizationAreaId: ""
+},
+{ //PVS
+  date: "2024-10-02T05:33:56.000Z",
+  seqValue: 109.213123,
+  decarbonizationAreaId: ""
+}
 ];
 
 const faqsData = [

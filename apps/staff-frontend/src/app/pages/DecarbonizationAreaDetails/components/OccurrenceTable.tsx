@@ -25,6 +25,9 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [loading, setLoading] = useState<boolean>(true);
 
+
+
+
   useEffect(() => {
     const fetchOccurrences = async () => {
       const fetchedOccurrences = await getOccurrencesWithinDecarbonizationArea(decarbonizationAreaId);
@@ -34,9 +37,6 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
     fetchOccurrences();
   }, [decarbonizationAreaId]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
 
   const navigateToDetails = (occurrenceId: string) => {
     navigate(`/occurrences/${occurrenceId}`);
@@ -144,9 +144,20 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
       width: '10%',
     },
   ];
+   const filteredOccurrences = useMemo(() => {
+    return occurrences?.filter((occurrence) =>
+        occurrence.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        occurrence.zoneName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        occurrence.occurrenceStatus?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+  }, [occurrences, searchQuery]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
-    <>
+     <>
       {contextHolder}
       <Input
         suffix={<FiSearch />}
@@ -154,10 +165,12 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
         className="mb-4 bg-white"
         variant="filled"
         onChange={handleSearch}
+        value={searchQuery}
       />
-      <Table dataSource={occurrences} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
+      <Table dataSource={filteredOccurrences} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
     </>
   );
 };
+
 
 export default OccurrenceTable;
