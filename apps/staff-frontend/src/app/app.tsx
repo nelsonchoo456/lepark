@@ -71,9 +71,7 @@ import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
 import CreatePlantTask from './pages/PlantTask/CreatePlantTask';
 import PlantTaskEdit from './pages/PlantTaskEdit/PlantTaskEdit';
 import TicketListingDetails from './pages/AttractionDetails/TicketListingDetails/TicketListingDetails';
-
 import HubEdit from './pages/Hub/HubEdit';
-
 import DecarbonizationAreaDetails from './pages/DecarbonizationAreaDetails/DecarbonizationAreaDetails';
 import CreateDecarbonizationArea from './pages/DecarbonizationArea/CreateDecarbonizationArea';
 import DecarbonizationAreaEditMap from './pages/DecarbonizationAreaEditMap/DecarbonizationAreaEditMap';
@@ -91,6 +89,9 @@ import FAQList from './pages/FAQ/FAQList';
 import FAQCreate from './pages/FAQ/FAQCreate';
 import { App as AntdApp } from 'antd';
 import VerifyTicket from './pages/VerifyTicket/VerifyTicket';
+import AnnouncementList from './pages/Announcement/AnnouncementList';
+import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
+import AnnouncementDetails from './pages/AnnouncementDetails/AnnouncementDetails';
 
 export function App() {
   return (
@@ -527,6 +528,22 @@ export function App() {
                     </>
                   }
                 />
+
+                {/* Announcement Routes */}
+                <Route path="/announcement">
+                  <Route index element={<AnnouncementList />} />
+                  <Route path=":announcementId" element={<AnnouncementDetails />} />
+                  <Route
+                    element={
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
+                        redirectTo="/announcement"
+                      />
+                    }
+                  >
+                    <Route path="create" element={<AnnouncementCreate />} />
+                  </Route>
+                </Route>
 
                 {/* Catch-all for 404 */}
                 <Route path="*" element={<PageNotFound />} />

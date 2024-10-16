@@ -30,6 +30,7 @@ import sequestrationHistoryRouter from './routers/sequestrationHistoryRouter';
 import promotionRouter from './routers/promotionRouter';
 import os from 'os';
 import faqRouter from './routers/faqRouter';
+import AnnouncementRouter from './routers/announcementRouter';
 
 dotenv.config();
 const app = express();
@@ -83,6 +84,7 @@ app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 app.use('/api/attractionTickets', attractionTicketRouter);
 app.use('/api/promotions', promotionRouter);
 app.use('/api/faq', faqRouter);
+app.use('/api/announcements', AnnouncementRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePark } from '../../park-context/ParkContext';
 import { getAttractionsByParkId, AttractionResponse } from '@lepark/data-access';
-import { Card, Tag, Input, Select } from 'antd';
+import { Card, Tag, Input, Select, Spin } from 'antd';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
@@ -100,7 +100,11 @@ const AttractionsPerPark: React.FC = () => {
         {selectedStatus && <div className="h-[1px] w-full bg-black/5" />}
       </div>
 
-      {!filteredAttractions || filteredAttractions.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center flex-1">
+          <Spin size="large" />
+        </div>
+      ) : !filteredAttractions || filteredAttractions.length === 0 ? (
         <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
           <FiSearch className="text-4xl mb-2 mt-10" />
           No Attractions found.

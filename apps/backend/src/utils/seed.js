@@ -20,6 +20,7 @@ const {
   faqsData,
   visitorsData,
   promotionsData,
+  announcementsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -534,6 +535,17 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   });*/
 
   //faq'=
+  console.log(`Total attractions seeded: ${attractionList.length}\n`);
+
+  const announcementList = [];
+  for (const announcement of announcementsData) {
+    const createdAnnouncement = await prisma.announcement.create({
+      data: announcement,
+    });
+    announcementList.push(createdAnnouncement);
+  }
+  console.log(`Total announcements seeded: ${announcementList.length}\n`);
+  
 }
 
 // Utility function for Activity Logs and Status Logs

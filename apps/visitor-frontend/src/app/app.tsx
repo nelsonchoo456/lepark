@@ -34,6 +34,11 @@ import AttractionTransactionDetails from './pages/Profile/ViewAttractionTransact
 import AttractionTicketDetails from './pages/Profile/AttractionTicketDetails';
 import CompletionPage from './pages/Attractions/CompletionPage';
 import SuccessPage from './pages/Attractions/SuccessPage';
+import AnnouncementsList from './pages/Announcements/AnnouncementsList';
+import FacilitiesPerPark from './pages/Facilities/FacilitiesPerPark';
+import VisitorViewFacilityDetails from './pages/Facilities/VisitorViewFacilityDetails';
+import EventsPerPark from './pages/Events/EventsPerPark';
+import VisitorViewEventDetails from './pages/Events/VisitorViewEventDetails';
 
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
 import PromotionViewAll from './pages/Promotions/PromotionViewAll';
@@ -172,6 +177,17 @@ export function App() {
                 <Route path="/promotions">
                   <Route index element={<PromotionViewAll />} />
                   <Route path=":promotionId" element={<PromotionViewDetails />} />
+                </Route>
+                <Route path="/announcement">
+                  <Route index element={<AnnouncementsList />} />
+                </Route>
+                <Route path="/facility">
+                  <Route path="park/:parkId" element={<FacilitiesPerPark />} />
+                  <Route path=":facilityId" element={<VisitorViewFacilityDetails />} />
+                </Route>
+                <Route path="/event">
+                  <Route path="park/:parkId" element={<EventsPerPark />} />
+                  <Route path=":eventId" element={<VisitorViewEventDetails />} />
                 </Route>
               </Route>
             </Routes>

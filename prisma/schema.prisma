@@ -674,3 +674,21 @@ model FAQ {
 
   @@index([parkId])
 }
+
+enum AnnouncementStatusEnum {
+  UPCOMING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+model Announcement {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  content     String
+  updatedAt   DateTime
+  startDate   DateTime
+  endDate     DateTime
+  status      AnnouncementStatusEnum
+  parkId      Int?
+}

@@ -1,30 +1,37 @@
+import React, { useState, useMemo } from 'react';
 import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
-import { FaHouseUser, FaLocationDot, FaTent } from 'react-icons/fa6';
 import {BsHouseDoor} from 'react-icons/bs';
-import { Badge, Button, Card, Empty, Space } from 'antd';
+import { FaLocationDot, FaTent } from 'react-icons/fa6';
+import { Badge, Button, Card, Empty, List, Space, Spin, Typography } from 'antd';
 import EventCard from './components/EventCard';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
 import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
 import { getTotalSequestrationForParkAndYear } from '@lepark/data-access';
 import { FiExternalLink } from 'react-icons/fi';
 import { AiOutlinePercentage } from 'react-icons/ai';
 import { BiSolidDiscount } from 'react-icons/bi';
+import { useFetchAnnouncements } from '../../hooks/Announcements/useFetchAnnouncements';
+import { AnnouncementResponse } from '@lepark/data-access';
+
+const { Title, Paragraph } = Typography;
 
 const MainLanding = () => {
     const navigate = useNavigate();
   const { selectedPark } = usePark();
   const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
   const [poweredDays, setPoweredDays] = useState<number | null>(null);
+  const { announcements, loading, error } = useFetchAnnouncements(selectedPark?.id);
+  const [expandedAnnouncementId, setExpandedAnnouncementId] = useState<string | null>(null);
 
 useEffect(() => {
     const fetchSequestration = async () => {
@@ -45,6 +52,10 @@ useEffect(() => {
     fetchSequestration();
   }, [selectedPark]);
 
+  const toggleExpand = (announcementId: string) => {
+    setExpandedAnnouncementId(expandedAnnouncementId === announcementId ? null : announcementId);
+  };
+
   return (
     <div>
       <ParkHeader>
@@ -55,7 +66,6 @@ useEffect(() => {
         </div>
       </ParkHeader>
 
-      {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
       <div
         className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden relative z-10
             md:p-0"
@@ -78,7 +88,13 @@ useEffect(() => {
         >
           Attractions
         </NavButton>
-        <NavButton key="venues" icon={<FaTent />}>
+        <NavButton
+          key="venues"
+          icon={<FaTent />}
+          onClick={() => {
+            navigate(`/facility/park/${selectedPark?.id}`);
+          }}
+        >
           Venues
         </NavButton>
         <NavButton
@@ -92,8 +108,58 @@ useEffect(() => {
         </NavButton>
       </div>
 
-      {/* </div> */}
       <ContentWrapper>
+        {/* Announcements Section */}
+        <div>
+          <div className="flex items-center justify-between">
+            <LogoText className="text-xl">Announcements</LogoText>
+            <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+              <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+              <Button
+                icon={<MdArrowForward className="text-2xl" />}
+                shape="circle"
+                type="primary"
+                size="large"
+                className="md:bg-transparent md:text-green-500 md:shadow-none"
+                onClick={() => navigate('/announcement')}
+              />
+            </div>
+          </div>
+          {loading ? (
+            <Spin size="large" />
+          ) : error ? (
+            <div>Error loading announcements: {error}</div>
+          ) : (
+            <List
+              dataSource={announcements.slice(0, 2)} // Show only the latest 3 announcements
+              renderItem={(announcement: AnnouncementResponse) => (
+                <List.Item>
+                  <Card
+                    title={
+                      <div className="flex items-center">
+                        <span
+                          className={`truncate ${expandedAnnouncementId === announcement.id ? 'whitespace-normal' : 'whitespace-nowrap'}`}
+                        >
+                          {announcement.title}
+                        </span>
+                      </div>
+                    }
+                    onClick={() => toggleExpand(announcement.id)}
+                    hoverable
+                    className="w-full"
+                    bodyStyle={{ padding: expandedAnnouncementId === announcement.id ? '16px' : '0' }}
+                  >
+                    {expandedAnnouncementId === announcement.id && (
+                      <div className="mt-4">
+                        <Paragraph>{announcement.content}</Paragraph>
+                      </div>
+                    )}
+                  </Card>
+                </List.Item>
+              )}
+            />
+          )}
+        </div>
         <div className="flex items-center">
           <LogoText className="text-xl">Our Events</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
@@ -115,30 +181,6 @@ useEffect(() => {
             <br />
             Check back soon for Events!
           </div>
-          {/* <EventCard
-            title="Event 1"
-            url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
-            extra={<a href="#">More</a>}
-          >
-            keewewk
-          </EventCard>
-          <EventCard
-            title="Event 4"
-            url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
-            extra={<a href="#">More</a>}
-          >
-            rwrewrkeek
-          </EventCard>
-          <EventCard
-            title="Event 2"
-            url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
-            extra={<a href="#">More</a>}
-          >
-            keewerewk
-          </EventCard>
-          <EventCard title="Event 3" url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" extra={<a href="#">More</a>}>
-            keewerewrk
-          </EventCard> */}
         </div>
         <br />
       <div className="flex justify-between items-center">
@@ -181,7 +223,6 @@ useEffect(() => {
         </Badge.Ribbon>
       </ContentWrapper>
     </div>
-    // </MainLayout>
   );
 };
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHelpCircle, FiHome, FiInbox, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -265,6 +265,37 @@ const MainLayout = () => {
       label: 'FAQ',
       onClick: () => navigate('/faq'),
     },
+    {
+      key: 'announcement',
+      icon: <FiMessageSquare />,
+      label: 'Announcements',
+      onClick: () => navigate('/announcement'),
+    },
+    // userRole === 'MANAGER' ||
+    // userRole === 'SUPERADMIN' ||
+    // userRole === 'BOTANIST' ||
+    // userRole === 'ARBORIST' ||
+    // userRole === 'PARK_RANGER' ||
+    // userRole === 'VENDOR_MANAGER'
+    //   ? {
+    //       key: 'task',
+    //       icon: <FiInbox />,
+    //       label: 'Tasks',
+    //       children: [
+    //         {
+    //           key: 'plant-tasks',
+    //           label: 'Plant Tasks',
+    //           onClick: () => navigate('/plant-tasks'),
+    //         },
+    //         {
+    //           key: 'maintenance-tasks',
+    //           label: 'Maintenance Tasks',
+    //           onClick: () => navigate('/maintenance-tasks'),
+    //         },
+    //       ],
+    //     }
+    //   : null,
+
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',
