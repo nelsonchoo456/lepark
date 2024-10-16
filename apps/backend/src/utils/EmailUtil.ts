@@ -4,7 +4,9 @@ import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import { getAttractionTicketById, viewVisitorDetails } from '@lepark/data-access';
+import VisitorDao from '../dao/VisitorDao';
+import AttractionTicketDao from '../dao/AttractionTicketDao';
+import AttractionDao from '../dao/AttractionDao';
 
 class EmailUtility {
   async sendPasswordResetEmail(recipientEmail: string, resetLink: string) {
@@ -99,35 +101,40 @@ class EmailUtility {
     const pdfDirectory = path.join(__dirname, '..', '..', '..', '..', 'temp', 'pdfs', 'attraction-tickets');
     const pdfPath = path.join(pdfDirectory, `AttractionTicket-${transaction.id}.pdf`);
 
-    const visitorResponse = await viewVisitorDetails(transaction.visitorId);
-    const visitor = visitorResponse.data;
+    const visitor = await VisitorDao.getVisitorById(transaction.visitorId);
 
     // Ensure the directory exists
     await fs.promises.mkdir(pdfDirectory, { recursive: true });
 
     doc.pipe(fs.createWriteStream(pdfPath));
 
-    // Add header
-    doc.font('Helvetica-Bold').fontSize(18).text('Lepark Attraction Ticket', { align: 'center' });
-    doc.moveDown();
+    const addHeader = () => {
+      doc.font('Helvetica-Bold').fontSize(18).text('Lepark Attraction Ticket', { align: 'center' });
+      doc.moveDown();
+      doc
+        .fontSize(12)
+        .text(`Purchased by: ${visitor.firstName} ${visitor.lastName}`, { align: 'left' })
+        .text(`Order Number: ${transaction.id}`, { align: 'left' })
+        .text(`Purchase Date: ${new Date(transaction.purchaseDate).toDateString()}`, { align: 'left' })
+        .text(`Visit Date: ${new Date(transaction.attractionDate).toDateString()}`, { align: 'left' });
+      doc.moveDown(2);
+    };
 
-    // Add transaction details
-    doc
-      .fontSize(12)
-      .text(`Purchased by: ${visitor.firstName} ${visitor.lastName}`, { align: 'left' })
-      .text(`Order Number: ${transaction.id}`, { align: 'left' })
-      .text(`Purchase Date: ${new Date(transaction.purchaseDate).toDateString()}`, { align: 'left' })
-      .text(`Visit Date: ${new Date(transaction.attractionDate).toDateString()}`, { align: 'left' });
+    addHeader();
 
-    doc.moveDown(2); // Add more space before tickets
-
-    // Add tickets
     let yPosition = 180;
-    for (const ticketData of transaction.attractionTickets) {
-      const response = await getAttractionTicketById(ticketData.id);
-      const ticket = response.data;
+    for (let i = 0; i < transaction.attractionTickets.length; i++) {
+      const ticketData = transaction.attractionTickets[i];
+      const ticket = await AttractionTicketDao.getAttractionTicketById(ticketData.id);
+      const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
 
       const qrCodePath = await this.generateQRCode(`http://localhost:4200/verify-ticket/${ticket.id}`);
+
+      if (yPosition > 650) {
+        doc.addPage();
+        yPosition = 50;
+        addHeader();
+      }
 
       // Green box for the ticket
       doc.rect(50, yPosition, 500, 150).fillColor('darkgreen').fill();
@@ -136,8 +143,8 @@ class EmailUtility {
       doc
         .fillColor('white')
         .fontSize(12)
-        .text(`Category: ${ticket.attractionTicketListing.category}`, 70, yPosition + 20)
-        .text(`Nationality: ${ticket.attractionTicketListing.nationality}`, 70, yPosition + 45)
+        .text(`Category: ${listing.category}`, 70, yPosition + 20)
+        .text(`Nationality: ${listing.nationality}`, 70, yPosition + 45)
         .text(`Ticket ID: ${ticket.id}`, 70, yPosition + 70)
         .text(`Price: $${ticket.price}`, 70, yPosition + 90)
         .fontSize(10)
@@ -147,14 +154,14 @@ class EmailUtility {
       doc.image(qrCodePath, 450, yPosition + 35, { fit: [80, 80] });
 
       yPosition += 170; // Adjust spacing between tickets
-
-      if (yPosition > 700) {
-        doc.addPage();
-        yPosition = 50;
-      }
     }
 
-    // Add terms and conditions
+    // Add terms and conditions on the last page
+    if (yPosition > 700) {
+      doc.addPage();
+      yPosition = 50;
+    }
+
     doc
       .fillColor('black')
       .fontSize(8)
