@@ -1,20 +1,18 @@
+// FeedbackSchema.ts
 import { z } from 'zod';
-import { FeedbackCategoryEnum, FeedbackStatusEnum } from '@prisma/client';
 
 export const FeedbackSchema = z.object({
   id: z.string().uuid().optional(),
   dateCreated: z.date().optional(),
-  dateResolved: z.date().optional(),
+  dateResolved: z.date().optional().nullable(),
   title: z.string(),
   description: z.string(),
-  feedbackCategory: z.nativeEnum(FeedbackCategoryEnum),
+  feedbackCategory: z.enum(['FACILITIES', 'SERVICES', 'STAFF']),
   images: z.array(z.string()),
-  feedbackStatus: z.nativeEnum(FeedbackStatusEnum),
-  remarks: z.string().optional(),
-  staffId: z.string().uuid().optional(),
+  feedbackStatus: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED']),
+  remarks: z.string().optional().nullable(),
+  staffId: z.string().uuid().optional().nullable(),
   visitorId: z.string().uuid(),
-  facilityId: z.string().uuid().optional(),
-  occurrenceId: z.string().uuid().optional(),
 });
 
 export type FeedbackSchemaType = z.infer<typeof FeedbackSchema>;

@@ -1,44 +1,40 @@
+// feedback.ts
 import { StaffResponse } from './staff';
 import { VisitorResponse } from './visitor';
-import { FacilityResponse } from './facility';
-import { OccurrenceResponse } from './occurrence';
 
-export interface Feedback {
+export interface FeedbackData {
+  title: string;
+  description: string;
+  feedbackCategory: 'FACILITIES' | 'SERVICES' | 'STAFF';
+  images: string[];
+  feedbackStatus: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  remarks?: string | null;
+  staffId?: string | null;
+  visitorId: string;
+}
+
+export interface FeedbackResponse {
   id: string;
   dateCreated: string;
-  dateResolved?: string;
+  dateResolved?: string | null;
   title: string;
   description: string;
-  feedbackCategory: 'FACILITY' | 'PLANT' | 'GENERAL';
+  feedbackCategory: 'FACILITIES' | 'SERVICES' | 'STAFF';
   images: string[];
-  feedbackStatus: 'PENDING' | 'IN_PROGRESS' | 'REJECTED' | 'RESOLVED';
-  remarks: string;
-  staffId?: string;
+  feedbackStatus: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  remarks?: string | null;
+  staffId?: string | null;
   visitorId: string;
-  facilityId?: string;
-  occurrenceId?: string;
-  staff?: StaffResponse;
   visitor: VisitorResponse;
-  facility?: FacilityResponse;
-  occurrence?: OccurrenceResponse;
+  staff?: StaffResponse;
 }
 
-export interface CreateFeedbackData {
-  title: string;
-  description: string;
-  feedbackCategory: 'FACILITY' | 'PLANT' | 'GENERAL';
-  images: string[];
-  visitorId: string;
-  facilityId?: string;
-  occurrenceId?: string;
-}
-
-export interface UpdateFeedbackData {
+export interface FeedbackUpdateData {
   title?: string;
   description?: string;
-  feedbackCategory?: 'FACILITY' | 'PLANT' | 'GENERAL';
+  feedbackCategory?: 'FACILITIES' | 'SERVICES' | 'STAFF';
   images?: string[];
-  feedbackStatus?: 'PENDING' | 'IN_PROGRESS' | 'REJECTED' | 'RESOLVED';
-  remarks?: string;
-  dateResolved?: string;
+  feedbackStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  remarks?: string | null;
+  staffId?: string | null;
 }

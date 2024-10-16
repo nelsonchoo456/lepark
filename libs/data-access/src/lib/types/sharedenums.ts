@@ -31,6 +31,7 @@ export enum PlantTaskUrgencyEnum {
   NORMAL = 'NORMAL',
   LOW = 'LOW',
 }
+
 export enum ParkAssetTypeEnum {
   PLANT_TOOL_AND_EQUIPMENT = 'PLANT_TOOL_AND_EQUIPMENT',
   HOSES_AND_PIPES = 'HOSES_AND_PIPES',
@@ -172,4 +173,16 @@ export enum FAQCategoryEnum {
   TICKETING = 'TICKETING',
   PARK_HISTORY = 'PARK_HISTORY',
   OTHER = 'OTHER',
+}
+
+export enum FeedbackCategoryEnum {
+  FACILITIES = 'FACILITIES',
+  SERVICES = 'SERVICES',
+  STAFF = 'STAFF',
+}
+
+export enum FeedbackStatusEnum {
+  OPEN = 'OPEN',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
 }

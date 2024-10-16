@@ -68,6 +68,12 @@ CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIM
 CREATE TYPE "PlantTaskUrgencyEnum" AS ENUM ('IMMEDIATE', 'HIGH', 'NORMAL', 'LOW');
 
 -- CreateEnum
+CREATE TYPE "FeedbackCategoryEnum" AS ENUM ('FACILITIES', 'SERVICES', 'STAFF', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY', 'EVENTS', 'WILDLIFE', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "FeedbackStatusEnum" AS ENUM ('PENDING', 'IN_PROGRESS', 'REJECTED', 'RESOLVED');
+
+-- CreateEnum
 CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT');
 
 -- CreateEnum
@@ -396,6 +402,23 @@ CREATE TABLE "SequestrationHistory" (
 );
 
 -- CreateTable
+CREATE TABLE "Feedback" (
+    "id" UUID NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateResolved" TIMESTAMP(3),
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "feedbackCategory" "FeedbackCategoryEnum" NOT NULL,
+    "images" TEXT[],
+    "feedbackStatus" "FeedbackStatusEnum" NOT NULL,
+    "remarks" TEXT,
+    "staffId" UUID,
+    "visitorId" UUID NOT NULL,
+
+    CONSTRAINT "Feedback_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Promotion" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
@@ -546,6 +569,12 @@ ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_submittingStaffId_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "SequestrationHistory" ADD CONSTRAINT "SequestrationHistory_decarbonizationAreaId_fkey" FOREIGN KEY ("decarbonizationAreaId") REFERENCES "DecarbonizationArea"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
