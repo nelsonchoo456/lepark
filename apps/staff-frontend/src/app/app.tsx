@@ -515,7 +515,7 @@ export function App() {
                   element={
                     <>
                       <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
                         redirectTo="/"
                       />
                       <DecarbonizationAreaEdit />
