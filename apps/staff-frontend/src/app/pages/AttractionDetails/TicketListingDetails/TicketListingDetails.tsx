@@ -53,10 +53,11 @@ const TicketListingDetails: React.FC = () => {
   const canEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER;
 
   useEffect(() => {
-    if (ticketListingId) {
+    if (!loading && ticketListing) {
       fetchInitialData();
+      setEditedTicketListing(ticketListing);
     }
-  }, [ticketListingId]);
+  }, [loading, ticketListing]);
 
   useEffect(() => {
     if (purchaseDateRange && attractionDateRange) {
@@ -202,7 +203,7 @@ const TicketListingDetails: React.FC = () => {
   };
 
   const toggleEditMode = () => {
-    if (inEditMode) {
+    if (inEditMode && ticketListing) {
       setEditedTicketListing(ticketListing);
     }
     setInEditMode(!inEditMode);
