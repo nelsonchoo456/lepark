@@ -43,6 +43,20 @@ const CompletionPage: React.FC = () => {
         return;
       }
 
+      try {
+        const response = await fetchPayment(paymentIntentId);
+
+        console.log(response.data);
+
+        if (response.data.status !== 'succeeded') {
+          setError(true);
+          setClientSecret(response.data.secret);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+
       paymentProcessed.current = true;
 
       try {
@@ -52,14 +66,6 @@ const CompletionPage: React.FC = () => {
           // Paid ticket
           if (!paymentIntentId) {
             throw new Error('Payment intent ID is missing for a paid ticket');
-          }
-
-          const response = await fetchPayment(paymentIntentId);
-
-          if (response.data.status !== 'succeeded') {
-            setError(true);
-            setClientSecret(response.data.secret);
-            return;
           }
         }
 
@@ -82,20 +88,16 @@ const CompletionPage: React.FC = () => {
       }
     };
 
-    if (transactionId) {
-      handleCompletion();
-    }
+    handleCompletion();
   }, [transactionId, paymentIntentId, navigate]);
 
   if (error === null) {
     return <div className="flex justify-center pt-50 text-2xl">Processing your order...</div>;
   }
 
-  if (error === true && clientSecret && stripePromise) {
-    return (
-      // Implement your retry logic here
-      <div>Payment failed. Please try again.</div>
-    );
+  if (error === true) {
+    // return <div className="flex justify-center pt-50 text-2xl">Payment failed. Please try again.</div>;
+    navigate('/failed');
   }
 
   return null;

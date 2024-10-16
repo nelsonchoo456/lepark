@@ -43,6 +43,7 @@ import VisitorViewEventDetails from './pages/Events/VisitorViewEventDetails';
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
 import PromotionViewAll from './pages/Promotions/PromotionViewAll';
 import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
+import FailedPage from './pages/Attractions/FailedPage';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -141,6 +142,14 @@ export function App() {
                   element={
                     <ProtectedRoute redirectTo="/login">
                       <SuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/failed"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <FailedPage />
                     </ProtectedRoute>
                   }
                 />

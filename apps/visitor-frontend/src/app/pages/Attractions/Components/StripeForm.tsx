@@ -115,7 +115,8 @@ const StripeForm: React.FC<StripeFormProps> = ({
 
       if (error) {
         await deleteAttractionTicketTransaction(transactionId);
-        message.error(error.message);
+        // message.error(error.message);
+        navigate(`/payment-completion/${transactionId}?payment_intent=${paymentIntentId}`);
       }
     } catch (error) {
       console.error(error);
