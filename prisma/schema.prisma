@@ -131,7 +131,6 @@ model Occurrence {
   images       String[]
   activityLogs ActivityLog[]
   statusLogs   StatusLog[]
-  Feedback     Feedback[]
 
   species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
 
@@ -453,7 +452,6 @@ model Facility {
   events              Event[]
   parkAssets          ParkAsset[]
   sensors             Sensor[]
-  Feedback            Feedback[]
 
   @@index([parkId])
 }
@@ -559,20 +557,22 @@ model Feedback {
   feedbackStatus   FeedbackStatusEnum
   remarks          String?
 
-  staffId      String?     @db.Uuid
-  staff   Staff?      @relation(fields: [staffId], references: [id])
-  visitorId    String      @db.Uuid
-  visitor      Visitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  facilityId   String?     @db.Uuid
-  facility     Facility?   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  occurrenceId String?     @db.Uuid
-  occurrence   Occurrence? @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  staffId   String? @db.Uuid
+  staff     Staff?  @relation(fields: [staffId], references: [id])
+  visitorId String  @db.Uuid
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
 }
 
 enum FeedbackCategoryEnum {
-  FACILITY
-  PLANT
-  GENERAL
+  FACILITIES
+  SERVICES
+  STAFF
+  SAFETY
+  CLEANLINESS
+  ACCESSIBILITY
+  EVENTS
+  WILDLIFE
+  OTHER
 }
 
 enum FeedbackStatusEnum {
