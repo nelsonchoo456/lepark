@@ -19,7 +19,8 @@ const {
   newHub,
   newSensors,
   seqHistoriesData,
-  faqsData
+  faqsData,
+  promotionsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -397,6 +398,15 @@ async function seed() {
   }
   console.log(`Total attractions seeded: ${attractionList.length}\n`);
 
+  const promotionList = [];
+  for (const promotion of promotionsData) {
+    const createdPromotion = await prisma.promotion.create({
+      data: promotion,
+    });
+    promotionList.push(createdPromotion);
+  }
+  console.log(`Total promotions seeded: ${promotionList.length}\n`);
+
 const plantTasksList = [];
   for (const plantTask of plantTasksData) {
     // Ensure we have valid staff and occurrence data
@@ -551,12 +561,12 @@ const generateMockReadings = (sensorType) => {
   const readings = [];
   const now = new Date();
   const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-  
+
   // Generate readings every 15 minutes from now till 8 hours ago
   for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
     readings.push(createReading(sensorType, time));
   }
-  
+
   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
 };
 
