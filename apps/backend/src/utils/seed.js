@@ -534,9 +534,6 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
     console.log('---');
   });*/
 
-  //faq'=
-  console.log(`Total attractions seeded: ${attractionList.length}\n`);
-
   const announcementList = [];
   for (const announcement of announcementsData) {
     const createdAnnouncement = await prisma.announcement.create({
