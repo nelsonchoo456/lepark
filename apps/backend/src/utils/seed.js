@@ -503,10 +503,10 @@ const plantTasksList = [];
   // Now create sequestration histories after all decarbonization areas are created
   console.log('Seeding 14 sequestration histories per decarb area...');
 
-  const areaNames = ['PVN', 'East Area', 'West Area', 'PVC', 'PVS'];
+  //const areaNames = ['PVN', 'East Area', 'West Area', 'PVC', 'PVS'];
 for (let i = 0; i < decarbonizationAreaList.length; i++) {
   const area = decarbonizationAreaList[i];
-  console.log(`Seeding sequestration history for ${areaNames[i]}...`);
+  //console.log(`Seeding sequestration history for ${areaNames[i]}...`);
   await createSeqHistories(area.id, seqHistoriesData[i], i);
 }
 
