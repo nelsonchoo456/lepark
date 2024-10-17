@@ -609,7 +609,17 @@ const TicketListingDetails: React.FC = () => {
           </Tabs>
         </Card>
       </ContentWrapperDark>
-      {/* ... existing Modal ... */}
+      <Modal
+        title="Existing Active Listing"
+        visible={promptModalVisible}
+        onOk={handleMakeInactiveAndUpdate}
+        onCancel={handleCancelPrompt}
+        okText="Deactivate and Update"
+        cancelText="Cancel"
+      >
+        <p>An active listing with the same category and nationality already exists.</p>
+        <p>Do you want to deactivate the existing listing and update this one?</p>
+      </Modal>
     </>
   );
 };
