@@ -487,39 +487,6 @@ const speciesData = [
   {
     phylum: 'Magnoliophyta',
     class: 'Magnoliopsida',
-    order: 'Asterales',
-    family: 'Asteraceae',
-    genus: 'Helianthus',
-    speciesName: 'Helianthus annuus',
-    commonName: 'Sunflower',
-    speciesDescription: 'A large annual plant native to North America, known for its large flower heads.',
-    conservationStatus: 'LEAST_CONCERN',
-    originCountry: 'North America',
-    lightType: 'FULL_SUN',
-    soilType: 'SANDY',
-    fertiliserType: 'Organic',
-    images: [
-      'https://fareastfloragarden.com/media/wysiwyg/1800x1200px-sunflower-2.jpg',
-      'https://fwbg.org/wp-content/uploads/2022/09/Sunflowers-_-pixabay.jpg',
-    ],
-    soilMoisture: 40,
-    fertiliserRequirement: 30,
-    idealHumidity: 50,
-    minTemp: 15,
-    maxTemp: 35,
-    idealTemp: 30,
-    isDroughtTolerant: true,
-    isFastGrowing: true,
-    isSlowGrowing: false,
-    isEdible: true,
-    isDeciduous: true,
-    isEvergreen: false,
-    isToxic: false,
-    isFragrant: false,
-  },
-  {
-    phylum: 'Magnoliophyta',
-    class: 'Magnoliopsida',
     order: 'Rosales',
     family: 'Moraceae',
     genus: 'Ficus',
@@ -1652,9 +1619,10 @@ const plantTasksData = [
     taskType: 'PRUNING_TRIMMING',
     taskUrgency: 'NORMAL',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-15T00:00:00Z',
-    submittingStaff: '', // This will be filled programmatically
-    occurrence: '', // This will be filled programmatically
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Due in 1 day
+    submittingStaff: '',
+    occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
     position: 1,
   },
@@ -1664,7 +1632,8 @@ const plantTasksData = [
     taskType: 'WATERING',
     taskUrgency: 'HIGH',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-30T00:00:00Z',
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+    dueDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Overdue by 1 day
     submittingStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
@@ -1676,7 +1645,8 @@ const plantTasksData = [
     taskType: 'OTHERS',
     taskUrgency: 'NORMAL',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-23T00:00:00Z',
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    dueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // Due 3 days ago
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
@@ -1688,7 +1658,8 @@ const plantTasksData = [
     taskType: 'PEST_MANAGEMENT',
     taskUrgency: 'HIGH',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-28T00:00:00Z',
+    createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Due 14 days later
     submittingStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
@@ -1700,7 +1671,8 @@ const plantTasksData = [
     taskType: 'OTHERS',
     taskUrgency: 'NORMAL',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-10T00:00:00Z',
+    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+    dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // Due 10 days later
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
@@ -1712,7 +1684,8 @@ const plantTasksData = [
     taskType: 'STAKING_SUPPORTING',
     taskUrgency: 'HIGH',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-05T00:00:00Z',
+    createdAt: new Date(Date.now()), // Today
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due 5 days later
     submittingStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
@@ -1724,7 +1697,8 @@ const plantTasksData = [
     taskType: 'PRUNING_TRIMMING',
     taskUrgency: 'NORMAL',
     taskStatus: 'OPEN',
-    dueDate: '2024-10-13T00:00:00Z',
+    createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due 5 days later
     submittingStaff: '',
     occurrence: '',
     images: ['https://www.tomorrowsharvest.com/wp-content/uploads/2017/08/pruning_clippers-how-to-prune-a-tree.jpg'],
@@ -1736,7 +1710,8 @@ const plantTasksData = [
     taskType: 'OTHERS',
     taskUrgency: 'LOW',
     taskStatus: 'OPEN',
-    dueDate: '2024-11-01T00:00:00Z',
+    createdAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000), // 9 days ago
+    dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // Due 5 days later
     submittingStaff: '',
     occurrence: '',
     images: [

@@ -407,6 +407,7 @@ const plantTasksList = [];
       const createdPlantTask = await prisma.plantTask.create({
         data: {
           ...plantTask,
+          createdAt: plantTask.createdAt, // Use the createdAt from the mock data
           submittingStaff: {
             connect: { id: staffList[randomStaffIndex].id },
           },
