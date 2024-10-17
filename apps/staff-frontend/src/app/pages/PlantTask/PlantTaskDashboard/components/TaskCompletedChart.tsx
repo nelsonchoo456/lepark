@@ -37,8 +37,8 @@ const TaskCompletedChart = () => {
     datasets: [{
       label: 'Tasks Completed',
       data: data.map(item => item.taskCompleted),
-      backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      borderColor: 'rgba(75, 192, 192, 1)',
+      backgroundColor: 'rgba(255, 192, 203, 0.6)',
+      borderColor: 'rgba(255, 192, 203, 1)',
       borderWidth: 1,
     }]
   };
