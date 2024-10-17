@@ -64,3 +64,6 @@ export * from './lib/api/faq';
 export * from './lib/types/faq';
 export * from './lib/api/announcement';
 export * from './lib/types/announcement';
+
+export * from './lib/api/eventTicket';
+export * from './lib/types/eventTicket';

@@ -77,3 +77,43 @@ export interface UpdateEventData {
     status?: EventStatusEnum;
     facilityId?: string;
 }
+
+export enum EventTicketCategoryEnum {
+  ADULT = 'ADULT',
+  CHILD = 'CHILD',
+  SENIOR = 'SENIOR',
+  STUDENT = 'STUDENT',
+}
+
+export enum EventTicketNationalityEnum {
+  LOCAL = 'LOCAL',
+  STANDARD = 'STANDARD',
+}
+
+export interface EventTicketListingResponse {
+  id: string;
+  category: EventTicketCategoryEnum;
+  nationality: EventTicketNationalityEnum;
+  description: string;
+  price: number;
+  isActive: boolean;
+  eventId: string;
+}
+
+export interface CreateEventTicketListingData {
+  category: EventTicketCategoryEnum;
+  nationality: EventTicketNationalityEnum;
+  description: string;
+  price: number;
+  isActive: boolean;
+  eventId: string;
+}
+
+export interface UpdateEventTicketListingData {
+  category?: EventTicketCategoryEnum;
+  nationality?: EventTicketNationalityEnum;
+  description?: string;
+  price?: number;
+  isActive?: boolean;
+  eventId?: string;
+}

@@ -1,6 +1,6 @@
 import express from 'express';
 import EventService from '../services/EventService';
-import { EventSchemaType } from '../schemas/eventSchema';
+import { EventSchemaType, EventTicketListingSchemaType } from '../schemas/eventSchema';
 import multer from 'multer';
 import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 
@@ -106,6 +106,65 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+router.post('/createEventTicketListing', authenticateJWTStaff, async (req, res) => {
+  try {
+    const ticketListing = await EventService.createEventTicketListing(req.body);
+    res.status(201).json(ticketListing);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getAllEventTicketListings', async (req, res) => {
+  try {
+    const ticketListings = await EventService.getAllEventTicketListings();
+    res.status(200).json(ticketListings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getEventTicketListingsByEventId/:eventId', async (req, res) => {
+  try {
+    const eventId = req.params.eventId;
+    const ticketListings = await EventService.getEventTicketListingsByEventId(eventId);
+    res.status(200).json(ticketListings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getEventTicketListingById/:id', async (req, res) => {
+  try {
+    const ticketListingId = req.params.id;
+    const ticketListing = await EventService.getEventTicketListingById(ticketListingId);
+    res.status(200).json(ticketListing);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/updateEventTicketListingDetails/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const ticketListingId = req.params.id;
+    const updateData: Partial<EventTicketListingSchemaType> = req.body;
+    const updatedTicketListing = await EventService.updateEventTicketListingDetails(ticketListingId, updateData);
+    res.status(200).json(updatedTicketListing);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/deleteEventTicketListing/:id', authenticateJWTStaff, async (req, res) => {
+  try {
+    const ticketListingId = req.params.id;
+    await EventService.deleteEventTicketListing(ticketListingId);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

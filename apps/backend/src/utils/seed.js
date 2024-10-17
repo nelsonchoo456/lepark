@@ -23,7 +23,7 @@ const {
   faqsData,
   visitorsData,
   promotionsData,
-  announcementsData
+  announcementsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -406,7 +406,7 @@ async function seed() {
     }
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
-  
+
   const plantTasksList = [];
   for (const plantTask of plantTasksData) {
     // Ensure we have valid staff and occurrence data
@@ -504,11 +504,11 @@ async function seed() {
   console.log('Seeding 14 sequestration histories per decarb area...');
 
   //const areaNames = ['PVN', 'East Area', 'West Area', 'PVC', 'PVS'];
-for (let i = 0; i < decarbonizationAreaList.length; i++) {
-  const area = decarbonizationAreaList[i];
-  //console.log(`Seeding sequestration history for ${areaNames[i]}...`);
-  await createSeqHistories(area.id, seqHistoriesData[i], i);
-}
+  for (let i = 0; i < decarbonizationAreaList.length; i++) {
+    const area = decarbonizationAreaList[i];
+    //console.log(`Seeding sequestration history for ${areaNames[i]}...`);
+    await createSeqHistories(area.id, seqHistoriesData[i], i);
+  }
 
   await seedFAQs();
 
@@ -523,7 +523,7 @@ for (let i = 0; i < decarbonizationAreaList.length; i++) {
     visitorList.push(createdVisitor);
   }
   console.log(`Total visitors seeded: ${visitorList.length}\n`);
-  
+
   const promotionList = [];
   for (const promotion of promotionsData) {
     const createdPromotion = await prisma.promotion.create({
@@ -532,6 +532,15 @@ for (let i = 0; i < decarbonizationAreaList.length; i++) {
     promotionList.push(createdPromotion);
   }
   console.log(`Total promotions seeded: ${promotionList.length}\n`);
+
+  const announcementList = [];
+  for (const announcement of announcementsData) {
+    const createdAnnouncement = await prisma.announcement.create({
+      data: announcement,
+    });
+    announcementList.push(createdAnnouncement);
+  }
+  console.log(`Total announcements seeded: ${announcementList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -540,8 +549,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   const endDate = new Date('2024-10-23');
   const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
- const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
- const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
+  const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+  const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
 
   const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
 
@@ -554,8 +563,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
         data: {
           date: new Date(currentDate),
           seqValue: parseFloat(currentSeqValue.toFixed(3)),
-          decarbonizationAreaId: decarbAreaId
-        }
+          decarbonizationAreaId: decarbAreaId,
+        },
       });
       seqHistories.push(createdSeqHistory);
       currentSeqValue += dailyIncrease;
@@ -591,16 +600,6 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
     console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
     console.log('---');
   });*/
-
-  const announcementList = [];
-  for (const announcement of announcementsData) {
-    const createdAnnouncement = await prisma.announcement.create({
-      data: announcement,
-    });
-    announcementList.push(createdAnnouncement);
-  }
-  console.log(`Total announcements seeded: ${announcementList.length}\n`);
-  
 }
 
 // Utility function for Activity Logs and Status Logs

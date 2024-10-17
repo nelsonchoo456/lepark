@@ -1,4 +1,4 @@
-import { EventStatusEnum, EventTypeEnum, EventSuitabilityEnum } from '@prisma/client';
+import { EventStatusEnum, EventTypeEnum, EventSuitabilityEnum, EventTicketNationalityEnum, EventTicketCategoryEnum } from '@prisma/client';
 import { z } from 'zod';
 
 export const EventSchema = z.object({
@@ -17,4 +17,14 @@ export const EventSchema = z.object({
   facilityId: z.string().uuid()
 });
 
+export const EventTicketListingSchema = z.object({
+  category: z.nativeEnum(EventTicketCategoryEnum),
+  nationality: z.nativeEnum(EventTicketNationalityEnum),
+  description: z.string(),
+  price: z.number(),
+  isActive: z.boolean(),
+  eventId: z.string()
+});
+
 export type EventSchemaType = z.infer<typeof EventSchema>;
+export type EventTicketListingSchemaType = z.infer<typeof EventTicketListingSchema>;

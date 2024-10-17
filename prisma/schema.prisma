@@ -300,10 +300,63 @@ model Event {
   images          String[]
   status          EventStatusEnum
   facilityId      String               @db.Uuid
+  eventTicketListings EventTicketListing[]
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   @@index([facilityId])
+}
+
+enum EventTicketCategoryEnum {
+  ADULT
+  CHILD
+  SENIOR
+  STUDENT
+}
+
+enum EventTicketNationalityEnum {
+  LOCAL
+  STANDARD
+}
+
+model EventTicketListing {
+  id           String                     @id @default(uuid()) @db.Uuid
+  category     EventTicketCategoryEnum
+  nationality  EventTicketNationalityEnum
+  description  String
+  price        Float
+  isActive     Boolean
+  eventId      String                     @db.Uuid
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+enum EventTicketStatusEnum {
+  VALID
+  INVALID
+  USED
+}
+
+model EventTicket {
+  id                       String               @id @default(uuid()) @db.Uuid
+  price                    Float
+  status                   EventTicketStatusEnum
+  eventTicketListingId     String               @db.Uuid
+  eventTicketTransactionId String               @db.Uuid
+
+  eventTicketTransaction EventTicketTransaction @relation(fields: [eventTicketTransactionId], references: [id], onDelete: Cascade)
+}
+
+model EventTicketTransaction {
+  id           String   @id @default(uuid()) @db.Uuid
+  eventDate    DateTime
+  purchaseDate DateTime
+  totalAmount  Float
+  visitorId    String   @db.Uuid
+  eventId      String   @db.Uuid
+
+  visitor      Visitor       @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  eventTickets EventTicket[]
 }
 
 // model DecarbonizationArea {
@@ -331,6 +384,7 @@ model Visitor {
   resetToken                   String?
   resetTokenUsed               Boolean                       @default(false)
   attractionTicketTransactions AttractionTicketTransaction[]
+  eventTicketTransactions      EventTicketTransaction[]
   promotionsRedeemed           Promotion[]                   @relation("VisitorPromotionsRedeemed")
 }
 

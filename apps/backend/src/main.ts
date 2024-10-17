@@ -32,6 +32,7 @@ import os from 'os';
 import sensorReadingRouter from './routers/sensorReadingRouter';
 import faqRouter from './routers/faqRouter';
 import AnnouncementRouter from './routers/announcementRouter';
+import eventTicketRouter from './routers/eventTicketRouter';
 
 dotenv.config();
 const app = express();
@@ -92,6 +93,7 @@ app.use('/api/promotions', promotionRouter);
 app.use('/api/sensorreadings', sensorReadingRouter);
 app.use('/api/faq', faqRouter);
 app.use('/api/announcements', AnnouncementRouter);
+app.use('/api/eventTickets', eventTicketRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();
