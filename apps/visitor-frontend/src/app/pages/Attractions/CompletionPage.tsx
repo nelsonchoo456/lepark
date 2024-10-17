@@ -43,6 +43,8 @@ const CompletionPage: React.FC = () => {
         return;
       }
 
+      paymentProcessed.current = true;
+
       try {
         const response = await fetchPayment(paymentIntentId);
 
@@ -56,8 +58,6 @@ const CompletionPage: React.FC = () => {
       } catch (error) {
         console.error(error);
       }
-
-      paymentProcessed.current = true;
 
       try {
         const transaction = await getAttractionTicketTransactionById(transactionId || '');
