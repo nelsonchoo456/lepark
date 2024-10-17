@@ -74,6 +74,31 @@ export interface TaskLoadPercentageData {
 
 export interface StaffPerformanceRankingData {
   bestPerformer: StaffResponse | null;
-  worstPerformer: StaffResponse | null;
+  secondBestPerformer: StaffResponse | null;
+  thirdBestPerformer: StaffResponse | null;
   message?: string;
+}
+
+export interface ParkTaskCompletedData {
+  staff: StaffResponse;
+  taskCompleted: number;
+}
+export interface ParkStaffAverageCompletionTimeForPastMonthsData {
+  staff: StaffResponse;
+  averageCompletionTimes: number[];
+}
+
+export interface ParkStaffCompletionRatesForPastMonthsData {
+  staff: StaffResponse;
+  completionRates: number[];
+}
+
+export interface ParkStaffOverdueRatesForPastMonthsData {
+  staff: StaffResponse;
+  overdueRates: number[];
+}
+
+export interface ParkStaffTasksCompletedForPastMonthsData {
+  staff: StaffResponse;
+  tasksCompleted: number[];
 }

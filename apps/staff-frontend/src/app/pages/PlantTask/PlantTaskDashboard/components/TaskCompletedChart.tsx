@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Card, DatePicker, Tooltip } from 'antd';
-import { CompletionRateData, getParkPlantTaskCompletionRates, StaffResponse } from '@lepark/data-access';
+import { ParkTaskCompletedData, StaffResponse, getParkTaskCompleted } from '@lepark/data-access';
 import dayjs from 'dayjs';
 import { useAuth } from '@lepark/common-ui';
-import { InfoCircleOutlined } from '@ant-design/icons'; // Optional, using an icon
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const { RangePicker } = DatePicker;
 
-const CompletionRateChart = () => {
-  const [data, setData] = useState<CompletionRateData[]>([]);
+const TaskCompletedChart = () => {
+  const [data, setData] = useState<ParkTaskCompletedData[]>([]);
   const [startDate, setStartDate] = useState<string>(dayjs().startOf('month').toISOString());
   const [endDate, setEndDate] = useState<string>(dayjs().endOf('month').toISOString());
   const { user } = useAuth<StaffResponse>();
-
 
   useEffect(() => {
     fetchData();
@@ -21,10 +20,10 @@ const CompletionRateChart = () => {
 
   const fetchData = async () => {
     try {
-      const response = await getParkPlantTaskCompletionRates(user?.parkId ?? null, new Date(startDate), new Date(endDate));
+      const response = await getParkTaskCompleted(user?.parkId ?? null, new Date(startDate), new Date(endDate));
       setData(response.data);
     } catch (error) {
-      console.error('Error fetching completion rate data:', error);
+      console.error('Error fetching task completed data:', error);
     }
   };
 
@@ -36,8 +35,8 @@ const CompletionRateChart = () => {
   const chartData = {
     labels: data.map(item => item.staff.firstName + ' ' + item.staff.lastName),
     datasets: [{
-      label: 'Completion Rate (%)',
-      data: data.map(item => item.completionRate.toFixed(2)),
+      label: 'Tasks Completed',
+      data: data.map(item => item.taskCompleted),
       backgroundColor: 'rgba(75, 192, 192, 0.6)',
       borderColor: 'rgba(75, 192, 192, 1)',
       borderWidth: 1,
@@ -48,18 +47,17 @@ const CompletionRateChart = () => {
     scales: {
       y: {
         beginAtZero: true,
-        max: 100,
         title: {
           display: true,
-          text: 'Completion Rate (%)'
-        }
+          text: 'Number of Tasks Completed'
+        },
       }
     },
     plugins: {
       title: {
         display: true,
-        text: 'Plant Task Completion Rates by Staff'
-      }
+        text: 'Tasks Completed by Staff'
+      },
     },
     maintainAspectRatio: false,
     responsive: true,
@@ -67,11 +65,10 @@ const CompletionRateChart = () => {
 
   return (
     <Card 
-      
       title={
         <div>
-          Task Completion Rates
-          <Tooltip title="This chart shows the completion rates of tasks among different staff members for the selected period.">
+          Tasks Completed
+          <Tooltip title="This chart shows the number of tasks completed by each staff member for the selected period.">
             <InfoCircleOutlined style={{ color: 'rgba(0, 0, 0, 0.45)', marginLeft: '8px' }} />
           </Tooltip>
         </div>
@@ -89,4 +86,4 @@ const CompletionRateChart = () => {
   );
 };
 
-export default CompletionRateChart;
+export default TaskCompletedChart;

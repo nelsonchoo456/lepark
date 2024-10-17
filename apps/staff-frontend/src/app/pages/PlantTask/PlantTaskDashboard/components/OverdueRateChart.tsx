@@ -10,8 +10,8 @@ const { RangePicker } = DatePicker;
 
 const OverdueRateChart = () => {
   const [data, setData] = useState<OverdueRateData[]>([]);
-  const [startDate, setStartDate] = useState<string>(dayjs().subtract(1, 'month').toISOString());
-  const [endDate, setEndDate] = useState<string>(dayjs().toISOString());
+  const [startDate, setStartDate] = useState<string>(dayjs().startOf('month').toISOString());
+  const [endDate, setEndDate] = useState<string>(dayjs().endOf('month').toISOString());
   const { user } = useAuth<StaffResponse>();
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const OverdueRateChart = () => {
       extra={
         <RangePicker 
           onChange={handleDateChange}
-          defaultValue={[dayjs().subtract(1, 'month'), dayjs()]}
+          defaultValue={[dayjs().startOf('month'), dayjs().endOf('month')]}
         />
       }
       styles={{ body: { height: '450px', minHeight: '400px' } }}

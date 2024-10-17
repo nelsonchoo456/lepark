@@ -19,14 +19,12 @@ const {
   newHub,
   newSensors,
   seqHistoriesData,
-  faqsData
+  faqsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
-
-
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -217,7 +215,6 @@ async function seedFAQs() {
   console.log(`Total FAQs seeded: ${faqList.length}\n`);
 }
 
-
 async function seed() {
   const parks = [];
   for (const park of parksData) {
@@ -397,28 +394,45 @@ async function seed() {
   }
   console.log(`Total attractions seeded: ${attractionList.length}\n`);
 
-const plantTasksList = [];
+  const plantTasksList = [];
   for (const plantTask of plantTasksData) {
+    // Filter staff from Park Id 2
+    const parkId2Staff = staffList.filter((staff) => staff.parkId === 2);
+
+    // Filter staff with ARBORIST or BOTANIST roles from Park Id 2
+    const eligibleAssignedStaff = parkId2Staff.filter((staff) => staff.role === 'ARBORIST' || staff.role === 'BOTANIST');
+
+    const eligibleSubmittingStaff = parkId2Staff.filter(
+      (staff) => staff.role === 'ARBORIST' || staff.role === 'BOTANIST' || staff.role === 'SUPERADMIN' || staff.role === 'MANAGER',
+    );
+
+    // Filter occurrences from Park Id 2
+    const parkId2Occurrences = occurrenceList.filter((occurrence) => occurrence.zoneId && occurrence.zoneId === 2);
+
     // Ensure we have valid staff and occurrence data
-    if (staffList.length > 0 && occurrenceList.length > 0) {
-      const randomStaffIndex = Math.floor(Math.random() * staffList.length);
-      const randomOccurrenceIndex = Math.floor(Math.random() * occurrenceList.length);
+    if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0 && parkId2Occurrences.length > 0) {
+      const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
+      const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+      const randomOccurrenceIndex = Math.floor(Math.random() * parkId2Occurrences.length);
 
       const createdPlantTask = await prisma.plantTask.create({
         data: {
           ...plantTask,
           createdAt: plantTask.createdAt, // Use the createdAt from the mock data
           submittingStaff: {
-            connect: { id: staffList[randomStaffIndex].id },
+            connect: { id: parkId2Staff[randomSubmittingStaffIndex].id },
+          },
+          assignedStaff: {
+            connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
           },
           occurrence: {
-            connect: { id: occurrenceList[randomOccurrenceIndex].id },
+            connect: { id: parkId2Occurrences[randomOccurrenceIndex].id },
           },
         },
       });
       plantTasksList.push(createdPlantTask);
     } else {
-      console.warn('Unable to create plant task: No staff or occurrences available');
+      console.warn('Unable to create plant task: No eligible staff or occurrences available for Park Id 2');
     }
   }
 
@@ -503,7 +517,6 @@ const plantTasksList = [];
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
-
   const seqHistories = [];
 
   let currentSeqValue = baseSeqHistory.seqValue;
@@ -521,8 +534,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
           data: {
             date: newDate,
             seqValue: currentSeqValue,
-            decarbonizationAreaId: decarbAreaId
-          }
+            decarbonizationAreaId: decarbAreaId,
+          },
         });
         seqHistories.push(createdSeqHistory);
         currentSeqValue += interval; // Increase by 0.2 kg for the next entry
@@ -544,9 +557,7 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   });*/
 
   //faq'=
-
 }
-
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {
@@ -559,12 +570,12 @@ const generateMockReadings = (sensorType) => {
   const readings = [];
   const now = new Date();
   const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-  
+
   // Generate readings every 15 minutes from now till 8 hours ago
   for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
     readings.push(createReading(sensorType, time));
   }
-  
+
   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
 };
 
@@ -588,16 +599,16 @@ const createReading = (sensorType, date) => {
       break;
     case 'TEMPERATURE':
       // Simulate daily temperature cycle
-      value = 22 + Math.sin((hour - 6) * Math.PI / 12) * 5 + Math.random() * 2;
+      value = 22 + Math.sin(((hour - 6) * Math.PI) / 12) * 5 + Math.random() * 2;
       break;
     case 'HUMIDITY':
       // Inverse relationship with temperature
-      value = 70 - Math.sin((hour - 6) * Math.PI / 12) * 10 + Math.random() * 5;
+      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5;
       break;
     case 'LIGHT':
       if (hour >= 6 && hour < 18) {
         // Daylight hours
-        value = Math.sin((hour - 6) * Math.PI / 12) * 200 + Math.random() * 50;
+        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50;
       } else {
         // Night time
         value = Math.random() * 5; // Very low light at night

@@ -42,6 +42,11 @@ import OverdueRateChart from './PlantTaskDashboard/components/OverdueRateChart';
 import AverageCompletionTimeChart from './PlantTaskDashboard/components/AverageCompletionTimeChart';
 import TaskLoadPercentageChart from './PlantTaskDashboard/components/TaskLoadPercentageChart';
 import StaffPerformanceRanking from './PlantTaskDashboard/components/StaffPerformanceRanking';
+import StaffAverageCompletionTimeLineChart from './PlantTaskDashboard/components/StaffAverageCompletionTimeLineChart';
+import TaskCompletedChart from './PlantTaskDashboard/components/TaskCompletedChart';
+import StaffCompletionRatesLineChart from './PlantTaskDashboard/components/StaffCompletionRatesLineChart';
+import StaffOverdueRatesLineChart from './PlantTaskDashboard/components/StaffOverdueRatesLineChart';
+import StaffTasksCompletedLineChart from './PlantTaskDashboard/components/StaffTasksCompletedLineChart';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -232,14 +237,17 @@ const PlantTaskList: React.FC = () => {
                 key: '2',
                 label: 'Staff Workload',
                 children: (
-                  <StaffWorkloadTable
-                    staffList={staffList}
-                    plantTasks={plantTasks}
-                    isSuperAdmin={isSuperAdmin}
-                    selectedParkId={selectedParkId}
-                    onParkChange={(parkId) => setSelectedParkId(parkId)}
-                    parkOptions={parkOptions as { value: string | null; label: string }[]}
-                  />
+                  <>
+                    <StaffWorkloadTable
+                      staffList={staffList}
+                      plantTasks={plantTasks}
+                      isSuperAdmin={isSuperAdmin}
+                      selectedParkId={selectedParkId}
+                      onParkChange={(parkId) => setSelectedParkId(parkId)}
+                      parkOptions={parkOptions as { value: string | null; label: string }[]}
+                    />
+                    <TaskLoadPercentageChart />
+                  </>
                 ),
               },
               !isSuperAdmin
@@ -251,7 +259,8 @@ const PlantTaskList: React.FC = () => {
                         {staffPerformanceRanking && (
                           <StaffPerformanceRanking
                             bestPerformer={staffPerformanceRanking.bestPerformer}
-                            worstPerformer={staffPerformanceRanking.worstPerformer}
+                            secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
+                            thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
                             message={staffPerformanceRanking.message}
                           />
                         )}
@@ -260,7 +269,8 @@ const PlantTaskList: React.FC = () => {
                             <CompletionRateChart />
                           </Col>
                           <Col span={12}>
-                            <OverdueRateChart />
+                          <StaffCompletionRatesLineChart />
+                            
                           </Col>
                         </Row>
                         <Row gutter={[16, 16]} className="mt-4">
@@ -268,7 +278,23 @@ const PlantTaskList: React.FC = () => {
                             <AverageCompletionTimeChart />
                           </Col>
                           <Col span={12}>
-                            <TaskLoadPercentageChart />
+                            <StaffAverageCompletionTimeLineChart />
+                          </Col>
+                        </Row>
+                        <Row gutter={[16, 16]} className="mt-4">
+                          <Col span={12}>
+                            <TaskCompletedChart />
+                          </Col>
+                          <Col span={12}>
+                            <StaffTasksCompletedLineChart />
+                          </Col>
+                        </Row>
+                        <Row gutter={[16, 16]} className="mt-4">
+                          <Col span={12}>
+                          <OverdueRateChart />
+                          </Col>
+                          <Col span={12}>
+                            <StaffOverdueRatesLineChart />
                           </Col>
                         </Row>
                       </>

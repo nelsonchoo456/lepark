@@ -192,6 +192,7 @@ class PlantTaskDao {
           gte: startDate,
           lte: endDate,
         },
+        taskStatus: PlantTaskStatusEnum.COMPLETED,
       },
     });
   }
@@ -267,8 +268,6 @@ class PlantTaskDao {
 
     return totalCompletionTime / tasks.length;
   }
-
-
 }
 
 export default new PlantTaskDao();

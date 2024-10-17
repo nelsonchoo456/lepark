@@ -10,8 +10,8 @@ const { RangePicker } = DatePicker;
 
 const AverageCompletionTimeChart = () => {
   const [data, setData] = useState<AverageCompletionTimeData[]>([]);
-  const [startDate, setStartDate] = useState<string>(dayjs().subtract(1, 'month').toISOString());
-  const [endDate, setEndDate] = useState<string>(dayjs().toISOString());
+  const [startDate, setStartDate] = useState<string>(dayjs().startOf('month').toISOString());
+  const [endDate, setEndDate] = useState<string>(dayjs().endOf('month').toISOString());
   const { user } = useAuth<StaffResponse>();
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const AverageCompletionTimeChart = () => {
       extra={
         <RangePicker 
           onChange={handleDateChange}
-          defaultValue={[dayjs().subtract(1, 'month'), dayjs()]}
+          defaultValue={[dayjs().startOf('month'), dayjs().endOf('month')]}
         />
       }
     >

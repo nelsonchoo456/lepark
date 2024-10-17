@@ -516,21 +516,44 @@ class PlantTaskService {
     return staffTaskLoadPercentages;
   }
 
-  public async getStaffPerformanceRanking(parkId: number, startDate: Date, endDate: Date): Promise<{ bestPerformer: Staff, worstPerformer: Staff, message: string | null }> {
+  public async getParkTaskCompleted(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; taskCompleted: number }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+    const staffTasksCompleted = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+        const taskCompleted = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
+        return { staff, taskCompleted };
+      }),
+    );
+
+    return staffTasksCompleted;
+  }
+
+  public async getStaffPerformanceRanking(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ bestPerformer: Staff; secondBestPerformer: Staff; thirdBestPerformer: Staff; message: string | null }> {
     const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
     const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
     const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
 
     const staffPerformance = completionRates.map(({ staff, completionRate }) => {
-      const overdue = overdueRates.find(o => o.staff.id === staff.id)?.overdueRate || 0;
-      const avgTime = avgCompletionTimes.find(a => a.staff.id === staff.id)?.averageCompletionTime || 0;
+      const overdue = overdueRates.find((o) => o.staff.id === staff.id)?.overdueRate || 0;
+      const avgTime = avgCompletionTimes.find((a) => a.staff.id === staff.id)?.averageCompletionTime || 0;
 
       // Calculate a performance score
       // Higher completion rate is better
       // Lower overdue rate is better
       // Lower average completion time is better
       // Higher task load is considered better (more productive)
-      const performanceScore = (completionRate * 0.4) + ((100 - overdue) * 0.3) + ((100 - avgTime) * 0.3);
+      const performanceScore = completionRate * 0.5 + (100 - overdue) * 0.2 + (100 - avgTime) * 0.3;
 
       return { staff, performanceScore };
     });
@@ -543,21 +566,164 @@ class PlantTaskService {
     }
 
     const bestPerformer = staffPerformance[0];
-    const worstPerformer = staffPerformance[staffPerformance.length - 1];
-
-    if (bestPerformer.performanceScore === worstPerformer.performanceScore) {
-      return {
-        bestPerformer: null,
-        worstPerformer: null,
-        message: "All staff are on track with their performance."
-      };
-    }
+    const secondBestPerformer = staffPerformance[1];
+    const thirdBestPerformer = staffPerformance[2];
 
     return {
       bestPerformer: bestPerformer.staff,
-      worstPerformer: worstPerformer.staff,
-      message: null
+      secondBestPerformer: secondBestPerformer.staff,
+      thirdBestPerformer: thirdBestPerformer.staff,
+      message: null,
     };
+  }
+
+  public async getParkStaffAverageCompletionTimeForPastMonths(
+    parkId: number,
+    months: number,
+  ): Promise<{ staff: Staff; averageCompletionTimes: number[] }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+
+    const currentDate = new Date();
+
+    const staffAverageCompletionTimes = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+
+        const monthlyAverages = [];
+        for (let i = 0; i < months; i++) {
+          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
+          monthEndDate.setHours(23, 59, 59, 999);
+
+          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthStartDate.setHours(0, 0, 0, 0);
+
+          const averageCompletionTime = await PlantTaskDao.getStaffAverageTaskCompletionTime(staffId, monthStartDate, monthEndDate);
+          monthlyAverages.unshift(averageCompletionTime);
+        }
+
+        return { staff, averageCompletionTimes: monthlyAverages };
+      }),
+    );
+
+    return staffAverageCompletionTimes;
+  }
+
+  public async getParkStaffCompletionRatesForPastMonths(
+    parkId: number,
+    months: number,
+  ): Promise<{ staff: Staff; completionRates: number[] }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+
+    const currentDate = new Date();
+
+    const staffCompletionRates = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+
+        const monthlyCompletionRates = [];
+        for (let i = 0; i < months; i++) {
+          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
+          monthEndDate.setHours(23, 59, 59, 999);
+
+          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthStartDate.setHours(0, 0, 0, 0);
+
+          const completedTasks = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, monthStartDate, monthEndDate);
+          const totalTasks = await PlantTaskDao.getStaffTotalTasksForPeriod(staffId, monthStartDate, monthEndDate);
+          const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+          monthlyCompletionRates.unshift(completionRate);
+        }
+
+        return { staff, completionRates: monthlyCompletionRates };
+      }),
+    );
+
+    return staffCompletionRates;
+  }
+
+  public async getParkStaffOverdueRatesForPastMonths(parkId: number, months: number): Promise<{ staff: Staff; overdueRates: number[] }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+
+    const currentDate = new Date();
+
+    const staffOverdueRates = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+
+        const monthlyOverdueRates = [];
+        for (let i = 0; i < months; i++) {
+          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
+          monthEndDate.setHours(23, 59, 59, 999);
+
+          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthStartDate.setHours(0, 0, 0, 0);
+
+          const overdueTasks = await PlantTaskDao.getStaffOverdueTasksForPeriod(staffId, monthStartDate, monthEndDate);
+          const totalTasks = await PlantTaskDao.getStaffTotalTasksDueForPeriod(staffId, monthStartDate, monthEndDate);
+          const overdueRate = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
+          monthlyOverdueRates.unshift(overdueRate);
+        }
+
+        return { staff, overdueRates: monthlyOverdueRates };
+      }),
+    );
+
+    return staffOverdueRates;
+  }
+
+  public async getParkStaffTasksCompletedForPastMonths(
+    parkId: number,
+    months: number,
+  ): Promise<{ staff: Staff; tasksCompleted: number[] }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+
+    const currentDate = new Date();
+
+    const staffTasksCompleted = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+
+        const monthlyTasksCompleted = [];
+        for (let i = 0; i < months; i++) {
+          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
+          monthEndDate.setHours(23, 59, 59, 999);
+
+          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthStartDate.setHours(0, 0, 0, 0);
+
+          const tasksCompleted = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, monthStartDate, monthEndDate);
+          monthlyTasksCompleted.unshift(tasksCompleted);
+        }
+
+        return { staff, tasksCompleted: monthlyTasksCompleted };
+      }),
+    );
+
+    return staffTasksCompleted;
   }
 }
 

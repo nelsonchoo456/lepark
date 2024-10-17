@@ -22,9 +22,11 @@ import EditPlantTaskModal from './EditPlantTaskModal';
 import ViewPlantTaskModal from './ViewPlantTaskModal';
 import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 import { COLORS } from '../../config/colors';
+import dayjs from 'dayjs';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
 
 // Utility function to format task type
 const formatTaskType = (taskType: string) => {
@@ -68,6 +70,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   const [form] = Form.useForm();
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -119,6 +122,23 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     setViewModalVisible(true);
   };
 
+  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDateRange(dates);
+  };
+
+  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+    if (!dateRange || !dateRange[0] || !dateRange[1]) {
+      return tasks;
+    }
+    const [startDate, endDate] = dateRange;
+    return tasks.filter(task => {
+      const dueDate = dayjs(task.dueDate);
+      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
+    });
+  };
+
+  const filteredPlantTasks = filterTasksByDateRange(plantTasks);
+
   const columns: TableProps<PlantTaskResponse>['columns'] = [
     {
       title: 'Title',
@@ -153,7 +173,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       filters:
         userRole === StaffType.SUPERADMIN
           ? parks
-          : plantTasks
+          : filteredPlantTasks
               .filter((task) => task.occurrence?.zone?.parkId === user?.parkId)
               .map((task) => ({
                 text: task.occurrence?.zone?.name,
@@ -334,6 +354,11 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           );
         }
       },
+      filters: staffList.map((staff) => ({
+        text: `${staff.firstName} ${staff.lastName}`,
+        value: staff.id,
+      })),
+      onFilter: (value, record) => record.assignedStaff?.id === value,
       width: '15%',
     },
     {
@@ -364,16 +389,16 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     const groupedTasks =
       groupBy === 'status'
         ? {
-            OPEN: plantTasks.filter((task) => task.taskStatus === 'OPEN'),
-            IN_PROGRESS: plantTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
-            COMPLETED: plantTasks.filter((task) => task.taskStatus === 'COMPLETED'),
-            CANCELLED: plantTasks.filter((task) => task.taskStatus === 'CANCELLED'),
+            OPEN: filteredPlantTasks.filter((task) => task.taskStatus === 'OPEN'),
+            IN_PROGRESS: filteredPlantTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
+            COMPLETED: filteredPlantTasks.filter((task) => task.taskStatus === 'COMPLETED'),
+            CANCELLED: filteredPlantTasks.filter((task) => task.taskStatus === 'CANCELLED'),
           }
         : {
-            IMMEDIATE: plantTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
-            HIGH: plantTasks.filter((task) => task.taskUrgency === 'HIGH'),
-            NORMAL: plantTasks.filter((task) => task.taskUrgency === 'NORMAL'),
-            LOW: plantTasks.filter((task) => task.taskUrgency === 'LOW'),
+            IMMEDIATE: filteredPlantTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
+            HIGH: filteredPlantTasks.filter((task) => task.taskUrgency === 'HIGH'),
+            NORMAL: filteredPlantTasks.filter((task) => task.taskUrgency === 'NORMAL'),
+            LOW: filteredPlantTasks.filter((task) => task.taskUrgency === 'LOW'),
           };
 
     return (
@@ -417,16 +442,21 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     },
   };
 
-  switch (tableViewType) {
-    case 'grouped-status':
-      return renderGroupedTasks('status', tableProps);
-    case 'grouped-urgency':
-      return renderGroupedTasks('urgency', tableProps);
-    default:
-      return (
+  return (
+    <>
+      <div style={{ marginBottom: '16px' }}>
+        <RangePicker
+          onChange={handleDateRangeChange}
+          style={{ width: '100%' }}
+          placeholder={['Start Date', 'End Date']}
+        />
+      </div>
+      {tableViewType === 'grouped-status' && renderGroupedTasks('status', tableProps)}
+      {tableViewType === 'grouped-urgency' && renderGroupedTasks('urgency', tableProps)}
+      {tableViewType === 'all' && (
         <Card styles={{ body: { padding: '1rem' } }}>
           <Table
-            dataSource={plantTasks}
+            dataSource={filteredPlantTasks}
             columns={columns}
             rowKey="id"
             loading={loading}
@@ -449,8 +479,9 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             userRole={userRole as StaffType}
           />
         </Card>
-      );
-  }
+      )}
+    </>
+  );
 };
 
 export default PlantTaskTableView;

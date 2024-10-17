@@ -14,11 +14,11 @@ import {
   PlantTaskUpdateData,
   deleteManyPlantTasks,
 } from '@lepark/data-access';
-import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
+import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker } from 'antd';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
-import { MoreOutlined } from '@ant-design/icons';
+import { MoreOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { StaffRoleEnum } from '@prisma/client';
@@ -27,6 +27,7 @@ import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
 import EditPlantTaskModal from './EditPlantTaskModal';
 import ViewPlantTaskModal from './ViewPlantTaskModal';
+import dayjs from 'dayjs';
 
 interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
@@ -41,6 +42,8 @@ interface PlantTaskBoardViewProps {
   refreshData: () => void;
   userRole: string;
 }
+
+const { RangePicker } = DatePicker;
 
 const PlantTaskBoardView = ({
   open,
@@ -66,6 +69,7 @@ const PlantTaskBoardView = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -215,7 +219,7 @@ const PlantTaskBoardView = ({
         // Add a delay before refreshing data
         setTimeout(() => {
           refreshData();
-        }, 1000); // 1 second delay
+        }, 500); // 0.5 second delay
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');
@@ -360,11 +364,14 @@ const PlantTaskBoardView = ({
             <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
               {formatEnumLabelToRemoveUnderscores(task.taskType)}
             </Typography.Text>
-            {!task.assignedStaffId && (
-              <Tag color="default" style={{ fontSize: '0.7rem' }} bordered={false}>
-                UNASSIGNED
-              </Tag>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <UserOutlined style={{ marginRight: 4, color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }} />
+              <Typography.Text style={{ fontSize: '0.8rem', color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }}>
+                {task.assignedStaffId
+                  ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}`
+                  : 'Unassigned'}
+              </Typography.Text>
+            </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
             <div>
@@ -447,15 +454,42 @@ const PlantTaskBoardView = ({
     }
   };
 
+  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDateRange(dates);
+  };
+
+  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+    if (!dateRange || !dateRange[0] || !dateRange[1]) {
+      return tasks;
+    }
+    const [startDate, endDate] = dateRange;
+    return tasks.filter(task => {
+      const dueDate = dayjs(task.dueDate);
+      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
+    });
+  };
+
+  const filteredOpen = filterTasksByDateRange(open);
+  const filteredInProgress = filterTasksByDateRange(inProgress);
+  const filteredCompleted = filterTasksByDateRange(completed);
+  const filteredCancelled = filterTasksByDateRange(cancelled);
+
   return (
     <>
+      <div style={{ marginBottom: '16px' }}>
+        <RangePicker
+          onChange={handleDateRangeChange}
+          style={{ width: '100%' }}
+          placeholder={['Start Date', 'End Date']}
+        />
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Row gutter={16} className="mb-4">
           {[
-            { value: 'OPEN', title: 'Open', color: COLORS.sky[400] },
-            { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400] },
-            { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400] },
-            { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600] },
+            { value: 'OPEN', title: 'Open', color: COLORS.sky[400], tasks: filteredOpen },
+            { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400], tasks: filteredInProgress },
+            { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400], tasks: filteredCompleted },
+            { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600], tasks: filteredCancelled },
           ].map((status) => (
             <Col span={6} key={status.value}>
               <Card
@@ -476,7 +510,7 @@ const PlantTaskBoardView = ({
                 <Droppable droppableId={status.value}>
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} style={{ minHeight: '100px' }}>
-                      {getList(status.value as PlantTaskStatusEnum).map((task, index) => (
+                      {status.tasks.map((task, index) => (
                         <Draggable
                           key={task.id}
                           draggableId={task.id}

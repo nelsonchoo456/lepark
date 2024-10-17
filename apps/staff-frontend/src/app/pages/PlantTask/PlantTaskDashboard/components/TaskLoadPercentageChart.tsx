@@ -29,7 +29,7 @@ const TaskLoadPercentageChart = () => {
   const chartData = {
     labels: data.map(item => item.staff.firstName + ' ' + item.staff.lastName),
     datasets: [{
-      data: data.map(item => item.taskLoadPercentage),
+      data: data.map(item => item.taskLoadPercentage.toFixed(2)),
       backgroundColor: [
         'rgba(255, 99, 71, 0.6)',   // Tomato
         'rgba(173, 255, 47, 0.6)',  // Green Yellow
