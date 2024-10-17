@@ -29,7 +29,7 @@ const calculateDailySequestration = (biomass: number, decarbonizationType: strin
 
   const carbonFraction = sequestrationFactors[decarbonizationType as keyof typeof sequestrationFactors] || 0;
   const annualSequestration = biomass * carbonFraction * CO2_SEQUESTRATION_FACTOR;
-  return Math.floor((annualSequestration * 1000) / 365); // Convert annual sequestration to daily rate in grams, rounded down to nearest integer
+  return Number((annualSequestration / 365).toFixed(3)); // Convert annual sequestration to daily rate in kg, always returning 3 decimal places
 };
 
 const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ excludeOccurrenceId, selectedPark }) => {
@@ -116,11 +116,11 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ excludeOccurrenceId, 
       width: '10%',
     },
     {
-      title: 'CO2 absorbed daily',
+      title: 'CO₂ absorbed daily',
       key: 'dailySequestration',
       render: (_, record) => {
         const dailySequestration = calculateDailySequestration(record.biomass, record.decarbonizationType);
-        return dailySequestration.toFixed(0) + " g";
+        return dailySequestration + " kg";
       },
       sorter: (a, b) => {
         const seqA = calculateDailySequestration(a.biomass, a.decarbonizationType);

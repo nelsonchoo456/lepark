@@ -88,8 +88,15 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((z) => z.id === formValues.parkId);
       setSelectedPark(selectedPark);
+    } else {
+      setSelectedPark(parks[0]);
+    }
+  }, [parks, formValues.parkId]);
+
+  useEffect(() => {
+    if (selectedPark) {
       const fetchDecarbAreas = async () => {
-        const decarbAreasRes = await getDecarbonizationAreasByParkId(formValues.parkId);
+        const decarbAreasRes = await getDecarbonizationAreasByParkId(selectedPark.id);
         if (decarbAreasRes.status === 200) {
           const decarbAreasData = decarbAreasRes.data;
           setParkDecarbAreas(decarbAreasData);
@@ -97,21 +104,8 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
       };
 
       fetchDecarbAreas();
-    } else {
-      setSelectedPark(parks[0]);
-      if (selectedPark) {
-        const fetchDecarbAreas = async () => {
-          const decarbAreasRes = await getDecarbonizationAreasByParkId(selectedPark.id);
-          if (decarbAreasRes.status === 200) {
-            const decarbAreasData = decarbAreasRes.data;
-            setParkDecarbAreas(decarbAreasData);
-          }
-        };
-
-        fetchDecarbAreas();
-      }
     }
-  }, [parks, formValues.parkId]);
+  }, [selectedPark]);
 
   useEffect(() => {
     if (selectedPark?.id) {
