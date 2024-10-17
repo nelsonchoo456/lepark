@@ -829,6 +829,21 @@ const occurrenceData = [
     zoneId: 1,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-11.jpg'],
   },
+  {
+    lat: 1.3646164658,
+    lng: 103.8397,
+    dateObserved: '2024-09-08T10:00:00Z',
+    dateOfBirth: '2024-01-01T00:00:00Z',
+    numberOfPlants: 15.0,
+    biomass: 2100.5,
+    title: 'New Raintree Observation',
+    description: 'Observation of recently planted rain trees in the area',
+    decarbonizationType: 'TREE_TROPICAL',
+    speciesId: '',
+    occurrenceStatus: 'HEALTHY',
+    zoneId: 1,
+    images: ['https://www.shutterstock.com/image-photo/panorama-giant-monkey-pod-tree-260nw-1099876487.jpg'],
+  },
 ];
 
 const staffData = [

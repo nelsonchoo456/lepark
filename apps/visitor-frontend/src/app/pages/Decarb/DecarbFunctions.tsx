@@ -17,8 +17,9 @@ export function calculateHDBPoweredDays(totalSequestration: number): number {
 
   const dailyEmissions = AVERAGE_DAILY_CONSUMPTION * EMISSIONS_RATE;
   const poweredDays = totalSequestration / dailyEmissions;
+  const poweredYears = poweredDays / 365;
 
-  return Math.floor(poweredDays); // Round down to the nearest whole day
+  return Math.floor(poweredYears * 2) / 2; // Round down to the nearest 0.5 year
 }
 
 export function calculateNetflixHoursOffset(totalSequestration: number): number {
