@@ -451,7 +451,7 @@ const DecarbonizationAreaChart: React.FC = () => {
       const shrubsNeeded = calculatePlantsNeeded(shortfall, 'SHRUB', 500);
 
       return (
-        <div>
+        <div style={{ marginLeft: '10px' }}>
           <p style={{ color: 'red' }}>
             The sequestration amount is below the internationally benchmarked average by {shortfall.toFixed(2)} kg.
           </p>
