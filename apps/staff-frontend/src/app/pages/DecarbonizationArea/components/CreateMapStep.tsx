@@ -11,6 +11,7 @@ import {
   getOccurrencesByParkId,
   getZonesByParkId,
   ZoneResponse,
+  StaffResponse,
 } from '@lepark/data-access';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { COLORS } from '../../../config/colors';
@@ -24,6 +25,7 @@ import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../
 import { useNavigate } from 'react-router-dom';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { PiPlantFill } from 'react-icons/pi';
+import { useAuth } from '@lepark/common-ui';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
@@ -81,10 +83,11 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
   const [showZones, setShowZones] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log('Parks:', parks);
+    console.log('Form Values:', formValues);
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((z) => z.id === formValues.parkId);
       setSelectedPark(selectedPark);
-
       const fetchDecarbAreas = async () => {
         const decarbAreasRes = await getDecarbonizationAreasByParkId(formValues.parkId);
         if (decarbAreasRes.status === 200) {
@@ -94,6 +97,19 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
       };
 
       fetchDecarbAreas();
+    } else {
+      setSelectedPark(parks[0]);
+      if (selectedPark) {
+        const fetchDecarbAreas = async () => {
+          const decarbAreasRes = await getDecarbonizationAreasByParkId(selectedPark.id);
+          if (decarbAreasRes.status === 200) {
+            const decarbAreasData = decarbAreasRes.data;
+            setParkDecarbAreas(decarbAreasData);
+          }
+        };
+
+        fetchDecarbAreas();
+      }
     }
   }, [parks, formValues.parkId]);
 
