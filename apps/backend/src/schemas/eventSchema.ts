@@ -11,6 +11,7 @@ export const EventSchema = z.object({
   startTime: z.date(),
   endTime: z.date(),
   maxCapacity: z.number().int().positive(),
+  ticketingPolicy: z.string(),
   images: z.array(z.string()).optional(),
   status: z.nativeEnum(EventStatusEnum),
   facilityId: z.string().uuid()

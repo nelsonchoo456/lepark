@@ -23,6 +23,15 @@ CREATE TYPE "ActivityLogTypeEnum" AS ENUM ('WATERED', 'TRIMMED', 'FERTILIZED', '
 CREATE TYPE "AttractionStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_MAINTENANCE');
 
 -- CreateEnum
+CREATE TYPE "AttractionTicketCategoryEnum" AS ENUM ('ADULT', 'CHILD', 'SENIOR', 'STUDENT');
+
+-- CreateEnum
+CREATE TYPE "AttractionTicketNationalityEnum" AS ENUM ('LOCAL', 'STANDARD');
+
+-- CreateEnum
+CREATE TYPE "AttractionTicketStatusEnum" AS ENUM ('VALID', 'INVALID', 'USED');
+
+-- CreateEnum
 CREATE TYPE "EventStatusEnum" AS ENUM ('ONGOING', 'UPCOMING', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
@@ -78,6 +87,9 @@ CREATE TYPE "FAQStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'DRAFT', 'ARCHIVED');
 
 -- CreateEnum
 CREATE TYPE "FAQCategoryEnum" AS ENUM ('GENERAL', 'PARK_RULES', 'FACILITIES', 'EVENTS', 'SAFETY', 'ACCESSIBILITY', 'SERVICES', 'TICKETING', 'PARK_HISTORY', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "AnnouncementStatusEnum" AS ENUM ('UPCOMING', 'ACTIVE', 'INACTIVE', 'EXPIRED');
 
 -- CreateTable
 CREATE TABLE "Staff" (
@@ -187,11 +199,48 @@ CREATE TABLE "Attraction" (
     "closingHours" TIMESTAMP(3)[],
     "images" TEXT[],
     "status" "AttractionStatusEnum" NOT NULL,
+    "ticketingPolicy" TEXT NOT NULL,
     "lat" DOUBLE PRECISION,
     "lng" DOUBLE PRECISION,
     "parkId" INTEGER NOT NULL,
 
     CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AttractionTicketListing" (
+    "id" UUID NOT NULL,
+    "category" "AttractionTicketCategoryEnum" NOT NULL,
+    "nationality" "AttractionTicketNationalityEnum" NOT NULL,
+    "description" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "isActive" BOOLEAN NOT NULL,
+    "attractionId" UUID NOT NULL,
+
+    CONSTRAINT "AttractionTicketListing_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AttractionTicket" (
+    "id" UUID NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "status" "AttractionTicketStatusEnum" NOT NULL,
+    "attractionTicketListingId" UUID NOT NULL,
+    "attractionTicketTransactionId" UUID NOT NULL,
+
+    CONSTRAINT "AttractionTicket_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AttractionTicketTransaction" (
+    "id" UUID NOT NULL,
+    "attractionDate" TIMESTAMP(3) NOT NULL,
+    "purchaseDate" TIMESTAMP(3) NOT NULL,
+    "totalAmount" DOUBLE PRECISION NOT NULL,
+    "visitorId" UUID NOT NULL,
+    "attractionId" UUID NOT NULL,
+
+    CONSTRAINT "AttractionTicketTransaction_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -206,6 +255,7 @@ CREATE TABLE "Event" (
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
     "maxCapacity" INTEGER NOT NULL,
+    "ticketingPolicy" TEXT NOT NULL,
     "images" TEXT[],
     "status" "EventStatusEnum" NOT NULL,
     "facilityId" UUID NOT NULL,
@@ -431,6 +481,20 @@ CREATE TABLE "FAQ" (
 );
 
 -- CreateTable
+CREATE TABLE "Announcement" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "status" "AnnouncementStatusEnum" NOT NULL,
+    "parkId" INTEGER,
+
+    CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_VisitorfavoriteSpecies" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
@@ -507,6 +571,15 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicketListing" ADD CONSTRAINT "AttractionTicketListing_attractionId_fkey" FOREIGN KEY ("attractionId") REFERENCES "Attraction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicket" ADD CONSTRAINT "AttractionTicket_attractionTicketTransactionId_fkey" FOREIGN KEY ("attractionTicketTransactionId") REFERENCES "AttractionTicketTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicketTransaction" ADD CONSTRAINT "AttractionTicketTransaction_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;

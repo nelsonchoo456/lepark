@@ -1,7 +1,7 @@
 import { AttractionResponse, getAttractionById } from '@lepark/data-access';
-import { Tabs, Typography, Tag } from 'antd';
+import { Tabs, Typography, Tag, Button } from 'antd';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
 import AttractionInformationTab from './Components/AttractionsInformationTab';
 import { LogoText } from '@lepark/common-ui';
@@ -23,6 +23,7 @@ const VisitorViewAttractionDetails = () => {
   const { attractionId } = useParams<{ attractionId: string }>();
   const [attraction, setAttraction] = useState<AttractionResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +50,10 @@ const VisitorViewAttractionDetails = () => {
     // Add other tabs if necessary
   ];
 
+  const navigateToListings = (attractionId: string) => {
+    navigate(`/attractions/${attractionId}/listings`);
+  };
+
   return (
     <div className="md:p-4 md:h-screen md:overflow-hidden">
       <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
@@ -64,7 +69,7 @@ const VisitorViewAttractionDetails = () => {
           <div className="hidden md:flex items-start">
             <div className="flex-0">
               <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{attraction?.title}</LogoText>
-              <Typography.Paragraph
+              {/* <Typography.Paragraph
                 ellipsis={{
                   rows: 3,
                   expandable: true,
@@ -72,7 +77,7 @@ const VisitorViewAttractionDetails = () => {
                 }}
               >
                 {attraction?.description}
-              </Typography.Paragraph>
+              </Typography.Paragraph> */}
               {attraction && (
                 <div className="mb-4 hidden md:block">
                   <Tag color={attraction.status === 'OPEN' ? 'green' : 'red'}>{attraction.status}</Tag>
@@ -115,6 +120,11 @@ const VisitorViewAttractionDetails = () => {
                   ))}
               </tbody>
             </table>
+          </div>
+          <div className="mt-4">
+            <Button type="primary" className="w-full" onClick={() => attractionId && navigateToListings(attractionId)}>
+              Book Now
+            </Button>
           </div>
         </div>
       </div>

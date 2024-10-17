@@ -190,18 +190,72 @@ enum AttractionStatusEnum {
 }
 
 model Attraction {
-  id           String               @id @default(uuid()) @db.Uuid
-  title        String
-  description  String
-  openingHours DateTime[]
-  closingHours DateTime[]
-  images       String[]
-  status       AttractionStatusEnum
-  lat          Float?
-  lng          Float?
-  parkId       Int
+  id                       String                    @id @default(uuid()) @db.Uuid
+  title                    String
+  description              String
+  openingHours             DateTime[]
+  closingHours             DateTime[]
+  images                   String[]
+  status                   AttractionStatusEnum
+  ticketingPolicy          String
+  lat                      Float?
+  lng                      Float?
+  parkId                   Int
+  attractionTicketListings AttractionTicketListing[]
 
   @@index([parkId])
+}
+
+enum AttractionTicketCategoryEnum {
+  ADULT
+  CHILD
+  SENIOR
+  STUDENT
+}
+
+enum AttractionTicketNationalityEnum {
+  LOCAL
+  STANDARD
+}
+
+model AttractionTicketListing {
+  id           String                          @id @default(uuid()) @db.Uuid
+  category     AttractionTicketCategoryEnum
+  nationality  AttractionTicketNationalityEnum
+  description  String
+  price        Float
+  isActive     Boolean
+  attractionId String                          @db.Uuid
+
+  attraction Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+}
+
+enum AttractionTicketStatusEnum {
+  VALID
+  INVALID
+  USED
+}
+
+model AttractionTicket {
+  id                            String                     @id @default(uuid()) @db.Uuid
+  price                         Float
+  status                        AttractionTicketStatusEnum
+  attractionTicketListingId     String                     @db.Uuid
+  attractionTicketTransactionId String                     @db.Uuid
+
+  attractionTicketTransaction AttractionTicketTransaction @relation(fields: [attractionTicketTransactionId], references: [id], onDelete: Cascade)
+}
+
+model AttractionTicketTransaction {
+  id             String   @id @default(uuid()) @db.Uuid
+  attractionDate DateTime
+  purchaseDate   DateTime
+  totalAmount    Float
+  visitorId      String   @db.Uuid
+  attractionId   String   @db.Uuid
+
+  visitor           Visitor            @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  attractionTickets AttractionTicket[]
 }
 
 enum EventStatusEnum {
@@ -232,19 +286,20 @@ enum EventSuitabilityEnum {
 }
 
 model Event {
-  id          String               @id @default(uuid()) @db.Uuid
-  title       String
-  description String
-  type        EventTypeEnum
-  suitability EventSuitabilityEnum
-  startDate   DateTime
-  endDate     DateTime
-  startTime   DateTime
-  endTime     DateTime
-  maxCapacity Int
-  images      String[]
-  status      EventStatusEnum
-  facilityId  String               @db.Uuid
+  id              String               @id @default(uuid()) @db.Uuid
+  title           String
+  description     String
+  type            EventTypeEnum
+  suitability     EventSuitabilityEnum
+  startDate       DateTime
+  endDate         DateTime
+  startTime       DateTime
+  endTime         DateTime
+  maxCapacity     Int
+  ticketingPolicy String
+  images          String[]
+  status          EventStatusEnum
+  facilityId      String               @db.Uuid
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
@@ -265,17 +320,18 @@ model Event {
 // }
 
 model Visitor {
-  id                 String      @id @default(uuid()) @db.Uuid
-  firstName          String
-  lastName           String
-  email              String      @unique
-  password           String
-  contactNumber      String
-  favoriteSpecies    Species[]   @relation("VisitorfavoriteSpecies")
-  promotionsRedeemed Promotion[] @relation("VisitorPromotionsRedeemed")
-  isVerified         Boolean
-  resetToken         String?
-  resetTokenUsed     Boolean     @default(false)
+  id                           String                        @id @default(uuid()) @db.Uuid
+  firstName                    String
+  lastName                     String
+  email                        String                        @unique
+  password                     String
+  contactNumber                String
+  favoriteSpecies              Species[]                     @relation("VisitorfavoriteSpecies")
+  isVerified                   Boolean
+  resetToken                   String?
+  resetTokenUsed               Boolean                       @default(false)
+  attractionTicketTransactions AttractionTicketTransaction[]
+  promotionsRedeemed           Promotion[]                   @relation("VisitorPromotionsRedeemed")
 }
 
 enum HubStatusEnum {
@@ -608,13 +664,31 @@ enum FAQCategoryEnum {
 }
 
 model FAQ {
-  id          String         @id @default(uuid()) @db.Uuid
-  category    FAQCategoryEnum
-  question    String
-  answer      String
-  status      FAQStatusEnum
-  parkId      Int?            
-  priority    Int?
+  id       String          @id @default(uuid()) @db.Uuid
+  category FAQCategoryEnum
+  question String
+  answer   String
+  status   FAQStatusEnum
+  parkId   Int?
+  priority Int?
 
   @@index([parkId])
+}
+
+enum AnnouncementStatusEnum {
+  UPCOMING
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+model Announcement {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  content     String
+  updatedAt   DateTime
+  startDate   DateTime
+  endDate     DateTime
+  status      AnnouncementStatusEnum
+  parkId      Int?
 }

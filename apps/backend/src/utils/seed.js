@@ -13,6 +13,7 @@ const {
   eventsData,
   parkAssetsData,
   sensorsData,
+  attractionTicketListingsData,
   decarbonizationAreasData,
   plantTasksData,
   sensorReadingsData,
@@ -20,14 +21,14 @@ const {
   newSensors,
   seqHistoriesData,
   faqsData,
-  promotionsData
+  visitorsData,
+  promotionsData,
+  announcementsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
-
-
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -218,7 +219,6 @@ async function seedFAQs() {
   console.log(`Total FAQs seeded: ${faqList.length}\n`);
 }
 
-
 async function seed() {
   const parks = [];
   for (const park of parksData) {
@@ -396,18 +396,18 @@ async function seed() {
     });
     attractionList.push(createdAttraction);
   }
-  console.log(`Total attractions seeded: ${attractionList.length}\n`);
 
-  const promotionList = [];
-  for (const promotion of promotionsData) {
-    const createdPromotion = await prisma.promotion.create({
-      data: promotion,
-    });
-    promotionList.push(createdPromotion);
+  for (const attraction of attractionList) {
+    for (const listing of attractionTicketListingsData) {
+      listing.attractionId = attraction.id;
+      await prisma.attractionTicketListing.create({
+        data: listing,
+      });
+    }
   }
-  console.log(`Total promotions seeded: ${promotionList.length}\n`);
-
-const plantTasksList = [];
+  console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
+  
+  const plantTasksList = [];
   for (const plantTask of plantTasksData) {
     // Ensure we have valid staff and occurrence data
     if (staffList.length > 0 && occurrenceList.length > 0) {
@@ -511,6 +511,27 @@ for (let i = 0; i < decarbonizationAreaList.length; i++) {
 }
 
   await seedFAQs();
+
+  const visitorList = [];
+  for (const visitor of visitorsData) {
+    const hashedPassword = await bcrypt.hash(visitor.password, 10);
+    visitor.password = hashedPassword;
+
+    const createdVisitor = await prisma.visitor.create({
+      data: visitor,
+    });
+    visitorList.push(createdVisitor);
+  }
+  console.log(`Total visitors seeded: ${visitorList.length}\n`);
+  
+  const promotionList = [];
+  for (const promotion of promotionsData) {
+    const createdPromotion = await prisma.promotion.create({
+      data: promotion,
+    });
+    promotionList.push(createdPromotion);
+  }
+  console.log(`Total promotions seeded: ${promotionList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -541,14 +562,46 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
     } catch (error) {
       console.error(`Error inserting sequestration history for date: ${currentDate.toISOString()}`);
       console.error(error);
+      try {
+        const createdSeqHistory = await prisma.sequestrationHistory.create({
+          data: {
+            date: newDate,
+            seqValue: currentSeqValue,
+            decarbonizationAreaId: decarbAreaId,
+          },
+        });
+        seqHistories.push(createdSeqHistory);
+        currentSeqValue += interval; // Increase by 0.2 kg for the next entry
+      } catch (error) {
+        console.error(`Error inserting sequestration history for date: ${newDate.toISOString()}`);
+        console.error(error);
+      }
     }
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
   console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
-}
+  console.log(`Total sequestration histories seeded: ${seqHistories.length}\n`);
+  /*seqHistories.forEach((history, i) => {
+    console.log(`History ${i + 1}:`);
+    console.log(`  ID: ${history.id}`);
+    console.log(`  Date: ${history.date}`);
+    console.log(`  Sequestration Value: ${history.seqValue.toFixed(3)}`);
+    console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
+    console.log('---');
+  });*/
 
+  const announcementList = [];
+  for (const announcement of announcementsData) {
+    const createdAnnouncement = await prisma.announcement.create({
+      data: announcement,
+    });
+    announcementList.push(createdAnnouncement);
+  }
+  console.log(`Total announcements seeded: ${announcementList.length}\n`);
+  
+}
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {
