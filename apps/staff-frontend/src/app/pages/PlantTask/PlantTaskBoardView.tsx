@@ -369,7 +369,7 @@ const PlantTaskBoardView = ({
               <Typography.Text style={{ fontSize: '0.8rem', color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }}>
                 {task.assignedStaffId
                   ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}`
-                  : 'Unassigned'}
+                  : ''}
               </Typography.Text>
             </div>
           </div>
