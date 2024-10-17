@@ -13,6 +13,7 @@ import {
   updatePlantTaskDetails,
   PlantTaskUpdateData,
   deleteManyPlantTasks,
+  deletePlantTask,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker } from 'antd';
 import moment from 'moment';
@@ -28,6 +29,7 @@ import { FiClock } from 'react-icons/fi';
 import EditPlantTaskModal from './EditPlantTaskModal';
 import ViewPlantTaskModal from './ViewPlantTaskModal';
 import dayjs from 'dayjs';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 
 interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
@@ -70,6 +72,8 @@ const PlantTaskBoardView = ({
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -322,6 +326,16 @@ const PlantTaskBoardView = ({
       });
     }
 
+    // Add Delete Task option for Superadmin and Manager
+    if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) {
+      dropdownItems.push({
+        label: 'Delete Task',
+        key: '5',
+        danger: true,
+        onClick: () => handleDeleteTask(task),
+      });
+    }
+
     return (
       <Card
         size="small"
@@ -474,6 +488,35 @@ const PlantTaskBoardView = ({
   const filteredCompleted = filterTasksByDateRange(completed);
   const filteredCancelled = filterTasksByDateRange(cancelled);
 
+  // Add this function to handle task deletion
+  const handleDeleteTask = (task: PlantTaskResponse) => {
+    setPlantTaskToBeDeleted(task);
+    setDeleteModalOpen(true);
+  };
+
+  const deletePlantTaskConfirmed = async () => {
+    try {
+      if (!plantTaskToBeDeleted) {
+        throw new Error('Unable to delete Plant Task at this time');
+      }
+      await deletePlantTask(plantTaskToBeDeleted.id);
+      refreshData();
+      setPlantTaskToBeDeleted(null);
+      setDeleteModalOpen(false);
+      message.success(`Deleted Plant Task: ${plantTaskToBeDeleted.title}.`);
+    } catch (error) {
+      console.error(error);
+      setPlantTaskToBeDeleted(null);
+      setDeleteModalOpen(false);
+      message.error('Unable to delete Plant Task at this time. Please try again later.');
+    }
+  };
+
+  const cancelDelete = () => {
+    setPlantTaskToBeDeleted(null);
+    setDeleteModalOpen(false);
+  };
+
   return (
     <>
       <div style={{ marginBottom: '16px' }}>
@@ -589,6 +632,12 @@ const PlantTaskBoardView = ({
       >
         <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
       </Modal>
+      <ConfirmDeleteModal
+        onConfirm={deletePlantTaskConfirmed}
+        open={deleteModalOpen}
+        onCancel={cancelDelete}
+        description="Are you sure you want to delete this Plant Task?"
+      />
     </>
   );
 };
