@@ -1,4 +1,4 @@
-import { Prisma, PlantTask, PlantTaskUrgencyEnum, PlantTaskStatusEnum } from '@prisma/client';
+import { Prisma, PlantTask, PlantTaskUrgencyEnum, PlantTaskStatusEnum, Staff } from '@prisma/client';
 import { z } from 'zod';
 import { PlantTaskSchema, PlantTaskSchemaType } from '../schemas/plantTaskSchema';
 import PlantTaskDao from '../dao/PlantTaskDao';
@@ -409,6 +409,70 @@ class PlantTaskService {
 
   public async getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<PlantTask[]> {
     return PlantTaskDao.getPlantTasksByStatus(status);
+  }
+
+  public async getParkPlantTaskCompletionRates(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; completionRate: number;}[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
+    const staffTaskCompletionRates = await Promise.all(staffIdsArray.map(async (staffId) => {
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error('Staff not found');
+      }
+      const completedTasks = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
+      const totalTasks = await PlantTaskDao.getStaffTotalTasksForPeriod(staffId, startDate, endDate);
+      const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+      return { staff, completionRate };
+    }));
+    return staffTaskCompletionRates;
+  }
+
+  public async getParkPlantTaskOverdueRates(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; overdueRate: number; }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
+    const staffOverdueRates = await Promise.all(staffIdsArray.map(async (staffId) => {
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error('Staff not found');
+      }
+      const overdueTasks = await PlantTaskDao.getStaffOverdueTasksForPeriod(staffId, startDate, endDate);
+      const totalTasks = await PlantTaskDao.getStaffTotalTasksDueForPeriod(staffId, startDate, endDate);
+      const overdueRate = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
+      return { staff, overdueRate };
+    }));
+    return staffOverdueRates;
+  }
+
+  public async getParkAverageTaskCompletionTime(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; averageCompletionTime: number; }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
+    const staffAverageCompletionTimes = await Promise.all(staffIdsArray.map(async (staffId) => {
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error('Staff not found');
+      }
+      const averageCompletionTime = await PlantTaskDao.getStaffAverageTaskCompletionTime(staffId, startDate, endDate);
+      return { staff, averageCompletionTime };
+    }));
+
+    console.log("staffAverageCompletionTimes", staffAverageCompletionTimes);
+    return staffAverageCompletionTimes;
+  }
+
+  public async getParkTaskLoadPercentage(parkId: number): Promise<{ staff: Staff; taskLoadPercentage: number; }[]> {
+    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
+    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
+    const staffTaskLoadPercentages = await Promise.all(staffIdsArray.map(async (staffId) => {
+      const staff = await StaffDao.getStaffById(staffId);
+      if (!staff) {
+        throw new Error('Staff not found');
+      }
+      const tasks = await PlantTaskDao.getAllAssignedPlantTasksThatAreOpenOrInProgressByStaffId(staffId);
+      const totalTasks = await PlantTaskDao.getAllAssignedPlantTasksThatAreOpenOrInProgressByParkId(parkId);
+      const taskLoadPercentage = totalTasks.length > 0 ? (tasks.length / totalTasks.length) * 100 : 0;
+      return { staff, taskLoadPercentage };
+    }));
+    return staffTaskLoadPercentages;
   }
 }
 

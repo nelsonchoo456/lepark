@@ -191,5 +191,51 @@ router.delete('/deleteMany', async (req, res) => {
   }
 });
 
-export default router;
+router.get('/getParkPlantTaskCompletionRates', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const staffCompletionRates = await PlantTaskService.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
+    res.status(200).json(staffCompletionRates);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
+router.get('/getParkPlantTaskOverdueRates', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const staffOverdueRates = await PlantTaskService.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
+    res.status(200).json(staffOverdueRates);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkAverageTaskCompletionTime', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const staffAverageCompletionTimes = await PlantTaskService.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
+    res.status(200).json(staffAverageCompletionTimes);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkTaskLoadPercentage', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const staffTaskLoadPercentages = await PlantTaskService.getParkTaskLoadPercentage(parkId);
+    res.status(200).json(staffTaskLoadPercentages);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+
+export default router;

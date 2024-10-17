@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { PlantTaskData, PlantTaskResponse, PlantTaskUpdateData } from '../types/planttask';
 import client from './client';
 import { PlantTaskStatusEnum } from '@prisma/client';
+import { StaffResponse } from '../types/staff';
 
 const URL = '/planttasks';
 
@@ -243,3 +244,56 @@ export async function getPlantTasksByStatus(status: PlantTaskStatusEnum): Promis
     }
   }
 }
+
+export async function getParkPlantTaskCompletionRates(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<Array<{ staff: StaffResponse; completionRate: number }>>> {
+  try {
+    const response: AxiosResponse<Array<{ staff: StaffResponse; completionRate: number }>> = await client.get(`${URL}/getParkPlantTaskCompletionRates`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkPlantTaskOverdueRates(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<Array<{ staff: StaffResponse; overdueRate: number }>>> {
+  try {
+    const response: AxiosResponse<Array<{ staff: StaffResponse; overdueRate: number }>> = await client.get(`${URL}/getParkPlantTaskOverdueRates`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkAverageTaskCompletionTime(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<Array<{ staff: StaffResponse; averageCompletionTime: number }>>> {
+  try {
+    const response: AxiosResponse<Array<{ staff: StaffResponse; averageCompletionTime: number }>> = await client.get(`${URL}/getParkAverageTaskCompletionTime`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkTaskLoadPercentage(parkId: number | null): Promise<AxiosResponse<Array<{ staff: StaffResponse; taskLoadPercentage: number }>>> {
+  try {
+    const response: AxiosResponse<Array<{ staff: StaffResponse; taskLoadPercentage: number }>> = await client.get(`${URL}/getParkTaskLoadPercentage`, { params: { parkId } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+

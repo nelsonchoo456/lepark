@@ -51,3 +51,23 @@ export interface PlantTaskUpdateData {
   images?: string[];
   position?: number; // Add this line
 }
+
+export interface CompletionRateData {
+  staff: StaffResponse;
+  completionRate: number;
+}
+
+export interface OverdueRateData {
+  staff: StaffResponse;
+  overdueRate: number;
+}
+
+export interface AverageCompletionTimeData {
+  staff: StaffResponse;
+  averageCompletionTime: number;
+}
+
+export interface TaskLoadPercentageData {
+  staff: StaffResponse;
+  taskLoadPercentage: number;
+}

@@ -16,6 +16,14 @@ import {
   getAllAssignedPlantTasks,
   unassignPlantTask,
   PlantTaskStatusEnum,
+  getParkPlantTaskCompletionRates,
+  getParkPlantTaskOverdueRates,
+  getParkAverageTaskCompletionTime,
+  getParkTaskLoadPercentage,
+  CompletionRateData,
+  OverdueRateData,
+  AverageCompletionTimeData,
+  TaskLoadPercentageData,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
@@ -27,6 +35,10 @@ import moment from 'moment';
 import { Tabs } from 'antd';
 import { MdArrowBack } from 'react-icons/md';
 import StaffWorkloadTable from './PlantTaskDashboard/components/StaffWorkloadTable';
+import CompletionRateChart from './PlantTaskDashboard/components/CompletionRateChart';
+import OverdueRateChart from './PlantTaskDashboard/components/OverdueRateChart';
+import AverageCompletionTimeChart from './PlantTaskDashboard/components/AverageCompletionTimeChart';
+import TaskLoadPercentageChart from './PlantTaskDashboard/components/TaskLoadPercentageChart';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -56,8 +68,14 @@ const PlantTaskList: React.FC = () => {
 
   const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
 
+  const [completionRates, setCompletionRates] = useState<CompletionRateData[]>([]);
+  const [overdueRates, setOverdueRates] = useState<OverdueRateData[]>([]);
+  const [averageCompletionTimes, setAverageCompletionTimes] = useState<AverageCompletionTimeData[]>([]);
+  const [taskLoadPercentages, setTaskLoadPercentages] = useState<TaskLoadPercentageData[]>([]);
+
   useEffect(() => {
     fetchPlantTasks();
+    fetchChartData();
   }, [user]);
 
   const fetchPlantTasks = async () => {
@@ -94,6 +112,7 @@ const PlantTaskList: React.FC = () => {
       messageApi.error('Failed to fetch plant tasks');
     } finally {
       setLoading(false);
+      fetchChartData(); // Fetch chart data after updating tasks
     }
   };
 
@@ -102,6 +121,7 @@ const PlantTaskList: React.FC = () => {
       await assignPlantTask(plantTaskId, user?.id || '', staffId);
       messageApi.success('Staff assigned successfully');
       fetchPlantTasks();
+      fetchChartData(); // Fetch chart data after assigning staff
     } catch (error) {
       console.error('Error assigning staff:', error);
       messageApi.error('Failed to assign staff');
@@ -113,7 +133,7 @@ const PlantTaskList: React.FC = () => {
       await unassignPlantTask(plantTaskId, staffId);
       message.success('Staff unassigned successfully');
       fetchPlantTasks();
-
+      fetchChartData(); // Fetch chart data after unassigning staff
     } catch (error) {
       console.error('Failed to unassign staff:', error);
       message.error('Failed to unassign staff');
@@ -188,6 +208,13 @@ const PlantTaskList: React.FC = () => {
                 selectedParkId={selectedParkId}
                 onParkChange={(parkId) => setSelectedParkId(parkId)}
               />
+            </TabPane>
+
+            <TabPane tab="Task Analytics" key="4">
+              <CompletionRateChart data={completionRates} />
+              <OverdueRateChart data={overdueRates} />
+              <AverageCompletionTimeChart data={averageCompletionTimes} />
+              <TaskLoadPercentageChart data={taskLoadPercentages} />
             </TabPane>
           </Tabs>
         </Card>
@@ -311,8 +338,31 @@ const PlantTaskList: React.FC = () => {
   };
 
   const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
-    // Refresh the task list or update the local state as needed
     fetchPlantTasks();
+    fetchChartData(); // Fetch chart data after status change
+  };
+
+  const fetchChartData = async () => {
+    const parkId = user?.parkId || null;
+    const startDate = moment().subtract(30, 'days').toDate();
+    const endDate = moment().toDate();
+
+    try {
+      const [completionRatesRes, overdueRatesRes, avgCompletionTimeRes, taskLoadRes] = await Promise.all([
+        getParkPlantTaskCompletionRates(parkId, startDate, endDate),
+        getParkPlantTaskOverdueRates(parkId, startDate, endDate),
+        getParkAverageTaskCompletionTime(parkId, startDate, endDate),
+        getParkTaskLoadPercentage(parkId)
+      ]);
+
+      setCompletionRates(completionRatesRes.data);
+      setOverdueRates(overdueRatesRes.data);
+      setAverageCompletionTimes(avgCompletionTimeRes.data);
+      setTaskLoadPercentages(taskLoadRes.data);
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+      messageApi.error('Failed to fetch chart data');
+    }
   };
 
   if (inDashboards) {

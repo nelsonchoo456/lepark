@@ -62,6 +62,50 @@ class PlantTaskDao {
     });
   }
 
+  async getAllAssignedPlantTasksThatAreOpenOrInProgressByStaffId(staffId: string): Promise<PlantTask[]> {
+    return prisma.plantTask.findMany({
+      where: {
+        assignedStaffId: staffId,
+        taskStatus: {
+          in: [PlantTaskStatusEnum.OPEN, PlantTaskStatusEnum.IN_PROGRESS],
+        },
+      },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+      },
+    });
+  }
+
+  async getAllAssignedPlantTasksThatAreOpenOrInProgressByParkId(parkId: number): Promise<PlantTask[]> {
+    const zones = await ZoneDao.getZonesByParkId(parkId);
+    const zoneIds = zones.map((zone) => zone.id);
+
+    if (zoneIds.length === 0) {
+      return []; // Return an empty array if no zones are found
+    }
+
+    return prisma.plantTask.findMany({
+      where: {
+        occurrence: {
+          zoneId: {
+            in: zoneIds,
+          },
+        },
+        assignedStaffId: {
+          not: null,
+        },
+        taskStatus: {
+          in: [PlantTaskStatusEnum.OPEN, PlantTaskStatusEnum.IN_PROGRESS],
+        },
+      },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+      },
+    });
+  }
+
   async updatePlantTask(id: string, data: Prisma.PlantTaskUpdateInput): Promise<PlantTask> {
     return prisma.plantTask.update({ where: { id }, data });
   }
@@ -103,19 +147,19 @@ class PlantTaskDao {
   async getMaxPositionForStatus(status: PlantTaskStatusEnum): Promise<number> {
     const result = await prisma.plantTask.aggregate({
       where: { taskStatus: status },
-      _max: { position: true }
+      _max: { position: true },
     });
     return result._max.position || 0;
   }
 
   async updatePositions(tasks: { id: string; position: number }[]): Promise<void> {
     await prisma.$transaction(
-      tasks.map(task => 
+      tasks.map((task) =>
         prisma.plantTask.update({
           where: { id: task.id },
-          data: { position: task.position }
-        })
-      )
+          data: { position: task.position },
+        }),
+      ),
     );
   }
 
@@ -139,6 +183,92 @@ class PlantTaskDao {
 
     await this.updatePositions(updatedTasks);
   }
+
+  async getStaffCompletedTasksForPeriod(staffId: string, startDate: Date, endDate: Date): Promise<number> {
+    return prisma.plantTask.count({
+      where: {
+        assignedStaffId: staffId,
+        completedDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getStaffTotalTasksForPeriod(staffId: string, startDate: Date, endDate: Date): Promise<number> {
+    return prisma.plantTask.count({
+      where: {
+        assignedStaffId: staffId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getStaffOverdueTasksForPeriod(staffId: string, startDate: Date, endDate: Date): Promise<number> {
+    return prisma.plantTask.count({
+      where: {
+        assignedStaffId: staffId,
+        dueDate: {
+          gte: startDate, // Due date is on or after startDate
+          lte: endDate, // Due date is on or before endDate
+        },
+        OR: [
+          {
+            completedDate: {
+              gt: prisma.plantTask.fields.dueDate, // Task was completed after the due date (overdue)
+            },
+          },
+          {
+            completedDate: null, // Task is not completed but past its due date
+            dueDate: {
+              lt: new Date(), // The due date is in the past
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  async getStaffTotalTasksDueForPeriod(staffId: string, startDate: Date, endDate: Date): Promise<number> {
+    return prisma.plantTask.count({
+      where: {
+        assignedStaffId: staffId,
+        dueDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getStaffAverageTaskCompletionTime(staffId: string, startDate: Date, endDate: Date): Promise<number> {
+    const tasks = await prisma.plantTask.findMany({
+      where: {
+        assignedStaffId: staffId,
+        completedDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+
+    if (tasks.length === 0) {
+      return 0; // Return 0 if no tasks are found
+    }
+
+    const totalCompletionTime = tasks.reduce((sum, task) => {
+      const completionTime = task.completedDate ? task.completedDate.getTime() - task.createdAt.getTime() : 0;
+      return sum + completionTime / (1000 * 60 * 60 * 24); // in days
+    }, 0);
+
+    return totalCompletionTime / tasks.length;
+  }
+
+
 }
 
 export default new PlantTaskDao();
