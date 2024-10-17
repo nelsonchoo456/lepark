@@ -27,8 +27,6 @@ const ParkPromotionCreate = () => {
 
   const maximumUsage = Form.useWatch('maximumUsage', form);
   const minimumAmount = Form.useWatch('minimumAmount', form);
-  const isOneTime = Form.useWatch('isOneTime', form);
-
   const terms = Form.useWatch('terms', form);
 
   useEffect(() => {
@@ -43,7 +41,7 @@ const ParkPromotionCreate = () => {
     }
   }, [parks]);
 
-  const isOneTimeOptioons = [
+  const yesNoOptions = [
     {
       label: 'Yes',
       value: true,
@@ -144,7 +142,7 @@ const ParkPromotionCreate = () => {
               <>
                 <Divider orientation="left">Park</Divider>
                 <Form.Item name="isNParksWide" label="NParks Wide?" rules={[{ required: true }]}>
-                  <Radio.Group options={isOneTimeOptioons} optionType="button" />
+                  <Radio.Group options={yesNoOptions} optionType="button" />
                 </Form.Item>
                 {isNParksWide === false && (
                   <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -219,13 +217,6 @@ const ParkPromotionCreate = () => {
             )}
 
             <Divider orientation="left">Redemption Rules</Divider>
-            <Form.Item
-              name="isOneTime"
-              label="Restrict to One-Time Claim?"
-              rules={[{ required: true, message: "Please indicate if it's a One-Time Claim" }]}
-            >
-              <Radio.Group options={isOneTimeOptioons} optionType="button" />
-            </Form.Item>
 
             <Form.Item name="maximumUsage" label="Total Redemption Limit">
               <InputNumber min={1} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
@@ -313,27 +304,6 @@ const ParkPromotionCreate = () => {
                           <p>
                             <span className="text-secondary italic text-green-600">Suggested: </span> A minimum purchase of SGD $
                             {minimumAmount} is required.
-                          </p>
-                        </Button>
-                      </Form.Item>
-                    )}
-                    {isOneTime && (
-                      <Form.Item colon={false} className="p-0">
-                        <Button
-                          type="dashed"
-                          onClick={() => add('This offer is restricted to one claim per user.')}
-                          block
-                          className="text-green-400 text-wrap"
-                          style={{
-                            display: 'block',
-                            textAlign: 'left',
-                            height: 'auto',
-                            lineHeight: 'normal',
-                          }}
-                        >
-                          <p>
-                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer is restricted to one claim
-                            per user.
                           </p>
                         </Button>
                       </Form.Item>

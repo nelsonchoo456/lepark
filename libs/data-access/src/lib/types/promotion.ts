@@ -24,7 +24,6 @@ export interface PromotionResponse {
   terms: string[];
   maximumUsage?: number;
   minimumAmount?: number;
-  isOneTime?: boolean;
   discountType:  DiscountTypeEnum;
   park?: ParkResponse
 }
@@ -43,6 +42,5 @@ export interface PromotionData {
   terms: string[];
   maximumUsage?: number;
   minimumAmount?: number;
-  isOneTime?: boolean;
   discountType:  DiscountTypeEnum;
 }

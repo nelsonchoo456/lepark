@@ -132,10 +132,6 @@ const PromotionViewDetails = () => {
             </td>
           </tr>
           <tr className="border border-gray-300">
-            <td className="pr-4 font-semibold p-2">One-time Use</td>
-            <td className="p-2">{promotion?.isOneTime ? 'Yes' : 'No'}</td>
-          </tr>
-          <tr className="border border-gray-300">
             <td className="pr-4 font-semibold p-2">Discount</td>
             <td className="p-2">{renderDiscount(promotion?.discountType, promotion?.discountValue)}</td>
           </tr>

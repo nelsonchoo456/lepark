@@ -583,6 +583,5 @@ model Promotion {
   terms         String[]
   maximumUsage  Int?
   minimumAmount Float?
-  isOneTime     Boolean
   visitors      Visitor[]       @relation("VisitorPromotionsRedeemed")
 }

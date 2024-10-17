@@ -2236,13 +2236,11 @@ const promotionsData = [
     validUntil: '2025-04-30T23:59:59+08:00',
     status: "ENABLED",
     terms: [
-      "This offer is restricted to one claim per user.",
       "Cannot be used with other discounts.",
       "A minimum purchase of SGD $20 is required.",
     ],
     maximumUsage: 100,
     minimumAmount: 20,
-    isOneTime: true
   },
   {
     name: "Sustainability Fortnight at the Park",
@@ -2262,7 +2260,6 @@ const promotionsData = [
       "Limited slots available."
     ],
     maximumUsage: 200,
-    isOneTime: false
   },
   {
     name: "Children's Day Learning Adventure",
@@ -2282,9 +2279,7 @@ const promotionsData = [
     terms: [
       "Available only at the Singapore Botanic Gardens.",
       "A minimum purchase of SGD $50 is required.",
-      "This offer is restricted to one claim per user.",
     ],
-    isOneTime: true
   },
   {
     name: "Deepavali Nature Fest",
@@ -2302,7 +2297,6 @@ const promotionsData = [
     status: "ENABLED",
     terms: [],
     maximumUsage: 150,
-    isOneTime: false
   },
   {
     name: "Earth Day Conservation Special",
@@ -2320,9 +2314,7 @@ const promotionsData = [
     status: "ENABLED",
     terms: [
       "Valid for Earth Day only.",
-      "This offer is restricted to one claim per user.",
     ],
-    isOneTime: false,
   },
   {
     name: "Chinese New Year Eco-Blessings",
@@ -2339,11 +2331,9 @@ const promotionsData = [
     validUntil: '2024-02-05T23:59:59+08:00',
     status: "ENABLED",
     terms: [
-      "This offer is restricted to one claim per user.",
       "A minimum purchase of SGD $30 is required.",
     ],
     minimumAmount: 30,
-    isOneTime: true
   },
   {
     name: "Labour Day Park Promotion",
@@ -2353,17 +2343,16 @@ const promotionsData = [
     isNParksWide: false,
     parkId: 2,
     images: [
-      "https://example.com/labour_day_park.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWlbnZbV7DoXKVKnbG_E1w2HQPTrhsIkZe3A&s",
     ],
     discountValue: 15,
     validFrom: '2024-05-01T08:00:00+08:00',
     validUntil: '2024-05-07T23:59:59+08:00',
     status: "ENABLED",
     terms: [
-      "This offer is restricted to one claim per user.",
+      "Limited slots available.",
     ],
     maximumUsage: 100,
-    isOneTime: true
   },
   {
     name: "National Day Sustainability Fair",
@@ -2373,7 +2362,7 @@ const promotionsData = [
     isNParksWide: true,
     parkId: null,
     images: [
-      "https://example.com/national_day_sustainability.jpg",
+      "https://cdn.prod.website-files.com/6586ad1766809383c71cd41e/658bd36beac9ae62d1a57281_SINGAPORE-NATIONAL-DAY.jpeg",
     ],
     discountValue: 8,
     validFrom: '2024-08-06T08:00:00+08:00',
@@ -2385,7 +2374,6 @@ const promotionsData = [
     ],
     maximumUsage: 200,
     minimumAmount: 40,
-    isOneTime: false
   },
   {
     name: "20th Anniversary",
@@ -2395,7 +2383,7 @@ const promotionsData = [
     isNParksWide: false,
     parkId: 2,
     images: [
-      "https://example.com/national_day_sustainability.jpg",
+      "https://www.nac.gov.sg/artweek/uploads/event/2102030734d6052fbd003b41cd8a2104ea88faf13e_790.png",
     ],
     discountValue: 20,
     validFrom: '2024-10-01T08:00:00+08:00',
@@ -2407,27 +2395,25 @@ const promotionsData = [
     ],
     maximumUsage: 2000,
     minimumAmount: 20,
-    isOneTime: false
   },
   {
     name: "Sustainability Month",
-    description: "Walk with nature and promote inner peace this Vesak Day. Enjoy 10% off guided peace walks at our parks.",
+    description: "Walk with nature this Sustainability Month. Enjoy 10% off at our parks.",
     discountType: "PERCENTAGE",
     promoCode: "ECO10",
     isNParksWide: true,
     parkId: null,
     images: [
-      "https://example.com/vesak_day_walk.jpg",
+      "https://www.nparks.gov.sg/-/media/nparks-real-content/homepage/explore-nature/nature_familytrees.jpg?h=350&w=276",
     ],
     discountValue: 10,
     validFrom: '2024-10-14T08:00:00+08:00',
     validUntil: '2024-11-25T23:59:59+08:00',
     status: "ENABLED",
     terms: [
-      "This offer is restricted to one claim per user.",
+      "Limited slots available.",
     ],
     maximumUsage: 150,
-    isOneTime: true
   },
   {
     name: "Nature Week",
@@ -2437,7 +2423,7 @@ const promotionsData = [
     isNParksWide: false,
     parkId: 1,
     images: [
-      "https://example.com/christmas_nature.jpg",
+      "https://nt.global.ssl.fastly.net/binaries/content/gallery/website/national/regions/london/places/ham-house-and-garden/library/winter/christmas-tree-natural-ornaments-ham-house-and-garden-surrey-1607751.jpg",
     ],
     discountValue: 12,
     validFrom: '2024-11-21T08:00:00+08:00',
@@ -2445,11 +2431,8 @@ const promotionsData = [
     status: "ENABLED",
     terms: [
       "A minimum purchase of SGD $50 is required.",
-      "This offer is restricted to one claim per user.",
     ],
-    maximumUsage: 100,
     minimumAmount: 50,
-    isOneTime: true
   }
 ];
 

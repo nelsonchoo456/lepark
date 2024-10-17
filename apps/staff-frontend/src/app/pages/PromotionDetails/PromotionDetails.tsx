@@ -335,11 +335,6 @@ const PromotionDetails = () => {
       children: promotion?.maximumUsage ? promotion?.maximumUsage : <div className="text-secondary">None</div>,
     },
     {
-      label: 'One Time Claim?',
-      key: 'isOneTimeClaim',
-      children: promotion?.isOneTime ? 'True' : <div className="text-secondary">False</div>,
-    },
-    {
       label: 'Minimum Amount',
       key: 'minimumAmount',
       children: promotion?.minimumAmount ? promotion?.minimumAmount : <div className="text-secondary">None</div>,
