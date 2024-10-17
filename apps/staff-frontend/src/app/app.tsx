@@ -102,6 +102,7 @@ import VerifyTicket from './pages/VerifyTicket/VerifyTicket';
 import AnnouncementList from './pages/Announcement/AnnouncementList';
 import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
 import AnnouncementDetails from './pages/AnnouncementDetails/AnnouncementDetails';
+import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails/TicketListingDetails';
 
 export function App() {
   return (
@@ -413,6 +414,7 @@ export function App() {
                       <Route path=":id/edit" element={<EventEdit />} />
                     </Route>
                     <Route path=":id" element={<EventDetails />} />
+                    <Route path=":id/ticketlisting/:ticketListingId" element={<EventTicketListingDetails />} />
                   </Route>
                 </Route>
 
