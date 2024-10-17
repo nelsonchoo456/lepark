@@ -30,6 +30,7 @@ import { authenticateJWTStaff } from './middleware/authenticateJWT';
 import os from 'os';
 import sensorReadingRouter from './routers/sensorReadingRouter';
 import faqRouter from './routers/faqRouter';
+import feedbackRouter from './routers/feedbackRouter';
 
 dotenv.config();
 const app = express();
@@ -88,6 +89,7 @@ app.use('/api/sensors', authenticateJWTStaff, sensorRouter);
 app.use('/api/promotions', promotionRouter);
 app.use('/api/sensorreadings', sensorReadingRouter);
 app.use('/api/faq', faqRouter);
+app.use('/api/feedback', feedbackRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();

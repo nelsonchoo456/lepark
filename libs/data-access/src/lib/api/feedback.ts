@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import client from './client';
 import { FeedbackData, FeedbackResponse, FeedbackUpdateData } from '../types/feedback';
 
@@ -19,7 +19,7 @@ export async function createFeedback(data: FeedbackData): Promise<AxiosResponse<
 
 export async function getAllFeedbacks(visitorId: string): Promise<AxiosResponse<FeedbackResponse[]>> {
   try {
-    const response: AxiosResponse<FeedbackResponse[]> = await client.get(`${URL}/getAllFeedbacks/${visitorId}`);
+    const response: AxiosResponse<FeedbackResponse[]> = await client.get(`${URL}/getAllFeedback/${visitorId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -59,6 +59,19 @@ export async function updateFeedback(id: string, data: FeedbackUpdateData): Prom
 export async function deleteFeedback(id: string): Promise<AxiosResponse<void>> {
   try {
     const response: AxiosResponse<void> = await client.delete(`${URL}/deleteFeedback/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getFeedbackByParkId(parkId: number): Promise<AxiosResponse<FeedbackResponse[]>> {
+  try {
+    const response: AxiosResponse<FeedbackResponse[]> = await client.get(`${URL}/getFeedbackByParkId/${parkId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

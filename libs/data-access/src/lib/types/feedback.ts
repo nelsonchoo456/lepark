@@ -11,6 +11,7 @@ export interface FeedbackData {
   remarks?: string | null;
   staffId?: string | null;
   visitorId: string;
+  parkId: number;
 }
 
 export interface FeedbackResponse {
@@ -27,6 +28,7 @@ export interface FeedbackResponse {
   visitorId: string;
   visitor: VisitorResponse;
   staff?: StaffResponse;
+  parkId: number;
 }
 
 export interface FeedbackUpdateData {
@@ -37,4 +39,5 @@ export interface FeedbackUpdateData {
   feedbackStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
   remarks?: string | null;
   staffId?: string | null;
+  parkId?: number | null;
 }

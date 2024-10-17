@@ -7,8 +7,12 @@ class FeedbackDao {
     return prisma.feedback.create({ data });
   }
 
-  async getAllFeedbacks(visitorId: string): Promise<Feedback[]> {
+  async getAllFeedbackByVisitorId(visitorId: string): Promise<Feedback[]> {
     return prisma.feedback.findMany({ where: { visitorId } });
+  }
+
+  async getAllFeedback(): Promise<Feedback[]> {
+    return prisma.feedback.findMany();
   }
 
   async getFeedbackById(id: string): Promise<Feedback | null> {
@@ -21,6 +25,10 @@ class FeedbackDao {
 
   async deleteFeedback(id: string): Promise<Feedback> {
     return prisma.feedback.delete({ where: { id } });
+  }
+
+  async getFeedbackByParkId(parkId: number): Promise<Feedback[]> {
+    return prisma.feedback.findMany({ where: { parkId } });
   }
 }
 

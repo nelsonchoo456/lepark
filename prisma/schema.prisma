@@ -554,6 +554,7 @@ model Feedback {
   images           String[]
   feedbackStatus   FeedbackStatusEnum
   remarks          String?
+  parkId           Int
 
   staffId   String? @db.Uuid
   staff     Staff?  @relation(fields: [staffId], references: [id])
@@ -579,6 +580,7 @@ enum FeedbackStatusEnum {
   REJECTED
   RESOLVED
 }
+
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
@@ -630,13 +632,13 @@ enum FAQCategoryEnum {
 }
 
 model FAQ {
-  id          String         @id @default(uuid()) @db.Uuid
-  category    FAQCategoryEnum
-  question    String
-  answer      String
-  status      FAQStatusEnum
-  parkId      Int?            
-  priority    Int?
+  id       String          @id @default(uuid()) @db.Uuid
+  category FAQCategoryEnum
+  question String
+  answer   String
+  status   FAQStatusEnum
+  parkId   Int?
+  priority Int?
 
   @@index([parkId])
 }
