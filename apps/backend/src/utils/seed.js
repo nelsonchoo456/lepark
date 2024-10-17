@@ -515,12 +515,12 @@ for (let i = 0; i < decarbonizationAreaList.length; i++) {
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   const seqHistories = [];
-  const startDate = new Date('2023-11-01');
-  const endDate = new Date('2024-01-31');
+  const startDate = new Date('2023-12-01');
+  const endDate = new Date('2024-10-23');
   const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
- const startValues = [6, 15, 12.5, 13.5, 1.1]; // Starting values for PVN, East Area, West Area, PVC, PVS
-const endValues = [8.69, 22.28, 17.06, 19.37, 1.54]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
+ const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+ const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
 
   const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
 
