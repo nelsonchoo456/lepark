@@ -8,6 +8,7 @@ interface StaffWorkloadTableProps {
   isSuperAdmin: boolean;
   selectedParkId: string | null;
   onParkChange: (parkId: string | null) => void;
+  parkOptions: { value: string | null; label: string }[];
 }
 
 export const colouredTaskCount = (count: number) => {
@@ -20,14 +21,8 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
   isSuperAdmin,
   selectedParkId,
   onParkChange,
+  parkOptions
 }) => {
-  const parkOptions = useMemo(() => {
-    const uniqueParks = Array.from(new Set(staffList.map((staff) => staff.park?.name)));
-    return [
-      { value: null, label: 'All Parks' },
-      ...uniqueParks.map((parkName) => ({ value: parkName, label: parkName })),
-    ];
-  }, [staffList]);
 
   const filteredStaffList = useMemo(() => {
     return isSuperAdmin && selectedParkId

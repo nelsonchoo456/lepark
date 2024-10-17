@@ -118,30 +118,30 @@ class PlantTaskDao {
     await prisma.plantTask.deleteMany({ where: { taskStatus } });
   }
 
-  async assignPlantTask(id: string, assignedStaff: Staff): Promise<PlantTask> {
+  async assignPlantTask(id: string, assignedStaff: Staff, updatedAt: Date): Promise<PlantTask> {
     return prisma.plantTask.update({
       where: { id },
-      data: { assignedStaffId: assignedStaff.id },
+      data: { assignedStaffId: assignedStaff.id, updatedAt: updatedAt },
     });
   }
 
-  async unassignPlantTask(id: string): Promise<PlantTask> {
+  async unassignPlantTask(id: string, updatedAt: Date): Promise<PlantTask> {
     return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null, taskStatus: PlantTaskStatusEnum.OPEN } });
   }
 
-  async completePlantTask(id: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { completedDate: new Date() } });
+  async completePlantTask(id: string, updatedAt: Date): Promise<PlantTask> {
+    return prisma.plantTask.update({ where: { id }, data: { completedDate: new Date(), updatedAt: updatedAt } });
   }
 
-  async acceptPlantTask(staffId: string, id: string): Promise<PlantTask> {
+  async acceptPlantTask(staffId: string, id: string, updatedAt: Date): Promise<PlantTask> {
     return prisma.plantTask.update({
       where: { id },
-      data: { assignedStaffId: staffId },
+      data: { assignedStaffId: staffId, updatedAt: updatedAt },
     });
   }
 
-  async unacceptPlantTask(id: string): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null } });
+  async unacceptPlantTask(id: string, updatedAt: Date): Promise<PlantTask> {
+    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null, updatedAt: updatedAt } });
   }
 
   async getMaxPositionForStatus(status: PlantTaskStatusEnum): Promise<number> {

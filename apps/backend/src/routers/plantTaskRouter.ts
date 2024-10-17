@@ -237,5 +237,16 @@ router.get('/getParkTaskLoadPercentage', authenticateJWTStaff, async (req, res) 
   }
 });
 
+router.get('/getStaffPerformanceRanking', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const staffPerformance = await PlantTaskService.getStaffPerformanceRanking(parkId, startDate, endDate);
+    res.status(200).json(staffPerformance);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 export default router;

@@ -297,3 +297,15 @@ export async function getParkTaskLoadPercentage(parkId: number | null): Promise<
   }
 }
 
+export async function getStaffPerformanceRanking(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<{ bestPerformer: StaffResponse; worstPerformer: StaffResponse }>> {
+  try {
+    const response: AxiosResponse<{ bestPerformer: StaffResponse; worstPerformer: StaffResponse }> = await client.get(`${URL}/getStaffPerformanceRanking`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

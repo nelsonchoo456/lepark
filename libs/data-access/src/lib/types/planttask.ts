@@ -71,3 +71,9 @@ export interface TaskLoadPercentageData {
   staff: StaffResponse;
   taskLoadPercentage: number;
 }
+
+export interface StaffPerformanceRankingData {
+  bestPerformer: StaffResponse | null;
+  worstPerformer: StaffResponse | null;
+  message?: string;
+}

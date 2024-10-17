@@ -207,11 +207,15 @@ const PlantTaskBoardView = ({
         await assignPlantTask(selectedTaskId, user?.id || '', selectedStaffId);
         message.success('Task assigned successfully');
         setIsAssignModalVisible(false);
-        refreshData();
 
         // Update the local state
         const updatedTask = { ...selectedTask, assignedStaffId: selectedStaffId };
         updateTaskInList(updatedTask);
+
+        // Add a delay before refreshing data
+        setTimeout(() => {
+          refreshData();
+        }, 1000); // 1 second delay
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');
@@ -229,8 +233,12 @@ const PlantTaskBoardView = ({
 
     const updater = listUpdaters[updatedTask.taskStatus] as React.Dispatch<React.SetStateAction<PlantTaskResponse[]>>;
     updater((prevList: PlantTaskResponse[]) =>
-      prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task)),
+      prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task))
     );
+
+    // Log the updated state for debugging
+    console.log('Updated task:', updatedTask);
+    console.log('Updated list:', listUpdaters[updatedTask.taskStatus]);
   };
 
   const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
@@ -263,8 +271,8 @@ const PlantTaskBoardView = ({
   };
 
   const renderTaskCard = (task: PlantTaskResponse) => {
-    const isOverdue = moment().isAfter(moment(task.dueDate));
-    const isDueSoon = moment(task.dueDate).isBetween(moment(), moment().add(3, 'days')); // Consider "due soon" if within 3 days
+    const isOverdue = moment().startOf('day').isAfter(moment(task.dueDate).startOf('day'));
+    const isDueSoon = moment(task.dueDate).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days'));
     const shouldHighlightOverdue =
       isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
     const shouldHighlightDueSoon =
@@ -314,13 +322,16 @@ const PlantTaskBoardView = ({
       <Card
         size="small"
         className="mb-2"
-        style={
-          shouldHighlightOverdue
+        style={{
+          ...(shouldHighlightOverdue
             ? { backgroundColor: 'rgba(255, 0, 0, 0.1)' }
             : shouldHighlightDueSoon
             ? { backgroundColor: 'rgba(255, 255, 0, 0.1)' }
-            : {}
-        }
+            : {}),
+          height: '150px', // Set a fixed height for all cards
+          display: 'flex',
+          flexDirection: 'column',
+        }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -334,59 +345,62 @@ const PlantTaskBoardView = ({
             </Dropdown>
           </div>
         }
+        styles={{
+          body: { 
+            flex: 1,
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between',
+            overflow: 'hidden',
+          }
+        }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {formatEnumLabelToRemoveUnderscores(task.taskType)}
-          </Typography.Text>
-          {!task.assignedStaffId && (
-            <Tag color="default" style={{ fontSize: '0.7rem' }} bordered={false}>
-              UNASSIGNED
-            </Tag>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+              {formatEnumLabelToRemoveUnderscores(task.taskType)}
+            </Typography.Text>
+            {!task.assignedStaffId && (
+              <Tag color="default" style={{ fontSize: '0.7rem' }} bordered={false}>
+                UNASSIGNED
+              </Tag>
+            )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
+            <div>
+              <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+                {`Priority: `}
+              </Typography.Text>
+              <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
+              </Tag>
+            </div>
+          </div>
+          {userRole === StaffType.SUPERADMIN && (
+            <div>
+              <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
+                {`Park: ${task.occurrence?.zone?.park?.name}`}
+              </Typography.Text>
+            </div>
           )}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
-          <div>
-            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-              {`Priority: `}
-            </Typography.Text>
-            <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
-              {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
-            </Tag>
-          </div>
-          
-        </div>
-        {userRole === StaffType.SUPERADMIN && (
-          <div>
-            <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
-              {`Park: ${task.occurrence?.zone?.park?.name}`}
-            </Typography.Text>
-          </div>
-        )}
-
-        {/* <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-          {`Zone: ${task.occurrence?.zone?.name}`}
-        </Typography.Text> */}
-
-        {/* <div>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {task.assignedStaffId ? `Assigned to: ${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : 'Unassigned'}
-          </Typography.Text>
-        </div> */}
+        
         <div className='flex justify-between mt-1'>
           <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>
             Due: {moment(task.dueDate).format('D MMM YY')}
           </Typography.Text>
-          {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
-              OVERDUE
-            </Tag>
-          )}
-          {isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
-              DUE SOON
-            </Tag>
-          )}
+          <div>
+            {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+              <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
+                OVERDUE
+              </Tag>
+            )}
+            {isDueSoon && !isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+              <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
+                DUE SOON
+              </Tag>
+            )}
+          </div>
         </div>
       </Card>
     );

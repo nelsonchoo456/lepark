@@ -11,6 +11,7 @@ import aws from 'aws-sdk';
 import { ZoneResponseData } from '../schemas/zoneSchema';
 import { ParkResponseData } from '../schemas/parkSchema';
 import ParkDao from '../dao/ParkDao';
+import { StaffPerformanceRankingData } from '@lepark/data-access';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -26,7 +27,12 @@ class PlantTaskService {
         throw new Error('Staff not found');
       }
 
-      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.MANAGER && staff.role !== StaffRoleEnum.BOTANIST && staff.role !== StaffRoleEnum.ARBORIST) {
+      if (
+        staff.role !== StaffRoleEnum.SUPERADMIN &&
+        staff.role !== StaffRoleEnum.MANAGER &&
+        staff.role !== StaffRoleEnum.BOTANIST &&
+        staff.role !== StaffRoleEnum.ARBORIST
+      ) {
         throw new Error('Only Superadmins, Managers, Botanists and Arborists can create plant tasks');
       }
 
@@ -105,11 +111,17 @@ class PlantTaskService {
         throw new Error('Plant task not found');
       }
 
-      if (existingPlantTask.taskStatus === PlantTaskStatusEnum.COMPLETED || existingPlantTask.taskStatus === PlantTaskStatusEnum.CANCELLED) {
+      if (
+        existingPlantTask.taskStatus === PlantTaskStatusEnum.COMPLETED ||
+        existingPlantTask.taskStatus === PlantTaskStatusEnum.CANCELLED
+      ) {
         throw new Error('Completed or cancelled tasks cannot be edited');
       }
 
-      if (existingPlantTask.assignedStaffId === null && (data.taskStatus === PlantTaskStatusEnum.IN_PROGRESS || data.taskStatus === PlantTaskStatusEnum.COMPLETED)) {
+      if (
+        existingPlantTask.assignedStaffId === null &&
+        (data.taskStatus === PlantTaskStatusEnum.IN_PROGRESS || data.taskStatus === PlantTaskStatusEnum.COMPLETED)
+      ) {
         throw new Error('Only assigned tasks can be set to in progress or completed');
       }
 
@@ -118,6 +130,7 @@ class PlantTaskService {
       }
 
       const formattedData = dateFormatter(data);
+      formattedData.updatedAt = new Date(); // Add this line
 
       let mergedData = { ...existingPlantTask, ...formattedData };
       mergedData = Object.fromEntries(Object.entries(mergedData).filter(([key, value]) => value !== null));
@@ -186,9 +199,7 @@ class PlantTaskService {
       throw new Error('Assigned staff not found');
     }
 
-    console.log('assignedStaff', assignedStaff.id);
-
-    return PlantTaskDao.assignPlantTask(id, assignedStaff);
+    return PlantTaskDao.assignPlantTask(id, assignedStaff, new Date()); // Add current date as third argument
   }
 
   public async unassignPlantTask(id: string, unassignerStaffId: string): Promise<PlantTask> {
@@ -223,7 +234,7 @@ class PlantTaskService {
       throw new Error('Only open tasks can be unassigned');
     }
 
-    return PlantTaskDao.unassignPlantTask(id);
+    return PlantTaskDao.unassignPlantTask(id, new Date()); // Add current date as second argument
   }
 
   public async completePlantTask(id: string, staffId: string): Promise<PlantTask> {
@@ -240,9 +251,9 @@ class PlantTaskService {
       throw new Error('Only the assigned staff can complete the task');
     }
 
-    await this.updatePlantTask(id, { completedDate: new Date() });
+    await this.updatePlantTask(id, { completedDate: new Date(), updatedAt: new Date() });
 
-    return PlantTaskDao.completePlantTask(id);
+    return PlantTaskDao.completePlantTask(id, new Date()); // Add current date as second argument
   }
 
   public async acceptPlantTask(staffId: string, id: string): Promise<PlantTask> {
@@ -254,7 +265,7 @@ class PlantTaskService {
     if (plantTask.taskStatus !== PlantTaskStatusEnum.OPEN) {
       throw new Error('Only open tasks can be accepted');
     }
-    return PlantTaskDao.acceptPlantTask(staffId, id);
+    return PlantTaskDao.acceptPlantTask(staffId, id, new Date()); // Add current date as third argument
   }
 
   public async unacceptPlantTask(id: string): Promise<PlantTask> {
@@ -267,7 +278,7 @@ class PlantTaskService {
       throw new Error('Only in progress tasks can be unaccepted');
     }
 
-    return PlantTaskDao.unacceptPlantTask(id);
+    return PlantTaskDao.unacceptPlantTask(id, new Date()); // Add current date as second argument
   }
 
   public async uploadImages(files: Express.Multer.File[]): Promise<string[]> {
@@ -359,13 +370,14 @@ class PlantTaskService {
     }
 
     if (plantTask.taskStatus !== newStatus && newStatus === PlantTaskStatusEnum.COMPLETED) {
-      await this.updatePlantTask(id, { completedDate: new Date() });
+      await this.updatePlantTask(id, { completedDate: new Date(), updatedAt: new Date() });
     }
 
     const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);
     const updatedTask = await PlantTaskDao.updatePlantTask(id, {
       taskStatus: newStatus,
-      position: maxPosition + 1000, // Add 1000 to ensure it's at the end
+      position: maxPosition + 1000,
+      updatedAt: new Date(), // Add this line
     });
 
     return updatedTask;
@@ -401,7 +413,9 @@ class PlantTaskService {
     }));
 
     // Update all task positions in the database
-    await Promise.all(updatedTasks.map((task) => PlantTaskDao.updatePlantTask(task.id, { position: task.position })));
+    await Promise.all(
+      updatedTasks.map((task) => PlantTaskDao.updatePlantTask(task.id, { position: task.position, updatedAt: new Date() })),
+    );
 
     // Return the updated task
     return PlantTaskDao.getPlantTaskById(id);
@@ -411,68 +425,141 @@ class PlantTaskService {
     return PlantTaskDao.getPlantTasksByStatus(status);
   }
 
-  public async getParkPlantTaskCompletionRates(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; completionRate: number;}[]> {
+  public async getParkPlantTaskCompletionRates(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ staff: Staff; completionRate: number }[]> {
     const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
-    const staffTaskCompletionRates = await Promise.all(staffIdsArray.map(async (staffId) => {
-      const staff = await StaffDao.getStaffById(staffId);
-      if (!staff) {
-        throw new Error('Staff not found');
-      }
-      const completedTasks = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
-      const totalTasks = await PlantTaskDao.getStaffTotalTasksForPeriod(staffId, startDate, endDate);
-      const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-      return { staff, completionRate };
-    }));
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+    const staffTaskCompletionRates = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+        const completedTasks = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
+        const totalTasks = await PlantTaskDao.getStaffTotalTasksForPeriod(staffId, startDate, endDate);
+        const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        return { staff, completionRate };
+      }),
+    );
     return staffTaskCompletionRates;
   }
 
-  public async getParkPlantTaskOverdueRates(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; overdueRate: number; }[]> {
+  public async getParkPlantTaskOverdueRates(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ staff: Staff; overdueRate: number }[]> {
     const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
-    const staffOverdueRates = await Promise.all(staffIdsArray.map(async (staffId) => {
-      const staff = await StaffDao.getStaffById(staffId);
-      if (!staff) {
-        throw new Error('Staff not found');
-      }
-      const overdueTasks = await PlantTaskDao.getStaffOverdueTasksForPeriod(staffId, startDate, endDate);
-      const totalTasks = await PlantTaskDao.getStaffTotalTasksDueForPeriod(staffId, startDate, endDate);
-      const overdueRate = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
-      return { staff, overdueRate };
-    }));
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+    const staffOverdueRates = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+        const overdueTasks = await PlantTaskDao.getStaffOverdueTasksForPeriod(staffId, startDate, endDate);
+        const totalTasks = await PlantTaskDao.getStaffTotalTasksDueForPeriod(staffId, startDate, endDate);
+        const overdueRate = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
+        return { staff, overdueRate };
+      }),
+    );
     return staffOverdueRates;
   }
 
-  public async getParkAverageTaskCompletionTime(parkId: number, startDate: Date, endDate: Date): Promise<{ staff: Staff; averageCompletionTime: number; }[]> {
+  public async getParkAverageTaskCompletionTime(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ staff: Staff; averageCompletionTime: number }[]> {
     const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
-    const staffAverageCompletionTimes = await Promise.all(staffIdsArray.map(async (staffId) => {
-      const staff = await StaffDao.getStaffById(staffId);
-      if (!staff) {
-        throw new Error('Staff not found');
-      }
-      const averageCompletionTime = await PlantTaskDao.getStaffAverageTaskCompletionTime(staffId, startDate, endDate);
-      return { staff, averageCompletionTime };
-    }));
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+    const staffAverageCompletionTimes = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+        const averageCompletionTime = await PlantTaskDao.getStaffAverageTaskCompletionTime(staffId, startDate, endDate);
+        return { staff, averageCompletionTime };
+      }),
+    );
 
-    console.log("staffAverageCompletionTimes", staffAverageCompletionTimes);
     return staffAverageCompletionTimes;
   }
 
-  public async getParkTaskLoadPercentage(parkId: number): Promise<{ staff: Staff; taskLoadPercentage: number; }[]> {
+  public async getParkTaskLoadPercentage(parkId: number): Promise<{ staff: Staff; taskLoadPercentage: number }[]> {
     const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST).map((staff) => staff.id);
-    const staffTaskLoadPercentages = await Promise.all(staffIdsArray.map(async (staffId) => {
-      const staff = await StaffDao.getStaffById(staffId);
-      if (!staff) {
-        throw new Error('Staff not found');
-      }
-      const tasks = await PlantTaskDao.getAllAssignedPlantTasksThatAreOpenOrInProgressByStaffId(staffId);
-      const totalTasks = await PlantTaskDao.getAllAssignedPlantTasksThatAreOpenOrInProgressByParkId(parkId);
-      const taskLoadPercentage = totalTasks.length > 0 ? (tasks.length / totalTasks.length) * 100 : 0;
-      return { staff, taskLoadPercentage };
-    }));
+    const staffIdsArray = staffIds
+      .filter((staff) => staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST)
+      .map((staff) => staff.id);
+    const staffTaskLoadPercentages = await Promise.all(
+      staffIdsArray.map(async (staffId) => {
+        const staff = await StaffDao.getStaffById(staffId);
+        if (!staff) {
+          throw new Error('Staff not found');
+        }
+        const tasks = await PlantTaskDao.getAllAssignedPlantTasksThatAreOpenOrInProgressByStaffId(staffId);
+        const totalTasks = await PlantTaskDao.getAllAssignedPlantTasksThatAreOpenOrInProgressByParkId(parkId);
+        const taskLoadPercentage = totalTasks.length > 0 ? (tasks.length / totalTasks.length) * 100 : 0;
+        return { staff, taskLoadPercentage };
+      }),
+    );
     return staffTaskLoadPercentages;
+  }
+
+  public async getStaffPerformanceRanking(parkId: number, startDate: Date, endDate: Date): Promise<{ bestPerformer: Staff, worstPerformer: Staff, message: string | null }> {
+    const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
+    const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
+    const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
+    const taskLoadPercentages = await this.getParkTaskLoadPercentage(parkId);
+
+    const staffPerformance = completionRates.map(({ staff, completionRate }) => {
+      const overdue = overdueRates.find(o => o.staff.id === staff.id)?.overdueRate || 0;
+      const avgTime = avgCompletionTimes.find(a => a.staff.id === staff.id)?.averageCompletionTime || 0;
+      const taskLoad = taskLoadPercentages.find(t => t.staff.id === staff.id)?.taskLoadPercentage || 0;
+
+      // Calculate a performance score
+      // Higher completion rate is better
+      // Lower overdue rate is better
+      // Lower average completion time is better
+      // Higher task load is considered better (more productive)
+      const performanceScore = (completionRate * 0.4) + ((100 - overdue) * 0.3) + ((100 - avgTime) * 0.2) + (taskLoad * 0.1);
+
+      return { staff, performanceScore };
+    });
+
+    // Sort by performance score in descending order
+    staffPerformance.sort((a, b) => b.performanceScore - a.performanceScore);
+
+    if (staffPerformance.length === 0) {
+      throw new Error('No staff performance data available');
+    }
+
+    const bestPerformer = staffPerformance[0];
+    const worstPerformer = staffPerformance[staffPerformance.length - 1];
+
+    if (bestPerformer.performanceScore === worstPerformer.performanceScore) {
+      return {
+        bestPerformer: null,
+        worstPerformer: null,
+        message: "All staff are on track with their performance."
+      };
+    }
+
+    return {
+      bestPerformer: bestPerformer.staff,
+      worstPerformer: worstPerformer.staff,
+      message: null
+    };
   }
 }
 
