@@ -520,19 +520,17 @@ class PlantTaskService {
     const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
     const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
     const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
-    const taskLoadPercentages = await this.getParkTaskLoadPercentage(parkId);
 
     const staffPerformance = completionRates.map(({ staff, completionRate }) => {
       const overdue = overdueRates.find(o => o.staff.id === staff.id)?.overdueRate || 0;
       const avgTime = avgCompletionTimes.find(a => a.staff.id === staff.id)?.averageCompletionTime || 0;
-      const taskLoad = taskLoadPercentages.find(t => t.staff.id === staff.id)?.taskLoadPercentage || 0;
 
       // Calculate a performance score
       // Higher completion rate is better
       // Lower overdue rate is better
       // Lower average completion time is better
       // Higher task load is considered better (more productive)
-      const performanceScore = (completionRate * 0.4) + ((100 - overdue) * 0.3) + ((100 - avgTime) * 0.2) + (taskLoad * 0.1);
+      const performanceScore = (completionRate * 0.4) + ((100 - overdue) * 0.3) + ((100 - avgTime) * 0.3);
 
       return { staff, performanceScore };
     });
