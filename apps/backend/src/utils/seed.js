@@ -19,7 +19,8 @@ const {
   newHub,
   newSensors,
   seqHistoriesData,
-  faqsData
+  faqsData,
+  promotionsData
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -397,6 +398,15 @@ async function seed() {
   }
   console.log(`Total attractions seeded: ${attractionList.length}\n`);
 
+  const promotionList = [];
+  for (const promotion of promotionsData) {
+    const createdPromotion = await prisma.promotion.create({
+      data: promotion,
+    });
+    promotionList.push(createdPromotion);
+  }
+  console.log(`Total promotions seeded: ${promotionList.length}\n`);
+
 const plantTasksList = [];
   for (const plantTask of plantTasksData) {
     // Ensure we have valid staff and occurrence data
@@ -493,57 +503,50 @@ const plantTasksList = [];
   // Now create sequestration histories after all decarbonization areas are created
   console.log('Seeding 14 sequestration histories per decarb area...');
 
-  for (let i = 0; i < decarbonizationAreaList.length; i++) {
-    const area = decarbonizationAreaList[i];
-    await createSeqHistories(area.id, seqHistoriesData[i], i);
-  }
+  //const areaNames = ['PVN', 'East Area', 'West Area', 'PVC', 'PVS'];
+for (let i = 0; i < decarbonizationAreaList.length; i++) {
+  const area = decarbonizationAreaList[i];
+  //console.log(`Seeding sequestration history for ${areaNames[i]}...`);
+  await createSeqHistories(area.id, seqHistoriesData[i], i);
+}
 
   await seedFAQs();
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
-
   const seqHistories = [];
+  const startDate = new Date('2023-12-01');
+  const endDate = new Date('2024-10-23');
+  const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
-  let currentSeqValue = baseSeqHistory.seqValue;
-  const interval = 0.2; // 0.2 kg interval
+ const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+ const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
 
-  // Create entries for 2023 and 2024
-  for (let year = 2023; year <= 2024; year++) {
-    for (let i = 0; i < 7; i++) {
-      const newDate = new Date(baseSeqHistory.date);
-      newDate.setFullYear(year);
-      newDate.setDate(newDate.getDate() + i);
+  const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
 
-      try {
-        const createdSeqHistory = await prisma.sequestrationHistory.create({
-          data: {
-            date: newDate,
-            seqValue: currentSeqValue,
-            decarbonizationAreaId: decarbAreaId
-          }
-        });
-        seqHistories.push(createdSeqHistory);
-        currentSeqValue += interval; // Increase by 0.2 kg for the next entry
-      } catch (error) {
-        console.error(`Error inserting sequestration history for date: ${newDate.toISOString()}`);
-        console.error(error);
-      }
+  let currentDate = new Date(startDate);
+  let currentSeqValue = startValues[index];
+
+  while (currentDate <= endDate) {
+    try {
+      const createdSeqHistory = await prisma.sequestrationHistory.create({
+        data: {
+          date: new Date(currentDate),
+          seqValue: parseFloat(currentSeqValue.toFixed(3)),
+          decarbonizationAreaId: decarbAreaId
+        }
+      });
+      seqHistories.push(createdSeqHistory);
+      currentSeqValue += dailyIncrease;
+    } catch (error) {
+      console.error(`Error inserting sequestration history for date: ${currentDate.toISOString()}`);
+      console.error(error);
     }
+
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  console.log(`Total sequestration histories seeded: ${seqHistories.length}\n`);
-  /*seqHistories.forEach((history, i) => {
-    console.log(`History ${i + 1}:`);
-    console.log(`  ID: ${history.id}`);
-    console.log(`  Date: ${history.date}`);
-    console.log(`  Sequestration Value: ${history.seqValue.toFixed(3)}`);
-    console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
-    console.log('---');
-  });*/
-
-  //faq'=
-
+  console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
 }
 
 
@@ -558,12 +561,12 @@ const generateMockReadings = (sensorType) => {
   const readings = [];
   const now = new Date();
   const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-  
+
   // Generate readings every 15 minutes from now till 8 hours ago
   for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
     readings.push(createReading(sensorType, time));
   }
-  
+
   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
 };
 

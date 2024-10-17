@@ -625,7 +625,7 @@ const occurrenceData = [
     dateObserved: '2024-09-08T10:00:00Z',
     dateOfBirth: '2024-01-01T00:00:00Z',
     numberOfPlants: 10.0,
-    biomass: 250.5,
+    biomass: 2000.5,
     title: 'New Tree Observation',
     description: 'Observation of recently planted trees in the area',
     decarbonizationType: 'TREE_TROPICAL',
@@ -655,7 +655,7 @@ const occurrenceData = [
     dateObserved: '2024-09-06T09:30:00Z',
     dateOfBirth: '2024-02-15T00:00:00Z',
     numberOfPlants: 5.0,
-    biomass: 120.3,
+    biomass: 8000.3,
     title: 'Tropical Tree Growth',
     description: 'Monitoring the growth of tropical trees',
     decarbonizationType: 'TREE_TROPICAL',
@@ -670,7 +670,7 @@ const occurrenceData = [
     dateObserved: '2024-09-05T08:45:00Z',
     dateOfBirth: '2024-03-01T00:00:00Z',
     numberOfPlants: 12.0,
-    biomass: 275.0,
+    biomass: 13275.0,
     title: 'Mangrove Observation',
     description: 'Observation of newly planted mangroves',
     decarbonizationType: 'TREE_MANGROVE',
@@ -685,7 +685,7 @@ const occurrenceData = [
     dateObserved: '2024-09-04T10:15:00Z',
     dateOfBirth: '2024-02-01T00:00:00Z',
     numberOfPlants: 9.0,
-    biomass: 240.8,
+    biomass: 10000.8,
     title: 'Tropical Tree Observation',
     description: 'Observing the progress of tropical trees',
     decarbonizationType: 'TREE_TROPICAL',
@@ -700,7 +700,7 @@ const occurrenceData = [
     dateObserved: '2024-09-03T09:00:00Z',
     dateOfBirth: '2023-11-25T00:00:00Z',
     numberOfPlants: 6.0,
-    biomass: 160.2,
+    biomass: 1600.2,
     title: 'Shrub Monitoring',
     description: 'Monitoring recently planted shrubs',
     decarbonizationType: 'SHRUB',
@@ -715,7 +715,7 @@ const occurrenceData = [
     dateObserved: '2024-09-02T12:30:00Z',
     dateOfBirth: '2024-01-15T00:00:00Z',
     numberOfPlants: 10.0,
-    biomass: 300.0,
+    biomass: 30000.0,
     title: 'Mangrove Growth Observation',
     description: 'Monitoring the growth of mangroves in the area',
     decarbonizationType: 'TREE_MANGROVE',
@@ -730,7 +730,7 @@ const occurrenceData = [
     dateObserved: '2024-09-01T11:00:00Z',
     dateOfBirth: '2023-10-10T00:00:00Z',
     numberOfPlants: 7.0,
-    biomass: 210.0,
+    biomass: 21000.0,
     title: 'Shrub Care Observation',
     description: 'Observation of shrubs requiring care',
     decarbonizationType: 'SHRUB',
@@ -745,7 +745,7 @@ const occurrenceData = [
     dateObserved: '2024-08-31T14:00:00Z',
     dateOfBirth: '2024-02-10T00:00:00Z',
     numberOfPlants: 15.0,
-    biomass: 350.5,
+    biomass: 30500.5,
     title: 'Mangrove Area Observation',
     description: 'Observation of mangroves in the area',
     decarbonizationType: 'TREE_MANGROVE',
@@ -775,7 +775,7 @@ const occurrenceData = [
     dateObserved: '2024-08-30T13:45:00Z',
     dateOfBirth: '2023-12-20T00:00:00Z',
     numberOfPlants: 12.0,
-    biomass: 280.2,
+    biomass: 12800.2,
     title: 'Tree Growth Observation',
     description: 'Observation of tropical trees showing growth',
     decarbonizationType: 'TREE_TROPICAL',
@@ -790,7 +790,7 @@ const occurrenceData = [
     dateObserved: '2024-08-29T10:30:00Z',
     dateOfBirth: '2024-01-10T00:00:00Z',
     numberOfPlants: 6.0,
-    biomass: 170.5,
+    biomass: 17000.5,
     title: 'Mangrove Monitoring',
     description: 'Monitoring the health of mangroves',
     decarbonizationType: 'TREE_MANGROVE',
@@ -805,7 +805,7 @@ const occurrenceData = [
     dateObserved: '2024-08-28T09:00:00Z',
     dateOfBirth: '2024-03-05T00:00:00Z',
     numberOfPlants: 9.0,
-    biomass: 240.0,
+    biomass: 20040.0,
     title: 'Tree Care Observation',
     description: 'Trees needing urgent care',
     decarbonizationType: 'TREE_TROPICAL',
@@ -2431,37 +2431,32 @@ const decarbonizationAreasData = [
 ];
 
 const seqHistoriesData = [
-  {
-    //PVN
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 380.213123,
-    decarbonizationAreaId: '',
-  },
-  {
-    //East Area
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 409.213123,
-    decarbonizationAreaId: '',
-  },
-  {
-    //West Area
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 509.213123,
-    decarbonizationAreaId: '',
-  },
+{ //PVN
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 8,
+  decarbonizationAreaId: ""
+},
+{ //East Area
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 21,
+  decarbonizationAreaId: ""
+},
+{ //West Area
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 15,
+  decarbonizationAreaId: ""
+},
 
-  {
-    //PVC
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 509.213123,
-    decarbonizationAreaId: '',
-  },
-  {
-    //PVS
-    date: '2024-10-02T05:33:56.000Z',
-    seqValue: 109.213123,
-    decarbonizationAreaId: '',
-  },
+{ //PVC
+  date: "2024-10-02T05:33:56.000Z",
+  seqValue: 509.213123,
+  decarbonizationAreaId: ""
+},
+{ //PVS
+  date: "2024-10-02T05:33:56.000Z",
+  seqValue: 109.213123,
+  decarbonizationAreaId: ""
+}
 ];
 
 const faqsData = [
@@ -2868,7 +2863,240 @@ const faqsData = [
       'You can contribute by following park rules, participating in volunteer programs, supporting conservation organizations, and practicing Leave No Trace principles.',
     status: 'INACTIVE',
     priority: 1,
+  }
+];
+
+const promotionsData = [
+  {
+    name: "Hari Raya Family Special 2025",
+    description: "Celebrate Hari Raya with your loved ones! Enjoy 15% off on park tours and family-friendly attractions.",
+    discountType: "PERCENTAGE",
+    promoCode: "HARIRAYA15",
+    isNParksWide: true,
+    parkId: null,
+    images: [
+      "https://1.bp.blogspot.com/-HmL0WIcshng/XS2IMWA1ZeI/AAAAAAAAA2A/HVAuaox8l7w793GIzrV7H4cXMPulpxyCwCLcBGAs/s1600/DSC_1666.JPG",
+    ],
+    discountValue: 15,
+    validFrom: '2025-04-10T08:00:00+08:00',
+    validUntil: '2025-04-30T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "This offer is restricted to one claim per user.",
+      "Cannot be used with other discounts.",
+      "A minimum purchase of SGD $20 is required.",
+    ],
+    maximumUsage: 100,
+    minimumAmount: 20,
+    isOneTime: true
   },
+  {
+    name: "Sustainability Fortnight at the Park",
+    description: "Join us for Sustainability Weekend! Get $5 off on workshops about eco-friendly living and urban gardening.",
+    discountType: "FIXED_AMOUNT",
+    promoCode: "SUSTAIN5",
+    isNParksWide: true,
+    parkId: null,
+    images: [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEjCRB0Hx2nfMKmB2EcScuzjf8_uX6e8XZ4uTSxOvvzT4BhdbxjTfh9dH5GgfN71NIrZ8&usqp=CAU"
+    ],
+    discountValue: 5,
+    validFrom: '2024-10-21T08:00:00+08:00',
+    validUntil: '2024-11-04T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "Limited slots available."
+    ],
+    maximumUsage: 200,
+    isOneTime: false
+  },
+  {
+    name: "Children's Day Learning Adventure",
+    description: "Free entry for children to discover nature’s wonders with guided educational tours on Children's Day.",
+    discountType: "FIXED_AMOUNT",
+    promoCode: "KIDSDAYFREE",
+    isNParksWide: false,
+    parkId: 2,
+    images: [
+      "https://www.ecda.gov.sg/images/growbeanstalklibraries/default-album/gbs/learning-activities/ideas-resources-from-community-partners/atrailofcoloursportal.jpg?sfvrsn=31c40182_0",
+    ],
+    discountValue: 10,
+    minimumAmount: 50,
+    validFrom: '2024-11-22T08:00:00+08:00',
+    validUntil: '2024-11-29T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "Available only at the Singapore Botanic Gardens.",
+      "A minimum purchase of SGD $50 is required.",
+      "This offer is restricted to one claim per user.",
+    ],
+    isOneTime: true
+  },
+  {
+    name: "Deepavali Nature Fest",
+    description: "Celebrate Deepavali with 20% off eco-friendly nature walks and sustainable activities at our parks.",
+    discountType: "PERCENTAGE",
+    promoCode: "DEEPAVALI20",
+    isNParksWide: true,
+    parkId: null,
+    images: [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2ONxBBPDXKw74ehO_6sMVoepH1n-ncrsEUQ&s"
+    ],
+    discountValue: 20,
+    validFrom: '2024-11-01T08:00:00+08:00',
+    validUntil: '2024-11-14T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [],
+    maximumUsage: 150,
+    isOneTime: false
+  },
+  {
+    name: "Earth Day Conservation Special",
+    description: "Celebrate Earth Day by joining our conservation efforts! Get $10 off park admission and eco-workshops.",
+    discountType: "FIXED_AMOUNT",
+    promoCode: "EARTHDAY10",
+    isNParksWide: false,
+    parkId: 1,
+    images: [
+      "https://www.nparks.gov.sg/-/media/nparks-real-content/nparks-buzz/nparks-buzz-2021/t_henderson-rd.jpg?h=213&w=400"
+    ],
+    discountValue: 10,
+    validFrom: '2024-10-21T08:00:00+08:00',
+    validUntil: '2024-10-26T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "Valid for Earth Day only.",
+      "This offer is restricted to one claim per user.",
+    ],
+    isOneTime: false,
+  },
+  {
+    name: "Chinese New Year Eco-Blessings",
+    description: "Celebrate the new year with eco-friendly blessings! Enjoy 10% off on all sustainable tours and events.",
+    discountType: "PERCENTAGE",
+    promoCode: "CNYECO10",
+    isNParksWide: true,
+    parkId: null,
+    images: [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmR3Uy3rgflyaK690FJBA1xu3dOJu3A_evDA&s",
+    ],
+    discountValue: 10,
+    validFrom: '2024-01-25T08:00:00+08:00',
+    validUntil: '2024-02-05T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "This offer is restricted to one claim per user.",
+      "A minimum purchase of SGD $30 is required.",
+    ],
+    minimumAmount: 30,
+    isOneTime: true
+  },
+  {
+    name: "Labour Day Park Promotion",
+    description: "Enjoy Labour Day at our parks with 15% off park entry and events. Celebrate with a day of nature and relaxation.",
+    discountType: "PERCENTAGE",
+    promoCode: "LABOURDAYISEVERYDAY",
+    isNParksWide: false,
+    parkId: 2,
+    images: [
+      "https://example.com/labour_day_park.jpg",
+    ],
+    discountValue: 15,
+    validFrom: '2024-05-01T08:00:00+08:00',
+    validUntil: '2024-05-07T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "This offer is restricted to one claim per user.",
+    ],
+    maximumUsage: 100,
+    isOneTime: true
+  },
+  {
+    name: "National Day Sustainability Fair",
+    description: "Celebrate National Day by joining our Sustainability Fair! Get $8 off on eco-friendly activities and workshops.",
+    discountType: "FIXED_AMOUNT",
+    promoCode: "NDSUSTAIN8",
+    isNParksWide: true,
+    parkId: null,
+    images: [
+      "https://example.com/national_day_sustainability.jpg",
+    ],
+    discountValue: 8,
+    validFrom: '2024-08-06T08:00:00+08:00',
+    validUntil: '2024-08-09T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "Limited slots available.",
+      "A minimum purchase of SGD $40 is required.",
+    ],
+    maximumUsage: 200,
+    minimumAmount: 40,
+    isOneTime: false
+  },
+  {
+    name: "20th Anniversary",
+    description: "Celebrate the Singapore Botanic Gardens' 20th Anniversary by joining in the month of October!",
+    discountType: "PERCENTAGE",
+    promoCode: "NDSUSTAIN8",
+    isNParksWide: false,
+    parkId: 2,
+    images: [
+      "https://example.com/national_day_sustainability.jpg",
+    ],
+    discountValue: 20,
+    validFrom: '2024-10-01T08:00:00+08:00',
+    validUntil: '2024-11-01T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "Limited slots available.",
+      "A minimum purchase of SGD $20 is required.",
+    ],
+    maximumUsage: 2000,
+    minimumAmount: 20,
+    isOneTime: false
+  },
+  {
+    name: "Sustainability Month",
+    description: "Walk with nature and promote inner peace this Vesak Day. Enjoy 10% off guided peace walks at our parks.",
+    discountType: "PERCENTAGE",
+    promoCode: "ECO10",
+    isNParksWide: true,
+    parkId: null,
+    images: [
+      "https://example.com/vesak_day_walk.jpg",
+    ],
+    discountValue: 10,
+    validFrom: '2024-10-14T08:00:00+08:00',
+    validUntil: '2024-11-25T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "This offer is restricted to one claim per user.",
+    ],
+    maximumUsage: 150,
+    isOneTime: true
+  },
+  {
+    name: "Nature Week",
+    description: "Experience a festive adventure in nature this Christmas with $12 off on guided park tours.",
+    discountType: "FIXED_AMOUNT",
+    promoCode: "XMASNATURE12",
+    isNParksWide: false,
+    parkId: 1,
+    images: [
+      "https://example.com/christmas_nature.jpg",
+    ],
+    discountValue: 12,
+    validFrom: '2024-11-21T08:00:00+08:00',
+    validUntil: '2024-11-28T23:59:59+08:00',
+    status: "ENABLED",
+    terms: [
+      "A minimum purchase of SGD $50 is required.",
+      "This offer is restricted to one claim per user.",
+    ],
+    maximumUsage: 100,
+    minimumAmount: 50,
+    isOneTime: true
+  }
 ];
 
 module.exports = {
@@ -2891,4 +3119,5 @@ module.exports = {
   newSensors,
   seqHistoriesData,
   faqsData,
+  promotionsData
 };

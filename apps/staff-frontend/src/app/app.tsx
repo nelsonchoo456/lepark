@@ -484,7 +484,18 @@ export function App() {
 
               <Route path="/decarbonization-area">
                 <Route index element={<DecarbonizationAreaList />} />
-                <Route path="create" element={<CreateDecarbonizationArea />} />
+                <Route
+                  path="create"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
+                        redirectTo="/"
+                      />
+                      <CreateDecarbonizationArea />
+                    </>
+                  }
+                />
                 <Route path="chart" element={<DecarbonizationAreaChart />} />
                 <Route path=":decarbonizationAreaId" element={<DecarbonizationAreaDetails />} />
                 <Route
@@ -492,7 +503,7 @@ export function App() {
                   element={
                     <>
                       <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
                         redirectTo="/"
                       />
                       <DecarbonizationAreaEditMap />
@@ -504,7 +515,7 @@ export function App() {
                   element={
                     <>
                       <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
                         redirectTo="/"
                       />
                       <DecarbonizationAreaEdit />
