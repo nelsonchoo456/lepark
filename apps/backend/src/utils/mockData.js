@@ -3264,6 +3264,17 @@ const announcementsData = [
   },
 ];
 
+const visitorsData = [
+  {
+    firstName: "Ely",
+    lastName: "Ong",
+    email: "elysiaong22@gmail.com",
+    password: "password",
+    contactNumber: "82882747",
+    isVerified: true,
+  }
+];
+
 module.exports = {
   parksData,
   zonesData,
