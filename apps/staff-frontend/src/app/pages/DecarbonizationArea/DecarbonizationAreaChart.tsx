@@ -1,3 +1,4 @@
+import { FileTextOutlined, InfoCircleFilled } from '@ant-design/icons';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { SequestrationHistoryResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import { Button, Card, Col, DatePicker, Row, Select, Spin, Statistic, Switch, Tooltip } from 'antd';
@@ -5,13 +6,12 @@ import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import React, { useCallback, useEffect, useState } from 'react';
+import { GiOakLeaf, GiPalmTree, GiTreehouse } from 'react-icons/gi';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useFetchDecarbonizationAreas } from '../../hooks/DecarbonizationArea/useFetchDecarbonizationAreas';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import useSequestrationHistory from '../../hooks/SequestrationHistory/useSequestrationHistory';
 import GraphContainer from './components/GraphContainer';
-import { FileTextOutlined, InfoCircleFilled } from '@ant-design/icons';
-
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
@@ -438,29 +438,42 @@ const DecarbonizationAreaChart: React.FC = () => {
       return latestEntry ? latestEntry.seqValue : 0;
     }
   };
-
   const renderAdvice = () => {
     const average = benchmarkValue;
     const actual = calculateActualSequestration(data, selectedArea, selectedParkId);
     const shortfall = average ? average - actual : -actual;
 
     if (average && actual >= average) {
-      return <p style={{ color: 'green' }}>Good job! The sequestration amount is above average.</p>;
+      return <p style={{ color: 'green' }}>Good job! The sequestration amount is above the internationally benchmarked average.</p>;
     } else {
       const treesNeeded = calculatePlantsNeeded(shortfall, 'TREE_TROPICAL', 7000);
       const mangrovesNeeded = calculatePlantsNeeded(shortfall, 'TREE_MANGROVE', 5000);
       const shrubsNeeded = calculatePlantsNeeded(shortfall, 'SHRUB', 500);
 
       return (
-        <div style={{ color: 'red' }}>
-          <p>The sequestration amount is below average by {shortfall.toFixed(2)} kg.</p>
-          <p>
-            Approximately {treesNeeded} tropical trees, {mangrovesNeeded} mangrove trees, or {shrubsNeeded} shrubs need to be planted to hit
-            the average.
-            <Tooltip title="Based on a biomass of 7000kg for tropical trees, 5000kg for mangrove trees, and 500kg for shrubs.">
-              <InfoCircleFilled style={{ color: 'grey', marginLeft: '8px' }} />
-            </Tooltip>
+        <div>
+          <p style={{ color: 'red' }}>
+            The sequestration amount is below the internationally benchmarked average by {shortfall.toFixed(2)} kg.
           </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+            <p>Approximately</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <GiPalmTree style={{ fontSize: '24px' }} />
+              <span>{treesNeeded} Tropical Trees, or</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <GiTreehouse style={{ fontSize: '24px' }} />
+              <span>{mangrovesNeeded} Mangrove Trees, or</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <GiOakLeaf style={{ fontSize: '24px' }} />
+              <span>{shrubsNeeded} Shrubs</span>
+            </div>
+            <p>need to be planted to hit the average.</p>
+            <Tooltip title="Based on a biomass of 7000kg for tropical trees, 5000kg for mangrove trees, and 500kg for shrubs.">
+              <InfoCircleFilled style={{ marginLeft: '8px' }} />
+            </Tooltip>
+          </div>
         </div>
       );
     }
