@@ -49,7 +49,7 @@ const StaffOverdueRatesLineChart: React.FC = () => {
     }).reverse(),
     datasets: data.map((item, index) => ({
       label: `${item.staff.firstName} ${item.staff.lastName}`,
-      data: item.overdueRates.reverse().map(rate => (rate * 100).toFixed(2)),
+      data: item.overdueRates.reverse().map(rate => rate.toFixed(2)),
       fill: false,
       borderColor: CHART_COLORS[index % CHART_COLORS.length],
       tension: 0.1
