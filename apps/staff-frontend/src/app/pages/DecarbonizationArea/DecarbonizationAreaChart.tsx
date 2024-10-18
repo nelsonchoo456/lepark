@@ -367,7 +367,12 @@ const DecarbonizationAreaChart: React.FC = () => {
 
       // Capture the entire report content
       try {
-        const canvas = await html2canvas(input);
+        const canvas = await html2canvas(input, {
+          backgroundColor: null,  // Set background to null
+          scale: 2,  // Increase scale for better quality
+          logging: false,  // Disable logging
+          useCORS: true,  // Enable CORS for images
+        });
         const imgData = canvas.toDataURL('image/png');
 
         // Calculate the height of the content
@@ -381,6 +386,14 @@ const DecarbonizationAreaChart: React.FC = () => {
         // Add the first page
         doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
         heightLeft -= pageHeight - position;
+
+        // Add new pages if content overflows
+        while (heightLeft >= 0) {
+          position = heightLeft - pdfHeight;
+          doc.addPage();
+          doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
+          heightLeft -= pageHeight;
+        }
 
         console.log('Report content captured');
       } catch (error) {
