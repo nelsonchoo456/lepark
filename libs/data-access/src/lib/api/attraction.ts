@@ -1,6 +1,6 @@
 import { Attraction } from '@prisma/client';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { AttractionResponse, CreateAttractionData, UpdateAttractionData } from '../types/attraction';
+import { AttractionResponse, AttractionTicketListingResponse, CreateAttractionData, CreateAttractionTicketListingData, UpdateAttractionData, UpdateAttractionTicketListingData } from '../types/attraction';
 import client from './client';
 
 const URL = '/attractions';
@@ -102,6 +102,84 @@ export async function updateAttractionDetails(id: string, updateData: UpdateAttr
 export async function deleteAttraction(id: string): Promise<AxiosResponse<void>> {
   try {
     const response: AxiosResponse<void> = await client.delete(`${URL}/deleteAttraction/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function createAttractionTicketListing(data: CreateAttractionTicketListingData): Promise<AxiosResponse<AttractionTicketListingResponse>> {
+  try {
+    const response: AxiosResponse<AttractionTicketListingResponse> = await client.post(`${URL}/createAttractionTicketListing`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAllAttractionTicketListings(): Promise<AxiosResponse<AttractionTicketListingResponse[]>> {
+  try {
+    const response: AxiosResponse<AttractionTicketListingResponse[]> = await client.get(`${URL}/getAllAttractionTicketListings`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAttractionTicketListingsByAttractionId(attractionId: string): Promise<AxiosResponse<AttractionTicketListingResponse[]>> {
+  try {
+    const response: AxiosResponse<AttractionTicketListingResponse[]> = await client.get(`${URL}/getAttractionTicketListingsByAttractionId/${attractionId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAttractionTicketListingById(id: string): Promise<AxiosResponse<AttractionTicketListingResponse>> {
+  try {
+    const response: AxiosResponse<AttractionTicketListingResponse> = await client.get(`${URL}/getAttractionTicketListingById/${id}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updateAttractionTicketListingDetails(id: string, updateData: UpdateAttractionTicketListingData): Promise<AxiosResponse<AttractionTicketListingResponse>> {
+  try {
+    const response: AxiosResponse<AttractionTicketListingResponse> = await client.put(`${URL}/updateAttractionTicketListingDetails/${id}`, updateData);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function deleteAttractionTicketListing(id: string): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.delete(`${URL}/deleteAttractionTicketListing/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

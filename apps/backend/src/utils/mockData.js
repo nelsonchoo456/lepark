@@ -592,7 +592,7 @@ const occurrenceData = [
     dateObserved: '2024-09-08T10:00:00Z',
     dateOfBirth: '2024-01-01T00:00:00Z',
     numberOfPlants: 10.0,
-    biomass: 250.5,
+    biomass: 2000.5,
     title: 'New Tree Observation',
     description: 'Observation of recently planted trees in the area',
     decarbonizationType: 'TREE_TROPICAL',
@@ -622,7 +622,7 @@ const occurrenceData = [
     dateObserved: '2024-09-06T09:30:00Z',
     dateOfBirth: '2024-02-15T00:00:00Z',
     numberOfPlants: 5.0,
-    biomass: 120.3,
+    biomass: 8000.3,
     title: 'Tropical Tree Growth',
     description: 'Monitoring the growth of tropical trees',
     decarbonizationType: 'TREE_TROPICAL',
@@ -637,7 +637,7 @@ const occurrenceData = [
     dateObserved: '2024-09-05T08:45:00Z',
     dateOfBirth: '2024-03-01T00:00:00Z',
     numberOfPlants: 12.0,
-    biomass: 275.0,
+    biomass: 13275.0,
     title: 'Mangrove Observation',
     description: 'Observation of newly planted mangroves',
     decarbonizationType: 'TREE_MANGROVE',
@@ -652,7 +652,7 @@ const occurrenceData = [
     dateObserved: '2024-09-04T10:15:00Z',
     dateOfBirth: '2024-02-01T00:00:00Z',
     numberOfPlants: 9.0,
-    biomass: 240.8,
+    biomass: 10000.8,
     title: 'Tropical Tree Observation',
     description: 'Observing the progress of tropical trees',
     decarbonizationType: 'TREE_TROPICAL',
@@ -667,7 +667,7 @@ const occurrenceData = [
     dateObserved: '2024-09-03T09:00:00Z',
     dateOfBirth: '2023-11-25T00:00:00Z',
     numberOfPlants: 6.0,
-    biomass: 160.2,
+    biomass: 1600.2,
     title: 'Shrub Monitoring',
     description: 'Monitoring recently planted shrubs',
     decarbonizationType: 'SHRUB',
@@ -682,7 +682,7 @@ const occurrenceData = [
     dateObserved: '2024-09-02T12:30:00Z',
     dateOfBirth: '2024-01-15T00:00:00Z',
     numberOfPlants: 10.0,
-    biomass: 300.0,
+    biomass: 30000.0,
     title: 'Mangrove Growth Observation',
     description: 'Monitoring the growth of mangroves in the area',
     decarbonizationType: 'TREE_MANGROVE',
@@ -697,7 +697,7 @@ const occurrenceData = [
     dateObserved: '2024-09-01T11:00:00Z',
     dateOfBirth: '2023-10-10T00:00:00Z',
     numberOfPlants: 7.0,
-    biomass: 210.0,
+    biomass: 21000.0,
     title: 'Shrub Care Observation',
     description: 'Observation of shrubs requiring care',
     decarbonizationType: 'SHRUB',
@@ -712,7 +712,7 @@ const occurrenceData = [
     dateObserved: '2024-08-31T14:00:00Z',
     dateOfBirth: '2024-02-10T00:00:00Z',
     numberOfPlants: 15.0,
-    biomass: 350.5,
+    biomass: 30500.5,
     title: 'Mangrove Area Observation',
     description: 'Observation of mangroves in the area',
     decarbonizationType: 'TREE_MANGROVE',
@@ -742,7 +742,7 @@ const occurrenceData = [
     dateObserved: '2024-08-30T13:45:00Z',
     dateOfBirth: '2023-12-20T00:00:00Z',
     numberOfPlants: 12.0,
-    biomass: 280.2,
+    biomass: 12800.2,
     title: 'Tree Growth Observation',
     description: 'Observation of tropical trees showing growth',
     decarbonizationType: 'TREE_TROPICAL',
@@ -757,7 +757,7 @@ const occurrenceData = [
     dateObserved: '2024-08-29T10:30:00Z',
     dateOfBirth: '2024-01-10T00:00:00Z',
     numberOfPlants: 6.0,
-    biomass: 170.5,
+    biomass: 17000.5,
     title: 'Mangrove Monitoring',
     description: 'Monitoring the health of mangroves',
     decarbonizationType: 'TREE_MANGROVE',
@@ -772,7 +772,7 @@ const occurrenceData = [
     dateObserved: '2024-08-28T09:00:00Z',
     dateOfBirth: '2024-03-05T00:00:00Z',
     numberOfPlants: 9.0,
-    biomass: 240.0,
+    biomass: 20040.0,
     title: 'Tree Care Observation',
     description: 'Trees needing urgent care',
     decarbonizationType: 'TREE_TROPICAL',
@@ -795,6 +795,21 @@ const occurrenceData = [
     occurrenceStatus: 'HEALTHY',
     zoneId: 1,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/occurrence/occurrence-11.jpg'],
+  },
+  {
+    lat: 1.3646164658,
+    lng: 103.8397,
+    dateObserved: '2024-09-08T10:00:00Z',
+    dateOfBirth: '2024-01-01T00:00:00Z',
+    numberOfPlants: 15.0,
+    biomass: 2100.5,
+    title: 'New Raintree Observation',
+    description: 'Observation of recently planted rain trees in the area',
+    decarbonizationType: 'TREE_TROPICAL',
+    speciesId: '',
+    occurrenceStatus: 'HEALTHY',
+    zoneId: 1,
+    images: ['https://www.shutterstock.com/image-photo/panorama-giant-monkey-pod-tree-260nw-1099876487.jpg'],
   },
 ];
 
@@ -1434,6 +1449,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727501914845-butterfly%20sanctuary%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.361387363945382,
     lng: 103.84889960289,
     parkId: 1,
@@ -1465,6 +1482,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727502147258-green%20heritage%20museum%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.359806129037598,
     lng: 103.8503265380859,
     parkId: 1,
@@ -1496,6 +1515,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727461825726-flower-dome-02.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.318784621302434,
     lng: 103.8187140486642,
     parkId: 2,
@@ -1527,6 +1548,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462129284-Centre%20for%20ethnobotany%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.319492692641653,
     lng: 103.816557581536,
     parkId: 2,
@@ -1555,6 +1578,8 @@ const attractionsData = [
     ],
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462391534-National_Biodiversity_Centre_Building.jpg'],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.316473506270394,
     lng: 103.8178771734238,
     parkId: 2,
@@ -1586,6 +1611,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462642918-botanical%20art%20gallery%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.314601354444774,
     lng: 103.80999147892,
     parkId: 2,
@@ -1617,6 +1644,8 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462925669-Forest%20Discovery%20Centre%202.jpg',
     ],
     status: 'OPEN',
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.313818486250098,
     lng: 103.8106995820999,
     parkId: 2,
@@ -2516,6 +2545,8 @@ const eventsData = [
     startTime: '2024-10-07T00:00:00.000Z',
     endTime: '2024-10-11T09:00:00.000Z',
     maxCapacity: 300,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727628906708-wildlife%20protection%20seminar%20event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2531,6 +2562,8 @@ const eventsData = [
     startTime: '2024-11-08T02:00:00.000Z',
     endTime: '2024-11-12T11:00:00.000Z',
     maxCapacity: 200,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629019586-stand%20up%20comedy.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2546,6 +2579,8 @@ const eventsData = [
     startTime: '2024-10-18T02:00:00.000Z',
     endTime: '2024-10-21T12:00:00.000Z',
     maxCapacity: 300,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629125264-jazz%20festival%20event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2561,6 +2596,8 @@ const eventsData = [
     startTime: '2024-10-10T01:00:00.000Z',
     endTime: '2024-10-12T09:00:00.000Z',
     maxCapacity: 30,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629271719-eco%20friendly%20craft%20workshop%201.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2576,6 +2613,8 @@ const eventsData = [
     startTime: '2024-10-01T01:00:00.000Z',
     endTime: '2024-10-01T11:00:00.000Z',
     maxCapacity: 25,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629353517-treasure%20hunt%20event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2591,6 +2630,8 @@ const eventsData = [
     startTime: '2024-10-01T02:00:00.000Z',
     endTime: '2024-10-04T09:00:00.000Z',
     maxCapacity: 30,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629448629-obstacle%20course%20challenge%201.jpg'],
     status: 'UPCOMING',
     facilityId: '',
@@ -2759,6 +2800,57 @@ const newSensors = [
   },
 ];
 
+const attractionTicketListingsData = [
+  {
+    nationality: 'LOCAL',
+    category: 'ADULT',
+    price: 5,
+    description: 'Singapore resident - Adult',
+    isActive: true,
+    attractionId: '',
+  },
+  {
+    nationality: 'LOCAL',
+    category: 'CHILD',
+    price: 0,
+    description: 'Singapore resident - Child (3 to 12 years old)',
+    isActive: true,
+    attractionId: '',
+  },
+  {
+    nationality: 'LOCAL',
+    category: 'SENIOR',
+    price: 0,
+    description: 'Singapore resident - Senior (60 years old and above)',
+    isActive: true,
+    attractionId: '',
+  },
+  {
+    nationality: 'LOCAL',
+    category: 'STUDENT',
+    price: 2,
+    description: 'Singapore resident - Student (Secondary & Tertiary students)',
+    isActive: true,
+    attractionId: '',
+  },
+  {
+    nationality: 'STANDARD',
+    category: 'ADULT',
+    price: 10,
+    description: 'Standard - Adult (13 years old and above)',
+    isActive: true,
+    attractionId: '',
+  },
+  {
+    nationality: 'STANDARD',
+    category: 'CHILD',
+    price: 5,
+    description: 'Standard - Child (3 to 12 years old)',
+    isActive: true,
+    attractionId: '',
+  },
+];
+
 const decarbonizationAreasData = [
   {
     geom: 'SRID=4326;POLYGON((103.83966207504274 1.3644984821319806, 103.83952796459201 1.3643644097063403, 103.83966743946075 1.3642196114782348, 103.83983373641968 1.3640909019348833, 103.83990883827211 1.3642196114782348, 103.83966207504274 1.3644984821319806))',
@@ -2793,6 +2885,21 @@ const decarbonizationAreasData = [
 ];
 
 const seqHistoriesData = [
+{ //PVN
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 8,
+  decarbonizationAreaId: ""
+},
+{ //East Area
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 21,
+  decarbonizationAreaId: ""
+},
+{ //West Area
+  date: "2023-11-01T05:33:56.000Z",
+  seqValue: 15,
+  decarbonizationAreaId: ""
+},
   {
     //PVN
     date: '2024-10-02T05:33:56.000Z',
@@ -3449,6 +3556,85 @@ const promotionsData = [
   }
 ];
 
+const announcementsData = [
+  {
+    title: 'Closure of Therapeutic Gardens',
+    content:
+      'A section of the Therapeutic Gardens (raised planters) will be closed for maintenance works from 6 dec to 16 dec 2024. ',
+    updatedAt: '2024-10-15T08:49:23.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2024-12-16T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 1,
+  },
+  {
+    title: 'Oil Spill Incident Update',
+    content: 'The National Environment Agency (NEA) has shared that the water quality at our parks has returned to normal levels and stabilised since the oil spill.',
+    updatedAt: '2024-10-15T08:50:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: null,
+  },
+  {
+    title: 'Advisory on Water Quality',
+    content: 'The water quality at our parks are unsafe for swimming and other water activities. Please do not enter the water until further notice.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
+    status: 'INACTIVE',
+    parkId: null,
+  },
+  {
+    title: 'Temporary closure of park entrance',
+    content:
+      'The park entrance at Ang Mo Kio Ave 1 and Marymount Road junction will be closed from 21 December 2020 until further notice.\n\nYou may use the new entrance along Ang Mo Kio Ave 1 to access the park.',
+    updatedAt: '2024-10-15T08:50:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 1,
+  },
+  {
+    title: 'Advisory on Flooding',
+    content: 'Some areas of Bishan-Ang Mo Kio Park may be flooded due to higher tides and bad weather. For your safety, do not enter when the area is flooded.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2024-10-16T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 1,
+  },
+  {
+    title: 'Hot Spring - Permit Application for large groups',
+    content: 'No permit is required for groups smaller than 20 people. For groups larger than 20 people, please submit a permit application before visiting the park.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-10-14T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 2,
+  },
+  {
+    title: 'Dog run lighting hours',
+    content: 'The lights in the dog runs are switched off at 10.30pm daily.',
+    updatedAt: '2024-10-15T08:51:27.000Z',
+    startDate: '2024-10-14T16:00:00.000Z',
+    endDate: '2025-10-14T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: 2,
+  },
+];
+
+const visitorsData = [
+  {
+    firstName: "Ely",
+    lastName: "Ong",
+    email: "elysiaong22@gmail.com",
+    password: "password",
+    contactNumber: "82882747",
+    isVerified: true,
+  }
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -3463,11 +3649,14 @@ module.exports = {
   eventsData,
   parkAssetsData,
   sensorsData,
+  attractionTicketListingsData,
   decarbonizationAreasData,
   plantTasksData,
   newHub,
   newSensors,
   seqHistoriesData,
   faqsData,
-  promotionsData
+  visitorsData,
+  promotionsData,
+  announcementsData,
 };

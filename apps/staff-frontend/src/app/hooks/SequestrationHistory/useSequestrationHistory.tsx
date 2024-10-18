@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { DecarbonizationAreaResponse, SequestrationHistoryResponse, getSequestrationHistoryByAreaIdAndTimeFrame } from '@lepark/data-access';
+import {
+  DecarbonizationAreaResponse,
+  SequestrationHistoryResponse,
+  getSequestrationHistoryByAreaIdAndTimeFrame,
+} from '@lepark/data-access';
 import { formatDate } from '../../pages/DecarbonizationArea/components/dateFormatter';
 
 const useSequestrationHistory = (
@@ -81,7 +85,7 @@ const useSequestrationHistory = (
           if (existingEntry) {
             existingEntry.seqValue += entry.seqValue;
           } else {
-            acc.push({ date: entry.date, seqValue: entry.seqValue });
+            acc.push({ date: entry.date, seqValue: entry.seqValue, decarbonizationAreaId: entry.decarbonizationAreaId });
           }
           return acc;
         }, []);

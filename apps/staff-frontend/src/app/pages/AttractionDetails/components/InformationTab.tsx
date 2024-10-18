@@ -42,6 +42,11 @@ const InformationTab = ({ attraction, park }: InformationTabProps) => {
       label: 'Description',
       children: <Typography.Paragraph>{attraction?.description}</Typography.Paragraph>,
     },
+    {
+      key: 'ticketingPolicy',
+      label: 'Ticketing Policy',
+      children: <Typography.Paragraph>{attraction?.ticketingPolicy}</Typography.Paragraph>,
+    },
   ];
 
   const locationItems = [

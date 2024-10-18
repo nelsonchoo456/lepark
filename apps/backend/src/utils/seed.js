@@ -13,6 +13,7 @@ const {
   eventsData,
   parkAssetsData,
   sensorsData,
+  attractionTicketListingsData,
   decarbonizationAreasData,
   plantTasksData,
   sensorReadingsData,
@@ -20,7 +21,9 @@ const {
   newSensors,
   seqHistoriesData,
   faqsData,
+  visitorsData,
   promotionsData,
+  announcementsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -393,16 +396,15 @@ async function seed() {
     });
     attractionList.push(createdAttraction);
   }
-  console.log(`Total attractions seeded: ${attractionList.length}\n`);
-
-  const promotionList = [];
-  for (const promotion of promotionsData) {
-    const createdPromotion = await prisma.promotion.create({
-      data: promotion,
-    });
-    promotionList.push(createdPromotion);
+  for (const attraction of attractionList) {
+    for (const listing of attractionTicketListingsData) {
+      listing.attractionId = attraction.id;
+      await prisma.attractionTicketListing.create({
+        data: listing,
+      });
+    }
   }
-  console.log(`Total promotions seeded: ${promotionList.length}\n`);
+  console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
   const plantTasksList = [];
   for (const plantTask of plantTasksData) {
@@ -518,27 +520,74 @@ async function seed() {
   // Now create sequestration histories after all decarbonization areas are created
   console.log('Seeding 14 sequestration histories per decarb area...');
 
+  //const areaNames = ['PVN', 'East Area', 'West Area', 'PVC', 'PVS'];
   for (let i = 0; i < decarbonizationAreaList.length; i++) {
     const area = decarbonizationAreaList[i];
+    //console.log(`Seeding sequestration history for ${areaNames[i]}...`);
     await createSeqHistories(area.id, seqHistoriesData[i], i);
   }
 
   await seedFAQs();
+
+  const visitorList = [];
+  for (const visitor of visitorsData) {
+    const hashedPassword = await bcrypt.hash(visitor.password, 10);
+    visitor.password = hashedPassword;
+
+    const createdVisitor = await prisma.visitor.create({
+      data: visitor,
+    });
+    visitorList.push(createdVisitor);
+  }
+  console.log(`Total visitors seeded: ${visitorList.length}\n`);
+
+  const promotionList = [];
+  for (const promotion of promotionsData) {
+    const createdPromotion = await prisma.promotion.create({
+      data: promotion,
+    });
+    promotionList.push(createdPromotion);
+  }
+  console.log(`Total promotions seeded: ${promotionList.length}\n`);
+
+  const announcementList = [];
+  for (const announcement of announcementsData) {
+    const createdAnnouncement = await prisma.announcement.create({
+      data: announcement,
+    });
+    announcementList.push(createdAnnouncement);
+  }
+  console.log(`Total announcements seeded: ${announcementList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   const seqHistories = [];
+  const startDate = new Date('2023-12-01');
+  const endDate = new Date('2024-10-23');
+  const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
-  let currentSeqValue = baseSeqHistory.seqValue;
-  const interval = 0.2; // 0.2 kg interval
+  const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+  const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
 
-  // Create entries for 2023 and 2024
-  for (let year = 2023; year <= 2024; year++) {
-    for (let i = 0; i < 7; i++) {
-      const newDate = new Date(baseSeqHistory.date);
-      newDate.setFullYear(year);
-      newDate.setDate(newDate.getDate() + i);
+  const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
 
+  let currentDate = new Date(startDate);
+  let currentSeqValue = startValues[index];
+
+  while (currentDate <= endDate) {
+    try {
+      const createdSeqHistory = await prisma.sequestrationHistory.create({
+        data: {
+          date: new Date(currentDate),
+          seqValue: parseFloat(currentSeqValue.toFixed(3)),
+          decarbonizationAreaId: decarbAreaId,
+        },
+      });
+      seqHistories.push(createdSeqHistory);
+      currentSeqValue += dailyIncrease;
+    } catch (error) {
+      console.error(`Error inserting sequestration history for date: ${currentDate.toISOString()}`);
+      console.error(error);
       try {
         const createdSeqHistory = await prisma.sequestrationHistory.create({
           data: {
@@ -554,8 +603,11 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
         console.error(error);
       }
     }
+
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
+  console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
   console.log(`Total sequestration histories seeded: ${seqHistories.length}\n`);
   /*seqHistories.forEach((history, i) => {
     console.log(`History ${i + 1}:`);
@@ -565,8 +617,6 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
     console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
     console.log('---');
   });*/
-
-  //faq'=
 }
 
 // Utility function for Activity Logs and Status Logs
