@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input, TreeSelect, Card, Tag } from 'antd';
+import { Input, TreeSelect, Card, Tag, Empty } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import { PiTicketFill } from 'react-icons/pi';
 import { useAuth } from '@lepark/common-ui';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
-import { DiscountTypeEnum, getAllPromotions, getPromotionsByParkId, PromotionResponse, VisitorResponse } from '@lepark/data-access';
+import { PromotionStatusEnum, DiscountTypeEnum, getAllPromotions, getPromotionsByParkId, PromotionResponse, VisitorResponse } from '@lepark/data-access';
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -44,7 +44,7 @@ const PromotionViewAll = () => {
         }
 
         const allPromotionsResponse = await getAllPromotions();
-        setAllPromotions(allPromotionsResponse.data);
+        setAllPromotions(filterValidPromotions(allPromotionsResponse.data));
       } catch (error) {
         console.error('Error fetching promotions:', error);
         // Handle error (e.g., show error message to user)
@@ -55,6 +55,16 @@ const PromotionViewAll = () => {
 
     fetchPromotions();
   }, [selectedPark]);
+
+  const filterValidPromotions = (promotions: PromotionResponse[]) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+
+  return promotions.filter(promotion =>
+    promotion.status === PromotionStatusEnum.ENABLED &&
+    new Date(promotion.validUntil) >= today
+  );
+};
 
   const limitedPromotions = useMemo(() => {
     const threeDaysFromNow = new Date();
@@ -68,9 +78,9 @@ const PromotionViewAll = () => {
 
     const filterPromotions = (promotions: PromotionResponse[]) => {
     return promotions.filter(promotion =>
-      promotion.name.toLowerCase().includes(searchQuery) ||
-      promotion.description?.toLowerCase().includes(searchQuery) ||
-      (promotion.promoCode && promotion.promoCode.toLowerCase().includes(searchQuery))
+      promotion.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+promotion.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+(promotion.promoCode && promotion.promoCode.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   };
 
@@ -113,7 +123,9 @@ const renderPromotionCard = (promotion: PromotionResponse) => {
               className="object-cover w-full h-full rounded-t-xl"
             />
           ) : (
-            "No Image"
+
+            <Empty/>
+
           )}
         </div>
       }
