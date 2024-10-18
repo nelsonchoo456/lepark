@@ -4,8 +4,19 @@ import { FeedbackData, FeedbackResponse, FeedbackUpdateData } from '../types/fee
 
 const URL = '/feedback';
 
-export async function createFeedback(data: FeedbackData): Promise<AxiosResponse<FeedbackResponse>> {
+export async function createFeedback(data: FeedbackData, files?: File[]): Promise<AxiosResponse<FeedbackResponse>> {
   try {
+    if (files && files.length > 0) {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append('files', file); // The key 'files' matches what Multer expects
+      });
+
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images = uploadedUrls.data.uploadedUrls;
+    }
+
     const response: AxiosResponse<FeedbackResponse> = await client.post(`${URL}/createFeedback`, data);
     return response;
   } catch (error) {
@@ -43,8 +54,19 @@ export async function getFeedbackById(id: string): Promise<AxiosResponse<Feedbac
   }
 }
 
-export async function updateFeedback(id: string, data: FeedbackUpdateData): Promise<AxiosResponse<FeedbackResponse>> {
+export async function updateFeedback(id: string, data: FeedbackUpdateData, files?: File[]): Promise<AxiosResponse<FeedbackResponse>> {
   try {
+    if (files && files.length > 0) {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append('files', file); // The key 'files' matches what Multer expects
+      });
+
+      const uploadedUrls = await client.post(`${URL}/upload`, formData);
+      data.images?.push(...uploadedUrls.data.uploadedUrls);
+    }
+
     const response: AxiosResponse<FeedbackResponse> = await client.put(`${URL}/updateFeedback/${id}`, data);
     return response;
   } catch (error) {
