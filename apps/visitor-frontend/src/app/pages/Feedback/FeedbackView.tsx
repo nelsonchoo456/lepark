@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { FeedbackResponse, getFeedbackById, viewStaffDetails, getParkById, ParkResponse } from '@lepark/data-access';
-import { Card, Tag, Spin, Button, Image } from 'antd';
+import { FeedbackResponse, getFeedbackById, viewStaffDetails, getParkById, deleteFeedback } from '@lepark/data-access';
+import { Card, Tag, Spin, Button, Image, Popconfirm, message } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
@@ -38,10 +38,11 @@ const FeedbackView: React.FC = () => {
       try {
         const feedbackResponse = await getFeedbackById(feedbackId);
         setFeedback(feedbackResponse.data);
-
+        console.log(feedback)
         if (feedbackResponse.data.staffId) {
           const staffResponse = await viewStaffDetails(feedbackResponse.data.staffId);
           setResolvedByStaff(`${staffResponse.data.firstName} ${staffResponse.data.lastName}`);
+          console.log(resolvedByStaff);
         }
 
         if (feedbackResponse.data.parkId) {
@@ -50,6 +51,7 @@ const FeedbackView: React.FC = () => {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        message.error('Failed to load feedback details');
       } finally {
         setLoading(false);
       }
@@ -57,6 +59,17 @@ const FeedbackView: React.FC = () => {
 
     fetchData();
   }, [feedbackId]);
+
+  const handleDelete = async () => {
+    try {
+      await deleteFeedback(feedbackId);
+      message.success('Feedback deleted successfully');
+      navigate(-1);
+    } catch (error) {
+      console.error('Error deleting feedback:', error);
+      message.error('Failed to delete feedback');
+    }
+  };
 
   if (loading) {
     return (
@@ -82,35 +95,54 @@ const FeedbackView: React.FC = () => {
         </div>
       </ParkHeader>
       <div className="flex-grow overflow-y-auto p-4">
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(-1)}
-          style={{ marginBottom: '1rem' }}
-        >
-          Back
-        </Button>
+        <div className="flex justify-between items-center mb-4">
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
+          {feedback.feedbackStatus === 'PENDING' && (
+            <Popconfirm
+              title="Are you sure you want to delete this feedback?"
+              onConfirm={handleDelete}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                type="primary"
+                danger
+                icon={<DeleteOutlined />}
+              >
+                Delete Feedback
+              </Button>
+            </Popconfirm>
+          )}
+        </div>
         <Card>
           <h1 className="text-xl font-semibold text-green-500">{feedback.title}</h1>
 
-
- <div className="mt-4">
+          <div className="mt-4">
             <p><strong>Status:</strong> <Tag color={getFeedbackStatusColor(feedback.feedbackStatus)}>{formatEnumLabel(feedback.feedbackStatus)}</Tag></p>
+            {feedback.dateResolved && (
+              <p><strong>Date Resolved:</strong> {new Date(feedback.dateResolved).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
+            )}
+            {resolvedByStaff && (
+              <p><strong>Resolved By:</strong> {resolvedByStaff}</p>
+            )}
+            {feedback.remarks && (
+              <>
+                <p><strong>Remarks:</strong> <i>{feedback.remarks}</i></p>
+                <br/>
+              </>
+            )}
             <p><strong>Category:</strong> {formatEnumLabel(feedback.feedbackCategory)}</p>
             <p><strong>Date Created:</strong> {new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
             <p><strong>Park:</strong> {parkName || 'Unknown'}</p>
 
-            {feedback.dateResolved && (
-              <p><strong>Date Resolved:</strong> {new Date(feedback.dateResolved).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
-            )}
 
-            {resolvedByStaff && (
-              <p><strong>Resolved By:</strong> {resolvedByStaff}</p>
-            )}
-
-            {feedback.remarks && (
-              <p><strong>Remarks:</strong> {feedback.remarks}</p>
-            )}
           </div>
+
           {feedback.images && feedback.images.length > 0 && (
             <div className="mt-4">
               <p><strong>Images:</strong></p>
@@ -127,8 +159,7 @@ const FeedbackView: React.FC = () => {
             </div>
           )}
 
-<p><strong>Description:</strong> {feedback.description}</p>
-
+          <p><strong>Description:</strong> {feedback.description}</p>
         </Card>
       </div>
     </div>

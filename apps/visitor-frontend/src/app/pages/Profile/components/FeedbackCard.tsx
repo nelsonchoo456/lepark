@@ -62,7 +62,7 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({ date, title, category, park
           {loading ? (
             <Spin size="small" />
           ) : (
-            <span>Park: {parkName}</span>
+            <span>{parkName}</span>
           )}
         </div>
       </div>

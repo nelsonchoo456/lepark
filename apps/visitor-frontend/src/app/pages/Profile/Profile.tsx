@@ -512,7 +512,7 @@ const ProfilePage = () => {
               .map((feedback) => (
                 <FeedbackCard
                   key={feedback.id}
-                  date={new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '/')}
+                  date={new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}
                   title={feedback.title}
                   category={feedback.feedbackCategory}
                   parkId={feedback.parkId}
