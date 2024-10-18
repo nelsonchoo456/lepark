@@ -1,5 +1,12 @@
 // emailUtility.ts
 import nodemailer from 'nodemailer';
+import QRCode from 'qrcode';
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
+import VisitorDao from '../dao/VisitorDao';
+import AttractionTicketDao from '../dao/AttractionTicketDao';
+import AttractionDao from '../dao/AttractionDao';
 
 class EmailUtility {
   async sendPasswordResetEmail(recipientEmail: string, resetLink: string) {
@@ -79,6 +86,171 @@ class EmailUtility {
       to: visitorEmail, // recipient
       subject: 'Verify Your Email Address',
       html: `<p>Welcome to Lepark! Please verify your email address by clicking the link below:</p><a href="${verificationLink}">Verify Email</a><p>The link expires in 15 minutes.</p><p>If you did not sign up, please ignore this email.</p>`,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+  }
+
+  async generateQRCode(id: string): Promise<string> {
+    return await QRCode.toDataURL(id);
+  }
+
+  async generatePDF(transaction: any): Promise<string> {
+    const doc = new PDFDocument({ size: 'A4' });
+    const pdfDirectory = path.join(__dirname, '..', '..', '..', '..', 'temp', 'pdfs', 'attraction-tickets');
+    const pdfPath = path.join(pdfDirectory, `AttractionTicket-${transaction.id}.pdf`);
+
+    const visitor = await VisitorDao.getVisitorById(transaction.visitorId);
+
+    // Ensure the directory exists
+    await fs.promises.mkdir(pdfDirectory, { recursive: true });
+
+    doc.pipe(fs.createWriteStream(pdfPath));
+
+    const addHeader = () => {
+      doc.font('Helvetica-Bold').fontSize(18).text('Lepark Attraction Ticket', { align: 'center' });
+      doc.moveDown();
+      doc
+        .fontSize(12)
+        .text(`Purchased by: ${visitor.firstName} ${visitor.lastName}`, { align: 'left' })
+        .text(`Order Number: ${transaction.id}`, { align: 'left' })
+        .text(`Purchase Date: ${new Date(transaction.purchaseDate).toDateString()}`, { align: 'left' })
+        .text(`Visit Date: ${new Date(transaction.attractionDate).toDateString()}`, { align: 'left' });
+      doc.moveDown(2);
+    };
+
+    addHeader();
+
+    let yPosition = 180;
+    for (let i = 0; i < transaction.attractionTickets.length; i++) {
+      const ticketData = transaction.attractionTickets[i];
+      const ticket = await AttractionTicketDao.getAttractionTicketById(ticketData.id);
+      const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+
+      const qrCodePath = await this.generateQRCode(`http://localhost:4200/verify-ticket/${ticket.id}`);
+
+      if (yPosition > 650) {
+        doc.addPage();
+        yPosition = 50;
+        addHeader();
+      }
+
+      // Green box for the ticket
+      doc.rect(50, yPosition, 500, 150).fillColor('darkgreen').fill();
+
+      // Ticket details
+      doc
+        .fillColor('white')
+        .fontSize(12)
+        .text(`Category: ${listing.category}`, 70, yPosition + 20)
+        .text(`Nationality: ${listing.nationality}`, 70, yPosition + 45)
+        .text(`Ticket ID: ${ticket.id}`, 70, yPosition + 70)
+        .text(`Price: $${ticket.price}`, 70, yPosition + 90)
+        .fontSize(10)
+        .text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', 70, yPosition + 120);
+
+      // QR Code
+      doc.image(qrCodePath, 450, yPosition + 35, { fit: [80, 80] });
+
+      yPosition += 170; // Adjust spacing between tickets
+    }
+
+    // Add terms and conditions on the last page
+    if (yPosition > 700) {
+      doc.addPage();
+      yPosition = 50;
+    }
+
+    doc
+      .fillColor('black')
+      .fontSize(8)
+      .text('Terms and conditions...', 50, yPosition + 20);
+
+    doc.end();
+    return pdfPath;
+  }
+
+  async sendAttractionTicketEmail(recipientEmail: string, transaction: any) {
+    // Create a transporter using Gmail's SMTP settings
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com', // replace with your Gmail email
+        pass: 'ezcr eqfz dxtn vbtr', // replace with your App Password
+      },
+      tls: {
+        rejectUnauthorized: false, // Disable certificate validation
+      },
+    });
+
+    const pdfPath = await this.generatePDF(transaction);
+
+    // Email message options
+    const mailOptions = {
+      to: recipientEmail, // recipient
+      subject: 'Your Lepark Attraction Tickets',
+      html: `
+        <h1>Thank you for your purchase!</h1>
+        <p>Your tickets are attached to this email. Please present them at the entrance.</p>
+        <p>Order details:</p>
+        <ul>
+          <li>Order ID: ${transaction.id}</li>
+          <li>Date: ${new Date(transaction.attractionDate).toDateString()}</li>
+          <li>Total Amount: $${transaction.totalAmount.toFixed(2)}</li>
+        </ul>
+      `,
+      attachments: [
+        {
+          filename: `Lepark-AttractionTickets-${transaction.id}.pdf`,
+          path: pdfPath,
+        },
+      ],
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+  }
+
+  async sendRequestedAttractionTicketEmail(recipientEmail: string, transaction: any) {
+    // Create a transporter using Gmail's SMTP settings
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com', // replace with your Gmail email
+        pass: 'ezcr eqfz dxtn vbtr', // replace with your App Password
+      },
+      tls: {
+        rejectUnauthorized: false, // Disable certificate validation
+      },
+    });
+
+    const pdfPath = await this.generatePDF(transaction);
+
+    // Email message options
+    const mailOptions = {
+      to: recipientEmail, // recipient
+      subject: 'Your Lepark Attraction Tickets',
+      html: `
+      <h1>Your requested attraction tickets are ready!</h1>
+      <p>Your tickets are attached to this email. Please present them at the entrance.</p>
+      <p>Order details:</p>
+      <ul>
+        <li>Order ID: ${transaction.id}</li>
+        <li>Date: ${new Date(transaction.attractionDate).toDateString()}</li>
+        <li>Total Amount: $${transaction.totalAmount.toFixed(2)}</li>
+      </ul>
+    `,
+      attachments: [
+        {
+          filename: `Lepark-AttractionTickets-${transaction.id}.pdf`,
+          path: pdfPath,
+        },
+      ],
     };
 
     // Send email

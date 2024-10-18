@@ -63,6 +63,26 @@ router.get('/getSensorsByHubId/:hubId', async (req, res) => {
   }
 });
 
+router.get('/getSensorsByZoneId/:zoneId', async (req, res) => {
+  try {
+    const zoneId = parseInt(req.params.zoneId);
+    const sensors = await SensorService.getSensorsByZoneId(zoneId);
+    res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getPlantSensorsByZoneId/:zoneId', async (req, res) => {
+  try {
+    const zoneId = parseInt(req.params.zoneId);
+    const sensors = await SensorService.getPlantSensorsByZoneId(zoneId);
+    res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getSensorsByFacilityId/:facilityId', async (req, res) => {
   try {
     const facilityId = req.params.facilityId;

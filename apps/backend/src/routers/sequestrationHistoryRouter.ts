@@ -73,4 +73,15 @@ router.get('/park/:parkId/date/:date', async (req, res) => {
   }
 });
 
+router.get('/park/:parkId/year/:year', async (req, res) => {
+  try {
+    const parkId = parseInt(req.params.parkId);
+    const year = req.params.year;
+    const totalSequestration = await SequestrationHistoryService.getTotalSequestrationForParkAndYear(parkId, year);
+    res.status(200).json({ totalSequestration });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

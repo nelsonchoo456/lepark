@@ -13,12 +13,13 @@ import {
   updatePlantTaskDetails,
   PlantTaskUpdateData,
   deleteManyPlantTasks,
+  deletePlantTask,
 } from '@lepark/data-access';
-import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
+import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker } from 'antd';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
-import { MoreOutlined } from '@ant-design/icons';
+import { MoreOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { StaffRoleEnum } from '@prisma/client';
@@ -26,6 +27,9 @@ import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
 import EditPlantTaskModal from './EditPlantTaskModal';
+import ViewPlantTaskModal from './ViewPlantTaskModal';
+import dayjs from 'dayjs';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 
 interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
@@ -40,6 +44,8 @@ interface PlantTaskBoardViewProps {
   refreshData: () => void;
   userRole: string;
 }
+
+const { RangePicker } = DatePicker;
 
 const PlantTaskBoardView = ({
   open,
@@ -62,6 +68,12 @@ const PlantTaskBoardView = ({
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [showLogPrompt, setShowLogPrompt] = useState(false);
+  const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -113,21 +125,18 @@ const PlantTaskBoardView = ({
 
       // Update status and position in the backend
       try {
-        // Unassign staff if the task is moved to "Open" status
-        if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER && destination.droppableId === PlantTaskStatusEnum.OPEN) {
-          await unassignPlantTask(movedTask.id, user?.id || '');
-          await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
-          await updatePlantTaskPosition(movedTask.id, destination.index);
-          message.success('Task moved to Open and unassigned from staff');
-        } else {
-          await updatePlantTaskStatus(movedTask.id, destination.droppableId as PlantTaskStatusEnum);
-          await updatePlantTaskPosition(movedTask.id, destination.index);
-          message.success('Task status updated successfully');
-        }
+        await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
+        await updatePlantTaskPosition(movedTask.id as string, destination.index);
+        message.success('Task status updated successfully');
       } catch (error) {
         console.error('Error updating task status, position, or unassigning:', error);
         message.error('Failed to update task status, position, or unassign');
       }
+    }
+
+    if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
+      setCompletedTaskOccurrenceId(movedTask.occurrence?.id || null);
+      setShowLogPrompt(true);
     }
 
     refreshData(); // Call the refreshData function after updating the task
@@ -182,16 +191,13 @@ const PlantTaskBoardView = ({
     }
   };
 
-  const handleViewDetails = (taskId: string) => {
-    navigate(`/plant-tasks/${taskId}`);
-  };
-
   const handleAssignStaff = async (task: PlantTaskResponse) => {
     if (userRole !== StaffType.SUPERADMIN && userRole !== StaffType.MANAGER) {
       return; // Prevent non-superadmin/manager from assigning staff
     }
     setSelectedTask(task);
     setSelectedTaskId(task.id);
+    setSelectedStaffId(null); // Reset the selected staff
     setIsAssignModalVisible(true);
     try {
       const response = await getAllStaffsByParkId(task.occurrence?.zone?.parkId);
@@ -209,11 +215,15 @@ const PlantTaskBoardView = ({
         await assignPlantTask(selectedTaskId, user?.id || '', selectedStaffId);
         message.success('Task assigned successfully');
         setIsAssignModalVisible(false);
-        refreshData();
 
         // Update the local state
         const updatedTask = { ...selectedTask, assignedStaffId: selectedStaffId };
         updateTaskInList(updatedTask);
+
+        // Add a delay before refreshing data
+        setTimeout(() => {
+          refreshData();
+        }, 500); // 0.5 second delay
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');
@@ -231,8 +241,17 @@ const PlantTaskBoardView = ({
 
     const updater = listUpdaters[updatedTask.taskStatus] as React.Dispatch<React.SetStateAction<PlantTaskResponse[]>>;
     updater((prevList: PlantTaskResponse[]) =>
-      prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task)),
+      prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task))
     );
+
+    // Log the updated state for debugging
+    console.log('Updated task:', updatedTask);
+    console.log('Updated list:', listUpdaters[updatedTask.taskStatus]);
+  };
+
+  const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
+    // Refresh the task list or update the local state as needed
+    refreshData();
   };
 
   const handleEditDetails = (task: PlantTaskResponse) => {
@@ -244,19 +263,24 @@ const PlantTaskBoardView = ({
     if (editingTask) {
       try {
         await updatePlantTaskDetails(editingTask.id, values);
+        message.success('Task updated successfully');
         setEditModalVisible(false);
         refreshData(); // Refresh the task list
-        message.success('Task updated successfully');
       } catch (error) {
         console.error('Error updating plant task:', error);
-        message.error('Failed to update task');
+        throw new Error('Failed to update task.' + ' ' + error + '.');
       }
     }
   };
 
+  const showViewModal = (task: PlantTaskResponse) => {
+    setSelectedTask(task);
+    setViewModalVisible(true);
+  };
+
   const renderTaskCard = (task: PlantTaskResponse) => {
-    const isOverdue = moment().isAfter(moment(task.dueDate));
-    const isDueSoon = moment(task.dueDate).isBetween(moment(), moment().add(3, 'days')); // Consider "due soon" if within 3 days
+    const isOverdue = moment().startOf('day').isAfter(moment(task.dueDate).startOf('day'));
+    const isDueSoon = moment(task.dueDate).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days'));
     const shouldHighlightOverdue =
       isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
     const shouldHighlightDueSoon =
@@ -266,7 +290,7 @@ const PlantTaskBoardView = ({
       {
         label: 'View Details',
         key: '1',
-        onClick: () => handleViewDetails(task.id),
+        onClick: () => showViewModal(task),
       },
     ];
 
@@ -278,7 +302,11 @@ const PlantTaskBoardView = ({
       });
     }
 
-    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && !task.assignedStaffId) {
+    if (
+      (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
+      !task.assignedStaffId &&
+      task.taskStatus === PlantTaskStatusEnum.OPEN
+    ) {
       dropdownItems.push({
         label: 'Assign Staff',
         key: '3',
@@ -286,9 +314,11 @@ const PlantTaskBoardView = ({
       });
     }
 
-    if ((userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && 
-        task.assignedStaffId && 
-        task.taskStatus === PlantTaskStatusEnum.OPEN) {
+    if (
+      (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
+      task.assignedStaffId &&
+      task.taskStatus === PlantTaskStatusEnum.OPEN
+    ) {
       dropdownItems.push({
         label: 'Unassign Staff',
         key: '4',
@@ -296,17 +326,30 @@ const PlantTaskBoardView = ({
       });
     }
 
+    // Add Delete Task option for Superadmin and Manager
+    if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) {
+      dropdownItems.push({
+        label: 'Delete Task',
+        key: '5',
+        danger: true,
+        onClick: () => handleDeleteTask(task),
+      });
+    }
+
     return (
       <Card
         size="small"
         className="mb-2"
-        style={
-          shouldHighlightOverdue
+        style={{
+          ...(shouldHighlightOverdue
             ? { backgroundColor: 'rgba(255, 0, 0, 0.1)' }
             : shouldHighlightDueSoon
             ? { backgroundColor: 'rgba(255, 255, 0, 0.1)' }
-            : {}
-        }
+            : {}),
+          height: '150px', // Set a fixed height for all cards
+          display: 'flex',
+          flexDirection: 'column',
+        }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -315,67 +358,70 @@ const PlantTaskBoardView = ({
                 {task.title}
               </Typography.Text>
             </div>
-            <Dropdown
-              menu={{ items: dropdownItems }}
-              trigger={['click']}
-            >
+            <Dropdown menu={{ items: dropdownItems }} trigger={['click']}>
               <MoreOutlined style={{ cursor: 'pointer' }} />
             </Dropdown>
           </div>
         }
+        styles={{
+          body: { 
+            flex: 1,
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between',
+            overflow: 'hidden',
+          }
+        }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {formatEnumLabelToRemoveUnderscores(task.taskType)}
-          </Typography.Text>
-          {!task.assignedStaffId && (
-            <Tag color="default" style={{ fontSize: '0.7rem' }} bordered={false}>
-              UNASSIGNED
-            </Tag>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+              {formatEnumLabelToRemoveUnderscores(task.taskType)}
+            </Typography.Text>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <UserOutlined style={{ marginRight: 4, color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }} />
+              <Typography.Text style={{ fontSize: '0.8rem', color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }}>
+                {task.assignedStaffId
+                  ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}`
+                  : ''}
+              </Typography.Text>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
+            <div>
+              <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+                {`Priority: `}
+              </Typography.Text>
+              <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
+              </Tag>
+            </div>
+          </div>
+          {userRole === StaffType.SUPERADMIN && (
+            <div>
+              <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
+                {`Park: ${task.occurrence?.zone?.park?.name}`}
+              </Typography.Text>
+            </div>
           )}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
-          <div>
-            <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-              {`Priority: `}
-            </Typography.Text>
-            <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
-              {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
-            </Tag>
-          </div>
-          
-        </div>
-        {userRole === StaffType.SUPERADMIN && (
-          <div>
-            <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
-              {`Park: ${task.occurrence?.zone?.park?.name}`}
-            </Typography.Text>
-          </div>
-        )}
-
-        {/* <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-          {`Zone: ${task.occurrence?.zone?.name}`}
-        </Typography.Text> */}
-
-        {/* <div>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {task.assignedStaffId ? `Assigned to: ${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : 'Unassigned'}
-          </Typography.Text>
-        </div> */}
+        
         <div className='flex justify-between mt-1'>
           <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>
             Due: {moment(task.dueDate).format('D MMM YY')}
           </Typography.Text>
-          {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
-              OVERDUE
-            </Tag>
-          )}
-          {isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
-              DUE SOON
-            </Tag>
-          )}
+          <div>
+            {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+              <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
+                OVERDUE
+              </Tag>
+            )}
+            {isDueSoon && !isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+              <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
+                DUE SOON
+              </Tag>
+            )}
+          </div>
         </div>
       </Card>
     );
@@ -404,15 +450,89 @@ const PlantTaskBoardView = ({
     }
   }
 
+  const handleLogPromptOk = () => {
+    setShowLogPrompt(false);
+    if (completedTaskOccurrenceId) {
+      navigate(`/occurrences/${completedTaskOccurrenceId}`);
+    }
+  };
+
+  const handleLogPromptCancel = () => {
+    setShowLogPrompt(false);
+    // Proceed with updating the task status
+    if (completedTaskOccurrenceId) {
+      const movedTask = open.find(task => task.occurrence?.id === completedTaskOccurrenceId);
+      if (movedTask) {
+        updatePlantTaskStatus(movedTask.id, PlantTaskStatusEnum.COMPLETED);
+      }
+    }
+  };
+
+  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDateRange(dates);
+  };
+
+  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+    if (!dateRange || !dateRange[0] || !dateRange[1]) {
+      return tasks;
+    }
+    const [startDate, endDate] = dateRange;
+    return tasks.filter(task => {
+      const dueDate = dayjs(task.dueDate);
+      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
+    });
+  };
+
+  const filteredOpen = filterTasksByDateRange(open);
+  const filteredInProgress = filterTasksByDateRange(inProgress);
+  const filteredCompleted = filterTasksByDateRange(completed);
+  const filteredCancelled = filterTasksByDateRange(cancelled);
+
+  // Add this function to handle task deletion
+  const handleDeleteTask = (task: PlantTaskResponse) => {
+    setPlantTaskToBeDeleted(task);
+    setDeleteModalOpen(true);
+  };
+
+  const deletePlantTaskConfirmed = async () => {
+    try {
+      if (!plantTaskToBeDeleted) {
+        throw new Error('Unable to delete Plant Task at this time');
+      }
+      await deletePlantTask(plantTaskToBeDeleted.id);
+      refreshData();
+      setPlantTaskToBeDeleted(null);
+      setDeleteModalOpen(false);
+      message.success(`Deleted Plant Task: ${plantTaskToBeDeleted.title}.`);
+    } catch (error) {
+      console.error(error);
+      setPlantTaskToBeDeleted(null);
+      setDeleteModalOpen(false);
+      message.error('Unable to delete Plant Task at this time. Please try again later.');
+    }
+  };
+
+  const cancelDelete = () => {
+    setPlantTaskToBeDeleted(null);
+    setDeleteModalOpen(false);
+  };
+
   return (
     <>
+      <div style={{ marginBottom: '16px' }}>
+        <RangePicker
+          onChange={handleDateRangeChange}
+          style={{ width: '100%' }}
+          placeholder={['Start Date', 'End Date']}
+        />
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Row gutter={16} className="mb-4">
           {[
-            { value: 'OPEN', title: 'Open', color: COLORS.sky[400] },
-            { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400] },
-            { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400] },
-            { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600] },
+            { value: 'OPEN', title: 'Open', color: COLORS.sky[400], tasks: filteredOpen },
+            { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400], tasks: filteredInProgress },
+            { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400], tasks: filteredCompleted },
+            { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600], tasks: filteredCancelled },
           ].map((status) => (
             <Col span={6} key={status.value}>
               <Card
@@ -433,7 +553,7 @@ const PlantTaskBoardView = ({
                 <Droppable droppableId={status.value}>
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} style={{ minHeight: '100px' }}>
-                      {getList(status.value as PlantTaskStatusEnum).map((task, index) => (
+                      {status.tasks.map((task, index) => (
                         <Draggable
                           key={task.id}
                           draggableId={task.id}
@@ -466,8 +586,21 @@ const PlantTaskBoardView = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal title="Assign Staff" open={isAssignModalVisible} onOk={handleAssignConfirm} onCancel={() => setIsAssignModalVisible(false)}>
-        <Select style={{ width: '100%' }} placeholder="Select a staff member" onChange={(value) => setSelectedStaffId(value)}>
+      <Modal
+        title="Assign Staff"
+        open={isAssignModalVisible}
+        onOk={handleAssignConfirm}
+        onCancel={() => {
+          setIsAssignModalVisible(false);
+          setSelectedStaffId(null); // Reset the selected staff when closing the modal
+        }}
+      >
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Select a staff member"
+          onChange={(value) => setSelectedStaffId(value)}
+          value={selectedStaffId} // Add this to control the select value
+        >
           {staffList.map((staff) => (
             <Select.Option key={staff.id} value={staff.id}>
               {staff.firstName} {staff.lastName} - {staff.role}
@@ -480,6 +613,30 @@ const PlantTaskBoardView = ({
         onCancel={() => setEditModalVisible(false)}
         onSubmit={handleEditSubmit}
         initialValues={editingTask}
+        userRole={userRole as StaffType}
+        onStatusChange={handleStatusChange}
+      />
+      <ViewPlantTaskModal
+        visible={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        task={selectedTask}
+        userRole={userRole as StaffType}
+      />
+      <Modal
+        title="Create Log"
+        open={showLogPrompt}
+        onOk={handleLogPromptOk}
+        onCancel={handleLogPromptCancel}
+        okText="Yes, create log"
+        cancelText="No, just complete the task"
+      >
+        <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
+      </Modal>
+      <ConfirmDeleteModal
+        onConfirm={deletePlantTaskConfirmed}
+        open={deleteModalOpen}
+        onCancel={cancelDelete}
+        description="Are you sure you want to delete this Plant Task?"
       />
     </>
   );

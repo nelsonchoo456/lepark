@@ -83,8 +83,8 @@ const HubPlaceInZone = () => {
   const handleCurrStep = async (step: number) => {
     if (step === 0) {
       try {
-        const values = await form.validateFields(); // Get form data
-        setCurrStep(0);
+        
+        setCurrStep(0); 
       } catch (error) {
         // console.error('Validation failed:', error);
       }
@@ -172,7 +172,14 @@ const HubPlaceInZone = () => {
     },
     {
       key: 'details',
-      children: <CreateDetailsStep handleCurrStep={handleCurrStep} handleSubmit={handleSubmit} form={form} />,
+      children: (
+        <CreateDetailsStep
+          handleCurrStep={handleCurrStep}
+          handleSubmit={handleSubmit}
+          form={form}
+          hubId={hubId || ''}
+        />
+      ),
     },
     {
       key: 'complete',
@@ -222,7 +229,7 @@ const HubPlaceInZone = () => {
             },
             {
               title: 'Details',
-              description: 'Input more details',
+              description: 'Input Hub\'s configuration',
             },
             {
               title: 'Complete',

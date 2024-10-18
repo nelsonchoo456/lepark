@@ -178,6 +178,14 @@ class SensorService {
     return SensorDao.getSensorsByHubId(hubId);
   }
 
+  public async getSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return SensorDao.getSensorsByZoneId(zoneId);
+  }
+
+  public async getPlantSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return SensorDao.getPlantSensorsByZoneId(zoneId);
+  }
+
   public async getSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
     return SensorDao.getAllSensorsByFacilityId(facilityId);
   }
@@ -221,6 +229,7 @@ class SensorService {
 
       const formattedData = dateFormatter(data);
       SensorSchema.partial().parse(formattedData);
+      console.log(formattedData);
 
       if (!formattedData.hubId) {
         throw new Error('Hub ID is required');

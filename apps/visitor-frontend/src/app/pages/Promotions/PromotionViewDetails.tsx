@@ -161,12 +161,7 @@ const PromotionViewDetails = () => {
       </table>
 </div>
  <div className="mt-4 w-full">
-            <Button
-              type="primary"
-              className="w-full h-12 text-lg bg-green-500 hover:bg-green-600 border-green-500 hover:border-green-600"
-            >
-              Buy Tickets Now
-            </Button>
+
           </div>
         </div>
       </div>

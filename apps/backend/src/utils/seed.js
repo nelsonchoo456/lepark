@@ -13,12 +13,22 @@ const {
   eventsData,
   parkAssetsData,
   sensorsData,
+  attractionTicketListingsData,
+  decarbonizationAreasData,
   plantTasksData,
+  sensorReadingsData,
+  newHub,
+  newSensors,
+  seqHistoriesData,
+  faqsData,
+  visitorsData,
   promotionsData,
+  announcementsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
+const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -191,6 +201,22 @@ async function createZone(data) {
   `;
 
   return zone[0];
+}
+
+async function seedFAQs() {
+  console.log('Seeding FAQs...');
+  const faqList = [];
+  for (const faq of faqsData) {
+    try {
+      const createdFAQ = await prisma.fAQ.create({
+        data: faq,
+      });
+      faqList.push(createdFAQ);
+    } catch (error) {
+      console.error(`Error creating FAQ: ${error.message}`);
+    }
+  }
+  console.log(`Total FAQs seeded: ${faqList.length}\n`);
 }
 
 async function seed() {
@@ -370,7 +396,150 @@ async function seed() {
     });
     attractionList.push(createdAttraction);
   }
-  console.log(`Total attractions seeded: ${attractionList.length}\n`);
+  for (const attraction of attractionList) {
+    for (const listing of attractionTicketListingsData) {
+      listing.attractionId = attraction.id;
+      await prisma.attractionTicketListing.create({
+        data: listing,
+      });
+    }
+  }
+  console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
+
+  const plantTasksList = [];
+  for (const plantTask of plantTasksData) {
+    // Filter staff from Park Id 2
+    const parkId2Staff = staffList.filter((staff) => staff.parkId === 2);
+
+    // Filter staff with ARBORIST or BOTANIST roles from Park Id 2
+    const eligibleAssignedStaff = parkId2Staff.filter((staff) => staff.role === 'ARBORIST' || staff.role === 'BOTANIST');
+
+    const eligibleSubmittingStaff = parkId2Staff.filter(
+      (staff) => staff.role === 'ARBORIST' || staff.role === 'BOTANIST' || staff.role === 'SUPERADMIN' || staff.role === 'MANAGER',
+    );
+
+    // Filter occurrences from Park Id 2
+    const parkId2Occurrences = occurrenceList.filter((occurrence) => occurrence.zoneId && occurrence.zoneId === 2);
+
+    // Ensure we have valid staff and occurrence data
+    if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0 && parkId2Occurrences.length > 0) {
+      const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
+      const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+      const randomOccurrenceIndex = Math.floor(Math.random() * parkId2Occurrences.length);
+
+      const createdPlantTask = await prisma.plantTask.create({
+        data: {
+          ...plantTask,
+          createdAt: plantTask.createdAt, // Use the createdAt from the mock data
+          submittingStaff: {
+            connect: { id: parkId2Staff[randomSubmittingStaffIndex].id },
+          },
+          assignedStaff: {
+            connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
+          },
+          occurrence: {
+            connect: { id: parkId2Occurrences[randomOccurrenceIndex].id },
+          },
+        },
+      });
+      plantTasksList.push(createdPlantTask);
+    } else {
+      console.warn('Unable to create plant task: No eligible staff or occurrences available for Park Id 2');
+    }
+  }
+
+  console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
+
+  // Create the new hub
+  const createdNewHub = await prisma.hub.create({
+    data: {
+      ...newHub,
+      facilityId: storeroomId, // or any other appropriate facilityId
+    },
+  });
+  console.log(`New hub created: ${createdNewHub.name}\n`);
+
+  // Create new sensors and associate them with the new hub
+  for (const sensor of newSensors) {
+    const createdSensor = await prisma.sensor.create({
+      data: {
+        ...sensor,
+        hubId: createdNewHub.id,
+        facilityId: storeroomId, // or any other appropriate facilityId
+      },
+    });
+    sensorList.push(createdSensor);
+  }
+  console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
+
+  // Generate and create sensor readings for all sensors
+  for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
+    const readings = generateMockReadings(sensor.sensorType).map((reading) => ({
+      ...reading,
+      sensorId: sensor.id,
+    }));
+
+    await prisma.sensorReading.createMany({
+      data: readings,
+    });
+  }
+  console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
+
+  //console.log('Seeding decarbonization areas...');
+  const decarbonizationAreaList = [];
+  for (const area of decarbonizationAreasData) {
+    try {
+      const id = uuidv4();
+      await prisma.$executeRaw`
+        INSERT INTO "DecarbonizationArea" (id, geom, description, name, "parkId")
+        VALUES (
+          ${id}::uuid,
+          ${area.geom},
+          ${area.description},
+          ${area.name},
+          ${area.parkId}
+        )
+      `;
+
+      // Fetch the inserted data
+      const [insertedArea] = await prisma.$queryRaw`
+        SELECT id, name, description, geom::text as geom, "parkId"
+        FROM "DecarbonizationArea"
+        WHERE id = ${id}::uuid
+      `;
+
+      decarbonizationAreaList.push(insertedArea);
+      //console.log(`Inserted area: ${insertedArea.name}`);
+    } catch (error) {
+      console.error(`Error inserting decarbonization area: ${area.name}`);
+      console.error(error);
+    }
+  }
+  console.log(`Total decarbonization areas seeded: ${decarbonizationAreaList.length}\n`);
+
+  // Now create sequestration histories after all decarbonization areas are created
+  console.log('Seeding 14 sequestration histories per decarb area...');
+
+  //const areaNames = ['PVN', 'East Area', 'West Area', 'PVC', 'PVS'];
+  for (let i = 0; i < decarbonizationAreaList.length; i++) {
+    const area = decarbonizationAreaList[i];
+    //console.log(`Seeding sequestration history for ${areaNames[i]}...`);
+    await createSeqHistories(area.id, seqHistoriesData[i], i);
+  }
+
+  await seedFAQs();
+
+  const visitorList = [];
+  for (const visitor of visitorsData) {
+    const hashedPassword = await bcrypt.hash(visitor.password, 10);
+    visitor.password = hashedPassword;
+
+    const createdVisitor = await prisma.visitor.create({
+      data: visitor,
+    });
+    visitorList.push(createdVisitor);
+  }
+  console.log(`Total visitors seeded: ${visitorList.length}\n`);
 
   const promotionList = [];
   for (const promotion of promotionsData) {
@@ -381,37 +550,115 @@ async function seed() {
   }
   console.log(`Total promotions seeded: ${promotionList.length}\n`);
 
-  const plantTasksList = [];
-  for (const plantTask of plantTasksData) {
-    // Ensure we have valid staff and occurrence data
-    if (staffList.length > 0 && occurrenceList.length > 0) {
-      const randomStaffIndex = Math.floor(Math.random() * staffList.length);
-      const randomOccurrenceIndex = Math.floor(Math.random() * occurrenceList.length);
+  const announcementList = [];
+  for (const announcement of announcementsData) {
+    const createdAnnouncement = await prisma.announcement.create({
+      data: announcement,
+    });
+    announcementList.push(createdAnnouncement);
+  }
+  console.log(`Total announcements seeded: ${announcementList.length}\n`);
+}
 
-      const createdPlantTask = await prisma.plantTask.create({
+async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
+  const seqHistories = [];
+  const startDate = new Date('2023-12-01');
+  const endDate = new Date('2024-10-23');
+  const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
+
+ const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+ const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
+
+  const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
+
+  let currentDate = new Date(startDate);
+  let currentSeqValue = startValues[index];
+
+  while (currentDate <= endDate) {
+    try {
+      const createdSeqHistory = await prisma.sequestrationHistory.create({
         data: {
-          ...plantTask,
-          submittingStaff: {
-            connect: { id: staffList[randomStaffIndex].id },
-          },
-          occurrence: {
-            connect: { id: occurrenceList[randomOccurrenceIndex].id },
-          },
-        },
+          date: new Date(currentDate),
+          seqValue: parseFloat(currentSeqValue.toFixed(3)),
+          decarbonizationAreaId: decarbAreaId
+        }
       });
-      plantTasksList.push(createdPlantTask);
-    } else {
-      console.warn('Unable to create plant task: No staff or occurrences available');
+      seqHistories.push(createdSeqHistory);
+      currentSeqValue += dailyIncrease;
+    } catch (error) {
+      console.error(`Error inserting sequestration history for date: ${currentDate.toISOString()}`);
+      console.error(error);
     }
+
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
+  console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
 }
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {
   const shuffled = array.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
+};
+
+// Generate mock sensor readings
+const generateMockReadings = (sensorType) => {
+  const readings = [];
+  const now = new Date();
+  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+
+  // Generate readings every 15 minutes from now till 8 hours ago
+  for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
+    readings.push(createReading(sensorType, time));
+  }
+
+  return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
+};
+
+const createReading = (sensorType, date) => {
+  const hour = date.getHours();
+  let value;
+
+  switch (sensorType) {
+    case 'SOIL_MOISTURE':
+      // Simulate watering at 6 AM and 6 PM
+      if (hour === 6 || hour === 18) {
+        value = 70 + Math.random() * 10; // 70-80%
+      } else if (hour >= 12 && hour <= 16) {
+        // Greater decrease from 12 PM to 4 PM
+        const hoursFrom12 = hour - 12;
+        value = 65 - hoursFrom12 * 4 + Math.random() * 5; // Steeper decline
+      } else {
+        // Gradual decrease in moisture for other hours
+        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5;
+      }
+      break;
+    case 'TEMPERATURE':
+      // Simulate daily temperature cycle
+      value = 22 + Math.sin(((hour - 6) * Math.PI) / 12) * 5 + Math.random() * 2;
+      break;
+    case 'HUMIDITY':
+      // Inverse relationship with temperature
+      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5;
+      break;
+    case 'LIGHT':
+      if (hour >= 6 && hour < 18) {
+        // Daylight hours
+        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50;
+      } else {
+        // Night time
+        value = Math.random() * 5; // Very low light at night
+      }
+      break;
+    default:
+      value = Math.random() * 100;
+  }
+
+  return {
+    date,
+    value: parseFloat(value.toFixed(2)),
+  };
 };
 
 seed()

@@ -87,6 +87,33 @@ router.get('/getHubByRadioGroup/:radioGroup', async (req, res) => {
   }
 });
 
+router.get('/getHubByZoneId/:zoneId', async (req, res) => {
+  try {
+    const hub = await HubService.getHubByZoneId(parseInt(req.params.zoneId));
+    res.status(200).json(hub);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getHubDataTransmissionRate/:identifierNumber', async (req, res) => {
+  try {
+    const dataTransmissionRate = await HubService.getHubDataTransmissionRate(req.params.identifierNumber);
+    res.status(200).json(dataTransmissionRate);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getAllSensorsByHubId/:hubId', async (req, res) => {
+  try {
+    const sensors = await HubService.getAllSensorsByHubId(req.params.hubId);
+    res.status(200).json(sensors);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/updateHubDetails/:id', async (req, res) => {
   try {
     const hub = await HubService.updateHubDetails(req.params.id, req.body);

@@ -82,6 +82,14 @@ const SensorAddToHub = () => {
     }
   };
 
+  useEffect(() => {
+    if (sensor) {
+      form.setFieldsValue({
+        remarks: sensor.remarks
+      });
+    }
+  }, [sensor, form]);
+
   const handleSubmit = async () => {
     if (!sensor) return;
     try {
@@ -98,6 +106,8 @@ const SensorAddToHub = () => {
         long: lng,
         hubId: selectedHub.id,
       };
+
+      console.log("Failure here")
       const response = await addSensorToHub(sensor.id, finalData);
 
       if (response.status === 200) {
@@ -105,6 +115,7 @@ const SensorAddToHub = () => {
         setCurrStep(2)
       }
     } catch (error) {
+      console.log(error)
       if (
         error === 'Sensor not found' ||
         error === 'Hub ID is required' ||
@@ -159,7 +170,7 @@ const SensorAddToHub = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         {!createdData ? (
-          <Form className="w-full" form={form} layout="vertical">
+          <Form className="w-full" form={form} layout="vertical" initialValues={{ remarks: sensor?.remarks }}>
             <Steps
               direction="vertical"
               size="small"

@@ -166,7 +166,7 @@ const ViewEditSpecies = () => {
         soilType: values.soilType,
         fertiliserType: values.fertiliserType,
         images: currentImages,
-        waterRequirement: values.waterRequirement,
+        soilMoisture: values.soilMoisture,
         fertiliserRequirement: values.fertiliserRequirement,
         idealHumidity: values.idealHumidity,
         minTemp: values.minTemp,
@@ -424,7 +424,7 @@ const ViewEditSpecies = () => {
               />
             </Form.Item>
 
-            <Form.Item name="waterRequirement" label="Water Requirement" rules={[{ required: true }]}>
+            <Form.Item name="soilMoisture" label="Soil Moisture (%)" rules={[{ required: true }]}>
               <InputNumber min={1} max={100} />
             </Form.Item>
 

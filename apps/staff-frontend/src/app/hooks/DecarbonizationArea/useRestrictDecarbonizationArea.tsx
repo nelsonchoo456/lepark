@@ -27,8 +27,7 @@ export const useRestrictDecarbonizationArea = (areaId?: string) => {
           console.log('Fetched Area:', fetchedArea);
 
           // Check if user has permission to view this decarbonization area
-          if (user?.role === StaffType.SUPERADMIN) {
-            //} || user?.parkId === fetchedArea.parkId) {
+          if (user?.role === StaffType.SUPERADMIN || user?.parkId === fetchedArea.parkId) {
             setDecarbonizationArea(fetchedArea);
           } else {
             throw new Error('Access denied');

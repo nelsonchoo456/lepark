@@ -86,14 +86,6 @@ const DecarbonizationAreaDetails = () => {
             <div className="w-full flex justify-between items-center">
               <Space>
                 <LogoText className="text-2xl py-2 m-0 ml-4">{decarbonizationArea.name}</LogoText>
-                <Typography.Paragraph
-                  ellipsis={{
-                    rows: 1,
-                  }}
-                  className="ml-4"
-                >
-                  {decarbonizationArea.description}
-                </Typography.Paragraph>
               </Space>
               <Space>
                 {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
@@ -104,17 +96,15 @@ const DecarbonizationAreaDetails = () => {
                   />
                 )}
                 <Button type="primary" loading={generating} onClick={handleGenerateSequestrationHistory}>
-                  Generate Sequestration Report
+                  Recalculate Current Sequestration
                 </Button>
               </Space>
             </div>
-            <Typography.Paragraph
-              ellipsis={{
-                rows: 3,
-              }}
-            >
-              {decarbonizationArea.description}
-            </Typography.Paragraph>
+            <div className="w-full flex justify-between items-left ml-4 mt-4">
+              <div className="max-w-4xl text-sm mr-auto">
+                <p>{decarbonizationArea.description}</p>
+              </div>
+            </div>
           </div>
         </div>
 

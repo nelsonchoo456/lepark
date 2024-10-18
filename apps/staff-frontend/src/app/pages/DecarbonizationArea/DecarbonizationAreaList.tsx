@@ -1,4 +1,4 @@
-import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { ContentWrapperDark, StaffAuthWrapper, useAuth } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Table, TableProps, Tag, Flex, Tooltip, Typography, message } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -79,7 +79,7 @@ const DecarbonizationAreaList: React.FC = () => {
           <Tooltip title="View Area">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(id)} />
           </Tooltip>
-          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
             <>
               <Tooltip title="Edit Area">
                 <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/decarbonization-area/${id}/edit`)} />

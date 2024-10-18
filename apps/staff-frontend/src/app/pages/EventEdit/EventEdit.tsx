@@ -436,6 +436,10 @@ const EventEdit = () => {
                   <InputNumber min={1} max={maxCapacity || undefined} placeholder="Capacity" />
                 </Form.Item>
 
+                <Form.Item name="ticketingPolicy" label="Ticketing Policy" rules={[{ required: true }]}>
+                  <TextArea placeholder="Describe the Ticketing Policy" autoSize={{ minRows: 3, maxRows: 5 }} />
+                </Form.Item>
+
                 <Form.Item label="Images">
                   <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
                 </Form.Item>

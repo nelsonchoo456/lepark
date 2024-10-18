@@ -1,7 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
-import { PlantTaskData, PlantTaskResponse, PlantTaskUpdateData } from '../types/planttask';
+import { AverageCompletionTimeData, CompletionRateData, OverdueRateData, ParkStaffAverageCompletionTimeForPastMonthsData, ParkStaffCompletionRatesForPastMonthsData, ParkStaffOverdueRatesForPastMonthsData, ParkStaffTasksCompletedForPastMonthsData, ParkTaskCompletedData, PlantTaskData, PlantTaskResponse, PlantTaskUpdateData, StaffPerformanceRankingData, TaskLoadPercentageData } from '../types/planttask';
 import client from './client';
 import { PlantTaskStatusEnum } from '@prisma/client';
+import { StaffResponse } from '../types/staff';
 
 const URL = '/planttasks';
 
@@ -234,6 +235,136 @@ export async function unacceptPlantTask(id: string): Promise<AxiosResponse<Plant
 export async function getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse[]>> {
   try {
     const response: AxiosResponse<PlantTaskResponse[]> = await client.get(`${URL}/getPlantTasksByStatus/${status}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkPlantTaskCompletionRates(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<CompletionRateData[]>> {
+  try {
+    const response: AxiosResponse<CompletionRateData[]> = await client.get(`${URL}/getParkPlantTaskCompletionRates`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkPlantTaskOverdueRates(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<OverdueRateData[]>> {
+  try {
+    const response: AxiosResponse<OverdueRateData[]> = await client.get(`${URL}/getParkPlantTaskOverdueRates`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkAverageTaskCompletionTime(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<AverageCompletionTimeData[]>> {
+  try {
+    const response: AxiosResponse<AverageCompletionTimeData[]> = await client.get(`${URL}/getParkAverageTaskCompletionTime`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkTaskLoadPercentage(parkId: number | null): Promise<AxiosResponse<TaskLoadPercentageData[]>> {
+  try {
+    const response: AxiosResponse<TaskLoadPercentageData[]> = await client.get(`${URL}/getParkTaskLoadPercentage`, { params: { parkId } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getStaffPerformanceRanking(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<StaffPerformanceRankingData>> {
+  try {
+    const response: AxiosResponse<StaffPerformanceRankingData> = await client.get(`${URL}/getStaffPerformanceRanking`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkTaskCompleted(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<ParkTaskCompletedData[]>> {
+  try {
+    const response: AxiosResponse<ParkTaskCompletedData[]> = await client.get(`${URL}/getParkTaskCompleted`, { params: { parkId, startDate, endDate } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkStaffAverageCompletionTimeForPastMonths(parkId: number | null, months: number): Promise<AxiosResponse<ParkStaffAverageCompletionTimeForPastMonthsData[]>> {
+  try {
+    const response: AxiosResponse<ParkStaffAverageCompletionTimeForPastMonthsData[]> = await client.get(`${URL}/getParkStaffAverageCompletionTimeForPastMonths`, { params: { parkId, months } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkStaffCompletionRatesForPastMonths(parkId: number | null, months: number): Promise<AxiosResponse<ParkStaffCompletionRatesForPastMonthsData[]>> {
+  try {
+    const response: AxiosResponse<ParkStaffCompletionRatesForPastMonthsData[]> = await client.get(`${URL}/getParkStaffCompletionRatesForPastMonths`, { params: { parkId, months } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkStaffOverdueRatesForPastMonths(parkId: number | null, months: number): Promise<AxiosResponse<ParkStaffOverdueRatesForPastMonthsData[]>> {
+  try {
+    const response: AxiosResponse<ParkStaffOverdueRatesForPastMonthsData[]> = await client.get(`${URL}/getParkStaffOverdueRatesForPastMonths`, { params: { parkId, months } });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkStaffTasksCompletedForPastMonths(parkId: number | null, months: number): Promise<AxiosResponse<ParkStaffTasksCompletedForPastMonthsData[]>> {
+  try {
+    const response: AxiosResponse<ParkStaffTasksCompletedForPastMonthsData[]> = await client.get(`${URL}/getParkStaffTasksCompletedForPastMonths`, { params: { parkId, months } });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

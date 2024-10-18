@@ -1,4 +1,4 @@
-import { PrismaClient, Hub, Prisma, Facility, Sensor, HubStatusEnum } from '@prisma/client';
+import { PrismaClient, Hub, Prisma, Facility, Sensor, HubStatusEnum, SensorStatusEnum } from '@prisma/client';
 import ParkDao from './ParkDao';
 import FacilityDao from './FacilityDao';
 import ZoneDao from './ZoneDao';
@@ -162,6 +162,10 @@ class HubDao {
     });
   }
 
+  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
+    return prisma.hub.findFirst({ where: { zoneId } });
+  }
+
   public async updateHubDetails(id: string, data: Prisma.HubUpdateInput): Promise<Hub> {
     return prisma.hub.update({ where: { id }, data });
   }
@@ -171,7 +175,17 @@ class HubDao {
   }
 
   public async getAllSensorsByHubId(hubId: string): Promise<Sensor[]> {
-    return prisma.sensor.findMany({ where: { hubId } });
+    if (!hubId) {
+      return [];
+    }
+    const sensors = await prisma.sensor.findMany({
+      where: { hubId: { equals: hubId } },
+    });
+    return sensors;
+  }
+
+  public async getAllActiveSensorsByHubId(hubId: string): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hubId, sensorStatus: SensorStatusEnum.ACTIVE } });
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
@@ -182,12 +196,6 @@ class HubDao {
       },
     });
     return !!hub;
-  }
-
-  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
-    return prisma.hub.findFirst({
-      where: { zoneId: zoneId },
-    });
   }
 
   public async doesHubHaveSensors(hubId: string): Promise<boolean> {

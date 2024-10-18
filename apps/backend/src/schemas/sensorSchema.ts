@@ -18,7 +18,7 @@ export const SensorSchema = z.object({
   images: z.array(z.string()).optional(),
   lat: z.number().min(-90).max(90).optional(),
   long: z.number().min(-180).max(180).optional(),
-  remarks: z.string().optional(),
+  remarks: z.string().optional().nullable(),
   hubId: z.string().uuid().optional(),
   facilityId: z.string().uuid().optional(),
 });

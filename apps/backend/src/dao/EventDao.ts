@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Event, EventStatusEnum } from '@prisma/client';
+import { PrismaClient, Prisma, Event, EventStatusEnum, EventTicketListing } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -57,6 +57,30 @@ class EventDao {
 
   async getEventByTitleAndFacilityId(title: string, facilityId: string): Promise<Event | null> {
     return prisma.event.findFirst({ where: { title, facilityId } });
+  }
+
+  async createEventTicketListing(data: Prisma.EventTicketListingCreateInput): Promise<EventTicketListing> {
+    return prisma.eventTicketListing.create({ data });
+  }
+  
+  async getAllEventTicketListings(): Promise<EventTicketListing[]> {
+    return prisma.eventTicketListing.findMany();
+  }
+  
+  async getEventTicketListingsByEventId(eventId: string): Promise<EventTicketListing[]> {
+    return prisma.eventTicketListing.findMany({ where: { eventId } });
+  }
+  
+  async getEventTicketListingById(id: string): Promise<EventTicketListing | null> {
+    return prisma.eventTicketListing.findUnique({ where: { id } });
+  }
+  
+  async updateEventTicketListingDetails(id: string, data: Prisma.EventTicketListingUpdateInput): Promise<EventTicketListing> {
+    return prisma.eventTicketListing.update({ where: { id }, data });
+  }
+  
+  async deleteEventTicketListing(id: string): Promise<void> {
+    await prisma.eventTicketListing.delete({ where: { id } });
   }
 }
 

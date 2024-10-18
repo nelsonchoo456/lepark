@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, List, Typography, Button, Empty, Space, Col, Row } from 'antd';
-import { EventResponse, EventStatusEnum, getEventsByParkId } from '@lepark/data-access';
+import { EventResponse, EventStatusEnum, getEventsByParkId, StaffResponse, StaffType } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import EventStatusTag from '../../EventDetails/components/EventStatusTag';
 import { FiExternalLink } from 'react-icons/fi';
 import dayjs from 'dayjs';
 import { useFetchPublicFacilitiesForEventsByPark } from '../../../hooks/Facilities/useFetchPublicFacilitiesForEventsByPark';
+import { useAuth } from '@lepark/common-ui';
 
 const { Text, Title } = Typography;
 
@@ -15,6 +16,7 @@ interface EventsTabProps {
 
 const EventsTab: React.FC<EventsTabProps> = ({ parkId }) => {
   const [events, setEvents] = useState<EventResponse[]>([]);
+  const { user } = useAuth<StaffResponse>();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { facilities } = useFetchPublicFacilitiesForEventsByPark(parkId);
@@ -53,11 +55,13 @@ const EventsTab: React.FC<EventsTabProps> = ({ parkId }) => {
 
   return (
     <>
-      <div className="mb-4 flex justify-end">
-        <Button type="link" icon={<FiExternalLink />} onClick={handleViewAllEvents}>
+      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && (
+        <div className="mb-4 flex justify-end">
+          <Button type="link" icon={<FiExternalLink />} onClick={handleViewAllEvents}>
           View All Events
-        </Button>
-      </div>
+          </Button>
+        </div>
+      )}
       <Row gutter={[16, 16]}>
         {events.map((event) => (
           <Col xs={24} sm={12} md={8} key={event.id}>
