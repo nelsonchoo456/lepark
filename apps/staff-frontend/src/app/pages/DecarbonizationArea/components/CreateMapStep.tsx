@@ -187,7 +187,7 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
           type: 'success',
           content: 'Decarbonization Area created successfully.',
         });
-        navigate(`/decarbonization-area/${response.data.id}`);
+        //navigate(`/decarbonization-area/${response.data.id}`);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -316,14 +316,6 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
               />
             ))}
         </MapContainer>
-      </div>
-      <div className="flex justify-center gap-2">
-        <Button type="default" onClick={() => handleCurrStep(0)}>
-          Previous
-        </Button>
-        <Button type="primary" onClick={handleSubmit}>
-          Submit
-        </Button>
       </div>
     </>
   );
