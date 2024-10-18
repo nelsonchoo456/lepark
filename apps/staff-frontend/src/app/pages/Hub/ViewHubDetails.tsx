@@ -144,7 +144,7 @@ const ViewHubDetails = () => {
                 </Tag>
                 {canActivateEdit && (
                   <Button type="primary" onClick={() => showDeactivateModal()} className="-mt-1" danger>
-                    Deactivate
+                    Delink
                   </Button>
                 )}
               </div>

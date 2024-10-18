@@ -412,7 +412,11 @@ const IotMap = () => {
               {selectedHub.occurrences?.map((o) => (
                 <div className="px-2 py-2 border-b-[1px] border-black/10 cursor-pointer flex hover:bg-green-400/10">
                   <div className="w-[40px] h-[40px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
-                    <img src={o.images[0]} alt={o.title} className="w-full h-full object-cover" />
+                    {o.images && o.images.length > 0 
+                    
+                     ? <img src={o.images[0]} alt={o.title} className="w-full h-full object-cover" />
+                      : <></>
+                    }
                   </div>
                   <div>
                     <span className="font-semibold text-wrap">{o.title}</span>
