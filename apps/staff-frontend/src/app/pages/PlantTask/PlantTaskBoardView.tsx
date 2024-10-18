@@ -527,14 +527,15 @@ const PlantTaskBoardView = ({
         />
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Row gutter={16} className="mb-4">
+        <Row gutter={[16, 16]} className="mb-4">
           {[
             { value: 'OPEN', title: 'Open', color: COLORS.sky[400], tasks: filteredOpen },
             { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400], tasks: filteredInProgress },
             { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400], tasks: filteredCompleted },
             { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600], tasks: filteredCancelled },
           ].map((status) => (
-            <Col span={6} key={status.value}>
+            // <Col span={6} key={status.value}>
+            <Col xs={24} md={24} lg={6} key={status.value}>
               <Card
                 title={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (status.value === "COMPLETED" || status.value === "CANCELLED") ?
                   <div className="flex justify-between">
