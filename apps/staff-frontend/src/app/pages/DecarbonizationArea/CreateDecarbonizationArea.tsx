@@ -188,7 +188,7 @@ const CreateDecarbonizationArea = () => {
               title="Created new Decarbonization Area"
               subTitle={createdData && <>Decarbonization Area title: {createdData.name}</>}
               extra={[
-                <Button key="back" onClick={() => navigate('/Decarbonization Area')}>
+                <Button key="back" onClick={() => navigate('/decarbonization-area')}>
                   Back to Decarbonization Area Management
                 </Button>,
                 <Tooltip title="View Decarbonization Area Details">
