@@ -58,7 +58,7 @@ const VisitorViewFacilityDetails = () => {
             renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
             className="md:mt-0 md:p-0"
           />
-          <div className="p-4">
+          <div className="mt-4">
             <Typography.Paragraph
               ellipsis={{
                 rows: 3,
