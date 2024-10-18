@@ -73,9 +73,13 @@ const ParkPromotionCreate = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const { dateRange, discountValueFixed, discountValuePercentage, terms, ...rest } = values;
+      const { dateRange, discountValueFixed, discountValuePercentage, terms, promoCode, ...rest } = values;
+      
+      // process dates
       const validFrom = dateRange[0].toISOString();
       const validUntil = dateRange[1].toISOString();
+
+      // process discount
       let discountValue;
       if (discountType === 'PERCENTAGE') {
         discountValue = discountValuePercentage;
@@ -83,15 +87,20 @@ const ParkPromotionCreate = () => {
         discountValue = discountValueFixed;
       }
 
+      // process terms
       let inputTerms = [];
       if (terms) {
         inputTerms = terms.filter((t: any) => t !== null && t !== undefined && typeof t === 'string' && t.trim().length > 0);
       }
 
+      // process promoCode
+      const trimmedPromoCode = promoCode.trim();
+
       const finalData = {
         ...rest,
         status: 'ENABLED',
         terms: inputTerms,
+        promoCode: trimmedPromoCode,
         discountValue,
         validFrom,
         validUntil,
@@ -107,10 +116,18 @@ const ParkPromotionCreate = () => {
         setCreatedData(response.data);
       }
     } catch (error) {
-      if ((error as { errorFields?: any }).errorFields) {
-        console.log('Validation failed:', (error as { errorFields?: any }).errorFields);
+      console.log(error)
+      if (error instanceof Error) {
+        if (error.message === "Please enter a unique Promo Code"
+          || error.message === 'Park not found.'
+          || error.message === "Park ID required."
+        ) {
+          messageApi.open({
+            type: 'error',
+            content: error.message,
+          });
+        }
       } else {
-        console.log(error);
         messageApi.open({
           type: 'error',
           content: 'Unable to create Promotion. Please try again later.',
@@ -135,6 +152,7 @@ const ParkPromotionCreate = () => {
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      {contextHolder}
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
@@ -163,7 +181,7 @@ const ParkPromotionCreate = () => {
             <Form.Item name="name" label="Title" rules={[{ required: true, message: 'Please enter Title' }]}>
               <Input placeholder="Enter Title" />
             </Form.Item>
-            <Form.Item name="promoCode" label="Promo Code" rules={[{ required: true, message: 'Please enter Promo Code' }]}>
+            <Form.Item name="promoCode" label="Promo Code" rules={[{ required: true, message: 'Please enter Promo Code' }, { max: 20, message: 'Promo Code must not exceed 20 characters' },]}>
               <Input placeholder="Enter a unique Promo Code" />
             </Form.Item>
             <Form.Item name="description" label="Description">
