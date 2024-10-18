@@ -33,6 +33,9 @@ import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
 import DecarbViewAllMap from './pages/Decarb/DecarbViewAllMap';
 import FAQList from './pages/FAQ/FAQList';
 import FAQView from './pages/FAQ/FAQView';
+import FeedbackCreate from './pages/Feedback/FeedbackCreate';
+import FeedbackList from './pages/Feedback/FeedbackList';
+import FeedbackView from './pages/Feedback/FeedbackView';
 
 export function App() {
   return (
@@ -121,6 +124,11 @@ export function App() {
                 <Route path="/faq">
                   <Route index element={<FAQList/>}/>
                   <Route path=":faqId" element={<FAQView/>}/>
+                </Route>
+                <Route path="/feedback">
+                  <Route index element={<FeedbackList/>}/>
+                  <Route path="create" element={<FeedbackCreate/>}/>
+                  <Route path=":feedbackId" element={<FeedbackView/>}/>
                 </Route>
               </Route>
             </Routes>

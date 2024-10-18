@@ -31,12 +31,15 @@ import {
   viewVisitorDetails,
   VisitorResponse,
   VisitorUpdateData,
+  getAllFeedbacks,
+  FeedbackResponse,
 } from '@lepark/data-access';
 import { PiSmiley } from 'react-icons/pi';
 import SpeciesCard from './components/SpeciesCard';
 import { FaSadTear } from 'react-icons/fa';
 import { AiOutlineFrown, AiOutlineSmile } from 'react-icons/ai';
 import { MdArrowForward } from 'react-icons/md';
+import FeedbackCard from './components/FeedbackCard';
 
 const initialVisitor = {
   id: '',
@@ -60,7 +63,7 @@ const ProfilePage = () => {
   const location = useLocation();
   const [resendEmailStatus, setResendEmailStatus] = useState(false);
   const [changeEmailStatus, setChangeEmailStatus] = useState(false);
-
+  const [feedbacks, setFeedbacks] = useState<FeedbackResponse[]>([]);
   const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
 
   useEffect(() => {
@@ -133,6 +136,25 @@ const ProfilePage = () => {
     const { firstName, lastName, email, contactNumber } = editedVisitor;
     return firstName && lastName && email && contactNumber;
   };
+
+   useEffect(() => {
+    const fetchFeedbacks = async () => {
+      if (!user) {
+        console.warn('User is not logged in!');
+        return;
+      }
+      try {
+        const response = await getAllFeedbacks(user.id);
+        setFeedbacks(response.data);
+      } catch (error) {
+        console.error('Error fetching feedbacks:', error);
+      }
+    };
+
+    if (user) {
+      fetchFeedbacks();
+    }
+  }, [user]);
 
   const onFinish = async (values: any) => {
     try {
@@ -466,6 +488,47 @@ const ProfilePage = () => {
               <p>No favorite species found.</p>
             )}
           </div>
+        </div>
+      </ContentWrapper>
+        <ContentWrapper>
+        <div className="flex items-center">
+          <LogoText className="text-xl">My Feedback</LogoText>
+          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+            <Button
+              icon={<MdArrowForward className="text-2xl" />}
+              shape="circle"
+              type="primary"
+              size="large"
+              className="md:bg-transparent md:text-green-500 md:shadow-none"
+              onClick={() => navigate('/feedback')}
+            />
+          </div>
+        </div>
+        <div className="w-full h-64 overflow-y-auto py-2 scrollbar-hide">
+          {feedbacks.length > 0 ? (
+            feedbacks
+              .sort((a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime())
+              .map((feedback) => (
+                <FeedbackCard
+                  key={feedback.id}
+                  date={new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '/')}
+                  title={feedback.title}
+                  category={feedback.feedbackCategory}
+                  parkId={feedback.parkId}
+                  status={feedback.feedbackStatus}
+                  onClick={() => {/* Handle click, e.g., navigate to feedback detail */}}
+                />
+              ))
+          ) : (
+            <div className="opacity-40 flex flex-col justify-center items-center text-center w-full h-full">
+              <FrownOutlined className="text-4xl" />
+              <br />
+              No Feedbacks yet.
+              <br />
+              Share your thoughts about a park!
+            </div>
+          )}
         </div>
       </ContentWrapper>
     </div>
