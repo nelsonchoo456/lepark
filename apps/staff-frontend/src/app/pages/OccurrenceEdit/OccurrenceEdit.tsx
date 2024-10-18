@@ -225,8 +225,8 @@ const OccurrenceEdit = () => {
           {/* <Form.Item name="species" label="Species" rules={[{ required: true }]}>
         <TreeSelect placeholder="Select a Species" treeData={speciesOptions}/>
       </Form.Item> */}
-          <Form.Item name="title" label="Title" rules={[{ required: true }]}>
-            <Input placeholder="Give this Plant Occurrence a title!" />
+          <Form.Item name="title" label="Name" rules={[{ required: true }]}>
+            <Input placeholder="Give this Plant Occurrence a name!" />
           </Form.Item>
           <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }, validateDates(form)]}>
             <DatePicker className="w-full" maxDate={dayjs()}/>

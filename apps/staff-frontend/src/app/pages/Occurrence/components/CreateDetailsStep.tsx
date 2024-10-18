@@ -134,10 +134,10 @@ const CreateDetailsStep = ({
       <Divider orientation="left">About the Occurrence</Divider>
       <Form.Item
         name="title"
-        label="Title"
+        label="Name"
         rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }]}
       >
-        <Input placeholder="Give this Plant Occurrence a title!" />
+        <Input placeholder="Give this Plant Occurrence a name!" />
       </Form.Item>
       <Form.Item name="description" label="Description">
         <TextArea placeholder="(Optional) Share details about this Plant Occurrence!" autoSize={{ minRows: 3, maxRows: 5 }} />

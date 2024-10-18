@@ -13,6 +13,7 @@ import { Input } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { SCREEN_LG } from '../../../config/breakpoints';
 import { set } from 'zod';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface OccurrenceTableProps {
   decarbonizationAreaId: string;
@@ -44,7 +45,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
 
   const columns: TableProps<OccurrenceResponse>['columns'] = [
     {
-      title: 'Label',
+      title: 'Occurrence Name',
       dataIndex: 'title',
       key: 'title',
       render: (text) => text,
@@ -79,29 +80,33 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ decarbonizationAreaId
           case 'HEALTHY':
             return (
               <Tag color="green" bordered={false}>
-                HEALTHY
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'MONITOR_AFTER_TREATMENT':
             return (
               <Tag color="yellow" bordered={false}>
-                MONITOR AFTER TREATMENT
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'NEEDS_ATTENTION':
             return (
               <Tag color="orange" bordered={false}>
-                NEEDS ATTENTION
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'URGENT_ACTION_REQUIRED':
             return (
               <Tag color="red" bordered={false}>
-                URGENT ACTION REQUIRED
+                {formatEnumLabelToRemoveUnderscores(text)}
               </Tag>
             );
           case 'REMOVED':
-            return <Tag bordered={false}>REMOVED</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(text)}
+              </Tag>
+            );
         }
       },
       filters: [

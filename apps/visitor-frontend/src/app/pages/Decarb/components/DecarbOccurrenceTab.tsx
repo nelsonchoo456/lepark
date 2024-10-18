@@ -79,7 +79,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ excludeOccurrenceId, 
 
   const columns: TableProps<OccurrenceResponse & { speciesName: string }>['columns'] = [
     {
-      title: 'Label',
+      title: 'Occurrence Name',
       dataIndex: 'title',
       key: 'title',
       render: (text) => text,
