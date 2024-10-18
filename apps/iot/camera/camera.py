@@ -36,6 +36,7 @@ from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 import matplotlib.pyplot as plt
+import pytz
 
 # Load environment variables from .env file
 load_dotenv()
@@ -268,7 +269,8 @@ def run_detection(model: str, max_results: int, score_threshold: float) -> None:
         try:
             with sqlite3.connect("processor.db") as mydb:
                 mycursor = mydb.cursor()
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                singapore_tz = pytz.timezone('Asia/Singapore')
+                current_time = datetime.now(singapore_tz).strftime("%Y-%m-%d %H:%M:%S")
                 query = "INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)"
                 mycursor.execute(query, (current_time, CAMERA_IDENTIFIER_NO, person_count, 0))
                 mydb.commit()
@@ -296,7 +298,8 @@ def run_detection(model: str, max_results: int, score_threshold: float) -> None:
          # Save every detection frame
         if detection_frame is not None:
             try:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                singapore_tz = pytz.timezone('Asia/Singapore')
+                timestamp = datetime.now(singapore_tz).strftime("%Y%m%d_%H%M%S_%f")
                 filename = f'detection_{timestamp}.png'
                 filepath = os.path.join(output_dir, filename)
                 

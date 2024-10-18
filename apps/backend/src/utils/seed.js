@@ -473,17 +473,17 @@ async function seed() {
   console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
 
   // Generate and create sensor readings for all sensors
-  for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
-    const readings = generateMockReadings(sensor.sensorType).map((reading) => ({
-      ...reading,
-      sensorId: sensor.id,
-    }));
+  // for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
+  //   const readings = generateMockReadings(sensor.sensorType).map((reading) => ({
+  //     ...reading,
+  //     sensorId: sensor.id,
+  //   }));
 
-    await prisma.sensorReading.createMany({
-      data: readings,
-    });
-  }
-  console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
+  //   await prisma.sensorReading.createMany({
+  //     data: readings,
+  //   });
+  // }
+  // console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
 
   //console.log('Seeding decarbonization areas...');
   const decarbonizationAreaList = [];
@@ -602,19 +602,19 @@ const getRandomItems = (array, count) => {
   return shuffled.slice(0, count);
 };
 
-// Generate mock sensor readings
-const generateMockReadings = (sensorType) => {
-  const readings = [];
-  const now = new Date();
-  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+// // Generate mock sensor readings
+// const generateMockReadings = (sensorType) => {
+//   const readings = [];
+//   const now = new Date();
+//   const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
 
-  // Generate readings every 15 minutes from now till 8 hours ago
-  for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
-    readings.push(createReading(sensorType, time));
-  }
+//   // Generate readings every 15 minutes from now till 8 hours ago
+//   for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
+//     readings.push(createReading(sensorType, time));
+//   }
 
-  return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
-};
+//   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
+// };
 
 const createReading = (sensorType, date) => {
   const hour = date.getHours();
