@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Sensor } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { ZoneCreateData, ZoneUpdateData } from '../schemas/zoneSchema';
@@ -6,6 +6,8 @@ import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
 import aws from 'aws-sdk';
 import HubDao from '../dao/HubDao';
+import SensorDao from '../dao/SensorDao';
+import SensorService from '../services/SensorService';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

@@ -197,4 +197,14 @@ router.get('/getCameraStreamBySensorId/:sensorId', async (req, res) => {
   }
 });
 
+router.get('/getCameraStreamsByZoneId/:zoneId', async (req, res) => {
+  try {
+    const zoneId = parseInt(req.params.zoneId);
+    const cameraStreams = await SensorService.getCameraStreamsByZoneId(zoneId);
+    res.status(200).json(cameraStreams);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

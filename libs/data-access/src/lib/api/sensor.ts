@@ -169,10 +169,7 @@ export async function updateSensorStatus(id: string, newStatus: string): Promise
   }
 }
 
-export async function addSensorToHub(
-  id: string,
-  data: Partial<SensorResponse>,
-): Promise<AxiosResponse<SensorResponse>> {
+export async function addSensorToHub(id: string, data: Partial<SensorResponse>): Promise<AxiosResponse<SensorResponse>> {
   try {
     const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/addSensorToHub/${id}`, data);
     return response;
@@ -185,9 +182,7 @@ export async function addSensorToHub(
   }
 }
 
-export async function removeSensorFromHub(
-  id: string,
-): Promise<AxiosResponse<SensorResponse>> {
+export async function removeSensorFromHub(id: string): Promise<AxiosResponse<SensorResponse>> {
   try {
     const response: AxiosResponse<SensorResponse> = await client.put(`${URL}/removeSensorFromHub/${id}`);
     return response;
@@ -243,9 +238,30 @@ export async function checkSensorDuplicateSerialNumber(serialNumber: string, sen
   }
 }
 
-export async function getCameraStreamBySensorId(sensorId: string): Promise<AxiosResponse<{sensor: SensorResponse, cameraStreamURL: string}>> {
+export async function getCameraStreamBySensorId(
+  sensorId: string,
+): Promise<AxiosResponse<{ sensor: SensorResponse; cameraStreamURL: string }>> {
   try {
-    const response: AxiosResponse<{sensor: SensorResponse, cameraStreamURL: string}> = await client.get(`${URL}/getCameraStreamBySensorId/${sensorId}`);
+    const response: AxiosResponse<{ sensor: SensorResponse; cameraStreamURL: string }> = await client.get(
+      `${URL}/getCameraStreamBySensorId/${sensorId}`,
+    );
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getCameraStreamsByZoneId(
+  zoneId: number,
+): Promise<AxiosResponse<{ sensor: SensorResponse; cameraStreamURL: string }[]>> {
+  try {
+    const response: AxiosResponse<{ sensor: SensorResponse; cameraStreamURL: string }[]> = await client.get(
+      `${URL}/getCameraStreamsByZoneId/${zoneId}`,
+    );
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

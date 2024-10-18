@@ -353,6 +353,27 @@ class SensorService {
     return {sensor: sensor, cameraStreamURL: cameraStreamURL };
   }
 
+  public async getCameraStreamsByZoneId(zoneId: number): Promise<{sensor: Sensor, cameraStreamURL: string}[]> {
+    const sensors = await SensorDao.getSensorsByZoneId(zoneId);
+
+
+    const cameraStreams = await Promise.all(
+      sensors.map(async (sensor) => {
+        try {
+          if (sensor.sensorType === 'CAMERA') {
+            return await this.getCameraStreamBySensorId(sensor.id);
+          }
+          return null;
+        } catch (error) {
+          console.error(`Error getting camera stream for sensor ${sensor.id}:`, error);
+          return null;
+        }
+      })
+    );
+
+    return cameraStreams.filter((stream): stream is {sensor: Sensor, cameraStreamURL: string} => stream !== null);
+  }
+
   private generateIdentifierNumber(): string {
     return `SE-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
