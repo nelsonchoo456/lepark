@@ -10,6 +10,8 @@ import {
   Button,
   Card,
   Carousel,
+  Checkbox,
+  Collapse,
   Descriptions,
   Drawer,
   Empty,
@@ -23,6 +25,7 @@ import {
   Space,
   Table,
   TableProps,
+  Tabs,
   Tag,
   Tooltip,
   Typography,
@@ -31,9 +34,11 @@ import { IoIosInformationCircle } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import {
   getHubsFiltered,
+  getOccurrencesByParkId,
   getParkById,
   getSensorsByParkId,
   HubResponse,
+  OccurrenceResponse,
   ParkResponse,
   SensorResponse,
   StaffResponse,
@@ -55,6 +60,17 @@ import PictureMarker from '../../components/map/PictureMarker';
 import { getSensorIcon } from './components/getSensorIcon';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { getHubDescriptionsItems, getSensorDescriptionItems } from './components/iotMapMisc';
+import styled from 'styled-components';
+import { PiPlantFill } from 'react-icons/pi';
+
+const CollapsePanelNoPadding = styled(Collapse.Panel)`
+  .ant-collapse {
+    padding: 0 !important;
+  }
+  .ant-collapse-content > .ant-collapse-content-box {
+    padding: 0 !important;
+  }
+`;
 
 interface MapZoomerProps {
   selectedHub?: HubResponse;
@@ -78,7 +94,7 @@ const IotMap = () => {
   const [park, setPark] = useState<ParkResponse>();
   const [parkId, setParkId] = useState<number>();
   const [parkZones, setParkZones] = useState<ZoneResponse[]>();
-  const [hubs, setHubs] = useState<HubResponse[]>();
+  const [hubs, setHubs] = useState<(HubResponse & { occurrences: OccurrenceResponse[] })[]>();
   const navigate = useNavigate();
   const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
   const mapRef = useRef<L.Map | null>(null);
@@ -87,8 +103,9 @@ const IotMap = () => {
 
   // Map behavior
   const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
-  const [selectedHub, setSelectedHub] = useState<HubResponse>();
+  const [selectedHub, setSelectedHub] = useState<(HubResponse & { occurrences: OccurrenceResponse[] })>();
   const [selectedSensor, setSelectedSensor] = useState<SensorResponse>();
+  const [showOccurrences, setShowOccurrences] = useState(false)
 
   // Map utilities
   const [zoomLevel, setZoomLevel] = useState(11);
@@ -140,6 +157,7 @@ const IotMap = () => {
     try {
       const hubsRes = await getHubsFiltered('ACTIVE', parkId);
       const sensorsRes = await getSensorsByParkId(parkId);
+      const occurrencesRes = await getOccurrencesByParkId(parkId);
       if (hubsRes.status === 200) {
         if (sensorsRes.status === 200) {
           hubsRes.data.forEach((h: HubResponse) => {
@@ -152,8 +170,20 @@ const IotMap = () => {
         } else {
           hubsRes.data.forEach((h: HubResponse) => (h.sensors = []));
         }
+
+        if (occurrencesRes.status === 200) {
+          hubsRes.data.forEach((h: any) => {
+            try {
+              h.occurrences = occurrencesRes.data.filter((o) => o.zoneId === h.zoneId);
+            } catch (e) {
+              h.occurrences = [];
+            }
+          });
+        } else {
+          hubsRes.data.forEach((h: any) => (h.occurrences = []));
+        }
         console.log(hubsRes.data);
-        setHubs(hubsRes.data);
+        setHubs(hubsRes.data as (HubResponse & { occurrences: OccurrenceResponse[] })[]);
       }
     } catch (error) {
       message.error('Unable to Fetch IoT');
@@ -265,7 +295,7 @@ const IotMap = () => {
 
   const breadcrumbItems = [
     {
-      title: 'Iot Management',
+      title: 'IoT Management',
       pathKey: '/sensor-map',
       isMain: true,
       isCurrent: true,
@@ -354,29 +384,52 @@ const IotMap = () => {
           )}
           <div className="font-semibold text-wrap text-lg my-2">{selectedHub.name}</div>
           <Descriptions items={getHubDescriptionsItems(selectedHub)} column={1} size="small" className="mb-2" />
-          <Card styles={{ body: { padding: 0 } }} className="mt-4 overflow-hidden">
-            <div className="text-lg font-semibold text-green-600 mx-2 my-2 mb02">Sensors</div>
-            {selectedHub.sensors?.map((s) => (
-              <div
-                className="px-2 py-2 border-b-[1px] border-black/10 cursor-pointer hover:bg-green-400/10"
-                onClick={() => handleSelectSensor(s)}
-              >
-                <span className="font-semibold text-wrap">{s.name}</span>
-                <div className="flex justify-between text-xs">
-                  <Tag bordered={false}>{formatEnumLabelToRemoveUnderscores(s.sensorType)}</Tag>
-                  <Tooltip title="View Sensor Details">
-                    <Button icon={<FiEye />} shape="circle" size="small" onClick={() => navigate(`/sensor/${s.id}`)} type="dashed"></Button>
-                  </Tooltip>
+
+          <Tabs className="mt-2 overflow-hidden" defaultActiveKey="1">
+            <Tabs.TabPane tab={<div className="text-md font-semibold text-green-600">Sensors</div>} key="1">
+              {selectedHub.sensors?.map((s) => (
+                <div
+                  className="px-2 py-2 border-b-[1px] border-black/10 cursor-pointer hover:bg-green-400/10"
+                  onClick={() => handleSelectSensor(s)}
+                >
+                  <span className="font-semibold text-wrap">{s.name}</span>
+                  <div className="flex justify-between text-xs">
+                    <Tag bordered={false}>{formatEnumLabelToRemoveUnderscores(s.sensorType)}</Tag>
+                    <Tooltip title="View Sensor Details">
+                      <Button icon={<FiEye />} shape="circle" size="small" onClick={() => navigate(`/sensor/${s.id}`)} type="dashed" />
+                    </Tooltip>
+                  </div>
                 </div>
+              ))}
+            </Tabs.TabPane>
+
+            <Tabs.TabPane tab={<div className="text-md font-semibold text-green-600">Occurrences</div>} key="2">
+              <div className="flex w-full">
+                <Checkbox className="mb-3 text-green-500" onChange={(e) => setShowOccurrences(e.target.checked)} checked={showOccurrences}>
+                  Show Occurrences on map
+                </Checkbox>
               </div>
-            ))}{' '}
-          </Card>
+              {selectedHub.occurrences?.map((o) => (
+                <div className="px-2 py-2 border-b-[1px] border-black/10 cursor-pointer flex hover:bg-green-400/10">
+                  <div className="w-[40px] h-[40px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
+                    <img src={o.images[0]} alt={o.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-wrap">{o.title}</span>
+                    <br />
+                    <span className="text-wrap italic">{o.speciesName}</span>
+                  </div>
+                </div>
+              ))}
+            </Tabs.TabPane>
+          </Tabs>
         </>
       );
     } else {
       return (
         <>
           <div className="text-lg font-semibold text-green-600">List of Hubs</div>
+
           {hubs && hubs.length > 0 ? (
             <>
               <div className="italic text-secondary mb-2">Click on a Hub below to zoom in and view more details</div>
@@ -398,12 +451,32 @@ const IotMap = () => {
                   </div>
                 </div>
               ))}
+              {user?.role === StaffType.SUPERADMIN && (
+                <Button
+                  onClick={() => {
+                    setPark(undefined);
+                    setParkId(undefined);
+                  }}
+                  className="w-full mt-4"
+                  type="link"
+                >
+                  {' '}
+                  Select Another Park?
+                </Button>
+              )}
             </>
           ) : (
             <div className="w-full flex-col flex">
               <div className="text-center w-full font-semibold text-secondary mt-10"> No Hubs available. </div>
               {user?.role === StaffType.SUPERADMIN && (
-                <Button onClick={() => setPark(undefined)} className="mx-auto" type="link">
+                <Button
+                  onClick={() => {
+                    setPark(undefined);
+                    setParkId(undefined);
+                  }}
+                  className="mx-auto"
+                  type="link"
+                >
                   {' '}
                   Select Another Park?
                 </Button>
@@ -443,7 +516,7 @@ const IotMap = () => {
             </Carousel>
           ) : (
             <div className="h-20 bg-gray-200 flex items-center justify-center">
-              <div className='text-secondary'>No Image</div>
+              <div className="text-secondary">No Image</div>
             </div>
           )}
           <div className="font-semibold text-wrap text-lg my-2">{selectedSensor.name}</div>
@@ -475,7 +548,7 @@ const IotMap = () => {
             </Carousel>
           ) : (
             <div className="h-20 bg-gray-200 flex items-center justify-center">
-              <div className='text-secondary'>No Image</div>
+              <div className="text-secondary">No Image</div>
             </div>
           )}
           <div className="font-semibold text-wrap text-lg my-2">{selectedHub.name}</div>
@@ -486,9 +559,7 @@ const IotMap = () => {
         </>
       );
     } else {
-      return (
-        <></>
-      );
+      return <></>;
     }
   };
 
@@ -599,6 +670,24 @@ const IotMap = () => {
             ),
         )}
 
+        {selectedHub && showOccurrences &&
+          selectedHub.occurrences?.map(
+            (o) =>
+              o.lat &&
+              o.lng && (
+                <PictureMarker
+                  id={o.id}
+                  entityType="OCCURRENCE"
+                  circleWidth={30}
+                  lat={o.lat}
+                  lng={o.lng}
+                  backgroundColor={COLORS.green[300]}
+                  icon={<PiPlantFill className="text-green-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+                  tooltipLabel={o.title}
+                />
+              ),
+          )}
+
         {selectedHub &&
           selectedHub.sensors?.map(
             (s) =>
@@ -664,9 +753,9 @@ const IotMap = () => {
         paddingTop: '3rem',
         height: 'calc(100vh)',
         width: `100vw`,
-        overflow: "hidden"
+        overflow: 'hidden',
       }}
-      className='relative'
+      className="relative"
     >
       {contextHolder}
       {!park && (
@@ -818,7 +907,6 @@ const IotMap = () => {
                   ),
               ),
           )}
-          
       </MapContainer>
       <div className="fixed bottom-0 w-full bg-white rounded-lg p-4" style={{ zIndex: 400 }}>
         {showDrawerDisplayMobile()}

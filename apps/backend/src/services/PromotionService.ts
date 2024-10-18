@@ -204,8 +204,7 @@ function ensureAllFieldsPresent(data: PromotionSchemaType): Prisma.PromotionCrea
     !data.discountValue ||
     !data.validFrom ||
     !data.validUntil ||
-    !data.status ||
-    !data.isOneTime === undefined
+    !data.status
   ) {
     throw new Error('Missing required fields for Promotion creation');
   }

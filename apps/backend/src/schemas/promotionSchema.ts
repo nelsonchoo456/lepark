@@ -16,7 +16,6 @@ export const PromotionSchema = z.object({
   terms: z.array(z.string()).optional(),
   maximumUsage: z.number().min(1).optional(),
   minimumAmount: z.number().min(0.01).optional(),
-  isOneTime: z.boolean(),
 });
 
 export type PromotionSchemaType = z.infer<typeof PromotionSchema>;

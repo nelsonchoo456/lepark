@@ -20,6 +20,7 @@ const {
   newSensors,
   seqHistoriesData,
   faqsData,
+  promotionsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -393,6 +394,15 @@ async function seed() {
     attractionList.push(createdAttraction);
   }
   console.log(`Total attractions seeded: ${attractionList.length}\n`);
+
+  const promotionList = [];
+  for (const promotion of promotionsData) {
+    const createdPromotion = await prisma.promotion.create({
+      data: promotion,
+    });
+    promotionList.push(createdPromotion);
+  }
+  console.log(`Total promotions seeded: ${promotionList.length}\n`);
 
   const plantTasksList = [];
   for (const plantTask of plantTasksData) {
