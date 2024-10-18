@@ -59,17 +59,6 @@ const VisitorViewFacilityDetails = () => {
             className="md:mt-0 md:p-0"
           />
           <div className="mt-4">
-            <Typography.Paragraph
-              ellipsis={{
-                rows: 3,
-                expandable: true,
-                symbol: 'more',
-              }}
-            >
-              {facility?.description}
-            </Typography.Paragraph>
-          </div>
-          <div className="mt-4">
             <LogoText className="text-2xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 mb-2 leading-tight pb-1">
               Opening Hours
             </LogoText>
