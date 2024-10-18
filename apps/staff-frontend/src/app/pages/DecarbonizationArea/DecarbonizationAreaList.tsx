@@ -164,7 +164,7 @@ const DecarbonizationAreaList: React.FC = () => {
           >
             Data Visualizations
           </Button>
-        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
           <Button
             type="primary"
             onClick={() => {

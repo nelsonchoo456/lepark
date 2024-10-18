@@ -35,9 +35,9 @@ const ViewAttractionTicketListings = () => {
   const [discount, setDiscount] = useState(0);
   const [finalTotalPayable, setFinalTotalPayable] = useState<number>(0);
   const navigate = useNavigate();
-  const [localResidentChecked, setLocalResidentChecked] = useState(false);
   const [appliedPromotion, setAppliedPromotion] = useState<PromotionResponse | null>(null);
   const [subtotal, setSubtotal] = useState(0);
+  const [termsChecked, setTermsChecked] = useState(false);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -142,7 +142,7 @@ const ViewAttractionTicketListings = () => {
       <Row justify="space-between" align="middle" className="mb-1">
         <Col span={14}>
           <Text strong className="text-lg">
-            {listing.category}
+            {listing.category.charAt(0).toUpperCase() + listing.category.slice(1).toLowerCase()}
           </Text>
           <Text strong className="text-lg ml-2">
             S${listing.price}
@@ -169,21 +169,22 @@ const ViewAttractionTicketListings = () => {
           <>
             {Object.entries(groupedListings).map(([nationality, listings]) => (
               <Card key={nationality} className="mb-4 shadow-sm">
-                <Title level={4}>{nationality}</Title>
-                {nationality === 'Local Resident' && (
-                  <Checkbox className="mb-4 text-sm" checked={localResidentChecked} onChange={handleLocalResidentCheckbox}>
-                    I understand that I will not be permitted from entering if I could not prove my identity at the admission gate
-                  </Checkbox>
-                )}
+                <div className="mb-4">
+                  <Title level={4}>{nationality}</Title>
+                </div>
                 {listings.map(renderListingRow)}
               </Card>
             ))}
             <div className="mt-4 pb-16">
+              <Checkbox className="mb-4 text-sm" checked={termsChecked} onChange={handleTermsCheckbox}>
+                I understand that I will not be permitted from entering if I do not have the necessary proof of identification (e.g. NRIC,
+                Student ID)
+              </Checkbox>
               <Button
                 type="primary"
                 className="w-full h-12 text-lg"
                 onClick={handleProceedToDateSelection}
-                disabled={Object.values(ticketCounts).every((count) => count === 0) || (hasLocalResidentTickets() && !localResidentChecked)}
+                disabled={Object.values(ticketCounts).every((count) => count === 0) || !termsChecked}
               >
                 Proceed to Date Selection
               </Button>
@@ -237,8 +238,8 @@ const ViewAttractionTicketListings = () => {
     }
   };
 
-  const handleLocalResidentCheckbox = (e: CheckboxChangeEvent) => {
-    setLocalResidentChecked(e.target.checked);
+  const handleTermsCheckbox = (e: CheckboxChangeEvent) => {
+    setTermsChecked(e.target.checked);
   };
 
   const hasLocalResidentTickets = () => {

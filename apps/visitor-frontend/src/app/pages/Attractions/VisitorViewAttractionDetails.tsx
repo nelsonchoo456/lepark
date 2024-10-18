@@ -91,7 +91,7 @@ const VisitorViewAttractionDetails = () => {
             renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
             className="md:mt-0 md:p-0"
           />
-          <div className="p-4">
+          <div>
             {attraction && (
               <div className="mb-4 md:hidden">
                 <Tag color={attraction.status === 'OPEN' ? 'green' : 'red'}>{attraction.status}</Tag>
@@ -107,7 +107,7 @@ const VisitorViewAttractionDetails = () => {
               {attraction?.description}
             </Typography.Paragraph>
           </div>
-          <div className="mt-4">
+          <div>
             <LogoText className="text-2xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 mb-2">Opening Hours</LogoText>
             <table className="table-auto text-sm border-collapse border border-gray-300">
               <tbody>

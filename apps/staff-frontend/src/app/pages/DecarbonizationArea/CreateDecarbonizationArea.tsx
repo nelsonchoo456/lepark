@@ -1,9 +1,5 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import {
-  createDecarbonizationArea,
-  DecarbonizationAreaResponse,
-  StaffResponse
-} from '@lepark/data-access';
+import { createDecarbonizationArea, DecarbonizationAreaResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, Result, Steps, Tooltip } from 'antd';
 import { LatLng } from 'leaflet';
 import { useRef, useState } from 'react';
@@ -174,7 +170,15 @@ const CreateDecarbonizationArea = () => {
         {currStep === 0 && content[0].children}
         {currStep === 1 && (
           <>
-            {content[1].children}
+            {content[1].children}{' '}
+            <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
+              <Button type="default" className="w-full" onClick={() => handleCurrStep(0)}>
+                Previous
+              </Button>
+              <Button type="primary" className="w-full" onClick={handleSubmit}>
+                Submit
+              </Button>
+            </Flex>
           </>
         )}
         {currStep === 2 && (

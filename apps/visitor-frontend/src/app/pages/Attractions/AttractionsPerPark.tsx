@@ -134,7 +134,7 @@ const AttractionsPerPark: React.FC = () => {
                 </div>
                 <div className="h-full flex-1">
                   <div className="text-lg font-semibold text-green-700">{attraction.title}</div>
-                  <div className="-mt-[2px] text-green-700/80 italic">{attraction.description}</div>
+                  <div className="-mt-[2px] text-green-700/80 italic line-clamp-2">{attraction.description}</div>
                 </div>
                 <div className="h-full flex-1 hidden lg:block">
                   <Tag color={attraction.status === 'OPEN' ? 'green' : 'red'}>{attraction.status}</Tag>
