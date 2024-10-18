@@ -26,6 +26,7 @@ import ZoneTab from './components/ZoneTab';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { LuUnplug } from 'react-icons/lu';
 import { RiExternalLinkLine } from 'react-icons/ri';
+import SensorReadingsTab from './components/SensorReadingsTab';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -232,6 +233,13 @@ const ViewSensorDetails = () => {
               }
             : null,
         ]),
+    sensor?.sensorStatus === 'ACTIVE'
+      ? {
+          key: 'readings',
+          label: 'Sensor Readings',
+          children: sensor ? <SensorReadingsTab sensorId={sensor.id} /> : <p>Loading sensor readings...</p>,
+        }
+      : null,
   ];
 
   if (loading) {
