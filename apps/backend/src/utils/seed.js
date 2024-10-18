@@ -566,8 +566,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   const endDate = new Date('2024-10-23');
   const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
-  const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
-  const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
+ const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+ const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
 
   const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
 
@@ -580,43 +580,20 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
         data: {
           date: new Date(currentDate),
           seqValue: parseFloat(currentSeqValue.toFixed(3)),
-          decarbonizationAreaId: decarbAreaId,
-        },
+          decarbonizationAreaId: decarbAreaId
+        }
       });
       seqHistories.push(createdSeqHistory);
       currentSeqValue += dailyIncrease;
     } catch (error) {
       console.error(`Error inserting sequestration history for date: ${currentDate.toISOString()}`);
       console.error(error);
-      try {
-        const createdSeqHistory = await prisma.sequestrationHistory.create({
-          data: {
-            date: newDate,
-            seqValue: currentSeqValue,
-            decarbonizationAreaId: decarbAreaId,
-          },
-        });
-        seqHistories.push(createdSeqHistory);
-        currentSeqValue += interval; // Increase by 0.2 kg for the next entry
-      } catch (error) {
-        console.error(`Error inserting sequestration history for date: ${newDate.toISOString()}`);
-        console.error(error);
-      }
     }
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
   console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
-  console.log(`Total sequestration histories seeded: ${seqHistories.length}\n`);
-  /*seqHistories.forEach((history, i) => {
-    console.log(`History ${i + 1}:`);
-    console.log(`  ID: ${history.id}`);
-    console.log(`  Date: ${history.date}`);
-    console.log(`  Sequestration Value: ${history.seqValue.toFixed(3)}`);
-    console.log(`  Decarbonization Area ID: ${history.decarbonizationAreaId}`);
-    console.log('---');
-  });*/
 }
 
 // Utility function for Activity Logs and Status Logs

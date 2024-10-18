@@ -41,6 +41,15 @@ CREATE TYPE "EventTypeEnum" AS ENUM ('WORKSHOP', 'EXHIBITION', 'GUIDED_TOUR', 'P
 CREATE TYPE "EventSuitabilityEnum" AS ENUM ('ANYONE', 'FAMILIES_AND_FRIENDS', 'CHILDREN', 'NATURE_ENTHUSIASTS', 'PETS', 'FITNESS_ENTHUSIASTS');
 
 -- CreateEnum
+CREATE TYPE "EventTicketCategoryEnum" AS ENUM ('ADULT', 'CHILD', 'SENIOR', 'STUDENT');
+
+-- CreateEnum
+CREATE TYPE "EventTicketNationalityEnum" AS ENUM ('LOCAL', 'STANDARD');
+
+-- CreateEnum
+CREATE TYPE "EventTicketStatusEnum" AS ENUM ('VALID', 'INVALID', 'USED');
+
+-- CreateEnum
 CREATE TYPE "HubStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'UNDER_MAINTENANCE', 'DECOMMISSIONED');
 
 -- CreateEnum
@@ -264,6 +273,42 @@ CREATE TABLE "Event" (
 );
 
 -- CreateTable
+CREATE TABLE "EventTicketListing" (
+    "id" UUID NOT NULL,
+    "category" "EventTicketCategoryEnum" NOT NULL,
+    "nationality" "EventTicketNationalityEnum" NOT NULL,
+    "description" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "isActive" BOOLEAN NOT NULL,
+    "eventId" UUID NOT NULL,
+
+    CONSTRAINT "EventTicketListing_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EventTicket" (
+    "id" UUID NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "status" "EventTicketStatusEnum" NOT NULL,
+    "eventTicketListingId" UUID NOT NULL,
+    "eventTicketTransactionId" UUID NOT NULL,
+
+    CONSTRAINT "EventTicket_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EventTicketTransaction" (
+    "id" UUID NOT NULL,
+    "eventDate" TIMESTAMP(3) NOT NULL,
+    "purchaseDate" TIMESTAMP(3) NOT NULL,
+    "totalAmount" DOUBLE PRECISION NOT NULL,
+    "visitorId" UUID NOT NULL,
+    "eventId" UUID NOT NULL,
+
+    CONSTRAINT "EventTicketTransaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Visitor" (
     "id" UUID NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -462,7 +507,6 @@ CREATE TABLE "Promotion" (
     "terms" TEXT[],
     "maximumUsage" INTEGER,
     "minimumAmount" DOUBLE PRECISION,
-    "isOneTime" BOOLEAN NOT NULL,
 
     CONSTRAINT "Promotion_pkey" PRIMARY KEY ("id")
 );
@@ -583,6 +627,15 @@ ALTER TABLE "AttractionTicketTransaction" ADD CONSTRAINT "AttractionTicketTransa
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EventTicketListing" ADD CONSTRAINT "EventTicketListing_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EventTicket" ADD CONSTRAINT "EventTicket_eventTicketTransactionId_fkey" FOREIGN KEY ("eventTicketTransactionId") REFERENCES "EventTicketTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EventTicketTransaction" ADD CONSTRAINT "EventTicketTransaction_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Hub" ADD CONSTRAINT "Hub_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
