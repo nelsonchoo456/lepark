@@ -160,7 +160,7 @@ const AnnouncementCreate = () => {
             </Form.Item>
 
             <Form.Item name="content" label="Content" rules={[{ required: true }]}>
-              <TextArea placeholder="Describe the Event" autoSize={{ minRows: 3, maxRows: 5 }} />
+              <TextArea placeholder="Describe the Announcement" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
 
             <Form.Item name="dateRange" label="Published Dates" rules={[{ required: true, message: 'Please select the dates to publish' }]}>
