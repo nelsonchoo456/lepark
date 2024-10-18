@@ -13,10 +13,10 @@ const s3 = new aws.S3({
 
 class FeedbackService {
   public async createFeedback(data: FeedbackSchemaType): Promise<Feedback> {
-    const validatedData = FeedbackSchema.parse(data);
-    const formattedData = validatedData as Prisma.FeedbackCreateInput;
+    const formattedData = dateFormatter(data)
+    const validatedData = FeedbackSchema.parse(formattedData)as Prisma.FeedbackCreateInput;
 
-    return FeedbackDao.createFeedback(formattedData);
+    return FeedbackDao.createFeedback(validatedData);
   }
 
   public async getAllFeedback(visitorId?: string): Promise<any[]> {
@@ -47,7 +47,8 @@ class FeedbackService {
   }
 
   public async updateFeedback(id: string, data: Partial<FeedbackSchemaType>): Promise<any> {
-    const validatedData = FeedbackSchema.partial().parse(data);
+    const formattedData = dateFormatter(data) as Prisma.FeedbackUpdateInput;
+    const validatedData = FeedbackSchema.partial().parse(formattedData);
     const updatedFeedback = await FeedbackDao.updateFeedback(id, validatedData);
     const visitor = await VisitorDao.getVisitorById(updatedFeedback.visitorId);
     const staff = updatedFeedback.staffId ? await StaffDao.getStaffById(updatedFeedback.staffId) : null;
@@ -87,5 +88,22 @@ class FeedbackService {
     return feedbacksWithDetails;
   }
 }
+
+// Utility function to format date fields
+const dateFormatter = (data: any) => {
+  const { dateCreated, dateResolved, ...rest } = data;
+  const formattedData = { ...rest };
+
+  // Format dateCreated and dateResolved into JavaScript Date objects
+  const dateCreatedFormat = dateCreated ? new Date(dateCreated) : undefined;
+  const dateResolvedFormat = dateResolved ? new Date(dateResolved) : undefined;
+  if (dateCreated) {
+    formattedData.dateCreated = dateCreatedFormat;
+  }
+  if (dateResolved) {
+    formattedData.dateResolved = dateResolvedFormat;
+  }
+  return formattedData;
+};
 
 export default new FeedbackService();
