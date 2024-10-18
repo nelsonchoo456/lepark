@@ -1,4 +1,4 @@
-import { Descriptions, Tag } from 'antd';
+import { Descriptions, Tag, Typography } from 'antd';
 import { FacilityResponse, FacilityStatusEnum } from '@lepark/data-access';
 import moment from 'moment';
 import { AiOutlineCheck, AiOutlineClose } from 'react-icons/ai';
@@ -48,6 +48,17 @@ const FacilityInformationTab = ({ facility }: { facility: FacilityResponse }) =>
 
   return (
     <div>
+      <div>
+        <Typography.Paragraph
+          ellipsis={{
+            rows: 3,
+            expandable: true,
+            symbol: 'more',
+          }}
+        >
+          {facility?.description}
+        </Typography.Paragraph>
+      </div>
       <Descriptions
         items={[
           ...descriptionsItems,
