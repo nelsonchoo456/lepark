@@ -26,35 +26,35 @@ const ZoneDetails = () => {
     if (zone) {
       fetchHub(zone.id);
     }
-  }, [zone])
+  }, [zone]);
 
   useEffect(() => {
     if (hub) {
       fetchSensors(hub.id);
     }
-  }, [hub])
+  }, [hub]);
 
   const fetchHub = async (zoneId: number) => {
     try {
       const hubRes = await getHubByZoneId(zoneId);
       if (hubRes.status === 200) {
-        setHub(hubRes.data)
+        setHub(hubRes.data);
       }
     } catch (e) {
       //
     }
-  }
+  };
 
   const fetchSensors = async (hubId: string) => {
     try {
       const sensorsRes = await getSensorsByHubId(hubId);
       if (sensorsRes.status === 200) {
-        setSensors(sensorsRes.data)
+        setSensors(sensorsRes.data);
       }
     } catch (e) {
       //
     }
-  }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -91,7 +91,11 @@ const ZoneDetails = () => {
     {
       key: 'IoT',
       label: 'IoT',
-      children: hub ? <SensorsTab hub={hub} sensors={sensors} zone={zone} fetchSensors={() => fetchSensors(hub.id)}></SensorsTab> : <Empty></Empty>,
+      children: hub ? (
+        <SensorsTab hub={hub} sensors={sensors} zone={zone} fetchSensors={() => fetchSensors(hub.id)}></SensorsTab>
+      ) : (
+        <Empty description="No Linked Hubs"></Empty>
+      ),
     },
   ];
 
@@ -143,7 +147,9 @@ const ZoneDetails = () => {
                 <LogoText className="text-2xl py-2 m-0">{zone.name}</LogoText>
                 <ZoneStatusTag>{formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}</ZoneStatusTag>
               </Space>
-              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+              {(user?.role === StaffType.SUPERADMIN ||
+                user?.role === StaffType.MANAGER ||
+                user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"
