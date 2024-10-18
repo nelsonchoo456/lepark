@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { PaymentElement, useElements, useStripe, Elements } from '@stripe/react-stripe-js';
+import { StripePaymentElementChangeEvent } from '@stripe/stripe-js';
 import { Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
@@ -34,6 +35,7 @@ const StripeForm: React.FC<StripeFormProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth<VisitorResponse>();
+  const [isComplete, setIsComplete] = useState(false);
 
   const handleProcessing = async () => {
     try {
@@ -126,12 +128,21 @@ const StripeForm: React.FC<StripeFormProps> = ({
     }
   };
 
+  const handlePaymentElementChange = (event: StripePaymentElementChangeEvent) => {
+    setIsComplete(event.complete);
+  };
+
   return (
     <div>
-      {!isFreeTicket && <PaymentElement />}
+      {!isFreeTicket && <PaymentElement onChange={handlePaymentElementChange} />}
       {isFreeTicket && <div className="mb-4">This is a free ticket. Click the button below to confirm your order.</div>}
       <div className="mt-5 flex w-full justify-end">
-        <Button type="primary" onClick={handlePayment} disabled={isProcessing} className="w-full md:w-1/5 lg:w-1/5">
+        <Button
+          type="primary"
+          onClick={handlePayment}
+          disabled={isProcessing || (!isFreeTicket && !isComplete)}
+          className="w-full md:w-1/5 lg:w-1/5"
+        >
           {isProcessing ? 'Processing...' : isFreeTicket ? 'Confirm Free Ticket' : 'Pay'}
         </Button>
       </div>
