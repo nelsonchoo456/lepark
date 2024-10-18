@@ -345,26 +345,26 @@ const DecarbonizationAreaChart: React.FC = () => {
   const generateReport = async () => {
     console.log('Generate Report button clicked');
     const doc = new jsPDF();
-
+  
     // Use helvetica font
     doc.setFont('helvetica', 'normal');
-
+  
     // Set the text color to grey (assuming the grey color used in your app is #808080)
     doc.setTextColor(128, 128, 128);
-
+  
     const input = document.getElementById('report-content');
-
+  
     if (input) {
       // Retrieve park and area names
       const selectedPark = parks.find((park) => park.id === selectedParkId)?.name || 'All Parks';
       const selectedAreaName = selectedArea === 'all' ? 'All' : filteredDecarbonizationAreas.find((area) => area.id === selectedArea)?.name;
-
+  
       // Add the timeframe, park name, and area name to the PDF
       const timeframeText = `${dayjs(startDate).format('D MMM YY')} to ${dayjs(endDate).format('D MMM YY')}`;
       const headerText = `Park: ${selectedPark} | Area: ${selectedAreaName} | ${timeframeText}`;
-      doc.setFontSize(14);
-      doc.text(headerText, 10, 10);
-
+      doc.setFontSize(12);
+      doc.text(headerText, 10, 6);
+  
       // Capture the entire report content
       try {
         const canvas = await html2canvas(input, {
@@ -374,32 +374,32 @@ const DecarbonizationAreaChart: React.FC = () => {
           useCORS: true,  // Enable CORS for images
         });
         const imgData = canvas.toDataURL('image/png');
-
+  
         // Calculate the height of the content
         const imgProps = doc.getImageProperties(imgData);
         const pdfWidth = doc.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         const pageHeight = doc.internal.pageSize.getHeight();
         let heightLeft = pdfHeight;
-        let position = 20;
-
+        let position = 11; // Reduce padding between header and content
+  
         // Add the first page
         doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
         heightLeft -= pageHeight - position;
-
-        // Add new pages if content overflows
-        while (heightLeft >= 0) {
+  
+        // Add additional pages if needed
+        while (heightLeft > 0) {
           position = heightLeft - pdfHeight;
           doc.addPage();
           doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
           heightLeft -= pageHeight;
         }
-
+  
         console.log('Report content captured');
       } catch (error) {
         console.error('Error capturing report content:', error);
       }
-
+  
       // Save the PDF with formatted date and park/area names
       const formattedDate = dayjs().format('D MMM YY');
       const fileName = `Decarbonization Report ${selectedPark} Area-${selectedAreaName} ${formattedDate}.pdf`;
