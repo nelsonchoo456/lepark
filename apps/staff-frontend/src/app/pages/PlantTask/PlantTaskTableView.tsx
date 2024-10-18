@@ -464,22 +464,23 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             scroll={{ x: SCREEN_LG }}
             {...tableProps}
           />
-          <EditPlantTaskModal
-            visible={editModalVisible}
-            onCancel={() => setEditModalVisible(false)}
-            onSubmit={handleEditSubmit}
-            initialValues={editingTask}
-            userRole={userRole as StaffType}
-            onStatusChange={handleStatusChange}
-          />
-          <ViewPlantTaskModal
-            visible={viewModalVisible}
-            onCancel={() => setViewModalVisible(false)}
-            task={selectedTask}
-            userRole={userRole as StaffType}
-          />
         </Card>
       )}
+      {/* Move the modals outside of the conditional rendering */}
+      <EditPlantTaskModal
+        visible={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onSubmit={handleEditSubmit}
+        initialValues={editingTask}
+        userRole={userRole as StaffType}
+        onStatusChange={handleStatusChange}
+      />
+      <ViewPlantTaskModal
+        visible={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        task={selectedTask}
+        userRole={userRole as StaffType}
+      />
     </>
   );
 };
