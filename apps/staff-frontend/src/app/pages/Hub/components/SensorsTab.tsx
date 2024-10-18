@@ -219,20 +219,14 @@ const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
           </Tooltip>
-          {canActivateEdit && <>
-            <Tooltip title="Edit Sensor">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
+          {canActivateEdit &&
+            <Tooltip title="Delink Sensor">
+              <Button danger type="link" icon={<LuUnplug className="text-error" />} onClick={() => showDeactivateModal(record)} />
             </Tooltip>
-            <Tooltip title="Delete Sensor">
-              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-            </Tooltip>
-            <Tooltip title="Deactivate Sensor">
-              <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeactivateModal(record)} />
-            </Tooltip>
-          </>}
+          }
         </Flex>
       ),
-      width: '20%',
+      width: '1%',
     },
   ];
 
@@ -312,43 +306,35 @@ const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
           </Tooltip>
-          {user && (user.role === StaffType.MANAGER || user.role === StaffType.SUPERADMIN) && (
-            <>
-              <Tooltip title="Edit Sensor">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
-              </Tooltip>
-              <Tooltip title="Delete Sensor">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-              </Tooltip>
-              <Tooltip title="Deactivate Sensor">
-                <Button danger type="link" icon={<LuUnplug className="text-error" />} onClick={() => showDeactivateModal(record)} />
-              </Tooltip>
-            </>
-          )}
+          {canActivateEdit &&
+            <Tooltip title="Delink Sensor">
+              <Button danger type="link" icon={<LuUnplug className="text-error" />} onClick={() => showDeactivateModal(record)} />
+            </Tooltip>
+          }
         </Flex>
       ),
-      width: '20%',
+      width: '1%',
     },
   ];
 
   return (
     <>
       <ConfirmDeleteModal
-        title="Deactivation of Sensor"
-        okText="Confirm Deactivate"
+        title="Delinking Sensor"
+        okText="Confirm Delinking of Sensor"
         onConfirm={handleDeactivateSensor}
         open={deactivateModalOpen}
         onCancel={cancelDeactivate}
 
         // For Success
-        description={updatedData ? undefined : "Deactivating a Sensor will disconnect it from its assigned Hub and remove it from the Zone."}
+        description={updatedData ? undefined : "Delinking a Sensor will disconnect it from its assigned Hub and remove it from the Zone."}
         footer={updatedData && null}
         closable={!updatedData}
       >
         {/* For Success */}
         {updatedData && <Result
           status="success"
-          title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Sensor'}
+          title={updatedData ? `Delinked ${updatedData.name}` : 'Delinked Sensor'}
           subTitle="Returning to Sensors Tab..."
         />}
       </ConfirmDeleteModal>

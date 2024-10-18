@@ -48,6 +48,19 @@ router.get('/getHubById/:id', async (req, res) => {
   }
 });
 
+router.get('/getHubByZoneId/:zoneId', async (req, res) => {
+  try {
+    const hub = await HubService.getHubByZoneId(parseInt(req.params.zoneId));
+    if (hub) {
+      res.status(200).json(hub);
+    } else {
+      res.status(404).json({ error: 'Hub not found for the given Zone.' });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getHubByIdentifierNumber/:identifierNumber', async (req, res) => {
   try {
     const hub = await HubService.getHubByIdentifierNumber(req.params.identifierNumber);

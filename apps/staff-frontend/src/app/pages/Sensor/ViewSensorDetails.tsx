@@ -123,7 +123,7 @@ const ViewSensorDetails = () => {
                 </Tag>
                 {canActivateEdit && (
                   <Button type="primary" onClick={() => showDeactivateModal()} className="-mt-1" danger icon={<LuUnplug />}>
-                    Deactivate
+                    Delink
                   </Button>
                 )}
               </div>
@@ -247,14 +247,14 @@ const ViewSensorDetails = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {contextHolder}
       <ConfirmDeleteModal
-        title="Deactivation of Sensor"
-        okText="Confirm Deactivate"
+        title="Delinking Sensor"
+        okText="Confirm Delinking of Sensor"
         onConfirm={handleDeactivateSensor}
         open={deactivateModalOpen}
         onCancel={cancelDeactivate}
         // For Success
         description={
-          updatedData ? undefined : 'Deactivating a Sensor will disconnect it from its assigned Hub and remove it from the Zone.'
+          updatedData ? undefined : 'Delinking a Sensor will disconnect it from its assigned Hub and remove it from the Zone.'
         }
         footer={updatedData && null}
         closable={!updatedData}
@@ -263,7 +263,7 @@ const ViewSensorDetails = () => {
         {updatedData && (
           <Result
             status="success"
-            title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Sensor'}
+            title={updatedData ? `Delinked ${updatedData.name}` : 'Delinked Sensor'}
             subTitle="Returning to Sensor Details Page..."
           />
         )}

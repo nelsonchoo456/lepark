@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography } from 'antd';
-import { StaffResponse, StaffType } from '@lepark/data-access';
+import { getHubByZoneId, getSensorsByHubId, HubResponse, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import ZoneStatusTag from './components/ZoneStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -10,6 +10,7 @@ import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import SensorsTab from './components/SensorsTab';
 
 const { Text } = Typography;
 
@@ -18,6 +19,42 @@ const ZoneDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { zone, loading } = useRestrictZone(id);
+  const [hub, setHub] = useState<HubResponse>();
+  const [sensors, setSensors] = useState<SensorResponse[]>();
+
+  useEffect(() => {
+    if (zone) {
+      fetchHub(zone.id);
+    }
+  }, [zone]);
+
+  useEffect(() => {
+    if (hub) {
+      fetchSensors(hub.id);
+    }
+  }, [hub]);
+
+  const fetchHub = async (zoneId: number) => {
+    try {
+      const hubRes = await getHubByZoneId(zoneId);
+      if (hubRes.status === 200) {
+        setHub(hubRes.data);
+      }
+    } catch (e) {
+      //
+    }
+  };
+
+  const fetchSensors = async (hubId: string) => {
+    try {
+      const sensorsRes = await getSensorsByHubId(hubId);
+      if (sensorsRes.status === 200) {
+        setSensors(sensorsRes.data);
+      }
+    } catch (e) {
+      //
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -54,7 +91,11 @@ const ZoneDetails = () => {
     {
       key: 'IoT',
       label: 'IoT',
-      children: <Empty description={'IoT Coming Soon'}></Empty>,
+      children: hub ? (
+        <SensorsTab hub={hub} sensors={sensors} zone={zone} fetchSensors={() => fetchSensors(hub.id)}></SensorsTab>
+      ) : (
+        <Empty description="No Linked Hubs"></Empty>
+      ),
     },
   ];
 
@@ -106,7 +147,9 @@ const ZoneDetails = () => {
                 <LogoText className="text-2xl py-2 m-0">{zone.name}</LogoText>
                 <ZoneStatusTag>{formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}</ZoneStatusTag>
               </Space>
-              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+              {(user?.role === StaffType.SUPERADMIN ||
+                user?.role === StaffType.MANAGER ||
+                user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"

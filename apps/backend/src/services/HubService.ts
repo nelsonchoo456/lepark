@@ -98,6 +98,10 @@ class HubService {
     return HubDao.getHubsFiltered(hubStatus, parkId);
   }
 
+  public async getHubByZoneId(zoneId: number): Promise<Hub> {
+    return HubDao.getHubByZoneId(zoneId);
+  }
+
   public async getHubsByParkId(parkId: number): Promise<Hub[]> {
     return HubDao.getHubsByParkId(parkId);
   }
@@ -137,9 +141,9 @@ class HubService {
     }
   }
 
-  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
-    return HubDao.getHubByZoneId(zoneId);
-  }
+  // public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
+  //   return HubDao.getHubByZoneId(zoneId);
+  // }
 
   public async getHubDataTransmissionRate(identifierNumber: string): Promise<number | null> {
     const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
