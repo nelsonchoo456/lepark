@@ -163,7 +163,7 @@ const ZoneIoTDetailsPage: React.FC = () => {
         <Col span={12}>
           <Tooltip title="Total change over the period">
             <Statistic
-              title="Change"
+              title="Absolute Change"
               value={trend.absoluteChange}
               prefix={getArrow(trend.absoluteChange)}
               valueStyle={{ fontSize: '14px' }}
@@ -241,7 +241,7 @@ const ZoneIoTDetailsPage: React.FC = () => {
             .map(([sensorType, value]) => (
               <Col xs={24} sm={12} md={6} key={sensorType}>
                 <Statistic
-                  title={formatEnumLabelToRemoveUnderscores(sensorType as SensorTypeEnum)}
+                  title={`Average ${formatEnumLabelToRemoveUnderscores(sensorType as SensorTypeEnum)}`}
                   value={value.toFixed(2)}
                   prefix={getSensorIcon(sensorType as SensorTypeEnum)}
                   suffix={getSensorUnit(sensorType as SensorTypeEnum)}
