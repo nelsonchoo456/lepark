@@ -187,4 +187,14 @@ router.put('/removeSensorFromHub/:id', async (req, res) => {
   }
 });
 
+router.get('/getCameraStreamBySensorId/:sensorId', async (req, res) => {
+  try {
+    const sensorId = req.params.sensorId;
+    const cameraStream = await SensorService.getCameraStreamBySensorId(sensorId);
+    res.status(200).json(cameraStream);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

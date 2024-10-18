@@ -27,6 +27,7 @@ import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { LuUnplug } from 'react-icons/lu';
 import { RiExternalLinkLine } from 'react-icons/ri';
 import SensorReadingsTab from './components/SensorReadingsTab';
+import CameraStreamTab from './components/CameraStreamTab';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -238,6 +239,14 @@ const ViewSensorDetails = () => {
           key: 'readings',
           label: 'Sensor Readings',
           children: sensor ? <SensorReadingsTab sensorId={sensor.id} /> : <p>Loading sensor readings...</p>,
+        }
+      : null,
+    // Add the new Camera Stream tab
+    sensor?.sensorStatus === 'ACTIVE' && sensor?.sensorType === 'CAMERA'
+      ? {
+          key: 'cameraStream',
+          label: 'Camera Stream',
+          children: sensor ? <CameraStreamTab sensorId={sensor.id} /> : <p>Loading camera stream...</p>,
         }
       : null,
   ];

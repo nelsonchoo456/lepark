@@ -331,6 +331,28 @@ class SensorService {
     }
   }
 
+  public async getCameraStreamBySensorId(sensorId: string): Promise<{sensor: Sensor, cameraStreamURL: string}> {
+    const sensor = await SensorDao.getSensorById(sensorId);
+    if (!sensor) {
+      throw new Error('Sensor not found');
+    }
+    if (sensor.sensorType !== 'CAMERA') {
+      throw new Error('Sensor is not a camera');
+    }
+
+    const hub = await HubDao.getHubById(sensor.hubId);
+    if (!hub) {
+      throw new Error('Hub not found');
+    }
+    if (hub.hubStatus !== 'ACTIVE') {
+      throw new Error('Hub is not active');
+    }
+
+    const cameraStreamURL = `http://${hub.ipAddress}:8000`;
+
+    return {sensor: sensor, cameraStreamURL: cameraStreamURL };
+  }
+
   private generateIdentifierNumber(): string {
     return `SE-${uuidv4().substr(0, 5).toUpperCase()}`;
   }

@@ -242,3 +242,16 @@ export async function checkSensorDuplicateSerialNumber(serialNumber: string, sen
     }
   }
 }
+
+export async function getCameraStreamBySensorId(sensorId: string): Promise<AxiosResponse<{sensor: SensorResponse, cameraStreamURL: string}>> {
+  try {
+    const response: AxiosResponse<{sensor: SensorResponse, cameraStreamURL: string}> = await client.get(`${URL}/getCameraStreamBySensorId/${sensorId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
