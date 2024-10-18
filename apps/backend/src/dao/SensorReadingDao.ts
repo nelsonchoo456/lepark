@@ -107,7 +107,6 @@ class SensorReadingDao {
     hours: number,
   ): Promise<number> {
     const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
-    console.log('readings', readings.length);
     if (readings.length === 0) {
       return 0;
     }

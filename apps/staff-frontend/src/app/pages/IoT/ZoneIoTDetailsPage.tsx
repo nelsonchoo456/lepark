@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select } from 'antd';
+import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge } from 'antd';
 import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink } from 'react-icons/fi';
-import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
   ZoneResponse,
@@ -25,6 +25,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTit
 
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
+const { Panel } = Collapse;
 
 const ZoneIoTDetailsPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
@@ -79,12 +80,14 @@ const ZoneIoTDetailsPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
+      case 'OPEN':
         return 'green';
-      case 'INACTIVE':
-        return 'red';
-      case 'MAINTENANCE':
+      case 'UNDER_CONSTRUCTION':
         return 'orange';
+      case 'LIMITED_ACCESS':
+        return 'yellow';
+      case 'CLOSED':
+        return 'red';
       default:
         return 'default';
     }
@@ -120,6 +123,7 @@ const ZoneIoTDetailsPage: React.FC = () => {
     }
   };
 
+
   const breadcrumbItems = [
     {
       title: 'IoT Dashboard',
@@ -138,30 +142,57 @@ const ZoneIoTDetailsPage: React.FC = () => {
 
     const getArrow = (value: string) => {
       const numberValue = parseFloat(value);
-      console.log('numberValue', numberValue);
-      if (isNaN(numberValue)) return null;
+      if (isNaN(numberValue)) return <MinusOutlined style={{ color: 'gray' }} />;
       if (numberValue < 0) return <ArrowDownOutlined style={{ color: 'red' }} />;
       if (numberValue > 0) return <ArrowUpOutlined style={{ color: 'green' }} />;
-      return null;
+      return <MinusOutlined style={{ color: 'gray' }} />;
     };
 
     return (
-      <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
-        <li>Trend: {trend.trendDescription}</li>
-        <li>
-          Direction: {trend.directionOfChange} ({trend.magnitudeOfChange})
-        </li>
-        <li>
-          Absolute change: {getArrow(trend.absoluteChange)} {trend.absoluteChange}
-        </li>
-        <li>
-          Rate of change: {getArrow(trend.rateOfChange)} {trend.rateOfChange}
-        </li>
-        <li>Readings analyzed: {trend.readingsCount}</li>
-        <li>
-          <Text strong>Insight:</Text> {trend.actionableInsight}
-        </li>
-      </ul>
+      <Row gutter={[16, 16]} style={{ marginTop: '10px' }}>
+        <Col span={12}>
+          <Tooltip title="Direction and magnitude of change">
+            <Statistic
+              title="Trend"
+              value={trend.directionOfChange}
+              suffix={trend.magnitudeOfChange}
+              valueStyle={{ fontSize: '14px' }}
+            />
+          </Tooltip>
+        </Col>
+        <Col span={12}>
+          <Tooltip title="Total change over the period">
+            <Statistic
+              title="Change"
+              value={trend.absoluteChange}
+              prefix={getArrow(trend.absoluteChange)}
+              valueStyle={{ fontSize: '14px' }}
+            />
+          </Tooltip>
+        </Col>
+        <Col span={12}>
+          <Tooltip title="Change per hour">
+            <Statistic
+              title="Rate"
+              value={trend.rateOfChange}
+              valueStyle={{ fontSize: '14px' }}
+            />
+          </Tooltip>
+        </Col>
+        <Col span={12}>
+          <Tooltip title="Number of readings analyzed">
+            <Statistic
+              title="Data Points"
+              value={trend.readingsCount}
+              valueStyle={{ fontSize: '14px' }}
+            />
+          </Tooltip>
+        </Col>
+        <Col span={24}>
+          <Text strong>Insight:</Text>
+          <Text> {trend.actionableInsight}</Text>
+        </Col>
+      </Row>
     );
   };
 
@@ -185,14 +216,26 @@ const ZoneIoTDetailsPage: React.FC = () => {
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        <Row gutter={[16, 16]}>
-          <Col span={24}>
-            <Space align="center">
-              <Title level={3}>{zone.name}</Title>
-              <Tag color={getStatusColor(zone.zoneStatus)}>{formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}</Tag>
-              <Tag color="blue">4-Hour Average</Tag>
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} md={16}>
+            <Space align="center" size={16}>
+              <Title level={3} style={{ marginBottom: 0 }}>{zone.name}</Title>
+                <Tag color={getStatusColor(zone.zoneStatus)} style={{ fontSize: '12px', padding: '2px 8px', marginLeft: '3px' }}>
+                   {formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}
+                </Tag>
+
             </Space>
           </Col>
+          <Col xs={24} md={8} style={{ textAlign: 'right' }}>
+            <Tooltip title="Data averaged over the last 4 hours">
+              <Text type="secondary">
+                <ClockCircleOutlined /> 4-Hour Average
+              </Text>
+            </Tooltip>
+          </Col>
+        </Row>
+        
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
           {Object.entries(averageReadings)
             .filter(([sensorType]) => filteredSensorTypes.includes(sensorType as SensorTypeEnum))
             .map(([sensorType, value]) => (
@@ -212,40 +255,59 @@ const ZoneIoTDetailsPage: React.FC = () => {
       {/* New section for unhealthy occurrences */}
       {unhealthyOccurrences.length > 0 && (
         <Card style={{ marginTop: 16 }}>
-          <Title level={4}>
-            <WarningOutlined style={{ color: '#faad14' }} /> Potential Issues
-          </Title>
-          <Text type="secondary" style={{ marginBottom: 16, display: 'block' }}>
-            Showing issues based on sensor readings from the last hour only.
-          </Text>
-          <List
-            dataSource={unhealthyOccurrences}
-            renderItem={(item) => (
-              <List.Item>
-                <List.Item.Meta
-                  title={
-                    <Space>
-                      {`${item.speciesName} (Occurrence Name: ${item.occurrenceName})`}
-                      <Tooltip title="View Occurrence Details">
-                        <Button
-                          type="link"
-                          icon={<FiExternalLink />}
-                          onClick={() => window.open(`/occurrences/${item.occurrenceId}`, '_blank')}
-                        />
-                      </Tooltip>
-                    </Space>
-                  }
-                  description={
-                    <ul>
-                      {item.issues.map((issue: string, index: number) => (
-                        <li key={index}>{issue}</li>
-                      ))}
-                    </ul>
-                  }
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Space align="center">
+              <Title level={4} style={{ margin: 0 }}>
+                <WarningOutlined style={{ color: '#faad14', marginRight: 8 }} />
+                Potential Issues
+              </Title>
+              <Badge 
+                count={unhealthyOccurrences.length} 
+                overflowCount={99} 
+                style={{ backgroundColor: '#faad14', marginLeft: 8 }}
+              />
+            </Space>
+            <Text type="secondary" style={{ marginBottom: 16 }}>
+              Based on sensor readings from the last hour
+            </Text>
+          </Space>
+          
+          <Collapse>
+            {unhealthyOccurrences.map((item, index) => (
+              <Panel 
+                key={index} 
+                header={
+                  <Space>
+                    <Text strong>{item.speciesName}</Text>
+                    <Text type="secondary">({item.occurrenceName})</Text>
+                    <Badge count={item.issues.length} style={{ backgroundColor: '#ff4d4f' }} />
+                  </Space>
+                }
+                extra={
+                  <Tooltip title="View Occurrence Details">
+                    <Button
+                      type="link"
+                      icon={<FiExternalLink />}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        window.open(`/occurrences/${item.occurrenceId}`, '_blank');
+                      }}
+                    />
+                  </Tooltip>
+                }
+              >
+                <List
+                  size="small"
+                  dataSource={item.issues}
+                  renderItem={(issue: string) => (
+                    <List.Item>
+                      <Text>{issue}</Text>
+                    </List.Item>
+                  )}
                 />
-              </List.Item>
-            )}
-          />
+              </Panel>
+            ))}
+          </Collapse>
         </Card>
       )}
 

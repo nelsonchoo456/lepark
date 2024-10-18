@@ -10,6 +10,7 @@ import SpeciesService from './SpeciesService';
 import OccurrenceService from './OccurrenceService';
 import { OccurrenceWithDetails } from './OccurrenceService';
 import OccurrenceDao from '../dao/OccurrenceDao';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const dateFormatter = (data: any) => {
   const { timestamp, ...rest } = data;
@@ -19,6 +20,13 @@ const dateFormatter = (data: any) => {
     formattedData.timestamp = new Date(timestamp);
   }
   return formattedData;
+};
+
+const enumFormatter = (enumValue: string): string => {
+    return enumValue
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
 };
 
 class SensorReadingService {
@@ -362,7 +370,7 @@ class SensorReadingService {
         rateOfChange: 'N/A',
         directionOfChange: 'N/A',
         magnitudeOfChange: 'N/A',
-        actionableInsight: 'Check system for errors and try again.',
+        actionableInsight: 'No actionable insight available.',
         readingsCount: 0,
         unit: 'N/A',
       };
@@ -525,23 +533,23 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
           switch (sensorType) {
             case SensorTypeEnum.TEMPERATURE:
               if (latestReading.value < speciesConditions.minTemp || latestReading.value > speciesConditions.maxTemp) {
-                issues.push(`Temperature out of range: ${latestReading.value}°C`);
+                issues.push(`Temperature out of range: ${latestReading.value}°C (Recommended: ${speciesConditions.minTemp}°C - ${speciesConditions.maxTemp}°C)`);
               }
               break;
             case SensorTypeEnum.HUMIDITY:
               if (Math.abs(latestReading.value - speciesConditions.idealHumidity) > 10) {
-                issues.push(`Humidity not ideal: ${latestReading.value}%`);
+                issues.push(`Humidity not ideal: ${latestReading.value}% (Recommended: ${speciesConditions.idealHumidity}%)`);
               }
               break;
             case SensorTypeEnum.SOIL_MOISTURE:
               if (Math.abs(latestReading.value - speciesConditions.soilMoisture) > 10) {
-                issues.push(`Soil moisture not ideal: ${latestReading.value}%`);
+                issues.push(`Soil moisture not ideal: ${latestReading.value}% (Recommended: ${speciesConditions.soilMoisture}%)`);
               }
               break;
             case SensorTypeEnum.LIGHT: {
               const lightIssue = this.checkLightCondition(latestReading.value, speciesConditions.lightType);
               if (lightIssue) {
-                issues.push(lightIssue);
+                issues.push(`Light level not ideal: ${latestReading.value} Lux (Recommended: ${this.getLightLuxRecommendation(speciesConditions.lightType)})`);
               }
               break;
             }
@@ -580,6 +588,20 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
         return null;
     }
   }
+
+  private getLightLuxRecommendation(lightType: LightTypeEnum): string {
+    switch (lightType) {
+      case LightTypeEnum.FULL_SUN:
+        return "> 200 Lux";
+      case LightTypeEnum.PARTIAL_SHADE:
+        return "50 - 200 Lux";
+      case LightTypeEnum.FULL_SHADE:
+        return "< 50 Lux";
+      default:
+        return "0 Lux";
+    }
+  }
+  
 
   // Get the latest sensor reading for an occurrence (based on nearest sensor)
   public async getLatestSensorReadingForOccurrence(
