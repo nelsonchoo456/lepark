@@ -169,10 +169,12 @@ const DecarbonizationAreaEditMap = () => {
       if (response.status === 200) {
         messageApi.open({
           type: 'success',
-          content: 'Decarbonization Area boundaries updated successfully.',
+          content: 'Saved changes to Decarbonization Area Boundaries.  Redirecting to Decarbonization Area details page...',
         });
         setCreatedData(response.data);
-        navigate(`/decarbonization-area/${decarbonizationArea.id}`);
+        setTimeout(() => {
+          navigate(`/decarbonization-area/${decarbonizationArea.id}`);
+        }, 1000);
       }
     } catch (error) {
       if (error instanceof Error) {
