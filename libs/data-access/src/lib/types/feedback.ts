@@ -1,13 +1,14 @@
 // feedback.ts
+import { FeedbackCategoryEnum, FeedbackStatusEnum } from './sharedenums';
 import { StaffResponse } from './staff';
 import { VisitorResponse } from './visitor';
 
 export interface FeedbackData {
   title: string;
   description: string;
-  feedbackCategory: 'FACILITIES' | 'SERVICES' | 'STAFF';
+  feedbackCategory: FeedbackCategoryEnum;
   images: string[];
-  feedbackStatus: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  feedbackStatus: FeedbackStatusEnum;
   remarks?: string | null;
   staffId?: string | null;
   visitorId: string;
@@ -20,9 +21,9 @@ export interface FeedbackResponse {
   dateResolved?: string | null;
   title: string;
   description: string;
-  feedbackCategory: 'FACILITIES' | 'SERVICES' | 'STAFF';
+  feedbackCategory: FeedbackCategoryEnum;
   images: string[];
-  feedbackStatus: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  feedbackStatus: FeedbackStatusEnum;
   remarks?: string | null;
   staffId?: string | null;
   visitorId: string;
@@ -34,9 +35,9 @@ export interface FeedbackResponse {
 export interface FeedbackUpdateData {
   title?: string;
   description?: string;
-  feedbackCategory?: 'FACILITIES' | 'SERVICES' | 'STAFF';
+  feedbackCategory?: FeedbackCategoryEnum;
   images?: string[];
-  feedbackStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  feedbackStatus?: FeedbackStatusEnum;
   remarks?: string | null;
   staffId?: string | null;
   parkId?: number | null;

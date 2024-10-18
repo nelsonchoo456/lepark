@@ -59,3 +59,6 @@ export * from './lib/types/sensorreading';
 
 export * from './lib/api/faq';
 export * from './lib/types/faq';
+
+export * from './lib/api/feedback';
+export * from './lib/types/feedback';
