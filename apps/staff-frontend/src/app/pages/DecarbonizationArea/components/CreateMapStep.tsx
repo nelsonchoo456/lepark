@@ -151,7 +151,7 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
 
       const finalData = {
         ...formValues,
-        parkId: formValues.parkId, // Use the parkId from the form
+        parkId: formValues.parkId ? formValues.parkId : selectedPark?.id,
       };
 
       if (polygon && polygon[0] && polygon[0][0]) {
