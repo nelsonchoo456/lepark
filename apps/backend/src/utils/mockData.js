@@ -3632,6 +3632,14 @@ const visitorsData = [
     password: "password",
     contactNumber: "82882747",
     isVerified: true,
+  },
+  {
+    firstName: "Aaron",
+    lastName: "Foo",
+    email: "aaronfyr@outlook.com",
+    password: "password",
+    contactNumber: "91234567",
+    isVerified: true,
   }
 ];
 
