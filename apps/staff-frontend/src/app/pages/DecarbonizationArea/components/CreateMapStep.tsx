@@ -1,40 +1,39 @@
-import { Button, Card, Checkbox, Input, Space, message } from 'antd';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import MapFeatureManager from '../../../components/map/MapFeatureManager';
-import { useEffect, useState } from 'react';
 import {
-  getDecarbonizationAreasByParkId,
-  ParkResponse,
-  DecarbonizationAreaResponse,
   createDecarbonizationArea,
-  OccurrenceResponse,
+  DecarbonizationAreaResponse,
+  getDecarbonizationAreasByParkId,
   getOccurrencesByParkId,
   getZonesByParkId,
+  OccurrenceResponse,
+  ParkResponse,
   ZoneResponse,
-  StaffResponse,
 } from '@lepark/data-access';
-import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { COLORS } from '../../../config/colors';
+import { Button, Card, Checkbox, message, Space } from 'antd';
+import { useEffect, useState } from 'react';
+import { PiPlantFill } from 'react-icons/pi';
+import { TbTree } from 'react-icons/tb';
+import { MapContainer, TileLayer } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
+import edit_image from '../../../assets/mapFeatureManager/edit.png';
 import node_image from '../../../assets/mapFeatureManager/line.png';
 import polygon_image from '../../../assets/mapFeatureManager/polygon.png';
-import edit_image from '../../../assets/mapFeatureManager/edit.png';
-import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { TbTree } from 'react-icons/tb';
-import { LatLng } from 'leaflet';
 import { latLngArrayToPolygon, polygonHasOverlap, polygonIsWithin } from '../../../components/map/functions/functions';
-import { useNavigate } from 'react-router-dom';
+import MapFeatureManager from '../../../components/map/MapFeatureManager';
 import PictureMarker from '../../../components/map/PictureMarker';
-import { PiPlantFill } from 'react-icons/pi';
-import { useAuth } from '@lepark/common-ui';
+import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
+import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
+import { COLORS } from '../../../config/colors';
 
 interface CreateMapStepProps {
   handleCurrStep: (step: number) => void;
+  setCurrStep: (step: number) => void; // Add setCurrStep prop
   polygon: any[];
   setPolygon: (item: any[]) => void;
   lines: any[];
   setLines: (item: any[]) => void;
   formValues: any;
   parks: ParkResponse[];
+  onSuccess: (data: DecarbonizationAreaResponse) => void; // Add onSuccess prop
 }
 
 const parseGeom = (geom: string) => {
@@ -70,8 +69,18 @@ const parseGeom = (geom: string) => {
   }
 };
 
-const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, formValues, parks }: CreateMapStepProps) => {
-  const [selectedPark, setSelectedPark] = useState<ParkResponse>();
+const CreateMapStep = ({
+  handleCurrStep,
+  setCurrStep,
+  polygon,
+  setPolygon,
+  lines,
+  setLines,
+  formValues,
+  parks,
+  onSuccess,
+}: CreateMapStepProps) => {
+  const [selectedPark, setSelectedPark] = useState<ParkResponse | undefined>(undefined);
   const [parkDecarbAreas, setParkDecarbAreas] = useState<DecarbonizationAreaResponse[]>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -83,8 +92,6 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
   const [showZones, setShowZones] = useState<boolean>(false);
 
   useEffect(() => {
-    console.log('Parks:', parks);
-    console.log('Form Values:', formValues);
     if (parks?.length > 0 && formValues && formValues.parkId) {
       const selectedPark = parks.find((z) => z.id === formValues.parkId);
       setSelectedPark(selectedPark);
@@ -151,7 +158,7 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
 
       const finalData = {
         ...formValues,
-        parkId: formValues.parkId ? formValues.parkId : selectedPark?.id,
+        parkId: formValues.parkId ? formValues.parkId : selectedPark?.id, // Use the parkId from the form
       };
 
       if (polygon && polygon[0] && polygon[0][0]) {
@@ -183,11 +190,8 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
 
       const response = await createDecarbonizationArea(finalData);
       if (response.status === 201) {
-        messageApi.open({
-          type: 'success',
-          content: 'Decarbonization Area created successfully.',
-        });
-        //navigate(`/decarbonization-area/${response.data.id}`);
+        console.log('Success response received');
+        onSuccess(response.data); // Call the onSuccess callback
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -316,6 +320,14 @@ const CreateMapStep = ({ handleCurrStep, polygon, setPolygon, lines, setLines, f
               />
             ))}
         </MapContainer>
+      </div>
+      <div className="flex justify-center gap-2">
+        <Button type="default" onClick={() => handleCurrStep(0)}>
+          Previous
+        </Button>
+        <Button type="primary" onClick={handleSubmit}>
+          Submit
+        </Button>
       </div>
     </>
   );
