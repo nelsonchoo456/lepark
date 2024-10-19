@@ -250,17 +250,4 @@ export async function getParkMaintenanceTaskOverdueRates(parkId: number | null, 
   }
 }
 
-export async function getParkAverageTaskCompletionTime(parkId: number | null, startDate: Date, endDate: Date): Promise<AxiosResponse<AverageCompletionTimeData[]>> {
-  try {
-    const response: AxiosResponse<AverageCompletionTimeData[]> = await client.get(`${URL}/getParkAverageTaskCompletionTime`, { params: { parkId, startDate, endDate } });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
 // Add other functions similar to the plantTask API file, such as getParkTaskLoadPercentage, getStaffPerformanceRanking, etc.
