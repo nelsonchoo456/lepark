@@ -466,7 +466,7 @@ async function seed() {
   // Create new sensors and associate them with the new hub
   let count = 0;
   for (const sensor of newSensors) {
-    if (count < 4) {
+    if (count < 5) {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
