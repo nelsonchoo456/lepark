@@ -57,8 +57,8 @@ const SidebarContainer = styled.div<{
   width: ${({ open, customWidth }) =>
     customWidth ? customWidth : SIDEBAR_WIDTH};
 
-  height: 100vh;
-  position: absolute;
+  height: 100%;
+  position: fixed;
   top: 0;
   left: 0;
 
@@ -98,7 +98,7 @@ export const Sidebar = ({ children, className  }: SidebarProps) => {
   }, []);
 
   return (
-    <SidebarContainer open={open} className={`${className} py-4 bg-indigoGrey-100 h-100vh`}>
+    <SidebarContainer open={open} className={`${className} py-4 bg-indigoGrey-100`}>
       <div>{children}</div>
     </SidebarContainer>
   );
