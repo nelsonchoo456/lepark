@@ -17,7 +17,7 @@ interface PlantTaskDashboardProps {
   parkOptions: { value: string | null; label: string }[];
 }
 
-const STATUS_COLORS = {
+export const STATUS_COLORS = {
   [PlantTaskStatusEnum.OPEN]: COLORS.sky[400],
   [PlantTaskStatusEnum.IN_PROGRESS]: COLORS.mustard[400],
   [PlantTaskStatusEnum.COMPLETED]: COLORS.green[400],

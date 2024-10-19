@@ -27,7 +27,8 @@ export const ContentWrapper = styled.div`
 
 export const DashboardContentWrapper = styled.div`
   padding: 0 1rem 1rem 1rem;
-  height: 100vh;
+  min-height: 100vh;
+  background-color: ${COLORS.gray[100]};
   // position: relative;
   // overflow: scroll;
 
