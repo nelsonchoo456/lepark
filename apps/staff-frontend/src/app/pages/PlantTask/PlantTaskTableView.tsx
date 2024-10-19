@@ -29,7 +29,7 @@ const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
 // Utility function to format task type
-const formatTaskType = (taskType: string) => {
+export const formatTaskType = (taskType: string) => {
   return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
