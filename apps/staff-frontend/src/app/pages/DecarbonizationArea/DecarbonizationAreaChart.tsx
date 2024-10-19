@@ -491,7 +491,7 @@ const DecarbonizationAreaChart: React.FC = () => {
     const shortfall = average ? average - actual : -actual;
     const percentageAchieved = average ? (actual / average) * 100 : 0;
 
-    const PlantOption = ({ icon, count, type }) => (
+    const PlantOption = ({ icon, count, type }: { icon: React.ElementType; count: number; type: string }) => (
       <Card size="small" style={{ marginBottom: '10px' }}>
         <Row align="middle" gutter={8}>
           {React.createElement(icon, { style: { fontSize: '32px', color: '#1890ff' } })}
