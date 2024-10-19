@@ -12,6 +12,10 @@ import { useFetchDecarbonizationAreas } from '../../hooks/DecarbonizationArea/us
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import useSequestrationHistory from '../../hooks/SequestrationHistory/useSequestrationHistory';
 import GraphContainer from './components/GraphContainer';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Chart } from 'chart.js';
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -345,69 +349,97 @@ const DecarbonizationAreaChart: React.FC = () => {
 
   const generateReport = async () => {
     console.log('Generate Report button clicked');
-    const doc = new jsPDF();
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-    // Use helvetica font
-    doc.setFont('helvetica', 'normal');
+    // Retrieve park and area names
+    const selectedPark = parks.find((park) => park.id === selectedParkId)?.name || 'All Parks';
+    const selectedAreaName = selectedArea === 'all' ? 'All' : filteredDecarbonizationAreas.find((area) => area.id === selectedArea)?.name;
 
-    // Set the text color to grey (assuming the grey color used in your app is #808080)
-    doc.setTextColor(128, 128, 128);
+    // Prepare the timeframe text
+    const timeframeText = `${dayjs(startDate).format('D MMM YY')} to ${dayjs(endDate).format('D MMM YY')}`;
 
-    const input = document.getElementById('report-content');
+    // Function to convert a chart to a base64 image
+    const chartToBase64 = (chart: Chart): Promise<string> => {
+      return new Promise((resolve) => {
+        resolve(chart.toBase64Image());
+      });
+    };
 
-    if (input) {
-      // Retrieve park and area names
-      const selectedPark = parks.find((park) => park.id === selectedParkId)?.name || 'All Parks';
-      const selectedAreaName = selectedArea === 'all' ? 'All' : filteredDecarbonizationAreas.find((area) => area.id === selectedArea)?.name;
+    // Get all chart instances
+    const chartInstances = Chart.instances;
+    const chartImages: string[] = await Promise.all(
+      Object.values(chartInstances).map((chart) => chartToBase64(chart))
+    );
 
-      // Add the timeframe, park name, and area name to the PDF
-      const timeframeText = `${dayjs(startDate).format('D MMM YY')} to ${dayjs(endDate).format('D MMM YY')}`;
-      const headerText = `Park: ${selectedPark} | Area: ${selectedAreaName} | ${timeframeText}`;
-      doc.setFontSize(12);
-      doc.text(headerText, 10, 6);
+    // Calculate sequestration performance
+    const average = benchmarkValue;
+    const actual = calculateActualSequestration(data, selectedArea, selectedParkId);
+    const shortfall = average ? average - actual : -actual;
+    const percentageAchieved = average ? (actual / average) * 100 : 0;
 
-      // Capture the entire report content
-      try {
-        const canvas = await html2canvas(input, {
-          backgroundColor: null, // Set background to null
-          scale: 2, // Increase scale for better quality
-          logging: false, // Disable logging
-          useCORS: true, // Enable CORS for images
-        });
-        const imgData = canvas.toDataURL('image/png');
+    // Calculate plants needed
+    const treesNeeded = calculatePlantsNeeded(shortfall, 'TREE_TROPICAL', 7000);
+    const mangrovesNeeded = calculatePlantsNeeded(shortfall, 'TREE_MANGROVE', 5000);
+    const shrubsNeeded = calculatePlantsNeeded(shortfall, 'SHRUB', 500);
 
-        // Calculate the height of the content
-        const imgProps = doc.getImageProperties(imgData);
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        const pageHeight = doc.internal.pageSize.getHeight();
-        let heightLeft = pdfHeight;
-        let position = 11; // Reduce padding between header and content
+    // Prepare the document definition
+    const docDefinition: TDocumentDefinitions = {
+      content: [
+        { text: 'Decarbonization Report', style: 'header' },
+        { text: `Park: ${selectedPark} | Area: ${selectedAreaName}`, style: 'subheader' },
+        { text: timeframeText, style: 'subheader' },
+        { text: 'Metrics', style: 'sectionHeader' },
+        {
+          columns: [
+            { text: `Total: ${metrics.total} kg`, style: 'metric' },
+            { text: `Average: ${metrics.average} kg`, style: 'metric' },
+            { text: `Max: ${metrics.max} kg`, style: 'metric' },
+            { text: `Min: ${metrics.min} kg`, style: 'metric' },
+            { text: `Trend: ${metrics.trend} kg/day`, style: 'metric' },
+          ],
+        },
+        { text: 'Sequestration Performance', style: 'sectionHeader' },
+        {
+          columns: [
+            {
+              width: '50%',
+              stack: [
+                { text: `${Math.round(percentageAchieved)}% of target achieved`, style: 'performanceMetric' },
+                { text: `${shortfall.toFixed(2)} kg below average`, style: 'performanceMetric' },
+              ],
+            },
+            {
+              width: '50%',
+              stack: [
+                { text: 'To reach the target, plant:', style: 'plantAdvice' },
+                { text: `${treesNeeded} Tropical Trees`, style: 'plantOption' },
+                { text: `${mangrovesNeeded} Mangrove Trees`, style: 'plantOption' },
+                { text: `${shrubsNeeded} Shrubs`, style: 'plantOption' },
+              ],
+            },
+          ],
+        },
+        { text: 'Charts', style: 'sectionHeader' },
+        ...chartImages.map((image, index) => ({
+          image: image,
+          width: 500,
+          alignment: 'center' as const,
+          margin: [0, 10, 0, 10] as [number, number, number, number],
+        })),
+      ],
+      styles: {
+        header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
+        subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
+        sectionHeader: { fontSize: 14, bold: true, margin: [0, 15, 0, 5] },
+        metric: { fontSize: 12, margin: [0, 5, 0, 5] },
+        performanceMetric: { fontSize: 12, margin: [0, 5, 0, 5], color: 'red' },
+        plantAdvice: { fontSize: 12, bold: true, margin: [0, 5, 0, 5] },
+        plantOption: { fontSize: 12, margin: [0, 2, 0, 2] },
+      },
+    };
 
-        // Add the first page
-        doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
-        heightLeft -= pageHeight - position;
-
-        // Add additional pages if needed
-        while (heightLeft > 0) {
-          position = heightLeft - pdfHeight;
-          doc.addPage();
-          doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
-          heightLeft -= pageHeight;
-        }
-
-        console.log('Report content captured');
-      } catch (error) {
-        console.error('Error capturing report content:', error);
-      }
-
-      // Save the PDF with formatted date and park/area names
-      const formattedDate = dayjs().format('D MMM YY');
-      const fileName = `Decarbonization Report ${selectedPark} Area-${selectedAreaName} ${formattedDate}.pdf`;
-      doc.save(fileName);
-    } else {
-      console.warn('Report content not found');
-    }
+    // Generate the PDF
+    pdfMake.createPdf(docDefinition).download(`Decarbonization Report ${selectedPark} Area-${selectedAreaName} ${dayjs().format('D MMM YY')}.pdf`);
   };
 
   const sequestrationFactors = {
@@ -494,7 +526,7 @@ const DecarbonizationAreaChart: React.FC = () => {
                 <Progress
                   type="dashboard"
                   percent={Math.round(percentageAchieved)}
-                  width={200}
+                  size={200}
                   format={(percent) => (
                     <span>
                       {percent}%<br />
