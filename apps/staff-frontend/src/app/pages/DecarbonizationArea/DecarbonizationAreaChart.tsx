@@ -1,7 +1,7 @@
-import { FileTextOutlined, InfoCircleFilled } from '@ant-design/icons';
+import { FileTextOutlined, InfoCircleFilled, InfoCircleOutlined } from '@ant-design/icons';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { SequestrationHistoryResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { Button, Card, Col, DatePicker, Row, Select, Spin, Statistic, Switch, Tooltip } from 'antd';
+import { Button, Card, Col, DatePicker, Row, Select, Spin, Statistic, Switch, Tooltip, Alert, Progress, Typography } from 'antd';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -12,8 +12,13 @@ import { useFetchDecarbonizationAreas } from '../../hooks/DecarbonizationArea/us
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import useSequestrationHistory from '../../hooks/SequestrationHistory/useSequestrationHistory';
 import GraphContainer from './components/GraphContainer';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Chart } from 'chart.js';
 const { RangePicker } = DatePicker;
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 const DecarbonizationAreaChart: React.FC = () => {
   const { decarbonizationAreas, loading: areasLoading } = useFetchDecarbonizationAreas();
@@ -142,7 +147,7 @@ const DecarbonizationAreaChart: React.FC = () => {
       {
         label: 'Average',
         data: data.map(() => benchmarkValue), // Create an array of the same length as the data, filled with the benchmark value
-        borderColor: 'red',
+        borderColor: '#1363b8',
         borderDash: [5, 5], // This creates the dotted line effect
         borderWidth: 2,
         pointRadius: 0, // Hide the points
@@ -344,69 +349,97 @@ const DecarbonizationAreaChart: React.FC = () => {
 
   const generateReport = async () => {
     console.log('Generate Report button clicked');
-    const doc = new jsPDF();
-  
-    // Use helvetica font
-    doc.setFont('helvetica', 'normal');
-  
-    // Set the text color to grey (assuming the grey color used in your app is #808080)
-    doc.setTextColor(128, 128, 128);
-  
-    const input = document.getElementById('report-content');
-  
-    if (input) {
-      // Retrieve park and area names
-      const selectedPark = parks.find((park) => park.id === selectedParkId)?.name || 'All Parks';
-      const selectedAreaName = selectedArea === 'all' ? 'All' : filteredDecarbonizationAreas.find((area) => area.id === selectedArea)?.name;
-  
-      // Add the timeframe, park name, and area name to the PDF
-      const timeframeText = `${dayjs(startDate).format('D MMM YY')} to ${dayjs(endDate).format('D MMM YY')}`;
-      const headerText = `Park: ${selectedPark} | Area: ${selectedAreaName} | ${timeframeText}`;
-      doc.setFontSize(12);
-      doc.text(headerText, 10, 6);
-  
-      // Capture the entire report content
-      try {
-        const canvas = await html2canvas(input, {
-          backgroundColor: null,  // Set background to null
-          scale: 2,  // Increase scale for better quality
-          logging: false,  // Disable logging
-          useCORS: true,  // Enable CORS for images
-        });
-        const imgData = canvas.toDataURL('image/png');
-  
-        // Calculate the height of the content
-        const imgProps = doc.getImageProperties(imgData);
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        const pageHeight = doc.internal.pageSize.getHeight();
-        let heightLeft = pdfHeight;
-        let position = 11; // Reduce padding between header and content
-  
-        // Add the first page
-        doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
-        heightLeft -= pageHeight - position;
-  
-        // Add additional pages if needed
-        while (heightLeft > 0) {
-          position = heightLeft - pdfHeight;
-          doc.addPage();
-          doc.addImage(imgData, 'PNG', 10, position, pdfWidth - 20, pdfHeight);
-          heightLeft -= pageHeight;
-        }
-  
-        console.log('Report content captured');
-      } catch (error) {
-        console.error('Error capturing report content:', error);
-      }
-  
-      // Save the PDF with formatted date and park/area names
-      const formattedDate = dayjs().format('D MMM YY');
-      const fileName = `Decarbonization Report ${selectedPark} Area-${selectedAreaName} ${formattedDate}.pdf`;
-      doc.save(fileName);
-    } else {
-      console.warn('Report content not found');
-    }
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+    // Retrieve park and area names
+    const selectedPark = parks.find((park) => park.id === selectedParkId)?.name || 'All Parks';
+    const selectedAreaName = selectedArea === 'all' ? 'All' : filteredDecarbonizationAreas.find((area) => area.id === selectedArea)?.name;
+
+    // Prepare the timeframe text
+    const timeframeText = `${dayjs(startDate).format('D MMM YY')} to ${dayjs(endDate).format('D MMM YY')}`;
+
+    // Function to convert a chart to a base64 image
+    const chartToBase64 = (chart: Chart): Promise<string> => {
+      return new Promise((resolve) => {
+        resolve(chart.toBase64Image());
+      });
+    };
+
+    // Get all chart instances
+    const chartInstances = Chart.instances;
+    const chartImages: string[] = await Promise.all(
+      Object.values(chartInstances).map((chart) => chartToBase64(chart))
+    );
+
+    // Calculate sequestration performance
+    const average = benchmarkValue;
+    const actual = calculateActualSequestration(data, selectedArea, selectedParkId);
+    const shortfall = average ? average - actual : -actual;
+    const percentageAchieved = average ? (actual / average) * 100 : 0;
+
+    // Calculate plants needed
+    const treesNeeded = calculatePlantsNeeded(shortfall, 'TREE_TROPICAL', 7000);
+    const mangrovesNeeded = calculatePlantsNeeded(shortfall, 'TREE_MANGROVE', 5000);
+    const shrubsNeeded = calculatePlantsNeeded(shortfall, 'SHRUB', 500);
+
+    // Prepare the document definition
+    const docDefinition: TDocumentDefinitions = {
+      content: [
+        { text: 'Decarbonization Report', style: 'header' },
+        { text: `Park: ${selectedPark} | Area: ${selectedAreaName}`, style: 'subheader' },
+        { text: timeframeText, style: 'subheader' },
+        { text: 'Metrics', style: 'sectionHeader' },
+        {
+          columns: [
+            { text: `Total: ${metrics.total} kg`, style: 'metric' },
+            { text: `Average: ${metrics.average} kg`, style: 'metric' },
+            { text: `Max: ${metrics.max} kg`, style: 'metric' },
+            { text: `Min: ${metrics.min} kg`, style: 'metric' },
+            { text: `Trend: ${metrics.trend} kg/day`, style: 'metric' },
+          ],
+        },
+        { text: 'Sequestration Performance', style: 'sectionHeader' },
+        {
+          columns: [
+            {
+              width: '50%',
+              stack: [
+                { text: `${Math.round(percentageAchieved)}% of target achieved`, style: 'performanceMetric' },
+                { text: `${shortfall.toFixed(2)} kg below average`, style: 'performanceMetric' },
+              ],
+            },
+            {
+              width: '50%',
+              stack: [
+                { text: 'To reach the target, plant:', style: 'plantAdvice' },
+                { text: `${treesNeeded} Tropical Trees`, style: 'plantOption' },
+                { text: `${mangrovesNeeded} Mangrove Trees`, style: 'plantOption' },
+                { text: `${shrubsNeeded} Shrubs`, style: 'plantOption' },
+              ],
+            },
+          ],
+        },
+        { text: 'Charts', style: 'sectionHeader' },
+        ...chartImages.map((image, index) => ({
+          image: image,
+          width: 500,
+          alignment: 'center' as const,
+          margin: [0, 10, 0, 10] as [number, number, number, number],
+        })),
+      ],
+      styles: {
+        header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
+        subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] },
+        sectionHeader: { fontSize: 14, bold: true, margin: [0, 15, 0, 5] },
+        metric: { fontSize: 12, margin: [0, 5, 0, 5] },
+        performanceMetric: { fontSize: 12, margin: [0, 5, 0, 5], color: 'red' },
+        plantAdvice: { fontSize: 12, bold: true, margin: [0, 5, 0, 5] },
+        plantOption: { fontSize: 12, margin: [0, 2, 0, 2] },
+      },
+    };
+
+    // Generate the PDF
+    pdfMake.createPdf(docDefinition).download(`Decarbonization Report ${selectedPark} Area-${selectedAreaName} ${dayjs().format('D MMM YY')}.pdf`);
   };
 
   const sequestrationFactors = {
@@ -451,43 +484,75 @@ const DecarbonizationAreaChart: React.FC = () => {
       return latestEntry ? latestEntry.seqValue : 0;
     }
   };
+
   const renderAdvice = () => {
     const average = benchmarkValue;
     const actual = calculateActualSequestration(data, selectedArea, selectedParkId);
     const shortfall = average ? average - actual : -actual;
+    const percentageAchieved = average ? (actual / average) * 100 : 0;
+
+    const PlantOption = ({ icon, count, type }: { icon: React.ElementType; count: number; type: string }) => (
+      <Card size="small" style={{ marginBottom: '10px' }}>
+        <Row align="middle" gutter={8}>
+          {React.createElement(icon, { style: { fontSize: '32px', color: '#1890ff' } })}
+          <Col>
+            <Text strong>{count}</Text>
+            <br />
+            <Text type="secondary">{type}</Text>
+          </Col>
+        </Row>
+      </Card>
+    );
 
     if (average && actual >= average) {
-      return <p style={{ color: 'green' }}>Good job! The sequestration amount is above the internationally benchmarked average.</p>;
+      return (
+        <Alert
+          message="Excellent Performance!"
+          description="The sequestration amount is above the internationally benchmarked average."
+          type="success"
+          showIcon
+        />
+      );
     } else {
       const treesNeeded = calculatePlantsNeeded(shortfall, 'TREE_TROPICAL', 7000);
       const mangrovesNeeded = calculatePlantsNeeded(shortfall, 'TREE_MANGROVE', 5000);
       const shrubsNeeded = calculatePlantsNeeded(shortfall, 'SHRUB', 500);
 
       return (
-        <div style={{ marginLeft: '10px' }}>
-          <p style={{ color: 'red' }}>
-            The sequestration amount is below the internationally benchmarked average by {shortfall.toFixed(2)} kg.
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-            <p>Approximately</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <GiPalmTree style={{ fontSize: '24px' }} />
-              <span>{treesNeeded} Tropical Trees, or</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <GiTreehouse style={{ fontSize: '24px' }} />
-              <span>{mangrovesNeeded} Mangrove Trees, or</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <GiOakLeaf style={{ fontSize: '24px' }} />
-              <span>{shrubsNeeded} Shrubs</span>
-            </div>
-            <p>need to be planted to hit the average.</p>
-            <Tooltip title="Based on a biomass of 7000kg for tropical trees, 5000kg for mangrove trees, and 500kg for shrubs.">
-              <InfoCircleFilled style={{ marginLeft: '8px' }} />
-            </Tooltip>
-          </div>
-        </div>
+        <Card title="Sequestration Performance" extra={<InfoCircleOutlined />}>
+          <Row gutter={16} align="middle">
+            <Col span={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <Progress
+                  type="dashboard"
+                  percent={Math.round(percentageAchieved)}
+                  size={200}
+                  format={(percent) => (
+                    <span>
+                      {percent}%<br />
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        of target
+                      </Text>
+                    </span>
+                  )}
+                />
+              </div>
+            </Col>
+            <Col span={12}>
+              <Title level={4} type="danger">
+                {shortfall.toFixed(2)} kg
+              </Title>
+              <Text type="secondary">below the average</Text>
+              <br />
+              <br />
+              <Text>To reach the target, plant any of the following:</Text>
+              <br />
+              <PlantOption icon={GiPalmTree} count={treesNeeded} type="Tropical Trees" />
+              <PlantOption icon={GiTreehouse} count={mangrovesNeeded} type="Mangrove Trees" />
+              <PlantOption icon={GiOakLeaf} count={shrubsNeeded} type="Shrubs" />
+            </Col>
+          </Row>
+        </Card>
       );
     }
   };
@@ -538,41 +603,39 @@ const DecarbonizationAreaChart: React.FC = () => {
         {loading || areasLoading ? (
           <Spin />
         ) : data.length > 0 ? (
-          <>
-            <div id="report-content">
-              <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }} id="metrics-section">
-                <Col span={4}>
-                  <Statistic title="Total Sequestration (kg)" value={metrics.total} />
-                </Col>
-                <Col span={4}>
-                  <Statistic title="Average Sequestration (kg)" value={metrics.average} />
-                </Col>
-                <Col span={4}>
-                  <Statistic title="Max Sequestration (kg)" value={metrics.max} />
-                </Col>
-                <Col span={4}>
-                  <Statistic title="Min Sequestration (kg)" value={metrics.min} />
-                </Col>
-                <Col span={4}>
-                  <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
-                </Col>
-              </Row>
-              <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }}>
-                <Col span={24}>{renderAdvice()}</Col>
-              </Row>
-              <div
-                id="charts-section"
-                style={{
-                  display: 'flex',
-                  flexDirection: isSingleColumn ? 'column' : 'row',
-                  flexWrap: 'wrap',
-                  justifyContent: 'space-around',
-                }}
-              >
-                {renderGraphs()}
-              </div>
+          <div id="report-content">
+            <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }} id="metrics-section">
+              <Col span={4}>
+                <Statistic title="Total Sequestration (kg)" value={metrics.total} />
+              </Col>
+              <Col span={4}>
+                <Statistic title="Average Sequestration (kg)" value={metrics.average} />
+              </Col>
+              <Col span={4}>
+                <Statistic title="Max Sequestration (kg)" value={metrics.max} />
+              </Col>
+              <Col span={4}>
+                <Statistic title="Min Sequestration (kg)" value={metrics.min} />
+              </Col>
+              <Col span={4}>
+                <Statistic title="Trend (per day) (kg)" value={metrics.trend} />
+              </Col>
+            </Row>
+            <Row gutter={12} style={{ marginTop: '15px', justifyContent: 'center' }}>
+              <Col span={24}>{renderAdvice()}</Col>
+            </Row>
+            <div
+              id="charts-section"
+              style={{
+                display: 'flex',
+                flexDirection: isSingleColumn ? 'column' : 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'space-around',
+              }}
+            >
+              {renderGraphs()}
             </div>
-          </>
+          </div>
         ) : (
           <p>No data available</p>
         )}

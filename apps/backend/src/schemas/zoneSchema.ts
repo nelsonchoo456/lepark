@@ -35,5 +35,4 @@ export interface ZoneResponseData {
   parkName: string;
   parkDescription: string;
   images?: string[];
-  
 }

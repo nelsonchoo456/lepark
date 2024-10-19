@@ -28,6 +28,6 @@ export interface ZoneResponse {
   parkName: string;
   parkDescription: string;
   park?: ParkResponse;
-  hub?: HubResponse;
+  hubs?: HubResponse[];
   sensors?: SensorResponse[];
 }

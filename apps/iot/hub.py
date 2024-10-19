@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 import requests
 import sys
+import pytz
 
 # Load environment variables from .env file
 load_dotenv()
@@ -112,9 +113,10 @@ def poll_sensor_data_from_microbit(valid_sensors, radioGroup):
                     value = float(data.split("|")[1])
 
                     if sensorIdentifier not in poll_result:
+                        singapore_tz = pytz.timezone('Asia/Singapore')
                         poll_result[sensorIdentifier] = {
                             "readings": [],
-                            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            "time": datetime.now(singapore_tz).strftime("%Y-%m-%d %H:%M:%S")
                         }
                     
                     poll_result[sensorIdentifier]["readings"].append(value)
@@ -288,9 +290,10 @@ def main_function():
     print("Data Transmission Rate (Polls) is: " + str(response))
     try:
         polls = 0
-        last_poll_time = datetime.now()
+        singapore_tz = pytz.timezone('Asia/Singapore')
+        last_poll_time = datetime.now(singapore_tz)
         while True:
-            current_time = datetime.now()
+            current_time = datetime.now(singapore_tz)
             if (current_time - last_poll_time).total_seconds() >= NEXT_POLL_IN_SECONDS:
                 polls += 1
                 # get the sensor values from the micro:bits

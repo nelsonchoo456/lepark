@@ -8,8 +8,9 @@ import {
   SensorResponse,
   StaffResponse,
   StaffType,
+  SensorTypeEnum,
 } from '@lepark/data-access';
-import { Button, Card, Flex, Form, Input, Result, Select, Steps, message } from 'antd';
+import { Button, Card, Flex, Form, Input, Result, Select, Steps, message, Tooltip } from 'antd';
 import { ZoneResponse } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import PlaceZoneMapStep from './components/AddSensorMapStep';
@@ -31,7 +32,6 @@ const SensorAddToHub = () => {
   const { user } = useAuth<StaffResponse>();
   const [currStep, setCurrStep] = useState<number>(0);
   const [createdData, setCreatedData] = useState<SensorResponse | null>();
-  // const [selectedZone, setSelectedZone] = useState<ZoneResponse>();
 
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -71,7 +71,7 @@ const SensorAddToHub = () => {
       setSelectedHub(matchedHub);
       setSelectedZone(matchedHub?.zone);
     }
-  }, [hubId]);
+  }, [hubId, hubs]);
 
   const adjustLatLng = ({ lat, lng }: AdjustLatLngInterface) => {
     if (lat) {
@@ -164,6 +164,10 @@ const SensorAddToHub = () => {
     return <></>;
   }
 
+  const isHubDisabled = (hub: HubResponse) => {
+    return sensor?.sensorType === SensorTypeEnum.CAMERA && hub.sensors?.some(s => s.sensorType === SensorTypeEnum.CAMERA);
+  };
+
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -177,7 +181,6 @@ const SensorAddToHub = () => {
               current={!hubId ? 0 : 1}
               items={[
                 {
-                  // title: 'Assign Sensor to a Hub',
                   description: (
                     <Form.Item name="hubId" label="Hub" rules={[{ required: true }]}>
                       <Select placeholder="Select a Hub" disabled={!hubs || hubs.length === 0}>
@@ -189,12 +192,14 @@ const SensorAddToHub = () => {
                           </div>
                         </Select.Option>
                         {hubs?.map((hub) => (
-                          <Select.Option key={hub.id} value={hub.id}>
-                            <div className="flex">
-                              <div className="flex-[1] font-semibold">{hub.name}</div>
-                              <div className="flex-[1]">{hub.identifierNumber}</div>
-                              <div className="flex-[1]">{hub.zone?.name}</div>
-                            </div>
+                          <Select.Option key={hub.id} value={hub.id} disabled={isHubDisabled(hub)}>
+                            <Tooltip title={isHubDisabled(hub) ? "This hub already has a camera sensor" : ""}>
+                              <div className="flex">
+                                <div className="flex-[1] font-semibold">{hub.name}</div>
+                                <div className="flex-[1]">{hub.identifierNumber}</div>
+                                <div className="flex-[1]">{hub.zone?.name}</div>
+                              </div>
+                            </Tooltip>
                           </Select.Option>
                         ))}
                       </Select>
@@ -203,7 +208,6 @@ const SensorAddToHub = () => {
                   ),
                 },
                 {
-                  // title: "Indicate the Sensor's Location",
                   description: (
                     <>
                       <PlaceZoneMapStep

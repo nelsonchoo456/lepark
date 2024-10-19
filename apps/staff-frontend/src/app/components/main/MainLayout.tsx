@@ -181,7 +181,8 @@ const MainLayout = () => {
     userRole === StaffType.SUPERADMIN ||
     userRole === StaffType.MANAGER ||
     userRole === StaffType.ARBORIST ||
-    userRole === StaffType.BOTANIST
+    userRole === StaffType.BOTANIST ||
+    userRole === StaffType.VENDOR_MANAGER
       ? {
           key: 'iot',
           label: 'IoT',
@@ -247,12 +248,7 @@ const MainLayout = () => {
           ],
         }
       : null,
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'BOTANIST' ||
-    userRole === 'ARBORIST' ||
-    userRole === 'PARK_RANGER' ||
-    userRole === 'VENDOR_MANAGER'
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'task',
           icon: <FiInbox />,
@@ -271,7 +267,23 @@ const MainLayout = () => {
           ],
         }
       : null,
-     {
+    userRole === 'ARBORIST' || userRole === 'BOTANIST'
+      ? {
+          key: 'plant-tasks',
+          icon: <FiInbox />,
+          label: 'Plant Tasks',
+          onClick: () => navigate('/plant-tasks'),
+        }
+      : null,
+    userRole === 'VENDOR_MANAGER'
+      ? {
+          key: 'maintenance-tasks',
+          icon: <FiInbox />,
+          label: 'Maintenance Tasks',
+          onClick: () => navigate('/maintenance-tasks'),
+        }
+      : null,
+    {
       key: 'faq',
       icon: <FiHelpCircle />,
       label: 'FAQ',

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge } from 'antd';
-import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink } from 'react-icons/fi';
+import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera } from 'react-icons/fi';
 import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
@@ -220,10 +220,14 @@ const ZoneIoTDetailsPage: React.FC = () => {
           <Col xs={24} md={16}>
             <Space align="center" size={16}>
               <Title level={3} style={{ marginBottom: 0 }}>{zone.name}</Title>
-                <Tag color={getStatusColor(zone.zoneStatus)} style={{ fontSize: '12px', padding: '2px 8px', marginLeft: '3px' }}>
-                   {formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}
-                </Tag>
-
+              <Tag color={getStatusColor(zone.zoneStatus)} style={{ fontSize: '12px', padding: '2px 8px', marginLeft: '3px' }}>
+                {formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}
+              </Tag>
+              <Tooltip title="View Camera Streams">
+                <Link to={`/iot/zones/${zoneId}/camera-streams`}>
+                  <Button type="link" icon={<FiCamera />} />
+                </Link>
+              </Tooltip>
             </Space>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'right' }}>

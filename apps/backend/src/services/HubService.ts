@@ -208,11 +208,7 @@ class HubService {
           throw new Error('Zone not found');
         }
 
-        // Check if the zone already has a hub
-        const existingHubInZone = await HubDao.getHubByZoneId(formattedData.zoneId);
-        if (existingHubInZone) {
-          throw new Error('Zone already has a hub assigned');
-        }
+        // Remove the check for existing hub in zone
       }
 
       const zone = await ZoneDao.getZoneById(formattedData.zoneId);
@@ -222,7 +218,7 @@ class HubService {
       }
 
       if (hub.zoneId) {
-        throw new Error('Hub already has a zone');
+        throw new Error('Hub is already assigned to a zone');
       }
 
       if (hub.hubStatus === 'ACTIVE') {
@@ -358,15 +354,22 @@ class HubService {
       console.log('payload', payload);
 
       for (const sensorIdentifier of Object.keys(payload)) {
+        const sensor = await SensorDao.getSensorByIdentifierNumber(sensorIdentifier);
+        if (!sensor) {
+          throw new Error('Sensor not found');
+        }
+
         for (const sensorData of payload[sensorIdentifier]) {
-          const sensor = await SensorDao.getSensorByIdentifierNumber(sensorIdentifier);
-          if (!sensor) {
-            throw new Error('Sensor not found');
+          let value = sensorData.reading;
+
+          // Convert soil moisture reading to percentage
+          if (sensor.sensorType === 'SOIL_MOISTURE') {
+            value = this.convertSoilMoistureToPercentage(value);
           }
 
           await SensorReadingDao.createSensorReading({
             date: new Date(sensorData.readingDate),
-            value: sensorData.reading,
+            value: value,
             sensor: { connect: { id: sensor.id } },
           });
         }
@@ -459,6 +462,13 @@ class HubService {
 
     const sensors = await HubDao.getAllActiveSensorsByHubId(hub.id);
     return sensors.map((sensor) => sensor.identifierNumber);
+  }
+
+  // Add this new method to convert soil moisture readings
+  private convertSoilMoistureToPercentage(reading: number): number {
+    // Assuming the input range is 0-500 and we want to convert it to 0-100
+    const percentage = (reading / 500) * 100;
+    return Math.min(Math.max(percentage, 0), 100); // Ensure the result is between 0 and 100
   }
 }
 

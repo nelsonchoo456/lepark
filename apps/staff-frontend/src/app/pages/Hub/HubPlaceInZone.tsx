@@ -248,10 +248,9 @@ const HubPlaceInZone = () => {
                     value: zone.id,
                     label: (
                       <div className="flex justify-between">
-                        {zone.name} {zone.hubId && <div>Has a Hub</div>}
+                        {zone.name} {zone.hubs && zone.hubs.length > 0 && <div>Has {zone.hubs.length} Hub(s)</div>}
                       </div>
                     ),
-                    disabled: !!zone.hubId,
                   }))}
                 />
               </Form.Item>

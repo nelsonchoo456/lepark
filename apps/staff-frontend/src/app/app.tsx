@@ -103,6 +103,7 @@ import AnnouncementList from './pages/Announcement/AnnouncementList';
 import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
 import AnnouncementDetails from './pages/AnnouncementDetails/AnnouncementDetails';
 import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails/TicketListingDetails';
+import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
 
 export function App() {
   return (
@@ -426,7 +427,7 @@ export function App() {
                         StaffType.MANAGER,
                         StaffType.ARBORIST,
                         StaffType.BOTANIST,
-                        StaffType.VENDOR_MAANGER,
+                        StaffType.VENDOR_MANAGER,
                       ]}
                       redirectTo="/"
                     />
@@ -480,7 +481,7 @@ export function App() {
                         StaffType.MANAGER,
                         StaffType.ARBORIST,
                         StaffType.BOTANIST,
-                        StaffType.VENDOR_MAANGER,
+                        StaffType.VENDOR_MANAGER,
                       ]}
                       redirectTo="/"
                     />
@@ -568,6 +569,7 @@ export function App() {
                 <Route path="/iot">
                   <Route path="zones" element={<ZoneIoTDashboard />} />
                   <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
+                  <Route path="zones/:zoneId/camera-streams" element={<ZoneCameraStreamsPage />} />
                 </Route>
 
                 {/* FAQ Routes */}

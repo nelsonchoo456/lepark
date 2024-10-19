@@ -26,6 +26,8 @@ import ZoneTab from './components/ZoneTab';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { LuUnplug } from 'react-icons/lu';
 import { RiExternalLinkLine } from 'react-icons/ri';
+import SensorReadingsTab from './components/SensorReadingsTab';
+import CameraStreamTab from './components/CameraStreamTab';
 
 const formatSensorType = (type: string): string => {
   return type
@@ -136,7 +138,7 @@ const ViewSensorDetails = () => {
             );
           case 'UNDER_MAINTENANCE':
             return (
-              <Tag color="orange" bordered={false}>
+              <Tag color="yellow" bordered={false}>
                 {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
               </Tag>
             );
@@ -232,6 +234,21 @@ const ViewSensorDetails = () => {
               }
             : null,
         ]),
+    sensor?.sensorStatus === 'ACTIVE'
+      ? {
+          key: 'readings',
+          label: 'Sensor Readings',
+          children: sensor ? <SensorReadingsTab sensorId={sensor.id} /> : <p>Loading sensor readings...</p>,
+        }
+      : null,
+    // Add the new Camera Stream tab
+    sensor?.sensorStatus === 'ACTIVE' && sensor?.sensorType === 'CAMERA'
+      ? {
+          key: 'cameraStream',
+          label: 'Camera Stream',
+          children: sensor ? <CameraStreamTab sensorId={sensor.id} /> : <p>Loading camera stream...</p>,
+        }
+      : null,
   ];
 
   if (loading) {

@@ -36,6 +36,7 @@ from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 import matplotlib.pyplot as plt
+import pytz
 
 # Load environment variables from .env file
 load_dotenv()
@@ -51,13 +52,13 @@ PAGE = """\
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Picamera2 MJPEG Streaming</title>
+    <title>Live Camera Feed</title>
     <style>
         body {{
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -65,32 +66,60 @@ PAGE = """\
         }}
         .container {{
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
             text-align: center;
+            max-width: 800px;
+            width: 90%;
         }}
         h1 {{
-            color: #333;
-            margin-bottom: 10px;
+            color: #1a73e8;
+            margin-bottom: 15px;
+            font-size: 2.5em;
         }}
         h2 {{
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 1.2em;
+            color: #5f6368;
+            margin-bottom: 25px;
+            font-size: 1.3em;
+            font-weight: normal;
         }}
-        img {{
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
+        .stream-container {{
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }}
+        .stream-container img {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }}
+        .camera-info {{
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 0.9em;
         }}
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Picamera2 MJPEG Streaming</h1>
-        <h2>Viewing Camera: {camera_identifier}</h2>
-        <img src="stream.mjpg" alt="MJPEG Stream" />
+        <h1>Live Camera Feed</h1>
+        <h2>Real-time surveillance from Camera {camera_identifier}</h2>
+        <div class="stream-container">
+            <img src="stream.mjpg" alt="Live Camera Feed" />
+            <div class="camera-info">Camera ID: {camera_identifier}</div>
+        </div>
     </div>
 </body>
 </html>
@@ -240,7 +269,8 @@ def run_detection(model: str, max_results: int, score_threshold: float) -> None:
         try:
             with sqlite3.connect("processor.db") as mydb:
                 mycursor = mydb.cursor()
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                singapore_tz = pytz.timezone('Asia/Singapore')
+                current_time = datetime.now(singapore_tz).strftime("%Y-%m-%d %H:%M:%S")
                 query = "INSERT INTO sensordb(readingDate, sensorIdentifier, reading, sent) VALUES (?, ?, ?, ?)"
                 mycursor.execute(query, (current_time, CAMERA_IDENTIFIER_NO, person_count, 0))
                 mydb.commit()
@@ -268,7 +298,8 @@ def run_detection(model: str, max_results: int, score_threshold: float) -> None:
          # Save every detection frame
         if detection_frame is not None:
             try:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                singapore_tz = pytz.timezone('Asia/Singapore')
+                timestamp = datetime.now(singapore_tz).strftime("%Y%m%d_%H%M%S_%f")
                 filename = f'detection_{timestamp}.png'
                 filepath = os.path.join(output_dir, filename)
                 

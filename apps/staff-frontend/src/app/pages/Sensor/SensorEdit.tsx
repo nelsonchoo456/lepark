@@ -53,7 +53,7 @@ const SensorEdit = () => {
       setCurrentImages(sensor.images || []);
 
       form.setFieldsValue(finalData);
-      form.setFieldValue('sensorStatus', formatEnumLabelToRemoveUnderscores(sensor.sensorStatus));
+      form.setFieldValue('sensorStatus', sensor.sensorStatus);
 
       if (sensor.facilityId) {
         fetchFacilityDetails(sensor.facilityId);
@@ -80,11 +80,27 @@ const SensorEdit = () => {
     }
   };
 
+  const getSensorUnitFromType = (sensorType: SensorTypeEnum): SensorUnitEnum => {
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return SensorUnitEnum.DEGREES_CELSIUS;
+      case SensorTypeEnum.HUMIDITY:
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return SensorUnitEnum.PERCENT;
+      case SensorTypeEnum.LIGHT:
+        return SensorUnitEnum.LUX;
+      case SensorTypeEnum.CAMERA:
+        return SensorUnitEnum.PAX;
+      default:
+        return SensorUnitEnum.PERCENT;
+    }
+  };
+
   const handleSubmit = async () => {
     if (!sensor) return;
     try {
       const values = await form.validateFields();
-
+      values.sensorUnit = getSensorUnitFromType(values.sensorType);
       const changedData: Partial<SensorUpdateData> = Object.keys(values).reduce((acc, key) => {
         const typedKey = key as keyof SensorUpdateData;
         if (JSON.stringify(values[typedKey]) !== JSON.stringify(sensor?.[typedKey])) {
@@ -187,6 +203,7 @@ const SensorEdit = () => {
           <Form.Item name="serialNumber" label="Serial Number" rules={[{ required: true, message: 'Please enter Serial Number' }]}>
             <Input placeholder="Enter Serial Number" />
           </Form.Item>
+          {sensor?.sensorStatus !== SensorStatusEnum.ACTIVE && (
           <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
             <Select placeholder="Select Sensor Type">
               {Object.values(SensorTypeEnum).map((type) => (
@@ -194,28 +211,22 @@ const SensorEdit = () => {
                   {formatEnumLabelToRemoveUnderscores(type)}
                 </Select.Option>
               ))}
-            </Select>
-          </Form.Item>
+              </Select>
+            </Form.Item>
+          )}
           {sensor?.sensorStatus !== SensorStatusEnum.ACTIVE && (
             <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
               <Select placeholder="Select Sensor Status">
-                {Object.values(SensorStatusEnum).filter((s) => s !== "ACTIVE").map((status) => (
-                <Select.Option key={status} value={status}>
-                  {formatEnumLabelToRemoveUnderscores(status)}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+                {Object.values(SensorStatusEnum)
+                  .filter((s) => s !== 'ACTIVE')
+                  .map((status) => (
+                    <Select.Option key={status} value={status}>
+                      {formatEnumLabelToRemoveUnderscores(status)}
+                    </Select.Option>
+                  ))}
+              </Select>
+            </Form.Item>
           )}
-          <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
-            <Select placeholder="Select Sensor Unit">
-              {Object.values(SensorUnitEnum).map((unit) => (
-                <Select.Option key={unit} value={unit}>
-                  {formatEnumLabelToRemoveUnderscores(unit)}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
           <Form.Item name="acquisitionDate" label="Acquisition Date" rules={[{ required: true, message: 'Please enter Acquisition Date' }]}>
             <DatePicker className="w-full" disabledDate={(current) => current && current > dayjs().endOf('day')} />
           </Form.Item>

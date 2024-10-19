@@ -291,12 +291,14 @@ class SensorReadingService {
       for (const sensor of sensors) {
         const readings = await this.getSensorReadingsHoursAgo(sensor.id, hours);
 
+        // at least 2 readings
         if (readings.length >= 2) {
           readings.sort((a, b) => a.date.getTime() - b.date.getTime());
           const oldestReading = readings[0];
           const latestReading = readings[readings.length - 1];
           const timeSpanHours = (latestReading.date.getTime() - oldestReading.date.getTime()) / (1000 * 60 * 60);
           totalTimeSpanHours += timeSpanHours;
+          // must be at least 1/2 of hours between latest reading and oldest reading
           if (timeSpanHours >= hours * 0.5) {
             const absoluteChange = latestReading.value - oldestReading.value;
             const rateOfChange = absoluteChange / timeSpanHours;

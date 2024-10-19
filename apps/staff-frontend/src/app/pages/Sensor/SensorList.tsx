@@ -170,8 +170,8 @@ const SensorManagementPage: React.FC = () => {
               <Tooltip title="Edit Sensor">
                 <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`${record.id}/edit`)} />
               </Tooltip>
-              <Tooltip title="Delete Sensor">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
+                <Tooltip title="Delete Sensor">
+                  <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
               </Tooltip>
             </>
         </Flex>
