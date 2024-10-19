@@ -451,6 +451,7 @@ async function seed() {
   console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
 
   // Create the new hub
+  let createdNewHubs = [];
   for (const newHub of newHubs) {
     const createdNewHub = await prisma.hub.create({
       data: {
@@ -458,6 +459,7 @@ async function seed() {
         facilityId: storeroomId, // or any other appropriate facilityId
       },
     });
+    createdNewHubs.push(createdNewHub);
     console.log(`New hub created: ${createdNewHub.name}\n`);
   }
 
@@ -468,7 +470,7 @@ async function seed() {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
-          hubId: newHubs[0].id,
+          hubId: createdNewHubs[0].id,
           facilityId: storeroomId, // or any other appropriate facilityId
         },
       });
@@ -477,7 +479,7 @@ async function seed() {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
-          hubId: newHubs[1].id,
+          hubId: createdNewHubs[1].id,
           facilityId: storeroomId, // or any other appropriate facilityId
         },
       });
