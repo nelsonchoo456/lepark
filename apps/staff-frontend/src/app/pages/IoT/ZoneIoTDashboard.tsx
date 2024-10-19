@@ -53,12 +53,13 @@ const ZoneIoTDashboard: React.FC = () => {
           activeCounts[zone.id] = activeCount.data.count;
 
           const totalSensorsCount = await getPlantSensorsByZoneId(zone.id);
-          totalSensors[zone.id] = totalSensorsCount.data.length;
+          totalSensors[zone.id] = totalSensorsCount.data.filter((sensor: SensorResponse) => sensor.sensorType !== SensorTypeEnum.CAMERA).length;
         } catch (error) {
           console.error(`Error fetching data for zone ${zone.id}:`, error);
           metrics[zone.id] = {};
           differences[zone.id] = {};
           activeCounts[zone.id] = 0;
+          totalSensors[zone.id] = 0;
         }
       }
       setZoneMetrics(metrics);

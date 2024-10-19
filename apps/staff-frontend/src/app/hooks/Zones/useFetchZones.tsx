@@ -24,7 +24,7 @@ export const useFetchZones = () => {
         return;
       }
       setZones(response.data);
-      setZonesWithIoT(response.data.filter((zone) => zone.hub !== null));
+      setZonesWithIoT(response.data.filter((zone) => zone.hubs ? zone.hubs?.length > 0 : false));
     } catch (error) {
       console.error('Error fetching zones:', error);
       setZones([]);
