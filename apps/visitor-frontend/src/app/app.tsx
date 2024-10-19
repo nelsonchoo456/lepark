@@ -36,6 +36,7 @@ import FAQView from './pages/FAQ/FAQView';
 import FeedbackCreate from './pages/Feedback/FeedbackCreate';
 import FeedbackList from './pages/Feedback/FeedbackList';
 import FeedbackView from './pages/Feedback/FeedbackView';
+import FeedbackEdit from './pages/Feedback/FeedbackEdit';
 
 export function App() {
   return (
@@ -129,6 +130,7 @@ export function App() {
                   <Route index element={<FeedbackList/>}/>
                   <Route path="create" element={<FeedbackCreate/>}/>
                   <Route path=":feedbackId" element={<FeedbackView/>}/>
+                  <Route path="edit/:feedbackId" element={<FeedbackEdit/>}/>
                 </Route>
               </Route>
             </Routes>

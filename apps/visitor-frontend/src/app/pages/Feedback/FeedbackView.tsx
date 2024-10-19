@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ContentWrapperDark } from '@lepark/common-ui';
-import { FeedbackResponse, getFeedbackById, viewStaffDetails, getParkById, deleteFeedback } from '@lepark/data-access';
-import { Card, Tag, Spin, Button, Image, Popconfirm, message } from 'antd';
+import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
+import { FeedbackResponse, getFeedbackById, viewStaffDetails, getParkById, deleteFeedback, VisitorResponse } from '@lepark/data-access';
+import { Card, Tag, Spin, Button, Image, Popconfirm, message, Modal, Upload } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
-import { ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 
 const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
@@ -31,6 +31,11 @@ const FeedbackView: React.FC = () => {
   const [parkName, setParkName] = useState<string>('');
   const { selectedPark } = usePark();
   const navigate = useNavigate();
+  const { user } = useAuth<VisitorResponse>();
+  const [isAccessDeniedModalVisible, setIsAccessDeniedModalVisible] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [fileList, setFileList] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,6 +43,10 @@ const FeedbackView: React.FC = () => {
       try {
         const feedbackResponse = await getFeedbackById(feedbackId);
         setFeedback(feedbackResponse.data);
+        if (user && feedbackResponse.data.visitorId !== user.id) {
+          setIsAccessDeniedModalVisible(true);
+          return;
+        }
         console.log(feedback)
         if (feedbackResponse.data.staffId) {
           const staffResponse = await viewStaffDetails(feedbackResponse.data.staffId);
@@ -49,6 +58,15 @@ const FeedbackView: React.FC = () => {
           const parkResponse = await getParkById(feedbackResponse.data.parkId);
           setParkName(parkResponse.data.name);
         }
+
+        if (feedbackResponse.data.images) {
+          setFileList(feedbackResponse.data.images.map((url, index) => ({
+            uid: `-${index}`,
+            name: `image-${index}`,
+            status: 'done',
+            url: url,
+          })));
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         message.error('Failed to load feedback details');
@@ -58,7 +76,7 @@ const FeedbackView: React.FC = () => {
     };
 
     fetchData();
-  }, [feedbackId]);
+  }, [feedbackId, user]);
 
   const handleDelete = async () => {
     try {
@@ -69,6 +87,16 @@ const FeedbackView: React.FC = () => {
       console.error('Error deleting feedback:', error);
       message.error('Failed to delete feedback');
     }
+  };
+
+  const handlePreview = async (file: any) => {
+    setPreviewImage(file.url || file.preview);
+    setPreviewVisible(true);
+  };
+
+  const handleAccessDeniedOk = () => {
+    setIsAccessDeniedModalVisible(false);
+    navigate('/');
   };
 
   if (loading) {
@@ -102,22 +130,32 @@ const FeedbackView: React.FC = () => {
           >
             Back
           </Button>
-          {feedback.feedbackStatus === 'PENDING' && (
-            <Popconfirm
-              title="Are you sure you want to delete this feedback?"
-              onConfirm={handleDelete}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button
-                type="primary"
-                danger
-                icon={<DeleteOutlined />}
-              >
-                Delete Feedback
-              </Button>
-            </Popconfirm>
-          )}
+          <div>
+            {feedback.feedbackStatus === 'PENDING' && (
+              <>
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  style={{ marginRight: '8px' }}
+                  onClick={() => navigate(`/feedback/edit/${feedbackId}`)}
+                >
+                </Button>
+                <Popconfirm
+                  title="Are you sure you want to delete this feedback?"
+                  onConfirm={handleDelete}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<DeleteOutlined />}
+                  >
+                  </Button>
+                </Popconfirm>
+              </>
+            )}
+          </div>
         </div>
         <Card>
           <h1 className="text-xl font-semibold text-green-500">{feedback.title}</h1>
@@ -139,29 +177,60 @@ const FeedbackView: React.FC = () => {
             <p><strong>Category:</strong> {formatEnumLabel(feedback.feedbackCategory)}</p>
             <p><strong>Date Created:</strong> {new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
             <p><strong>Park:</strong> {parkName || 'Unknown'}</p>
-
-
           </div>
 
-          {feedback.images && feedback.images.length > 0 && (
-            <div className="mt-4">
-              <p><strong>Images:</strong></p>
-              <Image.PreviewGroup>
-                {feedback.images.map((image, index) => (
-                  <Image
-                    key={index}
-                    src={image}
+            {fileList.length > 0 && (
+          <div className="mt-4">
+            <p><strong>Images:</strong></p>
+            <div className="grid grid-cols-2 gap-2">
+              {fileList.map((file, index) => (
+                <div key={file.uid} className="aspect-square relative group">
+                  <img
+                    src={file.url}
                     alt={`Feedback image ${index + 1}`}
-                    style={{ width: 200, height: 200, objectFit: 'cover', marginRight: 8, marginBottom: 8 }}
+                    className="w-full h-full object-cover"
                   />
-                ))}
-              </Image.PreviewGroup>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50">
+                    <EyeOutlined
+                      className="text-white text-2xl cursor-pointer"
+                      onClick={() => {
+                        setPreviewImage(file.url);
+                        setPreviewVisible(true);
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
           <p><strong>Description:</strong> {feedback.description}</p>
         </Card>
       </div>
+      <Modal
+        title="Access Denied"
+        visible={isAccessDeniedModalVisible}
+        onOk={handleAccessDeniedOk}
+        onCancel={handleAccessDeniedOk}
+        footer={[
+          <Button key="ok" type="primary" onClick={handleAccessDeniedOk}>
+            OK
+          </Button>,
+        ]}
+      >
+        <p>You do not have permission to view this feedback.</p>
+      </Modal>
+      <Image
+        style={{ display: 'none' }}
+        src={previewImage}
+        preview={{
+          visible: previewVisible,
+          onVisibleChange: (visible) => {
+            setPreviewVisible(visible);
+          },
+        }}
+      />
     </div>
   );
 };

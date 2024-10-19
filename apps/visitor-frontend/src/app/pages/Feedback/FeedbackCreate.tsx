@@ -121,6 +121,7 @@ const FeedbackCreate = () => {
                 fileList={fileList}
                 onChange={handleUpload}
                 beforeUpload={() => false}
+                accept="image/png, image/jpeg"
               >
                 <Button icon={<UploadOutlined />}>Upload Image</Button>
               </Upload>
