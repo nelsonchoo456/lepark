@@ -158,8 +158,8 @@ class PlantTaskService {
     await PlantTaskDao.deletePlantTask(id);
   }
 
-  public async deleteTaskskByStatus(taskStatus: PlantTaskStatusEnum): Promise<void> {
-    await PlantTaskDao.deleteTaskskByStatus(taskStatus);
+  public async deleteTasksByStatus(taskStatus: PlantTaskStatusEnum): Promise<void> {
+    await PlantTaskDao.deleteTasksByStatus(taskStatus);
   }
 
   public async assignPlantTask(id: string, assignerStaffId: string, staffId: string): Promise<PlantTask> {
@@ -369,16 +369,22 @@ class PlantTaskService {
       throw new Error('Plant task not found');
     }
 
-    if (plantTask.taskStatus !== newStatus && newStatus === PlantTaskStatusEnum.COMPLETED) {
-      await this.updatePlantTask(id, { completedDate: new Date(), updatedAt: new Date() });
-    }
-
     const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);
-    const updatedTask = await PlantTaskDao.updatePlantTask(id, {
-      taskStatus: newStatus,
-      position: maxPosition + 1000,
-      updatedAt: new Date(), // Add this line
-    });
+    let updatedTask: PlantTask;
+    if (newStatus === PlantTaskStatusEnum.COMPLETED) {
+      updatedTask = await PlantTaskDao.updatePlantTask(id, {
+        taskStatus: newStatus,
+        position: maxPosition + 1000,
+        completedDate: new Date(),
+        updatedAt: new Date(), // Add this line
+      });
+    } else {
+      updatedTask = await PlantTaskDao.updatePlantTask(id, {
+        taskStatus: newStatus,
+        position: maxPosition + 1000,
+        updatedAt: new Date(), // Add this line
+      });
+    }
 
     return updatedTask;
   }
@@ -417,8 +423,12 @@ class PlantTaskService {
       updatedTasks.map((task) => PlantTaskDao.updatePlantTask(task.id, { position: task.position, updatedAt: new Date() })),
     );
 
-    // Return the updated task
-    return PlantTaskDao.getPlantTaskById(id);
+    const updatedTask = await PlantTaskDao.getPlantTaskById(id);
+    if (!updatedTask) {
+      throw new Error('Updated task not found');
+    }
+
+    return updatedTask;
   }
 
   public async getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<PlantTask[]> {

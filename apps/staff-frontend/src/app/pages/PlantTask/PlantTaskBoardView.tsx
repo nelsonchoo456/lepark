@@ -74,6 +74,8 @@ const PlantTaskBoardView = ({
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
+  const [taskBeingCompleted, setTaskBeingCompleted] = useState<PlantTaskResponse | null>(null);
+  const [taskCompletionIndex, setTaskCompletionIndex] = useState<number | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -127,7 +129,6 @@ const PlantTaskBoardView = ({
       try {
         await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
         await updatePlantTaskPosition(movedTask.id as string, destination.index);
-        message.success('Task status updated successfully');
       } catch (error) {
         console.error('Error updating task status, position, or unassigning:', error);
         message.error('Failed to update task status, position, or unassign');
@@ -135,8 +136,20 @@ const PlantTaskBoardView = ({
     }
 
     if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
+      setTaskBeingCompleted(movedTask);
+      setTaskCompletionIndex(destination.index);
       setCompletedTaskOccurrenceId(movedTask.occurrence?.id || null);
       setShowLogPrompt(true);
+    } else {
+      // If not moving to COMPLETED, update the task status immediately
+      try {
+        await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
+        await updatePlantTaskPosition(movedTask.id as string, destination.index);
+        message.success('Task status updated successfully');
+      } catch (error) {
+        console.error('Error updating task status or position:', error);
+        message.error('Failed to update task status or position');
+      }
     }
 
     refreshData(); // Call the refreshData function after updating the task
@@ -450,20 +463,33 @@ const PlantTaskBoardView = ({
     }
   }
 
-  const handleLogPromptOk = () => {
+  const handleLogPromptOk = async () => {
     setShowLogPrompt(false);
     if (completedTaskOccurrenceId) {
       navigate(`/occurrences/${completedTaskOccurrenceId}`);
     }
   };
 
-  const handleLogPromptCancel = () => {
+  const handleLogPromptCancel = async () => {
     setShowLogPrompt(false);
-    // Proceed with updating the task status
-    if (completedTaskOccurrenceId) {
-      const movedTask = open.find(task => task.occurrence?.id === completedTaskOccurrenceId);
-      if (movedTask) {
-        updatePlantTaskStatus(movedTask.id, PlantTaskStatusEnum.COMPLETED);
+    await completeTask();
+  };
+
+  const completeTask = async () => {
+    if (taskBeingCompleted && taskCompletionIndex !== null) {
+      try {
+        await updatePlantTaskStatus(taskBeingCompleted.id, PlantTaskStatusEnum.COMPLETED);
+        await updatePlantTaskPosition(taskBeingCompleted.id, taskCompletionIndex);
+
+        message.success('Task marked as completed');
+        refreshData();
+      } catch (error) {
+        console.error('Error completing task:', error);
+        message.error('Failed to complete task');
+      } finally {
+        setTaskBeingCompleted(null);
+        setTaskCompletionIndex(null);
+        setCompletedTaskOccurrenceId(null);
       }
     }
   };
