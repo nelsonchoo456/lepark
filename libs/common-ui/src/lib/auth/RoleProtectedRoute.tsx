@@ -26,7 +26,7 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ allowedR
       case 'PARK_RANGER':
         return StaffType.PARK_RANGER;
       case 'VENDOR_MANAGER':
-        return StaffType.VENDOR_MAANGER;
+        return StaffType.VENDOR_MANAGER;
       case 'SUPERADMIN':
         return StaffType.SUPERADMIN;
       default:

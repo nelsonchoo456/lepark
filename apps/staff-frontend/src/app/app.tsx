@@ -427,7 +427,7 @@ export function App() {
                         StaffType.MANAGER,
                         StaffType.ARBORIST,
                         StaffType.BOTANIST,
-                        StaffType.VENDOR_MAANGER,
+                        StaffType.VENDOR_MANAGER,
                       ]}
                       redirectTo="/"
                     />
@@ -481,7 +481,7 @@ export function App() {
                         StaffType.MANAGER,
                         StaffType.ARBORIST,
                         StaffType.BOTANIST,
-                        StaffType.VENDOR_MAANGER,
+                        StaffType.VENDOR_MANAGER,
                       ]}
                       redirectTo="/"
                     />

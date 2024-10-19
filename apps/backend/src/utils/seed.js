@@ -668,6 +668,12 @@ const createReading = (sensorType, date) => {
         value = Math.random() * 5; // Very low light at night
       }
       break;
+    case 'CAMERA':
+      value = Math.random() * 50; // 0 to 50
+      return {
+        date,
+        value: parseFloat(value.toFixed(0)),
+      }
     default:
       value = Math.random() * 100;
   }

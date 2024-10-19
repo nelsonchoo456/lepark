@@ -78,15 +78,19 @@ const HubList: React.FC = () => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
-            return (<>
-              <Tag color="green" bordered={false}>
-                {formattedStatus}
-              </Tag>
-              {record.zone?.name && <div className='flex'>
-                <p className="opacity-50 mr-2">Zone:</p>
-                {record.zone?.name}
-              </div>}
-            </>);
+            return (
+              <>
+                <Tag color="green" bordered={false}>
+                  {formattedStatus}
+                </Tag>
+                {record.zone?.name && (
+                  <div className="flex">
+                    <p className="opacity-50 mr-2">Zone:</p>
+                    {record.zone?.name}
+                  </div>
+                )}
+              </>
+            );
           case 'INACTIVE':
             return (
               <Tag color="blue" bordered={false}>
@@ -140,16 +144,13 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role !== StaffType.VENDOR_MAANGER && (
-            <>
-              <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
-              </Tooltip>
-              <Tooltip title="Delete">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-              </Tooltip>
-            </>
-          )}
+
+          <Tooltip title="Edit">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
@@ -210,15 +211,18 @@ const HubList: React.FC = () => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
-            return (<>
-              <Tag color="green" bordered={false}>
-                {formattedStatus}
-              </Tag><br/>
-              <div className='flex'>
-                <p className="opacity-50 mr-2">Zone:</p>
-                {record.zone?.name && record.zone?.name}
-              </div>
-            </>);
+            return (
+              <>
+                <Tag color="green" bordered={false}>
+                  {formattedStatus}
+                </Tag>
+                <br />
+                <div className="flex">
+                  <p className="opacity-50 mr-2">Zone:</p>
+                  {record.zone?.name && record.zone?.name}
+                </div>
+              </>
+            );
           case 'INACTIVE':
             return (
               <Tag color="blue" bordered={false}>
@@ -323,13 +327,9 @@ const HubList: React.FC = () => {
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Hubs..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        {[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(
-          user?.role as StaffType,
-        ) && (
-          <Button type="primary" onClick={() => navigate('/hubs/create')}>
-            Create Hub
-          </Button>
-        )}
+        <Button type="primary" onClick={() => navigate('/hubs/create')}>
+          Create Hub
+        </Button>
       </Flex>
       <Card>
         <Table

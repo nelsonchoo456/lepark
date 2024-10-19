@@ -181,7 +181,8 @@ const MainLayout = () => {
     userRole === StaffType.SUPERADMIN ||
     userRole === StaffType.MANAGER ||
     userRole === StaffType.ARBORIST ||
-    userRole === StaffType.BOTANIST
+    userRole === StaffType.BOTANIST || 
+    userRole === StaffType.VENDOR_MANAGER
       ? {
           key: 'iot',
           label: 'IoT',
