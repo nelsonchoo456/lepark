@@ -1,4 +1,4 @@
-import { Facility, Hub, Prisma, Sensor } from '@prisma/client';
+import { Facility, Hub, Prisma, Sensor, SensorTypeEnum } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
@@ -280,6 +280,13 @@ class SensorService {
 
       if (sensor.hubId) {
         throw new Error('Sensor is already assigned to a hub');
+      }
+
+      if (sensor.sensorType === SensorTypeEnum.CAMERA) {
+        const camerasInHub = await SensorDao.getSensorsByHubId(hub.id);
+        if (camerasInHub.some(s => s.sensorType === SensorTypeEnum.CAMERA)) {
+          throw new Error('Hub already has a camera sensor');
+        }
       }
 
       formattedData.sensorStatus = 'ACTIVE';
