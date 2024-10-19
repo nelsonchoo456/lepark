@@ -204,11 +204,7 @@ class HubService {
           throw new Error('Zone not found');
         }
 
-        // Check if the zone already has a hub
-        const existingHubInZone = await HubDao.getHubByZoneId(formattedData.zoneId);
-        if (existingHubInZone) {
-          throw new Error('Zone already has a hub assigned');
-        }
+        // Remove the check for existing hub in zone
       }
 
       const zone = await ZoneDao.getZoneById(formattedData.zoneId);
@@ -218,7 +214,7 @@ class HubService {
       }
 
       if (hub.zoneId) {
-        throw new Error('Hub already has a zone');
+        throw new Error('Hub is already assigned to a zone');
       }
 
       if (hub.hubStatus === 'ACTIVE') {

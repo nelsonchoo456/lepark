@@ -129,13 +129,15 @@ class ZoneService {
     return Promise.all(
       zones.map(async (zone) => {
         const park = await ParkDao.getParkById(zone.parkId);
-        const hub = await HubDao.getHubByZoneId(zone.id);
-        const sensors = await HubDao.getAllSensorsByHubId(hub?.id);
+        const hubs = await HubDao.getHubsByZoneId(zone.id);
+        const sensors = await Promise.all(
+          hubs.map(async (hub) => await HubDao.getAllSensorsByHubId(hub.id))
+        );
         return {
           ...zone,
           park,
-          hub,
-          sensors,
+          hubs,
+          sensors: sensors.flat(),
         };
       }),
     );
