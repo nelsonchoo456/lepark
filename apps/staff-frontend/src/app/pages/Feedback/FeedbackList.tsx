@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { deleteFeedback, getAllFeedbacks, FeedbackResponse, StaffResponse, StaffType, getParkById } from '@lepark/data-access';
+import { deleteFeedback, getAllFeedback, FeedbackResponse, StaffResponse, StaffType, getParkById } from '@lepark/data-access';
 import { Button, Card, Flex, Input, message, Modal, Table, TableProps, Tag, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { FiEye, FiSearch } from 'react-icons/fi';

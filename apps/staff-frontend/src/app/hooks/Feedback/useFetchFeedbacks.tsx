@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useAuth } from '@lepark/common-ui';
 import {
-  getAllFeedbacks,
+  getAllFeedback,
   getFeedbackByParkId,
   FeedbackResponse,
   StaffResponse,

@@ -28,9 +28,10 @@ export async function createFeedback(data: FeedbackData, files?: File[]): Promis
   }
 }
 
-export async function getAllFeedbacks(visitorId: string): Promise<AxiosResponse<FeedbackResponse[]>> {
+export async function getAllFeedback(visitorId?: string): Promise<AxiosResponse<FeedbackResponse[]>> {
   try {
-    const response: AxiosResponse<FeedbackResponse[]> = await client.get(`${URL}/getAllFeedback/${visitorId}`);
+    const url = visitorId ? `${URL}/getAllFeedback/${visitorId}` : `${URL}/getAllFeedback`;
+    const response: AxiosResponse<FeedbackResponse[]> = await client.get(url);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
