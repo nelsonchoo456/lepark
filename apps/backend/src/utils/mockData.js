@@ -2666,6 +2666,8 @@ const newHubs = [
     acquisitionDate: new Date(),
     supplier: 'Supplier 4',
     supplierContactNumber: '87654321',
+    ipAddress: '192.168.2.2',
+    macAddress: '00:00:00:00:00:00',
     dataTransmissionInterval: 5,
     lat: 1.307183192453113,
     long: 103.81657361984254,
