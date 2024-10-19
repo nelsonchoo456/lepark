@@ -1,9 +1,9 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { HubResponse, HubStatusEnum, StaffResponse, StaffType, deleteHub } from '@lepark/data-access';
+import { HubResponse, HubStatusEnum, StaffResponse, StaffType, deleteHub, getSensorsByHubId } from '@lepark/data-access';
 import { Button, Card, Flex, Input, Table, TableProps, Tag, Tooltip, message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { FiEye, FiSearch } from 'react-icons/fi';
-import { MdDeleteOutline } from 'react-icons/md';
+import { MdDeleteOutline, MdError } from 'react-icons/md';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -21,6 +21,7 @@ const HubList: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [hubToBeDeleted, setHubToBeDeleted] = useState<HubResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
 
   const filteredHubs = useMemo(() => {
     return hubs.filter((hub) => Object.values(hub).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
@@ -282,14 +283,25 @@ const HubList: React.FC = () => {
     },
   ];
 
-  const showDeleteModal = (hub: HubResponse) => {
-    setDeleteModalOpen(true);
-    setHubToBeDeleted(hub);
+  const showDeleteModal = async (hub: HubResponse) => {
+    try {
+      const sensorsRes = await getSensorsByHubId(hub.id);
+      if (sensorsRes.status === 200 && sensorsRes.data.length > 0) {
+        setHubToBeDeleted(hub);
+        setDeactivateModalOpen(true);
+      } else {
+        setHubToBeDeleted(hub);
+        setDeleteModalOpen(true);
+      }
+    } catch (error) {
+      messageApi.error('Failed to check hub sensors');
+    }
   };
 
   const cancelDelete = () => {
     setHubToBeDeleted(null);
     setDeleteModalOpen(false);
+    setDeactivateModalOpen(false);
   };
 
   const deleteHubToBeDeleted = async () => {
@@ -324,6 +336,20 @@ const HubList: React.FC = () => {
         onConfirm={deleteHubToBeDeleted}
         description={`Are you sure you want to delete the hub "${hubToBeDeleted?.name}"?`}
         open={deleteModalOpen}
+      />
+      <ConfirmDeleteModal
+        okText="Confirm Deactivate"
+        onConfirm={cancelDelete}
+        open={deactivateModalOpen}
+        onCancel={cancelDelete}
+        title="Unable to delete Hub"
+        footer={null}
+        description={
+          <p>
+            <MdError className="text-error inline mr-2 text-lg" />
+            This Hub has {hubToBeDeleted?.sensors?.length} Sensor(s) assigned to it. Please deactivate the Sensor(s) first.
+          </p>
+        }
       />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Hubs..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
