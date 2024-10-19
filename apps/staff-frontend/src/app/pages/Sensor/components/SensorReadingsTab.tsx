@@ -53,10 +53,12 @@ const SensorReadingsTab: React.FC<SensorReadingsTabProps> = ({ sensorId }) => {
     setSearchQuery(e.target.value);
   };
 
-  const filteredSensorReadings = sensorReadings.filter(reading =>
-    reading.value.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-    dayjs(reading.date).format('YYYY-MM-DD HH:mm:ss').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSensorReadings = sensorReadings
+    .filter(reading =>
+      reading.value.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dayjs(reading.date).format('YYYY-MM-DD HH:mm:ss').toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf()); // Sort from latest to oldest
 
   const columns: ColumnsType<SensorReadingResponse> = [
     {
@@ -64,7 +66,7 @@ const SensorReadingsTab: React.FC<SensorReadingsTabProps> = ({ sensorId }) => {
       dataIndex: 'date',
       key: 'date',
       render: (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm:ss'),
-      sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
+      sorter: (a, b) => dayjs(b.date).unix() - dayjs(a.date).unix(), // Updated sorter to maintain latest-to-oldest order
       width: '50%',
     },
     {
