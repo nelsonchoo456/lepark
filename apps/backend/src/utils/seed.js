@@ -17,7 +17,7 @@ const {
   decarbonizationAreasData,
   plantTasksData,
   sensorReadingsData,
-  newHub,
+  newHubs,
   newSensors,
   seqHistoriesData,
   faqsData,
@@ -451,24 +451,41 @@ async function seed() {
   console.log(`Total plant tasks seeded: ${plantTasksList.length}\n`);
 
   // Create the new hub
-  const createdNewHub = await prisma.hub.create({
-    data: {
-      ...newHub,
-      facilityId: storeroomId, // or any other appropriate facilityId
-    },
-  });
-  console.log(`New hub created: ${createdNewHub.name}\n`);
-
-  // Create new sensors and associate them with the new hub
-  for (const sensor of newSensors) {
-    const createdSensor = await prisma.sensor.create({
+  let createdNewHubs = [];
+  for (const newHub of newHubs) {
+    const createdNewHub = await prisma.hub.create({
       data: {
-        ...sensor,
-        hubId: createdNewHub.id,
+        ...newHub,
         facilityId: storeroomId, // or any other appropriate facilityId
       },
     });
-    sensorList.push(createdSensor);
+    createdNewHubs.push(createdNewHub);
+    console.log(`New hub created: ${createdNewHub.name}\n`);
+  }
+
+  // Create new sensors and associate them with the new hub
+  let count = 0;
+  for (const sensor of newSensors) {
+    if (count < 4) {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[0].id,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
+    } else {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[1].id,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
+    }
+    count++;
   }
   console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
 
@@ -566,8 +583,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   const endDate = new Date('2024-10-23');
   const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
- const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
- const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
+  const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
+  const endValues = [146, 4100, 2029, 1142, 189]; // Corrected final values for PVN, East Area, West Area, PVC, PVS
 
   const dailyIncrease = (endValues[index] - startValues[index]) / (daysDiff - 1);
 
@@ -580,8 +597,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
         data: {
           date: new Date(currentDate),
           seqValue: parseFloat(currentSeqValue.toFixed(3)),
-          decarbonizationAreaId: decarbAreaId
-        }
+          decarbonizationAreaId: decarbAreaId,
+        },
       });
       seqHistories.push(createdSeqHistory);
       currentSeqValue += dailyIncrease;

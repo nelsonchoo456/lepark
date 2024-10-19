@@ -2639,22 +2639,42 @@ const eventsData = [
 ];
 
 // Add a new hub
-const newHub = {
-  serialNumber: 'IA21431241512554',
-  identifierNumber: 'HB-66666',
-  name: 'Raspberry Pi 4',
-  description: 'Hub for connecting various sensors in the tropical garden',
-  hubStatus: 'ACTIVE',
-  acquisitionDate: new Date(),
-  supplier: 'Supplier 4',
-  supplierContactNumber: '87654321',
-  lat: 1.3092116530491504,
-  long: 103.81549000740053,
-  images: ['https://www.raspberrypi.com/app/uploads/2020/06/raspberrypi_4b-1536x1022.jpg'],
-  remarks: 'Newly installed and configured',
-  facilityId: '',
-  zoneId: 2, // Assuming we're adding this to Zone 1
-};
+const newHubs = [
+  {
+    serialNumber: 'IA21431241512554',
+    identifierNumber: 'HB-66666',
+    name: 'Raspberry Pi 4',
+    description: 'Hub for connecting various sensors in the Swan Lake North',
+    hubStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    supplier: 'Supplier 4',
+    supplierContactNumber: '87654321',
+    dataTransmissionInterval: 5,
+    lat: 1.3092116530491504,
+    long: 103.81549000740053,
+    images: ['https://www.raspberrypi.com/app/uploads/2020/06/raspberrypi_4b-1536x1022.jpg'],
+    remarks: 'Newly installed and configured',
+    facilityId: '',
+    zoneId: 2,
+  },
+  {
+    serialNumber: 'IA21431241512558',
+    identifierNumber: 'HB-77777',
+    name: 'Raspberry Pi 3B',
+    description: 'Hub for connecting various sensors in the Swan Lake South',
+    hubStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    supplier: 'Supplier 4',
+    supplierContactNumber: '87654321',
+    dataTransmissionInterval: 5,
+    lat: 1.307183192453113,
+    long: 103.81657361984254,
+    images: ['https://www.raspberrypi.com/app/uploads/2020/06/raspberrypi_4b-1536x1022.jpg'],
+    remarks: 'Newly installed and configured',
+    facilityId: '',
+    zoneId: 2,
+  },
+];
 
 // Add new sensors
 const newSensors = [
@@ -2798,6 +2818,23 @@ const newSensors = [
     remarks: 'Installed in an open area',
     facilityId: '',
   },
+  {
+    name: 'Camera X10',
+    identifierNumber: 'SE-50505',
+    serialNumber: 'STE123094',
+    sensorType: 'CAMERA',
+    description: 'Camera for monitoring sunlight in tropical garden',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    sensorUnit: 'PAX',
+    supplier: 'BrightTech Innovations',
+    supplierContactNumber: '89004577',
+    lat: 1.3081065923487933,
+    long: 103.81797909736632,
+    images: ['https://i.ytimg.com/vi/YzEZvTwO7tA/maxresdefault.jpg'],
+    remarks: 'Installed in an open area',
+    facilityId: '',
+  },
 ];
 
 const attractionTicketListingsData = [
@@ -2885,21 +2922,24 @@ const decarbonizationAreasData = [
 ];
 
 const seqHistoriesData = [
-{ //PVN
-  date: "2023-11-01T05:33:56.000Z",
-  seqValue: 8,
-  decarbonizationAreaId: ""
-},
-{ //East Area
-  date: "2023-11-01T05:33:56.000Z",
-  seqValue: 21,
-  decarbonizationAreaId: ""
-},
-{ //West Area
-  date: "2023-11-01T05:33:56.000Z",
-  seqValue: 15,
-  decarbonizationAreaId: ""
-},
+  {
+    //PVN
+    date: '2023-11-01T05:33:56.000Z',
+    seqValue: 8,
+    decarbonizationAreaId: '',
+  },
+  {
+    //East Area
+    date: '2023-11-01T05:33:56.000Z',
+    seqValue: 21,
+    decarbonizationAreaId: '',
+  },
+  {
+    //West Area
+    date: '2023-11-01T05:33:56.000Z',
+    seqValue: 15,
+    decarbonizationAreaId: '',
+  },
   {
     //PVN
     date: '2024-10-02T05:33:56.000Z',
@@ -3342,225 +3382,184 @@ const faqsData = [
 
 const promotionsData = [
   {
-    name: "Hari Raya Family Special 2025",
-    description: "Celebrate Hari Raya with your loved ones! Enjoy 15% off on park tours and family-friendly attractions.",
-    discountType: "PERCENTAGE",
-    promoCode: "HARIRAYA15",
+    name: 'Hari Raya Family Special 2025',
+    description: 'Celebrate Hari Raya with your loved ones! Enjoy 15% off on park tours and family-friendly attractions.',
+    discountType: 'PERCENTAGE',
+    promoCode: 'HARIRAYA15',
     isNParksWide: true,
     parkId: null,
-    images: [
-      "https://1.bp.blogspot.com/-HmL0WIcshng/XS2IMWA1ZeI/AAAAAAAAA2A/HVAuaox8l7w793GIzrV7H4cXMPulpxyCwCLcBGAs/s1600/DSC_1666.JPG",
-    ],
+    images: ['https://1.bp.blogspot.com/-HmL0WIcshng/XS2IMWA1ZeI/AAAAAAAAA2A/HVAuaox8l7w793GIzrV7H4cXMPulpxyCwCLcBGAs/s1600/DSC_1666.JPG'],
     discountValue: 15,
     validFrom: '2025-04-10T08:00:00+08:00',
     validUntil: '2025-04-30T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Cannot be used with other discounts.",
-      "A minimum purchase of SGD $20 is required.",
-    ],
+    status: 'ENABLED',
+    terms: ['Cannot be used with other discounts.', 'A minimum purchase of SGD $20 is required.'],
     maximumUsage: 100,
     minimumAmount: 20,
   },
   {
-    name: "Sustainability Fortnight at the Park",
-    description: "Join us for Sustainability Weekend! Get $5 off on workshops about eco-friendly living and urban gardening.",
-    discountType: "FIXED_AMOUNT",
-    promoCode: "SUSTAIN5",
+    name: 'Sustainability Fortnight at the Park',
+    description: 'Join us for Sustainability Weekend! Get $5 off on workshops about eco-friendly living and urban gardening.',
+    discountType: 'FIXED_AMOUNT',
+    promoCode: 'SUSTAIN5',
     isNParksWide: true,
     parkId: null,
     images: [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEjCRB0Hx2nfMKmB2EcScuzjf8_uX6e8XZ4uTSxOvvzT4BhdbxjTfh9dH5GgfN71NIrZ8&usqp=CAU"
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEjCRB0Hx2nfMKmB2EcScuzjf8_uX6e8XZ4uTSxOvvzT4BhdbxjTfh9dH5GgfN71NIrZ8&usqp=CAU',
     ],
     discountValue: 5,
     validFrom: '2024-10-21T08:00:00+08:00',
     validUntil: '2024-11-04T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Limited slots available."
-    ],
+    status: 'ENABLED',
+    terms: ['Limited slots available.'],
     maximumUsage: 200,
   },
   {
     name: "Children's Day Learning Adventure",
     description: "Free entry for children to discover nature’s wonders with guided educational tours on Children's Day.",
-    discountType: "FIXED_AMOUNT",
-    promoCode: "KIDSDAYFREE",
+    discountType: 'FIXED_AMOUNT',
+    promoCode: 'KIDSDAYFREE',
     isNParksWide: false,
     parkId: 2,
     images: [
-      "https://www.ecda.gov.sg/images/growbeanstalklibraries/default-album/gbs/learning-activities/ideas-resources-from-community-partners/atrailofcoloursportal.jpg?sfvrsn=31c40182_0",
+      'https://www.ecda.gov.sg/images/growbeanstalklibraries/default-album/gbs/learning-activities/ideas-resources-from-community-partners/atrailofcoloursportal.jpg?sfvrsn=31c40182_0',
     ],
     discountValue: 10,
     minimumAmount: 50,
     validFrom: '2024-11-22T08:00:00+08:00',
     validUntil: '2024-11-29T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Available only at the Singapore Botanic Gardens.",
-      "A minimum purchase of SGD $50 is required.",
-    ],
+    status: 'ENABLED',
+    terms: ['Available only at the Singapore Botanic Gardens.', 'A minimum purchase of SGD $50 is required.'],
   },
   {
-    name: "Deepavali Nature Fest",
-    description: "Celebrate Deepavali with 20% off eco-friendly nature walks and sustainable activities at our parks.",
-    discountType: "PERCENTAGE",
-    promoCode: "DEEPAVALI20",
+    name: 'Deepavali Nature Fest',
+    description: 'Celebrate Deepavali with 20% off eco-friendly nature walks and sustainable activities at our parks.',
+    discountType: 'PERCENTAGE',
+    promoCode: 'DEEPAVALI20',
     isNParksWide: true,
     parkId: null,
-    images: [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2ONxBBPDXKw74ehO_6sMVoepH1n-ncrsEUQ&s"
-    ],
+    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2ONxBBPDXKw74ehO_6sMVoepH1n-ncrsEUQ&s'],
     discountValue: 20,
     validFrom: '2024-11-01T08:00:00+08:00',
     validUntil: '2024-11-14T23:59:59+08:00',
-    status: "ENABLED",
+    status: 'ENABLED',
     terms: [],
     maximumUsage: 150,
   },
   {
-    name: "Earth Day Conservation Special",
-    description: "Celebrate Earth Day by joining our conservation efforts! Get $10 off park admission and eco-workshops.",
-    discountType: "FIXED_AMOUNT",
-    promoCode: "EARTHDAY10",
+    name: 'Earth Day Conservation Special',
+    description: 'Celebrate Earth Day by joining our conservation efforts! Get $10 off park admission and eco-workshops.',
+    discountType: 'FIXED_AMOUNT',
+    promoCode: 'EARTHDAY10',
     isNParksWide: false,
     parkId: 1,
-    images: [
-      "https://www.nparks.gov.sg/-/media/nparks-real-content/nparks-buzz/nparks-buzz-2021/t_henderson-rd.jpg?h=213&w=400"
-    ],
+    images: ['https://www.nparks.gov.sg/-/media/nparks-real-content/nparks-buzz/nparks-buzz-2021/t_henderson-rd.jpg?h=213&w=400'],
     discountValue: 10,
     validFrom: '2024-10-21T08:00:00+08:00',
     validUntil: '2024-10-26T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Valid for Earth Day only.",
-    ],
+    status: 'ENABLED',
+    terms: ['Valid for Earth Day only.'],
   },
   {
-    name: "Chinese New Year Eco-Blessings",
-    description: "Celebrate the new year with eco-friendly blessings! Enjoy 10% off on all sustainable tours and events.",
-    discountType: "PERCENTAGE",
-    promoCode: "CNYECO10",
+    name: 'Chinese New Year Eco-Blessings',
+    description: 'Celebrate the new year with eco-friendly blessings! Enjoy 10% off on all sustainable tours and events.',
+    discountType: 'PERCENTAGE',
+    promoCode: 'CNYECO10',
     isNParksWide: true,
     parkId: null,
-    images: [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmR3Uy3rgflyaK690FJBA1xu3dOJu3A_evDA&s",
-    ],
+    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmR3Uy3rgflyaK690FJBA1xu3dOJu3A_evDA&s'],
     discountValue: 10,
     validFrom: '2024-01-25T08:00:00+08:00',
     validUntil: '2024-02-05T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "A minimum purchase of SGD $30 is required.",
-    ],
+    status: 'ENABLED',
+    terms: ['A minimum purchase of SGD $30 is required.'],
     minimumAmount: 30,
   },
   {
-    name: "Labour Day Park Promotion",
-    description: "Enjoy Labour Day at our parks with 15% off park entry and events. Celebrate with a day of nature and relaxation.",
-    discountType: "PERCENTAGE",
-    promoCode: "LABOURDAYISEVERYDAY",
+    name: 'Labour Day Park Promotion',
+    description: 'Enjoy Labour Day at our parks with 15% off park entry and events. Celebrate with a day of nature and relaxation.',
+    discountType: 'PERCENTAGE',
+    promoCode: 'LABOURDAYISEVERYDAY',
     isNParksWide: false,
     parkId: 2,
-    images: [
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWlbnZbV7DoXKVKnbG_E1w2HQPTrhsIkZe3A&s",
-    ],
+    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWlbnZbV7DoXKVKnbG_E1w2HQPTrhsIkZe3A&s'],
     discountValue: 15,
     validFrom: '2024-05-01T08:00:00+08:00',
     validUntil: '2024-05-07T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Limited slots available.",
-    ],
+    status: 'ENABLED',
+    terms: ['Limited slots available.'],
     maximumUsage: 100,
   },
   {
-    name: "National Day Sustainability Fair",
-    description: "Celebrate National Day by joining our Sustainability Fair! Get $8 off on eco-friendly activities and workshops.",
-    discountType: "FIXED_AMOUNT",
-    promoCode: "NDSUSTAIN8",
+    name: 'National Day Sustainability Fair',
+    description: 'Celebrate National Day by joining our Sustainability Fair! Get $8 off on eco-friendly activities and workshops.',
+    discountType: 'FIXED_AMOUNT',
+    promoCode: 'NDSUSTAIN8',
     isNParksWide: true,
     parkId: null,
-    images: [
-      "https://cdn.prod.website-files.com/6586ad1766809383c71cd41e/658bd36beac9ae62d1a57281_SINGAPORE-NATIONAL-DAY.jpeg",
-    ],
+    images: ['https://cdn.prod.website-files.com/6586ad1766809383c71cd41e/658bd36beac9ae62d1a57281_SINGAPORE-NATIONAL-DAY.jpeg'],
     discountValue: 8,
     validFrom: '2024-08-06T08:00:00+08:00',
     validUntil: '2024-08-09T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Limited slots available.",
-      "A minimum purchase of SGD $40 is required.",
-    ],
+    status: 'ENABLED',
+    terms: ['Limited slots available.', 'A minimum purchase of SGD $40 is required.'],
     maximumUsage: 200,
     minimumAmount: 40,
   },
   {
-    name: "20th Anniversary",
+    name: '20th Anniversary',
     description: "Celebrate the Singapore Botanic Gardens' 20th Anniversary by joining in the month of October!",
-    discountType: "PERCENTAGE",
-    promoCode: "NDSUSTAIN8",
+    discountType: 'PERCENTAGE',
+    promoCode: 'NDSUSTAIN8',
     isNParksWide: false,
     parkId: 2,
-    images: [
-      "https://www.nac.gov.sg/artweek/uploads/event/2102030734d6052fbd003b41cd8a2104ea88faf13e_790.png",
-    ],
+    images: ['https://www.nac.gov.sg/artweek/uploads/event/2102030734d6052fbd003b41cd8a2104ea88faf13e_790.png'],
     discountValue: 20,
     validFrom: '2024-10-01T08:00:00+08:00',
     validUntil: '2024-11-01T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Limited slots available.",
-      "A minimum purchase of SGD $20 is required.",
-    ],
+    status: 'ENABLED',
+    terms: ['Limited slots available.', 'A minimum purchase of SGD $20 is required.'],
     maximumUsage: 2000,
     minimumAmount: 20,
   },
   {
-    name: "Sustainability Month",
-    description: "Walk with nature this Sustainability Month. Enjoy 10% off at our parks.",
-    discountType: "PERCENTAGE",
-    promoCode: "ECO10",
+    name: 'Sustainability Month',
+    description: 'Walk with nature this Sustainability Month. Enjoy 10% off at our parks.',
+    discountType: 'PERCENTAGE',
+    promoCode: 'ECO10',
     isNParksWide: true,
     parkId: null,
-    images: [
-      "https://www.nparks.gov.sg/-/media/nparks-real-content/homepage/explore-nature/nature_familytrees.jpg?h=350&w=276",
-    ],
+    images: ['https://www.nparks.gov.sg/-/media/nparks-real-content/homepage/explore-nature/nature_familytrees.jpg?h=350&w=276'],
     discountValue: 10,
     validFrom: '2024-10-14T08:00:00+08:00',
     validUntil: '2024-11-25T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "Limited slots available.",
-    ],
+    status: 'ENABLED',
+    terms: ['Limited slots available.'],
     maximumUsage: 150,
   },
   {
-    name: "Nature Week",
-    description: "Experience a festive adventure in nature this Christmas with $12 off on guided park tours.",
-    discountType: "FIXED_AMOUNT",
-    promoCode: "XMASNATURE12",
+    name: 'Nature Week',
+    description: 'Experience a festive adventure in nature this Christmas with $12 off on guided park tours.',
+    discountType: 'FIXED_AMOUNT',
+    promoCode: 'XMASNATURE12',
     isNParksWide: false,
     parkId: 1,
     images: [
-      "https://nt.global.ssl.fastly.net/binaries/content/gallery/website/national/regions/london/places/ham-house-and-garden/library/winter/christmas-tree-natural-ornaments-ham-house-and-garden-surrey-1607751.jpg",
+      'https://nt.global.ssl.fastly.net/binaries/content/gallery/website/national/regions/london/places/ham-house-and-garden/library/winter/christmas-tree-natural-ornaments-ham-house-and-garden-surrey-1607751.jpg',
     ],
     discountValue: 12,
     validFrom: '2024-11-21T08:00:00+08:00',
     validUntil: '2024-11-28T23:59:59+08:00',
-    status: "ENABLED",
-    terms: [
-      "A minimum purchase of SGD $50 is required.",
-    ],
+    status: 'ENABLED',
+    terms: ['A minimum purchase of SGD $50 is required.'],
     minimumAmount: 50,
-  }
+  },
 ];
 
 const announcementsData = [
   {
     title: 'Closure of Therapeutic Gardens',
-    content:
-      'A section of the Therapeutic Gardens (raised planters) will be closed for maintenance works from 6 dec to 16 dec 2024. ',
+    content: 'A section of the Therapeutic Gardens (raised planters) will be closed for maintenance works from 6 dec to 16 dec 2024. ',
     updatedAt: '2024-10-15T08:49:23.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
     endDate: '2024-12-16T15:59:59.000Z',
@@ -3569,7 +3568,8 @@ const announcementsData = [
   },
   {
     title: 'Oil Spill Incident Update',
-    content: 'The National Environment Agency (NEA) has shared that the water quality at our parks has returned to normal levels and stabilised since the oil spill.',
+    content:
+      'The National Environment Agency (NEA) has shared that the water quality at our parks has returned to normal levels and stabilised since the oil spill.',
     updatedAt: '2024-10-15T08:50:27.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
     endDate: '2025-02-28T15:59:59.000Z',
@@ -3578,7 +3578,8 @@ const announcementsData = [
   },
   {
     title: 'Advisory on Water Quality',
-    content: 'The water quality at our parks are unsafe for swimming and other water activities. Please do not enter the water until further notice.',
+    content:
+      'The water quality at our parks are unsafe for swimming and other water activities. Please do not enter the water until further notice.',
     updatedAt: '2024-10-15T08:51:27.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
     endDate: '2025-02-28T15:59:59.000Z',
@@ -3597,7 +3598,8 @@ const announcementsData = [
   },
   {
     title: 'Advisory on Flooding',
-    content: 'Some areas of Bishan-Ang Mo Kio Park may be flooded due to higher tides and bad weather. For your safety, do not enter when the area is flooded.',
+    content:
+      'Some areas of Bishan-Ang Mo Kio Park may be flooded due to higher tides and bad weather. For your safety, do not enter when the area is flooded.',
     updatedAt: '2024-10-15T08:51:27.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
     endDate: '2024-10-16T15:59:59.000Z',
@@ -3606,7 +3608,8 @@ const announcementsData = [
   },
   {
     title: 'Hot Spring - Permit Application for large groups',
-    content: 'No permit is required for groups smaller than 20 people. For groups larger than 20 people, please submit a permit application before visiting the park.',
+    content:
+      'No permit is required for groups smaller than 20 people. For groups larger than 20 people, please submit a permit application before visiting the park.',
     updatedAt: '2024-10-15T08:51:27.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
     endDate: '2025-10-14T15:59:59.000Z',
@@ -3626,21 +3629,21 @@ const announcementsData = [
 
 const visitorsData = [
   {
-    firstName: "Ely",
-    lastName: "Ong",
-    email: "elysiaong22@gmail.com",
-    password: "password",
-    contactNumber: "82882747",
+    firstName: 'Ely',
+    lastName: 'Ong',
+    email: 'elysiaong22@gmail.com',
+    password: 'password',
+    contactNumber: '82882747',
     isVerified: true,
   },
   {
-    firstName: "Aaron",
-    lastName: "Foo",
-    email: "aaronfyr@outlook.com",
-    password: "password",
-    contactNumber: "91234567",
+    firstName: 'Aaron',
+    lastName: 'Foo',
+    email: 'aaronfyr@outlook.com',
+    password: 'password',
+    contactNumber: '91234567',
     isVerified: true,
-  }
+  },
 ];
 
 module.exports = {
@@ -3660,7 +3663,7 @@ module.exports = {
   attractionTicketListingsData,
   decarbonizationAreasData,
   plantTasksData,
-  newHub,
+  newHubs,
   newSensors,
   seqHistoriesData,
   faqsData,

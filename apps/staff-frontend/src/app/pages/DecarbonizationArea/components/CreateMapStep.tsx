@@ -8,7 +8,7 @@ import {
   ParkResponse,
   ZoneResponse,
 } from '@lepark/data-access';
-import { Button, Card, Checkbox, message, Space } from 'antd';
+import { Button, Card, Checkbox, Flex, message, Space } from 'antd';
 import { useEffect, useState } from 'react';
 import { PiPlantFill } from 'react-icons/pi';
 import { TbTree } from 'react-icons/tb';
@@ -321,14 +321,14 @@ const CreateMapStep = ({
             ))}
         </MapContainer>
       </div>
-      <div className="flex justify-center gap-2">
-        <Button type="default" onClick={() => handleCurrStep(0)}>
+      <Flex className="w-full max-w-[600px] mx-auto" gap={10}>
+        <Button type="default" className="w-full" onClick={() => handleCurrStep(0)}>
           Previous
         </Button>
-        <Button type="primary" onClick={handleSubmit}>
+        <Button type="primary" className="w-full" onClick={handleSubmit}>
           Submit
         </Button>
-      </div>
+      </Flex>
     </>
   );
 };

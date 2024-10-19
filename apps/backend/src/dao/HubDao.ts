@@ -205,6 +205,10 @@ class HubDao {
     });
     return hub?.sensors.length > 0;
   }
+
+  public async getHubsByZoneId(zoneId: number): Promise<Hub[]> {
+    return prisma.hub.findMany({ where: { zoneId } });
+  }
 }
 
 export default new HubDao();

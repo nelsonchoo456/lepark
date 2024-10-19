@@ -24,10 +24,10 @@ How to setup Raspberry Pi for IoT? (make sure you are in SSH)
 1. mkdir <folder_name>
 2. cd <folder_name>
 3. nano .env, set the following:
-    a. HUB_IDENTIFIER_NO = <hub_identifier_number>
-    b. BACKEND_IP = <backend_ip_address>
-    c. BACKEND_PORT = <backend_port>
-    d. COM_PORT = <com_port>
+    a. HUB_IDENTIFIER_NO = "<hub_identifier_number>"
+    b. BACKEND_IP = "<backend_ip_address>"
+    c. BACKEND_PORT = "<backend_port>"
+    d. COM_PORT = <com_port> (No need quotation marks)
         i. If COM_PORT is not known, run `ls /dev/tty*` to find out the COM_PORT
         ii. If there are multiple COM_PORT, try connecting the micro:bit to the Raspberry Pi via USB and see which COM_PORT is being used. (usually /dev/ttyACM0)
     e. CAMERA_IDENTIFIER_NO = <camera_identifier_number>
