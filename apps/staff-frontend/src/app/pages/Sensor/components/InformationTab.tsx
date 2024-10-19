@@ -15,7 +15,7 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
       case 'INACTIVE':
         return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'UNDER_MAINTENANCE':
-        return <Tag color="orange" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       case 'DECOMMISSIONED':
         return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
       default:
@@ -36,21 +36,11 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
     { key: 'supplierContactNumber', label: 'Supplier Contact Number', children: sensor.supplierContactNumber || '-' },
     { key: 'remarks', label: 'Remarks', children: sensor.remarks || '-' },
     { key: 'hubName', label: 'Connected Hub', children: sensor.hub?.name || '-' },
-    user?.role === StaffType.SUPERADMIN && { key: 'parkName', label: 'Park', children: sensor.park?.name || '-' },
+    user?.role === StaffType.SUPERADMIN ? { key: 'parkName', label: 'Park', children: sensor.park?.name || '-' } : null,
     { key: 'facilityName', label: 'Facility', children: sensor.facility?.name || '-' },
-  ];
+  ].filter(Boolean);
 
   const conditionalItems = [
-    sensor.calibrationFrequencyDays && {
-      key: 'calibrationFrequencyDays',
-      label: 'Calibration Frequency (days)',
-      children: `${sensor.calibrationFrequencyDays} days`,
-    },
-    sensor.lastCalibratedDate && {
-      key: 'lastCalibratedDate',
-      label: 'Last Calibrated Date',
-      children: moment(sensor.lastCalibratedDate).format('MMMM D, YYYY'),
-    },
     sensor.lastMaintenanceDate && {
       key: 'lastMaintenanceDate',
       label: 'Last Maintenance Date',
@@ -60,11 +50,6 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
       children: moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY'),
-    },
-    sensor.dataFrequencyMinutes && {
-      key: 'dataFrequencyMinutes',
-      label: 'Data Frequency (minutes)',
-      children: `${sensor.dataFrequencyMinutes} minutes`,
     },
     sensor.lat && { key: 'lat', label: 'Latitude', children: sensor.lat.toString() },
     sensor.long && { key: 'long', label: 'Longitude', children: sensor.long.toString() },

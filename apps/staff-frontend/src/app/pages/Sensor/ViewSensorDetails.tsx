@@ -138,7 +138,7 @@ const ViewSensorDetails = () => {
             );
           case 'UNDER_MAINTENANCE':
             return (
-              <Tag color="orange" bordered={false}>
+              <Tag color="yellow" bordered={false}>
                 {formatEnumLabelToRemoveUnderscores(sensor.sensorStatus)}
               </Tag>
             );
