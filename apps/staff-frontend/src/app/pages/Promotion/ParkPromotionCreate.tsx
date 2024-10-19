@@ -29,6 +29,9 @@ const ParkPromotionCreate = () => {
   const minimumAmount = Form.useWatch('minimumAmount', form);
   const terms = Form.useWatch('terms', form);
 
+  const [showMaxUsageSuggestion, setShowMaxUsageSuggestion] = useState(true);
+  const [showMinAmountSuggestion, setShowMinAmountSuggestion] = useState(true);
+
   useEffect(() => {
     if (discountType) {
       form.setFieldsValue({ discountValuePercentage: 0.1, discountValueFixed: 0.1 });
@@ -149,6 +152,14 @@ const ParkPromotionCreate = () => {
     },
   ];
 
+  const handleTermChange = (terms: string[]) => {
+    const maxUsageTermExists = terms.some(term => term.includes(`This offer is limited to the first ${maximumUsage} users`));
+    const minAmountTermExists = terms.some(term => term.includes(`A minimum purchase of SGD $${minimumAmount} is required`));
+
+    setShowMaxUsageSuggestion(!maxUsageTermExists);
+    setShowMinAmountSuggestion(!minAmountTermExists);
+  };
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
@@ -250,11 +261,10 @@ const ParkPromotionCreate = () => {
                 {(fields, { add, remove }) => (
                   <>
                     {fields.map(({ key, name, fieldKey, ...restField }) => (
-                      <Form.Item colon={false} className="mb-2">
+                      <Form.Item colon={false} className="mb-2" key={key}>
                         <Flex gap={10}>
                           <Form.Item
                             {...restField}
-                            key={key}
                             name={[name]}
                             noStyle
                             fieldKey={fieldKey !== undefined ? fieldKey : key}
@@ -271,9 +281,23 @@ const ParkPromotionCreate = () => {
                               },
                             ]}
                           >
-                            <Input placeholder="Enter a term" />
+                            <Input 
+                              placeholder="Enter a term" 
+                              onChange={() => {
+                                const currentTerms = form.getFieldValue('terms');
+                                handleTermChange(currentTerms);
+                              }}
+                            />
                           </Form.Item>
-                          <Button onClick={() => remove(name)} icon={<MdClose />} shape="circle" />
+                          <Button 
+                            onClick={() => {
+                              remove(name);
+                              const currentTerms = form.getFieldValue('terms');
+                              handleTermChange(currentTerms.filter((_: any, index: number) => index !== name));
+                            }} 
+                            icon={<MdClose />} 
+                            shape="circle" 
+                          />
                         </Flex>
                       </Form.Item>
                     ))}
@@ -284,11 +308,14 @@ const ParkPromotionCreate = () => {
                       </Button>
                     </Form.Item>
 
-                    {maximumUsage !== undefined && typeof maximumUsage === "number" && (
+                    {maximumUsage !== undefined && typeof maximumUsage === "number" && showMaxUsageSuggestion && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
-                          onClick={() => add(`This offer is limited to the first ${maximumUsage} users`)}
+                          onClick={() => {
+                            add(`This offer is limited to the first ${maximumUsage} users`);
+                            setShowMaxUsageSuggestion(false);
+                          }}
                           block
                           className="text-green-400 text-wrap"
                           style={{
@@ -305,11 +332,14 @@ const ParkPromotionCreate = () => {
                         </Button>
                       </Form.Item>
                     )}
-                    {minimumAmount !== undefined && typeof minimumAmount === "number" && (
+                    {minimumAmount !== undefined && typeof minimumAmount === "number" && showMinAmountSuggestion && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
-                          onClick={() => add(`A minimum purchase of SGD $${minimumAmount} is required.`)}
+                          onClick={() => {
+                            add(`A minimum purchase of SGD $${minimumAmount} is required.`);
+                            setShowMinAmountSuggestion(false);
+                          }}
                           block
                           className="text-green-400 text-wrap"
                           style={{
