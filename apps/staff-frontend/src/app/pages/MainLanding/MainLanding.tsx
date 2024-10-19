@@ -1,12 +1,15 @@
-import { ContentWrapper, ContentWrapperDark, DashboardContentWrapper, LogoText } from '@lepark/common-ui';
+import { ContentWrapper, ContentWrapperDark, DashboardContentWrapper, LogoText, useAuth } from '@lepark/common-ui';
 import MainLayout from '../../components/main/MainLayout';
 import { Badge, Card, Empty, Statistic } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import PageHeader2 from '../../components/main/PageHeader2_MainLanding';
 import ManagerMainLanding from './Manager/ManagerMainLanding';
+import { StaffResponse, StaffType } from '@lepark/data-access';
+import BAMainLanding from './BotanistArborist/BAMainLanding';
 
 const MainLanding = () => {
+  const { user } = useAuth<StaffResponse>();
   const chartOptions: ApexOptions = {
     chart: {
       type: 'line',
@@ -60,6 +63,9 @@ const MainLanding = () => {
   ]
 
   const renderDashboard = () => {
+    if (user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) {
+      return <BAMainLanding/>
+    }
     return <ManagerMainLanding/>
   }
 
