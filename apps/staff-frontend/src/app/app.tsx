@@ -100,6 +100,9 @@ import FAQCreate from './pages/FAQ/FAQCreate';
 import { App as AntdApp } from 'antd';
 import FAQView from './pages/FAQ/FAQView';
 import FAQEdit from './pages/FAQ/FAQEdit';
+
+import FeedbackList from './pages/Feedback/FeedbackList';
+
 export function App() {
   return (
     <AntdApp>
@@ -557,6 +560,11 @@ export function App() {
                 <Route path="create" element={<FAQCreate />} />
                 <Route path=":faqId" element={<FAQView />} />
                 <Route path=":faqId/edit" element={<FAQEdit />} />
+              </Route>
+
+              <Route path="/feedback">
+                <Route index element={<FeedbackList />} />
+
               </Route>
 
               {/* Catch-all for 404 */}
