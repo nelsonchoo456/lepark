@@ -35,22 +35,9 @@ router.get('/getAllHubs', async (req, res) => {
   }
 });
 
-router.get('/getHubById/:id', async (req, res) => {
+router.get('/getHubsByZoneId/:zoneId', async (req, res) => {
   try {
-    const hub = await HubService.getHubById(req.params.id);
-    if (hub) {
-      res.status(200).json(hub);
-    } else {
-      res.status(404).json({ error: 'Hub not found' });
-    }
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getHubByZoneId/:zoneId', async (req, res) => {
-  try {
-    const hub = await HubService.getHubByZoneId(parseInt(req.params.zoneId));
+    const hub = await HubService.getHubsByZoneId(parseInt(req.params.zoneId));
     if (hub) {
       res.status(200).json(hub);
     } else {
@@ -82,15 +69,6 @@ router.get('/getHubByRadioGroup/:radioGroup', async (req, res) => {
     } else {
       res.status(404).json({ error: 'Hub not found' });
     }
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getHubByZoneId/:zoneId', async (req, res) => {
-  try {
-    const hub = await HubService.getHubByZoneId(parseInt(req.params.zoneId));
-    res.status(200).json(hub);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

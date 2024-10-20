@@ -81,9 +81,9 @@ export async function getHubById(id: string): Promise<AxiosResponse<HubResponse>
   }
 }
 
-export async function getHubByZoneId(zoneId: number): Promise<AxiosResponse<HubResponse>> {
+export async function getHubsByZoneId(zoneId: number): Promise<AxiosResponse<HubResponse[]>> {
   try {
-    const response: AxiosResponse<HubResponse> = await client.get(`${URL}/getHubByZoneId/${zoneId}`);
+    const response: AxiosResponse<HubResponse[]> = await client.get(`${URL}/getHubsByZoneId/${zoneId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

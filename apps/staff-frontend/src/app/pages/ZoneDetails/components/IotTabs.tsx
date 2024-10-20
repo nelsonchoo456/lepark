@@ -1,94 +1,50 @@
 import {
   HubResponse,
-  ZoneResponse,
-  StaffResponse,
-  StaffType,
   SensorResponse,
-  deleteSensor,
   SensorStatusEnum,
   SensorTypeEnum,
 } from '@lepark/data-access';
-import { Button, Flex, Input, message, Modal, Tag, Tooltip, Table, Result, Card, Divider } from 'antd';
+import { Button, Flex, Input, message, Tag, Tooltip, Table, Card, Divider, Tabs } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { ColumnsType } from 'antd/es/table';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { SCREEN_LG } from '../../../config/breakpoints';
 
+interface IotTabsProps {
+  hubs: (HubResponse & { sensors?: SensorResponse[] })[];
+}
 interface SensorsTabProps {
-  hub: HubResponse;
-  zone: ZoneResponse;
-  sensors?: SensorResponse[];
-  fetchSensors: () => void; // callback function
+  hub: (HubResponse & { sensors?: SensorResponse[] });
 }
 
-const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
+const IotTabs = ({ hubs }: IotTabsProps) => {
+  return (
+    <Tabs
+      defaultActiveKey="0"
+      type="card"
+    >
+      {hubs.map((hub, index) => (
+        <Tabs.TabPane tab={hub.name} key={index.toString()}>
+          <SensorsTab hub={hub} />
+        </Tabs.TabPane>
+      ))}
+    </Tabs>
+  );
+};
+
+const SensorsTab = ({ hub }: SensorsTabProps) => {
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState('');
-  // const [sensorToBeDeactivated, setSensorToBeDeactivated] = useState<SensorResponse | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
-  // const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
-  // const [updatedData, setUpdatedData] = useState<SensorResponse>();
-
-  // const canActivateEdit = user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER
-
-  // // Deactivate utility
-  // const cancelDeactivate = () => {
-  //   setSensorToBeDeactivated(null);
-  //   setDeactivateModalOpen(false);
-  // };
-
-  // const showDeactivateModal = (sensor: SensorResponse) => {
-  //   setSensorToBeDeactivated(sensor);
-  //   setDeactivateModalOpen(true);
-  // };
-
-  // const handleDeactivateSensor = async () => {
-  //   try {
-  //     if (!sensorToBeDeactivated) {
-  //       throw new Error('Unable to deactivate Sensor a this time.');
-  //     }
-  //     const sensorRes = await removeSensorFromHub(sensorToBeDeactivated.id);
-  //     if (sensorRes.status === 200) {
-  //       setUpdatedData(sensorRes.data);
-        
-  //       setTimeout(() => {
-  //         setDeactivateModalOpen(false);
-  //         // triggerFetch();
-  //         fetchSensors();
-  //       }, 2000);
-  //     }
-      
-  //   } catch (error) {
-  //     console.log(error);
-  //     if (
-  //       error === 'Sensor is not assigned to any hub' ||
-  //       error === 'Sensor must be active to be removed from a hub' ||
-  //       error === 'Sensor not found'
-  //     ) {
-  //       messageApi.open({
-  //         type: 'error',
-  //         content: error,
-  //       });
-  //       setDeactivateModalOpen(false);
-  //     } else {
-  //       messageApi.open({
-  //         type: 'error',
-  //         content: `Unable to deactivate Sensor at this time. Please try again later.`,
-  //       });
-  //       setDeactivateModalOpen(false);
-  //     }
-      
-  //   }
-  // };
 
   const filteredSensors = useMemo(() => {
-    return sensors?.filter((sensor) => {
+    return hub.sensors?.filter((sensor) => {
       return Object.values(sensor).some((value) => value && value.toString().toLowerCase().includes(searchQuery.toLowerCase()));
     });
-  }, [sensors, searchQuery]);
+  }, [hub.sensors, searchQuery]);
 
   const handleSearchBar = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -179,24 +135,6 @@ const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
   return (
     <>
       {contextHolder}
-      {/* <ConfirmDeleteModal
-        title="Delinking Sensor"
-        okText="Confirm Delinking of Sensor"
-        onConfirm={handleDeactivateSensor}
-        open={deactivateModalOpen}
-        onCancel={cancelDeactivate}
-
-        // For Success
-        description={updatedData ? undefined : "Delinking a Sensor will disconnect it from its assigned Hub and remove it from the Zone."}
-        footer={updatedData && null}
-        closable={!updatedData}
-      >
-        {updatedData && <Result
-          status="success"
-          title={updatedData ? `Delinked ${updatedData.name}` : 'Delinked Sensor'}
-          subTitle="Returning to Sensors Tab..."
-        />}
-      </ConfirmDeleteModal> */}
       
       <Divider orientation='left'>Hub</Divider>
       <Card styles={{ body: { padding: "1rem" }}} className='mb-4'>
@@ -226,4 +164,4 @@ const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
   );
 };
 
-export default SensorsTab;
+export default IotTabs;

@@ -162,10 +162,6 @@ class HubDao {
     });
   }
 
-  public async getHubByZoneId(zoneId: number): Promise<Hub | null> {
-    return prisma.hub.findFirst({ where: { zoneId } });
-  }
-
   public async updateHubDetails(id: string, data: Prisma.HubUpdateInput): Promise<Hub> {
     return prisma.hub.update({ where: { id }, data });
   }

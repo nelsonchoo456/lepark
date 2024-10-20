@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography } from 'antd';
-import { getHubByZoneId, getSensorsByHubId, HubResponse, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
+import { getHubsByZoneId, getSensorsByHubId, HubResponse, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import ZoneStatusTag from './components/ZoneStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -10,7 +10,7 @@ import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import SensorsTab from './components/SensorsTab';
+import IotTabs from './components/IotTabs';
 
 const { Text } = Typography;
 
@@ -19,37 +19,42 @@ const ZoneDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { zone, loading } = useRestrictZone(id);
-  const [hub, setHub] = useState<HubResponse>();
+  const [hubs, setHubs] = useState<(HubResponse & { sensors?: SensorResponse[] })[]>();
   const [sensors, setSensors] = useState<SensorResponse[]>();
 
   useEffect(() => {
     if (zone) {
-      fetchHub(zone.id);
+      fetchHubs(zone.id);
     }
   }, [zone]);
 
-  useEffect(() => {
-    if (hub) {
-      fetchSensors(hub.id);
-    }
-  }, [hub]);
+  // useEffect(() => {
+  //   if (hub) {
+  //     fetchSensors(hub.id)
+  //   }
+  // }, [hub]);
 
-  const fetchHub = async (zoneId: number) => {
+  const fetchHubs = async (zoneId: number) => {
     try {
-      const hubRes = await getHubByZoneId(zoneId);
+      const hubRes = await getHubsByZoneId(zoneId);
       if (hubRes.status === 200) {
-        setHub(hubRes.data);
-      }
-    } catch (e) {
-      //
-    }
-  };
+        // setHubs(hubRes.data);
+        const hubsData = hubRes.data;
+        
+        hubsData.forEach(async (h) => {
+          try {
+            const sensorRes = await getSensorsByHubId(h.id);
+            if (sensorRes.status === 200) {
+              h.sensors = sensorRes.data
+            };
+          } catch (e) {
+            h.sensors = [];
+          }
+        })
 
-  const fetchSensors = async (hubId: string) => {
-    try {
-      const sensorsRes = await getSensorsByHubId(hubId);
-      if (sensorsRes.status === 200) {
-        setSensors(sensorsRes.data);
+        console.log(hubsData)
+
+        setHubs(hubsData)
       }
     } catch (e) {
       //
@@ -91,8 +96,8 @@ const ZoneDetails = () => {
     {
       key: 'IoT',
       label: 'IoT',
-      children: hub ? (
-        <SensorsTab hub={hub} sensors={sensors} zone={zone} fetchSensors={() => fetchSensors(hub.id)}></SensorsTab>
+      children: hubs ? (
+        <IotTabs hubs={hubs}/>
       ) : (
         <Empty description="No Linked Hubs"></Empty>
       ),
