@@ -108,64 +108,94 @@ class EmailUtility {
 
     doc.pipe(fs.createWriteStream(pdfPath));
 
-    const addHeader = () => {
-      doc.font('Helvetica-Bold').fontSize(18).text('Lepark Attraction Ticket', { align: 'center' });
-      doc.moveDown();
-      doc
-        .fontSize(12)
-        .text(`Purchased by: ${visitor.firstName} ${visitor.lastName}`, { align: 'left' })
-        .text(`Order Number: ${transaction.id}`, { align: 'left' })
-        .text(`Purchase Date: ${new Date(transaction.purchaseDate).toDateString()}`, { align: 'left' })
-        .text(`Visit Date: ${new Date(transaction.attractionDate).toDateString()}`, { align: 'left' });
-      doc.moveDown(2);
-    };
-
-    addHeader();
-
-    let yPosition = 180;
     for (let i = 0; i < transaction.attractionTickets.length; i++) {
+      if (i > 0) {
+        doc.addPage();
+      }
+
       const ticketData = transaction.attractionTickets[i];
       const ticket = await AttractionTicketDao.getAttractionTicketById(ticketData.id);
       const listing = await AttractionDao.getAttractionTicketListingById(ticket.attractionTicketListingId);
+      const attraction = await AttractionDao.getAttractionById(listing.attractionId);
 
-      const qrCodePath = await this.generateQRCode(`http://localhost:4200/verify-ticket/${ticket.id}`);
+      const leftMargin = 50;
+      const pageWidth = 500;
+      const halfWidth = pageWidth / 2;
 
-      if (yPosition > 650) {
-        doc.addPage();
-        yPosition = 50;
-        addHeader();
-      }
+      // Header
+      doc.font('Helvetica-Bold').fontSize(18).text('Lepark Attraction Ticket', leftMargin, 30, { width: pageWidth, align: 'center' });
+
+      // Visitor and order information
+      doc
+        .fontSize(10)
+        .text(`Purchased by: ${visitor.firstName} ${visitor.lastName}`, leftMargin, 70, { width: halfWidth })
+        .text(`Purchase Date: ${new Date(transaction.purchaseDate).toDateString()}`, leftMargin + halfWidth, 70, {
+          width: halfWidth,
+          align: 'right',
+        })
+        .text(`Order Number: ${transaction.id}`, leftMargin, 85, { width: halfWidth })
+        .text(`VALID ON ${new Date(transaction.attractionDate).toDateString()}`, leftMargin + halfWidth, 85, {
+          width: halfWidth,
+          align: 'right',
+        });
+
+      // Increased gap before "Valid on the specified date" line
+      doc
+        .moveDown(4) // Increased from 2 to 4 for a bigger gap
+        .fontSize(12)
+        .text('Valid on the specified date above. VALID FOR ONE GUEST ONLY', leftMargin, 120, { width: pageWidth });
 
       // Green box for the ticket
-      doc.rect(50, yPosition, 500, 150).fillColor('darkgreen').fill();
+      const greenBoxHeight = 120; // Increased height
+      doc.rect(leftMargin, 140, pageWidth, greenBoxHeight).fillColor('darkgreen').fill();
 
-      // Ticket details
+      // Ticket details (centered in green box)
       doc
         .fillColor('white')
-        .fontSize(12)
-        .text(`Category: ${listing.category}`, 70, yPosition + 20)
-        .text(`Nationality: ${listing.nationality}`, 70, yPosition + 45)
-        .text(`Ticket ID: ${ticket.id}`, 70, yPosition + 70)
-        .text(`Price: $${ticket.price}`, 70, yPosition + 90)
+        .fontSize(16)
+        .text('THIS IS YOUR E-TICKET', leftMargin, 155, { width: pageWidth, align: 'center' }) // Moved down by 5 units
+        .moveDown(0.5)
+        .fontSize(14)
+        .text(`${attraction.title} -  ${listing.nationality} ${listing.category}`, leftMargin, null, { width: pageWidth, align: 'center' })
+        .moveDown(0.5)
         .fontSize(10)
-        .text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', 70, yPosition + 120);
+        .text('PLEASE APPROACH THE STAFF TO SCAN THE QR CODE.', leftMargin, null, { width: pageWidth, align: 'center' })
+        .moveDown(0.5)
+        .text('THE TICKET IS NON-TRANSFERABLE, NON-REFUNDABLE AND VOID IF ALTERED', leftMargin, null, {
+          width: pageWidth,
+          align: 'center',
+        });
 
       // QR Code
-      doc.image(qrCodePath, 450, yPosition + 35, { fit: [80, 80] });
+      const qrCodePath = await this.generateQRCode(`http://localhost:4200/verify-ticket/${ticket.id}`);
+      doc.image(qrCodePath, 245, 270, { fit: [115, 115] });
 
-      yPosition += 170; // Adjust spacing between tickets
+      // Increased gap before "How to use this e-ticket"
+      doc.fillColor('black').fontSize(11).text('HOW TO USE THIS E-TICKET:', leftMargin, 410);
+
+      // How to use this e-ticket
+      doc
+        .fontSize(9)
+        .text('1. SCAN THIS ORIGINAL E-TICKET AT THE ATTRACTION ENTRANCE', leftMargin, 430)
+        .text('2. PHOTO ID VERIFICATION - May be required for verification.', leftMargin, 445)
+        .text('3. THIS TICKET IS ONLY APPLICABLE DURING REGULAR OPERATING HOURS', leftMargin, 460);
+
+      // Add terms and conditions at the bottom
+      doc
+        .fontSize(9)
+        .text('TERMS AND CONDITIONS:', leftMargin, 495, { underline: true })
+        .text(
+          'VALID FOR ONE (1) GUEST ONLY • TICKETS UTILISED ARE NON-TRANSFERABLE • NOT FOR SALE OR EXCHANGE • NO REVALIDATION, NON-CANCELLABLE, NON-REFUNDABLE, EVEN IN CASES OF INCLEMENT WEATHER • VOID IF ALTERED • STRICTLY NO OUTSIDE FOOD OR BEVERAGES PERMITTED • HAND STAMP AND TICKET REQUIRED FOR SAME DAY RE-ENTRY • NOT TO BE USED FOR PROMOTIONAL PURPOSES UNLESS APPROVED IN WRITING BY NATIONAL PARKS BOARD (NPARKS) • ATTRACTION OPERATING HOURS ARE SUBJECT TO CHANGE WITHOUT PRIOR NOTICE. GUEST MAY VISIT LEPARK WEBSITE FOR UPDATES PRIOR TO VISIT • ONLY PROGRAMMES AND/OR SERVICES AUTHORIZED BY NPARKS ARE PERMITTED IN NPARKS • NPARKS RESERVES THE RIGHT TO VARY OR AMEND ANY TERMS AND CONDITIONS WITHOUT PRIOR NOTICE',
+          leftMargin,
+          510,
+          { width: pageWidth, align: 'justify' },
+        )
+        .moveDown(1.5) // Add space between paragraphs
+        .text(
+          'Any resale of tickets/vouchers is strictly prohibited. NParks reserves the right to invalidate tickets/vouchers in connection with any fraudulent/unauthorized resale transaction, without refund or other compensation. Tickets/Vouchers allow for a one (1) - time use only. If it is determined by NParks that there are multiple copies/usages of the ticket, usage of the ticket will be denied. In the event of any dispute, a final decision shall be made based on our electronic record',
+          { width: pageWidth, align: 'justify' },
+        );
     }
-
-    // Add terms and conditions on the last page
-    if (yPosition > 700) {
-      doc.addPage();
-      yPosition = 50;
-    }
-
-    doc
-      .fillColor('black')
-      .fontSize(8)
-      .text('Terms and conditions...', 50, yPosition + 20);
 
     doc.end();
     return pdfPath;
