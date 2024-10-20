@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Select, Button, message, Tooltip, Flex } from 'antd';
-import { MaintenanceTaskResponse, MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum, MaintenanceTaskUpdateData, StaffType } from '@lepark/data-access';
+import { MaintenanceTaskResponse, MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum, MaintenanceTaskUpdateData, StaffType, getFacilityById } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import dayjs from 'dayjs';
 import { FiExternalLink } from 'react-icons/fi';
@@ -26,9 +26,10 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
+  const [facilityName, setFacilityName] = useState<string>('');
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
         title: initialValues.title,
@@ -39,21 +40,67 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
         description: initialValues.description,
         remarks: initialValues.remarks,
       });
+
+      const fetchFacilityName = async () => {
+        let name = '';
+        if (initialValues.parkAsset?.facilityId) {
+          const facility = await getFacilityById(initialValues.parkAsset.facilityId);
+          name = facility?.data?.name || '';
+        } else if (initialValues.sensor?.facilityId) {
+          const facility = await getFacilityById(initialValues.sensor.facilityId);
+          name = facility?.data?.name || '';
+        } else if (initialValues.hub?.facilityId) {
+          const facility = await getFacilityById(initialValues.hub.facilityId);
+          name = facility?.data?.name || '';
+        } else if (initialValues.facility) {
+          name = initialValues.facility.name;
+        }
+        setFacilityName(name);
+      };
+
+      fetchFacilityName();
     }
   }, [initialValues, form]);
 
-  const getFacilityNameForFaultyItem = () => {
-    if (initialValues?.facility) {
-      return initialValues.facility.name;
-    } else if (initialValues?.parkAsset) {
-      return initialValues.parkAsset.facility?.name;
+  const getFaultyEntityType = () => {
+    if (initialValues?.parkAsset) return 'Park Asset';
+    if (initialValues?.sensor) return 'Sensor';
+    if (initialValues?.hub) return 'Hub';
+    if (initialValues?.facility) return 'Facility';
+    return 'Unknown';
+  };
+
+  const getFaultyEntityName = () => {
+    if (initialValues?.parkAsset) return initialValues.parkAsset.name;
+    if (initialValues?.sensor) return initialValues.sensor.name;
+    if (initialValues?.hub) return initialValues.hub.name;
+    if (initialValues?.facility) return initialValues.facility.name;
+    return 'Unknown';
+  };
+
+  const navigateToEntity = () => {
+    if (initialValues?.parkAsset) {
+      window.open(`/park-assets/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.sensor) {
-      return initialValues.sensor.facility?.name;
+      window.open(`/sensor/${initialValues.sensor.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.hub) {
-      return initialValues.hub.facility?.name;
+      window.open(`/hubs/${initialValues.hub.id}`, '_blank', 'noopener,noreferrer');
+    } else if (initialValues?.facility) {
+      window.open(`/facilities/${initialValues.facility.id}`, '_blank', 'noopener,noreferrer');
     }
-    return '';
-  }
+  };
+
+  const navigateToLocation = () => {
+    if (initialValues?.parkAsset) {
+      window.open(`/facilities/${initialValues.parkAsset.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (initialValues?.sensor) {
+      window.open(`/facilities/${initialValues.sensor.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (initialValues?.hub) {
+      window.open(`/facilities/${initialValues.hub.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (initialValues?.facility) {
+      window.open(`/facilities/${initialValues.facility.id}`, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -103,52 +150,6 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
     onCancel(); // Close the edit modal
   };
 
-  const navigateToFacility = () => {
-    if (initialValues?.facility) {
-      window.open(`/facilities/${initialValues.facility.id}`, '_blank', 'noopener,noreferrer');
-    } else if (initialValues?.parkAsset) {
-      window.open(`/facilities/${initialValues.parkAsset.facility?.id}`, '_blank', 'noopener,noreferrer');
-    } else if (initialValues?.sensor) {
-      window.open(`/facilities/${initialValues.sensor.facility?.id}`, '_blank', 'noopener,noreferrer');
-    } else if (initialValues?.hub) {
-      window.open(`/facilities/${initialValues.hub.facility?.id}`, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  const renderFaultyEntity = () => {
-    let title = '';
-    if (initialValues?.facility) {
-      title = initialValues.facility.name;
-    } else if (initialValues?.parkAsset) {
-      title = initialValues.parkAsset.name;
-    } else if (initialValues?.sensor) {
-      title = initialValues.sensor.name;
-    } else if (initialValues?.hub) {
-      title = initialValues.hub.name;
-    }
-
-    return (
-      <Flex align="center" justify="space-between">
-        <span>{title}</span>
-        <Tooltip title="Go to entity">
-          <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToFacility()} />
-        </Tooltip>
-      </Flex>
-    );
-  };
-
-  const navigateToFaultyEntity = () => {
-    if (initialValues?.facility) {
-      navigate(`/facilities/${initialValues.facility.id}`);
-    } else if (initialValues?.parkAsset) {
-      navigate(`/park-assets/${initialValues.parkAsset.id}`);
-    } else if (initialValues?.sensor) {
-      navigate(`/sensors/${initialValues.sensor.id}`);
-    } else if (initialValues?.hub) {
-      navigate(`/hubs/${initialValues.hub.id}`);
-    }
-  };
-
   return (
     <>
       <Modal
@@ -170,16 +171,16 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
               <Form.Item style={{ marginBottom: '4px' }}>Park: {initialValues?.submittingStaff?.park?.name}</Form.Item>
             )}
             {/* <Form.Item style={{ marginBottom: '4px' }}>Facility: {getFacilityNameForFaultyItem()}</Form.Item> */}
-            <Form.Item style={{ marginBottom: '0' }}>
-              Location: {getFacilityNameForFaultyItem()}
+            <Form.Item style={{ marginBottom: '4px' }}>
+              Location: {facilityName}
               <Tooltip title="Go to location">
-                <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToFacility()} />
+                <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToLocation()} />
               </Tooltip>
             </Form.Item>
             <Form.Item style={{ marginBottom: '0' }}>
-              Faulty Entity: {renderFaultyEntity()}
+              Faulty Entity: {getFaultyEntityName()}
               <Tooltip title="Go to faulty entity">
-                <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToFaultyEntity()} />
+                <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToEntity()} />
               </Tooltip>
             </Form.Item>
           </div>

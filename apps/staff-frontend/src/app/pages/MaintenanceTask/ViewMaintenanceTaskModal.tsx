@@ -99,6 +99,18 @@ const ViewMaintenanceTaskModal: React.FC<ViewMaintenanceTaskModalProps> = ({ vis
     }
   };
 
+  const navigateToLocation = () => {
+    if (task.parkAsset) {
+      window.open(`/facilities/${task.parkAsset.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (task.sensor) {
+      window.open(`/facilities/${task.sensor.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (task.hub) {
+      window.open(`/facilities/${task.hub.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (task.facility) {
+      window.open(`/facilities/${task.facility.id}`, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <Modal
       title="Maintenance Task Details"
@@ -117,7 +129,7 @@ const ViewMaintenanceTaskModal: React.FC<ViewMaintenanceTaskModalProps> = ({ vis
           <Descriptions.Item label="Location">
             <span>{facilityName || 'Loading...'}</span>
             <Tooltip title="Go to location">
-              <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToEntity()} />
+              <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToLocation()} />
             </Tooltip>
           </Descriptions.Item>
         )}
