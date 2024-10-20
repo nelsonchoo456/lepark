@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Select, Button, message, Tooltip, Flex } from 'antd';
-import { MaintenanceTaskResponse, MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum, MaintenanceTaskUpdateData, StaffType, getFacilityById } from '@lepark/data-access';
+import {
+  MaintenanceTaskResponse,
+  MaintenanceTaskStatusEnum,
+  MaintenanceTaskTypeEnum,
+  MaintenanceTaskUpdateData,
+  StaffType,
+  getFacilityById,
+  updateMaintenanceTaskDetails,
+  assignMaintenanceTask,
+  unassignMaintenanceTask,
+  updateMaintenanceTaskStatus,
+  StaffResponse,
+} from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import dayjs from 'dayjs';
 import { FiExternalLink } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@lepark/common-ui';
 
 interface EditMaintenanceTaskModalProps {
   visible: boolean;
@@ -28,6 +41,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const [facilityName, setFacilityName] = useState<string>('');
   const navigate = useNavigate();
+  const { user } = useAuth<StaffResponse>();
 
   useEffect(() => {
     if (initialValues) {
@@ -107,8 +121,20 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
       setIsSubmitting(true);
       const values = await form.validateFields();
 
+      // Handle status changes
+      if (values.taskStatus !== initialValues?.taskStatus) {
+        if (values.taskStatus === MaintenanceTaskStatusEnum.OPEN && initialValues?.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS) {
+          await unassignMaintenanceTask(initialValues.id, user?.id || '');
+          values.assignedStaffId = null;
+        } else if (values.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && initialValues?.taskStatus === MaintenanceTaskStatusEnum.OPEN) {
+          await assignMaintenanceTask(initialValues.id, user?.id || '');
+          values.assignedStaffId = user?.id;
+        }
+      }
       // First, try to submit the form
       await onSubmit(values);
+      console.log('initialValues', initialValues);
+      console.log('values', values);
 
       // If submission is successful, then check if we need to show the log prompt
       if (values.taskStatus === MaintenanceTaskStatusEnum.COMPLETED && initialValues?.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED) {

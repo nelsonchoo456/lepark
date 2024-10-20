@@ -32,6 +32,7 @@ import moment from 'moment';
 import { Tabs } from 'antd';
 import { MdArrowBack } from 'react-icons/md';
 import MaintenanceTaskBoardView from './MaintenanceTaskBoardView';
+import MaintenanceTaskTableView from './MaintenanceTaskTableView';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -114,7 +115,7 @@ const MaintenanceTaskList: React.FC = () => {
 
   const handleAssignStaff = async (maintenanceTaskId: string, staffId: string) => {
     try {
-      await assignMaintenanceTask(maintenanceTaskId, user?.id || '', staffId);
+      await assignMaintenanceTask(maintenanceTaskId, user?.id || '');
       messageApi.success('Staff assigned successfully');
       fetchMaintenanceTasks();
     } catch (error) {
@@ -356,24 +357,24 @@ const MaintenanceTaskList: React.FC = () => {
     );
   };
 
-//   const renderTableView = () => {
-//     return (
-//       <MaintenanceTaskTableView
-//         maintenanceTasks={filteredMaintenanceTasks}
-//         loading={loading}
-//         staffList={staffList}
-//         tableViewType={tableViewType}
-//         userRole={user?.role || ''}
-//         handleAssignStaff={handleAssignStaff}
-//         navigateToDetails={navigateToDetails}
-//         navigate={navigate}
-//         showDeleteModal={showDeleteModal}
-//         handleUnassignStaff={handleUnassignStaff}
-//         onTaskUpdated={fetchMaintenanceTasks}
-//         handleStatusChange={handleStatusChange}
-//       />
-//     );
-//   };
+  const renderTableView = () => {
+    return (
+      <MaintenanceTaskTableView
+        maintenanceTasks={filteredMaintenanceTasks}
+        loading={loading}
+        staffList={staffList}
+        tableViewType={tableViewType}
+        userRole={user?.role || ''}
+        handleAssignStaff={handleAssignStaff}
+        navigateToDetails={navigateToDetails}
+        navigate={navigate}
+        showDeleteModal={showDeleteModal}
+        handleUnassignStaff={handleUnassignStaff}
+        onTaskUpdated={fetchMaintenanceTasks}
+        handleStatusChange={handleStatusChange}
+      />
+    );
+  };
 
   const renderViewSelector = () => {
     if (isSuperAdmin) {
@@ -398,8 +399,7 @@ const MaintenanceTaskList: React.FC = () => {
 
   const renderBoard = () => {
     if (isSuperAdmin || viewMode === 'table') {
-      // return renderTableView();
-      return null;
+      return renderTableView();
     } else {
       return (
         <MaintenanceTaskBoardView

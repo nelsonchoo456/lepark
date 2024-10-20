@@ -457,6 +457,19 @@ class MaintenanceTaskService {
           }
         }
 
+        if (maintenanceTask.hubId) {
+          const hub = await HubDao.getHubById(maintenanceTask.hubId);
+          if (!hub) {
+            throw new Error(`Hub not found for maintenance task ${maintenanceTask.id}`);
+          }
+          if (hub.facilityId) {
+            facility = await FacilityDao.getFacilityById(hub.facilityId);
+            if (!facility) {
+              throw new Error(`Facility not found for hub ${hub.id}`);
+            }
+          }
+        }
+
         return {
           ...maintenanceTask,
           facility,
