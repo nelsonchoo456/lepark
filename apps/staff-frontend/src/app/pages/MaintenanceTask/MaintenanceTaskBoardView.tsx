@@ -64,12 +64,12 @@ const MaintenanceTaskBoardView = ({
   const [editingTask, setEditingTask] = useState<MaintenanceTaskResponse | null>(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
-  const [completedTaskObjectId, setCompletedTaskObjectId] = useState<{ type: 'facility' | 'parkAsset' | 'sensor' | 'hub', id: string } | null>(null);
+  const [movedTaskObjectId, setMovedTaskObjectId] = useState<{ type: 'facility' | 'parkAsset' | 'sensor' | 'hub', id: string } | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [maintenanceTaskToBeDeleted, setMaintenanceTaskToBeDeleted] = useState<MaintenanceTaskResponse | null>(null);
-  const [taskBeingCompleted, setTaskBeingCompleted] = useState<MaintenanceTaskResponse | null>(null);
-  const [taskCompletionIndex, setTaskCompletionIndex] = useState<number | null>(null);
+  const [taskBeingMoved, setTaskBeingMoved] = useState<MaintenanceTaskResponse | null>(null);
+  const [taskMovedIndex, setTaskMovedIndex] = useState<number | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -117,34 +117,34 @@ const MaintenanceTaskBoardView = ({
             destination.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS) {
           await assignMaintenanceTask(movedTask.id, user?.id || '');
           message.success('Task has been assigned and updated successfully');
-        }
-
-        // Auto-unassign when moving from IN_PROGRESS to OPEN
-        if (source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS && 
-          destination.droppableId === MaintenanceTaskStatusEnum.OPEN) {
-        await unassignMaintenanceTask(movedTask.id, user?.id || '');
+        } else if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
+          message.success('Task marked as completed');
+        } else if (source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS && 
+                   destination.droppableId === MaintenanceTaskStatusEnum.OPEN) {
+          await unassignMaintenanceTask(movedTask.id, user?.id || '');
           message.success('Task has been unassigned and updated successfully');
+        } else {
+          message.success('Task updated successfully');
         }
-
-        // if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
-        //   destination.droppableId === MaintenanceTaskStatusEnum.CANCELLED) {
-        //   await updateMaintenanceTaskStatus(movedTask.id, MaintenanceTaskStatusEnum.COMPLETED, user?.id);
-        // }
 
         await updateMaintenanceTaskStatus(movedTask.id, destination.droppableId as MaintenanceTaskStatusEnum, user?.id);
         await updateMaintenanceTaskPosition(movedTask.id, destination.index);
         
-        if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
-          setTaskBeingCompleted(movedTask);
-          setTaskCompletionIndex(destination.index);
+        // Refresh data to show changes immediately
+        await refreshData();
+
+        // Show log prompt for all moves except to CANCELLED
+        if (destination.droppableId !== MaintenanceTaskStatusEnum.CANCELLED) {
+          setTaskBeingMoved(movedTask);
+          setTaskMovedIndex(destination.index);
           if (movedTask.parkAssetId) {
-            setCompletedTaskObjectId({ type: 'parkAsset', id: movedTask.parkAssetId });
+            setMovedTaskObjectId({ type: 'parkAsset', id: movedTask.parkAssetId });
           } else if (movedTask.sensorId) {
-            setCompletedTaskObjectId({ type: 'sensor', id: movedTask.sensorId });
+            setMovedTaskObjectId({ type: 'sensor', id: movedTask.sensorId });
           } else if (movedTask.hubId) {
-            setCompletedTaskObjectId({ type: 'hub', id: movedTask.hubId });
+            setMovedTaskObjectId({ type: 'hub', id: movedTask.hubId });
           } else if (movedTask.facilityId) {
-            setCompletedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
+            setMovedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
           }
 
           setShowLogPrompt(true);
@@ -158,8 +158,6 @@ const MaintenanceTaskBoardView = ({
         updateListState(destination.droppableId as MaintenanceTaskStatusEnum, destList);
       }
     }
-
-    refreshData();
   };
 
   const getList = (id: MaintenanceTaskStatusEnum) => {
@@ -373,43 +371,33 @@ const MaintenanceTaskBoardView = ({
     }
   }
 
-  const handleLogPromptOk = async () => {
+  const handleLogPromptOk = () => {
     setShowLogPrompt(false);
-    if (completedTaskObjectId) {
-      if (completedTaskObjectId.type === 'facility') {
-        navigate(`/facilities/${completedTaskObjectId.id}`);
-      } else if (completedTaskObjectId.type === 'parkAsset') {
-        navigate(`/park-assets/${completedTaskObjectId.id}`);
-      } else if (completedTaskObjectId.type === 'sensor') {
-        navigate(`/sensors/${completedTaskObjectId.id}`);
-      } else if (completedTaskObjectId.type === 'hub') {
-        navigate(`/hubs/${completedTaskObjectId.id}`);
+    if (movedTaskObjectId) {
+      let url = '';
+      if (movedTaskObjectId.type === 'facility') {
+        url = `/facilities/${movedTaskObjectId.id}/edit`;
+      } else if (movedTaskObjectId.type === 'parkAsset') {
+        url = `/parkasset/${movedTaskObjectId.id}/edit`;
+      } else if (movedTaskObjectId.type === 'sensor') {
+        url = `/sensors/${movedTaskObjectId.id}/edit`;
+      } else if (movedTaskObjectId.type === 'hub') {
+        url = `/hubs/${movedTaskObjectId.id}/edit`;
       }
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
+    cleanupAfterPrompt();
   };
 
-  const handleLogPromptCancel = async () => {
+  const handleLogPromptCancel = () => {
     setShowLogPrompt(false);
-    await completeTask();
+    cleanupAfterPrompt();
   };
 
-  const completeTask = async () => {
-    if (taskBeingCompleted && taskCompletionIndex !== null) {
-      try {
-        await updateMaintenanceTaskStatus(taskBeingCompleted.id, MaintenanceTaskStatusEnum.COMPLETED);
-        await updateMaintenanceTaskPosition(taskBeingCompleted.id, taskCompletionIndex);
-
-        message.success('Task marked as completed');
-        refreshData();
-      } catch (error) {
-        console.error('Error completing task:', error);
-        message.error('Failed to complete task');
-      } finally {
-        setTaskBeingCompleted(null);
-        setTaskCompletionIndex(null);
-        setCompletedTaskObjectId(null);
-      }
-    }
+  const cleanupAfterPrompt = () => {
+    setTaskBeingMoved(null);
+    setTaskMovedIndex(null);
+    setMovedTaskObjectId(null);
   };
 
   const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
@@ -546,14 +534,14 @@ const MaintenanceTaskBoardView = ({
         userRole={userRole as StaffType}
       />
       <Modal
-        title="Create Log"
+        title="Update Task"
         open={showLogPrompt}
         onOk={handleLogPromptOk}
         onCancel={handleLogPromptCancel}
-        okText="Yes, create log"
-        cancelText="No, just complete the task"
+        okText="Yes, edit status"
+        cancelText="No, just update the task"
       >
-        <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
+        <p>Do you want to edit the status of the {taskBeingMoved?.parkAsset ? 'Park Asset' : taskBeingMoved?.sensor ? 'Sensor' : taskBeingMoved?.hub ? 'Hub' : 'Facility'} "{taskBeingMoved?.parkAsset?.name || taskBeingMoved?.sensor?.name || taskBeingMoved?.hub?.name || taskBeingMoved?.facility?.name}"?</p>
       </Modal>
       <ConfirmDeleteModal
         onConfirm={deleteMaintenanceTaskConfirmed}

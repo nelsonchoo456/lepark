@@ -158,15 +158,17 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
   const handleLogPromptOk = () => {
     setShowLogPrompt(false);
     onStatusChange(MaintenanceTaskStatusEnum.COMPLETED);
+    let url = '';
     if (initialValues?.facility?.id) {
-      navigate(`/facilities/${initialValues.facility.id}`);
+      url = `/facilities/${initialValues.facility.id}/edit`;
     } else if (initialValues?.parkAsset?.id) {
-      navigate(`/park-assets/${initialValues.parkAsset.id}`);
+      url = `/parkasset/${initialValues.parkAsset.id}/edit`;
     } else if (initialValues?.sensor?.id) {
-      navigate(`/sensors/${initialValues.sensor.id}`);
+      url = `/sensors/${initialValues.sensor.id}/edit`;
     } else if (initialValues?.hub?.id) {
-      navigate(`/hubs/${initialValues.hub.id}`);
+      url = `/hubs/${initialValues.hub.id}/edit`;
     }
+    window.open(url, '_blank', 'noopener,noreferrer');
     onCancel(); // Close the edit modal
   };
 
@@ -255,14 +257,14 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
         </Form>
       </Modal>
       <Modal
-        title="Create Log"
+        title="Task Completed"
         open={showLogPrompt}
         onOk={handleLogPromptOk}
         onCancel={handleLogPromptCancel}
-        okText="Yes, create log"
+        okText="Yes, edit status"
         cancelText="No, just complete the task"
       >
-        <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
+        <p>Do you want to edit the status of the {getFaultyEntityType()} "{getFaultyEntityName()}"?</p>
       </Modal>
     </>
   );
