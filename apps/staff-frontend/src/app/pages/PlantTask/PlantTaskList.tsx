@@ -317,7 +317,7 @@ const PlantTaskList: React.FC = () => {
       task.taskStatus !== 'CANCELLED',
   ).length;
   const overdueTasks = plantTasks.filter(
-    (task) => moment(task.dueDate).isBefore(moment()) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
+    (task) => moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
   ).length;
 
   const renderStatisticsOverview = (defaultOpen?: boolean) => {

@@ -59,6 +59,16 @@ router.delete('/deleteMaintenanceTask/:id', authenticateJWTStaff, async (req, re
   }
 });
 
+router.delete('/deleteMaintenanceTasksByStatus/:status', authenticateJWTStaff, async (req, res) => {
+  try {
+    const taskStatus = req.params.status as MaintenanceTaskStatusEnum;
+    await MaintenanceTaskService.deleteMaintenanceTasksByStatus(taskStatus);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getMaintenanceTasksByParkId/:parkId', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = parseInt(req.params.parkId, 10);

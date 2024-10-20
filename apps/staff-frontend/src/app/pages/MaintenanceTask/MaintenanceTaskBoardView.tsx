@@ -1,19 +1,19 @@
 import React from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import {
-  PlantTaskResponse,
-  PlantTaskStatusEnum,
-  updatePlantTaskStatus,
-  assignPlantTask,
+  MaintenanceTaskResponse,
+  MaintenanceTaskStatusEnum,
+  updateMaintenanceTaskStatus,
+  assignMaintenanceTask,
   getAllStaffsByParkId,
   StaffResponse,
   getAllStaffs,
-  updatePlantTaskPosition,
-  unassignPlantTask,
-  updatePlantTaskDetails,
-  PlantTaskUpdateData,
-  deleteManyPlantTasks,
-  deletePlantTask,
+  updateMaintenanceTaskPosition,
+  unassignMaintenanceTask,
+  updateMaintenanceTaskDetails,
+  MaintenanceTaskUpdateData,
+  deleteMaintenanceTasksByStatus,
+  deleteMaintenanceTask,
 } from '@lepark/data-access';
 import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker } from 'antd';
 import moment from 'moment';
@@ -26,28 +26,30 @@ import { StaffRoleEnum } from '@prisma/client';
 import { useAuth } from '@lepark/common-ui';
 import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
-import EditPlantTaskModal from './EditPlantTaskModal';
-import ViewPlantTaskModal from './ViewPlantTaskModal';
+// import EditMaintenanceTaskModal from './EditMaintenanceTaskModal';
+// import ViewMaintenanceTaskModal from './ViewMaintenanceTaskModal';
 import dayjs from 'dayjs';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
+import EditMaintenanceTaskModal from './EditMaintenanceTaskModal';
+import ViewMaintenanceTaskModal from './ViewMaintenanceTaskModal';
 
-interface PlantTaskBoardViewProps {
-  open: PlantTaskResponse[];
-  inProgress: PlantTaskResponse[];
-  completed: PlantTaskResponse[];
-  cancelled: PlantTaskResponse[];
+interface MaintenanceTaskBoardViewProps {
+  open: MaintenanceTaskResponse[];
+  inProgress: MaintenanceTaskResponse[];
+  completed: MaintenanceTaskResponse[];
+  cancelled: MaintenanceTaskResponse[];
 
-  setOpen: (items: PlantTaskResponse[]) => void;
-  setInProgress: (items: PlantTaskResponse[]) => void;
-  setCompleted: (items: PlantTaskResponse[]) => void;
-  setCancelled: (items: PlantTaskResponse[]) => void;
+  setOpen: (items: MaintenanceTaskResponse[]) => void;
+  setInProgress: (items: MaintenanceTaskResponse[]) => void;
+  setCompleted: (items: MaintenanceTaskResponse[]) => void;
+  setCancelled: (items: MaintenanceTaskResponse[]) => void;
   refreshData: () => void;
   userRole: string;
 }
 
 const { RangePicker } = DatePicker;
 
-const PlantTaskBoardView = ({
+const MaintenanceTaskBoardView = ({
   open,
   inProgress,
   completed,
@@ -58,23 +60,23 @@ const PlantTaskBoardView = ({
   setCancelled,
   refreshData,
   userRole,
-}: PlantTaskBoardViewProps) => {
+}: MaintenanceTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [isAssignModalVisible, setIsAssignModalVisible] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
-  const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
+  const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
+  const [editingTask, setEditingTask] = useState<MaintenanceTaskResponse | null>(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
-  const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
+  const [completedTaskObjectId, setCompletedTaskObjectId] = useState<{ type: 'facility' | 'parkAsset' | 'sensor' | 'hub', id: string } | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
-  const [taskBeingCompleted, setTaskBeingCompleted] = useState<PlantTaskResponse | null>(null);
+  const [maintenanceTaskToBeDeleted, setMaintenanceTaskToBeDeleted] = useState<MaintenanceTaskResponse | null>(null);
+  const [taskBeingCompleted, setTaskBeingCompleted] = useState<MaintenanceTaskResponse | null>(null);
   const [taskCompletionIndex, setTaskCompletionIndex] = useState<number | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
@@ -84,15 +86,15 @@ const PlantTaskBoardView = ({
       return;
     }
 
-    const sourceList = getList(source.droppableId as PlantTaskStatusEnum);
-    const destList = getList(destination.droppableId as PlantTaskStatusEnum);
+    const sourceList = getList(source.droppableId as MaintenanceTaskStatusEnum);
+    const destList = getList(destination.droppableId as MaintenanceTaskStatusEnum);
 
     // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
     if (
-      source.droppableId === PlantTaskStatusEnum.OPEN &&
-      destination.droppableId !== PlantTaskStatusEnum.OPEN &&
-      destination.droppableId !== PlantTaskStatusEnum.CANCELLED &&
+      source.droppableId === MaintenanceTaskStatusEnum.OPEN &&
+      destination.droppableId !== MaintenanceTaskStatusEnum.OPEN &&
+      destination.droppableId !== MaintenanceTaskStatusEnum.CANCELLED &&
       !movedTask.assignedStaffId
     ) {
       message.error('Cannot move unassigned tasks. Please assign a staff member first.');
@@ -105,11 +107,11 @@ const PlantTaskBoardView = ({
       const [reorderedItem] = reorderedTasks.splice(source.index, 1);
       reorderedTasks.splice(destination.index, 0, reorderedItem);
 
-      updateListState(source.droppableId as PlantTaskStatusEnum, reorderedTasks);
+      updateListState(source.droppableId as MaintenanceTaskStatusEnum, reorderedTasks);
 
       // Update position in the backend
       try {
-        await updatePlantTaskPosition(reorderedItem.id, destination.index);
+        await updateMaintenanceTaskPosition(reorderedItem.id, destination.index);
       } catch (error) {
         console.error('Error updating task position:', error);
         message.error('Failed to update task position');
@@ -120,36 +122,43 @@ const PlantTaskBoardView = ({
       const destClone = Array.from(destList);
       const [movedTask] = sourceClone.splice(source.index, 1);
 
-      destClone.splice(destination.index, 0, { ...movedTask, taskStatus: destination.droppableId as PlantTaskStatusEnum });
+      destClone.splice(destination.index, 0, { ...movedTask, taskStatus: destination.droppableId as MaintenanceTaskStatusEnum });
 
-      updateListState(source.droppableId as PlantTaskStatusEnum, sourceClone);
-      updateListState(destination.droppableId as PlantTaskStatusEnum, destClone);
+      updateListState(source.droppableId as MaintenanceTaskStatusEnum, sourceClone);
+      updateListState(destination.droppableId as MaintenanceTaskStatusEnum, destClone);
 
       // Update status and position in the backend
       try {
-        await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
-        await updatePlantTaskPosition(movedTask.id as string, destination.index);
+        await updateMaintenanceTaskStatus(movedTask.id as string, destination.droppableId as MaintenanceTaskStatusEnum);
+        await updateMaintenanceTaskPosition(movedTask.id as string, destination.index);
       } catch (error) {
         console.error('Error updating task status, position, or unassigning:', error);
         message.error('Failed to update task status, position, or unassign');
       }
     }
 
-    if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
+    if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
       setTaskBeingCompleted(movedTask);
       setTaskCompletionIndex(destination.index);
-      setCompletedTaskOccurrenceId(movedTask.occurrence?.id || null);
+      if (movedTask.facilityId) {
+        setCompletedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
+      } else if (movedTask.parkAssetId) {
+        setCompletedTaskObjectId({ type: 'parkAsset', id: movedTask.parkAssetId });
+      } else if (movedTask.sensorId) {
+        setCompletedTaskObjectId({ type: 'sensor', id: movedTask.sensorId });
+      } else if (movedTask.hubId) {
+        setCompletedTaskObjectId({ type: 'hub', id: movedTask.hubId });
+      }
       setShowLogPrompt(true);
     } else {
       // If not moving to COMPLETED, update the task status immediately
       try {
-        // To myself: I fixed this with if else, if not working just remove if else and put the 3 lines in else clause into here
         if (destination.droppableId === movedTask.taskStatus) {
-          await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
-          await updatePlantTaskPosition(movedTask.id as string, destination.index);
+          await updateMaintenanceTaskStatus(movedTask.id as string, destination.droppableId as MaintenanceTaskStatusEnum);
+          await updateMaintenanceTaskPosition(movedTask.id as string, destination.index);
         } else {
-          await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
-          await updatePlantTaskPosition(movedTask.id as string, destination.index);
+          await updateMaintenanceTaskStatus(movedTask.id as string, destination.droppableId as MaintenanceTaskStatusEnum);
+          await updateMaintenanceTaskPosition(movedTask.id as string, destination.index);
           message.success('Task status updated successfully');
         }
       } catch (error) {
@@ -161,7 +170,7 @@ const PlantTaskBoardView = ({
     refreshData(); // Call the refreshData function after updating the task
   };
 
-  const getList = (id: PlantTaskStatusEnum) => {
+  const getList = (id: MaintenanceTaskStatusEnum) => {
     switch (id) {
       case 'OPEN':
         return open;
@@ -176,7 +185,7 @@ const PlantTaskBoardView = ({
     }
   };
 
-  const updateListState = (id: PlantTaskStatusEnum, items: PlantTaskResponse[]) => {
+  const updateListState = (id: MaintenanceTaskStatusEnum, items: MaintenanceTaskResponse[]) => {
     switch (id) {
       case 'OPEN':
         setOpen(items);
@@ -210,7 +219,7 @@ const PlantTaskBoardView = ({
     }
   };
 
-  const handleAssignStaff = async (task: PlantTaskResponse) => {
+  const handleAssignStaff = async (task: MaintenanceTaskResponse) => {
     if (userRole !== StaffType.SUPERADMIN && userRole !== StaffType.MANAGER) {
       return; // Prevent non-superadmin/manager from assigning staff
     }
@@ -219,7 +228,7 @@ const PlantTaskBoardView = ({
     setSelectedStaffId(null); // Reset the selected staff
     setIsAssignModalVisible(true);
     try {
-      const response = await getAllStaffsByParkId(task.occurrence?.zone?.parkId);
+      const response = await getAllStaffsByParkId(task.submittingStaff?.parkId);
       const staff = response.data.filter((s: StaffResponse) => s.role === StaffRoleEnum.ARBORIST || s.role === StaffRoleEnum.BOTANIST);
       setStaffList(staff);
     } catch (error) {
@@ -231,7 +240,7 @@ const PlantTaskBoardView = ({
   const handleAssignConfirm = async () => {
     if (selectedTaskId && selectedStaffId && selectedTask) {
       try {
-        await assignPlantTask(selectedTaskId, user?.id || '', selectedStaffId);
+        await assignMaintenanceTask(selectedTaskId, user?.id || '', selectedStaffId);
         message.success('Task assigned successfully');
         setIsAssignModalVisible(false);
 
@@ -250,17 +259,17 @@ const PlantTaskBoardView = ({
     }
   };
 
-  const updateTaskInList = (updatedTask: PlantTaskResponse) => {
+  const updateTaskInList = (updatedTask: MaintenanceTaskResponse) => {
     const listUpdaters = {
-      [PlantTaskStatusEnum.OPEN]: setOpen,
-      [PlantTaskStatusEnum.IN_PROGRESS]: setInProgress,
-      [PlantTaskStatusEnum.COMPLETED]: setCompleted,
-      [PlantTaskStatusEnum.CANCELLED]: setCancelled,
+      [MaintenanceTaskStatusEnum.OPEN]: setOpen,
+      [MaintenanceTaskStatusEnum.IN_PROGRESS]: setInProgress,
+      [MaintenanceTaskStatusEnum.COMPLETED]: setCompleted,
+      [MaintenanceTaskStatusEnum.CANCELLED]: setCancelled,
     };
 
-    const updater = listUpdaters[updatedTask.taskStatus] as React.Dispatch<React.SetStateAction<PlantTaskResponse[]>>;
-    updater((prevList: PlantTaskResponse[]) =>
-      prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task)),
+    const updater = listUpdaters[updatedTask.taskStatus] as React.Dispatch<React.SetStateAction<MaintenanceTaskResponse[]>>;
+    updater((prevList: MaintenanceTaskResponse[]) =>
+      prevList.map((task: MaintenanceTaskResponse) => (task.id === updatedTask.id ? updatedTask : task))
     );
 
     // Log the updated state for debugging
@@ -268,42 +277,42 @@ const PlantTaskBoardView = ({
     console.log('Updated list:', listUpdaters[updatedTask.taskStatus]);
   };
 
-  const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
+  const handleStatusChange = (newStatus: MaintenanceTaskStatusEnum) => {
     // Refresh the task list or update the local state as needed
     refreshData();
   };
 
-  const handleEditDetails = (task: PlantTaskResponse) => {
+  const handleEditDetails = (task: MaintenanceTaskResponse) => {
     setEditingTask(task);
     setEditModalVisible(true);
   };
 
-  const handleEditSubmit = async (values: PlantTaskUpdateData) => {
+  const handleEditSubmit = async (values: MaintenanceTaskUpdateData) => {
     if (editingTask) {
       try {
-        await updatePlantTaskDetails(editingTask.id, values);
+        await updateMaintenanceTaskDetails(editingTask.id, values);
         message.success('Task updated successfully');
         setEditModalVisible(false);
         refreshData(); // Refresh the task list
       } catch (error) {
-        console.error('Error updating plant task:', error);
+        console.error('Error updating maintenance task:', error);
         throw new Error('Failed to update task.' + ' ' + error + '.');
       }
     }
   };
 
-  const showViewModal = (task: PlantTaskResponse) => {
+  const showViewModal = (task: MaintenanceTaskResponse) => {
     setSelectedTask(task);
     setViewModalVisible(true);
   };
 
-  const renderTaskCard = (task: PlantTaskResponse) => {
+  const renderTaskCard = (task: MaintenanceTaskResponse) => {
     const isOverdue = moment().startOf('day').isAfter(moment(task.dueDate).startOf('day'));
     const isDueSoon = moment(task.dueDate).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days'));
     const shouldHighlightOverdue =
-      isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+      isOverdue && task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED;
     const shouldHighlightDueSoon =
-      isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+      isDueSoon && task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED;
 
     const dropdownItems = [
       {
@@ -313,7 +322,7 @@ const PlantTaskBoardView = ({
       },
     ];
 
-    if (task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED) {
+    if (task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED) {
       dropdownItems.push({
         label: 'Edit Details',
         key: '2',
@@ -324,7 +333,7 @@ const PlantTaskBoardView = ({
     if (
       (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
       !task.assignedStaffId &&
-      task.taskStatus === PlantTaskStatusEnum.OPEN
+      task.taskStatus === MaintenanceTaskStatusEnum.OPEN
     ) {
       dropdownItems.push({
         label: 'Assign Staff',
@@ -336,7 +345,7 @@ const PlantTaskBoardView = ({
     if (
       (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
       task.assignedStaffId &&
-      task.taskStatus === PlantTaskStatusEnum.OPEN
+      task.taskStatus === MaintenanceTaskStatusEnum.OPEN
     ) {
       dropdownItems.push({
         label: 'Unassign Staff',
@@ -383,13 +392,13 @@ const PlantTaskBoardView = ({
           </div>
         }
         styles={{
-          body: {
+          body: { 
             flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
+            display: 'flex', 
+            flexDirection: 'column', 
             justifyContent: 'space-between',
             overflow: 'hidden',
-          },
+          }
         }}
       >
         <div>
@@ -400,7 +409,9 @@ const PlantTaskBoardView = ({
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <UserOutlined style={{ marginRight: 4, color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }} />
               <Typography.Text style={{ fontSize: '0.8rem', color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }}>
-                {task.assignedStaffId ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : ''}
+                {task.assignedStaffId
+                  ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}`
+                  : ''}
               </Typography.Text>
             </div>
           </div>
@@ -417,37 +428,36 @@ const PlantTaskBoardView = ({
           {userRole === StaffType.SUPERADMIN && (
             <div>
               <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
-                {`Park: ${task.occurrence?.zone?.park?.name}`}
+                {`Park: ${task.submittingStaff?.park?.name}`}
               </Typography.Text>
             </div>
           )}
         </div>
-
-        <div className="flex justify-between mt-1">
-          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>Due: {moment(task.dueDate).format('D MMM YY')}</Typography.Text>
+        
+        <div className='flex justify-between mt-1'>
+          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>
+            Due: {moment(task.dueDate).format('D MMM YY')}
+          </Typography.Text>
           <div>
-            {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+            {isOverdue && task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
               <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
                 OVERDUE
               </Tag>
             )}
-            {isDueSoon &&
-              !isOverdue &&
-              task.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-              task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-                <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
-                  DUE SOON
-                </Tag>
-              )}
+            {isDueSoon && !isOverdue && task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
+              <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
+                DUE SOON
+              </Tag>
+            )}
           </div>
         </div>
       </Card>
     );
   };
 
-  const handleUnassignStaff = async (task: PlantTaskResponse) => {
+  const handleUnassignStaff = async (task: MaintenanceTaskResponse) => {
     try {
-      await unassignPlantTask(task.id, user?.id || '');
+      await unassignMaintenanceTask(task.id, user?.id || '');
       message.success('Staff unassigned successfully');
       refreshData();
 
@@ -461,17 +471,25 @@ const PlantTaskBoardView = ({
   };
 
   const handleDeleteTasks = async (taskType: string) => {
-    if (taskType === 'COMPLETED' || taskType === 'CANCELLED') {
-      await deleteManyPlantTasks(taskType);
+    if (taskType === "COMPLETED" || taskType === "CANCELLED") {
+      await deleteMaintenanceTasksByStatus(taskType);
       message.success('Cleared Tasks.');
       refreshData();
     }
-  };
+  }
 
   const handleLogPromptOk = async () => {
     setShowLogPrompt(false);
-    if (completedTaskOccurrenceId) {
-      navigate(`/occurrences/${completedTaskOccurrenceId}`);
+    if (completedTaskObjectId) {
+      if (completedTaskObjectId.type === 'facility') {
+        navigate(`/facilities/${completedTaskObjectId.id}`);
+      } else if (completedTaskObjectId.type === 'parkAsset') {
+        navigate(`/park-assets/${completedTaskObjectId.id}`);
+      } else if (completedTaskObjectId.type === 'sensor') {
+        navigate(`/sensors/${completedTaskObjectId.id}`);
+      } else if (completedTaskObjectId.type === 'hub') {
+        navigate(`/hubs/${completedTaskObjectId.id}`);
+      }
     }
   };
 
@@ -483,8 +501,8 @@ const PlantTaskBoardView = ({
   const completeTask = async () => {
     if (taskBeingCompleted && taskCompletionIndex !== null) {
       try {
-        await updatePlantTaskStatus(taskBeingCompleted.id, PlantTaskStatusEnum.COMPLETED);
-        await updatePlantTaskPosition(taskBeingCompleted.id, taskCompletionIndex);
+        await updateMaintenanceTaskStatus(taskBeingCompleted.id, MaintenanceTaskStatusEnum.COMPLETED);
+        await updateMaintenanceTaskPosition(taskBeingCompleted.id, taskCompletionIndex);
 
         message.success('Task marked as completed');
         refreshData();
@@ -494,7 +512,7 @@ const PlantTaskBoardView = ({
       } finally {
         setTaskBeingCompleted(null);
         setTaskCompletionIndex(null);
-        setCompletedTaskOccurrenceId(null);
+        setCompletedTaskObjectId(null);
       }
     }
   };
@@ -503,17 +521,14 @@ const PlantTaskBoardView = ({
     setDateRange(dates);
   };
 
-  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+  const filterTasksByDateRange = (tasks: MaintenanceTaskResponse[]) => {
     if (!dateRange || !dateRange[0] || !dateRange[1]) {
       return tasks;
     }
     const [startDate, endDate] = dateRange;
-    return tasks.filter((task) => {
+    return tasks.filter(task => {
       const dueDate = dayjs(task.dueDate);
-      return (
-        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
-        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
-      );
+      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
     });
   };
 
@@ -523,38 +538,42 @@ const PlantTaskBoardView = ({
   const filteredCancelled = filterTasksByDateRange(cancelled);
 
   // Add this function to handle task deletion
-  const handleDeleteTask = (task: PlantTaskResponse) => {
-    setPlantTaskToBeDeleted(task);
+  const handleDeleteTask = (task: MaintenanceTaskResponse) => {
+    setMaintenanceTaskToBeDeleted(task);
     setDeleteModalOpen(true);
   };
 
-  const deletePlantTaskConfirmed = async () => {
+  const deleteMaintenanceTaskConfirmed = async () => {
     try {
-      if (!plantTaskToBeDeleted) {
-        throw new Error('Unable to delete Plant Task at this time');
+      if (!maintenanceTaskToBeDeleted) {
+        throw new Error('Unable to delete Maintenance Task at this time');
       }
-      await deletePlantTask(plantTaskToBeDeleted.id);
+      await deleteMaintenanceTask(maintenanceTaskToBeDeleted.id);
       refreshData();
-      setPlantTaskToBeDeleted(null);
+      setMaintenanceTaskToBeDeleted(null);
       setDeleteModalOpen(false);
-      message.success(`Deleted Plant Task: ${plantTaskToBeDeleted.title}.`);
+      message.success(`Deleted Maintenance Task: ${maintenanceTaskToBeDeleted.title}.`);
     } catch (error) {
       console.error(error);
-      setPlantTaskToBeDeleted(null);
+      setMaintenanceTaskToBeDeleted(null);
       setDeleteModalOpen(false);
-      message.error('Unable to delete Plant Task at this time. Please try again later.');
+      message.error('Unable to delete Maintenance Task at this time. Please try again later.');
     }
   };
 
   const cancelDelete = () => {
-    setPlantTaskToBeDeleted(null);
+    setMaintenanceTaskToBeDeleted(null);
     setDeleteModalOpen(false);
   };
 
   return (
     <>
       <div style={{ marginBottom: '16px' }}>
-        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
+        <RangePicker
+          onChange={handleDateRangeChange}
+          style={{ width: '100%' }}
+          placeholder={['Start Date', 'End Date']}
+        />
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Row gutter={[16, 16]} className="mb-4">
@@ -567,20 +586,14 @@ const PlantTaskBoardView = ({
             // <Col span={6} key={status.value}>
             <Col xs={24} md={24} lg={6} key={status.value}>
               <Card
-                title={
-                  (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) &&
-                  (status.value === 'COMPLETED' || status.value === 'CANCELLED') ? (
-                    <div className="flex justify-between">
-                      <div>{status.title}</div>
-                      <Dropdown
-                        menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}
-                      >
-                        <MoreOutlined style={{ cursor: 'pointer' }} />
-                      </Dropdown>
-                    </div>
-                  ) : (
-                    status.title
-                  )
+                title={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (status.value === "COMPLETED" || status.value === "CANCELLED") ?
+                  <div className="flex justify-between">
+                    <div>{status.title}</div>
+                    <Dropdown menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}>
+                      <MoreOutlined style={{ cursor: 'pointer' }} />
+                    </Dropdown>
+                  </div>
+                  : status.title
                 }
                 styles={{
                   header: { backgroundColor: status.color, color: 'white' },
@@ -596,7 +609,7 @@ const PlantTaskBoardView = ({
                           draggableId={task.id}
                           index={index}
                           isDragDisabled={
-                            task.taskStatus === PlantTaskStatusEnum.COMPLETED || task.taskStatus === PlantTaskStatusEnum.CANCELLED
+                            task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED || task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED
                           }
                         >
                           {(provided, snapshot) => (
@@ -645,7 +658,7 @@ const PlantTaskBoardView = ({
           ))}
         </Select>
       </Modal>
-      <EditPlantTaskModal
+      <EditMaintenanceTaskModal
         visible={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onSubmit={handleEditSubmit}
@@ -653,7 +666,7 @@ const PlantTaskBoardView = ({
         userRole={userRole as StaffType}
         onStatusChange={handleStatusChange}
       />
-      <ViewPlantTaskModal
+      <ViewMaintenanceTaskModal
         visible={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         task={selectedTask}
@@ -670,13 +683,13 @@ const PlantTaskBoardView = ({
         <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
       </Modal>
       <ConfirmDeleteModal
-        onConfirm={deletePlantTaskConfirmed}
+        onConfirm={deleteMaintenanceTaskConfirmed}
         open={deleteModalOpen}
         onCancel={cancelDelete}
-        description="Are you sure you want to delete this Plant Task?"
+        description="Are you sure you want to delete this Maintenance Task?"
       />
     </>
   );
 };
 
-export default PlantTaskBoardView;
+export default MaintenanceTaskBoardView;

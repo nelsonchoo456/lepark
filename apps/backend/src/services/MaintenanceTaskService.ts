@@ -222,6 +222,10 @@ class MaintenanceTaskService {
     await MaintenanceTaskDao.deleteMaintenanceTask(id);
   }
 
+  public async deleteMaintenanceTasksByStatus(taskStatus: MaintenanceTaskStatusEnum): Promise<void> {
+    await MaintenanceTaskDao.deleteMaintenanceTasksByStatus(taskStatus);
+  }
+
   public async assignMaintenanceTask(id: string, assignerStaffId: string, staffId: string): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {

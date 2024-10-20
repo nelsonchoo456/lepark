@@ -48,6 +48,10 @@ class MaintenanceTaskDao {
     await prisma.maintenanceTask.delete({ where: { id } });
   }
 
+  async deleteMaintenanceTasksByStatus(taskStatus: MaintenanceTaskStatusEnum): Promise<void> {
+    await prisma.maintenanceTask.deleteMany({ where: { taskStatus } });
+  }
+
   async assignMaintenanceTask(id: string, assignedStaff: Staff, updatedAt: Date): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({
       where: { id },
