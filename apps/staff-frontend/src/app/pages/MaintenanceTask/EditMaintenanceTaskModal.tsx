@@ -37,6 +37,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
         taskStatus: initialValues.taskStatus,
         dueDate: dayjs(initialValues.dueDate),
         description: initialValues.description,
+        remarks: initialValues.remarks,
       });
     }
   }, [initialValues, form]);
@@ -221,6 +222,9 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
                 <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().endOf('day')} />
               </Form.Item>
             ))}
+          <Form.Item name="remarks" label="Remarks">
+            <Input.TextArea rows={2} />
+          </Form.Item>
         </Form>
       </Modal>
       <Modal
