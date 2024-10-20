@@ -135,7 +135,7 @@ const IotMap = () => {
     if (selectedZone && hubs) {
       const h = hubs.find((h) => h.zoneId === selectedZone.id);
       if (h) {
-        setSelectedHub(hubs.find((h) => h.zoneId === selectedZone.id));
+        // setSelectedHub(hubs.find((h) => h.zoneId === selectedZone.id));
       } else {
         messageApi.info(`Zone ${selectedZone.name} does not have a hub`);
       }
@@ -669,6 +669,14 @@ const IotMap = () => {
                 tooltipLabel={h.name}
                 backgroundColor={COLORS.gray[600]}
                 icon={<MdOutlineHub className="text-gray-500 drop-shadow-lg" style={{ fontSize: '1.4rem' }} />}
+                markerFields={{
+                  eventHandlers: {
+                    click: () => {
+                      setSelectedZone(h.zone);
+                      setSelectedHub(h)
+                    },
+                  },
+                }}
                 hovered={selectedHub ? { ...selectedHub, title: 'keke', entityType: 'SENSOR' } : null}
               />
             ),
