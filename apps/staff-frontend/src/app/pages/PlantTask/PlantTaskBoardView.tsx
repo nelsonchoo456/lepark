@@ -15,7 +15,7 @@ import {
   deleteManyPlantTasks,
   deletePlantTask,
 } from '@lepark/data-access';
-import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker } from 'antd';
+import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker, Spin } from 'antd';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
@@ -43,6 +43,7 @@ interface PlantTaskBoardViewProps {
   setCancelled: (items: PlantTaskResponse[]) => void;
   refreshData: () => void;
   userRole: string;
+  loading: boolean; // Add this new prop
 }
 
 const { RangePicker } = DatePicker;
@@ -58,6 +59,7 @@ const PlantTaskBoardView = ({
   setCancelled,
   refreshData,
   userRole,
+  loading, // Add this new prop
 }: PlantTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
@@ -553,7 +555,7 @@ const PlantTaskBoardView = ({
   };
 
   return (
-    <>
+    <Spin spinning={loading} tip="Loading tasks...">
       <div style={{ marginBottom: '16px' }}>
         <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
       </div>
@@ -676,7 +678,7 @@ const PlantTaskBoardView = ({
         onCancel={cancelDelete}
         description="Are you sure you want to delete this Plant Task?"
       />
-    </>
+    </Spin>
   );
 };
 

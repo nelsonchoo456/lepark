@@ -14,7 +14,7 @@ import {
   StaffType,
   StaffResponse,
 } from '@lepark/data-access';
-import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, DatePicker } from 'antd';
+import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, DatePicker, Spin } from 'antd';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
@@ -39,6 +39,7 @@ interface MaintenanceTaskBoardViewProps {
   setCancelled: (items: MaintenanceTaskResponse[]) => void;
   refreshData: () => void;
   userRole: string;
+  loading: boolean; // Add this new prop
 }
 
 const { RangePicker } = DatePicker;
@@ -54,6 +55,7 @@ const MaintenanceTaskBoardView = ({
   setCancelled,
   refreshData,
   userRole,
+  loading, // Add this new prop
 }: MaintenanceTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
@@ -460,7 +462,7 @@ const MaintenanceTaskBoardView = ({
   };
 
   return (
-    <>
+    <Spin spinning={loading} tip="Loading tasks...">
       <div style={{ marginBottom: '16px' }}>
         <RangePicker
           onChange={handleDateRangeChange}
@@ -559,7 +561,7 @@ const MaintenanceTaskBoardView = ({
         onCancel={cancelDelete}
         description="Are you sure you want to delete this Maintenance Task?"
       />
-    </>
+    </Spin>
   );
 };
 

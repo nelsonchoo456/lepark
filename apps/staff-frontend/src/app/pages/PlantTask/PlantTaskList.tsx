@@ -427,6 +427,7 @@ const PlantTaskList: React.FC = () => {
           setCancelled={setCancelled}
           refreshData={fetchPlantTasks}
           userRole={user?.role || ''}
+          loading={loading} // Pass the loading state
         />
       );
     }

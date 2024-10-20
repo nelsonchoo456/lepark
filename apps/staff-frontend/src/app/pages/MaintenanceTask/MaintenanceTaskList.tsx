@@ -413,6 +413,7 @@ const MaintenanceTaskList: React.FC = () => {
           setCancelled={setCancelled}
           refreshData={fetchMaintenanceTasks}
           userRole={user?.role || ''}
+          loading={loading} // Pass the loading state
         />
       );
     }
