@@ -92,7 +92,7 @@ const MaintenanceTaskList: React.FC = () => {
       setOpen(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN));
       setInProgress(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS));
       setCompleted(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED));
-      setCancelled(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
+      setCancelled(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
 
       // Fetch staff list
       let staffResponse;

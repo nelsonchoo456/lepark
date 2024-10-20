@@ -89,6 +89,7 @@ const PlantTaskBoardView = ({
 
     // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
+    
     if (
       source.droppableId === PlantTaskStatusEnum.OPEN &&
       destination.droppableId !== PlantTaskStatusEnum.OPEN &&

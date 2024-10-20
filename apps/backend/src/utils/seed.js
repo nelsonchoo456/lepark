@@ -16,6 +16,7 @@ const {
   attractionTicketListingsData,
   decarbonizationAreasData,
   plantTasksData,
+  maintenanceTasksData,
   sensorReadingsData,
   newHubs,
   newSensors,
@@ -405,6 +406,63 @@ async function seed() {
     }
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
+
+  const maintenanceTasksList = [];
+for (const maintenanceTask of maintenanceTasksData) {
+  // Filter staff from Park Id 2
+  const parkId2Staff = staffList.filter((staff) => staff.parkId === 2);
+
+  // Filter staff with MANAGER or SUPERADMIN roles from Park Id 2 for submitting
+  const eligibleSubmittingStaff = parkId2Staff.filter(
+    (staff) => staff.role === 'MANAGER' || staff.role === 'VENDOR_MANAGER'
+  );
+
+  // Filter staff with appropriate roles for assignment
+  const eligibleAssignedStaff = parkId2Staff.filter(
+    (staff) => ['VENDOR_MANAGER'].includes(staff.role)
+  );
+
+  // Ensure we have valid staff data
+  if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0) {
+    const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
+    // const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+
+    // Determine which entity to associate with the task
+    let entityConnection = {};
+    if (maintenanceTask.title.includes('Bench') || maintenanceTask.title.includes('Restroom')) {
+      const randomFacilityIndex = Math.floor(Math.random() * facilityList.length);
+      entityConnection = { facility: { connect: { id: facilityList[randomFacilityIndex].id } } };
+    } else if (maintenanceTask.title.includes('Sensor')) {
+      const randomSensorIndex = Math.floor(Math.random() * sensorList.length);
+      entityConnection = { sensor: { connect: { id: sensorList[randomSensorIndex].id } } };
+    } else if (maintenanceTask.title.includes('Hub')) {
+      const randomHubIndex = Math.floor(Math.random() * hubList.length);
+      entityConnection = { hub: { connect: { id: hubList[randomHubIndex].id } } };
+    } else if (maintenanceTask.title.includes('Lawnmower')) {
+      const randomParkAssetIndex = Math.floor(Math.random() * parkAssetList.length);
+      entityConnection = { parkAsset: { connect: { id: parkAssetList[randomParkAssetIndex].id } } };
+    }
+
+    const createdMaintenanceTask = await prisma.maintenanceTask.create({
+      data: {
+        ...maintenanceTask,
+        createdAt: maintenanceTask.createdAt,
+        submittingStaff: {
+          connect: { id: eligibleSubmittingStaff[randomSubmittingStaffIndex].id },
+        },
+        // assignedStaff: {
+        //   connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
+        // },
+        ...entityConnection,
+      },
+    });
+    maintenanceTasksList.push(createdMaintenanceTask);
+  } else {
+    console.warn('Unable to create maintenance task: No eligible staff available for Park Id 2');
+  }
+}
+
+console.log(`Total maintenance tasks seeded: ${maintenanceTasksList.length}\n`);
 
   const plantTasksList = [];
   for (const plantTask of plantTasksData) {

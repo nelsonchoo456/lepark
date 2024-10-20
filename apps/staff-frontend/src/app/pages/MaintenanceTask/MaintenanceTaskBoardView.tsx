@@ -79,8 +79,6 @@ const MaintenanceTaskBoardView = ({
     const sourceList = getList(source.droppableId as MaintenanceTaskStatusEnum);
     const destList = getList(destination.droppableId as MaintenanceTaskStatusEnum);
 
-    const movedTask = sourceList[source.index];
-
     // Prevent unassigned tasks from being moved directly to COMPLETE
     if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
         destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
@@ -102,8 +100,7 @@ const MaintenanceTaskBoardView = ({
         console.error('Error updating task position:', error);
         message.error('Failed to update task position');
       }
-    } else {
-      // Moving from one list to another
+    } else { // Moving from one list to another
       const sourceClone = Array.from(sourceList);
       const destClone = Array.from(destList);
       const [movedTask] = sourceClone.splice(source.index, 1);
@@ -120,29 +117,35 @@ const MaintenanceTaskBoardView = ({
           message.success('Task has been assigned and updated successfully');
         }
 
+        // Auto-unassign when moving from IN_PROGRESS to OPEN
+        if (source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS && 
+          destination.droppableId === MaintenanceTaskStatusEnum.OPEN) {
+        await unassignMaintenanceTask(movedTask.id, user?.id || '');
+          message.success('Task has been unassigned and updated successfully');
+        }
+
+        // if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
+        //   destination.droppableId === MaintenanceTaskStatusEnum.CANCELLED) {
+        //   await updateMaintenanceTaskStatus(movedTask.id, MaintenanceTaskStatusEnum.COMPLETED, user?.id);
+        // }
+
         await updateMaintenanceTaskStatus(movedTask.id, destination.droppableId as MaintenanceTaskStatusEnum, user?.id);
         await updateMaintenanceTaskPosition(movedTask.id, destination.index);
         
         if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
           setTaskBeingCompleted(movedTask);
           setTaskCompletionIndex(destination.index);
-          if (movedTask.facilityId) {
-            setCompletedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
-          } else if (movedTask.parkAssetId) {
+          if (movedTask.parkAssetId) {
             setCompletedTaskObjectId({ type: 'parkAsset', id: movedTask.parkAssetId });
           } else if (movedTask.sensorId) {
             setCompletedTaskObjectId({ type: 'sensor', id: movedTask.sensorId });
           } else if (movedTask.hubId) {
             setCompletedTaskObjectId({ type: 'hub', id: movedTask.hubId });
+          } else if (movedTask.facilityId) {
+            setCompletedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
           }
-          setShowLogPrompt(true);
-        }
 
-        // Auto-unassign when moving from IN_PROGRESS to OPEN
-        if (source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS && 
-            destination.droppableId === MaintenanceTaskStatusEnum.OPEN) {
-          await unassignMaintenanceTask(movedTask.id, user?.id || '');
-          message.success('Task has been unassigned and updated successfully');
+          setShowLogPrompt(true);
         }
 
       } catch (error) {
