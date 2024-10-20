@@ -1,33 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import {
   MaintenanceTaskResponse,
   MaintenanceTaskStatusEnum,
   updateMaintenanceTaskStatus,
   assignMaintenanceTask,
-  getAllStaffsByParkId,
-  StaffResponse,
-  getAllStaffs,
-  updateMaintenanceTaskPosition,
   unassignMaintenanceTask,
+  updateMaintenanceTaskPosition,
   updateMaintenanceTaskDetails,
   MaintenanceTaskUpdateData,
   deleteMaintenanceTasksByStatus,
   deleteMaintenanceTask,
+  StaffType,
+  StaffResponse,
 } from '@lepark/data-access';
-import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker } from 'antd';
+import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, DatePicker } from 'antd';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
 import { MoreOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { StaffRoleEnum } from '@prisma/client';
 import { useAuth } from '@lepark/common-ui';
-import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
-// import EditMaintenanceTaskModal from './EditMaintenanceTaskModal';
-// import ViewMaintenanceTaskModal from './ViewMaintenanceTaskModal';
 import dayjs from 'dayjs';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import EditMaintenanceTaskModal from './EditMaintenanceTaskModal';
@@ -63,10 +57,6 @@ const MaintenanceTaskBoardView = ({
 }: MaintenanceTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const [isAssignModalVisible, setIsAssignModalVisible] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [staffList, setStaffList] = useState<StaffResponse[]>([]);
-  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<MaintenanceTaskResponse | null>(null);
@@ -89,15 +79,12 @@ const MaintenanceTaskBoardView = ({
     const sourceList = getList(source.droppableId as MaintenanceTaskStatusEnum);
     const destList = getList(destination.droppableId as MaintenanceTaskStatusEnum);
 
-    // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
-    if (
-      source.droppableId === MaintenanceTaskStatusEnum.OPEN &&
-      destination.droppableId !== MaintenanceTaskStatusEnum.OPEN &&
-      destination.droppableId !== MaintenanceTaskStatusEnum.CANCELLED &&
-      !movedTask.assignedStaffId
-    ) {
-      message.error('Cannot move unassigned tasks. Please assign a staff member first.');
+
+    // Prevent unassigned tasks from being moved directly to COMPLETE
+    if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
+        destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
+      message.error('Tasks must be assigned before they can be completed.');
       return;
     }
 
@@ -109,7 +96,6 @@ const MaintenanceTaskBoardView = ({
 
       updateListState(source.droppableId as MaintenanceTaskStatusEnum, reorderedTasks);
 
-      // Update position in the backend
       try {
         await updateMaintenanceTaskPosition(reorderedItem.id, destination.index);
       } catch (error) {
@@ -127,59 +113,60 @@ const MaintenanceTaskBoardView = ({
       updateListState(source.droppableId as MaintenanceTaskStatusEnum, sourceClone);
       updateListState(destination.droppableId as MaintenanceTaskStatusEnum, destClone);
 
-      // Update status and position in the backend
       try {
-        await updateMaintenanceTaskStatus(movedTask.id as string, destination.droppableId as MaintenanceTaskStatusEnum);
-        await updateMaintenanceTaskPosition(movedTask.id as string, destination.index);
-      } catch (error) {
-        console.error('Error updating task status, position, or unassigning:', error);
-        message.error('Failed to update task status, position, or unassign');
-      }
-    }
-
-    if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
-      setTaskBeingCompleted(movedTask);
-      setTaskCompletionIndex(destination.index);
-      if (movedTask.facilityId) {
-        setCompletedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
-      } else if (movedTask.parkAssetId) {
-        setCompletedTaskObjectId({ type: 'parkAsset', id: movedTask.parkAssetId });
-      } else if (movedTask.sensorId) {
-        setCompletedTaskObjectId({ type: 'sensor', id: movedTask.sensorId });
-      } else if (movedTask.hubId) {
-        setCompletedTaskObjectId({ type: 'hub', id: movedTask.hubId });
-      }
-      setShowLogPrompt(true);
-    } else {
-      // If not moving to COMPLETED, update the task status immediately
-      try {
-        if (destination.droppableId === movedTask.taskStatus) {
-          await updateMaintenanceTaskStatus(movedTask.id as string, destination.droppableId as MaintenanceTaskStatusEnum);
-          await updateMaintenanceTaskPosition(movedTask.id as string, destination.index);
-        } else {
-          await updateMaintenanceTaskStatus(movedTask.id as string, destination.droppableId as MaintenanceTaskStatusEnum);
-          await updateMaintenanceTaskPosition(movedTask.id as string, destination.index);
-          message.success('Task status updated successfully');
+        if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
+            destination.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS) {
+          await assignMaintenanceTask(movedTask.id, user?.id || '');
+          message.success('Task has been assigned and updated successfully');
         }
+
+        await updateMaintenanceTaskStatus(movedTask.id, destination.droppableId as MaintenanceTaskStatusEnum, user?.id);
+        await updateMaintenanceTaskPosition(movedTask.id, destination.index);
+        
+        if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
+          setTaskBeingCompleted(movedTask);
+          setTaskCompletionIndex(destination.index);
+          if (movedTask.facilityId) {
+            setCompletedTaskObjectId({ type: 'facility', id: movedTask.facilityId });
+          } else if (movedTask.parkAssetId) {
+            setCompletedTaskObjectId({ type: 'parkAsset', id: movedTask.parkAssetId });
+          } else if (movedTask.sensorId) {
+            setCompletedTaskObjectId({ type: 'sensor', id: movedTask.sensorId });
+          } else if (movedTask.hubId) {
+            setCompletedTaskObjectId({ type: 'hub', id: movedTask.hubId });
+          }
+          setShowLogPrompt(true);
+        }
+
+        // Auto-unassign when moving from IN_PROGRESS to OPEN
+        if (source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS && 
+            destination.droppableId === MaintenanceTaskStatusEnum.OPEN) {
+          await unassignMaintenanceTask(movedTask.id, user?.id || '');
+          message.success('Task has been unassigned and updated successfully');
+        }
+
       } catch (error) {
-        console.error('Error updating task status or position:', error);
-        message.error('Failed to update task status or position');
+        console.error('Error updating task:', error);
+        message.error('Failed to update task');
+        // Revert the UI changes
+        updateListState(source.droppableId as MaintenanceTaskStatusEnum, sourceList);
+        updateListState(destination.droppableId as MaintenanceTaskStatusEnum, destList);
       }
     }
 
-    refreshData(); // Call the refreshData function after updating the task
+    refreshData();
   };
 
   const getList = (id: MaintenanceTaskStatusEnum) => {
     switch (id) {
-      case 'OPEN':
+      case MaintenanceTaskStatusEnum.OPEN:
         return open;
-      case 'IN_PROGRESS':
-        return inProgress;
-      case 'COMPLETED':
-        return completed;
-      case 'CANCELLED':
-        return cancelled;
+      case MaintenanceTaskStatusEnum.IN_PROGRESS:
+        return userRole === StaffType.SUPERADMIN ? inProgress : inProgress.filter(task => task.assignedStaffId === user?.id);
+      case MaintenanceTaskStatusEnum.COMPLETED:
+        return userRole === StaffType.SUPERADMIN ? completed : completed.filter(task => task.assignedStaffId === user?.id);
+      case MaintenanceTaskStatusEnum.CANCELLED:
+        return userRole === StaffType.SUPERADMIN ? cancelled : cancelled.filter(task => task.assignedStaffId === user?.id);
       default:
         return [];
     }
@@ -187,16 +174,16 @@ const MaintenanceTaskBoardView = ({
 
   const updateListState = (id: MaintenanceTaskStatusEnum, items: MaintenanceTaskResponse[]) => {
     switch (id) {
-      case 'OPEN':
+      case MaintenanceTaskStatusEnum.OPEN:
         setOpen(items);
         break;
-      case 'IN_PROGRESS':
+      case MaintenanceTaskStatusEnum.IN_PROGRESS:
         setInProgress(items);
         break;
-      case 'COMPLETED':
+      case MaintenanceTaskStatusEnum.COMPLETED:
         setCompleted(items);
         break;
-      case 'CANCELLED':
+      case MaintenanceTaskStatusEnum.CANCELLED:
         setCancelled(items);
         break;
       default:
@@ -219,69 +206,6 @@ const MaintenanceTaskBoardView = ({
     }
   };
 
-  const handleAssignStaff = async (task: MaintenanceTaskResponse) => {
-    if (userRole !== StaffType.SUPERADMIN && userRole !== StaffType.MANAGER) {
-      return; // Prevent non-superadmin/manager from assigning staff
-    }
-    setSelectedTask(task);
-    setSelectedTaskId(task.id);
-    setSelectedStaffId(null); // Reset the selected staff
-    setIsAssignModalVisible(true);
-    try {
-      const response = await getAllStaffsByParkId(task.submittingStaff?.parkId);
-      const staff = response.data.filter((s: StaffResponse) => s.role === StaffRoleEnum.ARBORIST || s.role === StaffRoleEnum.BOTANIST);
-      setStaffList(staff);
-    } catch (error) {
-      console.error('Failed to fetch staff list:', error);
-      message.error('Failed to load staff list');
-    }
-  };
-
-  const handleAssignConfirm = async () => {
-    if (selectedTaskId && selectedStaffId && selectedTask) {
-      try {
-        await assignMaintenanceTask(selectedTaskId, user?.id || '', selectedStaffId);
-        message.success('Task assigned successfully');
-        setIsAssignModalVisible(false);
-
-        // Update the local state
-        const updatedTask = { ...selectedTask, assignedStaffId: selectedStaffId };
-        updateTaskInList(updatedTask);
-
-        // Add a delay before refreshing data
-        setTimeout(() => {
-          refreshData();
-        }, 500); // 0.5 second delay
-      } catch (error) {
-        console.error('Failed to assign task:', error);
-        message.error('Failed to assign task');
-      }
-    }
-  };
-
-  const updateTaskInList = (updatedTask: MaintenanceTaskResponse) => {
-    const listUpdaters = {
-      [MaintenanceTaskStatusEnum.OPEN]: setOpen,
-      [MaintenanceTaskStatusEnum.IN_PROGRESS]: setInProgress,
-      [MaintenanceTaskStatusEnum.COMPLETED]: setCompleted,
-      [MaintenanceTaskStatusEnum.CANCELLED]: setCancelled,
-    };
-
-    const updater = listUpdaters[updatedTask.taskStatus] as React.Dispatch<React.SetStateAction<MaintenanceTaskResponse[]>>;
-    updater((prevList: MaintenanceTaskResponse[]) =>
-      prevList.map((task: MaintenanceTaskResponse) => (task.id === updatedTask.id ? updatedTask : task))
-    );
-
-    // Log the updated state for debugging
-    console.log('Updated task:', updatedTask);
-    console.log('Updated list:', listUpdaters[updatedTask.taskStatus]);
-  };
-
-  const handleStatusChange = (newStatus: MaintenanceTaskStatusEnum) => {
-    // Refresh the task list or update the local state as needed
-    refreshData();
-  };
-
   const handleEditDetails = (task: MaintenanceTaskResponse) => {
     setEditingTask(task);
     setEditModalVisible(true);
@@ -299,6 +223,11 @@ const MaintenanceTaskBoardView = ({
         throw new Error('Failed to update task.' + ' ' + error + '.');
       }
     }
+  };
+
+  const handleStatusChange = (newStatus: MaintenanceTaskStatusEnum) => {
+    // Refresh the task list or update the local state as needed
+    refreshData();
   };
 
   const showViewModal = (task: MaintenanceTaskResponse) => {
@@ -330,35 +259,11 @@ const MaintenanceTaskBoardView = ({
       });
     }
 
-    if (
-      (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
-      !task.assignedStaffId &&
-      task.taskStatus === MaintenanceTaskStatusEnum.OPEN
-    ) {
-      dropdownItems.push({
-        label: 'Assign Staff',
-        key: '3',
-        onClick: () => handleAssignStaff(task),
-      });
-    }
-
-    if (
-      (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
-      task.assignedStaffId &&
-      task.taskStatus === MaintenanceTaskStatusEnum.OPEN
-    ) {
-      dropdownItems.push({
-        label: 'Unassign Staff',
-        key: '4',
-        onClick: () => handleUnassignStaff(task),
-      });
-    }
-
     // Add Delete Task option for Superadmin and Manager
     if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) {
       dropdownItems.push({
         label: 'Delete Task',
-        key: '5',
+        key: '3',
         danger: true,
         onClick: () => handleDeleteTask(task),
       } as any);
@@ -453,21 +358,6 @@ const MaintenanceTaskBoardView = ({
         </div>
       </Card>
     );
-  };
-
-  const handleUnassignStaff = async (task: MaintenanceTaskResponse) => {
-    try {
-      await unassignMaintenanceTask(task.id, user?.id || '');
-      message.success('Staff unassigned successfully');
-      refreshData();
-
-      // Update the local state
-      const updatedTask = { ...task, assignedStaffId: null };
-      updateTaskInList(updatedTask);
-    } catch (error) {
-      console.error('Failed to unassign staff:', error);
-      message.error('Failed to unassign staff');
-    }
   };
 
   const handleDeleteTasks = async (taskType: string) => {
@@ -636,28 +526,6 @@ const MaintenanceTaskBoardView = ({
           ))}
         </Row>
       </DragDropContext>
-      <Modal
-        title="Assign Staff"
-        open={isAssignModalVisible}
-        onOk={handleAssignConfirm}
-        onCancel={() => {
-          setIsAssignModalVisible(false);
-          setSelectedStaffId(null); // Reset the selected staff when closing the modal
-        }}
-      >
-        <Select
-          style={{ width: '100%' }}
-          placeholder="Select a staff member"
-          onChange={(value) => setSelectedStaffId(value)}
-          value={selectedStaffId} // Add this to control the select value
-        >
-          {staffList.map((staff) => (
-            <Select.Option key={staff.id} value={staff.id}>
-              {staff.firstName} {staff.lastName} - {staff.role}
-            </Select.Option>
-          ))}
-        </Select>
-      </Modal>
       <EditMaintenanceTaskModal
         visible={editModalVisible}
         onCancel={() => setEditModalVisible(false)}

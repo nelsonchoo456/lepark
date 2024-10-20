@@ -66,9 +66,9 @@ export async function getAllAssignedMaintenanceTasks(staffId: string): Promise<A
   }
 }
 
-export async function updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum): Promise<AxiosResponse<MaintenanceTaskResponse>> {
+export async function updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskStatus/${id}`, { newStatus });
+    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskStatus/${id}`, { newStatus, staffId });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -159,9 +159,9 @@ export async function getMaintenanceTasksByParkId(parkId: number): Promise<Axios
   }
 }
 
-export async function assignMaintenanceTask(id: string, assignerStaffId: string, staffId: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
+export async function assignMaintenanceTask(id: string, staffId: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/assignMaintenanceTask/${id}`, { assignerStaffId, staffId });
+    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/assignMaintenanceTask/${id}`, { staffId });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

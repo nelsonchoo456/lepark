@@ -226,28 +226,19 @@ class MaintenanceTaskService {
     await MaintenanceTaskDao.deleteMaintenanceTasksByStatus(taskStatus);
   }
 
-  public async assignMaintenanceTask(id: string, assignerStaffId: string, staffId: string): Promise<MaintenanceTask> {
+  public async assignMaintenanceTask(id: string, staffId: string): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {
       throw new Error('Maintenance task not found');
     }
 
-    const assigner = await StaffDao.getStaffById(assignerStaffId);
-    if (!assigner) {
-      throw new Error('Assigning staff not found');
-    }
-
     const staff = await StaffDao.getStaffById(staffId);
     if (!staff) {
-      throw new Error('Assigned staff not found');
-    }
-
-    if (assigner.role !== StaffRoleEnum.SUPERADMIN) {
-      throw new Error('Only Superadmins can assign tasks');
+      throw new Error('Staff taking the task not found');
     }
 
     if (maintenanceTask.taskStatus !== MaintenanceTaskStatusEnum.OPEN) {
-      throw new Error('Only open tasks can be assigned');
+      throw new Error('Only open tasks can be taken');
     }
 
     return MaintenanceTaskDao.assignMaintenanceTask(id, staff, new Date());
@@ -265,11 +256,11 @@ class MaintenanceTaskService {
 
     const unassigner = await StaffDao.getStaffById(unassignerStaffId);
     if (!unassigner) {
-      throw new Error('Unassigning staff not found');
+      throw new Error('Staff returning the task not found');
     }
 
-    if (unassigner.role !== StaffRoleEnum.SUPERADMIN) {
-      throw new Error('Only Superadmins can unassign tasks');
+    if (unassigner.id !== maintenanceTask.assignedStaffId) {
+      throw new Error('Only the assigned staff can unassign the task');
     }
 
     return MaintenanceTaskDao.unassignMaintenanceTask(id, new Date());
@@ -322,18 +313,31 @@ class MaintenanceTaskService {
     });
   }
 
-  public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum): Promise<MaintenanceTask> {
+  public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {
       throw new Error('Maintenance task not found');
     }
 
+    if (newStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && maintenanceTask.assignedStaffId === null && staffId) {
+      await this.assignMaintenanceTask(id, staffId);
+    }
+
     const maxPosition = await MaintenanceTaskDao.getMaxPositionForStatus(newStatus);
-    return MaintenanceTaskDao.updateMaintenanceTask(id, {
+    const updateData: any = {
       taskStatus: newStatus,
       position: maxPosition + 1000,
       updatedAt: new Date(),
-    });
+    };
+
+    if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
+      if (!maintenanceTask.assignedStaffId) {
+        throw new Error('Only assigned tasks can be completed');
+      }
+      updateData.completedDate = new Date();
+    }
+
+    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
   }
 
   public async updateMaintenanceTaskPosition(id: string, newPosition: number): Promise<MaintenanceTask> {

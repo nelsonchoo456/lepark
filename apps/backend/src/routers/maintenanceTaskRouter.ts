@@ -107,9 +107,9 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
 
 router.put('/assignMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
   try {
-    const { assignerStaffId, staffId } = req.body;
+    const { staffId } = req.body;
     const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.assignMaintenanceTask(maintenanceTaskId, assignerStaffId, staffId);
+    const updatedMaintenanceTask = await MaintenanceTaskService.assignMaintenanceTask(maintenanceTaskId, staffId);
     res.status(200).json(updatedMaintenanceTask);
   } catch (error) {
     res.status(400).json({ error: error.message });
