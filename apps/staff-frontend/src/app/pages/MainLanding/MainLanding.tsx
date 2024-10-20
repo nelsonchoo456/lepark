@@ -7,6 +7,7 @@ import PageHeader2 from '../../components/main/PageHeader2_MainLanding';
 import ManagerMainLanding from './Manager/ManagerMainLanding';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import BAMainLanding from './BotanistArborist/BAMainLanding';
+import SuperadminMainLanding from './Superadmin/SuperadminMainLanding';
 
 const MainLanding = () => {
   const { user } = useAuth<StaffResponse>();
@@ -65,8 +66,10 @@ const MainLanding = () => {
   const renderDashboard = () => {
     if (user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) {
       return <BAMainLanding/>
+    } else if (user?.role === StaffType.MANAGER) {
+      return <ManagerMainLanding/>
     }
-    return <ManagerMainLanding/>
+    return <SuperadminMainLanding/>
   }
 
   return (

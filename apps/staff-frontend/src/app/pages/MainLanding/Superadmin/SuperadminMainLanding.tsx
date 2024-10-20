@@ -8,80 +8,109 @@ import styled from 'styled-components';
 import { useFetchAnnouncements } from '../../../hooks/Announcements/useFetchAnnouncements';
 import {
   AnnouncementResponse,
+  getAllAnnouncements,
   getAllAssignedPlantTasks,
+  getAllParks,
   getAllPlantTasks,
   getAnnouncementsByParkId,
   getNParksAnnouncements,
   getPlantTasksByParkId,
+  getZonesByParkId,
+  ParkResponse,
+  ParkStatusEnum,
   PlantTaskResponse,
   PlantTaskStatusEnum,
   StaffResponse,
   StaffType,
+  ZoneResponse,
 } from '@lepark/data-access';
 import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import PlantTasksTable from '../components/PlantTasksTable';
 import moment from 'moment';
+import { TbTrees } from 'react-icons/tb';
+import dayjs from 'dayjs';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
 export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-center justify-center mr-2';
 
-const ManagerMainLanding = () => {
+export const isParkOpen = (park: ParkResponse) => {
+  const now = dayjs();
+  const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+  const openingTime = dayjs(park.openingHours[currentDay]).format('HH:mm');
+  let closingTime = dayjs(park.closingHours[currentDay]).format('HH:mm');
+  if (closingTime === '00:00') {
+    closingTime = '24:00';
+  }
+
+  const currentTime = now.format('HH:mm');
+
+  // return now.isAfter(openingTime) && now.isBefore(closingTime);
+  return currentTime >= openingTime && currentTime <= closingTime;
+};
+
+const SuperadminMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
-  
+  const now = new Date();
+
   // Data
+  const [parks, setParks] = useState<(ParkResponse & { zones: ZoneResponse[] })[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
-  const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
 
   useEffect(() => {
-    if (user?.parkId) {
-      fetchAnnouncementsByParkId(user.parkId);
-      fetchPlantTasks();
+    if (user) {
+      fetchParks();
+      fetchAnnouncements();
     }
   }, [user]);
 
-  const fetchAnnouncementsByParkId = async (parkId: number) => {
+  const fetchParks = async () => {
     try {
-      const response = await getAnnouncementsByParkId(parkId);
-      setAnnouncements(response.data);
-      // setError(null);
+      const response = await getAllParks();
+      if (response.status === 200) {
+        const parksWithZones = await Promise.all(
+          response.data.map(async (p: any) => {
+            const zonesRes = await getZonesByParkId(p.id);
+            p.zones = zonesRes.status === 200 ? zonesRes.data : [];
+            return p;
+          }),
+        );
+        console.log(parksWithZones);
+        setParks(parksWithZones);
+      }
     } catch (err) {
       // setError('Failed to fetch announcements');
     }
   };
 
-  const fetchPlantTasks = async () => {
+  const fetchAnnouncements = async () => {
     try {
-      let response;
-      if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
-        response = user?.parkId ? await getPlantTasksByParkId(user.parkId) : await getAllPlantTasks();
-      } else {
-        response = await getAllAssignedPlantTasks(user?.id || '');
-      }
-      setPlantTasks(response.data);
-    } catch (error) {
-      console.error('Error fetching plant tasks:', error);
+      const response = await getNParksAnnouncements();
+      setAnnouncements(response.data);
+    } catch (err) {
+      // setError('Failed to fetch announcements');
     }
   };
 
-  const pendingTasksCount = useMemo(() => {
-    return plantTasks
-      ? plantTasks.filter((task) => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
-          .length
-      : 0;
-  }, [plantTasks]);
+  const openParks = useMemo(() => {
+    return parks.filter((park) => {
+      return (park.parkStatus === ParkStatusEnum.OPEN || park.parkStatus === ParkStatusEnum.LIMITED_ACCESS) && isParkOpen(park);
+    });
+  }, [parks]);
 
-  const overduePlantTasksCount = useMemo(() => {
-    return plantTasks
-      ? plantTasks.filter(
-          (task) =>
-            task.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-            task.taskStatus !== PlantTaskStatusEnum.CANCELLED &&
-            moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')),
-        ).length
-      : 0;
-  }, [plantTasks]);
+  const closedParks = useMemo(() => {
+    return parks.filter((park) => {
+      return park.parkStatus === ParkStatusEnum.CLOSED || !isParkOpen(park);
+    });
+  }, [parks]);
+
+  const constructionParks = useMemo(() => {
+    return parks.filter((park) => {
+      return park.parkStatus === ParkStatusEnum.UNDER_CONSTRUCTION;
+    });
+  }, [parks]);
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -143,47 +172,33 @@ const ManagerMainLanding = () => {
       <Col span={21}>
         {/* -- [ Section: Park Overview ] -- */}
         <div id="part-1" className={sectionStyles}>
-          {renderSectionHeader('Park Overview')}
+          {renderSectionHeader('NParks Overview')}
           <div className={flexColsStyles}>
             {/* Tasks Cards  */}
-            <div className="w-full h-86 flex-[2] flex flex-col gap-4">
-              <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className="flex">
-                  <div className={`${sectionHeaderIconStyles} bg-highlightGreen-400 text-white`}>
-                    <FiInbox />
+            <div className="w-full flex-[2] flex flex-col gap-4">
+              <Card className="flex flex-col h-full" styles={{ body: { padding: '1rem' } }}>
+                {/* Header Section */}
+                <div className="flex items-center mb-2">
+                  <div className={`${sectionHeaderIconStyles} bg-green-400 text-white`}>
+                    <TbTrees />
                   </div>
-                  <LogoText className="text-lg mb-2">Plant Tasks</LogoText>
+                  <LogoText className="text-lg">Parks</LogoText>
                 </div>
-                <div className="h-full flex flex-col gap-2 pl-4 ml-3 border-l-[2px]">
-                  {pendingTasksCount > 0 ? (
-                    <div className="text-mustard-400 font-semibold mr-2">
-                      {pendingTasksCount} Pending Tasks
-                    </div>
-                  ) : (
-                    <div className="text-mustard-400 gap-3 flex items-center">
-                      <MdCheck className='text-lg'/> No Pending Tasks
-                    </div>
-                  )}
 
-                  {overduePlantTasksCount > 0 ? (
-                    <div className="text-red-400 font-semibold mr-2">
-                      {overduePlantTasksCount} Pending Tasks
-                    </div>
-                  ) : (
-                    <div className="text-red-400 gap-3 flex items-center">
-                      <MdCheck className='text-lg'/> No Overdue Tasks
-                    </div>
-                  )}
-                </div>
-              </Card>
-              <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className="flex">
-                  <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
-                    <FiInbox />
+                <div className="h-full flex w-full gap-2">
+                  <div className="rounded-md bg-green-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-green-200">
+                    <strong className='text-lg'>{openParks.length}</strong><br/>
+                    Open Now
                   </div>
-                  <LogoText className="text-lg mb-2">Maintenance Tasks</LogoText>
+                  <div className="rounded-md bg-red-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-red-200">
+                    <strong className='text-lg'>{closedParks.length}</strong><br/>
+                    Closed Now
+                  </div>
+                  <div className="rounded-md bg-mustard-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-mustard-200">
+                    <strong className='text-lg'>{constructionParks.length}</strong><br/>
+                    Under Construction
+                  </div>
                 </div>
-                <div className="flex justify-center items-center h-full opacity-50">No data</div>
               </Card>
             </div>
 
@@ -211,23 +226,11 @@ const ManagerMainLanding = () => {
                     </Typography.Paragraph>
                   </div>
                 ))
-                
               ) : (
                 <Empty />
               )}
             </Card>
           </div>
-        </div>
-
-        {/* -- [ Section: Park Overview ] -- */}
-        <div id="part-2" className={sectionStyles}>
-          {renderSectionHeader('Plant Tasks')}
-          {user && <PlantTasksTable userRole={user?.role as StaffType} plantTasks={plantTasks} className="w-full" />}
-        </div>
-
-        <div id="part-3" className={sectionStyles}>
-          {renderSectionHeader('Maintenance Tasks')}
-          <Empty description="Maintenance Tasks coming soon..." className="md:py-8" />
         </div>
 
         {/* -- [ Section: Visitors Resource ] -- */}
@@ -258,17 +261,7 @@ const ManagerMainLanding = () => {
             {
               key: 'part-1',
               href: '#part-1',
-              title: 'Park Overview',
-            },
-            {
-              key: 'part-2',
-              href: '#part-2',
-              title: 'Plant Tasks',
-            },
-            {
-              key: 'part-3',
-              href: '#part-3',
-              title: 'Maintenance Tasks',
+              title: 'NParks Overview',
             },
             {
               key: 'part-4',
@@ -282,4 +275,4 @@ const ManagerMainLanding = () => {
   );
 };
 
-export default ManagerMainLanding;
+export default SuperadminMainLanding;

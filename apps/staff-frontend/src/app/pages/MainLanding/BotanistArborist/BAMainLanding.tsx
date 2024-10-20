@@ -255,7 +255,7 @@ const BAMainLanding = () => {
                 <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
               </Card>
               <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Live Visitor Count</LogoText>
+                <LogoText className="">Total Weekly Count</LogoText>
                 <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
               </Card>
             </div>
