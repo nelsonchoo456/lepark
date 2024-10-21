@@ -66,14 +66,8 @@ async function initParksDB() {
 async function createPark(data) {
   await initParksDB();
 
-  // Convert date strings to JavaScript Date objects
-  const openingHoursArray = data.openingHours.map((date) => new Date(date));
-  const closingHoursArray = data.closingHours.map((date) => new Date(date));
-
-  // Prepare the arrays using Prisma.sql and Prisma.join
-  const openingHoursParam = Prisma.sql`ARRAY[${Prisma.join(openingHoursArray.map((date) => Prisma.sql`${date}`))}]::timestamp[]`;
-
-  const closingHoursParam = Prisma.sql`ARRAY[${Prisma.join(closingHoursArray.map((date) => Prisma.sql`${date}`))}]::timestamp[]`;
+  const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
+  const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
 
   const imagesParam = Prisma.sql`ARRAY[${Prisma.join(data.images.map((image) => Prisma.sql`${image}`))}]::text[]`;
 
@@ -96,8 +90,8 @@ async function createPark(data) {
       ${data.description},
       ${data.address},
       ${data.contactNumber},
-      ${openingHoursParam},
-      ${closingHoursParam},
+      ${openingHoursArray}::timestamp[], 
+      ${closingHoursArray}::timestamp[],
       ${imagesParam},
       ST_GeomFromText(${data.geom}, 4326),
       ST_GeomFromText(${data.paths}, 4326),
@@ -153,14 +147,8 @@ async function initZonesDB() {
 async function createZone(data) {
   await initZonesDB();
 
-  // Convert date strings to JavaScript Date objects
-  const openingHoursArray = data.openingHours.map((date) => new Date(date));
-  const closingHoursArray = data.closingHours.map((date) => new Date(date));
-
-  // Prepare the arrays using Prisma.sql and Prisma.join
-  const openingHoursParam = Prisma.sql`ARRAY[${Prisma.join(openingHoursArray.map((date) => Prisma.sql`${date}`))}]::timestamp[]`;
-
-  const closingHoursParam = Prisma.sql`ARRAY[${Prisma.join(closingHoursArray.map((date) => Prisma.sql`${date}`))}]::timestamp[]`;
+  const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
+  const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
 
   // Prepare the geometry parameters
   const geomParam = Prisma.sql`ST_GeomFromText(${data.geom}, 4326)`;
@@ -181,8 +169,8 @@ async function createZone(data) {
     VALUES (
       ${data.name},
       ${data.description},
-      ${openingHoursParam},
-      ${closingHoursParam},
+      ${openingHoursArray}::timestamp[], 
+      ${closingHoursArray}::timestamp[],
       ${geomParam},
       ${pathsParam},
       ${data.zoneStatus}::"ZONE_STATUS_ENUM",
