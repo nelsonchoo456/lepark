@@ -181,6 +181,16 @@ router.get('/getPlantTasksByStatus/:status', authenticateJWTStaff, async (req, r
   }
 });
 
+router.get('/getPlantTasksBySubmittingStaff/:staffId', authenticateJWTStaff, async (req, res) => {
+  try {
+    const staffId = req.params.staffId;
+    const plantTasks = await PlantTaskService.getPlantTasksBySubmittingStaff(staffId);
+    res.status(200).json(plantTasks);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.delete('/deleteMany', async (req, res) => {
   try {
     const taskStatus = req.query.taskStatus ? (req.query.taskStatus as PlantTaskStatusEnum) : null;

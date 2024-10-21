@@ -131,13 +131,19 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       return tasks;
     }
     const [startDate, endDate] = dateRange;
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       const dueDate = dayjs(task.dueDate);
-      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
+      return (
+        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
+        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
+      );
     });
   };
 
   const filteredPlantTasks = filterTasksByDateRange(plantTasks);
+
+  const limitedToSubmittingTasksOnly =
+    user?.role === StaffType.VENDOR_MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT || user?.role === StaffType.PARK_RANGER;
 
   const columns: TableProps<PlantTaskResponse>['columns'] = [
     {
@@ -339,7 +345,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             </Flex>
           );
         } else {
-          return record.taskStatus === PlantTaskStatusEnum.OPEN ? (
+          return record.taskStatus === PlantTaskStatusEnum.OPEN && (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) ? (
             <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
               {staffList
                 .filter((staff) => staff.parkId === record.occurrence?.zone?.parkId)
@@ -362,6 +368,12 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       width: '15%',
     },
     {
+      title: 'Submitting Staff',
+      key: 'submittingStaff',
+      render: (_, record) => `${record.submittingStaff.firstName} ${record.submittingStaff.lastName}`,
+      width: '15%',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
@@ -369,9 +381,10 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tooltip title="Edit Plant Task">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+          {!limitedToSubmittingTasksOnly &&
+            (record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED) && (
+              <Tooltip title="Edit Plant Task">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
             </Tooltip>
           )}
           {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
@@ -445,11 +458,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   return (
     <>
       <div style={{ marginBottom: '16px' }}>
-        <RangePicker
-          onChange={handleDateRangeChange}
-          style={{ width: '100%' }}
-          placeholder={['Start Date', 'End Date']}
-        />
+        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
       </div>
       {tableViewType === 'grouped-status' && renderGroupedTasks('status', tableProps)}
       {tableViewType === 'grouped-urgency' && renderGroupedTasks('urgency', tableProps)}

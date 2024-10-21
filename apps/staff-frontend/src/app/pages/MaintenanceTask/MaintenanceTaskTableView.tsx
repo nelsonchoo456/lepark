@@ -166,6 +166,9 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     }
   };
 
+  const limitedToSubmittingTasksOnly =
+    user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST || user?.role === StaffType.PARK_RANGER || user?.role === StaffType.LANDSCAPE_ARCHITECT;
+
   // Filter tasks based on status and user
   const filteredTasks = maintenanceTasks.filter(task => {
     if (task.taskStatus === MaintenanceTaskStatusEnum.OPEN || task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED) {
@@ -414,7 +417,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
             </Flex>
           );
         } else {
-          return record.taskStatus === MaintenanceTaskStatusEnum.OPEN ? (
+          return record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (userRole === StaffType.VENDOR_MANAGER) ? (
             <Button
               type="link"
               onClick={() => handleTakeTask(record.id)}
@@ -435,6 +438,12 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       width: '15%',
     },
     {
+      title: 'Submitting Staff',
+      key: 'submittingStaff',
+      render: (_, record) => `${record.submittingStaff.firstName} ${record.submittingStaff.lastName}`,
+      width: '15%',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
@@ -442,12 +451,12 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
           <Tooltip title="View Maintenance Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
+          {!limitedToSubmittingTasksOnly && (record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED) && (
             <Tooltip title="Edit Maintenance Task">
               <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
             </Tooltip>
           )}
-          {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
+          {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.VENDOR_MANAGER) && (
             <Tooltip title="Delete Maintenance Task">
               <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
             </Tooltip>

@@ -89,6 +89,16 @@ router.get('/getAllAssignedMaintenanceTasks/:staffId', authenticateJWTStaff, asy
   }
 });
 
+router.get('/getMaintenanceTasksBySubmittingStaff/:staffId', authenticateJWTStaff, async (req, res) => {
+  try {
+    const staffId = req.params.staffId;
+    const maintenanceTasks = await MaintenanceTaskService.getMaintenanceTasksBySubmittingStaff(staffId);
+    res.status(200).json(maintenanceTasks);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.post('/upload', upload.array('files', 5), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];

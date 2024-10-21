@@ -86,6 +86,20 @@ class MaintenanceTaskDao {
     });
   }
 
+  async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
+    return prisma.maintenanceTask.findMany({
+      where: { submittingStaffId: staffId },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+        facility: true,
+        parkAsset: true,
+        sensor: true,
+        hub: true,
+      },
+    });
+  }
+
   async getMaxPositionForStatus(status: MaintenanceTaskStatusEnum): Promise<number> {
     const result = await prisma.maintenanceTask.aggregate({
       where: { taskStatus: status },
