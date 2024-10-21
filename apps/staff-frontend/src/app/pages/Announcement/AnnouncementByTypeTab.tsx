@@ -273,7 +273,7 @@ const AnnouncementByTypeTab: React.FC<AnnouncementByTypeTabProps> = ({ announcem
         columns={tableShowParks ? columnsWithParks : columns}
         dataSource={filteredAnnouncements}
         rowKey="id"
-        pagination={{ pageSize: 6 }}
+        pagination={{ pageSize: 10 }}
         scroll={{ x: SCREEN_LG }}
       />
         <ConfirmDeleteModal
