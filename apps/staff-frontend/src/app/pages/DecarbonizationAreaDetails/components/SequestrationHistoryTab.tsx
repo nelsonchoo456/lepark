@@ -41,8 +41,12 @@ const SequestrationHistoryTab = ({ areaId }: { areaId: string }) => {
       setData(formattedData);
 
       if (formattedData.length > 0) {
-        setStartDate(formattedData[0].date);
-        setEndDate(formattedData[formattedData.length - 1].date);
+        const currentDate = dayjs();
+        const startDateOfLastMonth = currentDate.subtract(1, 'month').startOf('day');
+        const endDateOfLastMonth = currentDate.startOf('day');
+
+        setStartDate(startDateOfLastMonth.toISOString());
+        setEndDate(endDateOfLastMonth.toISOString());
       }
     } catch (error) {
       console.log(error);
