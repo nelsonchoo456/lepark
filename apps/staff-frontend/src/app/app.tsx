@@ -295,30 +295,8 @@ export function App() {
 
                 {/* Task Routes */}
                 <Route path="/plant-tasks">
-                  <Route
-                    index
-                    element={
-                      <>
-                        <RoleProtectedRoute
-                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
-                          redirectTo="/"
-                        />
-                        <PlantTaskList />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="create"
-                    element={
-                      <>
-                        <RoleProtectedRoute
-                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
-                          redirectTo="/"
-                        />
-                        <CreatePlantTask />
-                      </>
-                    }
-                  />
+                  <Route index element={<PlantTaskList />} />
+                  <Route path="create" element={<CreatePlantTask />} />
                 </Route>
 
                 <Route path="/maintenance-tasks">

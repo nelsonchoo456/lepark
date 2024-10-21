@@ -25,10 +25,6 @@ class MaintenanceTaskService {
         throw new Error('Staff not found');
       }
 
-      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.MANAGER && staff.role !== StaffRoleEnum.VENDOR_MANAGER) {
-        throw new Error('Only Superadmins and Managers can create maintenance tasks');
-      }
-
       // Ensure only one of facility, parkAsset, sensor, or hub is provided
       const entityCount = [data.facilityId, data.parkAssetId, data.sensorId, data.hubId].filter(Boolean).length;
       if (entityCount !== 1) {
@@ -153,6 +149,11 @@ class MaintenanceTaskService {
     const maintenanceTasks = await MaintenanceTaskDao.getAllMaintenanceTasksByStaffId(staffId);
     return this.addFacilityInfo(maintenanceTasks);
   }
+
+  public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
+    const maintenanceTasks = await MaintenanceTaskDao.getMaintenanceTasksBySubmittingStaff(staffId);
+    return this.addFacilityInfo(maintenanceTasks);
+  } 
 
   public async updateMaintenanceTask(id: string, data: Partial<MaintenanceTaskSchemaType>): Promise<MaintenanceTask> {
     try {

@@ -66,6 +66,19 @@ export async function getAllAssignedMaintenanceTasks(staffId: string): Promise<A
   }
 }
 
+export async function getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<AxiosResponse<MaintenanceTaskResponse[]>> {
+  try {
+    const response: AxiosResponse<MaintenanceTaskResponse[]> = await client.get(`${URL}/getMaintenanceTasksBySubmittingStaff/${staffId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
     const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskStatus/${id}`, { newStatus, staffId });

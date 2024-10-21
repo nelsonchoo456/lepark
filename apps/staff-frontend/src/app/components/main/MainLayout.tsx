@@ -248,41 +248,23 @@ const MainLayout = () => {
           ],
         }
       : null,
-    userRole === 'MANAGER' || userRole === 'SUPERADMIN'
-      ? {
-          key: 'task',
-          icon: <FiInbox />,
-          label: 'Tasks',
-          children: [
-            {
-              key: 'plant-tasks',
-              label: 'Plant Tasks',
-              onClick: () => navigate('/plant-tasks'),
-            },
-            {
-              key: 'maintenance-tasks',
-              label: 'Maintenance Tasks',
-              onClick: () => navigate('/maintenance-tasks'),
-            },
-          ],
-        }
-      : null,
-    userRole === 'ARBORIST' || userRole === 'BOTANIST'
-      ? {
+    {
+      key: 'task',
+      icon: <FiInbox />,
+      label: 'Tasks',
+      children: [
+        {
           key: 'plant-tasks',
-          icon: <FiInbox />,
           label: 'Plant Tasks',
           onClick: () => navigate('/plant-tasks'),
-        }
-      : null,
-    userRole === 'VENDOR_MANAGER'
-      ? {
+        },
+        {
           key: 'maintenance-tasks',
-          icon: <FiInbox />,
           label: 'Maintenance Tasks',
           onClick: () => navigate('/maintenance-tasks'),
-        }
-      : null,
+        },
+    ],
+    },
     {
       key: 'faq',
       icon: <FiHelpCircle />,

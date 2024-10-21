@@ -24,6 +24,7 @@ import {
   TaskLoadPercentageData,
   getStaffPerformanceRanking,
   StaffPerformanceRankingData,
+  getMaintenanceTasksBySubmittingStaff,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
@@ -69,6 +70,15 @@ const MaintenanceTaskList: React.FC = () => {
 
   const [staffPerformanceRanking, setStaffPerformanceRanking] = useState<StaffPerformanceRankingData | null>(null);
 
+  const isTableOnlyView = useMemo(() => {
+    return user?.role === StaffType.SUPERADMIN ||
+           user?.role === StaffType.MANAGER ||
+           user?.role === StaffType.ARBORIST ||
+           user?.role === StaffType.BOTANIST ||
+           user?.role === StaffType.LANDSCAPE_ARCHITECT ||
+           user?.role === StaffType.PARK_RANGER;
+  }, [user?.role]);
+
   useEffect(() => {
     fetchMaintenanceTasks();
     if (user?.role === StaffType.MANAGER) {
@@ -82,7 +92,7 @@ const MaintenanceTaskList: React.FC = () => {
       if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.VENDOR_MANAGER) {
         response = user?.parkId ? await getMaintenanceTasksByParkId(user.parkId) : await getAllMaintenanceTasks();
       } else {
-        response = await getAllAssignedMaintenanceTasks(user?.id || '');
+        response = await getMaintenanceTasksBySubmittingStaff(user?.id || '');
       }
       setMaintenanceTasks(response.data);
 
@@ -377,7 +387,7 @@ const MaintenanceTaskList: React.FC = () => {
   };
 
   const renderViewSelector = () => {
-    if (isSuperAdmin) {
+    if (isTableOnlyView) {
       return null;
     }
     return (
@@ -398,7 +408,7 @@ const MaintenanceTaskList: React.FC = () => {
   };
 
   const renderBoard = () => {
-    if (isSuperAdmin || viewMode === 'table') {
+    if (isTableOnlyView || viewMode === 'table') {
       return renderTableView();
     } else {
       return (
@@ -413,7 +423,7 @@ const MaintenanceTaskList: React.FC = () => {
           setCancelled={setCancelled}
           refreshData={fetchMaintenanceTasks}
           userRole={user?.role || ''}
-          loading={loading} // Pass the loading state
+          loading={loading}
         />
       );
     }
@@ -441,7 +451,7 @@ const MaintenanceTaskList: React.FC = () => {
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
           {renderViewSelector()}
-          {(isSuperAdmin || viewMode === 'table') && (
+          {(isTableOnlyView || viewMode === 'table') && (
             <Select
               value={tableViewType}
               onChange={setTableViewType}
@@ -455,7 +465,7 @@ const MaintenanceTaskList: React.FC = () => {
           )}
         </Flex>
         <Flex gap={10}>
-          {(isSuperAdmin || viewMode === 'table') && (
+          {(isTableOnlyView || viewMode === 'table') && (
             <Input
               suffix={<FiSearch />}
               placeholder="Search in Maintenance Tasks..."
