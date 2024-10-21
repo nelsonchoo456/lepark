@@ -48,6 +48,10 @@ class MaintenanceTaskDao {
     await prisma.maintenanceTask.delete({ where: { id } });
   }
 
+  async deleteMaintenanceTasksByStatus(taskStatus: MaintenanceTaskStatusEnum): Promise<void> {
+    await prisma.maintenanceTask.deleteMany({ where: { taskStatus } });
+  }
+
   async assignMaintenanceTask(id: string, assignedStaff: Staff, updatedAt: Date): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({
       where: { id },
@@ -71,6 +75,20 @@ class MaintenanceTaskDao {
     return prisma.maintenanceTask.findMany({
       where: { taskStatus: status },
       orderBy: { position: 'asc' },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+        facility: true,
+        parkAsset: true,
+        sensor: true,
+        hub: true,
+      },
+    });
+  }
+
+  async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
+    return prisma.maintenanceTask.findMany({
+      where: { submittingStaffId: staffId },
       include: {
         assignedStaff: true,
         submittingStaff: true,

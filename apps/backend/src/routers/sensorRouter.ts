@@ -34,6 +34,17 @@ router.get('/getSensorById/:id', async (req, res) => {
   }
 });
 
+router.get('/getSensorByIdentifierNumber/:identifierNumber', async (req, res) => {
+  try {
+    const identifierNumber = req.params.identifierNumber;
+    const sensor = await SensorService.getSensorByIdentifierNumber(identifierNumber);
+    console.log('sensor', sensor);
+    res.status(200).json(sensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/updateSensorDetails/:id', async (req, res) => {
   try {
     const updatedSensor = await SensorService.updateSensor(req.params.id, req.body);

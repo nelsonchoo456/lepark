@@ -141,6 +141,7 @@ class HubService {
     }
   }
 
+  // used by raspberry pi to get data transmission rate
   public async getHubDataTransmissionRate(identifierNumber: string): Promise<number | null> {
     const hub = await HubDao.getHubByIdentifierNumber(identifierNumber);
     return hub?.dataTransmissionInterval || null;

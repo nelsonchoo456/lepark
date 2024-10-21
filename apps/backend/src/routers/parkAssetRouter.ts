@@ -126,6 +126,16 @@ router.get('/getBySerialNumber/:serialNumber', async (req, res) => {
   }
 });
 
+router.get('/getByIdentifierNumber/:identifierNumber', async (req, res) => {
+  try {
+    const identifierNumber = req.params.identifierNumber;
+    const parkAsset = await ParkAssetService.getParkAssetByIdentifierNumber(identifierNumber);
+    res.status(200).json(parkAsset);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/checkDuplicateSerialNumber', async (req, res) => {
   try {
     const { serialNumber, parkAssetId } = req.query;

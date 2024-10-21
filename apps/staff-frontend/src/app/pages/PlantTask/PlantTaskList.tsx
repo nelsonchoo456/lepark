@@ -26,6 +26,7 @@ import {
   TaskLoadPercentageData,
   getStaffPerformanceRanking,
   StaffPerformanceRankingData,
+  getPlantTasksBySubmittingStaff,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
@@ -83,6 +84,13 @@ const PlantTaskList: React.FC = () => {
 
   const [staffPerformanceRanking, setStaffPerformanceRanking] = useState<StaffPerformanceRankingData | null>(null);
 
+  const isTableOnlyView = useMemo(() => {
+    return user?.role === StaffType.SUPERADMIN ||
+           user?.role === StaffType.LANDSCAPE_ARCHITECT ||
+           user?.role === StaffType.PARK_RANGER ||
+           user?.role === StaffType.VENDOR_MANAGER;
+  }, [user?.role]);
+
   useEffect(() => {
     fetchPlantTasks();
     if (user?.role === StaffType.MANAGER) {
@@ -95,8 +103,11 @@ const PlantTaskList: React.FC = () => {
       let response;
       if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
         response = user?.parkId ? await getPlantTasksByParkId(user.parkId) : await getAllPlantTasks();
-      } else {
+      } else if (user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) {
         response = await getAllAssignedPlantTasks(user?.id || '');
+      } else {
+        // For LANDSCAPE_ARCHITECT, PARK_RANGER, VENDOR_MANAGER
+        response = await getPlantTasksBySubmittingStaff(user?.id || '');
       }
       setPlantTasks(response.data);
 
@@ -317,7 +328,7 @@ const PlantTaskList: React.FC = () => {
       task.taskStatus !== 'CANCELLED',
   ).length;
   const overdueTasks = plantTasks.filter(
-    (task) => moment(task.dueDate).isBefore(moment()) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
+    (task) => moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
   ).length;
 
   const renderStatisticsOverview = (defaultOpen?: boolean) => {
@@ -330,12 +341,13 @@ const PlantTaskList: React.FC = () => {
             </Button>
           </div>
         )}
-        <Collapse
-          defaultActiveKey={defaultOpen ? ['1'] : []}
-          className="mb-4 bg-white"
-          bordered={false}
-          expandIconPosition="end"
-          items={[
+        {(user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER && user?.role !== StaffType.VENDOR_MANAGER) && (
+          <Collapse
+            defaultActiveKey={defaultOpen ? ['1'] : []}
+            className="mb-4 bg-white"
+            bordered={false}
+            expandIconPosition="end"
+            items={[
             {
               key: '1',
               label: <LogoText className="">Task Overview</LogoText>,
@@ -366,7 +378,8 @@ const PlantTaskList: React.FC = () => {
               ),
             },
           ]}
-        />
+          />
+        )}
       </>
     );
   };
@@ -391,7 +404,7 @@ const PlantTaskList: React.FC = () => {
   };
 
   const renderViewSelector = () => {
-    if (isSuperAdmin) {
+    if (isTableOnlyView) {
       return null;
     }
     return (
@@ -412,7 +425,7 @@ const PlantTaskList: React.FC = () => {
   };
 
   const renderBoard = () => {
-    if (isSuperAdmin || viewMode === 'table') {
+    if (isTableOnlyView || viewMode === 'table') {
       return renderTableView();
     } else {
       return (
@@ -427,6 +440,7 @@ const PlantTaskList: React.FC = () => {
           setCancelled={setCancelled}
           refreshData={fetchPlantTasks}
           userRole={user?.role || ''}
+          loading={loading}
         />
       );
     }
@@ -454,7 +468,7 @@ const PlantTaskList: React.FC = () => {
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
           {renderViewSelector()}
-          {(isSuperAdmin || viewMode === 'table') && (
+          {(isTableOnlyView || user?.role === StaffType.MANAGER || viewMode === 'table') && (
             <Select
               value={tableViewType}
               onChange={setTableViewType}
@@ -468,7 +482,7 @@ const PlantTaskList: React.FC = () => {
           )}
         </Flex>
         <Flex gap={10}>
-          {(isSuperAdmin || viewMode === 'table') && (
+          {(isTableOnlyView || viewMode === 'table') && (
             <Input
               suffix={<FiSearch />}
               placeholder="Search in Plant Tasks..."

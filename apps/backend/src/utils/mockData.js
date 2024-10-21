@@ -39,7 +39,7 @@ const parksData = [
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
-      '2024-10-20T22:00:00.000Z'
+      '2024-10-20T22:00:00.000Z',
     ],
     closingHours: [
       '2024-10-21T15:00:00.000Z',
@@ -48,7 +48,7 @@ const parksData = [
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
-      '2024-10-21T15:00:00.000Z'
+      '2024-10-21T15:00:00.000Z',
     ],
     geom: 'POLYGON((103.818655014 1.3071309, 103.816766739 1.306873475, 103.813290596 1.30661605, 103.809642792 1.30867545, 103.80753994 1.31064904, 103.808569908 1.313094573, 103.809213638 1.315411392, 103.810114861 1.315883337, 103.811016083 1.314167175, 103.812646866 1.312708437, 103.815350533 1.316483993, 103.81436348 1.321117622, 103.814964294 1.322490548, 103.816423416 1.322233124, 103.81957769393921 1.322061508689393, 103.81972789764406 1.3213964978379424, 103.82080078125001 1.321010362423143, 103.819556236 1.318157249, 103.818869591 1.316526897, 103.817110062 1.315111064, 103.817110062 1.312236492, 103.817753792 1.31086356, 103.817753792 1.309319012, 103.818655014 1.3071309))',
     paths: 'LINESTRING(103.815 1.304, 103.816 1.305, 103.817 1.304)',
@@ -97,7 +97,7 @@ const zonesData = [
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
-      '2024-10-20T22:00:00.000Z'
+      '2024-10-20T22:00:00.000Z',
     ],
     closingHours: [
       '2024-10-21T15:00:00.000Z',
@@ -106,7 +106,7 @@ const zonesData = [
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
-      '2024-10-21T15:00:00.000Z'
+      '2024-10-21T15:00:00.000Z',
     ],
     geom: 'POLYGON((103.81491065 1.309490628, 103.814985752 1.309115217, 103.815050125 1.308750532, 103.815221786 1.3081606, 103.815178871 1.307635024, 103.815629482 1.307152352, 103.815693855 1.306884201, 103.816841841 1.306970009, 103.81728172302248 1.3070665713044594, 103.81844043731691 1.3072705608917101, 103.81811857223512 1.308117820816387, 103.81793618202211 1.3085681892574375, 103.81776452064516 1.3090183559115292, 103.81720662117006 1.3092867015506922, 103.81589770317079 1.3100052901471968, 103.81522178649904 1.3096947499013547, 103.81491065 1.309490628))',
     paths: 'LINESTRING(103.812 1.305, 103.813 1.306, 103.814 1.305)',
@@ -125,7 +125,7 @@ const zonesData = [
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
-      '2024-10-20T22:00:00.000Z'
+      '2024-10-20T22:00:00.000Z',
     ],
     closingHours: [
       '2024-10-21T15:00:00.000Z',
@@ -134,7 +134,7 @@ const zonesData = [
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
-      '2024-10-21T15:00:00.000Z'
+      '2024-10-21T15:00:00.000Z',
     ],
     geom: 'POLYGON((103.81296873092651 1.310295080786703, 103.81274342536928 1.3106704918312286, 103.8132691383362 1.3110029987093859, 103.8140630722046 1.3104881493309133, 103.81433129310608 1.3104988753607116, 103.81452441215517 1.3101020122276081, 103.81481409072877 1.3095764366302338, 103.81489992141725 1.3091902993864373, 103.81505012512207 1.3085038330283936, 103.8151252269745 1.3080318872982528, 103.81509304046631 1.3076672019005362, 103.8146960735321 1.3076779279423953, 103.81428837776186 1.3081820518583915, 103.81428837776186 1.3088685183044984, 103.81365537643433 1.3094799023248602, 103.81318330764772 1.3098982176212979, 103.81296873092651 1.310295080786703))',
     paths: 'LINESTRING(103.818 1.303, 103.819 1.304, 103.820 1.303)',
@@ -153,7 +153,7 @@ const zonesData = [
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
-      '2024-10-20T22:00:00.000Z'
+      '2024-10-20T22:00:00.000Z',
     ],
     closingHours: [
       '2024-10-21T15:00:00.000Z',
@@ -162,7 +162,7 @@ const zonesData = [
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
-      '2024-10-21T15:00:00.000Z'
+      '2024-10-21T15:00:00.000Z',
     ],
     geom: 'POLYGON((103.81009340286256 1.3085194417469383, 103.8111448287964 1.3098593267465217, 103.81194949150085 1.3104167186953857, 103.81261467933655 1.3106311001811457, 103.81297945976257 1.3100522701274704, 103.81322622299196 1.3097306978176497, 103.81392359733583 1.3090446767520956, 103.81408452987672 1.3087766997223758, 103.81414890289308 1.308197869240483, 103.8145136833191 1.307694072230879, 103.81464242935182 1.3075976004515464, 103.81508231163025 1.3075868813647462, 103.81554365158082 1.3071366796768955, 103.8156294822693 1.3068794215333213, 103.81331205368042 1.3066971969990155, 103.81009340286256 1.3085194417469383))',
   },
@@ -178,7 +178,7 @@ const zonesData = [
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
-      '2024-10-20T22:00:00.000Z'
+      '2024-10-20T22:00:00.000Z',
     ],
     closingHours: [
       '2024-10-21T15:00:00.000Z',
@@ -187,7 +187,7 @@ const zonesData = [
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
-      '2024-10-21T15:00:00.000Z'
+      '2024-10-21T15:00:00.000Z',
     ],
     geom: 'POLYGON((103.81797909736635 1.3183401735229419, 103.8184940814972 1.3183294504114549, 103.8192343711853 1.3182758348532952, 103.81949186325075 1.318114988171895, 103.81904125213624 1.31707484604817, 103.8188910484314 1.316581582621232, 103.81833314895631 1.3161741040644852, 103.81803274154665 1.3158953029083402, 103.81771087646486 1.317278585261253, 103.81797909736635 1.3183401735229419))',
   },
@@ -204,7 +204,7 @@ const zonesData = [
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
       '2024-10-20T22:00:00.000Z',
-      '2024-10-20T22:00:00.000Z'
+      '2024-10-20T22:00:00.000Z',
     ],
     closingHours: [
       '2024-10-21T15:00:00.000Z',
@@ -213,7 +213,7 @@ const zonesData = [
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
       '2024-10-21T15:00:00.000Z',
-      '2024-10-21T15:00:00.000Z'
+      '2024-10-21T15:00:00.000Z',
     ],
     geom: 'POLYGON((103.81600499153139 1.3222449701541492, 103.81729245185853 1.322137779912868, 103.8184940814972 1.3220949038150478, 103.81846189498903 1.3211945055898349, 103.81835460662843 1.320519206706766, 103.81632685661317 1.320690711202382, 103.81605863571168 1.3207657444154934, 103.81600499153139 1.3222449701541492))',
   },
@@ -1649,6 +1649,79 @@ const attractionsData = [
     lat: 1.313818486250098,
     lng: 103.8106995820999,
     parkId: 2,
+  },
+];
+
+const maintenanceTasksData = [
+  {
+    title: 'Repair Broken Bench',
+    description: 'Fix the broken wooden slats on the bench near the main entrance.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-15'),
+    updatedAt: new Date('2024-10-15'),
+    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Due in 2 days
+    completedDate: null,
+    images: ['https://example.com/broken-bench.jpg'],
+    remarks: 'Requires replacement wood and tools.',
+    position: 1,
+  },
+  {
+    title: 'Calibrate Temperature Sensor',
+    description: 'Recalibrate the temperature sensor in the Orchid Garden for accurate readings.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-14'),
+    updatedAt: new Date('2024-10-16'),
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Due in 3 days
+    completedDate: null,
+    images: ['https://example.com/temperature-sensor.jpg'],
+    remarks: 'Use calibration kit #3.',
+    position: 2,
+  },
+  {
+    title: 'Clean Public Restrooms',
+    description: 'Perform deep cleaning of all public restrooms in the Visitor Center.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-13'),
+    updatedAt: new Date('2024-10-13'),
+    dueDate: new Date('2024-10-13'),
+    completedDate: null,
+    images: ['https://example.com/clean-restroom.jpg'],
+    remarks: 'Use eco-friendly cleaning products.',
+    position: 3,
+  },
+  {
+    title: 'Update Hub Firmware',
+    description: 'Install the latest firmware update on the central data hub.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-16'),
+    updatedAt: new Date('2024-10-16'),
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due in 5 days
+    completedDate: null,
+    images: ['https://example.com/data-hub.jpg'],
+    remarks: 'Ensure all data is backed up before updating.',
+    position: 4,
+  },
+  {
+    title: 'Replace Damaged Lawnmower Blade',
+    description: 'Replace the damaged blade on lawnmower #3 with a new one.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-15'),
+    updatedAt: new Date('2024-10-17'),
+    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Due in 1 day
+    completedDate: null,
+    images: ['https://example.com/lawnmower-blade.jpg'],
+    remarks: 'New blade is in storage room B.',
+    position: 5,
   },
 ];
 
@@ -3648,6 +3721,107 @@ const visitorsData = [
   },
 ];
 
+const attractionTransactionLocalData = [
+  {
+    attractionDate: '2024-09-08T10:00:00Z',
+    purchaseDate: '2024-09-08T10:00:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    attractionDate: '2024-09-20T14:30:00Z',
+    purchaseDate: '2024-09-15T09:45:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    attractionDate: '2024-10-12T13:45:00Z',
+    purchaseDate: '2024-10-10T08:30:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  // New entries with dates after today
+  {
+    attractionDate: '2024-10-25T10:15:00Z',
+    purchaseDate: '2024-10-20T11:30:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    attractionDate: '2024-11-08T15:00:00Z',
+    purchaseDate: '2024-10-21T09:00:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+];
+
+const attractionTransactionStandardData = [
+  {
+    attractionDate: '2024-09-13T10:00:00Z',
+    purchaseDate: '2024-09-13T10:00:00Z',
+    totalAmount: 30,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    attractionDate: '2024-09-20T14:30:00Z',
+    purchaseDate: '2024-09-15T09:45:00Z',
+    totalAmount: 30,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  // New entries with dates after today
+  {
+    attractionDate: '2024-10-25T10:15:00Z',
+    purchaseDate: '2024-10-20T11:30:00Z',
+    totalAmount: 30,
+    visitorId: '',
+    attractionId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -3664,6 +3838,7 @@ module.exports = {
   sensorsData,
   attractionTicketListingsData,
   decarbonizationAreasData,
+  maintenanceTasksData,
   plantTasksData,
   newHubs,
   newSensors,
@@ -3672,4 +3847,6 @@ module.exports = {
   visitorsData,
   promotionsData,
   announcementsData,
+  attractionTransactionLocalData,
+  attractionTransactionStandardData,
 };

@@ -25,10 +25,6 @@ class MaintenanceTaskService {
         throw new Error('Staff not found');
       }
 
-      if (staff.role !== StaffRoleEnum.SUPERADMIN && staff.role !== StaffRoleEnum.MANAGER && staff.role !== StaffRoleEnum.VENDOR_MANAGER) {
-        throw new Error('Only Superadmins and Managers can create maintenance tasks');
-      }
-
       // Ensure only one of facility, parkAsset, sensor, or hub is provided
       const entityCount = [data.facilityId, data.parkAssetId, data.sensorId, data.hubId].filter(Boolean).length;
       if (entityCount !== 1) {
@@ -154,6 +150,11 @@ class MaintenanceTaskService {
     return this.addFacilityInfo(maintenanceTasks);
   }
 
+  public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
+    const maintenanceTasks = await MaintenanceTaskDao.getMaintenanceTasksBySubmittingStaff(staffId);
+    return this.addFacilityInfo(maintenanceTasks);
+  } 
+
   public async updateMaintenanceTask(id: string, data: Partial<MaintenanceTaskSchemaType>): Promise<MaintenanceTask> {
     try {
       const existingMaintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
@@ -222,28 +223,23 @@ class MaintenanceTaskService {
     await MaintenanceTaskDao.deleteMaintenanceTask(id);
   }
 
-  public async assignMaintenanceTask(id: string, assignerStaffId: string, staffId: string): Promise<MaintenanceTask> {
+  public async deleteMaintenanceTasksByStatus(taskStatus: MaintenanceTaskStatusEnum): Promise<void> {
+    await MaintenanceTaskDao.deleteMaintenanceTasksByStatus(taskStatus);
+  }
+
+  public async assignMaintenanceTask(id: string, staffId: string): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {
       throw new Error('Maintenance task not found');
     }
 
-    const assigner = await StaffDao.getStaffById(assignerStaffId);
-    if (!assigner) {
-      throw new Error('Assigning staff not found');
-    }
-
     const staff = await StaffDao.getStaffById(staffId);
     if (!staff) {
-      throw new Error('Assigned staff not found');
-    }
-
-    if (assigner.role !== StaffRoleEnum.SUPERADMIN) {
-      throw new Error('Only Superadmins can assign tasks');
+      throw new Error('Staff taking the task not found');
     }
 
     if (maintenanceTask.taskStatus !== MaintenanceTaskStatusEnum.OPEN) {
-      throw new Error('Only open tasks can be assigned');
+      throw new Error('Only open tasks can be taken');
     }
 
     return MaintenanceTaskDao.assignMaintenanceTask(id, staff, new Date());
@@ -261,11 +257,11 @@ class MaintenanceTaskService {
 
     const unassigner = await StaffDao.getStaffById(unassignerStaffId);
     if (!unassigner) {
-      throw new Error('Unassigning staff not found');
+      throw new Error('Staff returning the task not found');
     }
 
-    if (unassigner.role !== StaffRoleEnum.SUPERADMIN) {
-      throw new Error('Only Superadmins can unassign tasks');
+    if (unassigner.id !== maintenanceTask.assignedStaffId) {
+      throw new Error('Only the assigned staff can unassign the task');
     }
 
     return MaintenanceTaskDao.unassignMaintenanceTask(id, new Date());
@@ -318,18 +314,31 @@ class MaintenanceTaskService {
     });
   }
 
-  public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum): Promise<MaintenanceTask> {
+  public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {
       throw new Error('Maintenance task not found');
     }
 
+    if (newStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && maintenanceTask.assignedStaffId === null && staffId) {
+      await this.assignMaintenanceTask(id, staffId);
+    }
+
     const maxPosition = await MaintenanceTaskDao.getMaxPositionForStatus(newStatus);
-    return MaintenanceTaskDao.updateMaintenanceTask(id, {
+    const updateData: any = {
       taskStatus: newStatus,
       position: maxPosition + 1000,
       updatedAt: new Date(),
-    });
+    };
+
+    if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
+      if (!maintenanceTask.assignedStaffId) {
+        throw new Error('Only assigned tasks can be completed');
+      }
+      updateData.completedDate = new Date();
+    }
+
+    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
   }
 
   public async updateMaintenanceTaskPosition(id: string, newPosition: number): Promise<MaintenanceTask> {
@@ -445,6 +454,19 @@ class MaintenanceTaskService {
             facility = await FacilityDao.getFacilityById(sensor.facilityId);
             if (!facility) {
               throw new Error(`Facility not found for sensor ${sensor.id}`);
+            }
+          }
+        }
+
+        if (maintenanceTask.hubId) {
+          const hub = await HubDao.getHubById(maintenanceTask.hubId);
+          if (!hub) {
+            throw new Error(`Hub not found for maintenance task ${maintenanceTask.id}`);
+          }
+          if (hub.facilityId) {
+            facility = await FacilityDao.getFacilityById(hub.facilityId);
+            if (!facility) {
+              throw new Error(`Facility not found for hub ${hub.id}`);
             }
           }
         }

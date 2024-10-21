@@ -5,21 +5,24 @@ import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import {
-  PlantTaskResponse,
-  PlantTaskStatusEnum,
-  PlantTaskTypeEnum,
+  MaintenanceTaskResponse,
+  MaintenanceTaskStatusEnum,
+  MaintenanceTaskTypeEnum,
   StaffResponse,
   StaffType,
   getAllParks,
-  updatePlantTaskDetails,
-  PlantTaskUpdateData,
+  updateMaintenanceTaskDetails,
+  MaintenanceTaskUpdateData,
+  assignMaintenanceTask,
+  unassignMaintenanceTask,
+  updateMaintenanceTaskStatus,
 } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { CloseOutlined } from '@ant-design/icons';
 import { useAuth } from '@lepark/common-ui';
-import EditPlantTaskModal from './EditPlantTaskModal';
-import ViewPlantTaskModal from './ViewPlantTaskModal';
+import EditMaintenanceTaskModal from './EditMaintenanceTaskModal';
+import ViewMaintenanceTaskModal from './ViewMaintenanceTaskModal';
 import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 import { COLORS } from '../../config/colors';
 import dayjs from 'dayjs';
@@ -29,27 +32,27 @@ const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
 // Utility function to format task type
-export const formatTaskType = (taskType: string) => {
+const formatTaskType = (taskType: string) => {
   return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
-interface PlantTaskTableViewProps {
-  plantTasks: PlantTaskResponse[];
+interface MaintenanceTaskTableViewProps {
+  maintenanceTasks: MaintenanceTaskResponse[];
   loading: boolean;
   staffList: StaffResponse[];
   tableViewType: 'all' | 'grouped-status' | 'grouped-urgency';
   userRole: string;
-  handleAssignStaff: (plantTaskId: string, staffId: string) => void;
-  navigateToDetails: (plantTaskId: string) => void;
+  handleAssignStaff: (maintenanceTaskId: string, staffId: string) => void;
+  navigateToDetails: (maintenanceTaskId: string) => void;
   navigate: (path: string) => void;
-  showDeleteModal: (plantTask: PlantTaskResponse) => void;
-  handleUnassignStaff: (plantTaskId: string, staffId: string) => void;
+  showDeleteModal: (maintenanceTask: MaintenanceTaskResponse) => void;
+  handleUnassignStaff: (maintenanceTaskId: string, staffId: string) => void;
   onTaskUpdated: () => void; // Add this prop to refresh the task list after update
-  handleStatusChange: (newStatus: PlantTaskStatusEnum) => void;
+  handleStatusChange: (newStatus: MaintenanceTaskStatusEnum) => void;
 }
 
-const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
-  plantTasks,
+const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
+  maintenanceTasks,
   loading,
   staffList,
   tableViewType,
@@ -66,10 +69,10 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
   const { user } = useAuth<StaffResponse>();
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingTask, setEditingTask] = useState<PlantTaskResponse | null>(null);
+  const [editingTask, setEditingTask] = useState<MaintenanceTaskResponse | null>(null);
   const [form] = Form.useForm();
   const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
+  const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   useEffect(() => {
@@ -97,27 +100,27 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     }
   };
 
-  const showEditModal = (task: PlantTaskResponse) => {
+  const showEditModal = (task: MaintenanceTaskResponse) => {
     setEditingTask(task);
     setEditModalVisible(true);
   };
 
-  const handleEditSubmit = async (values: PlantTaskUpdateData) => {
+  const handleEditSubmit = async (values: MaintenanceTaskUpdateData) => {
     if (editingTask) {
       try {
-        await updatePlantTaskDetails(editingTask.id, values);
+        await updateMaintenanceTaskDetails(editingTask.id, values);
         message.success('Task updated successfully');
         setEditModalVisible(false);
         onTaskUpdated(); // Refresh the task list
       } catch (error) {
-        console.error('Error updating plant task:', error);
+        console.error('Error updating maintenance task:', error);
         throw new Error('Failed to update task.' + ' ' + error + '.');
         // The modal will remain open as we're not calling setEditModalVisible(false) here
       }
     }
   };
 
-  const showViewModal = (task: PlantTaskResponse) => {
+  const showViewModal = (task: MaintenanceTaskResponse) => {
     setSelectedTask(task);
     setViewModalVisible(true);
   };
@@ -126,26 +129,58 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     setDateRange(dates);
   };
 
-  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+  const filterTasksByDateRange = (tasks: MaintenanceTaskResponse[]) => {
     if (!dateRange || !dateRange[0] || !dateRange[1]) {
       return tasks;
     }
     const [startDate, endDate] = dateRange;
-    return tasks.filter((task) => {
+    return tasks.filter(task => {
       const dueDate = dayjs(task.dueDate);
-      return (
-        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
-        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
-      );
+      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
     });
   };
 
-  const filteredPlantTasks = filterTasksByDateRange(plantTasks);
+  const filteredMaintenanceTasks = filterTasksByDateRange(maintenanceTasks);
+
+  const handleTakeTask = async (taskId: string) => {
+    try {
+      await assignMaintenanceTask(taskId, user?.id || '');
+      await updateMaintenanceTaskStatus(taskId, MaintenanceTaskStatusEnum.IN_PROGRESS, user?.id);
+      message.success('Task assigned and updated successfully');
+      onTaskUpdated();
+    } catch (error) {
+      console.error('Error taking task:', error);
+      message.error('Failed to take task');
+    }
+  };
+
+  const handleReturnTask = async (taskId: string) => {
+    try {
+      await unassignMaintenanceTask(taskId, user?.id || '');
+      await updateMaintenanceTaskStatus(taskId, MaintenanceTaskStatusEnum.OPEN);
+      message.success('Task unassigned and updated successfully');
+      onTaskUpdated();
+    } catch (error) {
+      console.error('Error returning task:', error);
+      message.error('Failed to return task');
+    }
+  };
 
   const limitedToSubmittingTasksOnly =
-    user?.role === StaffType.VENDOR_MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT || user?.role === StaffType.PARK_RANGER;
+    user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST || user?.role === StaffType.PARK_RANGER || user?.role === StaffType.LANDSCAPE_ARCHITECT;
 
-  const columns: TableProps<PlantTaskResponse>['columns'] = [
+  // Filter tasks based on status and user
+  const filteredTasks = maintenanceTasks.filter(task => {
+    if (task.taskStatus === MaintenanceTaskStatusEnum.OPEN || task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED) {
+      return true;
+    }
+    if (task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS || task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED) {
+      return task.assignedStaff?.id === user?.id;
+    }
+    return false;
+  });
+
+  const columns: TableProps<MaintenanceTaskResponse>['columns'] = [
     {
       title: 'Title',
       dataIndex: 'title',
@@ -155,39 +190,77 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       width: '20%',
     },
     {
-      title: userRole === StaffType.SUPERADMIN ? 'Park, Zone' : 'Zone',
-      render: (_, record) => (
-        <div>
-          {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.occurrence?.zone?.park?.name}</p>}
-          <div className="flex">
-            {userRole !== StaffType.SUPERADMIN && <p className="opacity-50 mr-2"></p>}
-            {record.occurrence?.zone?.name}
+      title: userRole === StaffType.SUPERADMIN ? 'Park, Location' : 'Location',
+      render: (_, record) => {
+        const getFacilityName = () => {
+          if (record.parkAsset?.facility) return record.parkAsset.facility.name;
+          if (record.sensor?.facility) return record.sensor.facility.name;
+          if (record.hub?.facility) return record.hub.facility.name;
+          if (record.facility) return record.facility.name;
+          return 'N/A';
+        };
+
+        return (
+          <div>
+            {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.submittingStaff?.park?.name}</p>}
+            <div className="flex">
+              {userRole !== StaffType.SUPERADMIN && <p className="opacity-50 mr-2"></p>}
+              {getFacilityName()}
+            </div>
           </div>
-        </div>
-      ),
-      sorter: (a, b) => {
-        if (userRole === StaffType.SUPERADMIN) {
-          if (a.occurrence?.zone?.park?.name && b.occurrence?.zone?.park?.name) {
-            return a.occurrence.zone.park.name.localeCompare(b.occurrence.zone.park.name);
-          }
-        }
-        if (a.occurrence?.zone?.name && b.occurrence?.zone?.name) {
-          return a.occurrence.zone.name.localeCompare(b.occurrence.zone.name);
-        }
-        return 0;
+        );
       },
-      filters:
-        userRole === StaffType.SUPERADMIN
-          ? parks
-          : filteredPlantTasks
-              .filter((task) => task.occurrence?.zone?.parkId === user?.parkId)
-              .map((task) => ({
-                text: task.occurrence?.zone?.name,
-                value: task.occurrence?.zone?.id,
-              }))
-              .filter((v, i, a) => a.findIndex((t) => t.value === v.value) === i), // Remove duplicates
-      onFilter: (value, record) =>
-        userRole === StaffType.SUPERADMIN ? record.occurrence?.zone?.park?.id === value : record.occurrence?.zone?.id === value,
+      sorter: (a, b) => {
+        const getFacilityName = (record: MaintenanceTaskResponse) => {
+          if (record.parkAsset?.facility) return record.parkAsset.facility.name;
+          if (record.sensor?.facility) return record.sensor.facility.name;
+          if (record.hub?.facility) return record.hub.facility.name;
+          if (record.facility) return record.facility.name;
+          return '';
+        };
+
+        if (userRole === StaffType.SUPERADMIN) {
+          const parkCompare = (a.submittingStaff?.park?.name || '').localeCompare(b.submittingStaff?.park?.name || '');
+          if (parkCompare !== 0) return parkCompare;
+        }
+        return getFacilityName(a).localeCompare(getFacilityName(b));
+      },
+      filters: userRole === StaffType.SUPERADMIN
+        ? parks
+        : Object.values(
+            filteredMaintenanceTasks.reduce((acc, task) => {
+              let facilityName, facilityId;
+              if (task.parkAsset?.facility) {
+                facilityName = task.parkAsset.facility.name;
+                facilityId = task.parkAsset.facility.id;
+              } else if (task.sensor?.facility) {
+                facilityName = task.sensor.facility.name;
+                facilityId = task.sensor.facility.id;
+              } else if (task.hub?.facility) {
+                facilityName = task.hub.facility.name;
+                facilityId = task.hub.facility.id;
+              } else if (task.facility) {
+                facilityName = task.facility.name;
+                facilityId = task.facility.id;
+              }
+              if (facilityName && facilityId) {
+                acc[facilityId] = { text: facilityName, value: facilityId.toString() };
+              }
+              return acc;
+            }, {} as Record<string, { text: string; value: string }>)
+          ),
+      onFilter: (value, record) => {
+        if (userRole === StaffType.SUPERADMIN) {
+          return record.submittingStaff?.park?.id === value;
+        } else {
+          return (
+            (record.parkAsset?.facility?.id === value) ||
+            (record.sensor?.facility?.id === value) ||
+            (record.hub?.facility?.id === value) ||
+            (record.facility?.id === value)
+          );
+        }
+      },
       width: '15%',
     },
     {
@@ -199,7 +272,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           {formatTaskType(text)}
         </Flex>
       ),
-      filters: Object.values(PlantTaskTypeEnum).map((type) => ({
+      filters: Object.values(MaintenanceTaskTypeEnum).map((type) => ({
         text: formatTaskType(type),
         value: type,
       })),
@@ -264,12 +337,12 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       render: (text, record) => {
         const isOverdue =
           moment().startOf('day').isAfter(moment(text).startOf('day')) &&
-          record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-          record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+          record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+          record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED;
         const isDueSoon =
           moment(text).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days')) &&
-          record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-          record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+          record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+          record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED;
         return (
           <Flex align="center">
             {moment(text).format('D MMM YY')}
@@ -332,29 +405,26 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           return (
             <Flex align="center" justify="space-between">
               <span>{`${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`}</span>
-              {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && record.taskStatus === PlantTaskStatusEnum.OPEN && (
-                <Tooltip title="Unassign staff">
-                  <Button
-                    type="text"
-                    icon={<CloseOutlined />}
-                    onClick={() => handleUnassignStaff(record.id, user?.id || '')}
-                    size="small"
-                  />
-                </Tooltip>
+              {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && record.assignedStaff.id === user?.id && (
+                <Button
+                  type="link"
+                  onClick={() => handleReturnTask(record.id)}
+                  size="small"
+                >
+                  Return Task
+                </Button>
               )}
             </Flex>
           );
         } else {
-          return record.taskStatus === PlantTaskStatusEnum.OPEN && (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) ? (
-            <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
-              {staffList
-                .filter((staff) => staff.parkId === record.occurrence?.zone?.parkId)
-                .map((staff: StaffResponse) => (
-                  <Select.Option key={staff.id} value={staff.id}>
-                    {`${staff.firstName} ${staff.lastName} - ${staff.role}`}
-                  </Select.Option>
-                ))}
-            </Select>
+          return record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (userRole === StaffType.VENDOR_MANAGER) ? (
+            <Button
+              type="link"
+              onClick={() => handleTakeTask(record.id)}
+              size="small"
+            >
+              Take Task
+            </Button>
           ) : (
             <></>
           );
@@ -378,17 +448,16 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       key: 'actions',
       render: (_, record) => (
         <Flex justify="center">
-          <Tooltip title="View Plant Task">
+          <Tooltip title="View Maintenance Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {!limitedToSubmittingTasksOnly &&
-            (record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED) && (
-              <Tooltip title="Edit Plant Task">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+          {!limitedToSubmittingTasksOnly && (record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED) && (
+            <Tooltip title="Edit Maintenance Task">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
             </Tooltip>
           )}
-          {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
-            <Tooltip title="Delete Plant Task">
+          {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.VENDOR_MANAGER) && (
+            <Tooltip title="Delete Maintenance Task">
               <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
             </Tooltip>
           )}
@@ -402,16 +471,16 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     const groupedTasks =
       groupBy === 'status'
         ? {
-            OPEN: filteredPlantTasks.filter((task) => task.taskStatus === 'OPEN'),
-            IN_PROGRESS: filteredPlantTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
-            COMPLETED: filteredPlantTasks.filter((task) => task.taskStatus === 'COMPLETED'),
-            CANCELLED: filteredPlantTasks.filter((task) => task.taskStatus === 'CANCELLED'),
+            OPEN: filteredTasks.filter((task) => task.taskStatus === 'OPEN'),
+            IN_PROGRESS: filteredTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
+            COMPLETED: filteredTasks.filter((task) => task.taskStatus === 'COMPLETED'),
+            CANCELLED: filteredTasks.filter((task) => task.taskStatus === 'CANCELLED'),
           }
         : {
-            IMMEDIATE: filteredPlantTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
-            HIGH: filteredPlantTasks.filter((task) => task.taskUrgency === 'HIGH'),
-            NORMAL: filteredPlantTasks.filter((task) => task.taskUrgency === 'NORMAL'),
-            LOW: filteredPlantTasks.filter((task) => task.taskUrgency === 'LOW'),
+            IMMEDIATE: filteredTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
+            HIGH: filteredTasks.filter((task) => task.taskUrgency === 'HIGH'),
+            NORMAL: filteredTasks.filter((task) => task.taskUrgency === 'NORMAL'),
+            LOW: filteredTasks.filter((task) => task.taskUrgency === 'LOW'),
           };
 
     return (
@@ -425,7 +494,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             <Card styles={{ body: { padding: 0 } }} className="p-4 border-t-0 rounded-tl-none">
               <Table
                 dataSource={tasks}
-                columns={columns.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
+                columns={columns?.filter((col) => col.key !== (groupBy === 'status' ? 'taskStatus' : 'taskUrgency'))}
                 rowKey="id"
                 pagination={{ pageSize: 5 }}
                 scroll={{ x: SCREEN_LG }}
@@ -439,15 +508,15 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   };
 
   const tableProps = {
-    rowClassName: (record: PlantTaskResponse) => {
+    rowClassName: (record: MaintenanceTaskResponse) => {
       const isOverdue =
         moment().startOf('day').isAfter(moment(record.dueDate).startOf('day')) &&
-        record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-        record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+        record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+        record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED;
       const isDueSoon =
         moment(record.dueDate).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days')) &&
-        record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-        record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
+        record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+        record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED;
 
       if (isOverdue) return 'overdue-row';
       if (isDueSoon) return 'due-soon-row';
@@ -458,14 +527,18 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   return (
     <>
       <div style={{ marginBottom: '16px' }}>
-        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
+        <RangePicker
+          onChange={handleDateRangeChange}
+          style={{ width: '100%' }}
+          placeholder={['Start Date', 'End Date']}
+        />
       </div>
       {tableViewType === 'grouped-status' && renderGroupedTasks('status', tableProps)}
       {tableViewType === 'grouped-urgency' && renderGroupedTasks('urgency', tableProps)}
       {tableViewType === 'all' && (
         <Card styles={{ body: { padding: '1rem' } }}>
           <Table
-            dataSource={filteredPlantTasks}
+            dataSource={filteredTasks}
             columns={columns}
             rowKey="id"
             loading={loading}
@@ -476,7 +549,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         </Card>
       )}
       {/* Move the modals outside of the conditional rendering */}
-      <EditPlantTaskModal
+      <EditMaintenanceTaskModal
         visible={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onSubmit={handleEditSubmit}
@@ -484,7 +557,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         userRole={userRole as StaffType}
         onStatusChange={handleStatusChange}
       />
-      <ViewPlantTaskModal
+      <ViewMaintenanceTaskModal
         visible={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         task={selectedTask}
@@ -494,4 +567,4 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   );
 };
 
-export default PlantTaskTableView;
+export default MaintenanceTaskTableView;

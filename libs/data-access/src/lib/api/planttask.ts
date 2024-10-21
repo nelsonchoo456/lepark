@@ -68,6 +68,19 @@ export async function getAllAssignedPlantTasks(staffId: string): Promise<AxiosRe
   }
 }
 
+export async function getPlantTasksBySubmittingStaff(staffId: string): Promise<AxiosResponse<PlantTaskResponse[]>> {
+  try {
+    const response: AxiosResponse<PlantTaskResponse[]> = await client.get(`${URL}/getPlantTasksBySubmittingStaff/${staffId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updatePlantTaskStatus(id: string, newStatus: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse>> {
   try {
     const response: AxiosResponse<PlantTaskResponse> = await client.put(`${URL}/updatePlantTaskStatus/${id}`, { newStatus });

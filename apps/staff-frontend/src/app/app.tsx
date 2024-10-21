@@ -104,6 +104,8 @@ import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
 import AnnouncementDetails from './pages/AnnouncementDetails/AnnouncementDetails';
 import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails/TicketListingDetails';
 import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
+import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
+import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
 
 export function App() {
   return (
@@ -293,34 +295,13 @@ export function App() {
 
                 {/* Task Routes */}
                 <Route path="/plant-tasks">
-                  <Route
-                    index
-                    element={
-                      <>
-                        <RoleProtectedRoute
-                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
-                          redirectTo="/"
-                        />
-                        <PlantTaskList />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="create"
-                    element={
-                      <>
-                        <RoleProtectedRoute
-                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.ARBORIST, StaffType.BOTANIST]}
-                          redirectTo="/"
-                        />
-                        <CreatePlantTask />
-                      </>
-                    }
-                  />
+                  <Route index element={<PlantTaskList />} />
+                  <Route path="create" element={<CreatePlantTask />} />
                 </Route>
 
                 <Route path="/maintenance-tasks">
-                  <Route index element={<MaintenanceTask />} />
+                  <Route index element={<MaintenanceTaskList />} />
+                  <Route path="create" element={<CreateMaintenanceTask />} />
                 </Route>
 
                 {/* Settings Routes */}

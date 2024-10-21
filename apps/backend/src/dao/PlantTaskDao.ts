@@ -62,6 +62,16 @@ class PlantTaskDao {
     });
   }
 
+  async getPlantTasksBySubmittingStaff(staffId: string): Promise<PlantTask[]> {
+    return prisma.plantTask.findMany({
+      where: { submittingStaffId: staffId },
+      include: {
+        assignedStaff: true,
+        submittingStaff: true,
+      },
+    });
+  }
+
   async getAllAssignedPlantTasksThatAreOpenOrInProgressByStaffId(staffId: string): Promise<PlantTask[]> {
     return prisma.plantTask.findMany({
       where: {
