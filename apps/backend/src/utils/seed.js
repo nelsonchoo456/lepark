@@ -25,6 +25,8 @@ const {
   visitorsData,
   promotionsData,
   announcementsData,
+  attractionTransactionLocalData,
+  attractionTransactionStandardData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -385,72 +387,74 @@ async function seed() {
     });
     attractionList.push(createdAttraction);
   }
+
+  const attractionListingsList = [];
+
   for (const attraction of attractionList) {
+    const currentListings = [];
     for (const listing of attractionTicketListingsData) {
       listing.attractionId = attraction.id;
-      await prisma.attractionTicketListing.create({
+      const attractionListing = await prisma.attractionTicketListing.create({
         data: listing,
       });
+      currentListings.push(attractionListing);
     }
+    attractionListingsList.push(currentListings);
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
   const maintenanceTasksList = [];
-for (const maintenanceTask of maintenanceTasksData) {
-  // Filter staff from Park Id 2
-  const parkId2Staff = staffList.filter((staff) => staff.parkId === 2);
+  for (const maintenanceTask of maintenanceTasksData) {
+    // Filter staff from Park Id 2
+    const parkId2Staff = staffList.filter((staff) => staff.parkId === 2);
 
-  // Filter staff with MANAGER or SUPERADMIN roles from Park Id 2 for submitting
-  const eligibleSubmittingStaff = parkId2Staff.filter(
-    (staff) => staff.role === 'MANAGER' || staff.role === 'VENDOR_MANAGER'
-  );
+    // Filter staff with MANAGER or SUPERADMIN roles from Park Id 2 for submitting
+    const eligibleSubmittingStaff = parkId2Staff.filter((staff) => staff.role === 'MANAGER' || staff.role === 'VENDOR_MANAGER');
 
-  // Filter staff with appropriate roles for assignment
-  const eligibleAssignedStaff = parkId2Staff.filter(
-    (staff) => ['VENDOR_MANAGER'].includes(staff.role)
-  );
+    // Filter staff with appropriate roles for assignment
+    const eligibleAssignedStaff = parkId2Staff.filter((staff) => ['VENDOR_MANAGER'].includes(staff.role));
 
-  // Ensure we have valid staff data
-  if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0) {
-    const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
-    // const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+    // Ensure we have valid staff data
+    if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0) {
+      const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
+      // const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
 
-    // Determine which entity to associate with the task
-    let entityConnection = {};
-    if (maintenanceTask.title.includes('Bench') || maintenanceTask.title.includes('Restroom')) {
-      const randomFacilityIndex = Math.floor(Math.random() * facilityList.length);
-      entityConnection = { facility: { connect: { id: facilityList[randomFacilityIndex].id } } };
-    } else if (maintenanceTask.title.includes('Sensor')) {
-      const randomSensorIndex = Math.floor(Math.random() * sensorList.length);
-      entityConnection = { sensor: { connect: { id: sensorList[randomSensorIndex].id } } };
-    } else if (maintenanceTask.title.includes('Hub')) {
-      const randomHubIndex = Math.floor(Math.random() * hubList.length);
-      entityConnection = { hub: { connect: { id: hubList[randomHubIndex].id } } };
-    } else if (maintenanceTask.title.includes('Lawnmower')) {
-      const randomParkAssetIndex = Math.floor(Math.random() * parkAssetList.length);
-      entityConnection = { parkAsset: { connect: { id: parkAssetList[randomParkAssetIndex].id } } };
-    }
+      // Determine which entity to associate with the task
+      let entityConnection = {};
+      if (maintenanceTask.title.includes('Bench') || maintenanceTask.title.includes('Restroom')) {
+        const randomFacilityIndex = Math.floor(Math.random() * facilityList.length);
+        entityConnection = { facility: { connect: { id: facilityList[randomFacilityIndex].id } } };
+      } else if (maintenanceTask.title.includes('Sensor')) {
+        const randomSensorIndex = Math.floor(Math.random() * sensorList.length);
+        entityConnection = { sensor: { connect: { id: sensorList[randomSensorIndex].id } } };
+      } else if (maintenanceTask.title.includes('Hub')) {
+        const randomHubIndex = Math.floor(Math.random() * hubList.length);
+        entityConnection = { hub: { connect: { id: hubList[randomHubIndex].id } } };
+      } else if (maintenanceTask.title.includes('Lawnmower')) {
+        const randomParkAssetIndex = Math.floor(Math.random() * parkAssetList.length);
+        entityConnection = { parkAsset: { connect: { id: parkAssetList[randomParkAssetIndex].id } } };
+      }
 
-    const createdMaintenanceTask = await prisma.maintenanceTask.create({
-      data: {
-        ...maintenanceTask,
-        createdAt: maintenanceTask.createdAt,
-        submittingStaff: {
-          connect: { id: eligibleSubmittingStaff[randomSubmittingStaffIndex].id },
+      const createdMaintenanceTask = await prisma.maintenanceTask.create({
+        data: {
+          ...maintenanceTask,
+          createdAt: maintenanceTask.createdAt,
+          submittingStaff: {
+            connect: { id: eligibleSubmittingStaff[randomSubmittingStaffIndex].id },
+          },
+          // assignedStaff: {
+          //   connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
+          // },
+          ...entityConnection,
         },
-        // assignedStaff: {
-        //   connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
-        // },
-        ...entityConnection,
-      },
-    });
-    maintenanceTasksList.push(createdMaintenanceTask);
-  } else {
-    console.warn('Unable to create maintenance task: No eligible staff available for Park Id 2');
+      });
+      maintenanceTasksList.push(createdMaintenanceTask);
+    } else {
+      console.warn('Unable to create maintenance task: No eligible staff available for Park Id 2');
+    }
   }
-}
 
-console.log(`Total maintenance tasks seeded: ${maintenanceTasksList.length}\n`);
+  console.log(`Total maintenance tasks seeded: ${maintenanceTasksList.length}\n`);
 
   const plantTasksList = [];
   for (const plantTask of plantTasksData) {
@@ -621,6 +625,110 @@ console.log(`Total maintenance tasks seeded: ${maintenanceTasksList.length}\n`);
     announcementList.push(createdAnnouncement);
   }
   console.log(`Total announcements seeded: ${announcementList.length}\n`);
+
+  const transactionList = [];
+  const aaronId = visitorList[1].id;
+  const flowerDomeId = attractionList[2].id;
+  const flowerDomeListings = attractionListingsList[2];
+  for (const transaction of attractionTransactionLocalData) {
+    transaction.visitorId = aaronId;
+    transaction.attractionId = flowerDomeId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = flowerDomeListings[i].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.attractionTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.attractionTicketTransaction.create({
+        data: {
+          ...transactionData,
+          attractionTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                attractionTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          attractionTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    transactionList.push(result);
+  }
+
+  for (const transaction of attractionTransactionStandardData) {
+    transaction.visitorId = aaronId;
+    transaction.attractionId = flowerDomeId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = flowerDomeListings[i + 4].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.attractionTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.attractionTicketTransaction.create({
+        data: {
+          ...transactionData,
+          attractionTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                attractionTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          attractionTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    transactionList.push(result);
+  }
+
+  console.log(`Total attraction transactions seeded: ${transactionList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -719,7 +827,7 @@ const createReading = (sensorType, date) => {
       return {
         date,
         value: parseFloat(value.toFixed(0)),
-      }
+      };
     default:
       value = Math.random() * 100;
   }
