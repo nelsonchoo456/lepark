@@ -71,14 +71,27 @@ const FeedbackViewDetails = () => {
   const withoutUnderscores = enumValue.replace(/_/g, ' ').toLowerCase();
   return withoutUnderscores.charAt(0).toUpperCase() + withoutUnderscores.slice(1);
 };
-  const handleCreatePlantTask = () => {
+    const handleCreatePlantTask = () => {
     navigate('/plant-tasks/create', {
       state: {
         title: feedback?.title,
-        description: feedback?.description
+        description: feedback?.description,
+        images: feedback?.images,
+        parkId: feedback?.parkId
       }
     });
   };
+
+  const handleCreateMaintenanceTask = () => {
+  navigate('/maintenance-tasks/create', {
+    state: {
+      title: feedback?.title,
+      description: feedback?.description,
+      images: feedback?.images,
+      parkId: feedback?.parkId
+    }
+  });
+};
 
   useEffect(() => {
     if (!loading && feedback) {
@@ -326,7 +339,7 @@ const FeedbackViewDetails = () => {
             </div>
           }
         />
-         {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+         {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
             <Button
               type="primary"
               onClick={handleCreatePlantTask}
@@ -335,6 +348,13 @@ const FeedbackViewDetails = () => {
               Create Plant Task
             </Button>
           )}
+
+           {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
+        <Button type="primary" onClick={handleCreateMaintenanceTask} className="mt-4">
+          Create Maintenance Task
+        </Button>
+
+    )}
       </Card>
     </ContentWrapperDark>
   );

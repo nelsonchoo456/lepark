@@ -14,6 +14,7 @@ import {
   getZonesByParkId,
   getOccurrencesByParkId,
   StaffType,
+  getParkById,
 } from '@lepark/data-access';
 import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker, Switch, Radio } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -43,10 +44,11 @@ const CreatePlantTask = () => {
 
   const [showDueDate, setShowDueDate] = useState(false);
 
+  const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
+  const [feedbackPreviews, setFeedbackPreviews] = useState<string[]>([]);
+
   const location = useLocation();
-  const { title: feedbackTitle, description: feedbackDescription } = location.state || {};
-
-
+  const { title: feedbackTitle, description: feedbackDescription, images: feedbackImages, parkId: feedbackParkId } = location.state || {};
 
   useEffect(() => {
     if (feedbackTitle || feedbackDescription) {
@@ -55,30 +57,61 @@ const CreatePlantTask = () => {
         description: feedbackDescription
       });
     }
-  }, [feedbackTitle, feedbackDescription, form]);
+
+    if (user?.role === StaffType.SUPERADMIN && feedbackParkId) {
+      fetchParkDetails(feedbackParkId);
+    } else if (user?.parkId) {
+      fetchZones(user.parkId);
+      setIsZoneDisabled(false);
+    }
+
+    if (feedbackImages && feedbackImages.length > 0) {
+      const fetchImages = async () => {
+        const fetchedFiles: File[] = [];
+        const fetchedPreviews: string[] = [];
+
+        for (const imageUrl of feedbackImages) {
+          try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const fileName = imageUrl.split('/').pop() || 'image.jpg';
+            const file = new File([blob], fileName, { type: blob.type });
+            fetchedFiles.push(file);
+            fetchedPreviews.push(URL.createObjectURL(blob));
+          } catch (error) {
+            console.error('Error fetching image:', error);
+          }
+        }
+
+        setFeedbackFiles(fetchedFiles);
+        setFeedbackPreviews(fetchedPreviews);
+      };
+
+      fetchImages();
+    }
+  }, [feedbackTitle, feedbackDescription, feedbackImages, feedbackParkId, form, user]);
+
+  const allFiles = [...feedbackFiles, ...selectedFiles];
+  const allPreviews = [...feedbackPreviews, ...previewImages];
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
       fetchParks();
-    } else if (user?.parkId) {
-      fetchZones(user.parkId);
-      setIsZoneDisabled(false); // Enable Zone field for other staff roles
     }
   }, [user]);
 
-  useEffect(() => {
-    if (selectedParkId) {
-      fetchZones(selectedParkId);
+  const fetchParkDetails = async (parkId: number) => {
+    try {
+      const parkResponse = await getParkById(parkId);
+      form.setFieldsValue({ parkId: parkId.toString() });
+      setSelectedParkId(parkId);
+      fetchZones(parkId);
+      fetchOccurrences(parkId);
+    } catch (error) {
+      console.error('Error fetching park details:', error);
+      messageApi.error('Failed to fetch park details');
     }
-  }, [selectedParkId]);
-
-  useEffect(() => {
-    if (user?.role === StaffType.SUPERADMIN && selectedParkId) {
-      fetchOccurrences(selectedParkId);
-    } else if (user?.parkId) {
-      fetchOccurrences(user.parkId);
-    }
-  }, [selectedParkId, selectedZoneId]);
+  };
 
   const fetchParks = async () => {
     try {
@@ -94,6 +127,7 @@ const CreatePlantTask = () => {
     try {
       const response = await getZonesByParkId(parkId);
       setZones(response.data);
+      setIsZoneDisabled(false);
     } catch (error) {
       console.error('Error fetching zones:', error);
       messageApi.error('Failed to fetch zones');
@@ -102,9 +136,9 @@ const CreatePlantTask = () => {
 
   const fetchOccurrences = async (parkId: number) => {
     try {
-      console.log('fetchOccurrences', parkId, selectedZoneId);
       const response = await getOccurrencesByParkId(parkId);
       setOccurrences(response.data.filter((occurrence) => !selectedZoneId || occurrence.zoneId === selectedZoneId));
+      setIsOccurrenceDisabled(false);
     } catch (error) {
       console.error('Error fetching occurrences:', error);
       messageApi.error('Failed to fetch occurrences');
@@ -129,12 +163,12 @@ const CreatePlantTask = () => {
 
       const values = await form.validateFields();
 
-      if (selectedFiles.length === 0) {
+      if (allFiles.length === 0) {
         messageApi.error('Please upload at least one image.');
         return;
       }
 
-      if (selectedFiles.length > 3) {
+      if (allFiles.length > 3) {
         messageApi.error('You can upload a maximum of 3 images.');
         return;
       }
@@ -147,7 +181,7 @@ const CreatePlantTask = () => {
       };
       console.log('plantTaskData', taskData);
 
-      const taskResponse = await createPlantTask(taskData, user.id, selectedFiles);
+      const taskResponse = await createPlantTask(taskData, user.id, allFiles);
       console.log('Plant Task created:', taskResponse.data);
       setCreatedPlantTask(taskResponse.data);
     } catch (error) {
@@ -177,7 +211,6 @@ const CreatePlantTask = () => {
     },
   ];
 
-  // Add this function to filter options
   const filterOption = (input: string, option?: { label: string; value: string }) =>
     (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
@@ -187,8 +220,8 @@ const CreatePlantTask = () => {
     form.setFieldsValue({ zoneId: null, occurrenceId: null });
     setZones([]);
     setOccurrences([]);
-    setIsZoneDisabled(false); // Enable Zone field
-    setIsOccurrenceDisabled(true); // Disable Occurrence field
+    fetchZones(parkId);
+    setIsOccurrenceDisabled(true);
   };
 
   const handleZoneChange = (value: string) => {
@@ -196,7 +229,7 @@ const CreatePlantTask = () => {
     setSelectedZoneId(zoneId);
     form.setFieldsValue({ occurrenceId: null });
     setOccurrences([]);
-    setIsOccurrenceDisabled(false); // Enable Occurrence field
+    fetchOccurrences(selectedParkId!);
   };
 
   return (
@@ -204,9 +237,8 @@ const CreatePlantTask = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-        {!createdPlantTask ? (
+         {!createdPlantTask ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" onFinish={handleSubmit}>
-            <Divider orientation="left">Plant Task Details</Divider>
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
                 <Select
@@ -216,6 +248,7 @@ const CreatePlantTask = () => {
                   filterOption={filterOption}
                   options={parks.map((park) => ({ value: park.id.toString(), label: park.name }))}
                   onChange={handleParkChange}
+                  disabled={!!feedbackParkId}
                 />
               </Form.Item>
             )}
@@ -227,7 +260,7 @@ const CreatePlantTask = () => {
                 filterOption={filterOption}
                 options={zones.map((zone) => ({ value: zone.id.toString(), label: zone.name }))}
                 onChange={handleZoneChange}
-                disabled={isZoneDisabled && user?.role === StaffType.SUPERADMIN} // Disable Zone field initially only for SUPERADMIN
+                disabled={isZoneDisabled}
               />
             </Form.Item>
             <Form.Item name="occurrenceId" label="Occurrence" rules={[{ required: true }]}>
@@ -237,7 +270,7 @@ const CreatePlantTask = () => {
                 optionFilterProp="children"
                 filterOption={filterOption}
                 options={occurrences.map((occurrence) => ({ value: occurrence.id.toString(), label: occurrence.title }))}
-                disabled={isOccurrenceDisabled} // Disable Occurrence field initially
+                disabled={isOccurrenceDisabled}
               />
             </Form.Item>
              <Form.Item
@@ -263,7 +296,6 @@ const CreatePlantTask = () => {
               <Select placeholder="Select a Task Type" options={taskTypeOptions} />
             </Form.Item>
             <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
-
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
             <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
@@ -291,25 +323,34 @@ const CreatePlantTask = () => {
                 onChange={handleFileChange}
                 accept="image/png, image/jpeg"
                 onClick={onInputClick}
-                disabled={selectedFiles.length >= 3}
+                disabled={allFiles.length >= 3}
               />
             </Form.Item>
-            {previewImages?.length > 0 && (
+            {allPreviews.length > 0 && (
               <Form.Item label="Image Previews" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
                 <div className="flex flex-wrap gap-2">
-                  {previewImages.map((imgSrc, index) => (
+                  {allPreviews.map((imgSrc, index) => (
                     <img
                       key={index}
                       src={imgSrc}
                       alt={`Preview ${index}`}
                       className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => removeImage(index)}
+                      onClick={() => {
+                        if (index < feedbackPreviews.length) {
+                          // Remove feedback image
+                          setFeedbackFiles(prev => prev.filter((_, i) => i !== index));
+                          setFeedbackPreviews(prev => prev.filter((_, i) => i !== index));
+                        } else {
+                          // Remove uploaded image
+                          removeImage(index - feedbackPreviews.length);
+                        }
+                      }}
                     />
                   ))}
                 </div>
               </Form.Item>
             )}
-            {selectedFiles.length >= 3 && (
+            {allFiles.length >= 3 && (
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <p className="text-yellow-500">Maximum number of images (3) reached.</p>
               </Form.Item>
