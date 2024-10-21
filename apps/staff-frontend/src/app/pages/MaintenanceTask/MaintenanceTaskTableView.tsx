@@ -42,7 +42,8 @@ interface MaintenanceTaskTableViewProps {
   staffList: StaffResponse[];
   tableViewType: 'all' | 'grouped-status' | 'grouped-urgency';
   userRole: string;
-  handleAssignStaff: (maintenanceTaskId: string, staffId: string) => void;
+  handleTakeTask: (maintenanceTaskId: string, staffId: string) => void;
+  handleReturnTask: (maintenanceTaskId: string, staffId: string) => void;
   navigateToDetails: (maintenanceTaskId: string) => void;
   navigate: (path: string) => void;
   showDeleteModal: (maintenanceTask: MaintenanceTaskResponse) => void;
@@ -57,7 +58,8 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
   staffList,
   tableViewType,
   userRole,
-  handleAssignStaff,
+  handleTakeTask,
+  handleReturnTask, 
   navigateToDetails,
   navigate,
   showDeleteModal,
@@ -74,7 +76,6 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
-  const [localMaintenanceTasks, setLocalMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
 
   useEffect(() => {
     fetchParks();
@@ -87,10 +88,6 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       setActiveKeys(groupKeys);
     }
   }, [tableViewType]);
-
-  useEffect(() => {
-    setLocalMaintenanceTasks(maintenanceTasks);
-  }, [maintenanceTasks]);
 
   const fetchParks = async () => {
     try {
@@ -147,55 +144,6 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
 
   const filteredMaintenanceTasks = filterTasksByDateRange(maintenanceTasks);
 
-  const handleTakeTask = async (taskId: string) => {
-    try {
-      await assignMaintenanceTask(taskId, user?.id || '');
-      await updateMaintenanceTaskStatus(taskId, MaintenanceTaskStatusEnum.IN_PROGRESS, user?.id);
-      
-      // Update the local state
-      setLocalMaintenanceTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === taskId
-            ? {
-                ...task,
-                taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS,
-                assignedStaff: user || undefined
-              }
-            : task
-        )
-      );
-      
-      message.success('Task assigned and updated successfully');
-    } catch (error) {
-      console.error('Error taking task:', error);
-      message.error('Failed to take task');
-    }
-  };
-
-  const handleReturnTask = async (taskId: string) => {
-    try {
-      await unassignMaintenanceTask(taskId, user?.id || '');
-      await updateMaintenanceTaskStatus(taskId, MaintenanceTaskStatusEnum.OPEN);
-      
-      // Update the local state
-      setLocalMaintenanceTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === taskId
-            ? {
-                ...task,
-                taskStatus: MaintenanceTaskStatusEnum.OPEN,
-                assignedStaff: undefined
-              }
-            : task
-        )
-      );
-      
-      message.success('Task unassigned and updated successfully');
-    } catch (error) {
-      console.error('Error returning task:', error);
-      message.error('Failed to return task');
-    }
-  };
 
   const limitedToSubmittingTasksOnly =
     user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST || user?.role === StaffType.PARK_RANGER || user?.role === StaffType.LANDSCAPE_ARCHITECT;
@@ -409,7 +357,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
               {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && record.assignedStaff.id === user?.id && (
                 <Button
                   type="link"
-                  onClick={() => handleReturnTask(record.id)}
+                  onClick={() => handleReturnTask(record.id, user?.id || '')}
                   size="small"
                 >
                   Return Task
@@ -421,7 +369,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
           return record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (userRole === StaffType.VENDOR_MANAGER) ? (
             <Button
               type="link"
-              onClick={() => handleTakeTask(record.id)}
+              onClick={() => handleTakeTask(record.id, user?.id || '')}
               size="small"
             >
               Take Task
@@ -539,7 +487,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       {tableViewType === 'all' && (
         <Card styles={{ body: { padding: '1rem' } }}>
           <Table
-            dataSource={localMaintenanceTasks} // Use localMaintenanceTasks instead of filteredTasks
+            dataSource={filteredTasks}
             columns={columns}
             rowKey="id"
             loading={loading}

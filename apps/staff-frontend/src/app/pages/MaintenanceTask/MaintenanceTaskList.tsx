@@ -304,6 +304,28 @@ const MaintenanceTaskList: React.FC = () => {
 //     );
 //   };
 
+const handleTakeTask = async (maintenanceTaskId: string, staffId: string) => {
+  try {
+    await assignMaintenanceTask(maintenanceTaskId, staffId);
+    messageApi.success('Staff assigned successfully');
+    fetchMaintenanceTasks();
+  } catch (error) {
+    console.error('Error assigning staff:', error);
+    messageApi.error('Failed to assign staff');
+  }
+};
+
+const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
+  try {
+    await unassignMaintenanceTask(maintenanceTaskId, staffId);
+    message.success('Staff unassigned successfully');
+    fetchMaintenanceTasks();
+  } catch (error) {
+    console.error('Failed to unassign staff:', error);
+    message.error('Failed to unassign staff');
+  }
+};
+
   const totalOpenTasks = maintenanceTasks.filter((task) => task.taskStatus === 'OPEN').length;
   const outstandingTasks = maintenanceTasks.filter((task) => task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED').length;
   const urgentTasks = maintenanceTasks.filter(
@@ -375,11 +397,11 @@ const MaintenanceTaskList: React.FC = () => {
         staffList={staffList}
         tableViewType={tableViewType}
         userRole={user?.role || ''}
-        handleAssignStaff={handleAssignStaff}
+        handleTakeTask={handleTakeTask}
+        handleReturnTask={handleReturnTask}
         navigateToDetails={navigateToDetails}
         navigate={navigate}
         showDeleteModal={showDeleteModal}
-        handleUnassignStaff={handleUnassignStaff}
         onTaskUpdated={fetchMaintenanceTasks}
         handleStatusChange={handleStatusChange}
       />
