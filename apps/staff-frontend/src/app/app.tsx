@@ -98,9 +98,6 @@ import FAQCreate from './pages/FAQ/FAQCreate';
 import { App as AntdApp } from 'antd';
 import FAQView from './pages/FAQ/FAQView';
 import FAQEdit from './pages/FAQ/FAQEdit';
-
-import FeedbackList from './pages/Feedback/FeedbackList';
-import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 import VerifyTicket from './pages/VerifyTicket/VerifyTicket';
 import AnnouncementList from './pages/Announcement/AnnouncementList';
 import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
@@ -109,6 +106,8 @@ import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails
 import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
 import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
 import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
+import FeedbackList from './pages/Feedback/FeedbackList';
+import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 
 export function App() {
   return (
@@ -591,51 +590,15 @@ export function App() {
                   </Route>
                 </Route>
 
+                {/* Feedback Routes */}
+                <Route path="/feedback">
+                  <Route index element={<FeedbackList />} />
+                  <Route path=":feedbackId" element={<FeedbackViewDetails />} />
+                </Route>
+
                 {/* Catch-all for 404 */}
                 <Route path="*" element={<PageNotFound />} />
               </Route>
-
-              <Route path="/iot">
-                <Route path="zones" element={<ZoneIoTDashboard />} />
-                <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
-              </Route>
-
-              <Route path="/faq">
-                <Route index element={<FAQList />} />
-                <Route path="create" element={<FAQCreate />} />
-                <Route path=":faqId" element={<FAQView />} />
-                <Route path=":faqId/edit" element={<FAQEdit />} />
-              </Route>
-
-              <Route path="/feedback">
-                <Route
-                  index
-                  element={
-                    <>
-                      <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
-                        redirectTo="/"
-                      />
-                      <FeedbackList />
-                    </>
-                  }
-                />
-                <Route
-                  path=":feedbackId"
-                  element={
-                    <>
-                      <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
-                        redirectTo="/"
-                      />
-                      <FeedbackViewDetails />
-                    </>
-                  }
-                />
-              </Route>
-
-              {/* Catch-all for 404 */}
-              <Route path="*" element={<PageNotFound />} />
             </Routes>
           </BrowserRouter>
         </ConfigProvider>
