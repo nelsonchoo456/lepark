@@ -560,7 +560,7 @@ const TicketListingDetails: React.FC = () => {
                   </div>
                   {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
-                      title="Tickets Sold Over Time (Attraction Visit Date)"
+                      title="Expected Visits Over Time"
                       data={attractionDateSalesData}
                       type="line"
                       options={{
@@ -571,7 +571,7 @@ const TicketListingDetails: React.FC = () => {
                             beginAtZero: true,
                             title: {
                               display: true,
-                              text: 'Number of Tickets',
+                              text: 'Number of Visitors',
                             },
                             ticks: {
                               stepSize: 1,

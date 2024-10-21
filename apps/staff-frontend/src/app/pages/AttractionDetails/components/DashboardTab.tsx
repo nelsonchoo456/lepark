@@ -98,8 +98,14 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
         }
         
         const category = ticket.attractionTicketListing?.category;
-        if (category) {
-          dailyCounts[date][category] += 1;
+        if (category === AttractionTicketCategoryEnum.ADULT) {
+          dailyCounts[date].Adult += 1;
+        } else if (category === AttractionTicketCategoryEnum.CHILD) {
+          dailyCounts[date].Child += 1;
+        } else if (category === AttractionTicketCategoryEnum.STUDENT) {
+          dailyCounts[date].Student += 1;
+        } else {
+          dailyCounts[date].Senior += 1;
         }
       }
     });
@@ -276,7 +282,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
                 </div>
               )}
               <GraphContainer
-                title="Tickets Sold Over Time (Visit Date)"
+                title="Expected Visits Over Time"
                 data={attractionTimeSeriesChartData}
                 type="line"
                 options={{
@@ -287,7 +293,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
                       beginAtZero: true,
                       title: {
                         display: true,
-                        text: 'Number of Tickets',
+                        text: 'Number of Visitors',
                       },
                       ticks: {
                         stepSize: 1,
