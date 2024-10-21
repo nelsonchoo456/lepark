@@ -26,7 +26,7 @@ import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
 const { Text } = Typography;
 
 const ZoneIoTDashboard: React.FC = () => {
-  const { zones, loading } = useFetchZones();
+  const { zonesWithIoT, loading } = useFetchZones();
   const { user } = useAuth<StaffResponse>();
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const ZoneIoTDashboard: React.FC = () => {
       const differences: { [key: number]: any } = {};
       const activeCounts: { [key: number]: number } = {};
       const totalSensors: { [key: number]: number } = {};
-      for (const zone of zones) {
+      for (const zone of zonesWithIoT) {
         try {
           const averageReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(zone.id, 4);
           metrics[zone.id] = averageReadings.data;
@@ -53,12 +53,13 @@ const ZoneIoTDashboard: React.FC = () => {
           activeCounts[zone.id] = activeCount.data.count;
 
           const totalSensorsCount = await getPlantSensorsByZoneId(zone.id);
-          totalSensors[zone.id] = totalSensorsCount.data.length;
+          totalSensors[zone.id] = totalSensorsCount.data.filter((sensor: SensorResponse) => sensor.sensorType !== SensorTypeEnum.CAMERA).length;
         } catch (error) {
           console.error(`Error fetching data for zone ${zone.id}:`, error);
           metrics[zone.id] = {};
           differences[zone.id] = {};
           activeCounts[zone.id] = 0;
+          totalSensors[zone.id] = 0;
         }
       }
       setZoneMetrics(metrics);
@@ -68,11 +69,11 @@ const ZoneIoTDashboard: React.FC = () => {
     };
 
     fetchZoneMetrics();
-  }, [zones]);
+  }, [zonesWithIoT]);
 
   const filteredZones = useMemo(() => {
-    return zones.filter((zone) => Object.values(zone).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
-  }, [searchQuery, zones]);
+    return zonesWithIoT.filter((zone) => Object.values(zone).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
+  }, [searchQuery, zonesWithIoT]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -149,6 +150,27 @@ const ZoneIoTDashboard: React.FC = () => {
                 }
               >
                 <Flex vertical gap="small">
+                <Row gutter={16}>
+                    <Col span={12}>
+                      <Statistic
+                        title="Avg. Temperature"
+                        value={metrics[SensorTypeEnum.TEMPERATURE]?.toFixed(2) || 0}
+                        suffix={
+                          <>
+                            °C
+                            {renderDifference(SensorTypeEnum.TEMPERATURE, zone.id)}
+                          </>
+                        }
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Statistic
+                        title="Avg. Humidity"
+                        value={metrics[SensorTypeEnum.HUMIDITY]?.toFixed(2) || 0}
+                        suffix={<>%{renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}</>}
+                      />
+                    </Col>
+                  </Row>
                   <Row gutter={16}>
                     <Col span={12}>
                       <Statistic
@@ -167,27 +189,6 @@ const ZoneIoTDashboard: React.FC = () => {
                             {renderDifference(SensorTypeEnum.LIGHT, zone.id)}
                           </>
                         }
-                      />
-                    </Col>
-                  </Row>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Statistic
-                        title="Avg. Temperature"
-                        value={metrics[SensorTypeEnum.TEMPERATURE]?.toFixed(2) || 0}
-                        suffix={
-                          <>
-                            °C
-                            {renderDifference(SensorTypeEnum.TEMPERATURE, zone.id)}
-                          </>
-                        }
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Statistic
-                        title="Avg. Humidity"
-                        value={metrics[SensorTypeEnum.HUMIDITY]?.toFixed(2) || 0}
-                        suffix={<>%{renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}</>}
                       />
                     </Col>
                   </Row>

@@ -355,7 +355,7 @@ const CreateDetailsStep: React.FC<CreateDetailsStepProps> = ({
           </div>
         </Form.Item>
       )}
-      <Form.Item label={" "} colon={false}>
+      <Form.Item label={' '} colon={false}>
         <Button type="primary" className="w-full" onClick={handleClick}>
           Next
         </Button>

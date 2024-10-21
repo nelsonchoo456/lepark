@@ -13,12 +13,13 @@ import {
   updatePlantTaskDetails,
   PlantTaskUpdateData,
   deleteManyPlantTasks,
+  deletePlantTask,
 } from '@lepark/data-access';
-import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select } from 'antd';
+import { Card, Col, message, Row, Tag, Typography, Avatar, Dropdown, Menu, Modal, Select, DatePicker, Spin } from 'antd';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { COLORS } from '../../config/colors';
-import { MoreOutlined } from '@ant-design/icons';
+import { MoreOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { StaffRoleEnum } from '@prisma/client';
@@ -27,6 +28,8 @@ import { StaffType } from '@lepark/data-access';
 import { FiClock } from 'react-icons/fi';
 import EditPlantTaskModal from './EditPlantTaskModal';
 import ViewPlantTaskModal from './ViewPlantTaskModal';
+import dayjs from 'dayjs';
+import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 
 interface PlantTaskBoardViewProps {
   open: PlantTaskResponse[];
@@ -40,7 +43,10 @@ interface PlantTaskBoardViewProps {
   setCancelled: (items: PlantTaskResponse[]) => void;
   refreshData: () => void;
   userRole: string;
+  loading: boolean; // Add this new prop
 }
+
+const { RangePicker } = DatePicker;
 
 const PlantTaskBoardView = ({
   open,
@@ -53,6 +59,7 @@ const PlantTaskBoardView = ({
   setCancelled,
   refreshData,
   userRole,
+  loading, // Add this new prop
 }: PlantTaskBoardViewProps) => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
@@ -66,6 +73,11 @@ const PlantTaskBoardView = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
+  const [taskBeingCompleted, setTaskBeingCompleted] = useState<PlantTaskResponse | null>(null);
+  const [taskCompletionIndex, setTaskCompletionIndex] = useState<number | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -79,6 +91,7 @@ const PlantTaskBoardView = ({
 
     // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
+    
     if (
       source.droppableId === PlantTaskStatusEnum.OPEN &&
       destination.droppableId !== PlantTaskStatusEnum.OPEN &&
@@ -119,7 +132,6 @@ const PlantTaskBoardView = ({
       try {
         await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
         await updatePlantTaskPosition(movedTask.id as string, destination.index);
-        message.success('Task status updated successfully');
       } catch (error) {
         console.error('Error updating task status, position, or unassigning:', error);
         message.error('Failed to update task status, position, or unassign');
@@ -127,8 +139,26 @@ const PlantTaskBoardView = ({
     }
 
     if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
+      setTaskBeingCompleted(movedTask);
+      setTaskCompletionIndex(destination.index);
       setCompletedTaskOccurrenceId(movedTask.occurrence?.id || null);
       setShowLogPrompt(true);
+    } else {
+      // If not moving to COMPLETED, update the task status immediately
+      try {
+        // To myself: I fixed this with if else, if not working just remove if else and put the 3 lines in else clause into here
+        if (destination.droppableId === movedTask.taskStatus) {
+          await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
+          await updatePlantTaskPosition(movedTask.id as string, destination.index);
+        } else {
+          await updatePlantTaskStatus(movedTask.id as string, destination.droppableId as PlantTaskStatusEnum);
+          await updatePlantTaskPosition(movedTask.id as string, destination.index);
+          message.success('Task status updated successfully');
+        }
+      } catch (error) {
+        console.error('Error updating task status or position:', error);
+        message.error('Failed to update task status or position');
+      }
     }
 
     refreshData(); // Call the refreshData function after updating the task
@@ -207,11 +237,15 @@ const PlantTaskBoardView = ({
         await assignPlantTask(selectedTaskId, user?.id || '', selectedStaffId);
         message.success('Task assigned successfully');
         setIsAssignModalVisible(false);
-        refreshData();
 
         // Update the local state
         const updatedTask = { ...selectedTask, assignedStaffId: selectedStaffId };
         updateTaskInList(updatedTask);
+
+        // Add a delay before refreshing data
+        setTimeout(() => {
+          refreshData();
+        }, 500); // 0.5 second delay
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');
@@ -231,6 +265,10 @@ const PlantTaskBoardView = ({
     updater((prevList: PlantTaskResponse[]) =>
       prevList.map((task: PlantTaskResponse) => (task.id === updatedTask.id ? updatedTask : task)),
     );
+
+    // Log the updated state for debugging
+    console.log('Updated task:', updatedTask);
+    console.log('Updated list:', listUpdaters[updatedTask.taskStatus]);
   };
 
   const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
@@ -263,8 +301,8 @@ const PlantTaskBoardView = ({
   };
 
   const renderTaskCard = (task: PlantTaskResponse) => {
-    const isOverdue = moment().isAfter(moment(task.dueDate));
-    const isDueSoon = moment(task.dueDate).isBetween(moment(), moment().add(3, 'days')); // Consider "due soon" if within 3 days
+    const isOverdue = moment().startOf('day').isAfter(moment(task.dueDate).startOf('day'));
+    const isDueSoon = moment(task.dueDate).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days'));
     const shouldHighlightOverdue =
       isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED;
     const shouldHighlightDueSoon =
@@ -310,17 +348,30 @@ const PlantTaskBoardView = ({
       });
     }
 
+    // Add Delete Task option for Superadmin and Manager
+    if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) {
+      dropdownItems.push({
+        label: 'Delete Task',
+        key: '5',
+        danger: true,
+        onClick: () => handleDeleteTask(task),
+      } as any);
+    }
+
     return (
       <Card
         size="small"
         className="mb-2"
-        style={
-          shouldHighlightOverdue
+        style={{
+          ...(shouldHighlightOverdue
             ? { backgroundColor: 'rgba(255, 0, 0, 0.1)' }
             : shouldHighlightDueSoon
             ? { backgroundColor: 'rgba(255, 255, 0, 0.1)' }
-            : {}
-        }
+            : {}),
+          height: '150px', // Set a fixed height for all cards
+          display: 'flex',
+          flexDirection: 'column',
+        }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -334,59 +385,64 @@ const PlantTaskBoardView = ({
             </Dropdown>
           </div>
         }
+        styles={{
+          body: {
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            overflow: 'hidden',
+          },
+        }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {formatEnumLabelToRemoveUnderscores(task.taskType)}
-          </Typography.Text>
-          {!task.assignedStaffId && (
-            <Tag color="default" style={{ fontSize: '0.7rem' }} bordered={false}>
-              UNASSIGNED
-            </Tag>
-          )}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
-          <div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-              {`Priority: `}
+              {formatEnumLabelToRemoveUnderscores(task.taskType)}
             </Typography.Text>
-            <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
-              {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
-            </Tag>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <UserOutlined style={{ marginRight: 4, color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }} />
+              <Typography.Text style={{ fontSize: '0.8rem', color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }}>
+                {task.assignedStaffId ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : ''}
+              </Typography.Text>
+            </div>
           </div>
-          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 4 }}>
+            <div>
+              <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
+                {`Priority: `}
+              </Typography.Text>
+              <Tag color={getUrgencyColor(task.taskUrgency)} style={{ fontSize: '0.7rem' }} bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(task.taskUrgency)}
+              </Tag>
+            </div>
+          </div>
+          {userRole === StaffType.SUPERADMIN && (
+            <div>
+              <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
+                {`Park: ${task.occurrence?.zone?.park?.name}`}
+              </Typography.Text>
+            </div>
+          )}
         </div>
-        {userRole === StaffType.SUPERADMIN && (
+
+        <div className="flex justify-between mt-1">
+          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>Due: {moment(task.dueDate).format('D MMM YY')}</Typography.Text>
           <div>
-            <Typography.Text type="secondary" style={{ fontSize: '0.8rem', marginBottom: 4 }}>
-              {`Park: ${task.occurrence?.zone?.park?.name}`}
-            </Typography.Text>
+            {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+              <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
+                OVERDUE
+              </Tag>
+            )}
+            {isDueSoon &&
+              !isOverdue &&
+              task.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
+              task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
+                <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
+                  DUE SOON
+                </Tag>
+              )}
           </div>
-        )}
-
-        {/* <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-          {`Zone: ${task.occurrence?.zone?.name}`}
-        </Typography.Text> */}
-
-        {/* <div>
-          <Typography.Text type="secondary" style={{ fontSize: '0.8rem' }}>
-            {task.assignedStaffId ? `Assigned to: ${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : 'Unassigned'}
-          </Typography.Text>
-        </div> */}
-        <div className='flex justify-between mt-1'>
-          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>
-            Due: {moment(task.dueDate).format('D MMM YY')}
-          </Typography.Text>
-          {isOverdue && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
-              OVERDUE
-            </Tag>
-          )}
-          {isDueSoon && task.taskStatus !== PlantTaskStatusEnum.COMPLETED && task.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
-              DUE SOON
-            </Tag>
-          )}
         </div>
       </Card>
     );
@@ -408,51 +464,126 @@ const PlantTaskBoardView = ({
   };
 
   const handleDeleteTasks = async (taskType: string) => {
-    if (taskType === "COMPLETED" || taskType === "CANCELLED") {
+    if (taskType === 'COMPLETED' || taskType === 'CANCELLED') {
       await deleteManyPlantTasks(taskType);
       message.success('Cleared Tasks.');
       refreshData();
     }
-  }
+  };
 
-  const handleLogPromptOk = () => {
+  const handleLogPromptOk = async () => {
     setShowLogPrompt(false);
     if (completedTaskOccurrenceId) {
       navigate(`/occurrences/${completedTaskOccurrenceId}`);
     }
   };
 
-  const handleLogPromptCancel = () => {
+  const handleLogPromptCancel = async () => {
     setShowLogPrompt(false);
-    // Proceed with updating the task status
-    if (completedTaskOccurrenceId) {
-      const movedTask = open.find(task => task.occurrence?.id === completedTaskOccurrenceId);
-      if (movedTask) {
-        updatePlantTaskStatus(movedTask.id, PlantTaskStatusEnum.COMPLETED);
+    await completeTask();
+  };
+
+  const completeTask = async () => {
+    if (taskBeingCompleted && taskCompletionIndex !== null) {
+      try {
+        await updatePlantTaskStatus(taskBeingCompleted.id, PlantTaskStatusEnum.COMPLETED);
+        await updatePlantTaskPosition(taskBeingCompleted.id, taskCompletionIndex);
+
+        message.success('Task marked as completed');
+        refreshData();
+      } catch (error) {
+        console.error('Error completing task:', error);
+        message.error('Failed to complete task');
+      } finally {
+        setTaskBeingCompleted(null);
+        setTaskCompletionIndex(null);
+        setCompletedTaskOccurrenceId(null);
       }
     }
   };
 
+  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDateRange(dates);
+  };
+
+  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+    if (!dateRange || !dateRange[0] || !dateRange[1]) {
+      return tasks;
+    }
+    const [startDate, endDate] = dateRange;
+    return tasks.filter((task) => {
+      const dueDate = dayjs(task.dueDate);
+      return (
+        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
+        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
+      );
+    });
+  };
+
+  const filteredOpen = filterTasksByDateRange(open);
+  const filteredInProgress = filterTasksByDateRange(inProgress);
+  const filteredCompleted = filterTasksByDateRange(completed);
+  const filteredCancelled = filterTasksByDateRange(cancelled);
+
+  // Add this function to handle task deletion
+  const handleDeleteTask = (task: PlantTaskResponse) => {
+    setPlantTaskToBeDeleted(task);
+    setDeleteModalOpen(true);
+  };
+
+  const deletePlantTaskConfirmed = async () => {
+    try {
+      if (!plantTaskToBeDeleted) {
+        throw new Error('Unable to delete Plant Task at this time');
+      }
+      await deletePlantTask(plantTaskToBeDeleted.id);
+      refreshData();
+      setPlantTaskToBeDeleted(null);
+      setDeleteModalOpen(false);
+      message.success(`Deleted Plant Task: ${plantTaskToBeDeleted.title}.`);
+    } catch (error) {
+      console.error(error);
+      setPlantTaskToBeDeleted(null);
+      setDeleteModalOpen(false);
+      message.error('Unable to delete Plant Task at this time. Please try again later.');
+    }
+  };
+
+  const cancelDelete = () => {
+    setPlantTaskToBeDeleted(null);
+    setDeleteModalOpen(false);
+  };
+
   return (
-    <>
+    <Spin spinning={loading} tip="Loading tasks...">
+      <div style={{ marginBottom: '16px' }}>
+        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Row gutter={16} className="mb-4">
+        <Row gutter={[16, 16]} className="mb-4">
           {[
-            { value: 'OPEN', title: 'Open', color: COLORS.sky[400] },
-            { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400] },
-            { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400] },
-            { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600] },
+            { value: 'OPEN', title: 'Open', color: COLORS.sky[400], tasks: filteredOpen },
+            { value: 'IN_PROGRESS', title: 'In Progress', color: COLORS.mustard[400], tasks: filteredInProgress },
+            { value: 'COMPLETED', title: 'Completed', color: COLORS.green[400], tasks: filteredCompleted },
+            { value: 'CANCELLED', title: 'Cancelled', color: COLORS.gray[600], tasks: filteredCancelled },
           ].map((status) => (
-            <Col span={6} key={status.value}>
+            // <Col span={6} key={status.value}>
+            <Col xs={24} md={24} lg={6} key={status.value}>
               <Card
-                title={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (status.value === "COMPLETED" || status.value === "CANCELLED") ?
-                  <div className="flex justify-between">
-                    <div>{status.title}</div>
-                    <Dropdown menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}>
-                      <MoreOutlined style={{ cursor: 'pointer' }} />
-                    </Dropdown>
-                  </div>
-                  : status.title
+                title={
+                  (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) &&
+                  (status.value === 'COMPLETED' || status.value === 'CANCELLED') ? (
+                    <div className="flex justify-between">
+                      <div>{status.title}</div>
+                      <Dropdown
+                        menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}
+                      >
+                        <MoreOutlined style={{ cursor: 'pointer' }} />
+                      </Dropdown>
+                    </div>
+                  ) : (
+                    status.title
+                  )
                 }
                 styles={{
                   header: { backgroundColor: status.color, color: 'white' },
@@ -462,7 +593,7 @@ const PlantTaskBoardView = ({
                 <Droppable droppableId={status.value}>
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} style={{ minHeight: '100px' }}>
-                      {getList(status.value as PlantTaskStatusEnum).map((task, index) => (
+                      {status.tasks.map((task, index) => (
                         <Draggable
                           key={task.id}
                           draggableId={task.id}
@@ -541,7 +672,13 @@ const PlantTaskBoardView = ({
       >
         <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
       </Modal>
-    </>
+      <ConfirmDeleteModal
+        onConfirm={deletePlantTaskConfirmed}
+        open={deleteModalOpen}
+        onCancel={cancelDelete}
+        description="Are you sure you want to delete this Plant Task?"
+      />
+    </Spin>
   );
 };
 

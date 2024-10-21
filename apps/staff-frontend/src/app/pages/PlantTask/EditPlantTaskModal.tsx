@@ -15,7 +15,14 @@ interface EditPlantTaskModalProps {
   onStatusChange: (newStatus: PlantTaskStatusEnum) => void;
 }
 
-const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCancel, onSubmit, initialValues, userRole, onStatusChange }) => {
+const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
+  visible,
+  onCancel,
+  onSubmit,
+  initialValues,
+  userRole,
+  onStatusChange,
+}) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
@@ -30,6 +37,7 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
         taskStatus: initialValues.taskStatus,
         dueDate: dayjs(initialValues.dueDate),
         description: initialValues.description,
+        remarks: initialValues.remarks,
       });
     }
   }, [initialValues, form]);
@@ -38,10 +46,10 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
     try {
       setIsSubmitting(true);
       const values = await form.validateFields();
-      
+
       // First, try to submit the form
       await onSubmit(values);
-      
+
       // If submission is successful, then check if we need to show the log prompt
       if (values.taskStatus === PlantTaskStatusEnum.COMPLETED && initialValues?.taskStatus !== PlantTaskStatusEnum.COMPLETED) {
         setShowLogPrompt(true);
@@ -98,13 +106,9 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
         <Form form={form} layout="vertical">
           <div style={{ marginBottom: '16px' }}>
             {userRole === StaffType.SUPERADMIN && (
-              <Form.Item style={{ marginBottom: '4px' }}>
-                Park: {initialValues?.occurrence?.zone.park.name}
-              </Form.Item>
+              <Form.Item style={{ marginBottom: '4px' }}>Park: {initialValues?.occurrence?.zone.park.name}</Form.Item>
             )}
-            <Form.Item style={{ marginBottom: '4px' }}>
-              Zone: {initialValues?.occurrence?.zone.name}
-            </Form.Item>
+            <Form.Item style={{ marginBottom: '4px' }}>Zone: {initialValues?.occurrence?.zone.name}</Form.Item>
             <Form.Item style={{ marginBottom: '0' }}>
               Occurrence: {initialValues?.occurrence?.title}
               <Tooltip title="Go to Occurrence">
@@ -145,11 +149,14 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({ visible, onCanc
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="dueDate" label="Due Date" rules={[{ required: true, message: 'Please select the due date' }]}>
-            <DatePicker 
-              className="w-full" 
-              disabledDate={(current) => current && current < dayjs().endOf('day')} 
-            />
+          {userRole === StaffType.SUPERADMIN ||
+            (userRole === StaffType.MANAGER && (
+              <Form.Item name="dueDate" label="Due Date" rules={[{ required: true, message: 'Please select the due date' }]}>
+                <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().endOf('day')} />
+              </Form.Item>
+            ))}
+          <Form.Item name="remarks" label="Remarks">
+            <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
       </Modal>

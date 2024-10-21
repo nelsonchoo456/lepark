@@ -3,7 +3,7 @@ import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
 import { FaTent } from 'react-icons/fa6';
-import { Badge, Card, Space, TreeSelect, Input, Tag, Button } from 'antd';
+import { Badge, Card, Space, TreeSelect, Input, Tag, Button, Spin } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { plantTaxonomy } from '@lepark/data-utility';
 import { useState, useEffect, useMemo } from 'react';
@@ -200,7 +200,11 @@ const Discover = () => {
         />
         {selectedTaxonomy?.length > 0 && <div className="h-[1px] w-full bg-black/5" />}
       </div>
-      {!filteredSpecies || filteredSpecies.length == 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center flex-1">
+          <Spin size="large" />
+        </div>
+      ) : !filteredSpecies || filteredSpecies.length == 0 ? (
         <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
           <PiPlantFill className="text-4xl mb-2 mt-10" />
           No Species found.

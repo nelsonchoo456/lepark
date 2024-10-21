@@ -33,6 +33,10 @@ const PromotionDetails = () => {
     if (promotion?.images) {
       setCurrentImages(promotion.images);
     }
+
+    if (promotion) {
+      handleInputChange("status", promotion.status)
+    }
   }, [promotion]);
 
   const toggleEditMode = () => {
@@ -59,13 +63,15 @@ const PromotionDetails = () => {
   const onFinish = async (values: any) => {
     try {
       form.validateFields();
-
       if (!promotion) {
         throw new Error('Promotion not found.');
       } else if (!(user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN)) {
         throw new Error('Not allowed to edit Promotion details.');
       }
 
+      if (values.promoCode) {
+        values.promoCode = values.promoCode.trim();
+      }
       const terms = form.getFieldValue('terms')
 
       const finalData = {
@@ -75,6 +81,7 @@ const PromotionDetails = () => {
       if (terms) {
         finalData.terms = terms;
       }
+
       setPreviewImages([]);
 
       const updateRes = await updatePromotionDetails(promotion.id, finalData, selectedFiles);
@@ -333,11 +340,6 @@ const PromotionDetails = () => {
       label: 'Maximum Usage',
       key: 'maximumUsage',
       children: promotion?.maximumUsage ? promotion?.maximumUsage : <div className="text-secondary">None</div>,
-    },
-    {
-      label: 'One Time Claim?',
-      key: 'isOneTimeClaim',
-      children: promotion?.isOneTime ? 'True' : <div className="text-secondary">False</div>,
     },
     {
       label: 'Minimum Amount',

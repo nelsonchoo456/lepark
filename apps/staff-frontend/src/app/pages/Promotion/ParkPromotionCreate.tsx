@@ -27,9 +27,10 @@ const ParkPromotionCreate = () => {
 
   const maximumUsage = Form.useWatch('maximumUsage', form);
   const minimumAmount = Form.useWatch('minimumAmount', form);
-  const isOneTime = Form.useWatch('isOneTime', form);
-
   const terms = Form.useWatch('terms', form);
+
+  const [showMaxUsageSuggestion, setShowMaxUsageSuggestion] = useState(true);
+  const [showMinAmountSuggestion, setShowMinAmountSuggestion] = useState(true);
 
   useEffect(() => {
     if (discountType) {
@@ -43,7 +44,7 @@ const ParkPromotionCreate = () => {
     }
   }, [parks]);
 
-  const isOneTimeOptioons = [
+  const yesNoOptions = [
     {
       label: 'Yes',
       value: true,
@@ -75,9 +76,13 @@ const ParkPromotionCreate = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const { dateRange, discountValueFixed, discountValuePercentage, terms, ...rest } = values;
+      const { dateRange, discountValueFixed, discountValuePercentage, terms, promoCode, ...rest } = values;
+      
+      // process dates
       const validFrom = dateRange[0].toISOString();
       const validUntil = dateRange[1].toISOString();
+
+      // process discount
       let discountValue;
       if (discountType === 'PERCENTAGE') {
         discountValue = discountValuePercentage;
@@ -85,15 +90,20 @@ const ParkPromotionCreate = () => {
         discountValue = discountValueFixed;
       }
 
+      // process terms
       let inputTerms = [];
       if (terms) {
         inputTerms = terms.filter((t: any) => t !== null && t !== undefined && typeof t === 'string' && t.trim().length > 0);
       }
 
+      // process promoCode
+      const trimmedPromoCode = promoCode.trim();
+
       const finalData = {
         ...rest,
         status: 'ENABLED',
         terms: inputTerms,
+        promoCode: trimmedPromoCode,
         discountValue,
         validFrom,
         validUntil,
@@ -109,10 +119,18 @@ const ParkPromotionCreate = () => {
         setCreatedData(response.data);
       }
     } catch (error) {
-      if ((error as { errorFields?: any }).errorFields) {
-        console.log('Validation failed:', (error as { errorFields?: any }).errorFields);
+      console.log(error)
+      if (error instanceof Error) {
+        if (error.message === "Please enter a unique Promo Code"
+          || error.message === 'Park not found.'
+          || error.message === "Park ID required."
+        ) {
+          messageApi.open({
+            type: 'error',
+            content: error.message,
+          });
+        }
       } else {
-        console.log(error);
         messageApi.open({
           type: 'error',
           content: 'Unable to create Promotion. Please try again later.',
@@ -134,9 +152,18 @@ const ParkPromotionCreate = () => {
     },
   ];
 
+  const handleTermChange = (terms: string[]) => {
+    const maxUsageTermExists = terms.some(term => term.includes(`This offer is limited to the first ${maximumUsage} users`));
+    const minAmountTermExists = terms.some(term => term.includes(`A minimum purchase of SGD $${minimumAmount} is required`));
+
+    setShowMaxUsageSuggestion(!maxUsageTermExists);
+    setShowMinAmountSuggestion(!minAmountTermExists);
+  };
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      {contextHolder}
       <Card>
         {!createdData ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8">
@@ -144,7 +171,7 @@ const ParkPromotionCreate = () => {
               <>
                 <Divider orientation="left">Park</Divider>
                 <Form.Item name="isNParksWide" label="NParks Wide?" rules={[{ required: true }]}>
-                  <Radio.Group options={isOneTimeOptioons} optionType="button" />
+                  <Radio.Group options={yesNoOptions} optionType="button" />
                 </Form.Item>
                 {isNParksWide === false && (
                   <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -165,7 +192,7 @@ const ParkPromotionCreate = () => {
             <Form.Item name="name" label="Title" rules={[{ required: true, message: 'Please enter Title' }]}>
               <Input placeholder="Enter Title" />
             </Form.Item>
-            <Form.Item name="promoCode" label="Promo Code" rules={[{ required: true, message: 'Please enter Promo Code' }]}>
+            <Form.Item name="promoCode" label="Promo Code" rules={[{ required: true, message: 'Please enter Promo Code' }, { max: 20, message: 'Promo Code must not exceed 20 characters' },]}>
               <Input placeholder="Enter a unique Promo Code" />
             </Form.Item>
             <Form.Item name="description" label="Description">
@@ -219,13 +246,6 @@ const ParkPromotionCreate = () => {
             )}
 
             <Divider orientation="left">Redemption Rules</Divider>
-            <Form.Item
-              name="isOneTime"
-              label="Restrict to One-Time Claim?"
-              rules={[{ required: true, message: "Please indicate if it's a One-Time Claim" }]}
-            >
-              <Radio.Group options={isOneTimeOptioons} optionType="button" />
-            </Form.Item>
 
             <Form.Item name="maximumUsage" label="Total Redemption Limit">
               <InputNumber min={1} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
@@ -241,11 +261,10 @@ const ParkPromotionCreate = () => {
                 {(fields, { add, remove }) => (
                   <>
                     {fields.map(({ key, name, fieldKey, ...restField }) => (
-                      <Form.Item colon={false} className="mb-2">
+                      <Form.Item colon={false} className="mb-2" key={key}>
                         <Flex gap={10}>
                           <Form.Item
                             {...restField}
-                            key={key}
                             name={[name]}
                             noStyle
                             fieldKey={fieldKey !== undefined ? fieldKey : key}
@@ -262,9 +281,23 @@ const ParkPromotionCreate = () => {
                               },
                             ]}
                           >
-                            <Input placeholder="Enter a term" />
+                            <Input 
+                              placeholder="Enter a term" 
+                              onChange={() => {
+                                const currentTerms = form.getFieldValue('terms');
+                                handleTermChange(currentTerms);
+                              }}
+                            />
                           </Form.Item>
-                          <Button onClick={() => remove(name)} icon={<MdClose />} shape="circle" />
+                          <Button 
+                            onClick={() => {
+                              remove(name);
+                              const currentTerms = form.getFieldValue('terms');
+                              handleTermChange(currentTerms.filter((_: any, index: number) => index !== name));
+                            }} 
+                            icon={<MdClose />} 
+                            shape="circle" 
+                          />
                         </Flex>
                       </Form.Item>
                     ))}
@@ -275,11 +308,14 @@ const ParkPromotionCreate = () => {
                       </Button>
                     </Form.Item>
 
-                    {maximumUsage !== undefined && typeof maximumUsage === "number" && (
+                    {maximumUsage !== undefined && typeof maximumUsage === "number" && showMaxUsageSuggestion && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
-                          onClick={() => add(`This offer is limited to the first ${maximumUsage} users`)}
+                          onClick={() => {
+                            add(`This offer is limited to the first ${maximumUsage} users`);
+                            setShowMaxUsageSuggestion(false);
+                          }}
                           block
                           className="text-green-400 text-wrap"
                           style={{
@@ -296,11 +332,14 @@ const ParkPromotionCreate = () => {
                         </Button>
                       </Form.Item>
                     )}
-                    {minimumAmount !== undefined && typeof minimumAmount === "number" && (
+                    {minimumAmount !== undefined && typeof minimumAmount === "number" && showMinAmountSuggestion && (
                       <Form.Item colon={false} className="p-0 mb-2">
                         <Button
                           type="dashed"
-                          onClick={() => add(`A minimum purchase of SGD $${minimumAmount} is required.`)}
+                          onClick={() => {
+                            add(`A minimum purchase of SGD $${minimumAmount} is required.`);
+                            setShowMinAmountSuggestion(false);
+                          }}
                           block
                           className="text-green-400 text-wrap"
                           style={{
@@ -313,27 +352,6 @@ const ParkPromotionCreate = () => {
                           <p>
                             <span className="text-secondary italic text-green-600">Suggested: </span> A minimum purchase of SGD $
                             {minimumAmount} is required.
-                          </p>
-                        </Button>
-                      </Form.Item>
-                    )}
-                    {isOneTime && (
-                      <Form.Item colon={false} className="p-0">
-                        <Button
-                          type="dashed"
-                          onClick={() => add('This offer is restricted to one claim per user.')}
-                          block
-                          className="text-green-400 text-wrap"
-                          style={{
-                            display: 'block',
-                            textAlign: 'left',
-                            height: 'auto',
-                            lineHeight: 'normal',
-                          }}
-                        >
-                          <p>
-                            <span className="text-secondary italic text-green-600">Suggested: </span> This offer is restricted to one claim
-                            per user.
                           </p>
                         </Button>
                       </Form.Item>

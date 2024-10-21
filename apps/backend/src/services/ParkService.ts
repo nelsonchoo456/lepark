@@ -140,18 +140,15 @@ class ParkService {
 };
 
 const dateFormatter = (data: any) => {
-  const { dateObserved, dateOfBirth, ...rest } = data;
+  const { openingHours, closingHours, ...rest } = data;
   const formattedData = { ...rest };
 
   // Format dateObserved and dateOfBirth into JavaScript Date objects
-  const dateObservedFormat = dateOfBirth ? new Date(dateObserved) : undefined;
-  const dateOfBirthFormat = dateOfBirth ? new Date(dateOfBirth) : undefined;
-  if (dateObserved) {
-    formattedData.dateObserved = dateObservedFormat;
-  }
-  if (dateOfBirth) {
-    formattedData.dateOfBirth = dateOfBirthFormat;
-  }
+  const openingHoursFormatted = openingHours.map((h) => h ? new Date(h) : undefined);
+  const closingHoursFormatted = closingHours.map((h) => h ? new Date(h) : undefined);
+
+  formattedData.openingHours = openingHoursFormatted;
+  formattedData.closingHours = closingHoursFormatted;
   return formattedData;
 };//
 

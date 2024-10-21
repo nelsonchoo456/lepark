@@ -245,7 +245,7 @@ const MapTab = ({ decarbonizationArea }: MapTabProps) => {
             ))}
         </MapContainer>
 
-        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
           <div className="absolute top-4 right-3 z-[1000]">
             <Tooltip title="Edit Boundaries">
               <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`/decarbonization-area/${decarbonizationArea.id}/edit-map`)}>

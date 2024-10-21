@@ -57,14 +57,15 @@ const PromotionViewAll = () => {
   }, [selectedPark]);
 
   const filterValidPromotions = (promotions: PromotionResponse[]) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
 
-  return promotions.filter(promotion =>
-    promotion.status === PromotionStatusEnum.ENABLED &&
-    new Date(promotion.validUntil) >= today
-  );
-};
+    return promotions.filter(promotion =>
+      promotion.status === PromotionStatusEnum.ENABLED &&
+      new Date(promotion.validFrom) <= today &&
+      new Date(promotion.validUntil) >= today
+    );
+  };
 
   const limitedPromotions = useMemo(() => {
     const threeDaysFromNow = new Date();
@@ -166,7 +167,7 @@ const renderPromotionCard = (promotion: PromotionResponse) => {
         {[
           { title: 'All Promotions', data: filteredAllPromotions },
           { title: 'Park Promotions', data: filteredParkPromotions },
-          { title: 'Limited Time Offers', data: filteredLimitedPromotions }
+           ...(filteredLimitedPromotions.length > 0 ? [{ title: 'Limited Time Offers', data: filteredLimitedPromotions }] : [])
         ].map(({ title, data }, index) => (
           <div key={index} className="flex-shrink-0 p-4">
             <h2 className="text-lg font-semibold mb-2">{title}</h2>

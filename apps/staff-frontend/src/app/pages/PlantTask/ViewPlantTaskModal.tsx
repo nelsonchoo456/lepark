@@ -4,6 +4,7 @@ import { PlantTaskResponse, StaffType } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import dayjs from 'dayjs';
 import { FiExternalLink } from 'react-icons/fi';
+import { COLORS } from '../../config/colors';
 
 interface ViewPlantTaskModalProps {
   visible: boolean;
@@ -33,11 +34,11 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'OPEN':
-        return 'default';
+        return COLORS.sky[400];
       case 'IN_PROGRESS':
-        return 'blue';
+        return COLORS.mustard[400];
       case 'COMPLETED':
-        return 'green';
+        return COLORS.green[400];
       case 'CANCELLED':
         return 'gray';
       default:
@@ -62,17 +63,13 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
       width={700}
     >
       <Descriptions column={1} bordered>
-        {userRole === StaffType.SUPERADMIN && (
-          <Descriptions.Item label="Park">{task.occurrence?.zone.park.name}</Descriptions.Item>
-        )}
+        {userRole === StaffType.SUPERADMIN && <Descriptions.Item label="Park">{task.occurrence?.zone.park.name}</Descriptions.Item>}
         <Descriptions.Item label="Zone">{task.occurrence?.zone.name}</Descriptions.Item>
         <Descriptions.Item label="Occurrence">
-          <Flex align="center" justify="space-between">
-            <span>{task.occurrence?.title}</span>
-            <Tooltip title="Go to Occurrence">
-              <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToOccurrence(task.occurrence?.id || '')} />
-            </Tooltip>
-          </Flex>
+          <span>{task.occurrence?.title}</span>
+          <Tooltip title="Go to Occurrence">
+            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToOccurrence(task.occurrence?.id || '')} />
+          </Tooltip>
         </Descriptions.Item>
         <Descriptions.Item label="Title">{task.title}</Descriptions.Item>
         <Descriptions.Item label="Description">
@@ -94,7 +91,12 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
         <Descriptions.Item label="Created Date">{dayjs(task.createdAt).format('D MMM YYYY')}</Descriptions.Item>
         <Descriptions.Item label="Due Date">{dayjs(task.dueDate).format('D MMM YYYY')}</Descriptions.Item>
         <Descriptions.Item label="Last Updated">{dayjs(task.updatedAt).format('D MMM YYYY')}</Descriptions.Item>
-        <Descriptions.Item label="Completed Date">{task.completedDate ? dayjs(task.completedDate).format('D MMM YYYY') : '-'}</Descriptions.Item>
+        <Descriptions.Item label="Completed Date">
+          {task.completedDate ? dayjs(task.completedDate).format('D MMM YYYY') : '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="Remarks">
+          <Typography.Paragraph>{task.remarks || '-'}</Typography.Paragraph>
+        </Descriptions.Item>
         <Descriptions.Item label="Assigned Staff">
           {task.assignedStaff ? `${task.assignedStaff.firstName} ${task.assignedStaff.lastName}` : '-'}
         </Descriptions.Item>
@@ -113,8 +115,8 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
           ))}
         </Space>
       ) : (
-        <div className='h-64 bg-gray-200 flex items-center justify-center rounded-lg'>
-          <Empty description="No Image"/>
+        <div className="h-64 bg-gray-200 flex items-center justify-center rounded-lg">
+          <Empty description="No Image" />
         </div>
       )}
     </Modal>

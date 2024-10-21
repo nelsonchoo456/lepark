@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHelpCircle, FiHome, FiInbox, FiMap, FiSettings, FiUser, FiUsers } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap } from 'react-icons/fi';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -16,7 +16,6 @@ import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/dat
 import { MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
 import { AiOutlinePercentage } from 'react-icons/ai';
-import { FiMessageSquare } from 'react-icons/fi';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -182,7 +181,8 @@ const MainLayout = () => {
     userRole === StaffType.SUPERADMIN ||
     userRole === StaffType.MANAGER ||
     userRole === StaffType.ARBORIST ||
-    userRole === StaffType.BOTANIST
+    userRole === StaffType.BOTANIST ||
+    userRole === StaffType.VENDOR_MANAGER
       ? {
           key: 'iot',
           label: 'IoT',
@@ -248,31 +248,24 @@ const MainLayout = () => {
           ],
         }
       : null,
-    userRole === 'MANAGER' ||
-    userRole === 'SUPERADMIN' ||
-    userRole === 'BOTANIST' ||
-    userRole === 'ARBORIST' ||
-    userRole === 'PARK_RANGER' ||
-    userRole === 'VENDOR_MANAGER'
-      ? {
-          key: 'task',
-          icon: <FiInbox />,
-          label: 'Tasks',
-          children: [
-            {
-              key: 'plant-tasks',
-              label: 'Plant Tasks',
-              onClick: () => navigate('/plant-tasks'),
-            },
-            {
-              key: 'maintenance-tasks',
-              label: 'Maintenance Tasks',
-              onClick: () => navigate('/maintenance-tasks'),
-            },
-          ],
-        }
-      : null,
-     {
+    {
+      key: 'task',
+      icon: <FiInbox />,
+      label: 'Tasks',
+      children: [
+        {
+          key: 'plant-tasks',
+          label: 'Plant Tasks',
+          onClick: () => navigate('/plant-tasks'),
+        },
+        {
+          key: 'maintenance-tasks',
+          label: 'Maintenance Tasks',
+          onClick: () => navigate('/maintenance-tasks'),
+        },
+    ],
+    },
+    {
       key: 'faq',
       icon: <FiHelpCircle />,
       label: 'FAQ',
@@ -287,6 +280,37 @@ const MainLayout = () => {
           onClick: () => navigate('/feedback'),
         }
       : null,
+    {
+      key: 'announcement',
+      icon: <FiMessageSquare />,
+      label: 'Announcements',
+      onClick: () => navigate('/announcement'),
+    },
+    // userRole === 'MANAGER' ||
+    // userRole === 'SUPERADMIN' ||
+    // userRole === 'BOTANIST' ||
+    // userRole === 'ARBORIST' ||
+    // userRole === 'PARK_RANGER' ||
+    // userRole === 'VENDOR_MANAGER'
+    //   ? {
+    //       key: 'task',
+    //       icon: <FiInbox />,
+    //       label: 'Tasks',
+    //       children: [
+    //         {
+    //           key: 'plant-tasks',
+    //           label: 'Plant Tasks',
+    //           onClick: () => navigate('/plant-tasks'),
+    //         },
+    //         {
+    //           key: 'maintenance-tasks',
+    //           label: 'Maintenance Tasks',
+    //           onClick: () => navigate('/maintenance-tasks'),
+    //         },
+    //       ],
+    //     }
+    //   : null,
+
     userRole === 'MANAGER' || userRole === 'SUPERADMIN'
       ? {
           key: 'staff-management',

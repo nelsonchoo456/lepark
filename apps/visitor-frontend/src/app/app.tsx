@@ -13,7 +13,7 @@ import Profile from './pages/Profile/Profile';
 import Register from './pages/Register/Register';
 import { ProtectedRoute, VisitorAuthWrapper } from '@lepark/common-ui';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
-import Payment from './pages/Payment/Payment';
+// import Payment from './pages/Payment/Payment';
 import OccurrenceDetails from './pages/OccurrenceDetails/OccurrenceDetails';
 // import ActivityLogDetails from './pages/OccurrenceDetails/components/ActivityLogsDetails';
 import Discover from './pages/Taxonomy/Discover';
@@ -27,6 +27,19 @@ import AttractionsPerPark from './pages/Attractions/AttractionsPerPark';
 import VisitorViewAttractionDetails from './pages/Attractions/VisitorViewAttractionDetails';
 import ParkDetails from './pages/ParkDetails/ParkDetails';
 import VisitorParkViewDetails from './pages/Park/VisitorParkViewDetails';
+import ViewAttractionTicketListings from './pages/Attractions/ViewAttractionListings';
+import PaymentPage from './pages/Attractions/PaymentPage';
+import ViewAttractionTransactions from './pages/Profile/ViewAttractionTransactions';
+import AttractionTransactionDetails from './pages/Profile/ViewAttractionTransactionDetails';
+import AttractionTicketDetails from './pages/Profile/AttractionTicketDetails';
+import CompletionPage from './pages/Attractions/CompletionPage';
+import SuccessPage from './pages/Attractions/SuccessPage';
+import AnnouncementsList from './pages/Announcements/AnnouncementsList';
+import FacilitiesPerPark from './pages/Facilities/FacilitiesPerPark';
+import VisitorViewFacilityDetails from './pages/Facilities/VisitorViewFacilityDetails';
+import EventsPerPark from './pages/Events/EventsPerPark';
+import VisitorViewEventDetails from './pages/Events/VisitorViewEventDetails';
+
 import DecarbViewAll from './pages/Decarb/DecarbViewAll';
 import PromotionViewAll from './pages/Promotions/PromotionViewAll';
 import PromotionViewDetails from './pages/Promotions/PromotionViewDetails';
@@ -38,6 +51,7 @@ import FeedbackList from './pages/Feedback/FeedbackList';
 import FeedbackView from './pages/Feedback/FeedbackView';
 import FeedbackEdit from './pages/Feedback/FeedbackEdit';
 
+import FailedPage from './pages/Attractions/FailedPage';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -87,11 +101,63 @@ export function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                <Route
+                  path="/attraction-transaction"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <ViewAttractionTransactions />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/attraction-transaction/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <AttractionTransactionDetails />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/attraction-transaction/:transactionId/tickets"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <AttractionTicketDetails />
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path="/payment"
                   element={
                     <ProtectedRoute redirectTo="/login">
-                      <Payment />
+                      <PaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payment-completion/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <CompletionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/success"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <SuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/failed"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <FailedPage />
                     </ProtectedRoute>
                   }
                 />
@@ -112,6 +178,14 @@ export function App() {
                 <Route path="/attractions">
                   <Route path="park/:parkId" element={<AttractionsPerPark />} />
                   <Route path=":attractionId" element={<VisitorViewAttractionDetails />} />
+                  <Route
+                    path=":attractionId/listings"
+                    element={
+                      <ProtectedRoute redirectTo="/login">
+                        <ViewAttractionTicketListings />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
                 <Route path="/decarb">
                   <Route index element={<DecarbViewAll />} />
@@ -119,8 +193,19 @@ export function App() {
                   <Route path=":decarbAreaId" element={<DecarbViewDetails />} />
                 </Route>
                 <Route path="/promotions">
-                  <Route index element={<PromotionViewAll/>}/>
-                  <Route path=":promotionId" element={<PromotionViewDetails/>}/>
+                  <Route index element={<PromotionViewAll />} />
+                  <Route path=":promotionId" element={<PromotionViewDetails />} />
+                </Route>
+                <Route path="/announcement">
+                  <Route index element={<AnnouncementsList />} />
+                </Route>
+                <Route path="/facility">
+                  <Route path="park/:parkId" element={<FacilitiesPerPark />} />
+                  <Route path=":facilityId" element={<VisitorViewFacilityDetails />} />
+                </Route>
+                <Route path="/event">
+                  <Route path="park/:parkId" element={<EventsPerPark />} />
+                  <Route path=":eventId" element={<VisitorViewEventDetails />} />
                 </Route>
                 <Route path="/faq">
                   <Route index element={<FAQList/>}/>

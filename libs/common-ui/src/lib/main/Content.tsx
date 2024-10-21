@@ -17,8 +17,20 @@ export const Content = styled.div<ContentProps>`
 
 export const ContentWrapper = styled.div`
   padding: 1rem;
-  height: 100%;
+  height: 100vh;
   overflow: scroll;
+
+  @media (max-width: ${SCREEN_LG}px) {
+    padding: 4rem 1rem 1rem 1rem;
+  }
+`;
+
+export const DashboardContentWrapper = styled.div`
+  padding: 0 1rem 1rem 1rem;
+  min-height: 100vh;
+  background-color: ${COLORS.gray[100]};
+  // position: relative;
+  // overflow: scroll;
 
   @media (max-width: ${SCREEN_LG}px) {
     padding: 4rem 1rem 1rem 1rem;

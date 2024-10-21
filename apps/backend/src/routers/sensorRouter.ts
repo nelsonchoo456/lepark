@@ -34,6 +34,17 @@ router.get('/getSensorById/:id', async (req, res) => {
   }
 });
 
+router.get('/getSensorByIdentifierNumber/:identifierNumber', async (req, res) => {
+  try {
+    const identifierNumber = req.params.identifierNumber;
+    const sensor = await SensorService.getSensorByIdentifierNumber(identifierNumber);
+    console.log('sensor', sensor);
+    res.status(200).json(sensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.put('/updateSensorDetails/:id', async (req, res) => {
   try {
     const updatedSensor = await SensorService.updateSensor(req.params.id, req.body);
@@ -182,6 +193,26 @@ router.put('/removeSensorFromHub/:id', async (req, res) => {
   try {
     const updatedSensor = await SensorService.removeSensorFromHub(req.params.id);
     res.status(200).json(updatedSensor);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getCameraStreamBySensorId/:sensorId', async (req, res) => {
+  try {
+    const sensorId = req.params.sensorId;
+    const cameraStream = await SensorService.getCameraStreamBySensorId(sensorId);
+    res.status(200).json(cameraStream);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getCameraStreamsByZoneId/:zoneId', async (req, res) => {
+  try {
+    const zoneId = parseInt(req.params.zoneId);
+    const cameraStreams = await SensorService.getCameraStreamsByZoneId(zoneId);
+    res.status(200).json(cameraStreams);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

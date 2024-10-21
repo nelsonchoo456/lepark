@@ -8,6 +8,7 @@ interface StaffWorkloadTableProps {
   isSuperAdmin: boolean;
   selectedParkId: string | null;
   onParkChange: (parkId: string | null) => void;
+  parkOptions: { value: string | null; label: string }[];
 }
 
 export const colouredTaskCount = (count: number) => {
@@ -20,14 +21,8 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
   isSuperAdmin,
   selectedParkId,
   onParkChange,
+  parkOptions
 }) => {
-  const parkOptions = useMemo(() => {
-    const uniqueParks = Array.from(new Set(staffList.map((staff) => staff.park?.name)));
-    return [
-      { value: null, label: 'All Parks' },
-      ...uniqueParks.map((parkName) => ({ value: parkName, label: parkName })),
-    ];
-  }, [staffList]);
 
   const filteredStaffList = useMemo(() => {
     return isSuperAdmin && selectedParkId
@@ -56,7 +51,7 @@ const StaffWorkloadTable: React.FC<StaffWorkloadTableProps> = ({
     { title: 'Name', dataIndex: 'name', key: 'name' },
     { title: 'Role', dataIndex: 'role', key: 'role' },
     { title: 'Park', dataIndex: 'parkName', key: 'parkName' },
-    { title: 'Total Tasks', dataIndex: 'totalTasks', key: 'totalTasks', render: (text: any) => colouredTaskCount(text) },
+    { title: 'Total Tasks', dataIndex: 'totalTasks', key: 'totalTasks', render: (text: any) => text },
     { title: 'Open', dataIndex: 'openTasks', key: 'openTasks', render: (text: any) => colouredTaskCount(text) },
     { title: 'In Progress', dataIndex: 'inProgressTasks', key: 'inProgressTasks', render: (text: any) => colouredTaskCount(text) },
     { title: 'Completed', dataIndex: 'completedTasks', key: 'completedTasks' },

@@ -50,6 +50,9 @@ export * from './lib/types/sequestrationhistory';
 export * from './lib/api/facility';
 export * from './lib/types/facility';
 
+export * from './lib/api/attractionTicket';
+export * from './lib/types/attractionTicket';
+
 export * from './lib/api/promotion';
 export * from './lib/types/promotion';
 
@@ -62,3 +65,11 @@ export * from './lib/types/faq';
 
 export * from './lib/api/feedback';
 export * from './lib/types/feedback';
+export * from './lib/api/announcement';
+export * from './lib/types/announcement';
+
+export * from './lib/api/eventTicket';
+export * from './lib/types/eventTicket';
+
+export * from './lib/api/maintenancetask';
+export * from './lib/types/maintenancetask';

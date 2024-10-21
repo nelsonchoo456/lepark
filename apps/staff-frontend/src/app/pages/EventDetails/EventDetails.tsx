@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Flex, Space, Tabs, Tooltip, Typography } from 'antd';
@@ -24,6 +24,9 @@ import {
 import { GiPublicSpeaker } from 'react-icons/gi';
 import { MdEvent, MdChildCare, MdNaturePeople, MdPets, MdFitnessCenter } from 'react-icons/md';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import TicketsTab from './components/TicketsTab';
+import TicketSalesTab from './components/TicketSalesTab';
+import { useLocation } from 'react-router-dom';
 
 const { Text } = Typography;
 
@@ -32,6 +35,9 @@ const EventDetails = () => {
   const { id } = useParams();
   const { event, park, facility, loading } = useRestrictEvents(id);
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('information');
+  const [, setRefreshToggle] = useState(false);
+  const location = useLocation();
 
   const getEventTypeInfo = (eventType: EventTypeEnum) => {
     switch (eventType) {
@@ -74,6 +80,18 @@ const EventDetails = () => {
         return { text: 'Unknown', icon: <FaUsers className="text-3xl mt-2" /> };
     }
   };
+
+  const triggerFetch = useCallback(() => {
+    setRefreshToggle((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location]);
 
   const descriptionsItems = [
     {
@@ -120,14 +138,19 @@ const EventDetails = () => {
     },
     {
       key: 'tickets',
-      label: 'Tickets',
-      children: <Empty description={'Tickets Coming Soon'}></Empty>,
+      label: 'Ticket Listings',
+      children: event ? <TicketsTab event={event} onTicketListingCreated={triggerFetch} /> : <></>,
     },
     {
-      key: 'occupancy',
-      label: 'Occupancy',
-      children: <Empty description={'Occupancy Coming Soon'}></Empty>,
+      key: 'ticketSales',
+      label: 'Ticket Sales',
+      children: event ? <TicketSalesTab event={event} /> : <></>,
     },
+    // {
+    //   key: 'dashboard',
+    //   label: 'Dashboard',
+    //   children: event ? <DashboardTab eventId={event.id} /> : <></>,
+    // },
   ];
 
   const breadcrumbItems = [
@@ -213,7 +236,11 @@ const EventDetails = () => {
 
         <Tabs
           centered
-          defaultActiveKey="about"
+          activeKey={activeTab}
+          onChange={(key) => {
+            setActiveTab(key);
+            navigate(`/event/${id}?tab=${key}`, { replace: true });
+          }}
           items={tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"

@@ -14,10 +14,24 @@ import dayjs from 'dayjs';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { FaLocationDot } from 'react-icons/fa6';
 
+export const isParkOpen = (park: ParkResponse) => {
+  const now = dayjs();
+  const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+  const openingTime = dayjs(park.openingHours[currentDay]).format('HH:mm');
+  let closingTime = dayjs(park.closingHours[currentDay]).format('HH:mm');
+  if (closingTime === '00:00') {
+    closingTime = '24:00';
+  }
+
+  const currentTime = now.format('HH:mm');
+
+  // return now.isAfter(openingTime) && now.isBefore(closingTime);
+  return currentTime >= openingTime && currentTime <= closingTime;
+};
+
 const SelectParkPage: React.FC = () => {
   const now = new Date();
-  const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-  const currentTime = now.getTime();
 
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const [showFilter, setShowFilter] = useState<boolean>(false);
@@ -76,22 +90,6 @@ const SelectParkPage: React.FC = () => {
   const handleParkSelect = (park: ParkResponse) => {
     setSelectedPark(park);
     navigate('/');
-  };
-
-  const isParkOpen = (park: ParkResponse) => {
-    const now = dayjs();
-    const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-
-    const openingTime = dayjs(park.openingHours[currentDay]).format('HH:mm');
-    let closingTime = dayjs(park.closingHours[currentDay]).format('HH:mm');
-    if (closingTime === '00:00') {
-      closingTime = '24:00';
-    }
-
-    const currentTime = now.format('HH:mm');
-
-    // return now.isAfter(openingTime) && now.isBefore(closingTime);
-    return currentTime >= openingTime && currentTime <= closingTime;
   };
 
   const onChangeCheckedStatus = (list: string[]) => {

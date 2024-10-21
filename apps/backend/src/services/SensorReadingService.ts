@@ -10,6 +10,7 @@ import SpeciesService from './SpeciesService';
 import OccurrenceService from './OccurrenceService';
 import { OccurrenceWithDetails } from './OccurrenceService';
 import OccurrenceDao from '../dao/OccurrenceDao';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const dateFormatter = (data: any) => {
   const { timestamp, ...rest } = data;
@@ -19,6 +20,13 @@ const dateFormatter = (data: any) => {
     formattedData.timestamp = new Date(timestamp);
   }
   return formattedData;
+};
+
+const enumFormatter = (enumValue: string): string => {
+    return enumValue
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
 };
 
 class SensorReadingService {
@@ -78,7 +86,11 @@ class SensorReadingService {
   }
 
   public async getSensorReadingsByDateRange(sensorId: string, startDate: Date, endDate: Date): Promise<SensorReading[]> {
-    return SensorReadingDao.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+    // Adjust the end date to include the entire day
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    return SensorReadingDao.getSensorReadingsByDateRange(sensorId, startDate, adjustedEndDate);
   }
 
   public async getLatestSensorReadingBySensorId(sensorId: string): Promise<SensorReading | null> {
@@ -122,6 +134,32 @@ class SensorReadingService {
     } else {
       return 'Fluctuating trend: Mixed slope and changes detected.';
     }
+  }
+
+  public async getHourlyAverageSensorReadingsByDateRange(
+    sensorId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ date: string; average: number }[]> {
+    const readings = await this.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+
+    const hourlyAverages = new Map<string, { sum: number; count: number }>();
+
+    readings.forEach((reading) => {
+      const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z'; // Group by year, month, day, hour
+      const current = hourlyAverages.get(hourKey) || { sum: 0, count: 0 };
+      hourlyAverages.set(hourKey, {
+        sum: current.sum + reading.value,
+        count: current.count + 1,
+      });
+    });
+
+    return Array.from(hourlyAverages.entries())
+      .map(([hourKey, { sum, count }]) => ({
+        date: hourKey,
+        average: Number((sum / count).toFixed(2)), // Round to 2 decimal places
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
   // Hub
@@ -225,9 +263,11 @@ class SensorReadingService {
     hours: number,
   ): Promise<{
     trendDescription: string;
-    averageRateOfChange: string;
-    averagePercentageChange: string;
-    overallChange: string;
+    absoluteChange: string;
+    rateOfChange: string;
+    directionOfChange: string;
+    magnitudeOfChange: string;
+    actionableInsight: string;
     readingsCount: number;
     unit: string;
   }> {
@@ -237,83 +277,230 @@ class SensorReadingService {
         throw new Error('Zone not found');
       }
 
-      const readings = await this.getSensorReadingsByZoneIdAndSensorTypeForHoursAgo(zoneId, sensorType, hours);
-
-      if (readings.length < 2) {
-        return {
-          trendDescription: 'Insufficient readings to determine a trend.',
-          averageRateOfChange: 'N/A',
-          averagePercentageChange: 'N/A',
-          overallChange: 'N/A',
-          readingsCount: 0,
-          unit: 'N/A',
-        };
+      const sensors = await SensorDao.getSensorsByZoneIdAndType(zoneId, sensorType);
+      if (sensors.length === 0) {
+        throw new Error('No sensors found for this zone and sensor type');
       }
 
-      // Sort readings by date in ascending order
-      readings.sort((a, b) => a.date.getTime() - b.date.getTime());
+      let totalAbsoluteChange = 0;
+      let totalRateOfChange = 0;
+      let totalReadings = 0;
+      let validSensorsCount = 0;
+      let totalTimeSpanHours = 0;
 
-      const timeSpan = (readings[readings.length - 1].date.getTime() - readings[0].date.getTime()) / (1000 * 60 * 60);
-      if (timeSpan < hours * 0.5) {
+      for (const sensor of sensors) {
+        const readings = await this.getSensorReadingsHoursAgo(sensor.id, hours);
+
+        // at least 2 readings
+        if (readings.length >= 2) {
+          readings.sort((a, b) => a.date.getTime() - b.date.getTime());
+          const oldestReading = readings[0];
+          const latestReading = readings[readings.length - 1];
+          const timeSpanHours = (latestReading.date.getTime() - oldestReading.date.getTime()) / (1000 * 60 * 60);
+          totalTimeSpanHours += timeSpanHours;
+          // must be at least 1/2 of hours between latest reading and oldest reading
+          if (timeSpanHours >= hours * 0.5) {
+            const absoluteChange = latestReading.value - oldestReading.value;
+            const rateOfChange = absoluteChange / timeSpanHours;
+
+            totalAbsoluteChange += absoluteChange;
+            totalRateOfChange += rateOfChange;
+            totalReadings += readings.length;
+            validSensorsCount++;
+          }
+        }
+      }
+
+      if (validSensorsCount === 0) {
         return {
-          trendDescription: 'Insufficient time span for analysis',
-          averageRateOfChange: 'N/A',
-          averagePercentageChange: 'N/A',
-          overallChange: 'N/A',
-          readingsCount: readings.length,
+          trendDescription: 'Insufficient readings to determine a trend.',
+          absoluteChange: 'N/A',
+          rateOfChange: 'N/A',
+          directionOfChange: 'N/A',
+          magnitudeOfChange: 'N/A',
+          actionableInsight: 'Collect more data to analyze trends.',
+          readingsCount: totalReadings,
           unit: this.getSensorUnit(sensorType),
         };
       }
 
-      const slopes: number[] = [];
-      let totalPercentageChange = 0;
+      const averageAbsoluteChange = totalAbsoluteChange / validSensorsCount;
+      const averageRateOfChange = totalRateOfChange / validSensorsCount;
+      const averageTimeSpanHours = totalTimeSpanHours / validSensorsCount;
 
-      for (let i = 1; i < readings.length; i++) {
-        const timeDiff = (readings[i].date.getTime() - readings[i - 1].date.getTime()) / (1000 * 60 * 60); // Time difference in hours
-        const valueDiff = readings[i].value - readings[i - 1].value;
+      // Calculate percentage change based on the average absolute change
+      const percentageChange = (averageAbsoluteChange / 100) * 100; // Assuming a base value of 100 for percentage calculation
 
-        if (readings[i - 1].value === 0) continue; // Avoid division by zero
+      const directionOfChange = averageAbsoluteChange > 0 ? 'Increasing' : averageAbsoluteChange < 0 ? 'Decreasing' : 'Stable';
 
-        const slope = valueDiff / timeDiff;
-        slopes.push(slope);
-
-        const percentageChange = (valueDiff / readings[i - 1].value) * 100;
-        totalPercentageChange += percentageChange;
-      }
-
-      const avgSlope = slopes.reduce((sum, slope) => sum + slope, 0) / slopes.length;
-      const avgPercentageChange = totalPercentageChange / (readings.length - 1);
-      const latestReading = readings[readings.length - 1].value;
-      const oldestReading = readings[0].value;
-      const overallChange = ((latestReading - oldestReading) / oldestReading) * 100;
-
-      let trendDescription = '';
-      if (Math.abs(avgSlope) < 0.1 && Math.abs(avgPercentageChange) < 1) {
-        trendDescription = 'Stable';
-      } else if (avgSlope > 0) {
-        trendDescription = avgPercentageChange > 5 ? 'Rapidly increasing' : 'Gradually increasing';
+      let magnitudeOfChange: string;
+      if (Math.abs(percentageChange) < 1) {
+        magnitudeOfChange = 'Minimal';
+      } else if (Math.abs(percentageChange) < 5) {
+        magnitudeOfChange = 'Small';
+      } else if (Math.abs(percentageChange) < 10) {
+        magnitudeOfChange = 'Moderate';
       } else {
-        trendDescription = avgPercentageChange < -5 ? 'Rapidly decreasing' : 'Gradually decreasing';
+        magnitudeOfChange = 'Large';
       }
+
+      const trendDescription = `${magnitudeOfChange} ${directionOfChange.toLowerCase()}`;
+
+      const actionableInsight = this.getActionableInsight(
+        sensorType,
+        trendDescription,
+        averageAbsoluteChange,
+        averageRateOfChange,
+        averageTimeSpanHours,
+      );
 
       return {
         trendDescription,
-        averageRateOfChange: avgSlope.toFixed(2),
-        averagePercentageChange: avgPercentageChange.toFixed(2),
-        overallChange: overallChange.toFixed(2),
-        readingsCount: readings.length,
+        absoluteChange: `${averageAbsoluteChange.toFixed(2)} ${this.getSensorUnit(sensorType)}`,
+        rateOfChange: `${averageRateOfChange.toFixed(2)} ${this.getSensorUnit(sensorType)} per hour`,
+        directionOfChange,
+        magnitudeOfChange,
+        actionableInsight,
+        readingsCount: totalReadings,
         unit: this.getSensorUnit(sensorType),
       };
     } catch (error) {
       console.error('Error getting zone trend for sensor type:', error);
       return {
         trendDescription: 'Error getting zone trend for sensor type',
-        averageRateOfChange: 'N/A',
-        averagePercentageChange: 'N/A',
-        overallChange: 'N/A',
+        absoluteChange: 'N/A',
+        rateOfChange: 'N/A',
+        directionOfChange: 'N/A',
+        magnitudeOfChange: 'N/A',
+        actionableInsight: 'No actionable insight available.',
         readingsCount: 0,
         unit: 'N/A',
       };
+    }
+  }
+
+  private getActionableInsight(
+    sensorType: SensorTypeEnum,
+    trendDescription: string,
+    absoluteChange: number,
+    rateOfChange: number,
+    timeSpanHours: number
+  ): string {
+    const currentTime = new Date(); // Get the current time
+
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange, currentTime)}`;
+      case SensorTypeEnum.HUMIDITY:
+        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange, currentTime)}`;
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange, currentTime)}`;
+      case SensorTypeEnum.LIGHT:
+        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(absoluteChange, rateOfChange, currentTime)}`;
+      default:
+        return `The sensor readings have shown a ${trendDescription} trend. Monitor the situation and adjust conditions if necessary.`;
+    }
+  }
+
+  private getTemperatureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < 0) {
+        return `Unexpected morning temperature drop. Monitor for any sudden weather changes or shading issues.`;
+      } else if (rateOfChange > 2) {
+        return `Temperature rising quickly. Ensure plants are protected from heat stress as the day warms up.`;
+      }
+      return `Temperature rising normally for morning hours. Keep an eye on any sudden heat spikes.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (Math.abs(rateOfChange) > 1) {
+        return `Significant temperature fluctuations during peak heat. Ensure plants have adequate shade and hydration.`;
+      }
+      return `Temperature stable during the afternoon heat. Watch for signs of heat stress, especially in exposed areas.`;
+    } else {
+      if (rateOfChange > 0) {
+        return `Unusual temperature rise in the evening. Investigate potential heat sources or malfunctioning equipment.`;
+      } else if (rateOfChange < -2) {
+        return `Rapid temperature drop in the evening. Ensure plants sensitive to temperature changes are protected.`;
+      }
+      return `Temperature cooling down as expected. No immediate action required.`;
+    }
+}
+
+private getHumidityInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < -2) {
+        return `Humidity dropping quickly this morning. Consider light misting for moisture-sensitive plants.`;
+      }
+      return `Morning humidity changes are typical. No immediate action needed.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (rateOfChange < -1) {
+        return `Humidity decreasing during peak hours. Ensure plants have adequate water to cope with the heat.`;
+      }
+      return `Humidity levels are stable for midday. Continue regular monitoring.`;
+    } else {
+      if (rateOfChange > 2) {
+        return `Humidity increasing rapidly in the evening. Monitor for potential fungal growth in sensitive plants.`;
+      }
+      return `Evening humidity levels are typical. Watch for signs of excess moisture on foliage.`;
+    }
+}
+
+private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < -2) {
+        return `Soil moisture decreasing faster than usual this morning. Check for drainage issues or adjust watering schedules.`;
+      }
+      return `Morning soil moisture levels are stable. Continue regular irrigation checks.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (rateOfChange < -3) {
+        return `Rapid soil moisture loss during peak heat. Increase watering for plants in sunny or high-traffic areas.`;
+      }
+      return `Soil moisture stable during peak hours. Monitor plants in exposed areas for signs of stress.`;
+    } else {
+      if (rateOfChange > 2 && absoluteChange > 10) {
+        return `Unexpected increase in soil moisture this evening. Check for overwatering or potential irrigation system issues.`;
+      }
+      return `Evening soil moisture levels are normal. Adjust irrigation schedules if necessary.`;
+    }
+}
+
+private getLightInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+    const hour = currentTime.getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      if (rateOfChange < 50) {
+        return `Morning light levels rising slower than expected. Check for cloud cover or shading.`;
+      }
+      return `Light levels increasing as expected. Protect shade-loving plants from morning sun.`;
+    } else if (hour >= 12 && hour < 18) {
+      if (Math.abs(rateOfChange) > 100) {
+        return `Midday light fluctuating significantly. Check for sudden weather changes or intermittent shading.`;
+      }
+      return `Midday light levels are stable. Monitor plants sensitive to intense sunlight.`;
+    } else {
+      if (hour < 21 && rateOfChange > -50) {
+        return `Light levels decreasing slowly in the evening. Check for artificial lighting that may disrupt plant cycles.`;
+      }
+      return `Evening light levels dropping as expected. Ensure any artificial lights are adjusted for plant photoperiods.`;
+    }
+}
+
+  private getSensorUnit(sensorType: SensorTypeEnum): string {
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return '°C';
+      case SensorTypeEnum.HUMIDITY:
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return '%';
+      case SensorTypeEnum.LIGHT:
+        return 'Lux';
+      default:
+        return '';
     }
   }
 
@@ -326,58 +513,68 @@ class SensorReadingService {
   }
 
   // Get unhealthy occurrences that exceed their ideal conditions (based on nearest sensor whenever available)
-  public async getUnhealthyOccurrences(zoneId: number): Promise<{ occurrenceId: string; speciesName: string; issues: string[] }[]> {
+  public async getUnhealthyOccurrences(
+    zoneId: number,
+  ): Promise<{ occurrenceId: string; occurrenceName: string; speciesName: string; issues: string[] }[]> {
     const occurrences: OccurrenceWithDetails[] = await OccurrenceService.getAllOccurrenceByZoneId(zoneId);
-    console.log(
-      'Occurrences:',
-      occurrences.map((occurrence) => occurrence.title),
-    );
     const unhealthyOccurrences = [];
 
     for (const occurrence of occurrences) {
       const speciesConditions = await SpeciesService.getSpeciesIdealConditions(occurrence.speciesId);
       const issues = [];
 
-      // Check temperature
-      const latestTemperature = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.TEMPERATURE, occurrence.id);
-      if (
-        latestTemperature &&
-        (latestTemperature.value < speciesConditions.minTemp || latestTemperature.value > speciesConditions.maxTemp)
-      ) {
-        issues.push(`Temperature out of range: ${latestTemperature.value}°C`);
-      }
+      const sensorTypes = [SensorTypeEnum.TEMPERATURE, SensorTypeEnum.HUMIDITY, SensorTypeEnum.SOIL_MOISTURE, SensorTypeEnum.LIGHT];
+      let hasRecentReading = false;
 
-      // Check humidity
-      const latestHumidity = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.HUMIDITY, occurrence.id);
-      if (latestHumidity && Math.abs(latestHumidity.value - speciesConditions.idealHumidity) > 10) {
-        issues.push(`Humidity not ideal: ${latestHumidity.value}%`);
-      }
+      for (const sensorType of sensorTypes) {
+        const latestReading = await this.getLatestSensorReadingForOccurrence(zoneId, sensorType, occurrence.id);
 
-      // Check soil moisture (as an approximation for water requirement)
-      const latestSoilMoisture = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.SOIL_MOISTURE, occurrence.id);
-      if (latestSoilMoisture && Math.abs(latestSoilMoisture.value - speciesConditions.soilMoisture) > 10) {
-        issues.push(`Soil moisture not ideal: ${latestSoilMoisture.value}%`);
-      }
+        if (latestReading && this.isReadingRecent(latestReading)) {
+          hasRecentReading = true;
 
-      // Check light (this is more complex and might require additional logic)
-      const latestLight = await this.getLatestSensorReadingForOccurrence(zoneId, SensorTypeEnum.LIGHT, occurrence.id);
-      if (latestLight) {
-        const lightIssue = this.checkLightCondition(latestLight.value, speciesConditions.lightType);
-        if (lightIssue) {
-          issues.push(lightIssue);
+          switch (sensorType) {
+            case SensorTypeEnum.TEMPERATURE:
+              if (latestReading.value < speciesConditions.minTemp || latestReading.value > speciesConditions.maxTemp) {
+                issues.push(`Temperature out of range: ${latestReading.value}°C (Recommended: ${speciesConditions.minTemp}°C - ${speciesConditions.maxTemp}°C)`);
+              }
+              break;
+            case SensorTypeEnum.HUMIDITY:
+              if (Math.abs(latestReading.value - speciesConditions.idealHumidity) > 10) {
+                issues.push(`Humidity not ideal: ${latestReading.value}% (Recommended: ${speciesConditions.idealHumidity}%)`);
+              }
+              break;
+            case SensorTypeEnum.SOIL_MOISTURE:
+              if (Math.abs(latestReading.value - speciesConditions.soilMoisture) > 10) {
+                issues.push(`Soil moisture not ideal: ${latestReading.value}% (Recommended: ${speciesConditions.soilMoisture}%)`);
+              }
+              break;
+            case SensorTypeEnum.LIGHT: {
+              const lightIssue = this.checkLightCondition(latestReading.value, speciesConditions.lightType);
+              if (lightIssue) {
+                issues.push(`Light level not ideal: ${latestReading.value} Lux (Recommended: ${this.getLightLuxRecommendation(speciesConditions.lightType)})`);
+              }
+              break;
+            }
+          }
         }
       }
 
-      if (issues.length > 0) {
+      if (hasRecentReading && issues.length > 0) {
         unhealthyOccurrences.push({
+          occurrenceId: occurrence.id,
           occurrenceName: occurrence.title,
-          speciesName: occurrence.species.speciesName, // Now you can access species directly
+          speciesName: occurrence.species.speciesName,
           issues,
         });
       }
     }
 
     return unhealthyOccurrences;
+  }
+
+  private isReadingRecent(reading: SensorReading): boolean {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    return reading.date >= oneHourAgo;
   }
 
   private checkLightCondition(lightValue: number, idealLightType: LightTypeEnum): string | null {
@@ -394,25 +591,25 @@ class SensorReadingService {
     }
   }
 
-  private getSensorUnit(sensorType: SensorTypeEnum): string {
-    switch (sensorType) {
-      case SensorTypeEnum.TEMPERATURE:
-        return '°C';
-      case SensorTypeEnum.HUMIDITY:
-      case SensorTypeEnum.SOIL_MOISTURE:
-        return '%';
-      case SensorTypeEnum.LIGHT:
-        return 'Lux';
+  private getLightLuxRecommendation(lightType: LightTypeEnum): string {
+    switch (lightType) {
+      case LightTypeEnum.FULL_SUN:
+        return "> 200 Lux";
+      case LightTypeEnum.PARTIAL_SHADE:
+        return "50 - 200 Lux";
+      case LightTypeEnum.FULL_SHADE:
+        return "< 50 Lux";
       default:
-        return '';
+        return "0 Lux";
     }
   }
+  
 
   // Get the latest sensor reading for an occurrence (based on nearest sensor)
   public async getLatestSensorReadingForOccurrence(
     zoneId: number,
     sensorType: SensorTypeEnum,
-    occurrenceId: string
+    occurrenceId: string,
   ): Promise<SensorReading | null> {
     try {
       // Get the occurrence details
@@ -428,15 +625,13 @@ class SensorReadingService {
       }
 
       // Calculate distances and find the nearest sensor
-      const nearestSensor = sensors.reduce((nearest, sensor) => {
-        const distance = this.calculateDistance(
-          occurrence.lat,
-          occurrence.lng,
-          sensor.lat,
-          sensor.long
-        );
-        return distance < nearest.distance ? { sensor, distance } : nearest;
-      }, { sensor: sensors[0], distance: Infinity }).sensor;
+      const nearestSensor = sensors.reduce(
+        (nearest, sensor) => {
+          const distance = this.calculateDistance(occurrence.lat, occurrence.lng, sensor.lat, sensor.long);
+          return distance < nearest.distance ? { sensor, distance } : nearest;
+        },
+        { sensor: sensors[0], distance: Infinity },
+      ).sensor;
 
       // Get the latest reading for the nearest sensor
       return SensorReadingDao.getLatestSensorReadingBySensorId(nearestSensor.id);
@@ -453,8 +648,7 @@ class SensorReadingService {
     const dLon = this.deg2rad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in km
   }

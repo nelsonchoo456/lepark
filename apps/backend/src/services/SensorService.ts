@@ -1,4 +1,4 @@
-import { Facility, Hub, Prisma, Sensor } from '@prisma/client';
+import { Facility, Hub, Prisma, Sensor, SensorTypeEnum } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
@@ -282,6 +282,13 @@ class SensorService {
         throw new Error('Sensor is already assigned to a hub');
       }
 
+      if (sensor.sensorType === SensorTypeEnum.CAMERA) {
+        const camerasInHub = await SensorDao.getSensorsByHubId(hub.id);
+        if (camerasInHub.some(s => s.sensorType === SensorTypeEnum.CAMERA)) {
+          throw new Error('Hub already has a camera sensor');
+        }
+      }
+
       formattedData.sensorStatus = 'ACTIVE';
 
       const updateData = formattedData as Prisma.SensorUpdateInput;
@@ -329,6 +336,49 @@ class SensorService {
       }
       throw error;
     }
+  }
+
+  public async getCameraStreamBySensorId(sensorId: string): Promise<{sensor: Sensor, cameraStreamURL: string}> {
+    const sensor = await SensorDao.getSensorById(sensorId);
+    if (!sensor) {
+      throw new Error('Sensor not found');
+    }
+    if (sensor.sensorType !== 'CAMERA') {
+      throw new Error('Sensor is not a camera');
+    }
+
+    const hub = await HubDao.getHubById(sensor.hubId);
+    if (!hub) {
+      throw new Error('Hub not found');
+    }
+    if (hub.hubStatus !== 'ACTIVE') {
+      throw new Error('Hub is not active');
+    }
+
+    const cameraStreamURL = `http://${hub.ipAddress}:8000`;
+
+    return {sensor: sensor, cameraStreamURL: cameraStreamURL };
+  }
+
+  public async getCameraStreamsByZoneId(zoneId: number): Promise<{sensor: Sensor, cameraStreamURL: string}[]> {
+    const sensors = await SensorDao.getSensorsByZoneId(zoneId);
+
+
+    const cameraStreams = await Promise.all(
+      sensors.map(async (sensor) => {
+        try {
+          if (sensor.sensorType === 'CAMERA') {
+            return await this.getCameraStreamBySensorId(sensor.id);
+          }
+          return null;
+        } catch (error) {
+          console.error(`Error getting camera stream for sensor ${sensor.id}:`, error);
+          return null;
+        }
+      })
+    );
+
+    return cameraStreams.filter((stream): stream is {sensor: Sensor, cameraStreamURL: string} => stream !== null);
   }
 
   private generateIdentifierNumber(): string {

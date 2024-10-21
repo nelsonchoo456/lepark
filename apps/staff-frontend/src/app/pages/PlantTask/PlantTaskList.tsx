@@ -16,6 +16,17 @@ import {
   getAllAssignedPlantTasks,
   unassignPlantTask,
   PlantTaskStatusEnum,
+  getParkPlantTaskCompletionRates,
+  getParkPlantTaskOverdueRates,
+  getParkAverageTaskCompletionTime,
+  getParkTaskLoadPercentage,
+  CompletionRateData,
+  OverdueRateData,
+  AverageCompletionTimeData,
+  TaskLoadPercentageData,
+  getStaffPerformanceRanking,
+  StaffPerformanceRankingData,
+  getPlantTasksBySubmittingStaff,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
@@ -27,6 +38,16 @@ import moment from 'moment';
 import { Tabs } from 'antd';
 import { MdArrowBack } from 'react-icons/md';
 import StaffWorkloadTable from './PlantTaskDashboard/components/StaffWorkloadTable';
+import CompletionRateChart from './PlantTaskDashboard/components/CompletionRateChart';
+import OverdueRateChart from './PlantTaskDashboard/components/OverdueRateChart';
+import AverageCompletionTimeChart from './PlantTaskDashboard/components/AverageCompletionTimeChart';
+import TaskLoadPercentageChart from './PlantTaskDashboard/components/TaskLoadPercentageChart';
+import StaffPerformanceRanking from './PlantTaskDashboard/components/StaffPerformanceRanking';
+import StaffAverageCompletionTimeLineChart from './PlantTaskDashboard/components/StaffAverageCompletionTimeLineChart';
+import TaskCompletedChart from './PlantTaskDashboard/components/TaskCompletedChart';
+import StaffCompletionRatesLineChart from './PlantTaskDashboard/components/StaffCompletionRatesLineChart';
+import StaffOverdueRatesLineChart from './PlantTaskDashboard/components/StaffOverdueRatesLineChart';
+import StaffTasksCompletedLineChart from './PlantTaskDashboard/components/StaffTasksCompletedLineChart';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -56,8 +77,25 @@ const PlantTaskList: React.FC = () => {
 
   const [selectedParkId, setSelectedParkId] = useState<string | null>(null);
 
+  const parkOptions = useMemo(() => {
+    const uniqueParks = Array.from(new Set(staffList.map((staff) => staff.park?.name)));
+    return [{ value: null, label: 'All Parks' }, ...uniqueParks.map((parkName) => ({ value: parkName, label: parkName }))];
+  }, [staffList]);
+
+  const [staffPerformanceRanking, setStaffPerformanceRanking] = useState<StaffPerformanceRankingData | null>(null);
+
+  const isTableOnlyView = useMemo(() => {
+    return user?.role === StaffType.SUPERADMIN ||
+           user?.role === StaffType.LANDSCAPE_ARCHITECT ||
+           user?.role === StaffType.PARK_RANGER ||
+           user?.role === StaffType.VENDOR_MANAGER;
+  }, [user?.role]);
+
   useEffect(() => {
     fetchPlantTasks();
+    if (user?.role === StaffType.MANAGER) {
+      fetchStaffPerformanceRanking();
+    }
   }, [user]);
 
   const fetchPlantTasks = async () => {
@@ -65,8 +103,11 @@ const PlantTaskList: React.FC = () => {
       let response;
       if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
         response = user?.parkId ? await getPlantTasksByParkId(user.parkId) : await getAllPlantTasks();
-      } else {
+      } else if (user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) {
         response = await getAllAssignedPlantTasks(user?.id || '');
+      } else {
+        // For LANDSCAPE_ARCHITECT, PARK_RANGER, VENDOR_MANAGER
+        response = await getPlantTasksBySubmittingStaff(user?.id || '');
       }
       setPlantTasks(response.data);
 
@@ -113,7 +154,6 @@ const PlantTaskList: React.FC = () => {
       await unassignPlantTask(plantTaskId, staffId);
       message.success('Staff unassigned successfully');
       fetchPlantTasks();
-
     } catch (error) {
       console.error('Failed to unassign staff:', error);
       message.error('Failed to unassign staff');
@@ -171,25 +211,109 @@ const PlantTaskList: React.FC = () => {
     },
   ];
 
+  const fetchStaffPerformanceRanking = async () => {
+    try {
+      const startOfMonth = moment().startOf('month').toDate();
+      const endOfMonth = moment().endOf('month').toDate();
+      const response = await getStaffPerformanceRanking(user?.parkId || null, startOfMonth, endOfMonth);
+      setStaffPerformanceRanking(response.data);
+    } catch (error) {
+      console.error('Error fetching staff performance ranking:', error);
+      messageApi.error('Failed to fetch staff performance ranking');
+    }
+  };
+
   const renderDashboardOverview = () => {
     return (
       <>
         {renderStatisticsOverview(true)}
         <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
-          <Tabs defaultActiveKey="1">
-            <TabPane tab="Overview" key="1">
-              <PlantTaskDashboard plantTasks={plantTasks} />
-            </TabPane>
-            <TabPane tab="Staff Workload" key="2">
-              <StaffWorkloadTable
-                staffList={staffList}
-                plantTasks={plantTasks}
-                isSuperAdmin={isSuperAdmin}
-                selectedParkId={selectedParkId}
-                onParkChange={(parkId) => setSelectedParkId(parkId)}
-              />
-            </TabPane>
-          </Tabs>
+          <Tabs
+            defaultActiveKey="1"
+            items={[
+              {
+                key: '1',
+                label: 'Pending Tasks Breakdown',
+                children: (
+                  <PlantTaskDashboard
+                    plantTasks={plantTasks}
+                    isSuperAdmin={isSuperAdmin}
+                    selectedParkId={selectedParkId}
+                    onParkChange={(parkId) => setSelectedParkId(parkId)}
+                    parkOptions={parkOptions as { value: string | null; label: string }[]}
+                  />
+                ),
+              },
+              {
+                key: '2',
+                label: 'Staff Workload',
+                children: (
+                  <>
+                    <StaffWorkloadTable
+                      staffList={staffList}
+                      plantTasks={plantTasks}
+                      isSuperAdmin={isSuperAdmin}
+                      selectedParkId={selectedParkId}
+                      onParkChange={(parkId) => setSelectedParkId(parkId)}
+                      parkOptions={parkOptions as { value: string | null; label: string }[]}
+                    />
+                    <TaskLoadPercentageChart />
+                  </>
+                ),
+              },
+              !isSuperAdmin
+                ? {
+                    key: '3',
+                    label: 'Staff Performance Analytics',
+                    children: (
+                      <>
+                        {staffPerformanceRanking && (
+                          <StaffPerformanceRanking
+                            bestPerformer={staffPerformanceRanking.bestPerformer}
+                            secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
+                            thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
+                            message={staffPerformanceRanking.message}
+                          />
+                        )}
+                        <Row gutter={[16, 16]}>
+                          <Col span={12}>
+                            <CompletionRateChart />
+                          </Col>
+                          <Col span={12}>
+                          <StaffCompletionRatesLineChart />
+                            
+                          </Col>
+                        </Row>
+                        <Row gutter={[16, 16]} className="mt-4">
+                          <Col span={12}>
+                            <AverageCompletionTimeChart />
+                          </Col>
+                          <Col span={12}>
+                            <StaffAverageCompletionTimeLineChart />
+                          </Col>
+                        </Row>
+                        <Row gutter={[16, 16]} className="mt-4">
+                          <Col span={12}>
+                            <TaskCompletedChart />
+                          </Col>
+                          <Col span={12}>
+                            <StaffTasksCompletedLineChart />
+                          </Col>
+                        </Row>
+                        <Row gutter={[16, 16]} className="mt-4">
+                          <Col span={12}>
+                          <OverdueRateChart />
+                          </Col>
+                          <Col span={12}>
+                            <StaffOverdueRatesLineChart />
+                          </Col>
+                        </Row>
+                      </>
+                    ),
+                  }
+                : null,
+            ].filter(Boolean)}
+          />
         </Card>
       </>
     );
@@ -204,49 +328,60 @@ const PlantTaskList: React.FC = () => {
       task.taskStatus !== 'CANCELLED',
   ).length;
   const overdueTasks = plantTasks.filter(
-    (task) => moment(task.dueDate).isBefore(moment()) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
+    (task) => moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
   ).length;
 
   const renderStatisticsOverview = (defaultOpen?: boolean) => {
-    return (<>
-      {inDashboards && (
-        <div className="flex items-center">
-          <Button className="text-wrap mb-2" icon={<MdArrowBack/>} type="link" onClick={() => setInDashboards(false)}>
-            Return
-          </Button>
-        </div>
-      )}
-      <Collapse defaultActiveKey={defaultOpen ? ['1'] : []} className="mb-4 bg-white" bordered={false} expandIconPosition="end">
-        <Panel header={<LogoText className="">Task Overview</LogoText>} key="1">
-          {/* <Row gutter={5}> */}
-          <Flex>
-            <Flex justify="space-evenly" className="w-full">
-              <Col style={{ textAlign: 'center' }}>
-                <Statistic title="Open Tasks" value={totalOpenTasks} />
-              </Col>
-              <Col style={{ textAlign: 'center' }}>
-                <Statistic title="Task In Progress" value={inProgress.length} />
-              </Col>
-              <Col style={{ textAlign: 'center' }}>
-                <Statistic title="Urgent Tasks" value={urgentTasks} suffix={`of ${outstandingTasks}`} />
-              </Col>
-              <Col style={{ textAlign: 'center' }}>
-                <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
-              </Col>
-            </Flex>
-            {!inDashboards && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
-              <div className="flex items-center">
-                <Button type="link" onClick={() => setInDashboards(true)}>
-                  View more
-                </Button>
-              </div>
-            )}
-          </Flex>
-          {/*  */}
-          {/* </Row> */}
-        </Panel>
-      </Collapse>
-    </>);
+    return (
+      <>
+        {inDashboards && (
+          <div className="flex items-center">
+            <Button className="text-wrap mb-2" icon={<MdArrowBack />} type="link" onClick={() => setInDashboards(false)}>
+              Return
+            </Button>
+          </div>
+        )}
+        {(user?.role !== StaffType.LANDSCAPE_ARCHITECT && user?.role !== StaffType.PARK_RANGER && user?.role !== StaffType.VENDOR_MANAGER) && (
+          <Collapse
+            defaultActiveKey={defaultOpen ? ['1'] : []}
+            className="mb-4 bg-white"
+            bordered={false}
+            expandIconPosition="end"
+            items={[
+            {
+              key: '1',
+              label: <LogoText className="">Task Overview</LogoText>,
+              children: (
+                <Flex>
+                  <Flex justify="space-evenly" className="w-full">
+                    <Col style={{ textAlign: 'center' }}>
+                      <Statistic title="Open Tasks" value={totalOpenTasks} />
+                    </Col>
+                    <Col style={{ textAlign: 'center' }}>
+                      <Statistic title="Task In Progress" value={inProgress.length} />
+                    </Col>
+                    <Col style={{ textAlign: 'center' }}>
+                      <Statistic title="Urgent Tasks" value={urgentTasks} suffix={`of ${outstandingTasks}`} />
+                    </Col>
+                    <Col style={{ textAlign: 'center' }}>
+                      <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
+                    </Col>
+                  </Flex>
+                  {!inDashboards && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+                    <div className="flex items-center">
+                      <Button type="link" onClick={() => setInDashboards(true)}>
+                        View more
+                      </Button>
+                    </div>
+                  )}
+                </Flex>
+              ),
+            },
+          ]}
+          />
+        )}
+      </>
+    );
   };
 
   const renderTableView = () => {
@@ -269,7 +404,7 @@ const PlantTaskList: React.FC = () => {
   };
 
   const renderViewSelector = () => {
-    if (isSuperAdmin) {
+    if (isTableOnlyView) {
       return null;
     }
     return (
@@ -290,7 +425,7 @@ const PlantTaskList: React.FC = () => {
   };
 
   const renderBoard = () => {
-    if (isSuperAdmin || viewMode === 'table') {
+    if (isTableOnlyView || viewMode === 'table') {
       return renderTableView();
     } else {
       return (
@@ -305,13 +440,13 @@ const PlantTaskList: React.FC = () => {
           setCancelled={setCancelled}
           refreshData={fetchPlantTasks}
           userRole={user?.role || ''}
+          loading={loading}
         />
       );
     }
   };
 
   const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
-    // Refresh the task list or update the local state as needed
     fetchPlantTasks();
   };
 
@@ -322,7 +457,7 @@ const PlantTaskList: React.FC = () => {
         <PageHeader2 breadcrumbItems={breadcrumbItems} />
         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
       </ContentWrapperDark>
-    )
+    );
   }
 
   return (
@@ -330,11 +465,10 @@ const PlantTaskList: React.FC = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       {renderStatisticsOverview()}
-      {/* {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()} */}
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
           {renderViewSelector()}
-          {(isSuperAdmin || viewMode === 'table') && (
+          {(isTableOnlyView || user?.role === StaffType.MANAGER || viewMode === 'table') && (
             <Select
               value={tableViewType}
               onChange={setTableViewType}
@@ -348,7 +482,7 @@ const PlantTaskList: React.FC = () => {
           )}
         </Flex>
         <Flex gap={10}>
-          {(isSuperAdmin || viewMode === 'table') && (
+          {(isTableOnlyView || viewMode === 'table') && (
             <Input
               suffix={<FiSearch />}
               placeholder="Search in Plant Tasks..."

@@ -4,7 +4,16 @@ import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
-import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, StaffResponse, StaffType, getAllParks, updatePlantTaskDetails, PlantTaskUpdateData } from '@lepark/data-access';
+import {
+  PlantTaskResponse,
+  PlantTaskStatusEnum,
+  PlantTaskTypeEnum,
+  StaffResponse,
+  StaffType,
+  getAllParks,
+  updatePlantTaskDetails,
+  PlantTaskUpdateData,
+} from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { CloseOutlined } from '@ant-design/icons';
@@ -13,12 +22,14 @@ import EditPlantTaskModal from './EditPlantTaskModal';
 import ViewPlantTaskModal from './ViewPlantTaskModal';
 import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 import { COLORS } from '../../config/colors';
+import dayjs from 'dayjs';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
 
 // Utility function to format task type
-const formatTaskType = (taskType: string) => {
+export const formatTaskType = (taskType: string) => {
   return formatEnumLabelToRemoveUnderscores(taskType);
 };
 
@@ -59,6 +70,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   const [form] = Form.useForm();
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -110,6 +122,29 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     setViewModalVisible(true);
   };
 
+  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDateRange(dates);
+  };
+
+  const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
+    if (!dateRange || !dateRange[0] || !dateRange[1]) {
+      return tasks;
+    }
+    const [startDate, endDate] = dateRange;
+    return tasks.filter((task) => {
+      const dueDate = dayjs(task.dueDate);
+      return (
+        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
+        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
+      );
+    });
+  };
+
+  const filteredPlantTasks = filterTasksByDateRange(plantTasks);
+
+  const limitedToSubmittingTasksOnly =
+    user?.role === StaffType.VENDOR_MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT || user?.role === StaffType.PARK_RANGER;
+
   const columns: TableProps<PlantTaskResponse>['columns'] = [
     {
       title: 'Title',
@@ -141,19 +176,18 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         }
         return 0;
       },
-      filters: userRole === StaffType.SUPERADMIN
-        ? parks
-        : plantTasks
-            .filter(task => task.occurrence?.zone?.parkId === user?.parkId)
-            .map(task => ({
-              text: task.occurrence?.zone?.name,
-              value: task.occurrence?.zone?.id
-            }))
-            .filter((v, i, a) => a.findIndex(t => t.value === v.value) === i), // Remove duplicates
-      onFilter: (value, record) => 
+      filters:
         userRole === StaffType.SUPERADMIN
-          ? record.occurrence?.zone?.park?.id === value
-          : record.occurrence?.zone?.id === value,
+          ? parks
+          : filteredPlantTasks
+              .filter((task) => task.occurrence?.zone?.parkId === user?.parkId)
+              .map((task) => ({
+                text: task.occurrence?.zone?.name,
+                value: task.occurrence?.zone?.id,
+              }))
+              .filter((v, i, a) => a.findIndex((t) => t.value === v.value) === i), // Remove duplicates
+      onFilter: (value, record) =>
+        userRole === StaffType.SUPERADMIN ? record.occurrence?.zone?.park?.id === value : record.occurrence?.zone?.id === value,
       width: '15%',
     },
     {
@@ -229,18 +263,18 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       key: 'dueDate',
       render: (text, record) => {
         const isOverdue =
-          moment().isAfter(moment(text)) &&
+          moment().startOf('day').isAfter(moment(text).startOf('day')) &&
           record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
         const isDueSoon =
-          moment(text).isBetween(moment(), moment().add(3, 'days')) &&
+          moment(text).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days')) &&
           record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
           record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
         return (
           <Flex align="center">
             {moment(text).format('D MMM YY')}
             {isOverdue && <FiAlertCircle className="ml-2 text-red-500" />}
-            {isDueSoon && <FiClock className="ml-2 text-yellow-500" />}
+            {isDueSoon && !isOverdue && <FiClock className="ml-2 text-yellow-500" />}
           </Flex>
         );
       },
@@ -298,10 +332,9 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           return (
             <Flex align="center" justify="space-between">
               <span>{`${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`}</span>
-              {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) &&
-                record.taskStatus === PlantTaskStatusEnum.OPEN && (
-                  <Tooltip title="Unassign staff">
-                    <Button
+              {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && record.taskStatus === PlantTaskStatusEnum.OPEN && (
+                <Tooltip title="Unassign staff">
+                  <Button
                     type="text"
                     icon={<CloseOutlined />}
                     onClick={() => handleUnassignStaff(record.id, user?.id || '')}
@@ -312,7 +345,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             </Flex>
           );
         } else {
-          return record.taskStatus === PlantTaskStatusEnum.OPEN ? (
+          return record.taskStatus === PlantTaskStatusEnum.OPEN && (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) ? (
             <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignStaff(record.id, value)}>
               {staffList
                 .filter((staff) => staff.parkId === record.occurrence?.zone?.parkId)
@@ -327,19 +360,31 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
           );
         }
       },
+      filters: staffList.map((staff) => ({
+        text: `${staff.firstName} ${staff.lastName}`,
+        value: staff.id,
+      })),
+      onFilter: (value, record) => record.assignedStaff?.id === value,
+      width: '15%',
+    },
+    {
+      title: 'Submitting Staff',
+      key: 'submittingStaff',
+      render: (_, record) => `${record.submittingStaff.firstName} ${record.submittingStaff.lastName}`,
       width: '15%',
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Flex justify="center" >
+        <Flex justify="center">
           <Tooltip title="View Plant Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED && (
-            <Tooltip title="Edit Plant Task">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+          {!limitedToSubmittingTasksOnly &&
+            (record.taskStatus !== PlantTaskStatusEnum.COMPLETED && record.taskStatus !== PlantTaskStatusEnum.CANCELLED) && (
+              <Tooltip title="Edit Plant Task">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
             </Tooltip>
           )}
           {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) && (
@@ -357,22 +402,26 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     const groupedTasks =
       groupBy === 'status'
         ? {
-            OPEN: plantTasks.filter((task) => task.taskStatus === 'OPEN'),
-            IN_PROGRESS: plantTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
-            COMPLETED: plantTasks.filter((task) => task.taskStatus === 'COMPLETED'),
-            CANCELLED: plantTasks.filter((task) => task.taskStatus === 'CANCELLED'),
+            OPEN: filteredPlantTasks.filter((task) => task.taskStatus === 'OPEN'),
+            IN_PROGRESS: filteredPlantTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'),
+            COMPLETED: filteredPlantTasks.filter((task) => task.taskStatus === 'COMPLETED'),
+            CANCELLED: filteredPlantTasks.filter((task) => task.taskStatus === 'CANCELLED'),
           }
         : {
-            IMMEDIATE: plantTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
-            HIGH: plantTasks.filter((task) => task.taskUrgency === 'HIGH'),
-            NORMAL: plantTasks.filter((task) => task.taskUrgency === 'NORMAL'),
-            LOW: plantTasks.filter((task) => task.taskUrgency === 'LOW'),
+            IMMEDIATE: filteredPlantTasks.filter((task) => task.taskUrgency === 'IMMEDIATE'),
+            HIGH: filteredPlantTasks.filter((task) => task.taskUrgency === 'HIGH'),
+            NORMAL: filteredPlantTasks.filter((task) => task.taskUrgency === 'NORMAL'),
+            LOW: filteredPlantTasks.filter((task) => task.taskUrgency === 'LOW'),
           };
 
     return (
-      <TabsNoBottomMargin defaultActiveKey="1" type="card">
-        {Object.entries(groupedTasks).map(([key, tasks]) => (
-          <TabPane tab={`${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`} key={key}>
+      <TabsNoBottomMargin
+        defaultActiveKey="1"
+        type="card"
+        items={Object.entries(groupedTasks).map(([key, tasks]) => ({
+          key,
+          label: `${formatEnumLabelToRemoveUnderscores(key)} (${tasks.length})`,
+          children: (
             <Card styles={{ body: { padding: 0 } }} className="p-4 border-t-0 rounded-tl-none">
               <Table
                 dataSource={tasks}
@@ -383,20 +432,20 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
                 {...tableProps}
               />
             </Card>
-          </TabPane>
-        ))}
-      </TabsNoBottomMargin>
+          ),
+        }))}
+      />
     );
   };
 
   const tableProps = {
     rowClassName: (record: PlantTaskResponse) => {
       const isOverdue =
-        moment().isAfter(moment(record.dueDate)) &&
+        moment().startOf('day').isAfter(moment(record.dueDate).startOf('day')) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
         record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
       const isDueSoon =
-        moment(record.dueDate).isBetween(moment(), moment().add(3, 'days')) &&
+        moment(record.dueDate).startOf('day').isSameOrBefore(moment().startOf('day').add(3, 'days')) &&
         record.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
         record.taskStatus !== PlantTaskStatusEnum.CANCELLED;
 
@@ -406,16 +455,17 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     },
   };
 
-  switch (tableViewType) {
-    case 'grouped-status':
-      return renderGroupedTasks('status', tableProps);
-    case 'grouped-urgency':
-      return renderGroupedTasks('urgency', tableProps);
-    default:
-      return (
-        <Card styles={{ body: { padding: "1rem" }}}>
+  return (
+    <>
+      <div style={{ marginBottom: '16px' }}>
+        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
+      </div>
+      {tableViewType === 'grouped-status' && renderGroupedTasks('status', tableProps)}
+      {tableViewType === 'grouped-urgency' && renderGroupedTasks('urgency', tableProps)}
+      {tableViewType === 'all' && (
+        <Card styles={{ body: { padding: '1rem' } }}>
           <Table
-            dataSource={plantTasks}
+            dataSource={filteredPlantTasks}
             columns={columns}
             rowKey="id"
             loading={loading}
@@ -423,23 +473,25 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
             scroll={{ x: SCREEN_LG }}
             {...tableProps}
           />
-          <EditPlantTaskModal
-            visible={editModalVisible}
-            onCancel={() => setEditModalVisible(false)}
-            onSubmit={handleEditSubmit}
-            initialValues={editingTask}
-            userRole={userRole as StaffType}
-            onStatusChange={handleStatusChange}
-          />
-          <ViewPlantTaskModal
-            visible={viewModalVisible}
-            onCancel={() => setViewModalVisible(false)}
-            task={selectedTask}
-            userRole={userRole as StaffType}
-          />
         </Card>
-      );
-  }
+      )}
+      {/* Move the modals outside of the conditional rendering */}
+      <EditPlantTaskModal
+        visible={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onSubmit={handleEditSubmit}
+        initialValues={editingTask}
+        userRole={userRole as StaffType}
+        onStatusChange={handleStatusChange}
+      />
+      <ViewPlantTaskModal
+        visible={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        task={selectedTask}
+        userRole={userRole as StaffType}
+      />
+    </>
+  );
 };
 
 export default PlantTaskTableView;

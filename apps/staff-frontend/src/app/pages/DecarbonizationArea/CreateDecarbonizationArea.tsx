@@ -1,9 +1,5 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import {
-  createDecarbonizationArea,
-  DecarbonizationAreaResponse,
-  StaffResponse
-} from '@lepark/data-access';
+import { createDecarbonizationArea, DecarbonizationAreaResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, Result, Steps, Tooltip } from 'antd';
 import { LatLng } from 'leaflet';
 import { useRef, useState } from 'react';
@@ -14,6 +10,7 @@ import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
+
 const center = {
   lat: 1.3503881629328163,
   lng: 103.85132690751749,
@@ -57,7 +54,6 @@ const CreateDecarbonizationArea = () => {
   ];
 
   const handleCurrStep = async (step: number) => {
-    // console.log(formValues)
     if (step === 0) {
       setCurrStep(0);
     } else if (step === 1) {
@@ -73,45 +69,13 @@ const CreateDecarbonizationArea = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      if (!polygon || !(polygon.length > 0) || !polygon[0][0]) {
-        throw new Error('Please draw Decarbonization Area boundaries on the map.');
-      }
-
-      const finalData = {
-        ...formValues,
-        parkId: user?.parkId || formValues.parkId, // Use user's parkId if available, otherwise use the one from the form
-      };
-
-      if (polygon && polygon[0] && polygon[0][0]) {
-        const polygonData = latLngArrayToPolygon(polygon[0][0]);
-        finalData.geom = polygonData;
-      }
-
-      const response = await createDecarbonizationArea(finalData);
-      if (response.status === 201) {
-        setCreatedData(response.data);
-        setCurrStep(2);
-        messageApi.open({
-          type: 'success',
-          content: 'Decarbonization Area created successfully',
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        messageApi.open({
-          type: 'error',
-          content: error.message || 'An error occurred while creating the Decarbonization Area',
-        });
-      } else {
-        messageApi.open({
-          type: 'error',
-          content: 'Unable to create a Decarbonization Area. Please try again later.',
-        });
-      }
-    }
+  const handleSuccess = (data: DecarbonizationAreaResponse) => {
+    setCreatedData(data);
+    messageApi.open({
+      type: 'success',
+      content: 'Decarbonization Area created successfully.',
+    });
+    setCurrStep(2);
   };
 
   const content = [
@@ -134,12 +98,14 @@ const CreateDecarbonizationArea = () => {
       children: (
         <CreateMapStep
           handleCurrStep={handleCurrStep}
+          setCurrStep={setCurrStep}
           polygon={polygon}
           setPolygon={setPolygon}
           lines={lines}
           setLines={setLines}
           parks={parks}
           formValues={formValues}
+          onSuccess={handleSuccess} // Pass the callback
         />
       ),
     },
@@ -172,11 +138,7 @@ const CreateDecarbonizationArea = () => {
           ]}
         />
         {currStep === 0 && content[0].children}
-        {currStep === 1 && (
-          <>
-            {content[1].children}
-          </>
-        )}
+        {currStep === 1 && <>{content[1].children}</>}
         {currStep === 2 && (
           <Flex justify="center" className="py-4">
             <Result
@@ -184,7 +146,7 @@ const CreateDecarbonizationArea = () => {
               title="Created new Decarbonization Area"
               subTitle={createdData && <>Decarbonization Area title: {createdData.name}</>}
               extra={[
-                <Button key="back" onClick={() => navigate('/Decarbonization Area')}>
+                <Button key="back" onClick={() => navigate('/decarbonization-area')}>
                   Back to Decarbonization Area Management
                 </Button>,
                 <Tooltip title="View Decarbonization Area Details">

@@ -1,4 +1,4 @@
-import { ParkResponse } from "./park";
+import { ParkResponse } from './park';
 
 export enum StaffType {
   MANAGER = 'MANAGER',
@@ -6,7 +6,7 @@ export enum StaffType {
   ARBORIST = 'ARBORIST',
   LANDSCAPE_ARCHITECT = 'LANDSCAPE_ARCHITECT',
   PARK_RANGER = 'PARK_RANGER',
-  VENDOR_MAANGER = 'VENDOR_MANAGER',
+  VENDOR_MANAGER = 'VENDOR_MANAGER',
   SUPERADMIN = 'SUPERADMIN',
 }
 

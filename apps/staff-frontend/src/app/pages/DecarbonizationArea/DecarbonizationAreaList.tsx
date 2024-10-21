@@ -11,6 +11,7 @@ import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { deleteDecarbonizationArea } from '@lepark/data-access';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { useFetchDecarbonizationAreas } from '../../hooks/DecarbonizationArea/useFetchDecarbonizationAreas';
+import { useFetchParks } from '../../hooks/Parks/useFetchParks';
 
 const DecarbonizationAreaList: React.FC = () => {
   const { decarbonizationAreas, loading, triggerFetch } = useFetchDecarbonizationAreas();
@@ -20,12 +21,20 @@ const DecarbonizationAreaList: React.FC = () => {
   const [areaToBeDeleted, setAreaToBeDeleted] = useState<DecarbonizationAreaResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { parks } = useFetchParks();
+
+  // Create a mapping of park IDs to park names
+  const parkIdToNameMap = useMemo(() => {
+    const map: { [key: string]: string } = {};
+    parks.forEach((park) => {
+      map[park.id] = park.name;
+    });
+    return map;
+  }, [parks]);
 
   const filteredAreas = useMemo(() => {
     return decarbonizationAreas.filter((area) =>
-      Object.values(area).some((value) => 
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      Object.values(area).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
     );
   }, [searchQuery, decarbonizationAreas]);
 
@@ -50,7 +59,21 @@ const DecarbonizationAreaList: React.FC = () => {
       sorter: (a, b) => {
         return a.name.localeCompare(b.name);
       },
-      width: '50%',
+      width: '30%',
+    },
+    {
+      title: 'Park',
+      dataIndex: 'parkId',
+      key: 'parkId',
+      render: (parkId) => (
+        <Flex justify="space-between" align="center" className="font-semibold">
+          {parkIdToNameMap[parkId] || 'Unknown'}
+        </Flex>
+      ),
+      sorter: (a, b) => {
+        return (parkIdToNameMap[a.parkId] || '').localeCompare(parkIdToNameMap[b.parkId] || '');
+      },
+      width: '30%',
     },
     {
       title: 'Description',
@@ -68,7 +91,7 @@ const DecarbonizationAreaList: React.FC = () => {
       sorter: (a, b) => {
         return a.description.localeCompare(b.description);
       },
-      width: '50%',
+      width: '30%',
     },
     {
       title: 'Actions',
@@ -79,7 +102,10 @@ const DecarbonizationAreaList: React.FC = () => {
           <Tooltip title="View Area">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(id)} />
           </Tooltip>
-          {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
+          {(user?.role === StaffType.SUPERADMIN ||
+            user?.role === StaffType.MANAGER ||
+            user?.role === StaffType.ARBORIST ||
+            user?.role === StaffType.BOTANIST) && (
             <>
               <Tooltip title="Edit Area">
                 <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/decarbonization-area/${id}/edit`)} />
@@ -96,7 +122,7 @@ const DecarbonizationAreaList: React.FC = () => {
           )}
         </Flex>
       ),
-      width: '1%',
+      width: '10%',
     },
   ];
 
@@ -146,25 +172,33 @@ const DecarbonizationAreaList: React.FC = () => {
   return (
     <ContentWrapperDark>
       {contextHolder}
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <ConfirmDeleteModal onConfirm={deleteAreaToBeDeleted} open={deleteModalOpen} description='Deleting a Decarbonization Area will delete all of its data. This cannot be undone.' onCancel={cancelDelete}></ConfirmDeleteModal>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
+      <ConfirmDeleteModal
+        onConfirm={deleteAreaToBeDeleted}
+        open={deleteModalOpen}
+        description="Deleting a Decarbonization Area will delete all of its data. This cannot be undone."
+        onCancel={cancelDelete}
+      ></ConfirmDeleteModal>
       <Flex justify="end" gap={10}>
-        <Input 
-          suffix={<FiSearch />} 
-          placeholder="Search in Decarbonization Areas..." 
-          className="mb-4 bg-white" 
-          variant="filled" 
+        <Input
+          suffix={<FiSearch />}
+          placeholder="Search in Decarbonization Areas..."
+          className="mb-4 bg-white"
+          variant="filled"
           onChange={handleSearch}
         />
         <Button
-            type="primary"
-            onClick={() => {
-              navigate('/decarbonization-area/chart');
-            }}
-          >
-            Data Visualizations
-          </Button>
-        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+          type="primary"
+          onClick={() => {
+            navigate('/decarbonization-area/chart');
+          }}
+        >
+          Data Visualizations
+        </Button>
+        {(user?.role === StaffType.SUPERADMIN ||
+          user?.role === StaffType.MANAGER ||
+          user?.role === StaffType.ARBORIST ||
+          user?.role === StaffType.BOTANIST) && (
           <Button
             type="primary"
             onClick={() => {
@@ -177,13 +211,7 @@ const DecarbonizationAreaList: React.FC = () => {
       </Flex>
 
       <Card>
-        <Table 
-          dataSource={filteredAreas} 
-          columns={columns} 
-          rowKey="id" 
-          loading={loading}  
-          scroll={{ x: SCREEN_LG }}
-        />
+        <Table dataSource={filteredAreas} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }} />
       </Card>
     </ContentWrapperDark>
   );

@@ -51,3 +51,54 @@ export interface PlantTaskUpdateData {
   images?: string[];
   position?: number; // Add this line
 }
+
+export interface CompletionRateData {
+  staff: StaffResponse;
+  completionRate: number;
+}
+
+export interface OverdueRateData {
+  staff: StaffResponse;
+  overdueRate: number;
+}
+
+export interface AverageCompletionTimeData {
+  staff: StaffResponse;
+  averageCompletionTime: number;
+}
+
+export interface TaskLoadPercentageData {
+  staff: StaffResponse;
+  taskLoadPercentage: number;
+}
+
+export interface StaffPerformanceRankingData {
+  bestPerformer: StaffResponse | null;
+  secondBestPerformer: StaffResponse | null;
+  thirdBestPerformer: StaffResponse | null;
+  message?: string;
+}
+
+export interface ParkTaskCompletedData {
+  staff: StaffResponse;
+  taskCompleted: number;
+}
+export interface ParkStaffAverageCompletionTimeForPastMonthsData {
+  staff: StaffResponse;
+  averageCompletionTimes: number[];
+}
+
+export interface ParkStaffCompletionRatesForPastMonthsData {
+  staff: StaffResponse;
+  completionRates: number[];
+}
+
+export interface ParkStaffOverdueRatesForPastMonthsData {
+  staff: StaffResponse;
+  overdueRates: number[];
+}
+
+export interface ParkStaffTasksCompletedForPastMonthsData {
+  staff: StaffResponse;
+  tasksCompleted: number[];
+}

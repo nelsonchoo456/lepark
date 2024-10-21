@@ -88,7 +88,7 @@ const DecarbonizationAreaDetails = () => {
                 <LogoText className="text-2xl py-2 m-0 ml-4">{decarbonizationArea.name}</LogoText>
               </Space>
               <Space>
-                {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+                {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) && (
                   <Button
                     icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                     type="text"

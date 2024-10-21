@@ -1,6 +1,6 @@
-import { Event, EventStatusEnum } from '@prisma/client';
+import { Event, EventStatusEnum, EventTicketListing } from '@prisma/client';
 import { z } from 'zod';
-import { EventSchema, EventSchemaType } from '../schemas/eventSchema';
+import { EventSchema, EventSchemaType, EventTicketListingSchema, EventTicketListingSchemaType } from '../schemas/eventSchema';
 import EventDao from '../dao/EventDao';
 import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
@@ -147,6 +147,65 @@ class EventService {
 
   public async deleteEvent(id: string): Promise<void> {
     await EventDao.deleteEvent(id);
+  }
+
+  public async createEventTicketListing(data: EventTicketListingSchemaType): Promise<EventTicketListing> {
+    try {
+      const formattedData = dateFormatter(data);
+      EventTicketListingSchema.parse(formattedData);
+
+      // Check if the event exists
+      const event = await EventDao.getEventById(formattedData.eventId);
+      if (!event) {
+        throw new Error('Event not found');
+      }
+
+      return EventDao.createEventTicketListing(formattedData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+  
+  public async getAllEventTicketListings(): Promise<EventTicketListing[]> {
+    return EventDao.getAllEventTicketListings();
+  }
+  
+  public async getEventTicketListingsByEventId(eventId: string): Promise<EventTicketListing[]> {
+    return EventDao.getEventTicketListingsByEventId(eventId);
+  }
+  
+  public async getEventTicketListingById(id: string): Promise<EventTicketListing> {
+    const listing = await EventDao.getEventTicketListingById(id);
+    if (!listing) {
+      throw new Error('Event ticket listing not found');
+    }
+    return listing;
+  }
+  
+  public async updateEventTicketListingDetails(id: string, data: Partial<EventTicketListingSchemaType>): Promise<EventTicketListing> {
+    try {
+      const existingListing = await EventDao.getEventTicketListingById(id);
+      if (!existingListing) {
+        throw new Error('Event ticket listing not found');
+      }
+  
+      EventTicketListingSchema.parse({ ...existingListing, ...data });
+      return EventDao.updateEventTicketListingDetails(id, data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+  
+  public async deleteEventTicketListing(id: string): Promise<void> {
+    await EventDao.deleteEventTicketListing(id);
   }
 
   public async uploadImageToS3(fileBuffer, fileName, mimeType) {

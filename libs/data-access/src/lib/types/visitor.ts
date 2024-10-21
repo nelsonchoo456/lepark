@@ -17,6 +17,7 @@ export interface VisitorResponse {
   contactNumber: string;
   favoriteSpecies?: SpeciesResponse[];
   isVerified: boolean;
+  // attractionTicketTransactions?: AttractionTicketTransactionResponse[],
 }
 //conflict here
 

@@ -145,6 +145,21 @@ export async function getSensorReadingTrendWithSlope(sensorId: string, hours: nu
   }
 }
 
+export async function getHourlyAverageSensorReadingsByDateRange(sensorId: string, startDate: Date, endDate: Date): Promise<AxiosResponse<{ date: Date; average: number }[]>> {
+  try {
+    const response: AxiosResponse<{ date: Date; average: number }[]> = await client.get(`${URL}/getHourlyAverageSensorReadingsByDateRange/${sensorId}`, {
+      params: { startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
 // Hub-specific functions
 export async function getAllSensorReadingsByHubIdAndSensorType(
   hubId: string,
@@ -380,9 +395,11 @@ export async function getZoneTrendForSensorType(
 ): Promise<
   AxiosResponse<{
     trendDescription: string;
-    averageRateOfChange: string;
-    averagePercentageChange: string;
-    overallChange: string;
+    absoluteChange: string;
+    rateOfChange: string;
+    directionOfChange: string;
+    magnitudeOfChange: string;
+    actionableInsight: string;
     readingsCount: number;
     unit: string;
   }>
@@ -399,7 +416,8 @@ export async function getZoneTrendForSensorType(
   }
 }
 
-export async function getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<AxiosResponse<any>> {
+export async function 
+getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<AxiosResponse<any>> {
   try {
     const response: AxiosResponse<any> = await client.get(`${URL}/getActiveZonePlantSensorCount/${zoneId}/${hoursAgo}`);
     return response;

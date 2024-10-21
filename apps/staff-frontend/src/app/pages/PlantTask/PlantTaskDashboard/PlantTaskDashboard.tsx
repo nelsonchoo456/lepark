@@ -1,22 +1,27 @@
-import React from 'react';
-import { Row, Col, Card } from 'antd';
+import React, { useMemo } from 'react';
+import { Row, Col, Card, Select, Typography } from 'antd';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskUrgencyEnum, PlantTaskTypeEnum } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { COLORS } from '../../../config/colors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, ChartDataLabels);
 
 interface PlantTaskDashboardProps {
   plantTasks: PlantTaskResponse[];
+  isSuperAdmin: boolean;
+  selectedParkId: string | null;
+  onParkChange: (parkId: string | null) => void;
+  parkOptions: { value: string | null; label: string }[];
 }
 
-const STATUS_COLORS = {
-  [PlantTaskStatusEnum.OPEN]: '#d9d9d9',
-  [PlantTaskStatusEnum.IN_PROGRESS]: '#1890ff',
-  [PlantTaskStatusEnum.COMPLETED]: '#52c41a',
-  [PlantTaskStatusEnum.CANCELLED]: '#8c8c8c',
+export const STATUS_COLORS = {
+  [PlantTaskStatusEnum.OPEN]: COLORS.sky[400],
+  [PlantTaskStatusEnum.IN_PROGRESS]: COLORS.mustard[400],
+  [PlantTaskStatusEnum.COMPLETED]: COLORS.green[400],
+  [PlantTaskStatusEnum.CANCELLED]: COLORS.gray[400],
 };
 
 const URGENCY_COLORS = {
@@ -45,7 +50,27 @@ const URGENCY_ORDER = [
   PlantTaskUrgencyEnum.IMMEDIATE,
 ];
 
-const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) => {
+const { Title } = Typography;
+
+const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({
+  plantTasks,
+  isSuperAdmin,
+  selectedParkId,
+  onParkChange,
+  parkOptions,
+}) => {
+  const filteredPlantTasks = useMemo(() => {
+    if (!selectedParkId) return plantTasks;
+    return plantTasks.filter(task => task.occurrence?.zone?.park?.name === selectedParkId);
+  }, [plantTasks, selectedParkId]);
+
+  const pendingTasks = useMemo(() => {
+    return filteredPlantTasks.filter(task => 
+      task.taskStatus === PlantTaskStatusEnum.OPEN || 
+      task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS
+    );
+  }, [filteredPlantTasks]);
+
   const getChartData = (dataFunction: () => { name: string; value: number; color: string }[]) => {
     const data = dataFunction();
     return {
@@ -60,10 +85,12 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
   };
 
   const getStatusData = () => {
-    const statusCounts = plantTasks.reduce((acc, task) => {
-      acc[task.taskStatus] = (acc[task.taskStatus] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const statusCounts = filteredPlantTasks
+      .filter(task => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
+      .reduce((acc, task) => {
+        acc[task.taskStatus] = (acc[task.taskStatus] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
     return Object.entries(statusCounts).map(([status, value]) => ({
       name: formatEnumLabelToRemoveUnderscores(status),
@@ -73,7 +100,7 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
   };
 
   const getUrgencyData = () => {
-    const urgencyCounts = plantTasks
+    const urgencyCounts = filteredPlantTasks
       .filter(task => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
       .reduce((acc, task) => {
         acc[task.taskUrgency] = (acc[task.taskUrgency] || 0) + 1;
@@ -88,7 +115,7 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
   };
 
   const getTaskTypeData = () => {
-    const typeCounts = plantTasks.filter(task => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS).reduce((acc, task) => {
+    const typeCounts = filteredPlantTasks.filter(task => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS).reduce((acc, task) => {
       acc[task.taskType] = (acc[task.taskType] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -149,30 +176,58 @@ const PlantTaskDashboard: React.FC<PlantTaskDashboardProps> = ({ plantTasks }) =
     },
   };
 
+  const renderNoTasksMessage = () => (
+    <div style={{ height: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Title level={4}>All tasks are completed! No pending tasks right now. </Title>
+      <img 
+        src="https://cdn.iconscout.com/icon/free/png-512/free-cute-happy-flower-character-sticker-icon-download-in-svg-png-gif-file-formats--floral-blossom-pack-nature-icons-7822140.png?f=webp&w=256" 
+        alt="Smiley Plant" 
+        style={{ width: '48px', height: '48px', marginLeft: '10px' }} 
+      />
+    </div>
+  );
+
   return (
-    <Row gutter={[16, 16]}>
-      <Col span={12}>
-        <Card title="Tasks by Status">
-          <div style={{ height: '300px' }}>
-            <Pie data={getChartData(getStatusData)} options={chartOptions} />
-          </div>
-        </Card>
-      </Col>
-      <Col span={12}>
-        <Card title="Tasks by Urgency">
-          <div style={{ height: '300px' }}>
-            <Bar data={getChartData(getUrgencyData)} options={barOptions} />
-          </div>
-        </Card>
-      </Col>
-      <Col span={24}>
-        <Card title="Task Distribution by Type">
-          <div style={{ height: '400px' }}>
-            <Pie data={getChartData(getTaskTypeData)} options={chartOptions} />
-          </div>
-        </Card>
-      </Col>
-    </Row>
+    <>
+      {isSuperAdmin && (
+        <Select
+          style={{ width: 200, marginBottom: 16 }}
+          placeholder="Select a park"
+          onChange={onParkChange}
+          value={selectedParkId}
+          options={parkOptions}
+        />
+      )}
+      <Row gutter={[16, 16]}>
+        <Col span={12}>
+          <Card title="Pending Tasks by Status">
+            <div style={{ height: '300px' }}>
+              {pendingTasks.length > 0 ? (
+                <Pie data={getChartData(getStatusData)} options={chartOptions} />
+              ) : renderNoTasksMessage()}
+            </div>
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="Pending Tasks by Urgency">
+            <div style={{ height: '300px' }}>
+              {pendingTasks.length > 0 ? (
+                <Bar data={getChartData(getUrgencyData)} options={barOptions} />
+              ) : renderNoTasksMessage()}
+            </div>
+          </Card>
+        </Col>
+        <Col span={24}>
+          <Card title="Pending Tasks by Type">
+            <div style={{ height: '400px' }}>
+              {pendingTasks.length > 0 ? (
+                <Pie data={getChartData(getTaskTypeData)} options={chartOptions} />
+              ) : renderNoTasksMessage()}
+            </div>
+          </Card>
+        </Col>
+      </Row>
+    </>
   );
 };
 

@@ -8,6 +8,7 @@ export const VisitorSchema = z.object({
   contactNumber: z.string().min(1, { message: 'Contact number is required' }),
   favoriteSpecies: z.array(z.string()).optional(),
   isVerified: z.boolean(),
+  attractionTicketTransasctions: z.array(z.string()).optional(),
 });
 
 export const LoginSchema = z.object({
