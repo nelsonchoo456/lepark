@@ -4,6 +4,7 @@ import { FacilityResponse } from './facility';
 import { ParkAssetResponse } from './parkasset';
 import { SensorResponse } from './sensor';
 import { HubResponse } from './hub';
+import { ParkResponse } from './park';
 
 export interface MaintenanceTaskData {
   title: string;
@@ -46,6 +47,7 @@ export interface MaintenanceTaskResponse {
   submittingStaffId: string;
   submittingStaff: StaffResponse;
   position: number;
+  facilityOfFaultyEntity: FacilityResponse & { park: ParkResponse };
 }
 
 export interface MaintenanceTaskUpdateData {

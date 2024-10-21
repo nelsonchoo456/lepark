@@ -74,6 +74,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [localMaintenanceTasks, setLocalMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
 
   useEffect(() => {
     fetchParks();
@@ -86,6 +87,10 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       setActiveKeys(groupKeys);
     }
   }, [tableViewType]);
+
+  useEffect(() => {
+    setLocalMaintenanceTasks(maintenanceTasks);
+  }, [maintenanceTasks]);
 
   const fetchParks = async () => {
     try {
@@ -146,8 +151,21 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     try {
       await assignMaintenanceTask(taskId, user?.id || '');
       await updateMaintenanceTaskStatus(taskId, MaintenanceTaskStatusEnum.IN_PROGRESS, user?.id);
+      
+      // Update the local state
+      setLocalMaintenanceTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId
+            ? {
+                ...task,
+                taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS,
+                assignedStaff: user || undefined
+              }
+            : task
+        )
+      );
+      
       message.success('Task assigned and updated successfully');
-      onTaskUpdated();
     } catch (error) {
       console.error('Error taking task:', error);
       message.error('Failed to take task');
@@ -158,8 +176,21 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     try {
       await unassignMaintenanceTask(taskId, user?.id || '');
       await updateMaintenanceTaskStatus(taskId, MaintenanceTaskStatusEnum.OPEN);
+      
+      // Update the local state
+      setLocalMaintenanceTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId
+            ? {
+                ...task,
+                taskStatus: MaintenanceTaskStatusEnum.OPEN,
+                assignedStaff: undefined
+              }
+            : task
+        )
+      );
+      
       message.success('Task unassigned and updated successfully');
-      onTaskUpdated();
     } catch (error) {
       console.error('Error returning task:', error);
       message.error('Failed to return task');
@@ -180,6 +211,8 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     return false;
   });
 
+  console.log("Filtered Tasks", filteredTasks);
+
   const columns: TableProps<MaintenanceTaskResponse>['columns'] = [
     {
       title: 'Title',
@@ -192,76 +225,44 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     {
       title: userRole === StaffType.SUPERADMIN ? 'Park, Location' : 'Location',
       render: (_, record) => {
-        const getFacilityName = () => {
-          if (record.parkAsset?.facility) return record.parkAsset.facility.name;
-          if (record.sensor?.facility) return record.sensor.facility.name;
-          if (record.hub?.facility) return record.hub.facility.name;
-          if (record.facility) return record.facility.name;
-          return 'N/A';
-        };
 
         return (
           <div>
-            {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.submittingStaff?.park?.name}</p>}
+            {userRole === StaffType.SUPERADMIN && <p className="font-semibold">{record.facilityOfFaultyEntity.park.name}</p>}
             <div className="flex">
               {userRole !== StaffType.SUPERADMIN && <p className="opacity-50 mr-2"></p>}
-              {getFacilityName()}
+              {record.facilityOfFaultyEntity.name}
             </div>
           </div>
         );
       },
       sorter: (a, b) => {
-        const getFacilityName = (record: MaintenanceTaskResponse) => {
-          if (record.parkAsset?.facility) return record.parkAsset.facility.name;
-          if (record.sensor?.facility) return record.sensor.facility.name;
-          if (record.hub?.facility) return record.hub.facility.name;
-          if (record.facility) return record.facility.name;
-          return '';
-        };
-
         if (userRole === StaffType.SUPERADMIN) {
-          const parkCompare = (a.submittingStaff?.park?.name || '').localeCompare(b.submittingStaff?.park?.name || '');
+          const parkCompare = (a.facilityOfFaultyEntity.park.name || '').localeCompare(b.facilityOfFaultyEntity.park.name || '');
           if (parkCompare !== 0) return parkCompare;
         }
-        return getFacilityName(a).localeCompare(getFacilityName(b));
+        return a.facilityOfFaultyEntity.name.localeCompare(b.facilityOfFaultyEntity.name);
       },
       filters: userRole === StaffType.SUPERADMIN
         ? parks
         : Object.values(
             filteredMaintenanceTasks.reduce((acc, task) => {
-              let facilityName, facilityId;
-              if (task.parkAsset?.facility) {
-                facilityName = task.parkAsset.facility.name;
-                facilityId = task.parkAsset.facility.id;
-              } else if (task.sensor?.facility) {
-                facilityName = task.sensor.facility.name;
-                facilityId = task.sensor.facility.id;
-              } else if (task.hub?.facility) {
-                facilityName = task.hub.facility.name;
-                facilityId = task.hub.facility.id;
-              } else if (task.facility) {
-                facilityName = task.facility.name;
-                facilityId = task.facility.id;
-              }
+              const facilityName = task.facilityOfFaultyEntity?.name;
+              const facilityId = task.facilityOfFaultyEntity?.id;
               if (facilityName && facilityId) {
-                acc[facilityId] = { text: facilityName, value: facilityId.toString() };
+                acc[facilityId] = { text: facilityName, value: facilityId };
               }
               return acc;
             }, {} as Record<string, { text: string; value: string }>)
           ),
-      onFilter: (value, record) => {
-        if (userRole === StaffType.SUPERADMIN) {
-          return record.submittingStaff?.park?.id === value;
-        } else {
-          return (
-            (record.parkAsset?.facility?.id === value) ||
-            (record.sensor?.facility?.id === value) ||
-            (record.hub?.facility?.id === value) ||
-            (record.facility?.id === value)
-          );
-        }
-      },
-      width: '15%',
+        onFilter: (value, record) => {
+          if (userRole === StaffType.SUPERADMIN) {
+            return record.facilityOfFaultyEntity.park.id === value;
+          } else {
+            return record.facilityOfFaultyEntity.id === value;
+          }
+        },
+        width: '15%',
     },
     {
       title: 'Task Type',
@@ -538,7 +539,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       {tableViewType === 'all' && (
         <Card styles={{ body: { padding: '1rem' } }}>
           <Table
-            dataSource={filteredTasks}
+            dataSource={localMaintenanceTasks} // Use localMaintenanceTasks instead of filteredTasks
             columns={columns}
             rowKey="id"
             loading={loading}

@@ -263,7 +263,7 @@ const MaintenanceTaskBoardView = ({
     }
 
     // Add Delete Task option for Superadmin and Manager
-    if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER) {
+    if (userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.VENDOR_MANAGER) {
       dropdownItems.push({
         label: 'Delete Task',
         key: '3',
