@@ -71,8 +71,13 @@ const FeedbackViewDetails = () => {
   const withoutUnderscores = enumValue.replace(/_/g, ' ').toLowerCase();
   return withoutUnderscores.charAt(0).toUpperCase() + withoutUnderscores.slice(1);
 };
-const handleCreatePlantTask = () => {
-    navigate('/plant-tasks/create', { state: { description: feedback?.description } });
+  const handleCreatePlantTask = () => {
+    navigate('/plant-tasks/create', {
+      state: {
+        title: feedback?.title,
+        description: feedback?.description
+      }
+    });
   };
 
   useEffect(() => {

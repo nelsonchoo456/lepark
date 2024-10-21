@@ -44,13 +44,18 @@ const CreatePlantTask = () => {
   const [showDueDate, setShowDueDate] = useState(false);
 
   const location = useLocation();
-  const { description: feedbackDescription } = location.state || {};
+  const { title: feedbackTitle, description: feedbackDescription } = location.state || {};
+
+
 
   useEffect(() => {
-    if (feedbackDescription) {
-      form.setFieldsValue({ description: feedbackDescription });
+    if (feedbackTitle || feedbackDescription) {
+      form.setFieldsValue({
+        title: feedbackTitle,
+        description: feedbackDescription
+      });
     }
-  }, [feedbackDescription, form]);
+  }, [feedbackTitle, feedbackDescription, form]);
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
@@ -235,24 +240,25 @@ const CreatePlantTask = () => {
                 disabled={isOccurrenceDisabled} // Disable Occurrence field initially
               />
             </Form.Item>
-            <Form.Item
+             <Form.Item
               name="title"
               label="Title"
               rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }, { max: 100, message: 'Valid title must be at most 100 characters long' }]}
+              initialValue={feedbackTitle}
             >
               <Input placeholder="Give this Plant Task a title!" />
             </Form.Item>
             <Form.Item
-          name="description"
-          label="Description"
-          rules={[{ required: true }]}
-          initialValue={feedbackDescription}
-        >
-          <TextArea
-            placeholder="Describe the Plant Task"
-            autoSize={{ minRows: 3, maxRows: 5 }}
-          />
-        </Form.Item>
+              name="description"
+              label="Description"
+              rules={[{ required: true }]}
+              initialValue={feedbackDescription}
+            >
+              <TextArea
+                placeholder="Describe the Plant Task"
+                autoSize={{ minRows: 3, maxRows: 5 }}
+              />
+            </Form.Item>
             <Form.Item name="taskType" label="Task Type" rules={[{ required: true}]}>
               <Select placeholder="Select a Task Type" options={taskTypeOptions} />
             </Form.Item>

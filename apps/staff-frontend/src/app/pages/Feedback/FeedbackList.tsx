@@ -10,6 +10,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { useFetchFeedbacks } from '../../hooks/Feedback/useFetchFeedbacks';
 import { SCREEN_LG } from '../../config/breakpoints';
+import MainLayout from '../../components/main/MainLayout';
 
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
@@ -159,24 +160,23 @@ const FeedbackList = () => {
       isCurrent: true,
     },
   ];
-
   return (
-    <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
-      <Flex justify="end" gap={10}>
-        <Input
-          suffix={<FiSearch />}
-          placeholder="Search in Feedbacks..."
-          onChange={handleSearch}
-          className="mb-4 bg-white"
-          variant="filled"
-        />
-      </Flex>
+      <ContentWrapperDark>
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
+        <Flex justify="end" gap={10}>
+          <Input
+            suffix={<FiSearch />}
+            placeholder="Search in Feedbacks..."
+            onChange={handleSearch}
+            className="mb-4 bg-white"
+            variant="filled"
+          />
+        </Flex>
 
-      <Card>
-        <Table dataSource={filteredFeedbacks} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
-      </Card>
-    </ContentWrapperDark>
+        <Card>
+          <Table dataSource={filteredFeedbacks} columns={columns} rowKey="id" loading={loading} scroll={{ x: SCREEN_LG }}/>
+        </Card>
+      </ContentWrapperDark>
   );
 };
 
