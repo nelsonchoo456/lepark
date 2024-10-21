@@ -30,6 +30,7 @@ const getFeedbackStatusColor = (status: string) => {
   }
 }
 
+
 const initialFeedback: FeedbackResponse = {
   id: '',
   title: '',
@@ -70,6 +71,9 @@ const FeedbackViewDetails = () => {
   const withoutUnderscores = enumValue.replace(/_/g, ' ').toLowerCase();
   return withoutUnderscores.charAt(0).toUpperCase() + withoutUnderscores.slice(1);
 };
+const handleCreatePlantTask = () => {
+    navigate('/plant-tasks/create', { state: { description: feedback?.description } });
+  };
 
   useEffect(() => {
     if (!loading && feedback) {
@@ -317,6 +321,15 @@ const FeedbackViewDetails = () => {
             </div>
           }
         />
+         {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+            <Button
+              type="primary"
+              onClick={handleCreatePlantTask}
+              className="mt-4"
+            >
+              Create Plant Task
+            </Button>
+          )}
       </Card>
     </ContentWrapperDark>
   );

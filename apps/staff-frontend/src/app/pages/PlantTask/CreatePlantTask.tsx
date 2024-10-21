@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ContentWrapperDark, useAuth, ImageInput } from '@lepark/common-ui';
 import {
   createPlantTask,
@@ -42,6 +42,15 @@ const CreatePlantTask = () => {
   const [isOccurrenceDisabled, setIsOccurrenceDisabled] = useState(true);
 
   const [showDueDate, setShowDueDate] = useState(false);
+
+  const location = useLocation();
+  const { description: feedbackDescription } = location.state || {};
+
+  useEffect(() => {
+    if (feedbackDescription) {
+      form.setFieldsValue({ description: feedbackDescription });
+    }
+  }, [feedbackDescription, form]);
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
@@ -233,14 +242,22 @@ const CreatePlantTask = () => {
             >
               <Input placeholder="Give this Plant Task a title!" />
             </Form.Item>
-            <Form.Item name="description" label="Description" rules={[{ required: true }]}>
-              <TextArea placeholder="Describe the Plant Task" autoSize={{ minRows: 3, maxRows: 5 }} />
-            </Form.Item>
+            <Form.Item
+          name="description"
+          label="Description"
+          rules={[{ required: true }]}
+          initialValue={feedbackDescription}
+        >
+          <TextArea
+            placeholder="Describe the Plant Task"
+            autoSize={{ minRows: 3, maxRows: 5 }}
+          />
+        </Form.Item>
             <Form.Item name="taskType" label="Task Type" rules={[{ required: true}]}>
               <Select placeholder="Select a Task Type" options={taskTypeOptions} />
             </Form.Item>
             <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
-              
+
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
             <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
