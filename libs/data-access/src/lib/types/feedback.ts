@@ -41,4 +41,5 @@ export interface FeedbackUpdateData {
   remarks?: string | null;
   staffId?: string | null;
   parkId?: number | null;
+  dateResolved?: string | null;
 }

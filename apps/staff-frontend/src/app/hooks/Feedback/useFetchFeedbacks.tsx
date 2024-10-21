@@ -25,7 +25,7 @@ export const useFetchFeedbacks = () => {
     try {
       let feedbacksData;
       if (user?.role === StaffType.SUPERADMIN) {
-        const response = await getFeedbackByParkId(1);
+        const response = await getAllFeedback();
         feedbacksData = response.data;
       } else if (user?.parkId) {
         const response = await getFeedbackByParkId(user.parkId);

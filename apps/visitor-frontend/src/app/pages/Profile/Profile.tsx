@@ -31,7 +31,7 @@ import {
   viewVisitorDetails,
   VisitorResponse,
   VisitorUpdateData,
-  getAllFeedbacks,
+  getAllFeedback,
   FeedbackResponse,
 } from '@lepark/data-access';
 import { PiSmiley } from 'react-icons/pi';
@@ -144,7 +144,7 @@ const ProfilePage = () => {
         return;
       }
       try {
-        const response = await getAllFeedbacks(user.id);
+        const response = await getAllFeedback(user.id);
         setFeedbacks(response.data);
       } catch (error) {
         console.error('Error fetching feedbacks:', error);

@@ -5,7 +5,7 @@ import { FiSearch } from 'react-icons/fi';
 import { useAuth } from '@lepark/common-ui';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
-import { VisitorResponse, FeedbackResponse, getAllFeedbacks, FeedbackStatusEnum, FeedbackCategoryEnum, getAllParks, ParkResponse } from '@lepark/data-access';
+import { VisitorResponse, FeedbackResponse, getAllFeedback, FeedbackStatusEnum, FeedbackCategoryEnum, getAllParks, ParkResponse } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import FeedbackCard from '../Profile/components/FeedbackCard';
 
@@ -29,7 +29,7 @@ const FeedbackList = () => {
       setLoading(true);
       try {
         const [feedbacksResponse, parksResponse] = await Promise.all([
-          getAllFeedbacks(user.id),
+          getAllFeedback(user.id),
           getAllParks()
         ]);
         setFeedbacks(feedbacksResponse.data);
