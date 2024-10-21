@@ -104,6 +104,8 @@ import AnnouncementCreate from './pages/Announcement/AnnouncementCreate';
 import AnnouncementDetails from './pages/AnnouncementDetails/AnnouncementDetails';
 import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails/TicketListingDetails';
 import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
+import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
+import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
 
 export function App() {
   return (
@@ -320,7 +322,8 @@ export function App() {
                 </Route>
 
                 <Route path="/maintenance-tasks">
-                  <Route index element={<MaintenanceTask />} />
+                  <Route index element={<MaintenanceTaskList />} />
+                  <Route path="create" element={<CreateMaintenanceTask />} />
                 </Route>
 
                 {/* Settings Routes */}

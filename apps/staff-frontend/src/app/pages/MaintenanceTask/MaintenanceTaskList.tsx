@@ -4,20 +4,18 @@ import { Button, Card, Input, Flex, message, Radio, Select, Collapse, Row, Col, 
 import { FiSearch } from 'react-icons/fi';
 import { useEffect, useState, useMemo } from 'react';
 import {
-  getAllPlantTasks,
-  getPlantTasksByParkId,
-  PlantTaskResponse,
+  getAllMaintenanceTasks,
+  getMaintenanceTasksByParkId,
+  MaintenanceTaskResponse,
   StaffType,
   StaffResponse,
-  deletePlantTask,
-  assignPlantTask,
+  deleteMaintenanceTask,
+  assignMaintenanceTask,
   getAllStaffsByParkId,
   getAllStaffs,
-  getAllAssignedPlantTasks,
-  unassignPlantTask,
-  PlantTaskStatusEnum,
-  getParkPlantTaskCompletionRates,
-  getParkPlantTaskOverdueRates,
+  getAllAssignedMaintenanceTasks,
+  unassignMaintenanceTask,
+  MaintenanceTaskStatusEnum,
   getParkAverageTaskCompletionTime,
   getParkTaskLoadPercentage,
   CompletionRateData,
@@ -30,45 +28,33 @@ import {
 import PageHeader2 from '../../components/main/PageHeader2';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import PlantTaskBoardView from './PlantTaskBoardView';
-import PlantTaskDashboard from './PlantTaskDashboard/PlantTaskDashboard';
-import PlantTaskTableView from './PlantTaskTableView';
 import moment from 'moment';
 import { Tabs } from 'antd';
 import { MdArrowBack } from 'react-icons/md';
-import StaffWorkloadTable from './PlantTaskDashboard/components/StaffWorkloadTable';
-import CompletionRateChart from './PlantTaskDashboard/components/CompletionRateChart';
-import OverdueRateChart from './PlantTaskDashboard/components/OverdueRateChart';
-import AverageCompletionTimeChart from './PlantTaskDashboard/components/AverageCompletionTimeChart';
-import TaskLoadPercentageChart from './PlantTaskDashboard/components/TaskLoadPercentageChart';
-import StaffPerformanceRanking from './PlantTaskDashboard/components/StaffPerformanceRanking';
-import StaffAverageCompletionTimeLineChart from './PlantTaskDashboard/components/StaffAverageCompletionTimeLineChart';
-import TaskCompletedChart from './PlantTaskDashboard/components/TaskCompletedChart';
-import StaffCompletionRatesLineChart from './PlantTaskDashboard/components/StaffCompletionRatesLineChart';
-import StaffOverdueRatesLineChart from './PlantTaskDashboard/components/StaffOverdueRatesLineChart';
-import StaffTasksCompletedLineChart from './PlantTaskDashboard/components/StaffTasksCompletedLineChart';
+import MaintenanceTaskBoardView from './MaintenanceTaskBoardView';
+import MaintenanceTaskTableView from './MaintenanceTaskTableView';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
 
-const PlantTaskList: React.FC = () => {
-  const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
+const MaintenanceTaskList: React.FC = () => {
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
+  const [maintenanceTaskToBeDeleted, setMaintenanceTaskToBeDeleted] = useState<MaintenanceTaskResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [viewMode, setViewMode] = useState<'categories' | 'table'>('categories');
   const [inDashboards, setInDashboards] = useState(false);
   const [tableViewType, setTableViewType] = useState<'all' | 'grouped-status' | 'grouped-urgency'>('all');
 
-  const [open, setOpen] = useState<PlantTaskResponse[]>([]);
-  const [inProgress, setInProgress] = useState<PlantTaskResponse[]>([]);
-  const [completed, setCompleted] = useState<PlantTaskResponse[]>([]);
-  const [cancelled, setCancelled] = useState<PlantTaskResponse[]>([]);
+  const [open, setOpen] = useState<MaintenanceTaskResponse[]>([]);
+  const [inProgress, setInProgress] = useState<MaintenanceTaskResponse[]>([]);
+  const [completed, setCompleted] = useState<MaintenanceTaskResponse[]>([]);
+  const [cancelled, setCancelled] = useState<MaintenanceTaskResponse[]>([]);
 
   const [staffList, setStaffList] = useState<StaffResponse[]>([]);
 
@@ -84,30 +70,30 @@ const PlantTaskList: React.FC = () => {
   const [staffPerformanceRanking, setStaffPerformanceRanking] = useState<StaffPerformanceRankingData | null>(null);
 
   useEffect(() => {
-    fetchPlantTasks();
+    fetchMaintenanceTasks();
     if (user?.role === StaffType.MANAGER) {
       fetchStaffPerformanceRanking();
     }
   }, [user]);
 
-  const fetchPlantTasks = async () => {
+  const fetchMaintenanceTasks = async () => {
     try {
       let response;
-      if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
-        response = user?.parkId ? await getPlantTasksByParkId(user.parkId) : await getAllPlantTasks();
+      if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.VENDOR_MANAGER) {
+        response = user?.parkId ? await getMaintenanceTasksByParkId(user.parkId) : await getAllMaintenanceTasks();
       } else {
-        response = await getAllAssignedPlantTasks(user?.id || '');
+        response = await getAllAssignedMaintenanceTasks(user?.id || '');
       }
-      setPlantTasks(response.data);
+      setMaintenanceTasks(response.data);
 
       // Sort tasks by position before setting the state
       const sortedTasks = response.data.sort((a, b) => a.position - b.position);
 
       // set filtered tables
-      setOpen(sortedTasks.filter((task) => task.taskStatus === 'OPEN'));
-      setInProgress(sortedTasks.filter((task) => task.taskStatus === 'IN_PROGRESS'));
-      setCompleted(sortedTasks.filter((task) => task.taskStatus === 'COMPLETED'));
-      setCancelled(sortedTasks.filter((task) => task.taskStatus === 'CANCELLED'));
+      setOpen(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN));
+      setInProgress(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS));
+      setCompleted(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED));
+      setCancelled(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
 
       // Fetch staff list
       let staffResponse;
@@ -120,81 +106,81 @@ const PlantTaskList: React.FC = () => {
       const filteredStaff = staffResponse?.data.filter((staff) => staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST);
       setStaffList(filteredStaff || []);
     } catch (error) {
-      console.error('Error fetching plant tasks:', error);
-      messageApi.error('Failed to fetch plant tasks');
+      console.error('Error fetching maintenance tasks:', error);
+      messageApi.error('Failed to fetch maintenance tasks');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAssignStaff = async (plantTaskId: string, staffId: string) => {
+  const handleAssignStaff = async (maintenanceTaskId: string, staffId: string) => {
     try {
-      await assignPlantTask(plantTaskId, user?.id || '', staffId);
+      await assignMaintenanceTask(maintenanceTaskId, user?.id || '');
       messageApi.success('Staff assigned successfully');
-      fetchPlantTasks();
+      fetchMaintenanceTasks();
     } catch (error) {
       console.error('Error assigning staff:', error);
       messageApi.error('Failed to assign staff');
     }
   };
 
-  const handleUnassignStaff = async (plantTaskId: string, staffId: string) => {
+  const handleUnassignStaff = async (maintenanceTaskId: string, staffId: string) => {
     try {
-      await unassignPlantTask(plantTaskId, staffId);
+      await unassignMaintenanceTask(maintenanceTaskId, staffId);
       message.success('Staff unassigned successfully');
-      fetchPlantTasks();
+      fetchMaintenanceTasks();
     } catch (error) {
       console.error('Failed to unassign staff:', error);
       message.error('Failed to unassign staff');
     }
   };
 
-  const filteredPlantTasks = useMemo(() => {
-    return plantTasks.filter((plantTask) =>
-      Object.values(plantTask).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
+  const filteredMaintenanceTasks = useMemo(() => {
+    return maintenanceTasks.filter((maintenanceTask) =>
+      Object.values(maintenanceTask).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())),
     );
-  }, [searchQuery, plantTasks]);
+  }, [searchQuery, maintenanceTasks]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  const navigateToDetails = (plantTaskId: string) => {
-    navigate(`/plant-tasks/${plantTaskId}`);
+  const navigateToDetails = (maintenanceTaskId: string) => {
+    navigate(`/maintenance-tasks/${maintenanceTaskId}`);
   };
 
-  const showDeleteModal = (plantTask: PlantTaskResponse) => {
+  const showDeleteModal = (maintenanceTask: MaintenanceTaskResponse) => {
     setDeleteModalOpen(true);
-    setPlantTaskToBeDeleted(plantTask);
+    setMaintenanceTaskToBeDeleted(maintenanceTask);
   };
 
   const cancelDelete = () => {
-    setPlantTaskToBeDeleted(null);
+    setMaintenanceTaskToBeDeleted(null);
     setDeleteModalOpen(false);
   };
 
-  const deletePlantTaskConfirmed = async () => {
+  const deleteMaintenanceTaskConfirmed = async () => {
     try {
-      if (!plantTaskToBeDeleted) {
-        throw new Error('Unable to delete Plant Task at this time');
+      if (!maintenanceTaskToBeDeleted) {
+        throw new Error('Unable to delete Maintenance Task at this time');
       }
-      await deletePlantTask(plantTaskToBeDeleted.id);
-      fetchPlantTasks();
-      setPlantTaskToBeDeleted(null);
+      await deleteMaintenanceTask(maintenanceTaskToBeDeleted.id);
+      fetchMaintenanceTasks();
+      setMaintenanceTaskToBeDeleted(null);
       setDeleteModalOpen(false);
-      messageApi.success(`Deleted Plant Task: ${plantTaskToBeDeleted.title}.`);
+      messageApi.success(`Deleted Maintenance Task: ${maintenanceTaskToBeDeleted.title}.`);
     } catch (error) {
       console.error(error);
-      setPlantTaskToBeDeleted(null);
+      setMaintenanceTaskToBeDeleted(null);
       setDeleteModalOpen(false);
-      messageApi.error('Unable to delete Plant Task at this time. Please try again later.');
+      messageApi.error('Unable to delete Maintenance Task at this time. Please try again later.');
     }
   };
 
   const breadcrumbItems = [
     {
-      title: 'Plant Task Management',
-      pathKey: '/plant-tasks',
+      title: 'Maintenance Task Management',
+      pathKey: '/maintenance-tasks',
       isMain: true,
       isCurrent: true,
     },
@@ -212,111 +198,111 @@ const PlantTaskList: React.FC = () => {
     }
   };
 
-  const renderDashboardOverview = () => {
-    return (
-      <>
-        {renderStatisticsOverview(true)}
-        <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
-          <Tabs
-            defaultActiveKey="1"
-            items={[
-              {
-                key: '1',
-                label: 'Pending Tasks Breakdown',
-                children: (
-                  <PlantTaskDashboard
-                    plantTasks={plantTasks}
-                    isSuperAdmin={isSuperAdmin}
-                    selectedParkId={selectedParkId}
-                    onParkChange={(parkId) => setSelectedParkId(parkId)}
-                    parkOptions={parkOptions as { value: string | null; label: string }[]}
-                  />
-                ),
-              },
-              {
-                key: '2',
-                label: 'Staff Workload',
-                children: (
-                  <>
-                    <StaffWorkloadTable
-                      staffList={staffList}
-                      plantTasks={plantTasks}
-                      isSuperAdmin={isSuperAdmin}
-                      selectedParkId={selectedParkId}
-                      onParkChange={(parkId) => setSelectedParkId(parkId)}
-                      parkOptions={parkOptions as { value: string | null; label: string }[]}
-                    />
-                    <TaskLoadPercentageChart />
-                  </>
-                ),
-              },
-              !isSuperAdmin
-                ? {
-                    key: '3',
-                    label: 'Staff Performance Analytics',
-                    children: (
-                      <>
-                        {staffPerformanceRanking && (
-                          <StaffPerformanceRanking
-                            bestPerformer={staffPerformanceRanking.bestPerformer}
-                            secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
-                            thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
-                            message={staffPerformanceRanking.message}
-                          />
-                        )}
-                        <Row gutter={[16, 16]}>
-                          <Col span={12}>
-                            <CompletionRateChart />
-                          </Col>
-                          <Col span={12}>
-                          <StaffCompletionRatesLineChart />
+//   const renderDashboardOverview = () => {
+//     return (
+//       <>
+//         {renderStatisticsOverview(true)}
+//         <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
+//           <Tabs
+//             defaultActiveKey="1"
+//             items={[
+//               {
+//                 key: '1',
+//                 label: 'Pending Tasks Breakdown',
+//                 children: (
+//                   <MaintenanceTaskDashboard
+//                     maintenanceTasks={maintenanceTasks}
+//                     isSuperAdmin={isSuperAdmin}
+//                     selectedParkId={selectedParkId}
+//                     onParkChange={(parkId) => setSelectedParkId(parkId)}
+//                     parkOptions={parkOptions as { value: string | null; label: string }[]}
+//                   />
+//                 ),
+//               },
+//               {
+//                 key: '2',
+//                 label: 'Staff Workload',
+//                 children: (
+//                   <>
+//                     <StaffWorkloadTable
+//                       staffList={staffList}
+//                       maintenanceTasks={maintenanceTasks}
+//                       isSuperAdmin={isSuperAdmin}
+//                       selectedParkId={selectedParkId}
+//                       onParkChange={(parkId) => setSelectedParkId(parkId)}
+//                       parkOptions={parkOptions as { value: string | null; label: string }[]}
+//                     />
+//                     <TaskLoadPercentageChart />
+//                   </>
+//                 ),
+//               },
+//               !isSuperAdmin
+//                 ? {
+//                     key: '3',
+//                     label: 'Staff Performance Analytics',
+//                     children: (
+//                       <>
+//                         {staffPerformanceRanking && (
+//                           <StaffPerformanceRanking
+//                             bestPerformer={staffPerformanceRanking.bestPerformer}
+//                             secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
+//                             thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
+//                             message={staffPerformanceRanking.message}
+//                           />
+//                         )}
+//                         <Row gutter={[16, 16]}>
+//                           <Col span={12}>
+//                             <CompletionRateChart />
+//                           </Col>
+//                           <Col span={12}>
+//                           <StaffCompletionRatesLineChart />
                             
-                          </Col>
-                        </Row>
-                        <Row gutter={[16, 16]} className="mt-4">
-                          <Col span={12}>
-                            <AverageCompletionTimeChart />
-                          </Col>
-                          <Col span={12}>
-                            <StaffAverageCompletionTimeLineChart />
-                          </Col>
-                        </Row>
-                        <Row gutter={[16, 16]} className="mt-4">
-                          <Col span={12}>
-                            <TaskCompletedChart />
-                          </Col>
-                          <Col span={12}>
-                            <StaffTasksCompletedLineChart />
-                          </Col>
-                        </Row>
-                        <Row gutter={[16, 16]} className="mt-4">
-                          <Col span={12}>
-                          <OverdueRateChart />
-                          </Col>
-                          <Col span={12}>
-                            <StaffOverdueRatesLineChart />
-                          </Col>
-                        </Row>
-                      </>
-                    ),
-                  }
-                : null,
-            ].filter(Boolean)}
-          />
-        </Card>
-      </>
-    );
-  };
+//                           </Col>
+//                         </Row>
+//                         <Row gutter={[16, 16]} className="mt-4">
+//                           <Col span={12}>
+//                             <AverageCompletionTimeChart />
+//                           </Col>
+//                           <Col span={12}>
+//                             <StaffAverageCompletionTimeLineChart />
+//                           </Col>
+//                         </Row>
+//                         <Row gutter={[16, 16]} className="mt-4">
+//                           <Col span={12}>
+//                             <TaskCompletedChart />
+//                           </Col>
+//                           <Col span={12}>
+//                             <StaffTasksCompletedLineChart />
+//                           </Col>
+//                         </Row>
+//                         <Row gutter={[16, 16]} className="mt-4">
+//                           <Col span={12}>
+//                           <OverdueRateChart />
+//                           </Col>
+//                           <Col span={12}>
+//                             <StaffOverdueRatesLineChart />
+//                           </Col>
+//                         </Row>
+//                       </>
+//                     ),
+//                   }
+//                 : null,
+//             ].filter(Boolean)}
+//           />
+//         </Card>
+//       </>
+//     );
+//   };
 
-  const totalOpenTasks = plantTasks.filter((task) => task.taskStatus === 'OPEN').length;
-  const outstandingTasks = plantTasks.filter((task) => task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED').length;
-  const urgentTasks = plantTasks.filter(
+  const totalOpenTasks = maintenanceTasks.filter((task) => task.taskStatus === 'OPEN').length;
+  const outstandingTasks = maintenanceTasks.filter((task) => task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED').length;
+  const urgentTasks = maintenanceTasks.filter(
     (task) =>
       (task.taskUrgency === 'HIGH' || task.taskUrgency === 'IMMEDIATE') &&
       task.taskStatus !== 'COMPLETED' &&
       task.taskStatus !== 'CANCELLED',
   ).length;
-  const overdueTasks = plantTasks.filter(
+  const overdueTasks = maintenanceTasks.filter(
     (task) => moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
   ).length;
 
@@ -373,8 +359,8 @@ const PlantTaskList: React.FC = () => {
 
   const renderTableView = () => {
     return (
-      <PlantTaskTableView
-        plantTasks={filteredPlantTasks}
+      <MaintenanceTaskTableView
+        maintenanceTasks={filteredMaintenanceTasks}
         loading={loading}
         staffList={staffList}
         tableViewType={tableViewType}
@@ -384,7 +370,7 @@ const PlantTaskList: React.FC = () => {
         navigate={navigate}
         showDeleteModal={showDeleteModal}
         handleUnassignStaff={handleUnassignStaff}
-        onTaskUpdated={fetchPlantTasks}
+        onTaskUpdated={fetchMaintenanceTasks}
         handleStatusChange={handleStatusChange}
       />
     );
@@ -416,7 +402,7 @@ const PlantTaskList: React.FC = () => {
       return renderTableView();
     } else {
       return (
-        <PlantTaskBoardView
+        <MaintenanceTaskBoardView
           open={open}
           inProgress={inProgress}
           completed={completed}
@@ -425,7 +411,7 @@ const PlantTaskList: React.FC = () => {
           setCompleted={setCompleted}
           setInProgress={setInProgress}
           setCancelled={setCancelled}
-          refreshData={fetchPlantTasks}
+          refreshData={fetchMaintenanceTasks}
           userRole={user?.role || ''}
           loading={loading} // Pass the loading state
         />
@@ -433,19 +419,19 @@ const PlantTaskList: React.FC = () => {
     }
   };
 
-  const handleStatusChange = (newStatus: PlantTaskStatusEnum) => {
-    fetchPlantTasks();
+  const handleStatusChange = (newStatus: MaintenanceTaskStatusEnum) => {
+    fetchMaintenanceTasks();
   };
 
-  if (inDashboards) {
-    return (
-      <ContentWrapperDark>
-        {contextHolder}
-        <PageHeader2 breadcrumbItems={breadcrumbItems} />
-        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
-      </ContentWrapperDark>
-    );
-  }
+//   if (inDashboards) {
+//     return (
+//       <ContentWrapperDark>
+//         {contextHolder}
+//         <PageHeader2 breadcrumbItems={breadcrumbItems} />
+//         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
+//       </ContentWrapperDark>
+//     );
+//   }
 
   return (
     <ContentWrapperDark>
@@ -472,7 +458,7 @@ const PlantTaskList: React.FC = () => {
           {(isSuperAdmin || viewMode === 'table') && (
             <Input
               suffix={<FiSearch />}
-              placeholder="Search in Plant Tasks..."
+              placeholder="Search in Maintenance Tasks..."
               className="bg-white"
               variant="filled"
               onChange={handleSearch}
@@ -481,22 +467,22 @@ const PlantTaskList: React.FC = () => {
           <Button
             type="primary"
             onClick={() => {
-              navigate('/plant-tasks/create');
+              navigate('/maintenance-tasks/create');
             }}
           >
-            Create Plant Task
+            Create Maintenance Task
           </Button>
         </Flex>
       </Flex>
       {renderBoard()}
       <ConfirmDeleteModal
-        onConfirm={deletePlantTaskConfirmed}
+        onConfirm={deleteMaintenanceTaskConfirmed}
         open={deleteModalOpen}
         onCancel={cancelDelete}
-        description="Are you sure you want to delete this Plant Task?"
+        description="Are you sure you want to delete this Maintenance Task?"
       />
     </ContentWrapperDark>
   );
 };
 
-export default PlantTaskList;
+export default MaintenanceTaskList;

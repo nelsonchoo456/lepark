@@ -1652,6 +1652,79 @@ const attractionsData = [
   },
 ];
 
+const maintenanceTasksData = [
+  {
+    title: 'Repair Broken Bench',
+    description: 'Fix the broken wooden slats on the bench near the main entrance.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-15'),
+    updatedAt: new Date('2024-10-15'),
+    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Due in 2 days
+    completedDate: null,
+    images: ['https://example.com/broken-bench.jpg'],
+    remarks: 'Requires replacement wood and tools.',
+    position: 1,
+  },
+  {
+    title: 'Calibrate Temperature Sensor',
+    description: 'Recalibrate the temperature sensor in the Orchid Garden for accurate readings.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-14'),
+    updatedAt: new Date('2024-10-16'),
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Due in 3 days
+    completedDate: null,
+    images: ['https://example.com/temperature-sensor.jpg'],
+    remarks: 'Use calibration kit #3.',
+    position: 2,
+  },
+  {
+    title: 'Clean Public Restrooms',
+    description: 'Perform deep cleaning of all public restrooms in the Visitor Center.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-13'),
+    updatedAt: new Date('2024-10-13'),
+    dueDate: new Date('2024-10-13'),
+    completedDate: null,
+    images: ['https://example.com/clean-restroom.jpg'],
+    remarks: 'Use eco-friendly cleaning products.',
+    position: 3,
+  },
+  {
+    title: 'Update Hub Firmware',
+    description: 'Install the latest firmware update on the central data hub.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-16'),
+    updatedAt: new Date('2024-10-16'),
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due in 5 days
+    completedDate: null,
+    images: ['https://example.com/data-hub.jpg'],
+    remarks: 'Ensure all data is backed up before updating.',
+    position: 4,
+  },
+  {
+    title: 'Replace Damaged Lawnmower Blade',
+    description: 'Replace the damaged blade on lawnmower #3 with a new one.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'OPEN',
+    createdAt: new Date('2024-10-15'),
+    updatedAt: new Date('2024-10-17'),
+    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Due in 1 day
+    completedDate: null,
+    images: ['https://example.com/lawnmower-blade.jpg'],
+    remarks: 'New blade is in storage room B.',
+    position: 5,
+  },
+];
+
 const plantTasksData = [
   {
     title: 'Prune Ginger Plants',
@@ -3664,6 +3737,7 @@ module.exports = {
   sensorsData,
   attractionTicketListingsData,
   decarbonizationAreasData,
+  maintenanceTasksData,
   plantTasksData,
   newHubs,
   newSensors,

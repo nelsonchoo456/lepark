@@ -94,6 +94,20 @@ export async function getHubsByZoneId(zoneId: number): Promise<AxiosResponse<Hub
   }
 }
 
+export async function getHubByIdentifierNumber(identifierNumber: string): Promise<AxiosResponse<HubResponse>> {
+  try {
+    const response: AxiosResponse<HubResponse> = await client.get(`${URL}/getHubByIdentifierNumber/${identifierNumber}`);
+    console.log('response', response);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updateHubDetails(id: string, data: Partial<HubResponse>, files?: File[]): Promise<AxiosResponse<HubResponse>> {
   try {
     if (files && files.length > 0) {

@@ -124,7 +124,7 @@ class SensorDao {
   }
 
   async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
-    return prisma.sensor.findUnique({ where: { identifierNumber } });
+    return prisma.sensor.findUnique({ where: { identifierNumber }, include: { hub: true, facility: true } });
   }
 
   async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {

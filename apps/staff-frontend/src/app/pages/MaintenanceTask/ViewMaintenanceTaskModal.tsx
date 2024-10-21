@@ -1,20 +1,61 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Descriptions, Tag, Typography, Button, Tooltip, Flex, Space, Image, Empty } from 'antd';
-import { PlantTaskResponse, StaffType } from '@lepark/data-access';
+import { getFacilityById, MaintenanceTaskResponse, StaffType } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import dayjs from 'dayjs';
 import { FiExternalLink } from 'react-icons/fi';
 import { COLORS } from '../../config/colors';
 
-interface ViewPlantTaskModalProps {
+interface ViewMaintenanceTaskModalProps {
   visible: boolean;
   onCancel: () => void;
-  task: PlantTaskResponse | null;
+  task: MaintenanceTaskResponse | null;
   userRole: StaffType;
 }
 
-const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCancel, task, userRole }) => {
+const ViewMaintenanceTaskModal: React.FC<ViewMaintenanceTaskModalProps> = ({ visible, onCancel, task, userRole }) => {
+  const [facilityName, setFacilityName] = useState<string>('');
+
+  console.log('task', task);
+
+  useEffect(() => {
+    const fetchFacilityName = async () => {
+      if (!task) return;
+
+      let name = '';
+      if (task.parkAsset?.facilityId) {
+        const facility = await getFacilityById(task.parkAsset.facilityId);
+        name = facility?.data?.name || '';
+      } else if (task.sensor?.facilityId) {
+        const facility = await getFacilityById(task.sensor.facilityId);
+        name = facility?.data?.name || '';
+      } else if (task.hub?.facilityId) {
+        const facility = await getFacilityById(task.hub.facilityId);
+        name = facility?.data?.name || '';
+      }
+      setFacilityName(name);
+    };
+
+    fetchFacilityName();
+  }, [task]);
+
   if (!task) return null;
+
+  const getFaultyEntityType = () => {
+    if (task.parkAsset) return 'Park Asset';
+    if (task.sensor) return 'Sensor';
+    if (task.hub) return 'Hub';
+    if (task.facility) return 'Facility';
+    return 'Unknown';
+  };
+
+  const getFaultyEntityName = () => {
+    if (task.parkAsset) return task.parkAsset.name;
+    if (task.sensor) return task.sensor.name;
+    if (task.hub) return task.hub.name;
+    if (task.facility) return task.facility.name;
+    return 'Unknown';
+  };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
@@ -46,13 +87,33 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
     }
   };
 
-  const navigateToOccurrence = (occurrenceId: string) => {
-    window.open(`/occurrences/${occurrenceId}`, '_blank', 'noopener,noreferrer');
+  const navigateToEntity = () => {
+    if (task.parkAsset) {
+      window.open(`/park-assets/${task.parkAsset.id}`, '_blank', 'noopener,noreferrer');
+    } else if (task.sensor) {
+      window.open(`/sensor/${task.sensor.id}`, '_blank', 'noopener,noreferrer');
+    } else if (task.hub) {
+      window.open(`/hubs/${task.hub.id}`, '_blank', 'noopener,noreferrer');
+    } else if (task.facility) {
+      window.open(`/facilities/${task.facility.id}`, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const navigateToLocation = () => {
+    if (task.parkAsset) {
+      window.open(`/facilities/${task.parkAsset.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (task.sensor) {
+      window.open(`/facilities/${task.sensor.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (task.hub) {
+      window.open(`/facilities/${task.hub.facilityId}`, '_blank', 'noopener,noreferrer');
+    } else if (task.facility) {
+      window.open(`/facilities/${task.facility.id}`, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
     <Modal
-      title="Plant Task Details"
+      title="Maintenance Task Details"
       open={visible}
       onCancel={onCancel}
       footer={[
@@ -63,12 +124,19 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
       width={700}
     >
       <Descriptions column={1} bordered>
-        {userRole === StaffType.SUPERADMIN && <Descriptions.Item label="Park">{task.occurrence?.zone.park.name}</Descriptions.Item>}
-        <Descriptions.Item label="Zone">{task.occurrence?.zone.name}</Descriptions.Item>
-        <Descriptions.Item label="Occurrence">
-          <span>{task.occurrence?.title}</span>
-          <Tooltip title="Go to Occurrence">
-            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToOccurrence(task.occurrence?.id || '')} />
+        {userRole === StaffType.SUPERADMIN && <Descriptions.Item label="Park">{task.submittingStaff?.park?.name}</Descriptions.Item>}
+        {(task.parkAsset || task.sensor || task.hub) && (
+          <Descriptions.Item label="Location">
+            <span>{facilityName || 'Loading...'}</span>
+            <Tooltip title="Go to location">
+              <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToLocation()} />
+            </Tooltip>
+          </Descriptions.Item>
+        )}
+        <Descriptions.Item label={`Faulty ${getFaultyEntityType()}`}>
+          <span>{getFaultyEntityName()}</span>
+          <Tooltip title="Go to entity">
+            <Button type="link" icon={<FiExternalLink />} onClick={() => navigateToEntity()} />
           </Tooltip>
         </Descriptions.Item>
         <Descriptions.Item label="Title">{task.title}</Descriptions.Item>
@@ -123,4 +191,4 @@ const ViewPlantTaskModal: React.FC<ViewPlantTaskModalProps> = ({ visible, onCanc
   );
 };
 
-export default ViewPlantTaskModal;
+export default ViewMaintenanceTaskModal;

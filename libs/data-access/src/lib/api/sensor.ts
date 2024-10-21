@@ -61,6 +61,19 @@ export async function getSensorById(id: string): Promise<AxiosResponse<SensorRes
   }
 }
 
+export async function getSensorByIdentifierNumber(identifierNumber: string): Promise<AxiosResponse<SensorResponse>> {
+  try {
+    const response: AxiosResponse<SensorResponse> = await client.get(`${URL}/getSensorByIdentifierNumber/${identifierNumber}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getSensorsByHubId(hubId: string): Promise<AxiosResponse<SensorResponse[]>> {
   try {
     const response: AxiosResponse<SensorResponse[]> = await client.get(`${URL}/getSensorsByHubId/${hubId}`);

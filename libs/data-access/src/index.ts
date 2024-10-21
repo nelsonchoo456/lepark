@@ -67,3 +67,7 @@ export * from './lib/types/announcement';
 
 export * from './lib/api/eventTicket';
 export * from './lib/types/eventTicket';
+
+export * from './lib/api/maintenancetask';
+export * from './lib/types/maintenancetask';
+

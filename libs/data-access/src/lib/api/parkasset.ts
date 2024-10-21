@@ -59,6 +59,19 @@ export async function getParkAssetById(id: string): Promise<AxiosResponse<ParkAs
   }
 }
 
+export async function getParkAssetByIdentifierNumber(identifierNumber: string): Promise<AxiosResponse<ParkAssetResponse>> {
+  try {
+    const response: AxiosResponse<ParkAssetResponse> = await client.get(`${URL}/getByIdentifierNumber/${identifierNumber}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updateParkAssetDetails(
   id: string,
   data: ParkAssetUpdateData,
