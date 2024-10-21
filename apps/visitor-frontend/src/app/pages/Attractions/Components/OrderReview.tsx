@@ -118,6 +118,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
               type={isApplied ? 'primary' : 'default'}
               onClick={() => handleApplyPromotion(promotion)}
               disabled={!isApplied && appliedPromotion !== null}
+              className="ml-2"
             >
               {isApplied ? 'Applied' : 'Apply'}
             </Button>
