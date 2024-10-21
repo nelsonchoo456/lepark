@@ -38,6 +38,7 @@ const TicketListingTicketSalesTable: React.FC<TicketListingTicketSalesTableProps
         purchaseDate: dayjs(ticket.attractionTicketTransaction?.purchaseDate).format('YYYY-MM-DD'),
         attractionDate: dayjs(ticket.attractionTicketTransaction?.attractionDate).format('YYYY-MM-DD'),
       }));
+      console.log(formattedData);
       const filteredData = formattedData.filter((ticket) => {
         const ticketPurchaseDate = dayjs(ticket.purchaseDate);
         const ticketAttractionDate = dayjs(ticket.attractionDate);
@@ -48,9 +49,10 @@ const TicketListingTicketSalesTable: React.FC<TicketListingTicketSalesTableProps
         return isPurchaseDateInRange && isVisitDateInRange;
       });
   
-      setTickets(filteredData);
-  
-      if (!purchaseStartDate && !purchaseEndDate && !visitStartDate && !visitEndDate && formattedData.length > 0) {
+      formattedData.sort((a: any, b: any) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+      setTickets(formattedData);
+
+      if (formattedData.length > 0) {
         setPurchaseStartDate(formattedData[0].purchaseDate);
         setPurchaseEndDate(formattedData[formattedData.length - 1].purchaseDate);
         setVisitStartDate(formattedData[0].attractionDate);
@@ -75,6 +77,7 @@ const TicketListingTicketSalesTable: React.FC<TicketListingTicketSalesTableProps
   };
 
   const filteredTickets = useMemo(() => {
+    console.log("Filtering tickets with:", { purchaseStartDate, purchaseEndDate, visitStartDate, visitEndDate, searchTerm }); // Log filter criteria
     return tickets.filter((ticket) => {
     const searchString = `
       ${ticket.id}
