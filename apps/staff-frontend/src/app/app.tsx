@@ -102,6 +102,7 @@ import FAQView from './pages/FAQ/FAQView';
 import FAQEdit from './pages/FAQ/FAQEdit';
 
 import FeedbackList from './pages/Feedback/FeedbackList';
+import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 
 export function App() {
   return (
@@ -563,8 +564,30 @@ export function App() {
               </Route>
 
               <Route path="/feedback">
-                <Route index element={<FeedbackList />} />
-
+                <Route
+                  index
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
+                        redirectTo="/"
+                      />
+                      <FeedbackList />
+                    </>
+                  }
+                />
+                <Route
+                  path=":feedbackId"
+                  element={
+                    <>
+                      <RoleProtectedRoute
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
+                        redirectTo="/"
+                      />
+                      <FeedbackViewDetails />
+                    </>
+                  }
+                />
               </Route>
 
               {/* Catch-all for 404 */}

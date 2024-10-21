@@ -142,9 +142,6 @@ const FeedbackList = () => {
           <Tooltip title="View Feedback">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/feedback/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Edit Feedback">
-            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/feedback/${record.id}/edit`)} />
-          </Tooltip>
           <Tooltip title="Delete Feedback">
             <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
           </Tooltip>
