@@ -591,7 +591,15 @@ export function App() {
                 </Route>
 
                 {/* Feedback Routes */}
-                <Route path="/feedback">
+                <Route
+                  path="/feedback"
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
+                      redirectTo="/"
+                    />
+                  }
+                >
                   <Route index element={<FeedbackList />} />
                   <Route path=":feedbackId" element={<FeedbackViewDetails />} />
                 </Route>
