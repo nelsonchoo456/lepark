@@ -30,6 +30,7 @@ import PlantTasksTable from '../components/PlantTasksTable';
 import moment from 'moment';
 import { TbTrees } from 'react-icons/tb';
 import dayjs from 'dayjs';
+import AnnouncementsCard from '../components/AnnouncementsCard';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
@@ -156,10 +157,10 @@ const SuperadminMainLanding = () => {
     },
   ];
 
-  const renderSectionHeader = (title: string) => {
+  const renderSectionHeader = (title: string, onClick?: () => void) => {
     return (
       <div className="sticky top-0 pt-4 z-20 bg-gray-100">
-        <LogoText className={`text-lg font-semibold pb-2 pt-0`}>
+        <LogoText className={`text-lg font-semibold pb-2 pt-0 ${onClick && "cursor-pointer hover:opacity-80"}`} onClick={onClick && onClick}>
           <div className={`-z-10  px-2 rounded`}>{title}</div>
         </LogoText>
         <div className="w-full h-[1px] bg-gray-400/40 mb-4" />
@@ -203,33 +204,7 @@ const SuperadminMainLanding = () => {
             </div>
 
             {/* Announcements Card  */}
-            <Card className="w-full h-86 flex-[1] overflow-y-scroll" styles={{ body: { padding: '1rem' } }}>
-              <div className="flex">
-                <div className={`${sectionHeaderIconStyles} bg-red-400 text-white`}>
-                  <MdOutlineAnnouncement />
-                </div>
-                <LogoText className="text-lg mb-2">Announcements</LogoText>
-              </div>
-              {announcements?.length > 0 ? (
-                announcements.map((announcement: AnnouncementResponse) => (
-                  <div
-                    className="w-full hover:bg-green-50/20 px-2 pt-2 border-b-[1px] cursor-pointer hover:bg-green-50/50"
-                    key={announcement.id}
-                  >
-                    <strong className="text-green-400 hover:text-green-200">{announcement.title}</strong>
-                    <Typography.Paragraph
-                      ellipsis={{
-                        rows: 1,
-                      }}
-                    >
-                      {announcement.content}
-                    </Typography.Paragraph>
-                  </div>
-                ))
-              ) : (
-                <Empty />
-              )}
-            </Card>
+            <AnnouncementsCard announcements={announcements} />
           </div>
         </div>
 

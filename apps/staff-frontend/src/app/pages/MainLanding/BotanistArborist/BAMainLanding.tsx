@@ -1,5 +1,5 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Anchor, Badge, Card, Col, Empty, List, Row, Statistic, Table, Typography } from 'antd';
+import { Anchor, Badge, Card, Col, Empty, List, Row, Statistic, Table, Tag, Typography } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -12,7 +12,10 @@ import {
   getAllPlantTasks,
   getAnnouncementsByParkId,
   getNParksAnnouncements,
+  getOccurrencesByParkId,
   getPlantTasksByParkId,
+  OccurrenceResponse,
+  OccurrenceStatusEnum,
   PlantTaskResponse,
   PlantTaskStatusEnum,
   StaffResponse,
@@ -22,6 +25,10 @@ import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import PlantTasksTable from '../components/PlantTasksTable';
 import moment from 'moment';
+import { IoLeafOutline } from 'react-icons/io5';
+import AnnouncementsCard from '../components/AnnouncementsCard';
+import { renderSectionHeader, sectionHeader } from '../Manager/ManagerMainLanding';
+import { useNavigate } from 'react-router-dom';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
@@ -29,14 +36,17 @@ export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-
 
 const BAMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
+  const navigate = useNavigate();
   
   // Data
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
+  const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>([]);
 
   useEffect(() => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
+      fetchOccurencesByParkId(user.parkId);
       fetchPlantTasks();
     }
   }, [user]);
@@ -65,6 +75,16 @@ const BAMainLanding = () => {
     }
   };
 
+  const fetchOccurencesByParkId = async (parkId: number) => {
+    try {
+      const response = await getOccurrencesByParkId(parkId);
+      setOccurrences(response.data);
+      // setError(null);
+    } catch (err) {
+      // setError('Failed to fetch announcements');
+    }
+  };
+
   const myTasks = useMemo(() => {
     return plantTasks
       ? plantTasks.filter((task) => task.assignedStaffId === user?.id)
@@ -88,23 +108,35 @@ const BAMainLanding = () => {
       : [];
   }, [plantTasks]);
 
-  const pendingTasksCount = useMemo(() => {
-    return plantTasks
-      ? plantTasks.filter((task) => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
-          .length
-      : 0;
-  }, [plantTasks]);
+  const urgentActionOccurrences = useMemo(() => {
+    return occurrences
+      ? occurrences?.filter((o) => o.occurrenceStatus === OccurrenceStatusEnum.URGENT_ACTION_REQUIRED)
+      : [];
+  }, [occurrences]);
 
-  const overduePlantTasksCount = useMemo(() => {
-    return plantTasks
-      ? plantTasks.filter(
-          (task) =>
-            task.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
-            task.taskStatus !== PlantTaskStatusEnum.CANCELLED &&
-            moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')),
-        ).length
-      : 0;
-  }, [plantTasks]);
+  const needsAttentionOccurrences = useMemo(() => {
+    return occurrences
+      ? occurrences?.filter((o) => o.occurrenceStatus === OccurrenceStatusEnum.NEEDS_ATTENTION)
+      : [];
+  }, [occurrences]);
+
+  // const pendingTasksCount = useMemo(() => {
+  //   return plantTasks
+  //     ? plantTasks.filter((task) => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
+  //         .length
+  //     : 0;
+  // }, [plantTasks]);
+
+  // const overduePlantTasksCount = useMemo(() => {
+  //   return plantTasks
+  //     ? plantTasks.filter(
+  //         (task) =>
+  //           task.taskStatus !== PlantTaskStatusEnum.COMPLETED &&
+  //           task.taskStatus !== PlantTaskStatusEnum.CANCELLED &&
+  //           moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')),
+  //       ).length
+  //     : 0;
+  // }, [plantTasks]);
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -150,17 +182,6 @@ const BAMainLanding = () => {
     },
   ];
 
-  const renderSectionHeader = (title: string) => {
-    return (
-      <div className="sticky top-0 pt-4 z-20 bg-gray-100">
-        <LogoText className={`text-lg font-semibold pb-2 pt-0`}>
-          <div className={`-z-10  px-2 rounded`}>{title}</div>
-        </LogoText>
-        <div className="w-full h-[1px] bg-gray-400/40 mb-4" />
-      </div>
-    );
-  };
-
   return (
     <Row>
       <Col span={21}>
@@ -171,7 +192,7 @@ const BAMainLanding = () => {
             {/* Tasks Cards  */}
             <div className="w-full h-86 flex-[2] flex flex-col gap-4">
               <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className="flex">
+                <div className={sectionHeader} onClick={() => navigate('plant-tasks')}>
                   <div className={`${sectionHeaderIconStyles} bg-highlightGreen-400 text-white`}>
                     <FiInbox />
                   </div>
@@ -201,43 +222,47 @@ const BAMainLanding = () => {
                 </div>
               </Card>
 
+              <Card className="h-full" styles={{ body: { padding: '1rem' } }} onClick={() => navigate('/occurrences')}>
+                <div className={sectionHeader} onClick={() => navigate('/occurrences')}>
+                  <div className={`${sectionHeaderIconStyles} bg-green-600 text-white`}>
+                    <IoLeafOutline />
+                  </div>
+                  <LogoText className="text-lg mb-2">Occurrences</LogoText>
+                </div>
+   
+                <div className="h-full flex flex-col gap-2 pl-4 ml-3 border-l-[2px]">
+                  {needsAttentionOccurrences?.length > 0 ? (
+                    <div className="text-mustard-400 font-semibold mr-2">
+                      {needsAttentionOccurrences.length}  Needs Attention
+                    </div>
+                  ) : (
+                    <div className="text-mustard-400 gap-3 flex items-center">
+                      <MdCheck className='text-lg'/> 0 Needs Attention
+                    </div>
+                  )}
+
+                  {urgentActionOccurrences.length > 0 ? (
+                    <div className="text-red-400 font-semibold mr-2">
+                      {urgentActionOccurrences.length} Urgent Action Needed
+                    </div>
+                  ) : (
+                    <div className="text-red-400 gap-3 flex items-center">
+                      <MdCheck className='text-lg'/> No Urgent Action Needed
+                    </div>
+                  )}
+                </div>
+              </Card>
+
             </div>
 
             {/* Announcements Card  */}
-            <Card className="w-full h-86 flex-[1] overflow-y-scroll" styles={{ body: { padding: '1rem' } }}>
-              <div className="flex">
-                <div className={`${sectionHeaderIconStyles} bg-red-400 text-white`}>
-                  <MdOutlineAnnouncement />
-                </div>
-                <LogoText className="text-lg mb-2">Announcements</LogoText>
-              </div>
-              {announcements?.length > 0 ? (
-                announcements.map((announcement: AnnouncementResponse) => (
-                  <div
-                    className="w-full hover:bg-green-50/20 px-2 pt-2 border-b-[1px] cursor-pointer hover:bg-green-50/50"
-                    key={announcement.id}
-                  >
-                    <strong className="text-green-400 hover:text-green-200">{announcement.title}</strong>
-                    <Typography.Paragraph
-                      ellipsis={{
-                        rows: 1,
-                      }}
-                    >
-                      {announcement.content}
-                    </Typography.Paragraph>
-                  </div>
-                ))
-                
-              ) : (
-                <Empty />
-              )}
-            </Card>
+            <AnnouncementsCard announcements={announcements} />
           </div>
         </div>
 
         {/* -- [ Section: Park Overview ] -- */}
         <div id="part-2" className={sectionStyles}>
-          {renderSectionHeader('Plant Tasks')}
+          {renderSectionHeader('Plant Tasks', () => navigate('plant-tasks'))}
           {user && <PlantTasksTable userRole={user?.role as StaffType} plantTasks={myTasks} className="w-full" />}
         </div>
 
