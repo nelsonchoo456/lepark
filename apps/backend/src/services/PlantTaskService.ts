@@ -566,11 +566,7 @@ class PlantTaskService {
       const tasksCompleted = completedTasks.find((c) => c.staff.id === staff.id)?.taskCompleted || 0;
 
       // Calculate a performance score
-      // Higher completion rate is better
-      // Lower overdue rate is better
-      // Lower average completion time is better
-      // Higher task load is considered better (more productive)
-      const performanceScore = completionRate * 0.25 + (100 - overdue) * 0.25 + (100 - avgTime) * 0.25 + tasksCompleted * 0.25;
+      const performanceScore = completionRate * 0.1 + (100 - overdue) * 0.2 + (100 - avgTime) * 0.1 + tasksCompleted * 0.6;
 
       return { staff, performanceScore };
     });

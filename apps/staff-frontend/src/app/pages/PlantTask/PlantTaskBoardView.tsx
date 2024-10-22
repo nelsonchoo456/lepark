@@ -93,7 +93,7 @@ const PlantTaskBoardView = ({
 
     // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
-    
+
     if (
       source.droppableId === PlantTaskStatusEnum.OPEN &&
       destination.droppableId !== PlantTaskStatusEnum.OPEN &&
@@ -254,7 +254,7 @@ const PlantTaskBoardView = ({
         // Add a delay before refreshing data
         setTimeout(() => {
           refreshData();
-        }, 500); // 0.5 second delay
+        }, 100); // 0.1 second delay
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');

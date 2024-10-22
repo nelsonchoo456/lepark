@@ -44,7 +44,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
   const { user } = useAuth<StaffResponse>();
 
   useEffect(() => {
-    if (initialValues) {
+    if (visible && initialValues) {
       form.setFieldsValue({
         title: initialValues.title,
         taskType: initialValues.taskType,
@@ -73,8 +73,11 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
       };
 
       fetchFacilityName();
+    } else {
+      form.resetFields();
+      setFacilityName('');
     }
-  }, [initialValues, form]);
+  }, [visible, initialValues, form]);
 
   const getFaultyEntityType = () => {
     if (initialValues?.parkAsset) return 'Park Asset';
@@ -178,14 +181,20 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
     onCancel(); // Close the edit modal
   };
 
+  const handleCancel = () => {
+    form.resetFields();
+    setFacilityName('');
+    onCancel();
+  };
+
   return (
     <>
       <Modal
         title="Edit Maintenance Task"
         open={visible}
-        onCancel={onCancel}
+        onCancel={handleCancel}
         footer={[
-          <Button key="cancel" onClick={onCancel}>
+          <Button key="cancel" onClick={handleCancel}>
             Cancel
           </Button>,
           <Button key="submit" type="primary" loading={isSubmitting} onClick={handleSubmit}>
