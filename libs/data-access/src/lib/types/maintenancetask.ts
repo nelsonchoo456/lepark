@@ -65,7 +65,7 @@ export interface CompletionTimeData {
   averageCompletionTime: number;
 }
 
-export interface OverdueRateData {
+export interface OverdueRateMaintenanceTaskData {
   taskType: MaintenanceTaskTypeEnum;
   overdueRate: number;
 }
