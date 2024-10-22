@@ -9,6 +9,7 @@ import { FAQResponse, FAQCategoryEnum, StaffResponse } from '@lepark/data-access
 import styled from 'styled-components';
 import { RiEyeLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { Panel } = Collapse;
 
@@ -139,4 +140,4 @@ const FAQList: React.FC = () => {
   );
 };
 
-export default FAQList;
+export default withParkGuard(FAQList);
