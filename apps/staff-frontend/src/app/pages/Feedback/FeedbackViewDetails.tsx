@@ -150,7 +150,7 @@ const FeedbackViewDetails = () => {
   };
 
   const descriptionsItems: DescriptionsProps['items'] = [
-      {
+    {
       key: 'title',
       label: 'Title',
       children: feedback?.title,
@@ -162,7 +162,7 @@ const FeedbackViewDetails = () => {
       children: feedback?.description,
       span: 3,
     },
-   {
+    {
       key: 'category',
       label: 'Category',
       children: inEditMode ? (
@@ -178,7 +178,6 @@ const FeedbackViewDetails = () => {
           ))}
         </Select>
       ) : <Tag>{formatEnumLabel(feedback?.feedbackCategory ?? '')}</Tag>,
-      span: 1,
     },
     {
       key: 'status',
@@ -195,51 +194,41 @@ const FeedbackViewDetails = () => {
             </Select.Option>
           ))}
         </Select>
-      ) :   (
+      ) : (
         <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>
           {formatEnumLabel(feedback?.feedbackStatus ?? '')}
         </Tag>
       ),
-      span: 1,
     },
     {
       key: 'dateCreated',
       label: 'Date Created',
       children: new Date(feedback?.dateCreated || '').toLocaleString(),
-      span: 1,
     },
-
-
-
     {
       key: 'dateResolved',
       label: 'Date Resolved',
       children: feedback?.dateResolved ? new Date(feedback.dateResolved).toLocaleString() : 'Not resolved yet',
-      span: 1,
     },
     {
       key: 'park',
       label: 'Park',
       children: park?.name,
-      span: 1,
     },
     {
       key: 'resolvedBy',
       label: 'Resolved By',
       children: feedback?.staff ? `${feedback.staff.firstName} ${feedback.staff.lastName}` : 'Not resolved',
-      span: 1,
     },
-      {
+    {
       key: 'visitorName',
       label: 'Visitor Name',
       children: `${feedback?.visitor.firstName} ${feedback?.visitor.lastName}`,
-      span: 1,
     },
     {
       key: 'visitorEmail',
       label: 'Visitor Email',
       children: `${feedback?.visitor.email}`,
-      span: 2,
     },
     {
       key: 'remarks',
@@ -253,30 +242,28 @@ const FeedbackViewDetails = () => {
       ) : feedback?.remarks || 'No remarks',
       span: 3,
     },
-      ...(feedback?.images && feedback.images.length > 0
-      ? [
-          {
-            key: 'images',
-            label: 'Images',
-            children: (
-              <div className="flex flex-wrap gap-2">
-                {feedback.images.map((image, index) => (
-                  <Image
-                    key={index}
-                    src={image}
-                    alt={`Feedback image ${index + 1}`}
-                    width={100}
-                    height={100}
-                    style={{ objectFit: 'cover' }}
-                  />
-                ))}
-              </div>
-            ),
-            span: 3,
-          },
-        ]
-      : []),
   ];
+
+  if (feedback?.images && feedback.images.length > 0) {
+    descriptionsItems.push({
+      key: 'images',
+      label: 'Images',
+      children: (
+        <div className="flex flex-wrap gap-2">
+          {feedback.images.map((image, index) => (
+            <Image
+              key={index}
+              src={image}
+              alt={`Feedback image ${index + 1}`}
+              width={100}
+              height={100}
+              style={{ objectFit: 'cover' }}
+            />
+          ))}
+        </div>
+      ),
+    });
+  }
 
   const breadcrumbItems = [
     {
@@ -314,13 +301,13 @@ const FeedbackViewDetails = () => {
         <Descriptions
           items={descriptionsItems}
           bordered
-          column={3}
+          column={{ xxl: 3, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
           size="middle"
           title={
             <div className="w-full flex justify-between">
               {!inEditMode ? (
                 <>
-                  <div>{feedback.title}</div>
+                  <div>{feedback?.title}</div>
                   {(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) && (
                     <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
                   )}
@@ -339,22 +326,21 @@ const FeedbackViewDetails = () => {
             </div>
           }
         />
-         {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
-            <Button
-              type="primary"
-              onClick={handleCreatePlantTask}
-              className="mt-4"
-            >
-              Create Plant Task
-            </Button>
-          )}
+        {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
+          <Button
+            type="primary"
+            onClick={handleCreatePlantTask}
+            className="mt-4"
+          >
+            Create Plant Task
+          </Button>
+        )}
 
-           {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
-        <Button type="primary" onClick={handleCreateMaintenanceTask} className="mt-4">
-          Create Maintenance Task
-        </Button>
-
-    )}
+        {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
+          <Button type="primary" onClick={handleCreateMaintenanceTask} className="mt-4">
+            Create Maintenance Task
+          </Button>
+        )}
       </Card>
     </ContentWrapperDark>
   );

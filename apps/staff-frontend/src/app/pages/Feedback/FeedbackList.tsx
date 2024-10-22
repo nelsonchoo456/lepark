@@ -61,29 +61,29 @@ const FeedbackList = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      const confirmed = await new Promise((resolve) => {
-        Modal.confirm({
-          title: 'Confirm Deletion?',
-          content: 'Are you sure you want to delete this feedback? This action cannot be undone.',
-          onOk: () => resolve(true),
-          onCancel: () => resolve(false),
-          okText: "Confirm Delete",
-          okButtonProps: { danger: true }
-        });
-      });
+  // const handleDelete = async (id: string) => {
+  //   try {
+  //     const confirmed = await new Promise((resolve) => {
+  //       Modal.confirm({
+  //         title: 'Confirm Deletion?',
+  //         content: 'Are you sure you want to delete this feedback? This action cannot be undone.',
+  //         onOk: () => resolve(true),
+  //         onCancel: () => resolve(false),
+  //         okText: "Confirm Delete",
+  //         okButtonProps: { danger: true }
+  //       });
+  //     });
 
-      if (!confirmed) return;
+  //     if (!confirmed) return;
 
-      await deleteFeedback(id);
-      triggerFetch();
-      message.success('Feedback deleted successfully');
-    } catch (error) {
-      console.error('Error deleting feedback:', error);
-      message.error('Failed to delete feedback. Please try again.');
-    }
-  };
+  //     await deleteFeedback(id);
+  //     triggerFetch();
+  //     message.success('Feedback deleted successfully');
+  //   } catch (error) {
+  //     console.error('Error deleting feedback:', error);
+  //     message.error('Failed to delete feedback. Please try again.');
+  //   }
+  // };
 
   const columns: TableProps<FeedbackResponse>['columns'] = [
     {
@@ -143,9 +143,9 @@ const FeedbackList = () => {
           <Tooltip title="View Feedback">
             <Button type="link" icon={<FiEye />} onClick={() => navigate(`/feedback/${record.id}`)} />
           </Tooltip>
-          <Tooltip title="Delete Feedback">
+          {/* <Tooltip title="Delete Feedback">
             <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => handleDelete(record.id)} />
-          </Tooltip>
+          </Tooltip> */}
         </Flex>
       ),
       width: '10%',
