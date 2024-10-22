@@ -60,15 +60,24 @@ class MaintenanceTaskDao {
   }
 
   async unassignMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt } });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
+    });
   }
 
   async acceptMaintenanceTask(id: string, staffId: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: staffId, updatedAt: updatedAt } });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: staffId, updatedAt: updatedAt },
+    });
   }
 
   async unacceptMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt } });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
+    });
   }
 
   async getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<MaintenanceTask[]> {
@@ -223,6 +232,23 @@ class MaintenanceTaskDao {
     }, 0);
 
     return totalCompletionTime / tasks.length;
+  }
+
+  async getCompletedMaintenanceTasksByEntityId(entityId: string, entityType: 'ParkAsset' | 'Sensor' | 'Hub'): Promise<MaintenanceTask[]> {
+    const whereClause: any = { taskStatus: MaintenanceTaskStatusEnum.COMPLETED };
+
+    if (entityType === 'ParkAsset') {
+      whereClause.parkAssetId = entityId;
+    } else if (entityType === 'Sensor') {
+      whereClause.sensorId = entityId;
+    } else if (entityType === 'Hub') {
+      whereClause.hubId = entityId;
+    }
+
+    return prisma.maintenanceTask.findMany({
+      where: whereClause,
+      orderBy: { completedDate: 'asc' },
+    });
   }
 }
 

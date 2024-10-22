@@ -11,6 +11,7 @@ import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
 import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
+import { getAugumentedDataset } from '../utils/holtwinters';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -154,7 +155,7 @@ class MaintenanceTaskService {
   public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
     const maintenanceTasks = await MaintenanceTaskDao.getMaintenanceTasksBySubmittingStaff(staffId);
     return this.addFacilityInfo(maintenanceTasks);
-  } 
+  }
 
   public async updateMaintenanceTask(id: string, data: Partial<MaintenanceTaskSchemaType>): Promise<MaintenanceTask> {
     try {
@@ -315,33 +316,6 @@ class MaintenanceTaskService {
     });
   }
 
-  public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<MaintenanceTask> {
-    const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
-    if (!maintenanceTask) {
-      throw new Error('Maintenance task not found');
-    }
-
-    if (newStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && maintenanceTask.assignedStaffId === null && staffId) {
-      await this.assignMaintenanceTask(id, staffId);
-    }
-
-    const maxPosition = await MaintenanceTaskDao.getMaxPositionForStatus(newStatus);
-    const updateData: any = {
-      taskStatus: newStatus,
-      position: maxPosition + 1000,
-      updatedAt: new Date(),
-    };
-
-    if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
-      if (!maintenanceTask.assignedStaffId) {
-        throw new Error('Only assigned tasks can be completed');
-      }
-      updateData.completedDate = new Date();
-    }
-
-    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
-  }
-
   public async updateMaintenanceTaskPosition(id: string, newPosition: number): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {
@@ -476,7 +450,7 @@ class MaintenanceTaskService {
             park = await ParkDao.getParkById(facility.parkId);
           }
         }
-        console.log("Park:", park);
+        console.log('Park:', park);
 
         return {
           ...maintenanceTask,
@@ -554,6 +528,82 @@ class MaintenanceTaskService {
     );
 
     return staffAverageCompletionTimes;
+  }
+
+  public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<MaintenanceTask> {
+    const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
+    if (!maintenanceTask) {
+      throw new Error('Maintenance task not found');
+    }
+
+    if (newStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && maintenanceTask.assignedStaffId === null && staffId) {
+      maintenanceTask.assignedStaffId = staffId;
+    }
+
+    const maxPosition = await MaintenanceTaskDao.getMaxPositionForStatus(newStatus);
+    const updateData: any = {
+      taskStatus: newStatus,
+      position: maxPosition + 1000,
+      updatedAt: new Date(),
+    };
+
+    if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
+      updateData.completedDate = new Date();
+      console.log('maintenanceTask being completed', maintenanceTask);
+      // Predict next maintenance dates using Holt-Winters model
+      await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
+      console.log('prediction completed');
+    }
+
+    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
+  }
+
+  public async predictAndUpdateNextMaintenanceDates(maintenanceTask: MaintenanceTask): Promise<void> {
+    let associatedEntity: any;
+    let entityType: 'ParkAsset' | 'Sensor' | 'Hub';
+    if (maintenanceTask.parkAssetId) {
+      associatedEntity = await ParkAssetDao.getParkAssetById(maintenanceTask.parkAssetId);
+      entityType = 'ParkAsset';
+    } else if (maintenanceTask.sensorId) {
+      associatedEntity = await SensorDao.getSensorById(maintenanceTask.sensorId);
+      entityType = 'Sensor';
+    } else if (maintenanceTask.hubId) {
+      associatedEntity = await HubDao.getHubById(maintenanceTask.hubId);
+      entityType = 'Hub';
+    }
+
+    if (!associatedEntity) {
+      return;
+    }
+    const completedTasks = await MaintenanceTaskDao.getCompletedMaintenanceTasksByEntityId(associatedEntity.id, entityType);
+    const completedDates = completedTasks.map((task) => task.completedDate).sort((a, b) => a.getTime() - b.getTime());
+
+    if (completedDates.length < 2) {
+      return;
+    }
+
+    const intervals = completedDates
+      .slice(1)
+      .map((date, index) => Math.round((date.getTime() - completedDates[index].getTime()) / (1000 * 60 * 60 * 24)));
+    console.log('intervals:', intervals);
+    const predictions = getAugumentedDataset(intervals, 5);
+    console.log('predictions:', predictions);
+    const lastCompletedDate = completedDates[completedDates.length - 1];
+    const nextMaintenanceDates = predictions.augumentedDataset.slice(-5).map((interval) => {
+      const nextDate = new Date(lastCompletedDate);
+      nextDate.setDate(nextDate.getDate() + Math.round(interval));
+      return nextDate;
+    });
+    console.log('nextMaintenanceDates:', nextMaintenanceDates);
+    const nextMaintenanceDate = nextMaintenanceDates[0];
+
+    if (entityType === 'ParkAsset') {
+      await ParkAssetDao.updateParkAsset(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    } else if (entityType === 'Sensor') {
+      await SensorDao.updateSensor(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    } else if (entityType === 'Hub') {
+      await HubDao.updateHubDetails(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    }
   }
 }
 

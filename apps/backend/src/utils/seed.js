@@ -403,6 +403,45 @@ async function seed() {
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
+ // Generate 10 completed maintenance tasks for the sensor with title SE-22222
+const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
+if (sensor) {
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  for (let i = 0; i < 20; i++) {
+    // Function to generate random dates within a range with a minimum interval of 5 days
+    function randomDate(start, end) {
+      const minInterval = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+      const startDate = new Date(start.getTime() + minInterval);
+      return new Date(startDate.getTime() + Math.random() * (end.getTime() - startDate.getTime()));
+    }
+
+    const randomCompletedDate = randomDate(oneYearAgo, new Date());
+    maintenanceTasksData.push({
+      id: uuidv4(),
+      title: `Maintenance Task ${i + 1} for SE-22222`,
+      description: `Completed maintenance task ${i + 1} for sensor SE-22222.`,
+      taskStatus: 'COMPLETED',
+      taskType: 'INSPECTION',
+      taskUrgency: 'NORMAL',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(randomCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+      completedDate: randomCompletedDate,
+      images: ['https://example.com/maintenance-task-image.jpg'],
+      remarks: `Remarks for maintenance task ${i + 1}.`,
+      //assignedStaffId: null,
+      //submittingStaffId: null,
+      //facility: { connect: { id: sensor.facilityId } }, // Use nested facility field to connect the facilityId
+      //parkAssetId: null,
+      sensor: { connect: { serialNumber: sensor.serialNumber } }, // Use nested sensor field to connect the sensorId
+      //hubId: null,
+      position: i + 1,
+    });
+  }
+}
+
   const maintenanceTasksList = [];
   for (const maintenanceTask of maintenanceTasksData) {
     // Filter staff from Park Id 2
