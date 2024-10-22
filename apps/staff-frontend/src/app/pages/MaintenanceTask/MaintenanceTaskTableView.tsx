@@ -113,7 +113,6 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       } catch (error) {
         console.error('Error updating maintenance task:', error);
         throw new Error('Failed to update task.' + ' ' + error + '.');
-        // The modal will remain open as we're not calling setEditModalVisible(false) here
       }
     }
   };

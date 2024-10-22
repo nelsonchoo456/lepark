@@ -325,21 +325,36 @@ class MaintenanceTaskService {
       await this.assignMaintenanceTask(id, staffId);
     }
 
-    const maxPosition = await MaintenanceTaskDao.getMaxPositionForStatus(newStatus);
-    const updateData: any = {
-      taskStatus: newStatus,
-      position: maxPosition + 1000,
-      updatedAt: new Date(),
-    };
+    const tasksInNewStatus = await MaintenanceTaskDao.getMaintenanceTasksByStatus(newStatus);
+    let newPosition: number;
 
+    if (tasksInNewStatus.length === 0) {
+      newPosition = 1000; // First task in this status
+    } else {
+      // Add to the end of the list
+      newPosition = tasksInNewStatus[tasksInNewStatus.length - 1].position + 1000;
+    }
+
+    let updatedTask: MaintenanceTask;
     if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
       if (!maintenanceTask.assignedStaffId) {
         throw new Error('Only assigned tasks can be completed');
       }
-      updateData.completedDate = new Date();
+      updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
+        taskStatus: newStatus,
+        position: newPosition,
+        completedDate: new Date(),
+        updatedAt: new Date(),
+      });
+    } else {
+      updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
+        taskStatus: newStatus,
+        position: newPosition,
+        updatedAt: new Date(),
+      });
     }
 
-    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
+    return updatedTask;
   }
 
   public async updateMaintenanceTaskPosition(id: string, newPosition: number): Promise<MaintenanceTask> {
@@ -352,27 +367,31 @@ class MaintenanceTaskService {
 
     tasksInSameStatus.sort((a, b) => a.position - b.position);
 
-    const currentIndex = tasksInSameStatus.findIndex((task) => task.id === id);
-    if (currentIndex === -1) {
-      throw new Error('Task not found in the current status');
+    let newPositionValue: number;
+
+    if (newPosition === 0) {
+      // If moving to the start, set position to half of the first task's position
+      newPositionValue = tasksInSameStatus[0].position / 2;
+    } else if (newPosition >= tasksInSameStatus.length) {
+      // If moving to the end, set position to last task's position + 1000
+      newPositionValue = tasksInSameStatus[tasksInSameStatus.length - 1].position + 1000;
+    } else {
+      // Calculate the middle position between the two tasks
+      const prevTaskPosition = tasksInSameStatus[newPosition - 1].position;
+      const nextTaskPosition = tasksInSameStatus[newPosition].position;
+      newPositionValue = (prevTaskPosition + nextTaskPosition) / 2;
     }
 
-    const [movedTask] = tasksInSameStatus.splice(currentIndex, 1);
-    tasksInSameStatus.splice(newPosition, 0, movedTask);
+    // Update the task's position
+    const updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
+      position: newPositionValue,
+      updatedAt: new Date(),
+    });
 
-    const updatedTasks = tasksInSameStatus.map((task, index) => ({
-      id: task.id,
-      position: (index + 1) * 1000,
-    }));
-
-    await Promise.all(
-      updatedTasks.map((task) => MaintenanceTaskDao.updateMaintenanceTask(task.id, { position: task.position, updatedAt: new Date() })),
-    );
-
-    const updatedTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!updatedTask) {
       throw new Error('Updated task not found');
     }
+
     return updatedTask;
   }
 

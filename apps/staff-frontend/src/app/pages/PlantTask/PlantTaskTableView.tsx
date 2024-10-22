@@ -13,6 +13,7 @@ import {
   getAllParks,
   updatePlantTaskDetails,
   PlantTaskUpdateData,
+  updatePlantTaskStatus,
 } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
@@ -71,6 +72,10 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [showStatusChangeLogPrompt, setShowStatusChangeLogPrompt] = useState(false);
+  const [statusChangeTaskId, setStatusChangeTaskId] = useState<string | null>(null);
+  const [newStatus, setNewStatus] = useState<PlantTaskStatusEnum | null>(null);
+  const [oldStatus, setOldStatus] = useState<PlantTaskStatusEnum | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -106,13 +111,24 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     if (editingTask) {
       try {
         await updatePlantTaskDetails(editingTask.id, values);
-        message.success('Task updated successfully');
-        setEditModalVisible(false);
-        onTaskUpdated(); // Refresh the task list
+        
+        if (
+          (editingTask.taskStatus === PlantTaskStatusEnum.OPEN && values.taskStatus === PlantTaskStatusEnum.IN_PROGRESS) ||
+          (editingTask.taskStatus === PlantTaskStatusEnum.IN_PROGRESS && values.taskStatus === PlantTaskStatusEnum.OPEN)
+        ) {
+          setStatusChangeTaskId(editingTask.occurrence?.id || null);
+          setNewStatus(values.taskStatus as PlantTaskStatusEnum);
+          setOldStatus(editingTask.taskStatus);
+          setShowStatusChangeLogPrompt(true);
+          onTaskUpdated();
+        } else {
+          message.success('Task updated successfully');
+          setEditModalVisible(false);
+          onTaskUpdated(); // Refresh the task list
+        }
       } catch (error) {
         console.error('Error updating plant task:', error);
         throw new Error('Failed to update task.' + ' ' + error + '.');
-        // The modal will remain open as we're not calling setEditModalVisible(false) here
       }
     }
   };
@@ -455,6 +471,37 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     },
   };
 
+  const handleStatusChangePrompt = (newStatus: PlantTaskStatusEnum, oldStatus: PlantTaskStatusEnum) => {
+    if (
+      (oldStatus === PlantTaskStatusEnum.OPEN && newStatus === PlantTaskStatusEnum.IN_PROGRESS) ||
+      (oldStatus === PlantTaskStatusEnum.IN_PROGRESS && newStatus === PlantTaskStatusEnum.OPEN)
+    ) {
+      setStatusChangeTaskId(editingTask?.occurrence?.id || null);
+      setNewStatus(newStatus);
+      setOldStatus(oldStatus);
+      setShowStatusChangeLogPrompt(true);
+    } else {
+      setEditModalVisible(false);
+    }
+  };
+
+  const handleStatusChangeLogPromptOk = async () => {
+    setShowStatusChangeLogPrompt(false);
+    if (statusChangeTaskId) {
+      window.open(`/occurrences/${statusChangeTaskId}`, '_blank');
+    }
+    setStatusChangeTaskId(null);
+    setNewStatus(null);
+    setOldStatus(null);
+  };
+
+  const handleStatusChangeLogPromptCancel = async () => {
+    setShowStatusChangeLogPrompt(false);
+    setStatusChangeTaskId(null);
+    setNewStatus(null);
+    setOldStatus(null);
+  };
+
   return (
     <>
       <div style={{ marginBottom: '16px' }}>
@@ -482,7 +529,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         onSubmit={handleEditSubmit}
         initialValues={editingTask}
         userRole={userRole as StaffType}
-        onStatusChange={handleStatusChange}
+        onStatusChange={handleStatusChangePrompt}
       />
       <ViewPlantTaskModal
         visible={viewModalVisible}
@@ -490,6 +537,16 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         task={selectedTask}
         userRole={userRole as StaffType}
       />
+      <Modal
+        title="Create Log"
+        open={showStatusChangeLogPrompt}
+        onOk={handleStatusChangeLogPromptOk}
+        onCancel={handleStatusChangeLogPromptCancel}
+        okText="Yes, create log"
+        cancelText="No, just update task status"
+      >
+        <p>Do you want to create an Activity Log or Status Log for this status change?</p>
+      </Modal>
     </>
   );
 };

@@ -474,7 +474,7 @@ const PlantTaskList: React.FC = () => {
       <Flex justify="space-between" align="center" className="mb-4">
         <Flex align="center">
           {renderViewSelector()}
-          {(isTableOnlyView || user?.role === StaffType.MANAGER || viewMode === 'table') && (
+          {(isTableOnlyView || viewMode === 'table') && (
             <Select
               value={tableViewType}
               onChange={setTableViewType}

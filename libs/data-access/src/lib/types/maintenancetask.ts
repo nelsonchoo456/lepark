@@ -53,6 +53,7 @@ export interface MaintenanceTaskResponse {
 export interface MaintenanceTaskUpdateData {
   title?: string;
   description?: string;
+  taskStatus?: MaintenanceTaskStatusEnum;
   taskType?: MaintenanceTaskTypeEnum;
   taskUrgency?: MaintenanceTaskUrgencyEnum;
   dueDate?: string | null;
