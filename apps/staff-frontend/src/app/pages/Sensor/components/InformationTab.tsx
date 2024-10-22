@@ -41,11 +41,6 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   ].filter(Boolean);
 
   const conditionalItems = [
-    sensor.lastMaintenanceDate && {
-      key: 'lastMaintenanceDate',
-      label: 'Last Maintenance Date',
-      children: moment(sensor.lastMaintenanceDate).format('MMMM D, YYYY'),
-    },
     sensor.nextMaintenanceDate && {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',

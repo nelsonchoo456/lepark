@@ -405,8 +405,8 @@ model Hub {
   description              String?
   hubStatus                HubStatusEnum
   acquisitionDate          DateTime
-  lastMaintenanceDate      DateTime?
   nextMaintenanceDate      DateTime?
+  nextMaintenanceDates     DateTime[]
   dataTransmissionInterval Int? // might want to initialize this in pi during verifyInitialization
   supplier                 String
   supplierContactNumber    String
@@ -463,8 +463,8 @@ model Sensor {
   description           String?
   sensorStatus          SensorStatusEnum
   acquisitionDate       DateTime
-  lastMaintenanceDate   DateTime?
   nextMaintenanceDate   DateTime?
+  nextMaintenanceDates  DateTime[]
   sensorUnit            SensorUnitEnum
   supplier              String
   supplierContactNumber String
@@ -515,16 +515,16 @@ enum ParkAssetConditionEnum {
 }
 
 model ParkAsset {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  identifierNumber      String                 @unique
-  serialNumber          String?                @unique
-  name                  String
-  parkAssetType         ParkAssetTypeEnum
-  description           String?
-  parkAssetStatus       ParkAssetStatusEnum
-  acquisitionDate       DateTime
-  lastMaintenanceDate   DateTime? // Keep this field
-  nextMaintenanceDate   DateTime? // Keep this field
+  id                   String              @id @default(uuid()) @db.Uuid
+  identifierNumber     String              @unique
+  serialNumber         String?             @unique
+  name                 String
+  parkAssetType        ParkAssetTypeEnum
+  description          String?
+  parkAssetStatus      ParkAssetStatusEnum
+  acquisitionDate      DateTime
+  nextMaintenanceDate  DateTime? // Keep this field
+  nextMaintenanceDates DateTime[]
   supplier              String
   supplierContactNumber String
   parkAssetCondition    ParkAssetConditionEnum

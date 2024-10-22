@@ -5,44 +5,73 @@ function randomDate(start, end) {
   return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 }
 
-// Generate mock maintenance history data
-function generateMockMaintenanceHistory(assetId, numberOfEntries) {
+// Generate mock maintenance tasks data with restricted intervals
+function generateMockMaintenanceTasks(assetId, numberOfEntries) {
   console.log(`Generating ${numberOfEntries} mock maintenance entries for asset ${assetId}`);
   const startDate = new Date(2020, 0, 1);
   const endDate = new Date();
 
-  const history = Array.from({ length: numberOfEntries }, (_, index) => ({
-    id: `mh-${index + 1}`,
-    assetId: assetId,
-    maintenanceDate: randomDate(startDate, endDate),
-    description: `Routine maintenance #${index + 1}`
-  })).sort((a, b) => a.maintenanceDate - b.maintenanceDate);
+  const tasks = [];
+  let lastCompletedDate = randomDate(startDate, endDate);
 
-  console.log('Mock history generated and sorted by date');
-  return history;
+  for (let index = 0; index < numberOfEntries; index++) {
+    const minInterval = 10; // Minimum interval in days
+    const maxInterval = 200; // Maximum interval in days
+    const interval = Math.floor(Math.random() * (maxInterval - minInterval + 1)) + minInterval;
+    const completedDate = new Date(lastCompletedDate);
+    completedDate.setDate(completedDate.getDate() + interval);
+
+    tasks.push({
+      id: `mt-${index + 1}`,
+      assetId: assetId,
+      title: `Maintenance Task #${index + 1}`,
+      description: `Routine maintenance #${index + 1}`,
+      taskStatus: 'COMPLETED', // Assuming all tasks are completed for this example
+      taskType: 'INSPECTION', // Example task type
+      taskUrgency: 'NORMAL', // Example task urgency
+      createdAt: randomDate(startDate, endDate),
+      updatedAt: randomDate(startDate, endDate),
+      dueDate: randomDate(startDate, endDate),
+      completedDate: completedDate,
+      images: [],
+      remarks: `Remarks for maintenance task #${index + 1}`,
+      assignedStaffId: `staff-${index + 1}`,
+      submittingStaffId: `staff-${index + 1}`,
+      facilityId: `facility-${index + 1}`,
+      parkAssetId: `asset-${index + 1}`,
+      sensorId: `sensor-${index + 1}`,
+      hubId: `hub-${index + 1}`,
+      position: index + 1,
+    });
+
+    lastCompletedDate = completedDate;
+  }
+
+  tasks.sort((a, b) => a.completedDate - b.completedDate);
+
+  console.log('Mock tasks generated and sorted by date');
+  return tasks;
 }
 
 // Calculate intervals between maintenance dates in days
-function calculateIntervals(maintenanceHistory) {
+function calculateIntervals(maintenanceTasks) {
   console.log('Calculating intervals between maintenance dates');
-  const sortedDates = maintenanceHistory.map(mh => mh.maintenanceDate).sort((a, b) => a - b);
-  const intervals = sortedDates.slice(1).map((date, index) =>
-    (date - sortedDates[index]) / (1000 * 60 * 60 * 24)
-  );
+  const sortedDates = maintenanceTasks.map((mt) => mt.completedDate).sort((a, b) => a - b);
+  const intervals = sortedDates.slice(1).map((date, index) => (date - sortedDates[index]) / (1000 * 60 * 60 * 24));
   console.log('Intervals calculated:', intervals);
   return intervals;
 }
 
 // Predict future maintenance dates
-function predictMaintenanceDates(maintenanceHistory, numberOfPredictions) {
+function predictMaintenanceDates(maintenanceTasks, numberOfPredictions) {
   console.log(`Predicting ${numberOfPredictions} future maintenance dates`);
-  const intervals = calculateIntervals(maintenanceHistory);
+  const intervals = calculateIntervals(maintenanceTasks);
 
   console.log('Calling Holt-Winters algorithm');
   const result = getAugumentedDataset(intervals, numberOfPredictions);
   console.log('Holt-Winters algorithm completed');
 
-  const lastMaintenanceDate = new Date(Math.max(...maintenanceHistory.map(mh => mh.maintenanceDate)));
+  const lastMaintenanceDate = new Date(Math.max(...maintenanceTasks.map((mt) => mt.completedDate)));
   console.log('Last maintenance date:', lastMaintenanceDate);
 
   const predictedDates = result.augumentedDataset.slice(-numberOfPredictions).map((interval, index) => {
@@ -59,7 +88,7 @@ function predictMaintenanceDates(maintenanceHistory, numberOfPredictions) {
     beta: result.beta,
     gamma: result.gamma,
     period: result.period,
-    mse: result.mse
+    mse: result.mse,
   };
 }
 
@@ -81,15 +110,15 @@ function calculateInterval(currentDate, previousDate) {
 console.log('Starting mock maintenance prediction script');
 
 const assetId = 'asset-001';
-const mockHistory = generateMockMaintenanceHistory(assetId, 20);
+const mockTasks = generateMockMaintenanceTasks(assetId, 20);
 
 console.log('\nPredicting future maintenance dates');
-const predictions = predictMaintenanceDates(mockHistory, 5);
+const predictions = predictMaintenanceDates(mockTasks, 5);
 
 // Combine existing and predicted dates
 const allDates = [
-  ...mockHistory.map(mh => ({ type: 'Existing', date: mh.maintenanceDate })),
-  ...predictions.predictedDates.map(date => ({ type: 'Predicted', date }))
+  ...mockTasks.map((mt) => ({ type: 'Existing', date: mt.completedDate })),
+  ...predictions.predictedDates.map((date) => ({ type: 'Predicted', date })),
 ];
 
 // Sort all dates

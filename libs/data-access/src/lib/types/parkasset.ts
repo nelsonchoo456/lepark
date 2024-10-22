@@ -1,5 +1,5 @@
+import { MaintenanceTaskResponse } from '@lepark/data-access';
 import { FacilityResponse } from './facility';
-import { MaintenanceHistoryResponse } from './maintenancehistory';
 import { ParkResponse } from './park';
 import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedenums';
 
@@ -10,8 +10,8 @@ export interface ParkAssetData {
   description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
@@ -29,8 +29,8 @@ export interface ParkAssetResponse {
   description?: string;
   parkAssetStatus: ParkAssetStatusEnum;
   acquisitionDate: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   supplier: string;
   supplierContactNumber: string;
   parkAssetCondition: ParkAssetConditionEnum;
@@ -40,7 +40,7 @@ export interface ParkAssetResponse {
   facility?: FacilityResponse;
   parkName?: string;
   park?: ParkResponse;
-  maintenanceHistory?: MaintenanceHistoryResponse[];
+  maintenanceTasks?: MaintenanceTaskResponse[];
 }
 
 export interface ParkAssetUpdateData {
@@ -50,8 +50,8 @@ export interface ParkAssetUpdateData {
   description?: string;
   parkAssetStatus?: ParkAssetStatusEnum;
   acquisitionDate?: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   supplier?: string;
   supplierContactNumber?: string;
   parkAssetCondition?: ParkAssetConditionEnum;
