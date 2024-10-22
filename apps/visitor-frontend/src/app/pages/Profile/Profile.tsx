@@ -437,20 +437,21 @@ const ProfilePage = () => {
         {attractionTransactions && attractionTransactions.length > 0 ? (
             attractionTransactions
               .filter((transaction) => {
-                const transactionDate = new Date(transaction.attractionDate); 
+                const transactionDate = new Date(transaction.attractionDate);
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Set time to the start of the day
                 return transactionDate >= today; // Filter for today and onwards
               })
+              .sort((a, b) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime()) // Sort by date
               .map((transaction) => (
-              <div 
-                key={transaction.id} 
-                className="inline-block cursor-pointer"
-                onClick={() => navigateToTransactionDetails(transaction.id)}
-              >
-                <AttractionTransactionCard transaction={transaction} />
-              </div>
-            ))
+                <div 
+                  key={transaction.id} 
+                  className="inline-block cursor-pointer"
+                  onClick={() => navigateToTransactionDetails(transaction.id)}
+                >
+                  <AttractionTransactionCard transaction={transaction} />
+                </div>
+              ))
           ) : (
             <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
               <BsCalendar4Event className="text-4xl" />
