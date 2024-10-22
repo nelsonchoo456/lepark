@@ -162,6 +162,18 @@ const FeedbackViewDetails = () => {
       children: feedback?.description,
       span: 3,
     },
+     {
+    key: 'remarks',
+    label: 'Remarks',
+    children: inEditMode ? (
+      <Input.TextArea
+        value={editedFeedback.remarks || ''}
+        onChange={(e) => handleInputChange('remarks', e.target.value)}
+        placeholder="This will be visible to the visitor who submitted feedback. Ensure remarks are updated before resolving or rejecting."
+      />
+    ) : feedback?.remarks || 'No remarks',
+    span: 3, // Add this line to make remarks span full width
+  },
     {
       key: 'category',
       label: 'Category',
@@ -230,22 +242,15 @@ const FeedbackViewDetails = () => {
       label: 'Visitor Email',
       children: `${feedback?.visitor.email}`,
     },
-    {
-      key: 'remarks',
-      label: 'Remarks',
-      children: inEditMode ? (
-        <Input.TextArea
-          value={editedFeedback.remarks || ''}
-          onChange={(e) => handleInputChange('remarks', e.target.value)}
-          placeholder="This will be visible to the visitor who submitted feedback. Ensure remarks are updated before resolving or rejecting."
-        />
-      ) : feedback?.remarks || 'No remarks',
-      span: 3,
-    },
+
   ];
 
-  if (feedback?.images && feedback.images.length > 0) {
-    descriptionsItems.push({
+  // Find the index of the 'remarks' item
+  const remarksIndex = descriptionsItems.findIndex(item => item.key === 'remarks');
+
+  // If 'remarks' is found, insert the images item right after it
+  if (remarksIndex !== -1 && feedback?.images && feedback.images.length > 0) {
+    descriptionsItems.splice(remarksIndex + 1, 0, {
       key: 'images',
       label: 'Images',
       children: (
@@ -262,6 +267,7 @@ const FeedbackViewDetails = () => {
           ))}
         </div>
       ),
+      span: 3,
     });
   }
 
@@ -304,13 +310,29 @@ const FeedbackViewDetails = () => {
           column={{ xxl: 3, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}
           size="middle"
           title={
-            <div className="w-full flex justify-between">
+            <div className="w-full flex justify-between items-center">
               {!inEditMode ? (
                 <>
                   <div>{feedback?.title}</div>
-                  {(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) && (
-                    <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
-                  )}
+                  <div className="flex items-center">
+                    {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
+                      <Button
+                        type="primary"
+                        onClick={handleCreatePlantTask}
+                        className="mr-2"
+                      >
+                        Create Plant Task
+                      </Button>
+                    )}
+                    {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
+                      <Button type="primary" onClick={handleCreateMaintenanceTask} className="mr-2">
+                        Create Maintenance Task
+                      </Button>
+                    )}
+                    {(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) && (
+                      <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
@@ -326,24 +348,9 @@ const FeedbackViewDetails = () => {
             </div>
           }
         />
-        {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
-          <Button
-            type="primary"
-            onClick={handleCreatePlantTask}
-            className="mt-4"
-          >
-            Create Plant Task
-          </Button>
-        )}
-
-        {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
-          <Button type="primary" onClick={handleCreateMaintenanceTask} className="mt-4">
-            Create Maintenance Task
-          </Button>
-        )}
       </Card>
     </ContentWrapperDark>
-  );
+  )
 };
 
 export default FeedbackViewDetails;
