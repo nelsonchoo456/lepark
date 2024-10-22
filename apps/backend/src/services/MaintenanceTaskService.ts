@@ -10,6 +10,7 @@ import HubDao from '../dao/HubDao';
 import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
 import aws from 'aws-sdk';
+import ParkDao from '../dao/ParkDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -427,11 +428,13 @@ class MaintenanceTaskService {
     const enhancedMaintenanceTasks = await Promise.all(
       maintenanceTasks.map(async (maintenanceTask) => {
         let facility;
+        let park;
         if (maintenanceTask.facilityId) {
           facility = await FacilityDao.getFacilityById(maintenanceTask.facilityId);
           if (!facility) {
             throw new Error(`Facility not found for maintenance task ${maintenanceTask.id}`);
           }
+          park = await ParkDao.getParkById(facility.parkId);
         }
 
         if (maintenanceTask.parkAssetId) {
@@ -443,6 +446,7 @@ class MaintenanceTaskService {
           if (!facility) {
             throw new Error(`Facility not found for park asset ${parkAsset.id}`);
           }
+          park = await ParkDao.getParkById(facility.parkId);
         }
 
         if (maintenanceTask.sensorId) {
@@ -455,6 +459,7 @@ class MaintenanceTaskService {
             if (!facility) {
               throw new Error(`Facility not found for sensor ${sensor.id}`);
             }
+            park = await ParkDao.getParkById(facility.parkId);
           }
         }
 
@@ -468,12 +473,17 @@ class MaintenanceTaskService {
             if (!facility) {
               throw new Error(`Facility not found for hub ${hub.id}`);
             }
+            park = await ParkDao.getParkById(facility.parkId);
           }
         }
+        console.log("Park:", park);
 
         return {
           ...maintenanceTask,
-          facility,
+          facilityOfFaultyEntity: {
+            ...facility,
+            park: park,
+          },
         };
       }),
     );

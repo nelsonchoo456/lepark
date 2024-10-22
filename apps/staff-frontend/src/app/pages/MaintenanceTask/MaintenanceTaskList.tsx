@@ -100,10 +100,19 @@ const MaintenanceTaskList: React.FC = () => {
       const sortedTasks = response.data.sort((a, b) => a.position - b.position);
 
       // set filtered tables
-      setOpen(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN));
-      setInProgress(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS));
-      setCompleted(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED));
-      setCancelled(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
+      if (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) {
+        // For superadmin and manager, show all tasks in each category
+        setOpen(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN));
+        setInProgress(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS));
+        setCompleted(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED));
+        setCancelled(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
+      } else {
+        // For other roles, keep the existing filters
+        setOpen(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN));
+        setInProgress(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS));
+        setCompleted(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED));
+        setCancelled(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
+      }
 
       // Fetch staff list
       let staffResponse;
@@ -120,28 +129,6 @@ const MaintenanceTaskList: React.FC = () => {
       messageApi.error('Failed to fetch maintenance tasks');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAssignStaff = async (maintenanceTaskId: string, staffId: string) => {
-    try {
-      await assignMaintenanceTask(maintenanceTaskId, user?.id || '');
-      messageApi.success('Staff assigned successfully');
-      fetchMaintenanceTasks();
-    } catch (error) {
-      console.error('Error assigning staff:', error);
-      messageApi.error('Failed to assign staff');
-    }
-  };
-
-  const handleUnassignStaff = async (maintenanceTaskId: string, staffId: string) => {
-    try {
-      await unassignMaintenanceTask(maintenanceTaskId, staffId);
-      message.success('Staff unassigned successfully');
-      fetchMaintenanceTasks();
-    } catch (error) {
-      console.error('Failed to unassign staff:', error);
-      message.error('Failed to unassign staff');
     }
   };
 
@@ -304,6 +291,28 @@ const MaintenanceTaskList: React.FC = () => {
 //     );
 //   };
 
+const handleTakeTask = async (maintenanceTaskId: string, staffId: string) => {
+  try {
+    await assignMaintenanceTask(maintenanceTaskId, staffId);
+    messageApi.success('Staff assigned successfully');
+    fetchMaintenanceTasks();
+  } catch (error) {
+    console.error('Error assigning staff:', error);
+    messageApi.error('Failed to assign staff');
+  }
+};
+
+const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
+  try {
+    await unassignMaintenanceTask(maintenanceTaskId, staffId);
+    message.success('Staff unassigned successfully');
+    fetchMaintenanceTasks();
+  } catch (error) {
+    console.error('Failed to unassign staff:', error);
+    message.error('Failed to unassign staff');
+  }
+};
+
   const totalOpenTasks = maintenanceTasks.filter((task) => task.taskStatus === 'OPEN').length;
   const outstandingTasks = maintenanceTasks.filter((task) => task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED').length;
   const urgentTasks = maintenanceTasks.filter(
@@ -375,11 +384,11 @@ const MaintenanceTaskList: React.FC = () => {
         staffList={staffList}
         tableViewType={tableViewType}
         userRole={user?.role || ''}
-        handleAssignStaff={handleAssignStaff}
+        handleTakeTask={handleTakeTask}
+        handleReturnTask={handleReturnTask}
         navigateToDetails={navigateToDetails}
         navigate={navigate}
         showDeleteModal={showDeleteModal}
-        handleUnassignStaff={handleUnassignStaff}
         onTaskUpdated={fetchMaintenanceTasks}
         handleStatusChange={handleStatusChange}
       />
