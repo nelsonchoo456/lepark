@@ -7,6 +7,7 @@ import { LogoText } from '@lepark/common-ui';
 import moment from 'moment';
 import { CopyOutlined } from '@ant-design/icons';
 import { MdContentCopy } from 'react-icons/md';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { Title } = Typography;
 
@@ -169,4 +170,4 @@ const PromotionViewDetails = () => {
   );
 };
 
-export default PromotionViewDetails;
+export default withParkGuard(PromotionViewDetails);

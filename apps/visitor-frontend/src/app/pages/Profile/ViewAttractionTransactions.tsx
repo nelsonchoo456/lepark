@@ -42,7 +42,7 @@ const ViewAttractionTransactions: React.FC = () => {
   
     switch (sort) {
       case 'upcoming':
-        sorted = sorted.filter((t) => dayjs(t.attractionDate).isAfter(dayjs()));
+        sorted = sorted.filter((t) => dayjs(t.attractionDate).isSame(dayjs(), 'day') || dayjs(t.attractionDate).isAfter(dayjs()));
         break;
       case 'past':
         sorted = sorted.filter((t) => dayjs(t.attractionDate).isBefore(dayjs()));

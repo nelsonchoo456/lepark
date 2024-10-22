@@ -419,7 +419,7 @@ const ProfilePage = () => {
       {/* </div> */}
       <ContentWrapper>
       <div className="flex items-center">
-        <LogoText className="text-xl">My Attraction Bookings</LogoText>
+        <LogoText className="text-xl">My Upcoming Attraction Visits</LogoText>
         <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
           <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
           <Button
@@ -434,16 +434,24 @@ const ProfilePage = () => {
       </div>
       <div className="w-full overflow-x-auto py-2 min-h-[13rem]">
         <div className="flex whitespace-nowrap">
-          {attractionTransactions && attractionTransactions.length > 0 ? (
-            attractionTransactions.map((transaction) => (
-              <div 
-                key={transaction.id} 
-                className="inline-block cursor-pointer"
-                onClick={() => navigateToTransactionDetails(transaction.id)}
-              >
-                <AttractionTransactionCard transaction={transaction} />
-              </div>
-            ))
+        {attractionTransactions && attractionTransactions.length > 0 ? (
+            attractionTransactions
+              .filter((transaction) => {
+                const transactionDate = new Date(transaction.attractionDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Set time to the start of the day
+                return transactionDate >= today; // Filter for today and onwards
+              })
+              .sort((a, b) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime()) // Sort by date
+              .map((transaction) => (
+                <div 
+                  key={transaction.id} 
+                  className="inline-block cursor-pointer"
+                  onClick={() => navigateToTransactionDetails(transaction.id)}
+                >
+                  <AttractionTransactionCard transaction={transaction} />
+                </div>
+              ))
           ) : (
             <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
               <BsCalendar4Event className="text-4xl" />

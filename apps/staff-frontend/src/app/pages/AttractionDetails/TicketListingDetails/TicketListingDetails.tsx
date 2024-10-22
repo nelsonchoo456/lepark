@@ -47,6 +47,8 @@ const TicketListingDetails: React.FC = () => {
   const [ticketData, setTicketData] = useState<any[]>([]);
   const [attractionDateSalesData, setAttractionDateSalesData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('1');
+  const [absolutePurchaseStartDateRange, setAbsolutePurchaseStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [absoluteVisitStartDateRange, setAbsoluteVisitStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
   const { user } = useAuth<StaffResponse>();
 
@@ -87,8 +89,10 @@ const TicketListingDetails: React.FC = () => {
 
       if (ticketData.length > 0) {
         setPurchaseDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
+        setAbsolutePurchaseStartDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
         ticketData.sort((a: any, b: any) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime());
         setAttractionDateRange([ticketData[0].attractionDate, ticketData[ticketData.length - 1].attractionDate]);
+        setAbsoluteVisitStartDateRange([ticketData[0].attractionDate, ticketData[ticketData.length - 1].attractionDate]);
       }
 
       fetchTicketSalesData();
@@ -200,6 +204,14 @@ const TicketListingDetails: React.FC = () => {
 
   const handleAttractionDateRangeChange = (dates: any) => {
     setAttractionDateRange(dates);
+  };
+
+  const resetPurchaseDateRange = async () => {
+    setPurchaseDateRange(absolutePurchaseStartDateRange);
+  };
+
+  const resetVisitDateRange = async () => {
+    setAttractionDateRange(absoluteVisitStartDateRange);
   };
 
   const toggleEditMode = () => {
@@ -503,6 +515,7 @@ const TicketListingDetails: React.FC = () => {
                         style={{ marginBottom: '20px' }}
                       />
                     )}
+                    <Button className='ml-2' onClick={resetPurchaseDateRange}>Reset</Button>
                   </div>
                   {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
@@ -557,10 +570,11 @@ const TicketListingDetails: React.FC = () => {
                         style={{ marginBottom: '20px' }}
                       />
                     )}
+                    <Button className='ml-2' onClick={resetVisitDateRange}>Reset</Button>
                   </div>
                   {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
-                      title="Tickets Sold Over Time (Attraction Visit Date)"
+                      title="Expected Visits Over Time"
                       data={attractionDateSalesData}
                       type="line"
                       options={{
@@ -571,7 +585,7 @@ const TicketListingDetails: React.FC = () => {
                             beginAtZero: true,
                             title: {
                               display: true,
-                              text: 'Number of Tickets',
+                              text: 'Number of Visitors',
                             },
                             ticks: {
                               stepSize: 1,

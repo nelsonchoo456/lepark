@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, DatePicker, Spin, message, Checkbox, Typography } from 'antd';
+import { Card, Row, Col, DatePicker, Spin, message, Checkbox, Typography, Button } from 'antd';
 import moment from 'moment';
 import {
   getAttractionTicketsByAttractionId,
@@ -28,6 +28,8 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
   const [purchaseDateRange, setPurchaseDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [attractionDateRange, setAttractionDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['All']);
+  const [absolutePurchaseStartDateRange, setAbsolutePurchaseStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [absoluteVisitStartDateRange, setAbsoluteVisitStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -42,13 +44,20 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
         purchaseDate: dayjs(ticket.attractionTicketTransaction?.purchaseDate),
         attractionDate: dayjs(ticket.attractionTicketTransaction?.attractionDate),
       }));
-      formattedData.sort((a: EnhancedAttractionTicketResponse, b: EnhancedAttractionTicketResponse) => a.purchaseDate.valueOf() - b.purchaseDate.valueOf());
+      formattedData.sort(
+        (a: EnhancedAttractionTicketResponse, b: EnhancedAttractionTicketResponse) => a.purchaseDate.valueOf() - b.purchaseDate.valueOf(),
+      );
       setTicketsData(formattedData);
 
       if (formattedData.length > 0) {
         setPurchaseDateRange([formattedData[0].purchaseDate, formattedData[formattedData.length - 1].purchaseDate]);
-        formattedData.sort((a: EnhancedAttractionTicketResponse, b: EnhancedAttractionTicketResponse) => a.attractionDate.valueOf() - b.attractionDate.valueOf());
+        setAbsolutePurchaseStartDateRange([formattedData[0].purchaseDate, formattedData[formattedData.length - 1].purchaseDate]);
+        formattedData.sort(
+          (a: EnhancedAttractionTicketResponse, b: EnhancedAttractionTicketResponse) =>
+            a.attractionDate.valueOf() - b.attractionDate.valueOf(),
+        );
         setAttractionDateRange([formattedData[0].attractionDate, formattedData[formattedData.length - 1].attractionDate]);
+        setAbsoluteVisitStartDateRange([formattedData[0].attractionDate, formattedData[formattedData.length - 1].attractionDate]);
       }
     } catch (error) {
       message.error('Error fetching initial tickets data.');
@@ -65,9 +74,17 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
     setAttractionDateRange(dates);
   };
 
+  const resetPurchaseDateRange = async () => {
+    setPurchaseDateRange(absolutePurchaseStartDateRange);
+  };
+
+  const resetVisitDateRange = async () => {
+    setAttractionDateRange(absoluteVisitStartDateRange);
+  };
+
   const prepareTimeSeriesData = (dateRange: [dayjs.Dayjs, dayjs.Dayjs], dateField: 'purchaseDate' | 'attractionDate') => {
     const dailyCounts: { [key: string]: { [category: string]: number } } = {};
-  
+
     const allDates = [];
     let currentDate = dateRange[0];
     while (currentDate.isBefore(dateRange[1]) || currentDate.isSame(dateRange[1], 'day')) {
@@ -84,26 +101,32 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
       };
       currentDate = currentDate.add(1, 'day');
     }
-  
+
     ticketsData.forEach((ticket) => {
       const date = ticket[dateField].format('YYYY-MM-DD');
       if (dailyCounts.hasOwnProperty(date)) {
         dailyCounts[date].All += 1;
-        
+
         const nationality = ticket.attractionTicketListing?.nationality || 'Standard';
         if (nationality === AttractionTicketNationalityEnum.LOCAL) {
           dailyCounts[date].Local += 1;
         } else {
           dailyCounts[date].Standard += 1;
         }
-        
+
         const category = ticket.attractionTicketListing?.category;
-        if (category) {
-          dailyCounts[date][category] += 1;
+        if (category === AttractionTicketCategoryEnum.ADULT) {
+          dailyCounts[date].Adult += 1;
+        } else if (category === AttractionTicketCategoryEnum.CHILD) {
+          dailyCounts[date].Child += 1;
+        } else if (category === AttractionTicketCategoryEnum.STUDENT) {
+          dailyCounts[date].Student += 1;
+        } else {
+          dailyCounts[date].Senior += 1;
         }
       }
     });
-  
+
     return allDates.map((date) => ({
       date,
       ...dailyCounts[date],
@@ -131,14 +154,14 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
       [AttractionTicketCategoryEnum.SENIOR]: 0,
       [AttractionTicketCategoryEnum.STUDENT]: 0,
     };
-  
+
     ticketsData.forEach((ticket) => {
       const category = ticket.attractionTicketListing?.category;
       if (category && category in categoryCounts) {
         categoryCounts[category as keyof typeof categoryCounts] += 1;
       }
     });
-  
+
     return Object.entries(categoryCounts).map(([key, value]) => ({ key, value }));
   };
 
@@ -149,9 +172,9 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
 
   const nationalityColors = ['#0d47a1', '#2196f3'];
   const categoryColors = ['#e65100', '#ff9800', '#ffc107', '#ffe082'];
-  
+
   const colors = {
-    All: '#a3d4c7',  // A distinct green for 'All'
+    All: '#a3d4c7', // A distinct green for 'All'
     Local: '#0d47a1', // Dark blue
     Standard: '#2196f3', // Light blue
     Adult: '#e65100', // Dark orange
@@ -218,11 +241,10 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
               {purchaseDateRange && (
                 <div className="flex justify-start">
                   <Text className="mr-2 pt-1">Purchase Date:</Text>
-                  <RangePicker
-                    value={purchaseDateRange}
-                  onChange={handlePurchaseDateChange}
-                  style={{ marginBottom: '10px' }}
-                />
+                  <RangePicker value={purchaseDateRange} onChange={handlePurchaseDateChange} style={{ marginBottom: '10px' }} />
+                  <Button className="ml-2" onClick={resetPurchaseDateRange}>
+                    Reset
+                  </Button>
                 </div>
               )}
               <GraphContainer
@@ -268,15 +290,14 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
               {attractionDateRange && (
                 <div className="flex justify-start">
                   <Text className="mr-2 pt-1">Visit Date:</Text>
-                  <RangePicker
-                    value={attractionDateRange}
-                  onChange={handleAttractionDateChange}
-                    style={{ marginBottom: '10px' }}
-                  />
+                  <RangePicker value={attractionDateRange} onChange={handleAttractionDateChange} style={{ marginBottom: '10px' }} />
+                  <Button className="ml-2" onClick={resetVisitDateRange}>
+                    Reset
+                  </Button>
                 </div>
               )}
               <GraphContainer
-                title="Tickets Sold Over Time (Visit Date)"
+                title="Expected Visits Over Time"
                 data={attractionTimeSeriesChartData}
                 type="line"
                 options={{
@@ -287,7 +308,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
                       beginAtZero: true,
                       title: {
                         display: true,
-                        text: 'Number of Tickets',
+                        text: 'Number of Visitors',
                       },
                       ticks: {
                         stepSize: 1,
