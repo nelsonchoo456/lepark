@@ -5,6 +5,7 @@ import FacilityInformationTab from './components/FacilityInformationTab';
 import { LogoText } from '@lepark/common-ui';
 import moment from 'moment';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { Title } = Typography;
 
@@ -80,4 +81,4 @@ const VisitorViewFacilityDetails = () => {
   );
 };
 
-export default VisitorViewFacilityDetails;
+export default withParkGuard(VisitorViewFacilityDetails);

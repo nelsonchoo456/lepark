@@ -7,6 +7,7 @@ import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import dayjs from 'dayjs';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -213,4 +214,4 @@ const FacilitiesPerPark: React.FC = () => {
   );
 };
 
-export default FacilitiesPerPark;
+export default withParkGuard(FacilitiesPerPark);
