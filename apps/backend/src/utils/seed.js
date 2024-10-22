@@ -403,44 +403,168 @@ async function seed() {
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
- // Generate 10 completed maintenance tasks for the sensor with title SE-22222
-const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
-if (sensor) {
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  // Function to generate random dates with a minimum interval
+  function generateRandomDateWithInterval(startDate, minInterval, maxInterval) {
+    const startDateWithInterval = new Date(startDate.getTime() + minInterval);
+    const randomDate = new Date(startDateWithInterval.getTime() + Math.random() * (maxInterval - minInterval));
+    return randomDate;
+  }
 
-  for (let i = 0; i < 20; i++) {
-    // Function to generate random dates within a range with a minimum interval of 5 days
-    function randomDate(start, end) {
-      const minInterval = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
-      const startDate = new Date(start.getTime() + minInterval);
-      return new Date(startDate.getTime() + Math.random() * (end.getTime() - startDate.getTime()));
+  // Define the minimum and maximum intervals
+  const minInterval = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+  const maxInterval = 50 * 24 * 60 * 60 * 1000; // 10 days in milliseconds
+
+  // Generate 10 completed maintenance tasks for the sensor with title SE-22222
+  const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
+  if (sensor) {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 2);
+
+    let currentStartDate = oneYearAgo;
+
+    for (let i = 0; i < 11; i++) {
+      const randomCompletedDate = generateRandomDateWithInterval(currentStartDate, minInterval, maxInterval);
+      maintenanceTasksData.push({
+        id: uuidv4(),
+        title: `Maintenance Task ${i + 1} for SE-22222`,
+        description: `Completed maintenance task ${i + 1} for sensor SE-22222.`,
+        taskStatus: 'COMPLETED',
+        taskType: 'INSPECTION',
+        taskUrgency: 'NORMAL',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        dueDate: new Date(randomCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+        completedDate: randomCompletedDate,
+        images: ['https://example.com/maintenance-task-image.jpg'],
+        remarks: `Remarks for maintenance task ${i + 1}.`,
+        sensor: { connect: { serialNumber: sensor.serialNumber } }, // Use nested sensor field to connect the sensorId
+        position: i + 1,
+      });
+      currentStartDate = new Date(randomCompletedDate.getTime() + minInterval);
     }
 
-    const randomCompletedDate = randomDate(oneYearAgo, new Date());
+    // Ensure the last date is the day before the current date
+    const lastCompletedDate = new Date();
+    lastCompletedDate.setDate(lastCompletedDate.getDate() - 1);
     maintenanceTasksData.push({
       id: uuidv4(),
-      title: `Maintenance Task ${i + 1} for SE-22222`,
-      description: `Completed maintenance task ${i + 1} for sensor SE-22222.`,
+      title: `Maintenance Task 20 for SE-22222`,
+      description: `Completed maintenance task 20 for sensor SE-22222.`,
       taskStatus: 'COMPLETED',
       taskType: 'INSPECTION',
       taskUrgency: 'NORMAL',
       createdAt: new Date(),
       updatedAt: new Date(),
-      dueDate: new Date(randomCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
-      completedDate: randomCompletedDate,
+      dueDate: new Date(lastCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+      completedDate: lastCompletedDate,
       images: ['https://example.com/maintenance-task-image.jpg'],
-      remarks: `Remarks for maintenance task ${i + 1}.`,
-      //assignedStaffId: null,
-      //submittingStaffId: null,
-      //facility: { connect: { id: sensor.facilityId } }, // Use nested facility field to connect the facilityId
-      //parkAssetId: null,
+      remarks: `Remarks for maintenance task 20.`,
       sensor: { connect: { serialNumber: sensor.serialNumber } }, // Use nested sensor field to connect the sensorId
-      //hubId: null,
-      position: i + 1,
+      position: 20,
     });
   }
-}
+
+  // Find the hub with the identifier HB-11111
+  const hub = hubsData.find((h) => h.identifierNumber === 'HB-11111');
+
+  if (hub) {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 2);
+
+    let currentStartDate = oneYearAgo;
+
+    for (let i = 0; i < 11; i++) {
+      const randomCompletedDate = generateRandomDateWithInterval(currentStartDate, minInterval, maxInterval);
+      maintenanceTasksData.push({
+        id: uuidv4(),
+        title: `Maintenance Task ${i + 1} for HB-11111`,
+        description: `Completed maintenance task ${i + 1} for hub HB-11111.`,
+        taskStatus: 'COMPLETED',
+        taskType: 'INSPECTION',
+        taskUrgency: 'NORMAL',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        dueDate: new Date(randomCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+        completedDate: randomCompletedDate,
+        images: ['https://example.com/maintenance-task-image.jpg'],
+        remarks: `Remarks for maintenance task ${i + 1}.`,
+        hub: { connect: { serialNumber: hub.serialNumber } }, // Use nested hub field to connect the hubId
+        position: i + 1,
+      });
+      currentStartDate = new Date(randomCompletedDate.getTime() + minInterval);
+    }
+
+    // Ensure the last date is the day before the current date
+    const lastCompletedDate = new Date();
+    lastCompletedDate.setDate(lastCompletedDate.getDate() - 2);
+    maintenanceTasksData.push({
+      id: uuidv4(),
+      title: `Maintenance Task 20 for HB-11111`,
+      description: `Completed maintenance task 20 for hub HB-11111.`,
+      taskStatus: 'COMPLETED',
+      taskType: 'INSPECTION',
+      taskUrgency: 'NORMAL',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(lastCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+      completedDate: lastCompletedDate,
+      images: ['https://example.com/maintenance-task-image.jpg'],
+      remarks: `Remarks for maintenance task 20.`,
+      hub: { connect: { serialNumber: hub.serialNumber } }, // Use nested hub field to connect the hubId
+      position: 20,
+    });
+  }
+
+  // Find the park asset with the identifier HP-HR2515DK
+  const parkAsset = parkAssetsData.find((pa) => pa.identifierNumber === 'HP-HR2515DK');
+
+  if (parkAsset) {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    let currentStartDate = oneYearAgo;
+
+    for (let i = 0; i < 11; i++) {
+      const randomCompletedDate = generateRandomDateWithInterval(currentStartDate, minInterval, maxInterval);
+      maintenanceTasksData.push({
+        id: uuidv4(),
+        title: `Maintenance Task ${i + 1} for HP-HR2515DK`,
+        description: `Completed maintenance task ${i + 1} for park asset HP-HR2515DK.`,
+        taskStatus: 'COMPLETED',
+        taskType: 'INSPECTION',
+        taskUrgency: 'NORMAL',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        dueDate: new Date(randomCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+        completedDate: randomCompletedDate,
+        images: ['https://example.com/maintenance-task-image.jpg'],
+        remarks: `Remarks for maintenance task ${i + 1}.`,
+        parkAsset: { connect: { serialNumber: parkAsset.serialNumber } }, // Use nested parkAsset field to connect the parkAssetId
+        position: i + 1,
+      });
+      currentStartDate = new Date(randomCompletedDate.getTime() + minInterval);
+    }
+
+    // Ensure the last date is the day before the current date
+    const lastCompletedDate = new Date();
+    lastCompletedDate.setDate(lastCompletedDate.getDate() - 1);
+    maintenanceTasksData.push({
+      id: uuidv4(),
+      title: `Maintenance Task 20 for HP-HR2515DK`,
+      description: `Completed maintenance task 20 for park asset HP-HR2515DK.`,
+      taskStatus: 'COMPLETED',
+      taskType: 'INSPECTION',
+      taskUrgency: 'NORMAL',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(lastCompletedDate.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days after the random date
+      completedDate: lastCompletedDate,
+      images: ['https://example.com/maintenance-task-image.jpg'],
+      remarks: `Remarks for maintenance task 20.`,
+      parkAsset: { connect: { serialNumber: parkAsset.serialNumber } }, // Use nested parkAsset field to connect the parkAssetId
+      position: 20,
+    });
+  }
 
   const maintenanceTasksList = [];
   for (const maintenanceTask of maintenanceTasksData) {

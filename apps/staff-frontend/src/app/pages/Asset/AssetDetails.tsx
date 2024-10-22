@@ -38,15 +38,6 @@ const AssetDetails = () => {
       label: 'Identifier Number',
       children: asset ? asset.identifierNumber : 'Loading...',
     },
-    ...(asset?.nextMaintenanceDate
-      ? [
-          {
-            key: 'maintenanceGraph',
-            label: 'Predicted Maintenance Chart',
-            children: asset ? <MaintenanceGraphTabParkAsset parkAsset={asset} /> : <p>Loading graph data...</p>,
-          },
-        ]
-      : []),
     {
       key: 'assetType',
       label: 'Asset Type',
@@ -104,6 +95,15 @@ const AssetDetails = () => {
       label: 'Information',
       children: asset ? <AssetInfoTab asset={asset} /> : <p>Loading asset data...</p>,
     },
+    ...(asset?.nextMaintenanceDate
+      ? [
+          {
+            key: 'maintenanceGraph',
+            label: 'Predicted Maintenance Chart',
+            children: asset ? <MaintenanceGraphTabParkAsset parkAsset={asset} /> : <p>Loading graph data...</p>,
+          },
+        ]
+      : []),
     {
       key: 'location',
       label: 'Location',
