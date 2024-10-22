@@ -589,11 +589,14 @@ class MaintenanceTaskService {
     const predictions = getAugumentedDataset(intervals, 5);
     console.log('predictions:', predictions);
     const lastCompletedDate = completedDates[completedDates.length - 1];
-    const nextMaintenanceDates = predictions.augumentedDataset.slice(-5).map((interval) => {
-      const nextDate = new Date(lastCompletedDate);
-      nextDate.setDate(nextDate.getDate() + Math.round(interval));
-      return nextDate;
-    });
+    const nextMaintenanceDates = predictions.augumentedDataset
+      .slice(-5)
+      .map((interval) => {
+        const nextDate = new Date(lastCompletedDate);
+        nextDate.setDate(nextDate.getDate() + Math.round(interval));
+        return nextDate;
+      })
+      .sort((a, b) => a.getTime() - b.getTime()); // Sort the dates from soonest to furthest
     console.log('nextMaintenanceDates:', nextMaintenanceDates);
     const nextMaintenanceDate = nextMaintenanceDates[0];
 
