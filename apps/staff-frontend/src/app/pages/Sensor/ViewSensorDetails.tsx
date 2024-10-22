@@ -154,11 +154,7 @@ const ViewSensorDetails = () => {
       })(),
     },
     { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(sensor?.sensorType ?? '') },
-    // {
-    //   key: 'nextMaintenanceDate',
-    //   label: 'Next Maintenance Date',
-    //   children: sensor?.nextMaintenanceDate ? moment(sensor.nextMaintenanceDate).format('MMMM D, YYYY') : '-',
-    // },
+
     ...(user?.role === StaffType.SUPERADMIN
       ? [
           {
@@ -270,9 +266,7 @@ const ViewSensorDetails = () => {
         open={deactivateModalOpen}
         onCancel={cancelDeactivate}
         // For Success
-        description={
-          updatedData ? undefined : 'Delinking a Sensor will disconnect it from its assigned Hub and remove it from the Zone.'
-        }
+        description={updatedData ? undefined : 'Delinking a Sensor will disconnect it from its assigned Hub and remove it from the Zone.'}
         footer={updatedData && null}
         closable={!updatedData}
       >

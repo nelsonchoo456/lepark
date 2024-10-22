@@ -4,7 +4,16 @@ import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty } from 'antd';
 
 import { FaTools, FaLeaf, FaWrench } from 'react-icons/fa';
 import moment from 'moment';
-import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum, ParkAssetResponse, getParkAssetById, StaffResponse, StaffType, FacilityResponse } from '@lepark/data-access';
+import {
+  ParkAssetTypeEnum,
+  ParkAssetStatusEnum,
+  ParkAssetConditionEnum,
+  ParkAssetResponse,
+  getParkAssetById,
+  StaffResponse,
+  StaffType,
+  FacilityResponse,
+} from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
 import AssetInfoTab from './components/AssetInfoTab';
 import { useEffect, useState } from 'react';
@@ -38,30 +47,40 @@ const AssetDetails = () => {
       label: 'Status',
       children:
         asset?.parkAssetStatus === ParkAssetStatusEnum.AVAILABLE ? (
-          <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="green" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}
+          </Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.IN_USE ? (
-          <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="blue" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}
+          </Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.UNDER_MAINTENANCE ? (
-          <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}
+          </Tag>
         ) : asset?.parkAssetStatus === ParkAssetStatusEnum.DECOMMISSIONED ? (
-          <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}</Tag>
+          <Tag color="red" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(asset?.parkAssetStatus)}
+          </Tag>
         ) : (
           <Tag>{asset?.parkAssetStatus}</Tag>
         ),
     },
-    // {
-    //   key: 'nextMaintenance',
-    //   label: 'Next Maintenance',
-    //   children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
-    // },
+    {
+      key: 'nextMaintenance',
+      label: 'Next Maintenance',
+      children: asset ? (asset.nextMaintenanceDate ? moment(asset.nextMaintenanceDate).format('MMMM D, YYYY') : '-') : 'Loading...',
+    },
     // Add park name for Superadmin only
-    ...(user?.role === StaffType.SUPERADMIN ? [
-      {
-        key: 'park',
-        label: 'Park',
-        children: asset ? asset.park?.name : 'Loading...',
-      },
-    ] : []),
+    ...(user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            key: 'park',
+            label: 'Park',
+            children: asset ? asset.park?.name : 'Loading...',
+          },
+        ]
+      : []),
     {
       key: 'facility',
       label: 'Facility',
@@ -78,7 +97,7 @@ const AssetDetails = () => {
     {
       key: 'location',
       label: 'Location',
-      children: facility ? <LocationTab facility={facility} zones={zones} park={park}/> : <p>Loading asset data...</p>,
+      children: facility ? <LocationTab facility={facility} zones={zones} park={park} /> : <p>Loading asset data...</p>,
     },
   ];
 
@@ -170,7 +189,7 @@ const AssetDetails = () => {
           </div>
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{asset?.name}</LogoText>
-            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4"/>
+            <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
           </div>
         </div>
 

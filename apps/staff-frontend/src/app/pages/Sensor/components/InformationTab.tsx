@@ -4,6 +4,8 @@ import { Descriptions, Tag } from 'antd';
 import { DescriptionsItemType } from 'antd/es/descriptions';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { Bar } from 'react-chartjs-2';
+import dayjs from 'dayjs';
 
 const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   const { user } = useAuth<StaffResponse>();
@@ -11,13 +13,29 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   const getStatusTag = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="green" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case 'INACTIVE':
-        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="blue" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case 'UNDER_MAINTENANCE':
-        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case 'DECOMMISSIONED':
-        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="red" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       default:
         return <Tag>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
     }
@@ -52,16 +70,57 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
 
   const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
 
+  // Prepare data for the bar chart
+  const nextMaintenanceDates = sensor.nextMaintenanceDates || [];
+  const intervals = nextMaintenanceDates.map((date, index) => {
+    if (index === 0) return dayjs(date).diff(dayjs(), 'day'); // Interval from the current date
+    return dayjs(date).diff(dayjs(nextMaintenanceDates[index - 1]), 'day');
+  });
+
+  const barChartData = {
+    labels: nextMaintenanceDates.map((date) => dayjs(date).format('MMMM D, YYYY')),
+    datasets: [
+      {
+        label: 'Maintenance Interval (days)',
+        data: intervals,
+        backgroundColor: '#3498db',
+        borderColor: '#3498db',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    maintainAspectRatio: true,
+    responsive: true,
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Next Maintenance Dates',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Interval (days)',
+        },
+      },
+    },
+  };
+
   return (
     <div>
       <Descriptions
-        items={(descriptionsItems) as DescriptionsItemType[]}
+        items={descriptionsItems as DescriptionsItemType[]}
         bordered
         column={1}
         size="middle"
         labelStyle={{ width: '40%' }}
         contentStyle={{ width: '60%' }}
+        style={{ marginBottom: '8px' }}
       />
+      {nextMaintenanceDates.length > 0 && <Bar data={barChartData} options={barChartOptions} />}
     </div>
   );
 };

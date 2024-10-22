@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@lepark/common-ui';
 import { DescriptionsItemType } from 'antd/es/descriptions';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { Bar } from 'react-chartjs-2';
+import dayjs from 'dayjs';
 
 const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const [loading, setLoading] = useState(false);
@@ -17,13 +19,29 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const getStatusTag = (status: string) => {
     switch (status) {
       case ParkAssetStatusEnum.AVAILABLE:
-        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="green" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case ParkAssetStatusEnum.IN_USE:
-        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="blue" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case ParkAssetStatusEnum.UNDER_MAINTENANCE:
-        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case ParkAssetStatusEnum.DECOMMISSIONED:
-        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="red" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       default:
         return <Tag>{status}</Tag>;
     }
@@ -45,16 +63,6 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   ];
 
   const conditionalItems = [
-    // asset.lastMaintenanceDate && {
-    //   key: 'lastMaintenanceDate',
-    //   label: 'Last Maintenance Date',
-    //   children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY'),
-    // },
-    // asset.nextMaintenanceDate && {
-    //   key: 'nextMaintenanceDate',
-    //   label: 'Next Maintenance Date',
-    //   children: moment(asset.nextMaintenanceDate).format('MMMM D, YYYY'),
-    // },
     user?.role === StaffType.SUPERADMIN && {
       key: 'park',
       label: 'Park',
@@ -64,10 +72,49 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
       key: 'facility',
       label: 'Facility',
       children: asset.facility.name,
-    }
+    },
   ].filter(Boolean);
 
   const descriptionsItems = [...descriptionItems, ...conditionalItems];
+
+  // Prepare data for the bar chart
+  const nextMaintenanceDates = asset.nextMaintenanceDates || [];
+  const intervals = nextMaintenanceDates.map((date, index) => {
+    if (index === 0) return dayjs(date).diff(dayjs(), 'day'); // Interval from the current date
+    return dayjs(date).diff(dayjs(nextMaintenanceDates[index - 1]), 'day');
+  });
+
+  const barChartData = {
+    labels: nextMaintenanceDates.map((date) => dayjs(date).format('MMMM D, YYYY')),
+    datasets: [
+      {
+        label: 'Maintenance Interval (days)',
+        data: intervals,
+        backgroundColor: '#3498db',
+        borderColor: '#3498db',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    maintainAspectRatio: true,
+    responsive: true,
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Next Maintenance Dates',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Interval (days)',
+        },
+      },
+    },
+  };
 
   if (loading) {
     return <Spin />;
@@ -75,12 +122,8 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
 
   return (
     <div>
-      <Descriptions
-        items={(descriptionsItems) as DescriptionsItemType[]}
-        bordered
-        column={1}
-        size="middle"
-      />
+      <Descriptions items={descriptionsItems as DescriptionsItemType[]} bordered column={1} size="middle" />
+      {nextMaintenanceDates.length > 0 && <Bar data={barChartData} options={barChartOptions} />}
     </div>
   );
 };
