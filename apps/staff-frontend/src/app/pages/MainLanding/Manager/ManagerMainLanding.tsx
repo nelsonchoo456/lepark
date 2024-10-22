@@ -22,13 +22,27 @@ import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import PlantTasksTable from '../components/PlantTasksTable';
 import moment from 'moment';
+import AnnouncementsCard from '../components/AnnouncementsCard';
+import { useNavigate } from 'react-router-dom';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
 export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-center justify-center mr-2';
+export const sectionHeader = 'flex cursor-pointer w-full hover:underline hover:text-green-400';
+export const renderSectionHeader = (title: string, onClick?: () => void) => {
+  return (
+    <div className="sticky top-0 pt-4 z-20 bg-gray-100">
+      <LogoText className={`text-lg font-semibold pb-2 pt-0 ${onClick && "cursor-pointer hover:opacity-80"}`} onClick={onClick && onClick}>
+        <div className={`-z-10  px-2 rounded`}>{title}</div>
+      </LogoText>
+      <div className="w-full h-[1px] bg-gray-400/40 mb-4" />
+    </div>
+  );
+};
 
 const ManagerMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
+  const navigate = useNavigate();
   
   // Data
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
@@ -127,17 +141,6 @@ const ManagerMainLanding = () => {
     },
   ];
 
-  const renderSectionHeader = (title: string) => {
-    return (
-      <div className="sticky top-0 pt-4 z-20 bg-gray-100">
-        <LogoText className={`text-lg font-semibold pb-2 pt-0`}>
-          <div className={`-z-10  px-2 rounded`}>{title}</div>
-        </LogoText>
-        <div className="w-full h-[1px] bg-gray-400/40 mb-4" />
-      </div>
-    );
-  };
-
   return (
     <Row>
       <Col span={21}>
@@ -148,7 +151,7 @@ const ManagerMainLanding = () => {
             {/* Tasks Cards  */}
             <div className="w-full h-86 flex-[2] flex flex-col gap-4">
               <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className="flex">
+                <div className={sectionHeader} onClick={() => navigate('/plant-tasks')}>
                   <div className={`${sectionHeaderIconStyles} bg-highlightGreen-400 text-white`}>
                     <FiInbox />
                   </div>
@@ -167,7 +170,7 @@ const ManagerMainLanding = () => {
 
                   {overduePlantTasksCount > 0 ? (
                     <div className="text-red-400 font-semibold mr-2">
-                      {overduePlantTasksCount} Pending Tasks
+                      {overduePlantTasksCount} Overdue Tasks
                     </div>
                   ) : (
                     <div className="text-red-400 gap-3 flex items-center">
@@ -177,7 +180,7 @@ const ManagerMainLanding = () => {
                 </div>
               </Card>
               <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className="flex">
+                <div className={sectionHeader}>
                   <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
                     <FiInbox />
                   </div>
@@ -187,41 +190,13 @@ const ManagerMainLanding = () => {
               </Card>
             </div>
 
-            {/* Announcements Card  */}
-            <Card className="w-full h-86 flex-[1] overflow-y-scroll" styles={{ body: { padding: '1rem' } }}>
-              <div className="flex">
-                <div className={`${sectionHeaderIconStyles} bg-red-400 text-white`}>
-                  <MdOutlineAnnouncement />
-                </div>
-                <LogoText className="text-lg mb-2">Announcements</LogoText>
-              </div>
-              {announcements?.length > 0 ? (
-                announcements.map((announcement: AnnouncementResponse) => (
-                  <div
-                    className="w-full hover:bg-green-50/20 px-2 pt-2 border-b-[1px] cursor-pointer hover:bg-green-50/50"
-                    key={announcement.id}
-                  >
-                    <strong className="text-green-400 hover:text-green-200">{announcement.title}</strong>
-                    <Typography.Paragraph
-                      ellipsis={{
-                        rows: 1,
-                      }}
-                    >
-                      {announcement.content}
-                    </Typography.Paragraph>
-                  </div>
-                ))
-                
-              ) : (
-                <Empty />
-              )}
-            </Card>
+            <AnnouncementsCard announcements={announcements}/>
           </div>
         </div>
 
         {/* -- [ Section: Park Overview ] -- */}
         <div id="part-2" className={sectionStyles}>
-          {renderSectionHeader('Plant Tasks')}
+          {renderSectionHeader('Plant Tasks', () => navigate('plant-tasks'))}
           {user && <PlantTasksTable userRole={user?.role as StaffType} plantTasks={plantTasks} className="w-full" />}
         </div>
 
