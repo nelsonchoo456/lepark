@@ -4,8 +4,6 @@ import { Descriptions, Tag } from 'antd';
 import { DescriptionsItemType } from 'antd/es/descriptions';
 import moment from 'moment';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
-import { Bar } from 'react-chartjs-2';
-import dayjs from 'dayjs';
 
 const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   const { user } = useAuth<StaffResponse>();
@@ -70,45 +68,6 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
 
   const descriptionsItems = [...baseDescriptionsItems, ...conditionalItems];
 
-  // Prepare data for the bar chart
-  const nextMaintenanceDates = sensor.nextMaintenanceDates || [];
-  const intervals = nextMaintenanceDates.map((date, index) => {
-    if (index === 0) return dayjs(date).diff(dayjs(), 'day'); // Interval from the current date
-    return dayjs(date).diff(dayjs(nextMaintenanceDates[index - 1]), 'day');
-  });
-
-  const barChartData = {
-    labels: nextMaintenanceDates.map((date) => dayjs(date).format('MMMM D, YYYY')),
-    datasets: [
-      {
-        label: 'Maintenance Interval (days)',
-        data: intervals,
-        backgroundColor: '#3498db',
-        borderColor: '#3498db',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const barChartOptions = {
-    maintainAspectRatio: true,
-    responsive: true,
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Next Maintenance Dates',
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Interval (days)',
-        },
-      },
-    },
-  };
-
   return (
     <div>
       <Descriptions
@@ -120,7 +79,6 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
         contentStyle={{ width: '60%' }}
         style={{ marginBottom: '8px' }}
       />
-      {nextMaintenanceDates.length > 0 && <Bar data={barChartData} options={barChartOptions} />}
     </div>
   );
 };

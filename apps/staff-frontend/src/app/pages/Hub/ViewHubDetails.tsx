@@ -27,6 +27,8 @@ import { useEffect, useState } from 'react';
 import SensorsTab from './components/SensorsTab';
 import ConfirmDeleteModal from '../../components/modal/ConfirmDeleteModal';
 import { MdError } from 'react-icons/md';
+import MaintenanceGraphTab from '../Sensor/components/MaintenanceGraphTab';
+import MaintenanceGraphTabHub from './components/MaintenanceGraphTabHub';
 
 const ViewHubDetails = () => {
   const { hubId } = useParams<{ hubId: string }>();
@@ -77,7 +79,7 @@ const ViewHubDetails = () => {
 
       if (hubRes.status === 200) {
         setUpdatedData(hubRes.data);
-        
+
         setTimeout(() => {
           setDeactivateModalOpen(false);
           triggerFetch();
@@ -218,6 +220,15 @@ const ViewHubDetails = () => {
       label: 'Information',
       children: hub ? <InformationTab hub={hub} /> : <p>Loading hub data...</p>,
     },
+    ...(hub?.nextMaintenanceDate
+      ? [
+          {
+            key: 'maintenanceGraph',
+            label: 'Predicted Maintenance Chart',
+            children: hub ? <MaintenanceGraphTabHub hub={hub} /> : <p>Loading graph data...</p>,
+          },
+        ]
+      : []),
     ...(hub?.zone && hub.lat && hub.long
       ? [
           {
@@ -232,7 +243,11 @@ const ViewHubDetails = () => {
           {
             key: 'sensors',
             label: 'Connected Sensors',
-            children: hub ? <SensorsTab hub={hub} zone={hub.zone} sensors={sensors} fetchSensors={() => fetchSensors(hub.id)}/> : <p>Loading Sensors data...</p>,
+            children: hub ? (
+              <SensorsTab hub={hub} zone={hub.zone} sensors={sensors} fetchSensors={() => fetchSensors(hub.id)} />
+            ) : (
+              <p>Loading Sensors data...</p>
+            ),
           },
         ]
       : [
@@ -281,18 +296,19 @@ const ViewHubDetails = () => {
           open={deactivateModalOpen}
           onCancel={cancelDeactivate}
           title="Deactivation of Hub"
-          
           // For Success
-          description={updatedData ? undefined : "Deactivating a Hub will remove the Hub from its current Zone."}
+          description={updatedData ? undefined : 'Deactivating a Hub will remove the Hub from its current Zone.'}
           footer={updatedData && null}
           closable={!updatedData}
         >
           {/* For Success */}
-          {updatedData && <Result
-            status="success"
-            title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Hub'}
-            subTitle="Returning to Hub Details Page..."
-          />}
+          {updatedData && (
+            <Result
+              status="success"
+              title={updatedData ? `Deactivated ${updatedData.name}` : 'Deactivated Hub'}
+              subTitle="Returning to Hub Details Page..."
+            />
+          )}
         </ConfirmDeleteModal>
       )}
 

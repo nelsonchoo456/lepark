@@ -17,6 +17,7 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { Card, Descriptions, Tabs, Tag, Spin, Carousel, Empty, Button, message, Modal, Result, Tooltip } from 'antd';
 import moment from 'moment';
 import InformationTab from './components/InformationTab';
+import MaintenanceGraphTab from './components/MaintenanceGraphTab'; // Import the new component
 import { useRestrictSensors } from '../../hooks/Sensors/useRestrictSensors';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
@@ -213,6 +214,15 @@ const ViewSensorDetails = () => {
       label: 'Information',
       children: sensor ? <InformationTab sensor={sensor} /> : <p>Loading sensor data...</p>,
     },
+    ...(sensor?.nextMaintenanceDate
+      ? [
+          {
+            key: 'maintenanceGraph',
+            label: 'Predicted Maintenance Chart',
+            children: sensor ? <MaintenanceGraphTab sensor={sensor} /> : <p>Loading graph data...</p>,
+          },
+        ]
+      : []),
     ...(sensor?.hub && sensor.lat && sensor.long
       ? [
           {
@@ -309,9 +319,9 @@ const ViewSensorDetails = () => {
           <div className="flex-1 flex-col flex">
             <LogoText className="text-2xl py-2 m-0">{sensor?.name}</LogoText>
             <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
-            {/* <Button type="primary" className="w-24" onClick={() => navigate(`/sensor/${sensor?.id}/add-to-hub`)}>
-              Add to Hub
-            </Button> */}
+            {/* <Button type="primary" className="w-24" onClick={() => navigate(`/sensor/${sensor?.id}/add-to-hub`)}> */}
+            {/* Add to Hub */}
+            {/* </Button> */}
           </div>
         </div>
 

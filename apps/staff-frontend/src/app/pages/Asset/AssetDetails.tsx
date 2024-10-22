@@ -22,6 +22,7 @@ import { useAuth } from '@lepark/common-ui'; // Add this import
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import LocationTab from './components/LocationTab';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
+import MaintenanceGraphTabParkAsset from './components/MaintenanceGraphTabParkAsset';
 
 const AssetDetails = () => {
   const { assetId = '' } = useParams<{ assetId: string }>();
@@ -37,6 +38,15 @@ const AssetDetails = () => {
       label: 'Identifier Number',
       children: asset ? asset.identifierNumber : 'Loading...',
     },
+    ...(asset?.nextMaintenanceDate
+      ? [
+          {
+            key: 'maintenanceGraph',
+            label: 'Predicted Maintenance Chart',
+            children: asset ? <MaintenanceGraphTabParkAsset parkAsset={asset} /> : <p>Loading graph data...</p>,
+          },
+        ]
+      : []),
     {
       key: 'assetType',
       label: 'Asset Type',
