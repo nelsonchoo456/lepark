@@ -1,4 +1,4 @@
-import { Prisma, MaintenanceTask, MaintenanceTaskUrgencyEnum, MaintenanceTaskStatusEnum, Staff, PlantTaskStatusEnum } from '@prisma/client';
+import { Prisma, MaintenanceTask, MaintenanceTaskUrgencyEnum, MaintenanceTaskStatusEnum, Staff, PlantTaskStatusEnum, MaintenanceTaskTypeEnum } from '@prisma/client';
 import { z } from 'zod';
 import { MaintenanceTaskSchema, MaintenanceTaskSchemaType } from '../schemas/maintenanceTaskSchema';
 import MaintenanceTaskDao from '../dao/MaintenanceTaskDao';
@@ -491,69 +491,131 @@ class MaintenanceTaskService {
     return enhancedMaintenanceTasks;
   }
 
-  public async getParkMaintenanceTaskCompletionRates(
+  public async getParkMaintenanceTaskAverageCompletionTimeForPeriod(
     parkId: number,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ staff: Staff; completionRate: number }[]> {
-    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.map((staff) => staff.id);
-    const staffTaskCompletionRates = await Promise.all(
-      staffIdsArray.map(async (staffId) => {
-        const staff = await StaffDao.getStaffById(staffId);
-        if (!staff) {
-          throw new Error('Staff not found');
-        }
-        const completedTasks = await MaintenanceTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
-        const totalTasks = await MaintenanceTaskDao.getStaffTotalTasksForPeriod(staffId, startDate, endDate);
-        const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-        return { staff, completionRate };
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageCompletionTime: number }[]> {
+
+    const taskCompletionTimes = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const averageCompletionTime = await MaintenanceTaskDao.getAverageTaskTypeCompletionTime(taskType, parkId, startDate, endDate);
+        return { taskType, averageCompletionTime };
       }),
     );
-    return staffTaskCompletionRates;
+    return taskCompletionTimes;
   }
 
-  public async getParkMaintenanceTaskOverdueRates(
+  public async getParkMaintenanceTaskOverdueRateForPeriod(
     parkId: number,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ staff: Staff; overdueRate: number }[]> {
-    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.map((staff) => staff.id);
-    const staffOverdueRates = await Promise.all(
-      staffIdsArray.map(async (staffId) => {
-        const staff = await StaffDao.getStaffById(staffId);
-        if (!staff) {
-          throw new Error('Staff not found');
-        }
-        const overdueTasks = await MaintenanceTaskDao.getStaffOverdueTasksForPeriod(staffId, startDate, endDate);
-        const totalTasks = await MaintenanceTaskDao.getStaffTotalTasksDueForPeriod(staffId, startDate, endDate);
-        const overdueRate = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
-        return { staff, overdueRate };
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; overdueRate: number }[]> {
+
+    const overdueRates = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const overdueRate = await MaintenanceTaskDao.getOverdueRateByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
+        return { taskType, overdueRate };
       }),
     );
-    return staffOverdueRates;
+    return overdueRates;
   }
 
-  public async getParkAverageTaskCompletionTime(
+  public async getCriticalTaskTypesIdentification(
+    parkId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<string[]> {
+    const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+    const overdueRates = await this.getParkMaintenanceTaskOverdueRateForPeriod(parkId, startDate, endDate);
+
+    const criticalTasks = averageCompletionTimes.map(completionTime => {
+      const overdueRate = overdueRates.find(rate => rate.taskType === completionTime.taskType)?.overdueRate || 0;
+      return {
+        taskType: completionTime.taskType,
+        score: completionTime.averageCompletionTime * overdueRate
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    return criticalTasks.slice(0, 3).map((task, index) => 
+      `${index + 1}. ${task.taskType} tasks require attention due to their combination of long completion times and high overdue rates.`
+    );
+  }
+
+  public async getTaskTypeEfficiencyRanking(
+    parkId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<string> {
+    const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+    const sortedTasks = averageCompletionTimes.sort((a, b) => a.averageCompletionTime - b.averageCompletionTime);
+
+    const ranking = sortedTasks.map((item, index) => `${index + 1}. ${item.taskType}`).join(', ');
+    return `Task type efficiency ranking (from most efficient to least): ${ranking}`;
+  }
+
+  public async getTrendAnalysis(
     parkId: number,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ staff: Staff; averageCompletionTime: number }[]> {
-    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.map((staff) => staff.id);
-    const staffAverageCompletionTimes = await Promise.all(
-      staffIdsArray.map(async (staffId) => {
-        const staff = await StaffDao.getStaffById(staffId);
-        if (!staff) {
-          throw new Error('Staff not found');
-        }
-        const averageCompletionTime = await MaintenanceTaskDao.getStaffAverageTaskCompletionTime(staffId, startDate, endDate);
-        return { staff, averageCompletionTime };
-      }),
-    );
+    previousStartDate: Date,
+    previousEndDate: Date
+  ): Promise<string[]> {
+    const currentPeriod = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+    const previousPeriod = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, previousStartDate, previousEndDate);
 
-    return staffAverageCompletionTimes;
+    return currentPeriod.map(current => {
+      const previous = previousPeriod.find(item => item.taskType === current.taskType);
+      if (!previous) return `No previous data available for ${current.taskType} tasks.`;
+
+      const percentChange = ((current.averageCompletionTime - previous.averageCompletionTime) / previous.averageCompletionTime) * 100;
+      if (Math.abs(percentChange) < 5) {
+        return `${current.taskType} task completion time remained stable compared to the previous period.`;
+      } else if (percentChange > 0) {
+        return `${current.taskType} tasks are taking ${percentChange.toFixed(0)}% longer to complete compared to the previous period.`;
+      } else {
+        return `${current.taskType} tasks are being completed ${Math.abs(percentChange).toFixed(0)}% faster compared to the previous period.`;
+      }
+    });
+  }
+
+  public async getOverdueRateAnalysis(
+    parkId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<string[]> {
+    const overdueRates = await this.getParkMaintenanceTaskOverdueRateForPeriod(parkId, startDate, endDate);
+    const overallOverdueRate = overdueRates.reduce((sum, item) => sum + item.overdueRate, 0) / overdueRates.length;
+
+    return overdueRates.map(item => {
+      if (item.overdueRate > overallOverdueRate * 1.5) {
+        return `${item.taskType} tasks have a significantly higher overdue rate (${(item.overdueRate * 100).toFixed(1)}%) compared to the average.`;
+      } else if (item.overdueRate < overallOverdueRate * 0.5) {
+        return `${item.taskType} tasks have a notably lower overdue rate (${(item.overdueRate * 100).toFixed(1)}%) compared to the average.`;
+      } else {
+        return `${item.taskType} tasks have an overdue rate of ${(item.overdueRate * 100).toFixed(1)}%, close to the overall average.`;
+      }
+    });
+  }
+
+  public async getTaskTypeComparisonAnalysis(
+    parkId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<string[]> {
+    const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+    const overallAverage = averageCompletionTimes.reduce((sum, item) => sum + item.averageCompletionTime, 0) / averageCompletionTimes.length;
+
+    return averageCompletionTimes.map(item => {
+      const percentDifference = ((item.averageCompletionTime - overallAverage) / overallAverage) * 100;
+      if (Math.abs(percentDifference) < 10) {
+        return `${item.taskType} tasks took about the same time as the average.`;
+      } else if (percentDifference > 0) {
+        return `${item.taskType} tasks took ${percentDifference.toFixed(0)}% longer than the average.`;
+      } else {
+        return `${item.taskType} tasks were completed ${Math.abs(percentDifference).toFixed(0)}% faster than the average.`;
+      }
+    });
   }
 }
 

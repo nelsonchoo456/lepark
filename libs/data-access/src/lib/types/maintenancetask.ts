@@ -60,12 +60,16 @@ export interface MaintenanceTaskUpdateData {
   position?: number;
 }
 
-// export interface CompletionRateData {
-//   staff: StaffResponse;
-//   completionRate: number;
-// }
+export interface CompletionTimeData {
+  taskType: MaintenanceTaskTypeEnum;
+  averageCompletionTime: number;
+}
 
-// export interface OverdueRateData {
+export interface OverdueRateData {
+  taskType: MaintenanceTaskTypeEnum;
+  overdueRate: number;
+}
+
 //   staff: StaffResponse;
 //   overdueRate: number;
 // }
