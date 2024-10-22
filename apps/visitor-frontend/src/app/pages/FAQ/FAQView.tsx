@@ -8,6 +8,7 @@ import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import styled from 'styled-components';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
@@ -94,4 +95,4 @@ const FAQView: React.FC = () => {
   );
 };
 
-export default FAQView;
+export default withParkGuard(FAQView);
