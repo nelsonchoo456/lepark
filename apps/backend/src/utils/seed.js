@@ -520,7 +520,7 @@ async function seed() {
 
   if (parkAsset) {
     const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 2);
 
     let currentStartDate = oneYearAgo;
 

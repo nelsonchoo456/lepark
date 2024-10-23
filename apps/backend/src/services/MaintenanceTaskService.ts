@@ -547,15 +547,19 @@ class MaintenanceTaskService {
       updatedAt: new Date(),
     };
 
+    let updatedTask;
+
     if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
       updateData.completedDate = new Date();
       console.log('maintenanceTask being completed', maintenanceTask);
       // Predict next maintenance dates using Holt-Winters model
-      await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
       console.log('prediction completed');
+      await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
+      updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
+    } else {
+      updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
     }
-
-    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
+    return updatedTask;
   }
 
   public async predictAndUpdateNextMaintenanceDates(maintenanceTask: MaintenanceTask): Promise<void> {

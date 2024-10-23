@@ -182,24 +182,20 @@ function seasonalIndices(data, period, seasons) {
 
 function calcHoltWinters(data, st1, bt1, alpha, beta, gamma, seasonal, period, m) {
   var len = data.length;
-  var st = Array(len);
-  var bt = Array(len);
-  var it = Array(len);
-  var ft = Array(len);
-  var i;
+  var st = Array(len).fill(0);
+  var bt = Array(len).fill(0);
+  var it = Array(len).fill(0);
+  var ft = Array(len + m).fill(0);
 
   st[1] = st1;
   bt[1] = bt1;
 
-  for (i = 0; i < len; i++) {
-    ft[i] = 0.0;
+  for (var i = 0; i < period; i++) {
+    it[i] = Math.max(0, seasonal[i]); // Ensure non-negative seasonality
+    ft[i] = st1 * it[i]; // Initialize forecasts
   }
 
-  for (i = 0; i < period; i++) {
-    it[i] = seasonal[i];
-  }
-
-  for (i = 2; i < len; i++) {
+  for (var i = 2; i < len; i++) {
     if (i - period >= 0) {
       st[i] = (alpha * data[i]) / it[i - period] + (1.0 - alpha) * (st[i - 1] + bt[i - 1]);
     } else {
@@ -209,14 +205,14 @@ function calcHoltWinters(data, st1, bt1, alpha, beta, gamma, seasonal, period, m
     bt[i] = gamma * (st[i] - st[i - 1]) + (1 - gamma) * bt[i - 1];
 
     if (i - period >= 0) {
-      it[i] = (beta * data[i]) / st[i] + (1.0 - beta) * it[i - period];
+      it[i] = Math.max(0, (beta * data[i]) / st[i] + (1.0 - beta) * it[i - period]);
     }
 
-    if (i + m >= period) {
-      ft[i + m] = (st[i] + m * bt[i]) * it[i - period + m];
+    if (i + m < ft.length) {
+      ft[i + m] = Math.max(0, (st[i] + m * bt[i]) * it[(i - period + m) % period]);
     }
   }
-  //console.log('ft', ft);
+
   return ft;
 }
 
