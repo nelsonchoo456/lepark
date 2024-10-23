@@ -506,8 +506,9 @@ const TicketListingDetails: React.FC = () => {
             <TabPane tab="Ticket Sales Over Time" key="1">
               <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                  <div className="flex justify-start">
-                    <Text className="mr-2 pt-1">Purchase Date: </Text>
+                  {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 && (
+                    <div className="flex justify-start">
+                      <Text className="mr-2 pt-1">Purchase Date: </Text>
                     {purchaseDateRange && (
                       <RangePicker
                         value={purchaseDateRange}
@@ -515,8 +516,9 @@ const TicketListingDetails: React.FC = () => {
                         style={{ marginBottom: '20px' }}
                       />
                     )}
-                    <Button className='ml-2' onClick={resetPurchaseDateRange}>Reset</Button>
-                  </div>
+                      <Button className='ml-2' onClick={resetPurchaseDateRange}>Reset</Button>
+                    </div>
+                  )}
                   {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
                       title="Tickets Sold Over Time (Purchase Date)"
@@ -561,8 +563,9 @@ const TicketListingDetails: React.FC = () => {
                   )}
                 </Col>
                 <Col xs={24} lg={12}>
-                  <div className="flex justify-start">
-                    <Text className="mr-2 pt-1">Visit Date: </Text>
+                  {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 && (
+                    <div className="flex justify-start">
+                      <Text className="mr-2 pt-1">Visit Date: </Text>
                     {attractionDateRange && (
                       <RangePicker
                         value={attractionDateRange}
@@ -570,8 +573,9 @@ const TicketListingDetails: React.FC = () => {
                         style={{ marginBottom: '20px' }}
                       />
                     )}
-                    <Button className='ml-2' onClick={resetVisitDateRange}>Reset</Button>
-                  </div>
+                      <Button className='ml-2' onClick={resetVisitDateRange}>Reset</Button>
+                    </div>
+                  )}
                   {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
                       title="Expected Visits Over Time"
