@@ -195,7 +195,7 @@ class MaintenanceTaskDao {
       orderBy: { completedDate: 'asc' },
     });
   }
-  
+
   async getOverdueRateByTaskTypeForPeriod(
     taskType: MaintenanceTaskTypeEnum,
     parkId: number,
