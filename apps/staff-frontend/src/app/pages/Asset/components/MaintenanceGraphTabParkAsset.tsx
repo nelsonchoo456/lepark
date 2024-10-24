@@ -49,7 +49,7 @@ const MaintenanceGraphTabParkAsset = ({ parkAsset }: { parkAsset: ParkAssetRespo
 
   const handleCreateTask = () => {
     const earliestDate = nextMaintenanceDates.length > 0 ? dayjs(nextMaintenanceDates[0]).format('YYYY-MM-DD') : '';
-    navigate(`/maintenance-tasks/create?entityId=${parkAsset.identifierNumber}&dueDate=${earliestDate}&entityType=parkAsset`);
+    navigate(`/maintenance-tasks/create?entityId=${parkAsset.identifierNumber}&dueDate=${earliestDate}&entityType=parkAsset&hasDueDate=yes`);
   };
 
   return (

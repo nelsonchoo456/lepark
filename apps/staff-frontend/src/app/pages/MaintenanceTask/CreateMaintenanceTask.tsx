@@ -72,8 +72,8 @@ const CreateMaintenanceTask = () => {
     console.log('entityId:', entityId, 'entityType:', entityType, 'dueDate:', dueDate);
 
     if (dueDate) {
-      form.setFieldsValue({ dueDate: dayjs(dueDate) });
       setShowDueDate(true);
+      form.setFieldsValue({ dueDate: dayjs(dueDate) });
     }
   }, [location.search]);
 
@@ -174,9 +174,20 @@ const CreateMaintenanceTask = () => {
       }
 
       const { parkId, hasDueDate, dueDate, entityType, entityId, ...maintenanceTaskData } = values;
+
+      // Debugging: Log the raw dueDate value
+      console.log('Raw dueDate value from form:', dueDate);
+      console.log('hasDueDate', hasDueDate);
+      // Ensure dueDate is correctly parsed and converted
+      let formattedDueDate = null;
+      if (dueDate) {
+        formattedDueDate = dayjs(dueDate).toISOString();
+        console.log('Formatted dueDate value:', formattedDueDate);
+      }
+
       const taskData = {
         ...maintenanceTaskData,
-        dueDate: hasDueDate ? dayjs(dueDate).toISOString() : null,
+        dueDate: formattedDueDate,
         submittingStaffId: user.id,
         facilityId: entityType === 'facility' ? selectedEntity?.id : null,
         parkAssetId: entityType === 'parkAsset' ? selectedEntity?.id : null,
@@ -408,7 +419,7 @@ const CreateMaintenanceTask = () => {
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
             <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
-              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType="button" defaultValue="no">
+              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType="button" value={showDueDate ? 'yes' : 'no'}>
                 <Radio value="yes">Yes</Radio>
                 <Radio value="no">No</Radio>
               </Radio.Group>

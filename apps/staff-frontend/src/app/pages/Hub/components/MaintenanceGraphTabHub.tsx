@@ -49,7 +49,7 @@ const MaintenanceGraphTabHub = ({ hub }: { hub: HubResponse }) => {
 
   const handleCreateTask = () => {
     const earliestDate = nextMaintenanceDates.length > 0 ? dayjs(nextMaintenanceDates[0]).format('YYYY-MM-DD') : '';
-    navigate(`/maintenance-tasks/create?entityId=${hub.identifierNumber}&dueDate=${earliestDate}&entityType=hub`);
+    navigate(`/maintenance-tasks/create?entityId=${hub.identifierNumber}&dueDate=${earliestDate}&entityType=hub&hasDueDate=yes`);
   };
 
   return (
