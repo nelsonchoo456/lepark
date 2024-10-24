@@ -16,12 +16,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictFeedbacks } from '../../hooks/Feedback/useRestrictFeedbacks';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { MailOutlined } from '@ant-design/icons';
 
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
     case "PENDING":
       return 'yellow';
-    case 'RESOLVED':
+    case 'ACCEPTED':
       return 'green';
     case 'REJECTED':
       return 'red';
@@ -53,6 +54,7 @@ const initialFeedback: FeedbackResponse = {
   },
   staff: undefined,
   parkId: 0,
+  needResponse: false,
 };
 
 const formatEnumLabel = (enumValue: string): string => {
@@ -114,40 +116,35 @@ const FeedbackViewDetails = () => {
   };
 
   const handleSave = async () => {
-    try {
-      if (!user) {
-        throw new Error('User not found.');
-      }
-
-      const updatedFeedbackDetails: FeedbackUpdateData = {
-        feedbackCategory: editedFeedback.feedbackCategory,
-        feedbackStatus: editedFeedback.feedbackStatus,
-        remarks: editedFeedback.remarks,
-      };
-
-
-
-      // Add logic for updating staff when resolving or rejecting feedback
-      if ((feedback?.feedbackStatus !== FeedbackStatusEnum.RESOLVED &&
-          editedFeedback.feedbackStatus === FeedbackStatusEnum.RESOLVED) ||
-          (feedback?.feedbackStatus !== FeedbackStatusEnum.REJECTED &&
-          editedFeedback.feedbackStatus === FeedbackStatusEnum.REJECTED)) {
-        if (!editedFeedback.remarks || editedFeedback.remarks.trim() === '') {
-          throw new Error('Remarks cannot be blank when resolving or rejecting feedback.');
-        }
-        updatedFeedbackDetails.staffId = user.id;
-        updatedFeedbackDetails.dateResolved = new Date().toISOString();
-      }
-
-      await updateFeedback(feedbackId, updatedFeedbackDetails);
-      message.success('Feedback updated successfully!');
-      setInEditMode(false);
-      refreshFeedback();
-    } catch (error: any) {
-      console.error(error);
-      message.error(error.message || 'Failed to update feedback.');
+  try {
+    if (!user) {
+      throw new Error('User not found.');
     }
-  };
+
+    const updatedFeedbackDetails: FeedbackUpdateData = {
+      feedbackCategory: editedFeedback.feedbackCategory,
+      feedbackStatus: editedFeedback.feedbackStatus,
+      remarks: editedFeedback.remarks,
+    };
+
+    // Check if the status has changed to ACCEPTED or REJECTED
+    if ((feedback?.feedbackStatus !== FeedbackStatusEnum.ACCEPTED &&
+        editedFeedback.feedbackStatus === FeedbackStatusEnum.ACCEPTED) ||
+        (feedback?.feedbackStatus !== FeedbackStatusEnum.REJECTED &&
+        editedFeedback.feedbackStatus === FeedbackStatusEnum.REJECTED)) {
+      updatedFeedbackDetails.staffId = user.id;
+      updatedFeedbackDetails.dateResolved = new Date().toISOString();
+    }
+
+    await updateFeedback(feedbackId, updatedFeedbackDetails);
+    message.success('Feedback updated successfully!');
+    setInEditMode(false);
+    refreshFeedback();
+  } catch (error: any) {
+    console.error(error);
+    message.error(error.message || 'Failed to update feedback.');
+  }
+};
 
   const descriptionsItems: DescriptionsProps['items'] = [
     {
@@ -169,7 +166,6 @@ const FeedbackViewDetails = () => {
       <Input.TextArea
         value={editedFeedback.remarks || ''}
         onChange={(e) => handleInputChange('remarks', e.target.value)}
-        placeholder="This will be visible to the visitor who submitted feedback. Ensure remarks are updated before resolving or rejecting."
       />
     ) : feedback?.remarks || 'No remarks',
     span: 3, // Add this line to make remarks span full width
@@ -238,9 +234,22 @@ const FeedbackViewDetails = () => {
       children: `${feedback?.visitor.firstName} ${feedback?.visitor.lastName}`,
     },
     {
-      key: 'visitorEmail',
-      label: 'Visitor Email',
-      children: `${feedback?.visitor.email}`,
+      key: 'needResponse',
+      label: 'Email Response',
+      children: (
+        <div className="flex items-center justify-between">
+          <span>{feedback?.needResponse ? 'Required' : 'Not Required'}</span>
+          {feedback?.needResponse && feedback?.visitor?.email && (
+            <Tooltip title="Send email">
+              <Button
+                type="link"
+                icon={<MailOutlined />}
+                onClick={() => window.location.href = `mailto:${feedback.visitor.email}`}
+              />
+            </Tooltip>
+          )}
+        </div>
+      ),
     },
 
   ];
@@ -315,19 +324,23 @@ const FeedbackViewDetails = () => {
                 <>
                   <div>{feedback?.title}</div>
                   <div className="flex items-center">
-                    {!inEditMode && feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
-                      <Button
-                        type="primary"
-                        onClick={handleCreatePlantTask}
-                        className="mr-2"
-                      >
-                        Create Plant Task
-                      </Button>
-                    )}
-                    {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
-                      <Button type="primary" onClick={handleCreateMaintenanceTask} className="mr-2">
-                        Create Maintenance Task
-                      </Button>
+                    {!inEditMode && feedback?.feedbackStatus === FeedbackStatusEnum.ACCEPTED && (
+                      <>
+                        {feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
+                          <Button
+                            type="primary"
+                            onClick={handleCreatePlantTask}
+                            className="mr-2"
+                          >
+                            Create Plant Task
+                          </Button>
+                        )}
+                        {['FACILITIES', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY'].includes(feedback?.feedbackCategory) && (
+                          <Button type="primary" onClick={handleCreateMaintenanceTask} className="mr-2">
+                            Create Maintenance Task
+                          </Button>
+                        )}
+                      </>
                     )}
                     {(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.MANAGER || user?.role === StaffType.SUPERADMIN) && (
                       <Button icon={<RiEdit2Line className="text-lg" />} type="text" onClick={toggleEditMode} />

@@ -12,12 +12,11 @@ interface FeedbackCardProps {
   status: string;
 }
 
-
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
     case "PENDING":
       return 'yellow';
-    case 'RESOLVED':
+    case 'ACCEPTED':
       return 'green';
     case 'REJECTED':
       return 'red';
@@ -27,7 +26,7 @@ const getFeedbackStatusColor = (status: string) => {
 }
 
 const FeedbackCard: React.FC<FeedbackCardProps> = ({ date, title, category, parkId, onClick, status }) => {
-     const [parkName, setParkName] = useState<string>('');
+  const [parkName, setParkName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -45,6 +44,7 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({ date, title, category, park
 
     fetchParkName();
   }, [parkId]);
+
   return (
     <Card
       size="small"

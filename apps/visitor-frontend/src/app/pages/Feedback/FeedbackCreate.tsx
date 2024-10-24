@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
-import { Form, Input, Select, Button, Upload, message, Result } from 'antd';
+import { Form, Input, Select, Button, Upload, message, Result, Checkbox } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import { VisitorResponse, FeedbackData, createFeedback, FeedbackCategoryEnum, FeedbackStatusEnum } from '@lepark/data-access';
-
+import withParkGuard from '../../park-context/withParkGuard';
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -37,6 +37,7 @@ const FeedbackCreate = () => {
         feedbackStatus: FeedbackStatusEnum.PENDING,
         visitorId: user.id,
         parkId: selectedPark?.id || 0,
+        needResponse: values.needResponse,
       };
 
       // Convert fileList to File array
@@ -72,7 +73,8 @@ const FeedbackCreate = () => {
             initialValues={{
               visitorId: user.id,
               parkId: selectedPark?.id,
-              feedbackStatus: 'OPEN',
+              feedbackStatus: FeedbackStatusEnum.PENDING,
+              needResponse: false,
             }}
           >
             <Form.Item
@@ -127,15 +129,23 @@ const FeedbackCreate = () => {
               </Upload>
             </Form.Item>
 
+            <Form.Item
+              name="needResponse"
+              valuePropName="checked"
+            >
+              <Checkbox>I would like a response to my feedback via my email address</Checkbox>
+            </Form.Item>
+
             <p className="text-gray-500 italic">You are submitting feedback for {selectedPark?.name}</p>
-<br/>
+
+            <br/>
+
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 Submit Feedback
               </Button>
             </Form.Item>
           </Form>
-
         ) : (
           <Result
             status="warning"
@@ -153,4 +163,4 @@ const FeedbackCreate = () => {
   );
 };
 
-export default FeedbackCreate;
+export default withParkGuard(FeedbackCreate);

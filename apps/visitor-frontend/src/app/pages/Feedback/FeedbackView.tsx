@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { FeedbackResponse, getFeedbackById, viewStaffDetails, getParkById, deleteFeedback, VisitorResponse } from '@lepark/data-access';
-import { Card, Tag, Spin, Button, Image, Popconfirm, message, Modal, Upload } from 'antd';
+import { Card, Tag, Spin, Button, Image, Popconfirm, message, Modal } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import { ArrowLeftOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-
+import withParkGuard from '../../park-context/withParkGuard';
 const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
     case "PENDING":
       return 'yellow';
-    case 'RESOLVED':
+    case 'ACCEPTED':
       return 'green';
     case 'REJECTED':
       return 'red';
@@ -47,11 +47,10 @@ const FeedbackView: React.FC = () => {
           setIsAccessDeniedModalVisible(true);
           return;
         }
-        console.log(feedback)
+
         if (feedbackResponse.data.staffId) {
           const staffResponse = await viewStaffDetails(feedbackResponse.data.staffId);
           setResolvedByStaff(`${staffResponse.data.firstName} ${staffResponse.data.lastName}`);
-          console.log(resolvedByStaff);
         }
 
         if (feedbackResponse.data.parkId) {
@@ -87,11 +86,6 @@ const FeedbackView: React.FC = () => {
       console.error('Error deleting feedback:', error);
       message.error('Failed to delete feedback');
     }
-  };
-
-  const handlePreview = async (file: any) => {
-    setPreviewImage(file.url || file.preview);
-    setPreviewVisible(true);
   };
 
   const handleAccessDeniedOk = () => {
@@ -139,6 +133,7 @@ const FeedbackView: React.FC = () => {
                   style={{ marginRight: '8px' }}
                   onClick={() => navigate(`/feedback/edit/${feedbackId}`)}
                 >
+                  Edit
                 </Button>
                 <Popconfirm
                   title="Are you sure you want to delete this feedback?"
@@ -151,6 +146,7 @@ const FeedbackView: React.FC = () => {
                     danger
                     icon={<DeleteOutlined />}
                   >
+                    Delete
                   </Button>
                 </Popconfirm>
               </>
@@ -162,48 +158,45 @@ const FeedbackView: React.FC = () => {
 
           <div className="mt-4">
             <p><strong>Status:</strong> <Tag color={getFeedbackStatusColor(feedback.feedbackStatus)}>{formatEnumLabel(feedback.feedbackStatus)}</Tag></p>
+
             {feedback.dateResolved && (
               <p><strong>Date Resolved:</strong> {new Date(feedback.dateResolved).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
             )}
             {resolvedByStaff && (
               <p><strong>Resolved By:</strong> {resolvedByStaff}</p>
             )}
-            {feedback.remarks && (
-              <>
-                <p><strong>Remarks:</strong> <i>{feedback.remarks}</i></p>
-                <br/>
-              </>
-            )}
             <p><strong>Category:</strong> {formatEnumLabel(feedback.feedbackCategory)}</p>
+            <p><strong>Response Required:</strong> {feedback.needResponse ? 'Yes' : 'No'}</p>
+            <br/>
             <p><strong>Date Created:</strong> {new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
             <p><strong>Park:</strong> {parkName || 'Unknown'}</p>
           </div>
 
-            {fileList.length > 0 && (
-          <div className="mt-4">
-            <p><strong>Images:</strong></p>
-            <div className="grid grid-cols-2 gap-2">
-              {fileList.map((file, index) => (
-                <div key={file.uid} className="aspect-square relative group">
-                  <img
-                    src={file.url}
-                    alt={`Feedback image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50">
-                    <EyeOutlined
-                      className="text-white text-2xl cursor-pointer"
-                      onClick={() => {
-                        setPreviewImage(file.url);
-                        setPreviewVisible(true);
-                      }}
+          {fileList.length > 0 && (
+            <div className="mt-4">
+              <p><strong>Images:</strong></p>
+              <div className="grid grid-cols-2 gap-2">
+                {fileList.map((file, index) => (
+                  <div key={file.uid} className="aspect-square relative group">
+                    <img
+                      src={file.url}
+                      alt={`Feedback image ${index + 1}`}
+                      className="w-full h-full object-cover"
                     />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50">
+                      <EyeOutlined
+                        className="text-white text-2xl cursor-pointer"
+                        onClick={() => {
+                          setPreviewImage(file.url);
+                          setPreviewVisible(true);
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
           <p><strong>Description:</strong> {feedback.description}</p>
         </Card>
@@ -235,4 +228,4 @@ const FeedbackView: React.FC = () => {
   );
 };
 
-export default FeedbackView;
+export default withParkGuard(FeedbackView);

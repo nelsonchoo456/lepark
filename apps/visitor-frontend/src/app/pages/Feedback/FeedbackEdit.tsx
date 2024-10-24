@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@lepark/common-ui';
-import { Form, Input, Select, Button, Upload, message, Result, Spin, Modal, Image } from 'antd';
+import { Form, Input, Select, Button, Upload, message, Result, Spin, Modal, Image, Checkbox } from 'antd';
 import { UploadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import { VisitorResponse, FeedbackData, updateFeedback, FeedbackCategoryEnum, FeedbackStatusEnum, getFeedbackById, FeedbackResponse } from '@lepark/data-access';
-
+import withParkGuard from '../../park-context/withParkGuard';
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -55,6 +55,7 @@ const FeedbackEdit = () => {
             title: response.data.title,
             description: response.data.description,
             feedbackCategory: response.data.feedbackCategory,
+            needResponse: response.data.needResponse,
           });
           if (response.data.images) {
             setFileList(response.data.images.map((url, index) => ({
@@ -99,6 +100,7 @@ const FeedbackEdit = () => {
         title: values.title,
         description: values.description,
         feedbackCategory: values.feedbackCategory,
+        needResponse: values.needResponse,
         images: fileList.filter(file => file.url).map(file => file.url),
       };
 
@@ -175,6 +177,13 @@ const FeedbackEdit = () => {
               </Select>
             </Form.Item>
 
+            <Form.Item
+              name="needResponse"
+              valuePropName="checked"
+            >
+              <Checkbox>I would like a response to my feedback</Checkbox>
+            </Form.Item>
+
             <Form.Item label="Images">
               <Upload
                 listType="picture-card"
@@ -182,7 +191,6 @@ const FeedbackEdit = () => {
                 onChange={handleChange}
                 onPreview={handlePreview}
                 beforeUpload={() => false}
-
               >
                 {fileList.length >= 8 ? null : (
                   <div>

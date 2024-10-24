@@ -16,7 +16,7 @@ const getFeedbackStatusColor = (status: string) => {
   switch (status) {
     case "PENDING":
       return 'yellow';
-    case 'RESOLVED':
+    case 'ACCEPTED':
       return 'green';
     case 'REJECTED':
       return 'red';

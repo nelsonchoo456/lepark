@@ -8,6 +8,7 @@ import { usePark } from '../../park-context/ParkContext';
 import { VisitorResponse, FeedbackResponse, getAllFeedback, FeedbackStatusEnum, FeedbackCategoryEnum, getAllParks, ParkResponse } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import FeedbackCard from '../Profile/components/FeedbackCard';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { Option } = Select;
 
@@ -156,4 +157,4 @@ const FeedbackList = () => {
   );
 };
 
-export default FeedbackList;
+export default withParkGuard(FeedbackList);
