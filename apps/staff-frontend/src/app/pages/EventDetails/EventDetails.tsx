@@ -27,6 +27,7 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import TicketsTab from './components/TicketsTab';
 import TicketSalesTab from './components/TicketSalesTab';
 import { useLocation } from 'react-router-dom';
+import DashboardTab from './components/DashboardTab';
 
 const { Text } = Typography;
 
@@ -146,11 +147,11 @@ const EventDetails = () => {
       label: 'Ticket Sales',
       children: event ? <TicketSalesTab event={event} /> : <></>,
     },
-    // {
-    //   key: 'dashboard',
-    //   label: 'Dashboard',
-    //   children: event ? <DashboardTab eventId={event.id} /> : <></>,
-    // },
+    {
+      key: 'dashboard',
+      label: 'Dashboard',
+      children: event ? <DashboardTab eventId={event.id} /> : <></>,
+    },
   ];
 
   const breadcrumbItems = [

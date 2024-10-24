@@ -50,6 +50,8 @@ const TicketListingDetails: React.FC = () => {
   const [ticketData, setTicketData] = useState<any[]>([]);
   const [eventDateSalesData, setEventDateSalesData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('1');
+  const [absolutePurchaseStartDateRange, setAbsolutePurchaseStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [absoluteVisitStartDateRange, setAbsoluteVisitStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
   const { user } = useAuth<StaffResponse>();
 
@@ -82,7 +84,7 @@ const TicketListingDetails: React.FC = () => {
             purchaseDate: dayjs(transactionResponse.data.purchaseDate),
             eventDate: dayjs(transactionResponse.data.eventDate),
           };
-        }),
+        })
       );
 
       ticketData.sort((a: any, b: any) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
@@ -90,8 +92,10 @@ const TicketListingDetails: React.FC = () => {
 
       if (ticketData.length > 0) {
         setPurchaseDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
+        setAbsolutePurchaseStartDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
         ticketData.sort((a: any, b: any) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
         setEventDateRange([ticketData[0].eventDate, ticketData[ticketData.length - 1].eventDate]);
+        setAbsoluteVisitStartDateRange([ticketData[0].eventDate, ticketData[ticketData.length - 1].eventDate]);
       }
 
       fetchTicketSalesData();
@@ -203,6 +207,14 @@ const TicketListingDetails: React.FC = () => {
 
   const handleEventDateRangeChange = (dates: any) => {
     setEventDateRange(dates);
+  };
+
+  const resetPurchaseDateRange = async () => {
+    setPurchaseDateRange(absolutePurchaseStartDateRange);
+  };
+
+  const resetVisitDateRange = async () => {
+    setEventDateRange(absoluteVisitStartDateRange);
   };
 
   const toggleEditMode = () => {
@@ -475,12 +487,19 @@ const TicketListingDetails: React.FC = () => {
             <TabPane tab="Ticket Sales Over Time" key="1">
               <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                  <div className="flex justify-start">
-                    <Text className="mr-2 pt-1">Purchase Date: </Text>
-                    {purchaseDateRange && (
-                      <RangePicker value={purchaseDateRange} onChange={handlePurchaseDateRangeChange} style={{ marginBottom: '20px' }} />
-                    )}
-                  </div>
+                  {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 && (
+                    <div className="flex justify-start">
+                      <Text className="mr-2 pt-1">Purchase Date: </Text>
+                      {purchaseDateRange && (
+                        <RangePicker
+                          value={purchaseDateRange}
+                          onChange={handlePurchaseDateRangeChange}
+                          style={{ marginBottom: '20px' }}
+                        />
+                      )}
+                      <Button className='ml-2' onClick={resetPurchaseDateRange}>Reset</Button>
+                    </div>
+                  )}
                   {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
                       title="Tickets Sold Over Time (Purchase Date)"
@@ -525,15 +544,31 @@ const TicketListingDetails: React.FC = () => {
                   )}
                 </Col>
                 <Col xs={24} lg={12}>
-                  <div className="flex justify-start">
-                    <Text className="mr-2 pt-1">Visit Date: </Text>
-                    {eventDateRange && (
-                      <RangePicker value={eventDateRange} onChange={handleEventDateRangeChange} style={{ marginBottom: '20px' }} />
-                    )}
-                  </div>
+                  {eventDateSalesData && eventDateSalesData.datasets[0].data.length > 0 && (
+                    <div className="flex justify-start">
+                      <Text className="mr-2 pt-1">Event Date: </Text>
+                      {eventDateRange && (
+                        <RangePicker
+                          value={eventDateRange}
+                          onChange={handleEventDateRangeChange}
+                          style={{ marginBottom: '20px' }}
+                          disabledDate={(current) => {
+                            // Convert to start of day to avoid timezone issues
+                            const currentDate = current.startOf('day');
+                            const eventStart = dayjs(event?.startDate).startOf('day');
+                            const eventEnd = dayjs(event?.endDate).startOf('day');
+                            
+                            // Disable dates outside the event range
+                            return currentDate.isBefore(eventStart) || currentDate.isAfter(eventEnd);
+                          }}
+                        />
+                      )}
+                      <Button className='ml-2' onClick={resetVisitDateRange}>Reset</Button>
+                    </div>
+                  )}
                   {eventDateSalesData && eventDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
-                      title="Tickets Sold Over Time (Event Visit Date)"
+                      title="Expected Visits Over Time"
                       data={eventDateSalesData}
                       type="line"
                       options={{
@@ -544,7 +579,7 @@ const TicketListingDetails: React.FC = () => {
                             beginAtZero: true,
                             title: {
                               display: true,
-                              text: 'Number of Tickets',
+                              text: 'Number of Visitors',
                             },
                             ticks: {
                               stepSize: 1,
@@ -554,7 +589,7 @@ const TicketListingDetails: React.FC = () => {
                           x: {
                             title: {
                               display: true,
-                              text: 'Visit Date',
+                              text: 'Event Date',
                             },
                             ticks: {
                               maxRotation: 45,

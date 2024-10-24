@@ -27,6 +27,9 @@ const {
   announcementsData,
   attractionTransactionLocalData,
   attractionTransactionStandardData,
+  eventTicketListingsData,
+  eventTransactionLocalData,
+  eventTransactionStandardData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -378,7 +381,21 @@ async function seed() {
     });
     eventList.push(createdEvent);
   }
-  console.log(`Total events seeded: ${eventList.length}\n`);
+
+  const eventTicketListingsList = [];
+
+  for (const event of eventList) {
+    const currentListings = [];
+    for (const listing of eventTicketListingsData) {
+      listing.eventId = event.id;
+      const eventListing = await prisma.eventTicketListing.create({
+        data: listing,
+      });
+      currentListings.push(eventListing);
+    }
+    eventTicketListingsList.push(currentListings);
+  }
+  console.log(`Total events (with listings) seeded: ${eventList.length}\n`);
 
   const attractionList = [];
   for (const attraction of attractionsData) {
@@ -388,7 +405,7 @@ async function seed() {
     attractionList.push(createdAttraction);
   }
 
-  const attractionListingsList = [];
+  const attractionTicketListingsList = [];
 
   for (const attraction of attractionList) {
     const currentListings = [];
@@ -399,7 +416,7 @@ async function seed() {
       });
       currentListings.push(attractionListing);
     }
-    attractionListingsList.push(currentListings);
+    attractionTicketListingsList.push(currentListings);
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
@@ -629,7 +646,7 @@ async function seed() {
   const transactionList = [];
   const aaronId = visitorList[1].id;
   const flowerDomeId = attractionList[2].id;
-  const flowerDomeListings = attractionListingsList[2];
+  const flowerDomeListings = attractionTicketListingsList[2];
   for (const transaction of attractionTransactionLocalData) {
     transaction.visitorId = aaronId;
     transaction.attractionId = flowerDomeId;
@@ -729,6 +746,110 @@ async function seed() {
   }
 
   console.log(`Total attraction transactions seeded: ${transactionList.length}\n`);
+
+  const eventTransactionList = [];
+  const wildlifeTalkEventId = eventList[0].id;
+  const wildlifeTalkEventListings = eventTicketListingsList[0];
+
+  for (const transaction of eventTransactionLocalData) {
+    transaction.visitorId = aaronId;
+    transaction.eventId = wildlifeTalkEventId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = wildlifeTalkEventListings[i].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.eventTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.eventTicketTransaction.create({
+        data: {
+          ...transactionData,
+          eventTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                eventTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          eventTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    eventTransactionList.push(result);
+  }
+
+  for (const transaction of eventTransactionStandardData) {
+    transaction.visitorId = aaronId;
+    transaction.eventId = wildlifeTalkEventId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = wildlifeTalkEventListings[i + 4].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.eventTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.eventTicketTransaction.create({
+        data: {
+          ...transactionData,
+          eventTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                eventTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          eventTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    eventTransactionList.push(result);
+  }
+
+  console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
