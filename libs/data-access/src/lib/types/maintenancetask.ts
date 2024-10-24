@@ -53,6 +53,7 @@ export interface MaintenanceTaskResponse {
 export interface MaintenanceTaskUpdateData {
   title?: string;
   description?: string;
+  taskStatus?: MaintenanceTaskStatusEnum;
   taskType?: MaintenanceTaskTypeEnum;
   taskUrgency?: MaintenanceTaskUrgencyEnum;
   dueDate?: string | null;
@@ -60,12 +61,16 @@ export interface MaintenanceTaskUpdateData {
   position?: number;
 }
 
-// export interface CompletionRateData {
-//   staff: StaffResponse;
-//   completionRate: number;
-// }
+export interface CompletionTimeData {
+  taskType: MaintenanceTaskTypeEnum;
+  averageCompletionTime: number;
+}
 
-// export interface OverdueRateData {
+export interface OverdueRateMaintenanceTaskData {
+  taskType: MaintenanceTaskTypeEnum;
+  overdueRate: number;
+}
+
 //   staff: StaffResponse;
 //   overdueRate: number;
 // }

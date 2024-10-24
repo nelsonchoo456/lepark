@@ -22,7 +22,6 @@ const PromotionViewAll = () => {
   const [parkPromotions, setParkPromotions] = useState<PromotionResponse[]>([]);
   const [allPromotions, setAllPromotions] = useState<PromotionResponse[]>([]);
 
-
   const handleCategoryChange = (newValue: string[]) => {
     setSelectedCategory(newValue);
   };
@@ -31,16 +30,27 @@ const PromotionViewAll = () => {
     setSearchQuery(value);
   };
 
+  const filterValidPromotions = (promotions: PromotionResponse[]) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+
+    return promotions.filter(promotion =>
+      promotion.status === PromotionStatusEnum.ENABLED &&
+      new Date(promotion.validFrom) <= today &&
+      new Date(promotion.validUntil) >= today
+    );
+  };
+
   useEffect(() => {
     const fetchPromotions = async () => {
       setLoading(true);
       try {
         if (selectedPark?.id) {
           const parkPromotionsResponse = await getPromotionsByParkId(selectedPark.id.toString(), false, true);
-           console.log(parkPromotionsResponse.data);
-          const filteredParkPromotions = parkPromotionsResponse.data.filter(
+          console.log(parkPromotionsResponse.data);
+          const filteredParkPromotions = filterValidPromotions(parkPromotionsResponse.data.filter(
             promotion => promotion.parkId !== null
-          );
+          ));
           setParkPromotions(filteredParkPromotions);
         }
 
@@ -57,17 +67,6 @@ const PromotionViewAll = () => {
     fetchPromotions();
   }, [selectedPark]);
 
-  const filterValidPromotions = (promotions: PromotionResponse[]) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
-
-    return promotions.filter(promotion =>
-      promotion.status === PromotionStatusEnum.ENABLED &&
-      new Date(promotion.validFrom) <= today &&
-      new Date(promotion.validUntil) >= today
-    );
-  };
-
   const limitedPromotions = useMemo(() => {
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
@@ -78,11 +77,11 @@ const PromotionViewAll = () => {
     });
   }, [allPromotions]);
 
-    const filterPromotions = (promotions: PromotionResponse[]) => {
+  const filterPromotions = (promotions: PromotionResponse[]) => {
     return promotions.filter(promotion =>
       promotion.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-promotion.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-(promotion.promoCode && promotion.promoCode.toLowerCase().includes(searchQuery.toLowerCase()))
+      promotion.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (promotion.promoCode && promotion.promoCode.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   };
 
@@ -90,65 +89,62 @@ promotion.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
   const filteredParkPromotions = useMemo(() => filterPromotions(parkPromotions), [parkPromotions, searchQuery]);
   const filteredLimitedPromotions = useMemo(() => filterPromotions(limitedPromotions), [limitedPromotions, searchQuery]);
 
+  const renderPromotionCard = (promotion: PromotionResponse) => {
+    // Function to truncate text
+    const truncateText = (text: string, maxLength: number) => {
+      if (text.length <= maxLength) return text;
+      return text.slice(0, maxLength) + '...';
+    };
 
-const renderPromotionCard = (promotion: PromotionResponse) => {
-  // Function to truncate text
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + '...';
-  };
+    // Function to render discount value
+    const renderDiscountValue = () => {
+      if (promotion.discountType === DiscountTypeEnum.FIXED_AMOUNT) {
+        return `$${promotion.discountValue} OFF`;
+      } else {
+        return `${promotion.discountValue}% OFF`;
+      }
+    };
 
-  // Function to render discount value
-  const renderDiscountValue = () => {
-    if (promotion.discountType === DiscountTypeEnum.FIXED_AMOUNT) {
-      return `$${promotion.discountValue} OFF`;
-    } else {
-      return `${promotion.discountValue}% OFF`;
-    }
+    return (
+      <Card
+        key={promotion.id}
+        hoverable
+        style={{ width: 240, flexShrink: 0, borderRadius: '0.5rem', overflow: 'hidden' }}
+        styles={{
+          body: {padding: '7px'},
+        }}
+        onClick={() => navigate(`/promotions/${promotion.id}`)}
+        cover={
+          <div className="h-32 bg-gray-200 flex items-center justify-center overflow-hidden">
+            {promotion.images && promotion.images.length > 0 ? (
+              <img
+                src={promotion.images[0]}
+                alt={promotion.name}
+                className="object-cover w-full h-full rounded-t-xl"
+              />
+            ) : (
+              <Empty/>
+            )}
+          </div>
+        }
+      >
+        <Card.Meta
+          title={promotion.name}
+          description={
+            <>
+              <div className="m-0 p-0">{truncateText(promotion.description ?? '', 30)}</div>
+              <div className="mt-1">
+                <Tag color="green">{promotion.promoCode}</Tag>
+                <span className="text-sm text-gray-500 ml-1">{renderDiscountValue()}</span>
+              </div>
+            </>
+          }
+        />
+      </Card>
+    );
   };
 
   return (
-    <Card
-      key={promotion.id}
-      hoverable
-      style={{ width: 240, flexShrink: 0, borderRadius: '0.5rem', overflow: 'hidden' }}
-      styles={{
-        body: {padding: '7px'},
-      }}
-      onClick={() => navigate(`/promotions/${promotion.id}`)}
-      cover={
-        <div className="h-32 bg-gray-200 flex items-center justify-center overflow-hidden">
-          {promotion.images && promotion.images.length > 0 ? (
-            <img
-              src={promotion.images[0]}
-              alt={promotion.name}
-              className="object-cover w-full h-full rounded-t-xl"
-            />
-          ) : (
-
-            <Empty/>
-
-          )}
-        </div>
-      }
-    >
-      <Card.Meta
-        title={promotion.name}
-        description={
-          <>
-            <div className="m-0 p-0">{truncateText(promotion.description ?? '', 30)}</div>
-            <div className="mt-1">
-              <Tag color="green">{promotion.promoCode}</Tag>
-              <span className="text-sm text-gray-500 ml-1">{renderDiscountValue()}</span>
-            </div>
-          </>
-        }
-      />
-    </Card>
-  );
-};
-
- return (
     <div className="h-screen bg-slate-100 flex flex-col">
       <ParkHeader cardClassName="h-30 md:h-[160px]">
         <div className="flex w-full md:text-center md:mx-auto md:block md:w-auto">
@@ -181,10 +177,7 @@ const renderPromotionCard = (promotion: PromotionResponse) => {
         ))}
       </div>
     </div>
-
   );
 };
-
-
 
 export default withParkGuard(PromotionViewAll);

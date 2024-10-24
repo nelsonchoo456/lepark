@@ -3,7 +3,7 @@ import MaintenanceTaskService from '../services/MaintenanceTaskService'
 import { MaintenanceTaskSchemaType } from '../schemas/maintenanceTaskSchema';
 import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 import multer from 'multer';
-import { MaintenanceTaskStatusEnum } from '@prisma/client';
+import { MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum } from '@prisma/client';
 
 const router = express.Router();
 const upload = multer();
@@ -191,37 +191,87 @@ router.put('/updateMaintenanceTaskPosition/:id', authenticateJWTStaff, async (re
   }
 });
 
-router.get('/getParkMaintenanceTaskCompletionRates', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskAverageCompletionTimeForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const staffCompletionRates = await MaintenanceTaskService.getParkMaintenanceTaskCompletionRates(parkId, startDate, endDate);
-    res.status(200).json(staffCompletionRates);
+    const averageCompletionTime = await MaintenanceTaskService.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+    res.status(200).json(averageCompletionTime);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get('/getParkMaintenanceTaskOverdueRates', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskOverdueRateForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const staffOverdueRates = await MaintenanceTaskService.getParkMaintenanceTaskOverdueRates(parkId, startDate, endDate);
-    res.status(200).json(staffOverdueRates);
+    const overdueRate = await MaintenanceTaskService.getParkMaintenanceTaskOverdueRateForPeriod(parkId, startDate, endDate);
+    res.status(200).json(overdueRate);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get('/getParkAverageTaskCompletionTime', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskCriticalTaskTypesForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const staffAverageCompletionTimes = await MaintenanceTaskService.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
-    res.status(200).json(staffAverageCompletionTimes);
+    const criticalTaskTypes = await MaintenanceTaskService.getCriticalTaskTypesIdentification(parkId, startDate, endDate);
+    res.status(200).json(criticalTaskTypes);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkMaintenanceTaskTaskTypeEfficiencyRanking', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const ranking = await MaintenanceTaskService.getTaskTypeEfficiencyRanking(parkId, startDate, endDate);
+    res.status(200).json(ranking);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkMaintenanceTaskTrendAnalysis', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const previousStartDate = new Date(req.query.previousStartDate as string);
+    const previousEndDate = new Date(req.query.previousEndDate as string);
+    const trendAnalysis = await MaintenanceTaskService.getTrendAnalysis(parkId, startDate, endDate, previousStartDate, previousEndDate);
+    res.status(200).json(trendAnalysis);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkMaintenanceTaskOverdueRateAnalysis', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const overdueRateAnalysis = await MaintenanceTaskService.getOverdueRateAnalysis(parkId, startDate, endDate);
+    res.status(200).json(overdueRateAnalysis);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkMaintenanceTaskTaskTypeComparisonAnalysis', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const startDate = new Date(req.query.startDate as string);
+    const endDate = new Date(req.query.endDate as string);
+    const comparisonAnalysis = await MaintenanceTaskService.getTaskTypeComparisonAnalysis(parkId, startDate, endDate);
+    res.status(200).json(comparisonAnalysis);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

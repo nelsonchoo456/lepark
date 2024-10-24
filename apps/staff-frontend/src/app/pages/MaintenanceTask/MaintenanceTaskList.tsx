@@ -19,7 +19,7 @@ import {
   getParkAverageTaskCompletionTime,
   getParkTaskLoadPercentage,
   CompletionRateData,
-  OverdueRateData,
+  OverdueRateMaintenanceTaskData,
   AverageCompletionTimeData,
   TaskLoadPercentageData,
   getStaffPerformanceRanking,
@@ -71,12 +71,14 @@ const MaintenanceTaskList: React.FC = () => {
   const [staffPerformanceRanking, setStaffPerformanceRanking] = useState<StaffPerformanceRankingData | null>(null);
 
   const isTableOnlyView = useMemo(() => {
-    return user?.role === StaffType.SUPERADMIN ||
-           user?.role === StaffType.MANAGER ||
-           user?.role === StaffType.ARBORIST ||
-           user?.role === StaffType.BOTANIST ||
-           user?.role === StaffType.LANDSCAPE_ARCHITECT ||
-           user?.role === StaffType.PARK_RANGER;
+    return (
+      user?.role === StaffType.SUPERADMIN ||
+      user?.role === StaffType.MANAGER ||
+      user?.role === StaffType.ARBORIST ||
+      user?.role === StaffType.BOTANIST ||
+      user?.role === StaffType.LANDSCAPE_ARCHITECT ||
+      user?.role === StaffType.PARK_RANGER
+    );
   }, [user?.role]);
 
   useEffect(() => {
@@ -109,8 +111,12 @@ const MaintenanceTaskList: React.FC = () => {
       } else {
         // For other roles, keep the existing filters
         setOpen(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN));
-        setInProgress(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS));
-        setCompleted(sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED));
+        setInProgress(
+          sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS),
+        );
+        setCompleted(
+          sortedTasks.filter((task) => task.assignedStaffId === user?.id && task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED),
+        );
         setCancelled(sortedTasks.filter((task) => task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED));
       }
 
@@ -195,123 +201,123 @@ const MaintenanceTaskList: React.FC = () => {
     }
   };
 
-//   const renderDashboardOverview = () => {
-//     return (
-//       <>
-//         {renderStatisticsOverview(true)}
-//         <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
-//           <Tabs
-//             defaultActiveKey="1"
-//             items={[
-//               {
-//                 key: '1',
-//                 label: 'Pending Tasks Breakdown',
-//                 children: (
-//                   <MaintenanceTaskDashboard
-//                     maintenanceTasks={maintenanceTasks}
-//                     isSuperAdmin={isSuperAdmin}
-//                     selectedParkId={selectedParkId}
-//                     onParkChange={(parkId) => setSelectedParkId(parkId)}
-//                     parkOptions={parkOptions as { value: string | null; label: string }[]}
-//                   />
-//                 ),
-//               },
-//               {
-//                 key: '2',
-//                 label: 'Staff Workload',
-//                 children: (
-//                   <>
-//                     <StaffWorkloadTable
-//                       staffList={staffList}
-//                       maintenanceTasks={maintenanceTasks}
-//                       isSuperAdmin={isSuperAdmin}
-//                       selectedParkId={selectedParkId}
-//                       onParkChange={(parkId) => setSelectedParkId(parkId)}
-//                       parkOptions={parkOptions as { value: string | null; label: string }[]}
-//                     />
-//                     <TaskLoadPercentageChart />
-//                   </>
-//                 ),
-//               },
-//               !isSuperAdmin
-//                 ? {
-//                     key: '3',
-//                     label: 'Staff Performance Analytics',
-//                     children: (
-//                       <>
-//                         {staffPerformanceRanking && (
-//                           <StaffPerformanceRanking
-//                             bestPerformer={staffPerformanceRanking.bestPerformer}
-//                             secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
-//                             thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
-//                             message={staffPerformanceRanking.message}
-//                           />
-//                         )}
-//                         <Row gutter={[16, 16]}>
-//                           <Col span={12}>
-//                             <CompletionRateChart />
-//                           </Col>
-//                           <Col span={12}>
-//                           <StaffCompletionRatesLineChart />
-                            
-//                           </Col>
-//                         </Row>
-//                         <Row gutter={[16, 16]} className="mt-4">
-//                           <Col span={12}>
-//                             <AverageCompletionTimeChart />
-//                           </Col>
-//                           <Col span={12}>
-//                             <StaffAverageCompletionTimeLineChart />
-//                           </Col>
-//                         </Row>
-//                         <Row gutter={[16, 16]} className="mt-4">
-//                           <Col span={12}>
-//                             <TaskCompletedChart />
-//                           </Col>
-//                           <Col span={12}>
-//                             <StaffTasksCompletedLineChart />
-//                           </Col>
-//                         </Row>
-//                         <Row gutter={[16, 16]} className="mt-4">
-//                           <Col span={12}>
-//                           <OverdueRateChart />
-//                           </Col>
-//                           <Col span={12}>
-//                             <StaffOverdueRatesLineChart />
-//                           </Col>
-//                         </Row>
-//                       </>
-//                     ),
-//                   }
-//                 : null,
-//             ].filter(Boolean)}
-//           />
-//         </Card>
-//       </>
-//     );
-//   };
+  //   const renderDashboardOverview = () => {
+  //     return (
+  //       <>
+  //         {renderStatisticsOverview(true)}
+  //         <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
+  //           <Tabs
+  //             defaultActiveKey="1"
+  //             items={[
+  //               {
+  //                 key: '1',
+  //                 label: 'Pending Tasks Breakdown',
+  //                 children: (
+  //                   <MaintenanceTaskDashboard
+  //                     maintenanceTasks={maintenanceTasks}
+  //                     isSuperAdmin={isSuperAdmin}
+  //                     selectedParkId={selectedParkId}
+  //                     onParkChange={(parkId) => setSelectedParkId(parkId)}
+  //                     parkOptions={parkOptions as { value: string | null; label: string }[]}
+  //                   />
+  //                 ),
+  //               },
+  //               {
+  //                 key: '2',
+  //                 label: 'Staff Workload',
+  //                 children: (
+  //                   <>
+  //                     <StaffWorkloadTable
+  //                       staffList={staffList}
+  //                       maintenanceTasks={maintenanceTasks}
+  //                       isSuperAdmin={isSuperAdmin}
+  //                       selectedParkId={selectedParkId}
+  //                       onParkChange={(parkId) => setSelectedParkId(parkId)}
+  //                       parkOptions={parkOptions as { value: string | null; label: string }[]}
+  //                     />
+  //                     <TaskLoadPercentageChart />
+  //                   </>
+  //                 ),
+  //               },
+  //               !isSuperAdmin
+  //                 ? {
+  //                     key: '3',
+  //                     label: 'Staff Performance Analytics',
+  //                     children: (
+  //                       <>
+  //                         {staffPerformanceRanking && (
+  //                           <StaffPerformanceRanking
+  //                             bestPerformer={staffPerformanceRanking.bestPerformer}
+  //                             secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
+  //                             thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
+  //                             message={staffPerformanceRanking.message}
+  //                           />
+  //                         )}
+  //                         <Row gutter={[16, 16]}>
+  //                           <Col span={12}>
+  //                             <CompletionRateChart />
+  //                           </Col>
+  //                           <Col span={12}>
+  //                           <StaffCompletionRatesLineChart />
 
-const handleTakeTask = async (maintenanceTaskId: string, staffId: string) => {
-  try {
-    await assignMaintenanceTask(maintenanceTaskId, staffId);
-    messageApi.success('Staff assigned successfully');
-    fetchMaintenanceTasks();
-  } catch (error) {
-    console.error('Error assigning staff:', error);
-    messageApi.error('Failed to assign staff');
-  }
-};
+  //                           </Col>
+  //                         </Row>
+  //                         <Row gutter={[16, 16]} className="mt-4">
+  //                           <Col span={12}>
+  //                             <AverageCompletionTimeChart />
+  //                           </Col>
+  //                           <Col span={12}>
+  //                             <StaffAverageCompletionTimeLineChart />
+  //                           </Col>
+  //                         </Row>
+  //                         <Row gutter={[16, 16]} className="mt-4">
+  //                           <Col span={12}>
+  //                             <TaskCompletedChart />
+  //                           </Col>
+  //                           <Col span={12}>
+  //                             <StaffTasksCompletedLineChart />
+  //                           </Col>
+  //                         </Row>
+  //                         <Row gutter={[16, 16]} className="mt-4">
+  //                           <Col span={12}>
+  //                           <OverdueRateChart />
+  //                           </Col>
+  //                           <Col span={12}>
+  //                             <StaffOverdueRatesLineChart />
+  //                           </Col>
+  //                         </Row>
+  //                       </>
+  //                     ),
+  //                   }
+  //                 : null,
+  //             ].filter(Boolean)}
+  //           />
+  //         </Card>
+  //       </>
+  //     );
+  //   };
 
-const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
-  try {
-    await unassignMaintenanceTask(maintenanceTaskId, staffId);
-    message.success('Staff unassigned successfully');
-    fetchMaintenanceTasks();
-  } catch (error) {
-    console.error('Failed to unassign staff:', error);
-    message.error('Failed to unassign staff');
-  }
-};
+  const handleTakeTask = async (maintenanceTaskId: string, staffId: string) => {
+    try {
+      await assignMaintenanceTask(maintenanceTaskId, staffId);
+      messageApi.success('Staff assigned successfully');
+      fetchMaintenanceTasks();
+    } catch (error) {
+      console.error('Error assigning staff:', error);
+      messageApi.error('Failed to assign staff');
+    }
+  };
+
+  const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
+    try {
+      await unassignMaintenanceTask(maintenanceTaskId, staffId);
+      message.success('Staff unassigned successfully');
+      fetchMaintenanceTasks();
+    } catch (error) {
+      console.error('Failed to unassign staff:', error);
+      message.error('Failed to unassign staff');
+    }
+  };
 
   const totalOpenTasks = maintenanceTasks.filter((task) => task.taskStatus === 'OPEN').length;
   const outstandingTasks = maintenanceTasks.filter((task) => task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED').length;
@@ -322,7 +328,10 @@ const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
       task.taskStatus !== 'CANCELLED',
   ).length;
   const overdueTasks = maintenanceTasks.filter(
-    (task) => moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')) && task.taskStatus !== 'COMPLETED' && task.taskStatus !== 'CANCELLED',
+    (task) =>
+      moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')) &&
+      task.taskStatus !== 'COMPLETED' &&
+      task.taskStatus !== 'CANCELLED',
   ).length;
 
   const renderStatisticsOverview = (defaultOpen?: boolean) => {
@@ -442,15 +451,15 @@ const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
     fetchMaintenanceTasks();
   };
 
-//   if (inDashboards) {
-//     return (
-//       <ContentWrapperDark>
-//         {contextHolder}
-//         <PageHeader2 breadcrumbItems={breadcrumbItems} />
-//         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
-//       </ContentWrapperDark>
-//     );
-//   }
+  //   if (inDashboards) {
+  //     return (
+  //       <ContentWrapperDark>
+  //         {contextHolder}
+  //         <PageHeader2 breadcrumbItems={breadcrumbItems} />
+  //         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
+  //       </ContentWrapperDark>
+  //     );
+  //   }
 
   return (
     <ContentWrapperDark>

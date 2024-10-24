@@ -72,6 +72,8 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [showLogPrompt, setShowLogPrompt] = useState(false);
+  const [editedTask, setEditedTask] = useState<MaintenanceTaskResponse | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -110,10 +112,19 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
         message.success('Task updated successfully');
         setEditModalVisible(false);
         onTaskUpdated(); // Refresh the task list
+
+        // Check if the status has changed to trigger the log prompt
+        if (values.taskStatus && values.taskStatus !== editingTask.taskStatus) {
+          setEditedTask({ 
+            ...editingTask, 
+            ...values,
+            dueDate: values.dueDate || editingTask.dueDate // Provide a fallback value
+          });
+          setShowLogPrompt(true);
+        }
       } catch (error) {
         console.error('Error updating maintenance task:', error);
         throw new Error('Failed to update task.' + ' ' + error + '.');
-        // The modal will remain open as we're not calling setEditModalVisible(false) here
       }
     }
   };
@@ -148,6 +159,23 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     user?.role === StaffType.BOTANIST ||
     user?.role === StaffType.PARK_RANGER ||
     user?.role === StaffType.LANDSCAPE_ARCHITECT;
+
+  const handleTaskAction = async (task: MaintenanceTaskResponse, action: 'take' | 'return') => {
+    try {
+      if (action === 'take') {
+        handleTakeTask(task.id, user?.id || '');
+      } else {
+        handleReturnTask(task.id, user?.id || '');
+      }
+      
+      // Set the edited task and show the log prompt
+      setEditedTask(task);
+      setShowLogPrompt(true);
+    } catch (error) {
+      console.error(`Error ${action === 'take' ? 'taking' : 'returning'} task:`, error);
+      message.error(`Failed to ${action} task`);
+    }
+  };
 
   const columns: TableProps<MaintenanceTaskResponse>['columns'] = [
     {
@@ -343,7 +371,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
             <Flex align="center" justify="space-between">
               <span>{`${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`}</span>
               {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && record.assignedStaff.id === user?.id && (
-                <Button type="link" onClick={() => handleReturnTask(record.id, user?.id || '')} size="small">
+                <Button type="link" onClick={() => handleTaskAction(record, 'return')} size="small">
                   Return Task
                 </Button>
               )}
@@ -351,7 +379,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
           );
         } else {
           return record.taskStatus === MaintenanceTaskStatusEnum.OPEN && userRole === StaffType.VENDOR_MANAGER ? (
-            <Button type="link" onClick={() => handleTakeTask(record.id, user?.id || '')} size="small">
+            <Button type="link" onClick={() => handleTaskAction(record, 'take')} size="small">
               Take Task
             </Button>
           ) : (
@@ -454,6 +482,29 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     },
   };
 
+  const handleLogPromptOk = () => {
+    setShowLogPrompt(false);
+    if (editedTask) {
+      let url = '';
+      if (editedTask.facilityId) {
+        url = `/facilities/${editedTask.facilityId}/edit`;
+      } else if (editedTask.parkAssetId) {
+        url = `/parkasset/${editedTask.parkAssetId}/edit`;
+      } else if (editedTask.sensorId) {
+        url = `/sensors/${editedTask.sensorId}/edit`;
+      } else if (editedTask.hubId) {
+        url = `/hubs/${editedTask.hubId}/edit`;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    setEditedTask(null);
+  };
+
+  const handleLogPromptCancel = () => {
+    setShowLogPrompt(false);
+    setEditedTask(null);
+  };
+
   return (
     <>
       <div style={{ marginBottom: '16px' }}>
@@ -489,6 +540,16 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
         task={selectedTask}
         userRole={userRole as StaffType}
       />
+      <Modal
+        title="Update Task"
+        open={showLogPrompt}
+        onOk={handleLogPromptOk}
+        onCancel={handleLogPromptCancel}
+        okText="Yes, edit status"
+        cancelText="No, just update the task"
+      >
+        <p>Do you want to edit the status of the {editedTask?.parkAssetId ? 'Park Asset' : editedTask?.sensorId ? 'Sensor' : editedTask?.hubId ? 'Hub' : 'Facility'} "{editedTask?.parkAsset?.name || editedTask?.sensor?.name || editedTask?.hub?.name || editedTask?.facility?.name}"?</p>
+      </Modal>
     </>
   );
 };

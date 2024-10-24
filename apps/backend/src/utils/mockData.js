@@ -1665,7 +1665,7 @@ const maintenanceTasksData = [
     completedDate: null,
     images: ['https://example.com/broken-bench.jpg'],
     remarks: 'Requires replacement wood and tools.',
-    position: 1,
+    position: 1000,
   },
   {
     title: 'Calibrate Temperature Sensor',
@@ -1679,7 +1679,7 @@ const maintenanceTasksData = [
     completedDate: null,
     images: ['https://example.com/temperature-sensor.jpg'],
     remarks: 'Use calibration kit #3.',
-    position: 2,
+    position: 2000,
   },
   {
     title: 'Clean Public Restrooms',
@@ -1693,7 +1693,7 @@ const maintenanceTasksData = [
     completedDate: null,
     images: ['https://example.com/clean-restroom.jpg'],
     remarks: 'Use eco-friendly cleaning products.',
-    position: 3,
+    position: 3000,
   },
   {
     title: 'Update Hub Firmware',
@@ -1707,7 +1707,7 @@ const maintenanceTasksData = [
     completedDate: null,
     images: ['https://example.com/data-hub.jpg'],
     remarks: 'Ensure all data is backed up before updating.',
-    position: 4,
+    position: 4000,
   },
   {
     title: 'Replace Damaged Lawnmower Blade',
@@ -1721,11 +1721,11 @@ const maintenanceTasksData = [
     completedDate: null,
     images: ['https://example.com/lawnmower-blade.jpg'],
     remarks: 'New blade is in storage room B.',
-    position: 5,
+    position: 5000,
   },
 ];
 
-const plantTasksData = [
+let plantTasksData = [
   {
     title: 'Prune Ginger Plants',
     description: 'Trim overgrown ginger plants in the Ginger Garden to promote healthy growth.',
@@ -1740,7 +1740,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 1,
+    position: 1000,
   },
   {
     title: 'Water Evolution Garden',
@@ -1756,7 +1756,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 2,
+    position: 2000,
   },
   {
     title: 'Fertilize Peach Trees',
@@ -1772,7 +1772,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 3,
+    position: 3000,
   },
   {
     title: 'Inspect Toromiro for Pests',
@@ -1788,7 +1788,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
-    position: 4,
+    position: 4000,
   },
   {
     title: 'Mulch Tropical Trees',
@@ -1804,7 +1804,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 5,
+    position: 5000,
   },
   {
     title: 'Stake Young Mangroves',
@@ -1820,7 +1820,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
-    position: 6,
+    position: 6000,
   },
   {
     title: 'Prune Dead Branches',
@@ -1836,7 +1836,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.tomorrowsharvest.com/wp-content/uploads/2017/08/pruning_clippers-how-to-prune-a-tree.jpg'],
-    position: 7,
+    position: 7000,
   },
   {
     title: 'Replant Shrubs',
@@ -1854,7 +1854,7 @@ const plantTasksData = [
     images: [
       'https://www.treehugger.com/thmb/RkJe_rJWflrzXj7p_w81ZQNQTzA=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__mnn__images__2017__03__replant-tree-bfbbfd18d1334ee0aa03851c6800baaa.jpg',
     ],
-    position: 8,
+    position: 8000,
   },
   {
     title: 'Prune Rosa Gallica',
@@ -1870,7 +1870,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 9,
+    position: 9000,
   },
   {
     title: 'Water Ginger Garden',
@@ -1886,7 +1886,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 10,
+    position: 10000,
   },
   {
     title: 'Water Tropical Trees',
@@ -1902,7 +1902,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 11,
+    position: 11000,
   },
   {
     title: 'Fertilize Rose Garden',
@@ -1918,7 +1918,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
-    position: 12,
+    position: 12000,
   },
   {
     title: 'Inspect Orchids for Pests',
@@ -1934,7 +1934,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 13,
+    position: 13000,
   },
   {
     title: 'Trim Ferns',
@@ -1950,7 +1950,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 14,
+    position: 14000,
   },
   {
     title: 'Soil Maintenance for Peppers',
@@ -1966,7 +1966,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 15,
+    position: 15000,
   },
   {
     title: 'Replant Palm Trees',
@@ -1982,7 +1982,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 16,
+    position: 16000,
   },
   {
     title: 'Water Cacti Garden',
@@ -1998,7 +1998,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 17,
+    position: 17000,
   },
   {
     title: 'Prune Olive Trees',
@@ -2014,7 +2014,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 18,
+    position: 18000,
   },
   {
     title: 'Inspect Citrus for Pests',
@@ -2030,7 +2030,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
-    position: 19,
+    position: 19000,
   },
   {
     title: 'Fertilize Grapevines',
@@ -2046,7 +2046,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 20,
+    position: 20000,
   },
   {
     title: 'Fertilize Fig Trees',
@@ -2062,7 +2062,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 21,
+    position: 21000,
   },
   {
     title: 'Inspect Apple Orchard for Pests',
@@ -2078,7 +2078,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 22,
+    position: 22000,
   },
   {
     title: 'Water Succulent Garden',
@@ -2094,7 +2094,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 23,
+    position: 23000,
   },
   {
     title: 'Prune Bonsai Trees',
@@ -2110,7 +2110,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 24,
+    position: 24000,
   },
   {
     title: 'Debris Removal from Pathways',
@@ -2126,7 +2126,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
-    position: 25,
+    position: 25000,
   },
   {
     title: 'Adjust Sprinklers for Drought',
@@ -2142,7 +2142,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 26,
+    position: 26000,
   },
   {
     title: 'Water Rose Garden',
@@ -2158,7 +2158,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 27,
+    position: 27000,
   },
   {
     title: 'Replant Gardenias',
@@ -2174,7 +2174,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
-    position: 28,
+    position: 28000,
   },
   {
     title: 'Prune Jasmine',
@@ -2189,8 +2189,7 @@ const plantTasksData = [
     submittingStaff: '',
     assignedStaff: '',
     occurrence: '',
-    images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 29,
+    position: 29000,
   },
   {
     title: 'Mulch Garden Beds',
@@ -2206,9 +2205,41 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 30,
+    position: 30000,
   },
 ];
+
+// Group tasks by status
+const groupedTasks = {
+  OPEN: [],
+  IN_PROGRESS: [],
+  COMPLETED: [],
+  CANCELLED: []
+};
+
+plantTasksData.forEach(task => {
+  groupedTasks[task.taskStatus].push(task);
+});
+
+// Assign positions within each group
+Object.keys(groupedTasks).forEach(status => {
+  groupedTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedTasks[status].forEach((task, index) => {
+    task.position = (index + 1) * 1000;
+  });
+});
+
+// Flatten the grouped tasks back into a single array
+plantTasksData = Object.values(groupedTasks).flat();
+
+// Sort the plantTasksData array by status and position
+plantTasksData.sort((a, b) => {
+  const statusOrder = { OPEN: 0, IN_PROGRESS: 1, COMPLETED: 2, CANCELLED: 3 };
+  if (a.taskStatus !== b.taskStatus) {
+    return statusOrder[a.taskStatus] - statusOrder[b.taskStatus];
+  }
+  return a.position - b.position;
+});
 
 const facilitiesData = [
   {
@@ -3491,7 +3522,7 @@ const promotionsData = [
   },
   {
     name: "Children's Day Learning Adventure",
-    description: "Free entry for children to discover nature’s wonders with guided educational tours on Children's Day.",
+    description: "Free entry for children to discover nature's wonders with guided educational tours on Children's Day.",
     discountType: 'FIXED_AMOUNT',
     promoCode: 'KIDSDAYFREE',
     isNParksWide: false,
@@ -3637,7 +3668,7 @@ const announcementsData = [
     content: 'A section of the Therapeutic Gardens (raised planters) will be closed for maintenance works from 6 dec to 16 dec 2024. ',
     updatedAt: '2024-10-15T08:49:23.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
-    endDate: '2024-12-16T15:59:59.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
     status: 'ACTIVE',
     parkId: 1,
   },

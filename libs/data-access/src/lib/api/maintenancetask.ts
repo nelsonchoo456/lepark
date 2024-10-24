@@ -1,11 +1,21 @@
 import axios, { AxiosResponse } from 'axios';
-import { MaintenanceTaskData, MaintenanceTaskResponse, MaintenanceTaskUpdateData } from '../types/maintenancetask';
+import {
+  CompletionTimeData,
+  MaintenanceTaskData,
+  MaintenanceTaskResponse,
+  MaintenanceTaskUpdateData,
+  OverdueRateMaintenanceTaskData,
+} from '../types/maintenancetask';
 import client from './client';
 import { MaintenanceTaskStatusEnum } from '@prisma/client';
 
 const URL = '/maintenancetasks';
 
-export async function createMaintenanceTask(data: MaintenanceTaskData, staffId: string, files?: File[]): Promise<AxiosResponse<MaintenanceTaskResponse>> {
+export async function createMaintenanceTask(
+  data: MaintenanceTaskData,
+  staffId: string,
+  files?: File[],
+): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
     const formData = new FormData();
 
@@ -16,7 +26,10 @@ export async function createMaintenanceTask(data: MaintenanceTaskData, staffId: 
     const uploadedUrls = await client.post(`${URL}/upload`, formData);
     data.images = uploadedUrls.data.uploadedUrls;
 
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.post(`${URL}/createMaintenanceTask`, { ...data, submittingStaffId: staffId });
+    const response: AxiosResponse<MaintenanceTaskResponse> = await client.post(`${URL}/createMaintenanceTask`, {
+      ...data,
+      submittingStaffId: staffId,
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -79,9 +92,16 @@ export async function getMaintenanceTasksBySubmittingStaff(staffId: string): Pro
   }
 }
 
-export async function updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
+export async function updateMaintenanceTaskStatus(
+  id: string,
+  newStatus: MaintenanceTaskStatusEnum,
+  staffId?: string,
+): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskStatus/${id}`, { newStatus, staffId });
+    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskStatus/${id}`, {
+      newStatus,
+      staffId,
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -94,7 +114,9 @@ export async function updateMaintenanceTaskStatus(id: string, newStatus: Mainten
 
 export async function updateMaintenanceTaskPosition(id: string, newPosition: number): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskPosition/${id}`, { newPosition });
+    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/updateMaintenanceTaskPosition/${id}`, {
+      newPosition,
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -187,7 +209,9 @@ export async function assignMaintenanceTask(id: string, staffId: string): Promis
 
 export async function unassignMaintenanceTask(id: string, unassignerStaffId: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
   try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/unassignMaintenanceTask/${id}`, { unassignerStaffId });
+    const response: AxiosResponse<MaintenanceTaskResponse> = await client.put(`${URL}/unassignMaintenanceTask/${id}`, {
+      unassignerStaffId,
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -240,6 +264,142 @@ export async function unacceptMaintenanceTask(id: string): Promise<AxiosResponse
 export async function getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<AxiosResponse<MaintenanceTaskResponse[]>> {
   try {
     const response: AxiosResponse<MaintenanceTaskResponse[]> = await client.get(`${URL}/getMaintenanceTasksByStatus/${status}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskAverageCompletionTimeForPeriod(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<CompletionTimeData[]>> {
+  try {
+    const response: AxiosResponse<CompletionTimeData[]> = await client.get(`${URL}/getParkMaintenanceTaskAverageCompletionTimeForPeriod`, {
+      params: { parkId, startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskOverdueRateForPeriod(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<OverdueRateMaintenanceTaskData[]>> {
+  try {
+    const response: AxiosResponse<OverdueRateMaintenanceTaskData[]> = await client.get(
+      `${URL}/getParkMaintenanceTaskOverdueRateForPeriod`,
+      { params: { parkId, startDate, endDate } },
+    );
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskCriticalTaskTypesForPeriod(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<string[]>> {
+  try {
+    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskCriticalTaskTypesForPeriod`, {
+      params: { parkId, startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskTaskTypeEfficiencyRanking(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<string[]>> {
+  try {
+    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskTaskTypeEfficiencyRanking`, {
+      params: { parkId, startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskTrendAnalysis(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+  previousStartDate: Date,
+  previousEndDate: Date,
+): Promise<AxiosResponse<string[]>> {
+  try {
+    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskTrendAnalysis`, {
+      params: { parkId, startDate, endDate, previousStartDate, previousEndDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskOverdueRateAnalysis(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<string[]>> {
+  try {
+    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskOverdueRateAnalysis`, {
+      params: { parkId, startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getParkMaintenanceTaskTaskTypeComparisonAnalysis(
+  parkId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<string[]>> {
+  try {
+    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskTaskTypeComparisonAnalysis`, {
+      params: { parkId, startDate, endDate },
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
