@@ -450,7 +450,7 @@ class MaintenanceTaskService {
             park = await ParkDao.getParkById(facility.parkId);
           }
         }
-        console.log('Park:', park);
+        //console.log('Park:', park);
 
         return {
           ...maintenanceTask,
@@ -551,11 +551,13 @@ class MaintenanceTaskService {
 
     if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
       updateData.completedDate = new Date();
-      console.log('maintenanceTask being completed', maintenanceTask);
+      //console.log('maintenanceTask being completed', maintenanceTask);
       // Predict next maintenance dates using Holt-Winters model
-      console.log('prediction completed');
-      await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
+      //console.log('prediction completed');
       updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
+      if (updatedTask) {
+        await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
+      }
     } else {
       updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
     }
@@ -581,6 +583,7 @@ class MaintenanceTaskService {
     }
     const completedTasks = await MaintenanceTaskDao.getCompletedMaintenanceTasksByEntityId(associatedEntity.id, entityType);
     const completedDates = completedTasks.map((task) => task.completedDate).sort((a, b) => a.getTime() - b.getTime());
+    console.log('completedDates:', completedDates);
 
     if (completedDates.length < 2) {
       return;
