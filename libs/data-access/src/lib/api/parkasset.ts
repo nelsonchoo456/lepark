@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { ParkAssetData, ParkAssetResponse, ParkAssetUpdateData } from '../types/parkasset';
 import client from './client';
-import { MaintenanceHistoryResponse } from '../types/maintenancehistory';
+import { MaintenanceTaskResponse } from '@lepark/data-access';
 
 const URL = '/parkassets';
 
@@ -140,9 +140,9 @@ export async function updateParkAssetStatus(id: string, newStatus: string): Prom
   }
 }
 
-export async function getMaintenanceHistoryByParkAssetId(parkAssetId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
+export async function getMaintenanceTasksByParkAssetId(parkAssetId: string): Promise<AxiosResponse<MaintenanceTaskResponse[]>> {
   try {
-    const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${parkAssetId}`);
+    const response: AxiosResponse<MaintenanceTaskResponse[]> = await client.get(`${URL}/getMaintenanceTasks/${parkAssetId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

@@ -1,4 +1,12 @@
-import { Prisma, MaintenanceTask, MaintenanceTaskUrgencyEnum, MaintenanceTaskStatusEnum, Staff, PlantTaskStatusEnum, MaintenanceTaskTypeEnum } from '@prisma/client';
+import {
+  Prisma,
+  MaintenanceTask,
+  MaintenanceTaskUrgencyEnum,
+  MaintenanceTaskStatusEnum,
+  Staff,
+  PlantTaskStatusEnum,
+  MaintenanceTaskTypeEnum,
+} from '@prisma/client';
 import { z } from 'zod';
 import { MaintenanceTaskSchema, MaintenanceTaskSchemaType } from '../schemas/maintenanceTaskSchema';
 import MaintenanceTaskDao from '../dao/MaintenanceTaskDao';
@@ -11,6 +19,7 @@ import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
 import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
+import { getAugumentedDataset } from '../utils/holtwinters';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -154,7 +163,7 @@ class MaintenanceTaskService {
   public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
     const maintenanceTasks = await MaintenanceTaskDao.getMaintenanceTasksBySubmittingStaff(staffId);
     return this.addFacilityInfo(maintenanceTasks);
-  } 
+  }
 
   public async updateMaintenanceTask(id: string, data: Partial<MaintenanceTaskSchemaType>): Promise<MaintenanceTask> {
     try {
@@ -346,6 +355,9 @@ class MaintenanceTaskService {
         completedDate: new Date(),
         updatedAt: new Date(),
       });
+      if (updatedTask) {
+        await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
+      }
     } else {
       updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
         taskStatus: newStatus,
@@ -495,7 +507,7 @@ class MaintenanceTaskService {
             park = await ParkDao.getParkById(facility.parkId);
           }
         }
-        console.log("Park:", park);
+        //console.log('Park:', park);
 
         return {
           ...maintenanceTask,
@@ -515,7 +527,6 @@ class MaintenanceTaskService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageCompletionTime: number }[]> {
-
     const taskCompletionTimes = await Promise.all(
       Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
         const averageCompletionTime = await MaintenanceTaskDao.getAverageTaskTypeCompletionTime(taskType, parkId, startDate, endDate);
@@ -530,7 +541,6 @@ class MaintenanceTaskService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ taskType: MaintenanceTaskTypeEnum; overdueRate: number }[]> {
-
     const overdueRates = await Promise.all(
       Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
         const overdueRate = await MaintenanceTaskDao.getOverdueRateByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
@@ -540,32 +550,31 @@ class MaintenanceTaskService {
     return overdueRates;
   }
 
-  public async getCriticalTaskTypesIdentification(
-    parkId: number,
-    startDate: Date,
-    endDate: Date
-  ): Promise<string[]> {
+  public async getCriticalTaskTypesIdentification(parkId: number, startDate: Date, endDate: Date): Promise<string[]> {
     const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
     const overdueRates = await this.getParkMaintenanceTaskOverdueRateForPeriod(parkId, startDate, endDate);
 
-    const criticalTasks = averageCompletionTimes.map(completionTime => {
-      const overdueRate = overdueRates.find(rate => rate.taskType === completionTime.taskType)?.overdueRate || 0;
-      return {
-        taskType: completionTime.taskType,
-        score: completionTime.averageCompletionTime * overdueRate
-      };
-    }).sort((a, b) => b.score - a.score);
+    const criticalTasks = averageCompletionTimes
+      .map((completionTime) => {
+        const overdueRate = overdueRates.find((rate) => rate.taskType === completionTime.taskType)?.overdueRate || 0;
+        return {
+          taskType: completionTime.taskType,
+          score: completionTime.averageCompletionTime * overdueRate,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
 
-    return criticalTasks.slice(0, 3).map((task, index) => 
-      `${index + 1}. ${task.taskType} tasks require attention due to their combination of long completion times and high overdue rates.`
-    );
+    return criticalTasks
+      .slice(0, 3)
+      .map(
+        (task, index) =>
+          `${index + 1}. ${
+            task.taskType
+          } tasks require attention due to their combination of long completion times and high overdue rates.`,
+      );
   }
 
-  public async getTaskTypeEfficiencyRanking(
-    parkId: number,
-    startDate: Date,
-    endDate: Date
-  ): Promise<string> {
+  public async getTaskTypeEfficiencyRanking(parkId: number, startDate: Date, endDate: Date): Promise<string> {
     const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
     const sortedTasks = averageCompletionTimes.sort((a, b) => a.averageCompletionTime - b.averageCompletionTime);
 
@@ -578,13 +587,13 @@ class MaintenanceTaskService {
     startDate: Date,
     endDate: Date,
     previousStartDate: Date,
-    previousEndDate: Date
+    previousEndDate: Date,
   ): Promise<string[]> {
     const currentPeriod = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
     const previousPeriod = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, previousStartDate, previousEndDate);
 
-    return currentPeriod.map(current => {
-      const previous = previousPeriod.find(item => item.taskType === current.taskType);
+    return currentPeriod.map((current) => {
+      const previous = previousPeriod.find((item) => item.taskType === current.taskType);
       if (!previous) return `No previous data available for ${current.taskType} tasks.`;
 
       const percentChange = ((current.averageCompletionTime - previous.averageCompletionTime) / previous.averageCompletionTime) * 100;
@@ -593,39 +602,38 @@ class MaintenanceTaskService {
       } else if (percentChange > 0) {
         return `${current.taskType} tasks are taking ${percentChange.toFixed(0)}% longer to complete compared to the previous period.`;
       } else {
-        return `${current.taskType} tasks are being completed ${Math.abs(percentChange).toFixed(0)}% faster compared to the previous period.`;
+        return `${current.taskType} tasks are being completed ${Math.abs(percentChange).toFixed(
+          0,
+        )}% faster compared to the previous period.`;
       }
     });
   }
 
-  public async getOverdueRateAnalysis(
-    parkId: number,
-    startDate: Date,
-    endDate: Date
-  ): Promise<string[]> {
+  public async getOverdueRateAnalysis(parkId: number, startDate: Date, endDate: Date): Promise<string[]> {
     const overdueRates = await this.getParkMaintenanceTaskOverdueRateForPeriod(parkId, startDate, endDate);
     const overallOverdueRate = overdueRates.reduce((sum, item) => sum + item.overdueRate, 0) / overdueRates.length;
 
-    return overdueRates.map(item => {
+    return overdueRates.map((item) => {
       if (item.overdueRate > overallOverdueRate * 1.5) {
-        return `${item.taskType} tasks have a significantly higher overdue rate (${(item.overdueRate * 100).toFixed(1)}%) compared to the average.`;
+        return `${item.taskType} tasks have a significantly higher overdue rate (${(item.overdueRate * 100).toFixed(
+          1,
+        )}%) compared to the average.`;
       } else if (item.overdueRate < overallOverdueRate * 0.5) {
-        return `${item.taskType} tasks have a notably lower overdue rate (${(item.overdueRate * 100).toFixed(1)}%) compared to the average.`;
+        return `${item.taskType} tasks have a notably lower overdue rate (${(item.overdueRate * 100).toFixed(
+          1,
+        )}%) compared to the average.`;
       } else {
         return `${item.taskType} tasks have an overdue rate of ${(item.overdueRate * 100).toFixed(1)}%, close to the overall average.`;
       }
     });
   }
 
-  public async getTaskTypeComparisonAnalysis(
-    parkId: number,
-    startDate: Date,
-    endDate: Date
-  ): Promise<string[]> {
+  public async getTaskTypeComparisonAnalysis(parkId: number, startDate: Date, endDate: Date): Promise<string[]> {
     const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
-    const overallAverage = averageCompletionTimes.reduce((sum, item) => sum + item.averageCompletionTime, 0) / averageCompletionTimes.length;
+    const overallAverage =
+      averageCompletionTimes.reduce((sum, item) => sum + item.averageCompletionTime, 0) / averageCompletionTimes.length;
 
-    return averageCompletionTimes.map(item => {
+    return averageCompletionTimes.map((item) => {
       const percentDifference = ((item.averageCompletionTime - overallAverage) / overallAverage) * 100;
       if (Math.abs(percentDifference) < 10) {
         return `${item.taskType} tasks took about the same time as the average.`;
@@ -635,6 +643,58 @@ class MaintenanceTaskService {
         return `${item.taskType} tasks were completed ${Math.abs(percentDifference).toFixed(0)}% faster than the average.`;
       }
     });
+  }
+
+  public async predictAndUpdateNextMaintenanceDates(maintenanceTask: MaintenanceTask): Promise<void> {
+    let associatedEntity: any;
+    let entityType: 'ParkAsset' | 'Sensor' | 'Hub';
+    if (maintenanceTask.parkAssetId) {
+      associatedEntity = await ParkAssetDao.getParkAssetById(maintenanceTask.parkAssetId);
+      entityType = 'ParkAsset';
+    } else if (maintenanceTask.sensorId) {
+      associatedEntity = await SensorDao.getSensorById(maintenanceTask.sensorId);
+      entityType = 'Sensor';
+    } else if (maintenanceTask.hubId) {
+      associatedEntity = await HubDao.getHubById(maintenanceTask.hubId);
+      entityType = 'Hub';
+    }
+
+    if (!associatedEntity) {
+      return;
+    }
+    const completedTasks = await MaintenanceTaskDao.getCompletedMaintenanceTasksByEntityId(associatedEntity.id, entityType);
+    const completedDates = completedTasks.map((task) => task.completedDate).sort((a, b) => a.getTime() - b.getTime());
+    console.log('completedDates:', completedDates);
+
+    if (completedDates.length < 2) {
+      return;
+    }
+
+    const intervals = completedDates
+      .slice(1)
+      .map((date, index) => Math.round((date.getTime() - completedDates[index].getTime()) / (1000 * 60 * 60 * 24)));
+    console.log('intervals:', intervals);
+    const predictions = getAugumentedDataset(intervals, 5);
+    console.log('predictions:', predictions);
+    const lastCompletedDate = completedDates[completedDates.length - 1];
+    const nextMaintenanceDates = predictions.augumentedDataset
+      .slice(-5)
+      .map((interval) => {
+        const nextDate = new Date(lastCompletedDate);
+        nextDate.setDate(nextDate.getDate() + Math.round(interval));
+        return nextDate;
+      })
+      .sort((a, b) => a.getTime() - b.getTime()); // Sort the dates from soonest to furthest
+    console.log('nextMaintenanceDates:', nextMaintenanceDates);
+    const nextMaintenanceDate = nextMaintenanceDates[0];
+
+    if (entityType === 'ParkAsset') {
+      await ParkAssetDao.updateParkAsset(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    } else if (entityType === 'Sensor') {
+      await SensorDao.updateSensor(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    } else if (entityType === 'Hub') {
+      await HubDao.updateHubDetails(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    }
   }
 }
 

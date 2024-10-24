@@ -420,6 +420,103 @@ async function seed() {
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
+  // Function to generate random dates within a range
+  function randomDate(start, end) {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+  }
+
+  // Generate mock maintenance Task data
+  function generateMockMaintenanceTask(assetId, numberOfEntries) {
+    console.log(`Generating ${numberOfEntries} mock maintenance entries for asset ${assetId}`);
+    const startDate = new Date(2024, 3, 1);
+    const endDate = new Date();
+
+    const tasks = Array.from({ length: numberOfEntries }, (_, index) => ({
+      title: `Maintenance Task #${index + 1} for ${assetId}`,
+      description: `Completed maintenance task #${index + 1} for ${assetId}.`,
+      taskStatus: 'COMPLETED',
+      taskType: 'INSPECTION',
+      taskUrgency: 'NORMAL',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(),
+      completedDate: randomDate(startDate, endDate),
+      images: ['https://example.com/maintenance-task-image.jpg'],
+      remarks: `Remarks for maintenance task #${index + 1}.`,
+      position: index + 1,
+    })).sort((a, b) => a.completedDate - b.completedDate);
+
+    console.log('Mock tasks generated and sorted by date');
+    return tasks;
+  }
+
+  // Generate completed maintenance tasks for the sensor with title SE-22222
+  const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
+  if (sensor) {
+    const maintenanceTasks = generateMockMaintenanceTask(sensor.identifierNumber, 12);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        sensor: { connect: { serialNumber: sensor.serialNumber } },
+        position: task.position,
+      });
+    });
+  }
+
+  const hub = hubsData.find((h) => h.identifierNumber === 'HB-11111');
+  if (hub) {
+    const maintenanceTasks = generateMockMaintenanceTask(hub.identifierNumber, 12);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        hub: { connect: { serialNumber: hub.serialNumber } },
+        position: task.position,
+      });
+    });
+  }
+
+  const parkAsset = parkAssetsData.find((pa) => pa.identifierNumber === 'HP-HR2515DK');
+  if (parkAsset) {
+    const maintenanceTasks = generateMockMaintenanceTask(parkAsset.identifierNumber, 12);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        parkAsset: { connect: { serialNumber: parkAsset.serialNumber } },
+        position: task.position,
+      });
+    });
+  }
+
   const maintenanceTasksList = [];
   for (const maintenanceTask of maintenanceTasksData) {
     // Filter staff from Park Id 2

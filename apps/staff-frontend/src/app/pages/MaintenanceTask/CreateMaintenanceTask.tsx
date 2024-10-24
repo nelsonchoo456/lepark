@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ContentWrapperDark, useAuth, ImageInput } from '@lepark/common-ui';
 import {
   createMaintenanceTask,
@@ -39,6 +39,7 @@ const { TextArea } = Input;
 const CreateMaintenanceTask = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth<StaffResponse>();
   const [messageApi, contextHolder] = message.useMessage();
   const [createdMaintenanceTask, setCreatedMaintenanceTask] = useState<MaintenanceTaskResponse | null>(null);
@@ -55,6 +56,26 @@ const CreateMaintenanceTask = () => {
   const [showDueDate, setShowDueDate] = useState(false);
   const [entityIdInput, setEntityIdInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const entityId = queryParams.get('entityId');
+    const dueDate = queryParams.get('dueDate');
+    const entityType = queryParams.get('entityType');
+
+    if (entityId && entityType) {
+      fetchEntityDetails(entityType, entityId);
+      setSelectedEntityType(entityType);
+      form.setFieldsValue({ entityType, entityId }); // Ensure the form fields are set
+      setEntityIdInput(entityId); // Set the identifier input field
+    }
+    console.log('entityId:', entityId, 'entityType:', entityType, 'dueDate:', dueDate);
+
+    if (dueDate) {
+      setShowDueDate(true);
+      form.setFieldsValue({ dueDate: dayjs(dueDate) });
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
@@ -107,7 +128,7 @@ const CreateMaintenanceTask = () => {
         default:
           throw new Error('Invalid entity type');
       }
-      
+
       if (response.data) {
         setSelectedEntity(response.data);
         messageApi.success(`${convertCamelCaseToTitleCase(entityType)} found successfully`);
@@ -153,9 +174,20 @@ const CreateMaintenanceTask = () => {
       }
 
       const { parkId, hasDueDate, dueDate, entityType, entityId, ...maintenanceTaskData } = values;
+
+      // Debugging: Log the raw dueDate value
+      console.log('Raw dueDate value from form:', dueDate);
+      console.log('hasDueDate', hasDueDate);
+      // Ensure dueDate is correctly parsed and converted
+      let formattedDueDate = null;
+      if (dueDate) {
+        formattedDueDate = dayjs(dueDate).toISOString();
+        console.log('Formatted dueDate value:', formattedDueDate);
+      }
+
       const taskData = {
         ...maintenanceTaskData,
-        dueDate: hasDueDate ? dayjs(dueDate).toISOString() : null,
+        dueDate: formattedDueDate,
         submittingStaffId: user.id,
         facilityId: entityType === 'facility' ? selectedEntity?.id : null,
         parkAssetId: entityType === 'parkAsset' ? selectedEntity?.id : null,
@@ -223,7 +255,8 @@ const CreateMaintenanceTask = () => {
   };
 
   const convertCamelCaseToTitleCase = (text: string) => {
-    return text.replace(/([a-z])([A-Z])/g, '$1 $2') // Adds space before uppercase letters
+    return text
+      .replace(/([a-z])([A-Z])/g, '$1 $2') // Adds space before uppercase letters
       .replace(/^./, (char: string) => char.toUpperCase()); // Capitalize the first letter
   };
 
@@ -281,18 +314,20 @@ const CreateMaintenanceTask = () => {
     return (
       <Card className="mb-4">
         <Card.Meta
-          avatar={
-            entityImage ? (
-              <Avatar src={entityImage} size={64} />
-            ) : (
-              <Avatar icon={icon} size={64} />
-            )
-          }
+          avatar={entityImage ? <Avatar src={entityImage} size={64} /> : <Avatar icon={icon} size={64} />}
           title={selectedEntity.name || `${entityType || 'Entity'} ${selectedEntity.id}`}
           description={
             <div>
-              {entityType && <p><strong>Type:</strong> {entityType}</p>}
-              {location && <p><strong>Location:</strong> {location}</p>}
+              {entityType && (
+                <p>
+                  <strong>Type:</strong> {entityType}
+                </p>
+              )}
+              {location && (
+                <p>
+                  <strong>Location:</strong> {location}
+                </p>
+              )}
             </div>
           }
         />
@@ -340,66 +375,58 @@ const CreateMaintenanceTask = () => {
                   optionFilterProp="children"
                   filterOption={filterOption}
                   options={facilities.map((facility) => ({ value: facility.id.toString(), label: facility.name }))}
-                  onChange={(value) => setSelectedEntity(facilities.find(f => f.id.toString() === value) || null)}
+                  onChange={(value) => setSelectedEntity(facilities.find((f) => f.id.toString() === value) || null)}
                 />
               </Form.Item>
             ) : selectedEntityType ? (
-              <Form.Item name="entityId" label={`${convertCamelCaseToTitleCase(selectedEntityType)} Identifier Number`} rules={[{ required: true }]}>
+              <Form.Item
+                name="entityId"
+                label={`${convertCamelCaseToTitleCase(selectedEntityType)} Identifier Number`}
+                rules={[{ required: true }]}
+              >
                 <Space>
-                  <Input 
+                  <Input
                     placeholder={`Enter Identifier Number of ${convertCamelCaseToTitleCase(selectedEntityType)}`}
                     value={entityIdInput}
                     onChange={(e) => setEntityIdInput(e.target.value)}
                     style={{ width: '300px' }}
                   />
-                  <Button 
-                    icon={<FaSearch />} 
-                    onClick={handleEntityIdSearch}
-                    type="primary"
-                    loading={isSearching}
-                  >
+                  <Button icon={<FaSearch />} onClick={handleEntityIdSearch} type="primary" loading={isSearching}>
                     Search
                   </Button>
                 </Space>
               </Form.Item>
             ) : null}
-            {selectedEntity && (
-              <Form.Item label="Entity Details">
-                {renderEntityCard()}
-              </Form.Item>
-            )}
+            {selectedEntity && <Form.Item label="Entity Details">{renderEntityCard()}</Form.Item>}
             <Form.Item
               name="title"
               label="Title"
-              rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }, { max: 100, message: 'Valid title must be at most 100 characters long' }]}
+              rules={[
+                { required: true },
+                { min: 3, message: 'Valid title must be at least 3 characters long' },
+                { max: 100, message: 'Valid title must be at most 100 characters long' },
+              ]}
             >
               <Input placeholder="Give this Maintenance Task a title!" />
             </Form.Item>
             <Form.Item name="description" label="Description" rules={[{ required: true }]}>
               <TextArea placeholder="Describe the Maintenance Task" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
-            <Form.Item name="taskType" label="Task Type" rules={[{ required: true}]}>
+            <Form.Item name="taskType" label="Task Type" rules={[{ required: true }]}>
               <Select placeholder="Select a Task Type" options={taskTypeOptions} />
             </Form.Item>
             <Form.Item name="taskUrgency" label="Task Urgency" rules={[{ required: true }]}>
               <Select placeholder="Select Task Urgency" options={taskUrgencyOptions} />
             </Form.Item>
             <Form.Item name="hasDueDate" label="Set Due Date" valuePropName="checked">
-              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType='button' defaultValue="no">
+              <Radio.Group onChange={(e) => handleDueDateToggle(e.target.value)} optionType="button" value={showDueDate ? 'yes' : 'no'}>
                 <Radio value="yes">Yes</Radio>
                 <Radio value="no">No</Radio>
               </Radio.Group>
             </Form.Item>
             {showDueDate && (
-              <Form.Item
-                name="dueDate"
-                label="Due Date"
-                rules={[{ required: true, message: 'Please select a due date' }]}
-              >
-                <DatePicker
-                  className="w-full"
-                  disabledDate={(current) => current && current < dayjs().endOf('day')}
-                />
+              <Form.Item name="dueDate" label="Due Date" rules={[{ required: true, message: 'Please select a due date' }]}>
+                <DatePicker className="w-full" disabledDate={(current) => current && current < dayjs().endOf('day')} />
               </Form.Item>
             )}
             <Form.Item label="Upload Images" required tooltip="At least 1 image is required, maximum 3 images">
@@ -447,7 +474,7 @@ const CreateMaintenanceTask = () => {
             extra={[
               <Button key="back" onClick={() => navigate('/maintenance-tasks')}>
                 Back to Maintenance Task Management
-              </Button>
+              </Button>,
             ]}
           />
         )}

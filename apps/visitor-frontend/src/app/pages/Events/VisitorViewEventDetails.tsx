@@ -5,6 +5,7 @@ import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import EventInformationTab from './components/EventInformationTab';
 import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel'; // Import the carousel component
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { Title } = Typography;
 
@@ -48,17 +49,6 @@ const VisitorViewEventDetails = () => {
             renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
             className="md:mt-0 md:p-0"
           />
-          <div className="p-4">
-            <Typography.Paragraph
-              ellipsis={{
-                rows: 3,
-                expandable: true,
-                symbol: 'more',
-              }}
-            >
-              {event?.description}
-            </Typography.Paragraph>
-          </div>
           <div className="mt-4">
             {/* <LogoText className="text-2xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 mb-2 leading-tight pb-1">
               Event Schedule
@@ -86,4 +76,4 @@ const VisitorViewEventDetails = () => {
   );
 };
 
-export default VisitorViewEventDetails;
+export default withParkGuard(VisitorViewEventDetails);

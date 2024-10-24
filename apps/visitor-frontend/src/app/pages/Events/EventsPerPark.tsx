@@ -7,17 +7,11 @@ import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import dayjs from 'dayjs';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { SHOW_PARENT } = TreeSelect;
 
 const formatEnumLabel = (label: string) => {
-  const specialCases = {
-    BBQ_PIT: 'BBQ Pit',
-    AED: 'AED',
-  };
-  if (specialCases[label]) {
-    return specialCases[label];
-  }
   return label
     .toLowerCase()
     .split('_')
@@ -73,7 +67,6 @@ const EventsPerPark: React.FC = () => {
         children: [
           { title: 'Ongoing', value: 'status-ONGOING', key: 'status-ONGOING' },
           { title: 'Upcoming', value: 'status-UPCOMING', key: 'status-UPCOMING' },
-          { title: 'Completed', value: 'status-COMPLETED', key: 'status-COMPLETED' },
         ],
       },
       {
@@ -103,17 +96,19 @@ const EventsPerPark: React.FC = () => {
 
   const filteredEvents = useMemo(() => {
     if (loading) return [];
-    return events.filter((event) => {
-      const matchesSearchQuery = event.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilters = selectedFilters.every((filter) => {
-        const [category, value] = filter.split('-');
-        if (category === 'status') return event.status === value;
-        if (category === 'type') return event.type === value;
-        if (category === 'suitability') return event.suitability === value;
-        return true;
+    return events
+      .filter((event) => event.status !== EventStatusEnum.COMPLETED) // Filter out completed events
+      .filter((event) => {
+        const matchesSearchQuery = event.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFilters = selectedFilters.every((filter) => {
+          const [category, value] = filter.split('-');
+          if (category === 'status') return event.status === value;
+          if (category === 'type') return event.type === value;
+          if (category === 'suitability') return event.suitability === value;
+          return true;
+        });
+        return matchesSearchQuery && matchesFilters;
       });
-      return matchesSearchQuery && matchesFilters;
-    });
   }, [events, searchQuery, selectedFilters, loading]);
 
   const renderEventStatus = (status: EventStatusEnum) => {
@@ -127,12 +122,6 @@ const EventsPerPark: React.FC = () => {
       case EventStatusEnum.UPCOMING:
         return (
           <Tag color="blue" bordered={false}>
-            {formatEnumLabel(status)}
-          </Tag>
-        );
-      case EventStatusEnum.COMPLETED:
-        return (
-          <Tag color="gray" bordered={false}>
             {formatEnumLabel(status)}
           </Tag>
         );
@@ -225,4 +214,4 @@ const EventsPerPark: React.FC = () => {
   );
 };
 
-export default EventsPerPark;
+export default withParkGuard(EventsPerPark);

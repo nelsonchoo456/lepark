@@ -17,7 +17,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
 
@@ -57,7 +57,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
       where: {
         hubStatus: hubStatus ? hubStatus as HubStatusEnum : undefined,
@@ -103,7 +103,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
 
@@ -124,7 +124,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
@@ -135,7 +135,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
@@ -146,7 +146,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
@@ -157,7 +157,7 @@ class HubDao {
       include: {
         facility: true,
         sensors: true,
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }

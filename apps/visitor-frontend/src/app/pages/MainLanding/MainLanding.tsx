@@ -11,7 +11,7 @@ import EventCard from './components/EventCard';
 import { useNavigate, Link } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
-import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
+import { MdArrowForward, MdArrowOutward, MdArrowRight, MdEvent } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect } from 'react';
@@ -89,22 +89,22 @@ useEffect(() => {
           Attractions
         </NavButton>
         <NavButton
-          key="venues"
+          key="facilities"
           icon={<FaTent />}
           onClick={() => {
             navigate(`/facility/park/${selectedPark?.id}`);
           }}
         >
-          Venues
+          Facilities
         </NavButton>
         <NavButton
-          key="promotions"
-          icon={<BiSolidDiscount />}
+          key="events"
+          icon={<MdEvent />}
           onClick={() => {
-            navigate(`/promotions`);
+            navigate(`/event/park/${selectedPark?.id}`);
           }}
         >
-          Promotions
+          Events
         </NavButton>
       </div>
 

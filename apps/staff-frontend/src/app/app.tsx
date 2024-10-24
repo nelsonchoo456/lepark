@@ -106,6 +106,9 @@ import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails
 import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
 import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
 import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
+import SensorMaintenanceList from './pages/Sensor/SensorMaintenanceList';
+import HubMaintenanceList from './pages/Hub/HubMaintenanceList';
+import AssetListMaintenanceSummary from './pages/Asset/AssetListMaintenanceSummary';
 
 export function App() {
   return (
@@ -423,6 +426,7 @@ export function App() {
                     <Route path=":hubId/edit" element={<HubEdit />} />
                     <Route path=":hubId/edit-location" element={<HubUpdateLocation />} />
                     <Route path=":hubId/place-in-zone" element={<HubPlaceInZone />} />
+                    <Route path="maintenance" element={<HubMaintenanceList />} />
                     {/* <Route path="edit"/> */}
                   </Route>
                 </Route>
@@ -451,6 +455,7 @@ export function App() {
                   <Route path="create" element={<AssetCreate />} />
                   <Route path=":assetId" element={<AssetDetails />} />
                   <Route path=":assetId/edit" element={<AssetEdit />} />
+                  <Route path="maintenance" element={<AssetListMaintenanceSummary />} />
                 </Route>
 
                 {/* Sensor Routes */}
@@ -476,6 +481,7 @@ export function App() {
                     <Route path=":sensorId/edit-location" element={<SensorUpdateLocation />} />
                     <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
                     <Route path="map-view" element={<IotMap />} />
+                    <Route path="maintenance" element={<SensorMaintenanceList />} />
                   </Route>
                 </Route>
 

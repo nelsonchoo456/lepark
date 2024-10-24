@@ -11,13 +11,29 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   const getStatusTag = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="green" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case 'INACTIVE':
-        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="blue" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case 'UNDER_MAINTENANCE':
-        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case 'DECOMMISSIONED':
-        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="red" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       default:
         return <Tag>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
     }
@@ -41,11 +57,6 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   ].filter(Boolean);
 
   const conditionalItems = [
-    sensor.lastMaintenanceDate && {
-      key: 'lastMaintenanceDate',
-      label: 'Last Maintenance Date',
-      children: moment(sensor.lastMaintenanceDate).format('MMMM D, YYYY'),
-    },
     sensor.nextMaintenanceDate && {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
@@ -60,12 +71,13 @@ const InformationTab = ({ sensor }: { sensor: SensorResponse }) => {
   return (
     <div>
       <Descriptions
-        items={(descriptionsItems) as DescriptionsItemType[]}
+        items={descriptionsItems as DescriptionsItemType[]}
         bordered
         column={1}
         size="middle"
         labelStyle={{ width: '40%' }}
         contentStyle={{ width: '60%' }}
+        style={{ marginBottom: '8px' }}
       />
     </div>
   );
