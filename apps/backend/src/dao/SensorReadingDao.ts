@@ -185,6 +185,66 @@ class SensorReadingDao {
 
     return result;
   }
+
+  public async getHourlyAverageSensorReadingsForDateRange(
+    hubId: string,
+    sensorType: SensorTypeEnum,
+    startDate: Date,
+    endDate: Date
+  ): Promise<{ date: Date; average: number }[]> {
+    return prisma.$queryRaw`
+      SELECT 
+        date_trunc('hour', "date") as date,
+        AVG(value) as average
+      FROM "SensorReading"
+      JOIN "Sensor" ON "SensorReading"."sensorId" = "Sensor"."id"
+      WHERE "Sensor"."hubId" = ${hubId}
+        AND "Sensor"."sensorType" = ${sensorType}
+        AND "SensorReading"."date" BETWEEN ${startDate} AND ${endDate}
+      GROUP BY date_trunc('hour', "date")
+      ORDER BY date_trunc('hour', "date")
+    `;
+  }
+
+  public async getDailyAverageSensorReadingsForDateRange(
+    hubId: string,
+    sensorType: SensorTypeEnum,
+    startDate: Date,
+    endDate: Date
+  ): Promise<{ date: Date; average: number }[]> {
+    return prisma.$queryRaw`
+      SELECT 
+        date_trunc('day', "date") as date,
+        AVG(value) as average
+      FROM "SensorReading"
+      JOIN "Sensor" ON "SensorReading"."sensorId" = "Sensor"."id"
+      WHERE "Sensor"."hubId" = ${hubId}
+        AND "Sensor"."sensorType" = ${sensorType}
+        AND "SensorReading"."date" BETWEEN ${startDate} AND ${endDate}
+      GROUP BY date_trunc('day', "date")
+      ORDER BY date_trunc('day', "date")
+    `;
+  }
+
+  public async getWeeklyAverageSensorReadingsForDateRange(
+    hubId: string,
+    sensorType: SensorTypeEnum,
+    startDate: Date,
+    endDate: Date
+  ): Promise<{ date: Date; average: number }[]> {
+    return prisma.$queryRaw`
+      SELECT 
+        date_trunc('week', "date") as date,
+        AVG(value) as average
+      FROM "SensorReading"
+      JOIN "Sensor" ON "SensorReading"."sensorId" = "Sensor"."id"
+      WHERE "Sensor"."hubId" = ${hubId}
+        AND "Sensor"."sensorType" = ${sensorType}
+        AND "SensorReading"."date" BETWEEN ${startDate} AND ${endDate}
+      GROUP BY date_trunc('week', "date")
+      ORDER BY date_trunc('week', "date")
+    `;
+  }
 }
 
 export default new SensorReadingDao();

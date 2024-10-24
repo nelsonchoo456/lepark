@@ -671,6 +671,27 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
   private deg2rad(deg: number): number {
     return deg * (Math.PI / 180);
   }
+
+  public async getHourlyAverageSensorReadingsForPastDays(hubId: string, sensorType: SensorTypeEnum, days: number): Promise<{ date: Date; average: number }[]> {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+    
+    return SensorReadingDao.getHourlyAverageSensorReadingsForDateRange(hubId, sensorType, startDate, endDate);
+  }
+
+  public async getDailyAverageSensorReadingsForPastDays(hubId: string, sensorType: SensorTypeEnum, days: number): Promise<{ date: Date; average: number }[]> {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+    
+    return SensorReadingDao.getDailyAverageSensorReadingsForDateRange(hubId, sensorType, startDate, endDate);
+  }
+
+  public async getWeeklyAverageSensorReadingsForPastWeeks(hubId: string, sensorType: SensorTypeEnum, weeks: number): Promise<{ date: Date; average: number }[]> {
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - weeks * 7 * 24 * 60 * 60 * 1000);
+    
+    return SensorReadingDao.getWeeklyAverageSensorReadingsForDateRange(hubId, sensorType, startDate, endDate);
+  }
 }
 
 export default new SensorReadingService();
