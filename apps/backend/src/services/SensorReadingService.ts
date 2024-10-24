@@ -187,6 +187,21 @@ class SensorReadingService {
     return readings.reduce((sum, reading) => sum + reading.value, 0) / readings.length;
   }
 
+  public async getAverageSensorReadingsForHubIdAcrossAllSensorTypesForHoursAgo(
+    hubId: string,
+    hours: number,
+  ): Promise<{ [sensorType: string]: number }> {
+    const sensorTypes = Object.values(SensorTypeEnum);
+    const averages: { [sensorType: string]: number } = {};
+
+    for (const sensorType of sensorTypes) {
+      const average = await SensorReadingDao.getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(hubId, sensorType, hours);
+      averages[sensorType] = average;
+    }
+
+    return averages;
+  }
+
   public async getSensorReadingsByHubIdAndSensorTypeByDateRange(
     hubId: string,
     sensorType: SensorTypeEnum,

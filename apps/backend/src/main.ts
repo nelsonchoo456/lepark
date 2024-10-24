@@ -34,6 +34,7 @@ import faqRouter from './routers/faqRouter';
 import AnnouncementRouter from './routers/announcementRouter';
 import eventTicketRouter from './routers/eventTicketRouter';
 import maintenanceTaskRouter from './routers/maintenanceTaskRouter';
+import predictedWaterScheduleRouter from './routers/predictedWaterScheduleRouter';
 
 dotenv.config();
 const app = express();
@@ -96,6 +97,7 @@ app.use('/api/faq', faqRouter);
 app.use('/api/announcements', AnnouncementRouter);
 app.use('/api/eventTickets', eventTicketRouter);
 app.use('/api/maintenancetasks', maintenanceTaskRouter);
+app.use('/api/predictedwaterschedules', predictedWaterScheduleRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();
