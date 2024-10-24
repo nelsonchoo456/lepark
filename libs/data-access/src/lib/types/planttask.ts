@@ -45,6 +45,7 @@ export interface PlantTaskResponse {
 export interface PlantTaskUpdateData {
   title?: string;
   description?: string;
+  taskStatus?: PlantTaskStatusEnum;
   taskType?: PlantTaskTypeEnum;
   taskUrgency?: PlantTaskUrgencyEnum;
   dueDate?: string | null;

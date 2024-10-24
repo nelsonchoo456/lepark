@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface PlantTasksTableProps {
   userRole: StaffType;
-  plantTasks: PlantTaskResponse[]
+  plantTasks: PlantTaskResponse[];
   [key: string]: any;
 }
 const PlantTasksTable = ({ userRole, plantTasks, ...tableProps }: PlantTasksTableProps) => {
@@ -46,7 +46,9 @@ const PlantTasksTable = ({ userRole, plantTasks, ...tableProps }: PlantTasksTabl
 
   const pendingTasks = useMemo(() => {
     return plantTasks
-      ? plantTasks.filter((task) => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS).reverse()
+      ? plantTasks
+          .filter((task) => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
+          .reverse()
       : [];
   }, [plantTasks]);
 
@@ -389,14 +391,12 @@ const PlantTasksTable = ({ userRole, plantTasks, ...tableProps }: PlantTasksTabl
                 </Button>
               )}
             </div>
-            <div className="w-full flex-[1] flex flex-col hidden md:hidden lg:block">
-              <div className="font-semibold text-mustard-500 mb-4">
-                Pending Tasks Breakdown:
-              </div>
-              <div className='h-36 max-w-64 md:w-full flex justify-center'>
+            <Card className="w-full flex-[1] flex flex-col justify-center hidden md:hidden lg:block" styles={{ body: { padding: "0 1rem"}}}>
+              <div className="font-semibold text-mustard-500 mb-4">Pending Tasks Breakdown:</div>
+              <div className="h-36 md:w-full flex justify-center">
                 <Pie data={getChartData(getStatusData)} options={chartOptions} />
               </div>
-            </div>
+            </Card>
           </>
         ) : (
           <div className="flex items-center font-semibold text-mustard-500">
