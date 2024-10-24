@@ -14,6 +14,7 @@ export const FeedbackSchema = z.object({
   staffId: z.string().uuid().optional().nullable(),
   visitorId: z.string().uuid(),
   parkId: z.number(),
+  needResponse: z.boolean(),
 });
 
 export type FeedbackSchemaType = z.infer<typeof FeedbackSchema>;

@@ -221,7 +221,6 @@ export enum FeedbackCategoryEnum {
 
 export enum FeedbackStatusEnum {
   PENDING = 'PENDING',
-  IN_PROGRESS = 'IN_PROGRESS',
+  ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
-  RESOLVED = 'RESOLVED'
 }

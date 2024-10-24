@@ -40,7 +40,7 @@ model Staff {
   submittedPlantTasks       PlantTask[]       @relation("submittingStaff")
   assignedMaintenanceTasks  MaintenanceTask[] @relation("assignedStaff")
   submittedMaintenanceTasks MaintenanceTask[] @relation("submittingStaff")
-  Feedback Feedback[]
+  Feedback                  Feedback[]
 }
 
 enum ConservationStatusEnum {
@@ -308,7 +308,6 @@ model Event {
   @@index([facilityId])
 }
 
-
 enum EventTicketCategoryEnum {
   ADULT
   CHILD
@@ -388,7 +387,7 @@ model Visitor {
   attractionTicketTransactions AttractionTicketTransaction[]
   eventTicketTransactions      EventTicketTransaction[]
   promotionsRedeemed           Promotion[]                   @relation("VisitorPromotionsRedeemed")
-    Feedback Feedback[]
+  Feedback                     Feedback[]
 }
 
 enum HubStatusEnum {
@@ -743,6 +742,7 @@ model Feedback {
   feedbackStatus   FeedbackStatusEnum
   remarks          String?
   parkId           Int
+  needResponse     Boolean
 
   staffId   String? @db.Uuid
   staff     Staff?  @relation(fields: [staffId], references: [id])
@@ -764,9 +764,8 @@ enum FeedbackCategoryEnum {
 
 enum FeedbackStatusEnum {
   PENDING
-  IN_PROGRESS
+  ACCEPTED
   REJECTED
-  RESOLVED
 }
 
 enum DiscountType {

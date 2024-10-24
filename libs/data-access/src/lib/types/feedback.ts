@@ -13,6 +13,7 @@ export interface FeedbackData {
   staffId?: string | null;
   visitorId: string;
   parkId: number;
+  needResponse: boolean;
 }
 
 export interface FeedbackResponse {
@@ -30,6 +31,7 @@ export interface FeedbackResponse {
   visitor: VisitorResponse;
   staff?: StaffResponse;
   parkId: number;
+  needResponse: boolean;
 }
 
 export interface FeedbackUpdateData {
@@ -42,4 +44,5 @@ export interface FeedbackUpdateData {
   staffId?: string | null;
   parkId?: number | null;
   dateResolved?: string | null;
+  needResponse?: boolean;
 }
