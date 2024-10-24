@@ -51,7 +51,10 @@ interface ParkProviderProps {
 }
 
 export const ParkProvider: React.FC<ParkProviderProps> = ({ children }) => {
-  const [selectedPark, setSelectedPark] = useState<ParkResponse | null>(() => null);
+  const [selectedPark, setSelectedPark] = useState<ParkResponse | null>(() => {
+    const storedPark = localStorage.getItem('selectedPark');
+    return storedPark ? JSON.parse(storedPark) : null;
+  });
 
   const updateSelectedPark = (park: ParkResponse | null) => {
     setSelectedPark(park);

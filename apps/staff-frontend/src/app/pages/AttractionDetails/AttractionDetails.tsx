@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Flex, notification, Space, Tabs, Tag, Tooltip, Typography } from 'antd';
@@ -10,8 +10,10 @@ import InformationTab from './components/InformationTab';
 import { FiExternalLink } from 'react-icons/fi';
 import LocationTab from './components/LocationTab';
 import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
-
-const { Text } = Typography;
+import TicketsTab from './components/TicketsTab';
+import { useLocation } from 'react-router-dom';
+import DashboardTab from './components/DashboardTab';
+import TicketSalesTab from './components/TicketSalesTab';
 
 const AttractionDetails = () => {
   const { user } = useAuth<StaffResponse>();
@@ -19,6 +21,21 @@ const AttractionDetails = () => {
   const { attraction, park, loading } = useRestrictAttractions(id);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
+  const [, setRefreshToggle] = useState(false);
+  const [activeTab, setActiveTab] = useState('information');
+  const location = useLocation();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location]);
+
+  const triggerFetch = useCallback(() => {
+    setRefreshToggle((prev) => !prev);
+  }, []);
 
   const descriptionsItems = [
     {
@@ -55,13 +72,18 @@ const AttractionDetails = () => {
     },
     {
       key: 'tickets',
-      label: 'Tickets',
-      children: <Empty description={'Tickets Coming Soon'}></Empty>,
+      label: 'Ticket Listings',
+      children: attraction ? <TicketsTab attraction={attraction} onTicketListingCreated={triggerFetch} /> : <></>,
     },
     {
-      key: 'occupancy',
-      label: 'Occupancy',
-      children: <Empty description={'Occupancy Coming Soon'}></Empty>,
+      key: 'ticketSales',
+      label: 'Ticket Sales',
+      children: attraction ? <TicketSalesTab attraction={attraction} /> : <></>,
+    },
+    {
+      key: 'dashboard',
+      label: 'Dashboard',
+      children: attraction ? <DashboardTab attractionId={attraction.id} /> : <></>,
     },
   ];
 
@@ -114,11 +136,7 @@ const AttractionDetails = () => {
                 <AttractionStatusTag status={attraction?.status} />
               </Space>
               {user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER ? (
-                <Button
-                  icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
-                  type="text"
-                  onClick={() => navigate(`edit`)}
-                />
+                <Button icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />} type="text" onClick={() => navigate(`edit`)} />
               ) : null}
             </div>
             <Typography.Paragraph
@@ -134,7 +152,11 @@ const AttractionDetails = () => {
 
         <Tabs
           centered
-          defaultActiveKey="about"
+          activeKey={activeTab}
+          onChange={(key) => {
+            setActiveTab(key);
+            navigate(`/attraction/${id}?tab=${key}`, { replace: true });
+          }}
           items={tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"

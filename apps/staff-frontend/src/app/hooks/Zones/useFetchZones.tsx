@@ -5,6 +5,7 @@ import { StaffResponse, StaffType } from '@lepark/data-access';
 
 export const useFetchZones = () => {
   const [zones, setZones] = useState<ZoneResponse[]>([]);
+  const [zonesWithIoT, setZonesWithIoT] = useState<ZoneResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth<StaffResponse>();
 
@@ -23,6 +24,7 @@ export const useFetchZones = () => {
         return;
       }
       setZones(response.data);
+      setZonesWithIoT(response.data.filter((zone) => zone.hubs ? zone.hubs?.length > 0 : false));
     } catch (error) {
       console.error('Error fetching zones:', error);
       setZones([]);
@@ -39,5 +41,5 @@ export const useFetchZones = () => {
     fetchZones();
   };
 
-  return { zones, loading, triggerFetch };
+  return { zones, zonesWithIoT, loading, triggerFetch };
 };

@@ -1,20 +1,60 @@
-import { ContentWrapper, Divider, LogoText } from '@lepark/common-ui';
+import React, { useState, useMemo } from 'react';
+import { ContentWrapper, Divider, LogoText, QrScanner2 } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
+import {BsHouseDoor} from 'react-icons/bs';
 import { FaLocationDot, FaTent } from 'react-icons/fa6';
-import { Badge, Button, Card, Empty, Space } from 'antd';
+import { Badge, Button, Card, Empty, List, Space, Spin, Typography } from 'antd';
 import EventCard from './components/EventCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
 import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
+import { GiTreehouse } from 'react-icons/gi';
+import { useEffect } from 'react';
+import { calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
+import { getTotalSequestrationForParkAndYear } from '@lepark/data-access';
+import { FiExternalLink } from 'react-icons/fi';
+import { AiOutlinePercentage } from 'react-icons/ai';
+import { BiSolidDiscount } from 'react-icons/bi';
+import { useFetchAnnouncements } from '../../hooks/Announcements/useFetchAnnouncements';
+import { AnnouncementResponse } from '@lepark/data-access';
+
+const { Title, Paragraph } = Typography;
 
 const MainLanding = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const { selectedPark } = usePark();
+  const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
+  const [poweredDays, setPoweredDays] = useState<number | null>(null);
+  const { announcements, loading, error } = useFetchAnnouncements(selectedPark?.id);
+  const [expandedAnnouncementId, setExpandedAnnouncementId] = useState<string | null>(null);
+
+useEffect(() => {
+    const fetchSequestration = async () => {
+      if (selectedPark?.id) {
+        try {
+          const currentYear = new Date().getFullYear().toString();
+          const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
+          const sequestration = response.data.totalSequestration;
+          setTotalSequestration(Math.round(sequestration));
+          const days = calculateHDBPoweredDays(sequestration);
+          setPoweredDays(days);
+        } catch (error) {
+          console.error('Error fetching sequestration data:', error);
+        }
+      }
+    };
+
+    fetchSequestration();
+  }, [selectedPark]);
+
+  const toggleExpand = (announcementId: string) => {
+    setExpandedAnnouncementId(expandedAnnouncementId === announcementId ? null : announcementId);
+  };
 
   return (
     <div>
@@ -26,7 +66,6 @@ const MainLanding = () => {
         </div>
       </ParkHeader>
 
-      {/* md:flex-1 md:rounded-none md:mt-0 md:py-0 md:mb-2 md:flex-1 md:shadow-none */}
       <div
         className="flex items-start justify-between py-2 mx-4 bg-white rounded-2xl mt-[-2rem] shadow overflow-hidden relative z-10
             md:p-0"
@@ -49,16 +88,78 @@ const MainLanding = () => {
         >
           Attractions
         </NavButton>
-        <NavButton key="venues" icon={<FaTent />}>
+        <NavButton
+          key="venues"
+          icon={<FaTent />}
+          onClick={() => {
+            navigate(`/facility/park/${selectedPark?.id}`);
+          }}
+        >
           Venues
         </NavButton>
-        <NavButton key="tickets" icon={<PiTicketFill />}>
-          Tickets
+        <NavButton
+          key="promotions"
+          icon={<BiSolidDiscount />}
+          onClick={() => {
+            navigate(`/promotions`);
+          }}
+        >
+          Promotions
         </NavButton>
       </div>
 
-      {/* </div> */}
       <ContentWrapper>
+        {/* Announcements Section */}
+        <div>
+          <div className="flex items-center justify-between">
+            <LogoText className="text-xl">Announcements</LogoText>
+            <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+              <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+              <Button
+                icon={<MdArrowForward className="text-2xl" />}
+                shape="circle"
+                type="primary"
+                size="large"
+                className="md:bg-transparent md:text-green-500 md:shadow-none"
+                onClick={() => navigate('/announcement')}
+              />
+            </div>
+          </div>
+          {loading ? (
+            <Spin size="large" />
+          ) : error ? (
+            <div>Error loading announcements: {error}</div>
+          ) : (
+            <List
+              dataSource={announcements.slice(0, 2)} // Show only the latest 3 announcements
+              renderItem={(announcement: AnnouncementResponse) => (
+                <List.Item>
+                  <Card
+                    title={
+                      <div className="flex items-center">
+                        <span
+                          className={`truncate ${expandedAnnouncementId === announcement.id ? 'whitespace-normal' : 'whitespace-nowrap'}`}
+                        >
+                          {announcement.title}
+                        </span>
+                      </div>
+                    }
+                    onClick={() => toggleExpand(announcement.id)}
+                    hoverable
+                    className="w-full"
+                    bodyStyle={{ padding: expandedAnnouncementId === announcement.id ? '16px' : '0' }}
+                  >
+                    {expandedAnnouncementId === announcement.id && (
+                      <div className="mt-4">
+                        <Paragraph>{announcement.content}</Paragraph>
+                      </div>
+                    )}
+                  </Card>
+                </List.Item>
+              )}
+            />
+          )}
+        </div>
         <div className="flex items-center">
           <LogoText className="text-xl">Our Events</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
@@ -80,32 +181,59 @@ const MainLanding = () => {
             <br />
             Check back soon for Events!
           </div>
-          {/* <EventCard
-            title="Event 1"
-            url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
-            extra={<a href="#">More</a>}
-          >
-            keewewk
-          </EventCard>
-          <EventCard
-            title="Event 4"
-            url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
-            extra={<a href="#">More</a>}
-          >
-            rwrewrkeek
-          </EventCard>
-          <EventCard
-            title="Event 2"
-            url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
-            extra={<a href="#">More</a>}
-          >
-            keewerewk
-          </EventCard>
-          <EventCard title="Event 3" url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" extra={<a href="#">More</a>}>
-            keewerewrk
-          </EventCard> */}
         </div>
         <br />
+      <div className="flex justify-between items-center">
+    <LogoText className="text-xl">Sustainability</LogoText>
+    <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+      <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+      <Link to="/decarb">
+        <Button
+          icon={<MdArrowForward className="text-2xl" />}
+          shape="circle"
+          type="primary"
+          size="large"
+          className="md:bg-transparent md:text-green-500 md:shadow-none"
+        />
+      </Link>
+    </div>
+  </div>
+          <br/>
+
+  <div className="flex justify-between items-center h-48">
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <PiPlant className="text-4xl mb-2 text-green-500" />
+      <div className="flex flex-row items-center">
+        <p className="text-green-500">In the past year, this park has absorbed <span className="font-bold text-lg ml-1 text-green-500">{totalSequestration} kg</span> of CO<sub>2</sub></p>
+      </div>
+    </div>
+    <div className="w-px h-full bg-green-500 mx-4"></div>
+    <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <BsHouseDoor className="text-4xl mb-2 text-green-500" />
+      <p className="text-green-500">Equivalent to powering a 4 room HDB for</p>
+      <p className="font-bold text-lg text-green-500">{poweredDays} years</p>
+    </div>
+  </div>
+
+<br/>
+   <div className="flex justify-between items-center">
+     <LogoText className="font-bold text-lg">FAQs</LogoText>
+     <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+       <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+       <Link to="/faq">
+         <Button
+           icon={<MdArrowForward className="text-2xl" />}
+           shape="circle"
+           type="primary"
+           size="large"
+           className="md:bg-transparent md:text-green-500 md:shadow-none"
+         />
+       </Link>
+     </div>
+   </div>
+   <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
+<br/>
+<br/>
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
@@ -118,9 +246,10 @@ const MainLanding = () => {
             </div>
           </Card>
         </Badge.Ribbon>
+
+
       </ContentWrapper>
     </div>
-    // </MainLayout>
   );
 };
 

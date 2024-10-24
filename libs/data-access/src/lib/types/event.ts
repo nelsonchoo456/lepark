@@ -38,6 +38,7 @@ export interface EventResponse {
   startTime: any;
   endTime: any;
   maxCapacity: number;
+  ticketingPolicy: string;
   images?: string[];
   status: EventStatusEnum;
   facilityId: string;
@@ -55,6 +56,7 @@ export interface CreateEventData {
     startTime: any;
     endTime: any;
     maxCapacity: number;
+    ticketingPolicy: string;
     images?: string[];
     status: EventStatusEnum;
     facilityId: string;
@@ -70,7 +72,48 @@ export interface UpdateEventData {
     startTime?: any;
     endTime?: any;
     maxCapacity?: number;
+    ticketingPolicy?: string;
     images?: string[];
     status?: EventStatusEnum;
     facilityId?: string;
+}
+
+export enum EventTicketCategoryEnum {
+  ADULT = 'ADULT',
+  CHILD = 'CHILD',
+  SENIOR = 'SENIOR',
+  STUDENT = 'STUDENT',
+}
+
+export enum EventTicketNationalityEnum {
+  LOCAL = 'LOCAL',
+  STANDARD = 'STANDARD',
+}
+
+export interface EventTicketListingResponse {
+  id: string;
+  category: EventTicketCategoryEnum;
+  nationality: EventTicketNationalityEnum;
+  description: string;
+  price: number;
+  isActive: boolean;
+  eventId: string;
+}
+
+export interface CreateEventTicketListingData {
+  category: EventTicketCategoryEnum;
+  nationality: EventTicketNationalityEnum;
+  description: string;
+  price: number;
+  isActive: boolean;
+  eventId: string;
+}
+
+export interface UpdateEventTicketListingData {
+  category?: EventTicketCategoryEnum;
+  nationality?: EventTicketNationalityEnum;
+  description?: string;
+  price?: number;
+  isActive?: boolean;
+  eventId?: string;
 }

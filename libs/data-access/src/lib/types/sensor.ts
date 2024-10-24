@@ -1,6 +1,7 @@
 import { FacilityResponse } from './facility';
 import { HubResponse } from './hub';
 import { ParkResponse } from './park';
+import { SensorReadingResponse } from './sensorreading';
 import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums';
 
 export interface SensorData {
@@ -12,7 +13,6 @@ export interface SensorData {
   acquisitionDate: string;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes?: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
@@ -33,24 +33,22 @@ export interface SensorResponse {
   description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  lastCalibratedDate?: string;
-  calibrationFrequencyDays?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes: number;
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
   images?: string[];
   lat?: number;
   long?: number;
-  remarks?: string;
+  remarks?: string | null;
   hubId?: string;
   facilityId?: string;
   hub?: HubResponse;
   facility?: FacilityResponse;
   park?: ParkResponse;
   parkName?: string;
+  sensorReadings?: SensorReadingResponse[];
 }
 
 export interface SensorUpdateData {
@@ -60,11 +58,8 @@ export interface SensorUpdateData {
   description?: string;
   sensorStatus?: SensorStatusEnum;
   acquisitionDate?: string;
-  lastCalibratedDate?: string;
-  calibrationFrequencyDays?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
-  dataFrequencyMinutes?: number;
   sensorUnit?: SensorUnitEnum;
   supplier?: string;
   supplierContactNumber?: string;
@@ -79,14 +74,6 @@ export interface SensorUpdateData {
 export interface SensorMaintenanceHistoryResponse {
   id: string;
   maintenanceDate: string;
-  description: string;
-  sensorId: string;
-  name: string;
-}
-
-export interface SensorCalibrationHistoryResponse {
-  id: string;
-  calibrationDate: string;
   description: string;
   sensorId: string;
   name: string;

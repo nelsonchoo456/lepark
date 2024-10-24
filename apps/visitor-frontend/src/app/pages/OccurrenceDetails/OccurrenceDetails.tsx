@@ -97,7 +97,7 @@ const OccurrenceDetails = () => {
     },
   ];
 
-  const getWaterRequirementInfo = (value: number) => {
+  const getSoilMoistureInfo = (value: number) => {
     if (value <= 30) return { text: 'Low', icon: <FaTint className="text-3xl mt-2 text-blue-300" /> };
     if (value <= 60) return { text: 'Medium', icon: <FaTint className="text-3xl mt-2 text-blue-500" /> };
     return { text: 'High', icon: <FaTint className="text-3xl mt-2 text-blue-700" /> };
@@ -186,8 +186,8 @@ const OccurrenceDetails = () => {
             {species ? (
               <>
                 <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
-                  {getWaterRequirementInfo(species.waterRequirement).icon}
-                  <p className="text-xs mt-2">{getWaterRequirementInfo(species.waterRequirement).text}</p>
+                  {getSoilMoistureInfo(species.soilMoisture).icon}
+                  <p className="text-xs mt-2">{getSoilMoistureInfo(species.soilMoisture).text}</p>
                 </div>
                 <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
                   {getLightTypeInfo(species.lightType).icon}

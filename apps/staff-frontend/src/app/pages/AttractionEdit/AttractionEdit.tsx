@@ -184,7 +184,9 @@ const AttractionEdit = () => {
           <Form.Item name="status" label="Attraction Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={attractionStatusOptions} />
           </Form.Item>
-
+          <Form.Item name="ticketingPolicy" label="Ticketing Policy" rules={[{ required: true }]}>
+            <TextArea placeholder="Ticketing Policy" autoSize={{ minRows: 3, maxRows: 5 }} />
+          </Form.Item>
           <Form.Item label={'Image'}>
             <ImageInput type="file" multiple onChange={handleFileChange} accept="image/png, image/jpeg" onClick={onInputClick} />
           </Form.Item>

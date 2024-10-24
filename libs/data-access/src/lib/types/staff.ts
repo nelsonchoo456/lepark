@@ -1,10 +1,12 @@
+import { ParkResponse } from './park';
+
 export enum StaffType {
   MANAGER = 'MANAGER',
   BOTANIST = 'BOTANIST',
   ARBORIST = 'ARBORIST',
   LANDSCAPE_ARCHITECT = 'LANDSCAPE_ARCHITECT',
   PARK_RANGER = 'PARK_RANGER',
-  VENDOR_MAANGER = 'VENDOR_MANAGER',
+  VENDOR_MANAGER = 'VENDOR_MANAGER',
   SUPERADMIN = 'SUPERADMIN',
 }
 
@@ -29,6 +31,7 @@ export interface StaffResponse {
   role: string;
   isActive: boolean;
   parkId?: number;
+  park?: ParkResponse;
 }
 
 export interface LoginData {

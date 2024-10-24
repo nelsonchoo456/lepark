@@ -5,13 +5,9 @@ const prisma = new PrismaClient();
 class ParkDao {
   async createPark(data: ParkCreateData): Promise<any> {
     await this.initParksDB();
-    const openingHoursFormat = formatDatesArray(data.openingHours);
-    const closingHoursFormat = formatDatesArray(data.closingHours);
+    const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
+    const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
 
-    const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
-    const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
-
-    // console.log("createPark", data.images)
     const park = await prisma.$queryRaw`
       INSERT INTO "Park" (name, description, "address", "contactNumber", "openingHours", "closingHours", "images", "geom", "paths", "parkStatus")
       VALUES (
@@ -19,16 +15,8 @@ class ParkDao {
         ${data.description}, 
         ${data.address},
         ${data.contactNumber},
-        -- ${openingHoursFormat}, 
-        -- ${closingHoursFormat},
-        -- array[${data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`)}]::timestamp[], 
-        -- array[${data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`)}]::timestamp[], 
         ${openingHoursArray}::timestamp[], 
         ${closingHoursArray}::timestamp[],
-        -- ARRAY[${openingHoursArray.join(', ')}]::timestamp[], 
-        -- ARRAY[${closingHoursArray.join(', ')}]::timestamp[], 
-        -- ${prisma.$queryRaw`ARRAY[${data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`)}]::timestamp[]`}, 
-        -- ${prisma.$queryRaw`ARRAY[${data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`)}]::timestamp[]`}, 
         ${data.images}::text[],
         ST_GeomFromText(${data.geom}), 
         ST_LineFromText(${data.paths}, 4326),
@@ -294,17 +282,6 @@ class ParkDao {
       return null;
     }
   }
-}
-
-const formatDatesArray = (datesArray: Date[]) => {
-  // Convert the date array into the desired format YYYY-MM-DD HH:MM:SS
-  const formattedDates = datesArray.map(date => {
-    const parsedDate = new Date(date);
-    return parsedDate.toISOString().slice(0, 19).replace('T', ' '); // Replace 'T' with a space to get the correct format
-  });
-
-  // Join the dates into a single string and wrap it with curly braces
-  return `'{${formattedDates.join(', ')}}'`;
 }
 
 export default new ParkDao();

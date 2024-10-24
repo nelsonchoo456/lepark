@@ -166,9 +166,13 @@ class ParkAssetService {
     return ParkAssetDao.getParkAssetBySerialNumber(serialNumber);
   }
 
+  public async getParkAssetByIdentifierNumber(identifierNumber: string): Promise<ParkAsset | null> {
+    return ParkAssetDao.getParkAssetByIdentifierNumber(identifierNumber);
+  }
+
   private generateIdentifierNumber(assetType: ParkAssetTypeEnum): string {
     const prefix = this.getAssetTypePrefix(assetType);
-    return `${prefix}-${uuidv4().substr(0, 8).toUpperCase()}`;
+    return `${prefix}-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
 
   private getAssetTypePrefix(assetType: ParkAssetTypeEnum): string {

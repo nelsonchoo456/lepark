@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography } from 'antd';
-import { StaffResponse, StaffType } from '@lepark/data-access';
+import { getHubsByZoneId, getSensorsByHubId, HubResponse, SensorResponse, StaffResponse, StaffType } from '@lepark/data-access';
 import ZoneStatusTag from './components/ZoneStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -10,6 +10,7 @@ import { useRestrictZone } from '../../hooks/Zones/useRestrictZone';
 import InformationTab from './components/InformationTab';
 import MapTab from './components/MapTab';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import IotTabs from './components/IotTabs';
 
 const { Text } = Typography;
 
@@ -18,6 +19,47 @@ const ZoneDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { zone, loading } = useRestrictZone(id);
+  const [hubs, setHubs] = useState<(HubResponse & { sensors?: SensorResponse[] })[]>();
+  const [sensors, setSensors] = useState<SensorResponse[]>();
+
+  useEffect(() => {
+    if (zone) {
+      fetchHubs(zone.id);
+    }
+  }, [zone]);
+
+  // useEffect(() => {
+  //   if (hub) {
+  //     fetchSensors(hub.id)
+  //   }
+  // }, [hub]);
+
+  const fetchHubs = async (zoneId: number) => {
+    try {
+      const hubRes = await getHubsByZoneId(zoneId);
+      if (hubRes.status === 200) {
+        // setHubs(hubRes.data);
+        const hubsData = hubRes.data;
+        
+        hubsData.forEach(async (h) => {
+          try {
+            const sensorRes = await getSensorsByHubId(h.id);
+            if (sensorRes.status === 200) {
+              h.sensors = sensorRes.data
+            };
+          } catch (e) {
+            h.sensors = [];
+          }
+        })
+
+        console.log(hubsData)
+
+        setHubs(hubsData)
+      }
+    } catch (e) {
+      //
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -54,7 +96,11 @@ const ZoneDetails = () => {
     {
       key: 'IoT',
       label: 'IoT',
-      children: <Empty description={'IoT Coming Soon'}></Empty>,
+      children: hubs ? (
+        <IotTabs hubs={hubs}/>
+      ) : (
+        <Empty description="No Linked Hubs"></Empty>
+      ),
     },
   ];
 
@@ -106,7 +152,9 @@ const ZoneDetails = () => {
                 <LogoText className="text-2xl py-2 m-0">{zone.name}</LogoText>
                 <ZoneStatusTag>{formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}</ZoneStatusTag>
               </Space>
-              {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
+              {(user?.role === StaffType.SUPERADMIN ||
+                user?.role === StaffType.MANAGER ||
+                user?.role === StaffType.LANDSCAPE_ARCHITECT) && (
                 <Button
                   icon={<RiEdit2Line className="text-lg ml-auto mr-0 r-0" />}
                   type="text"

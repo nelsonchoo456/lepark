@@ -36,11 +36,6 @@ const SensorCreate = () => {
     label: formatEnumLabelToRemoveUnderscores(status),
   }));
 
-  const sensorUnitOptions = Object.values(SensorUnitEnum).map((unit) => ({
-    value: unit,
-    label: formatEnumLabelToRemoveUnderscores(unit),
-  }));
-
   const validateDates = (form: FormInstance) => ({
     validator(_: any, value: moment.Moment) {
       if (value.isAfter(moment(), 'day')) {
@@ -64,6 +59,22 @@ const SensorCreate = () => {
       ? facilities.filter((facility) => facility.parkId === selectedParkId && facility.facilityStatus === FacilityStatusEnum.OPEN && facility.facilityType === FacilityTypeEnum.STOREROOM)
       : facilities.filter((facility) => facility.parkId === user?.parkId && facility.facilityStatus === FacilityStatusEnum.OPEN && facility.facilityType === FacilityTypeEnum.STOREROOM);
 
+  const getSensorUnitFromType = (sensorType: SensorTypeEnum): SensorUnitEnum => {
+    switch (sensorType) {
+      case SensorTypeEnum.TEMPERATURE:
+        return SensorUnitEnum.DEGREES_CELSIUS;
+      case SensorTypeEnum.HUMIDITY:
+      case SensorTypeEnum.SOIL_MOISTURE:
+        return SensorUnitEnum.PERCENT;
+      case SensorTypeEnum.LIGHT:
+        return SensorUnitEnum.LUX;
+      case SensorTypeEnum.CAMERA:
+        return SensorUnitEnum.PAX;
+      default:
+        return SensorUnitEnum.PERCENT;
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -75,6 +86,7 @@ const SensorCreate = () => {
         ...filteredValues,
         acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
         images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [],
+        sensorUnit: getSensorUnitFromType(filteredValues.sensorType), // Automatically set the sensor unit
       };
 
       const isDuplicate = await checkSensorDuplicateSerialNumber(values.serialNumber);
@@ -164,12 +176,9 @@ const SensorCreate = () => {
             <Form.Item name="sensorType" label="Sensor Type" rules={[{ required: true, message: 'Please select Sensor Type' }]}>
               <Select placeholder="Select Sensor Type" options={sensorTypeOptions} />
             </Form.Item>
-            <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
+            {/* <Form.Item name="sensorStatus" label="Sensor Status" rules={[{ required: true, message: 'Please select Sensor Status' }]}>
               <Select placeholder="Select Sensor Status" options={sensorStatusOptions} />
-            </Form.Item>
-            <Form.Item name="sensorUnit" label="Sensor Unit" rules={[{ required: true, message: 'Please select Sensor Unit' }]}>
-              <Select placeholder="Select Sensor Unit" options={sensorUnitOptions} />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               name="acquisitionDate"
               label="Acquisition Date"

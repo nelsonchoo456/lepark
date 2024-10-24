@@ -1,4 +1,4 @@
-import { Facility, Hub, Prisma, Sensor } from '@prisma/client';
+import { Facility, Hub, Prisma, Sensor, SensorTypeEnum } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
@@ -10,6 +10,7 @@ import aws from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import ParkDao from '../dao/ParkDao';
 import { ParkResponseData } from '../schemas/parkSchema';
+import { HubNotFoundError } from './HubService';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -28,7 +29,8 @@ class SensorService {
       }
 
       const formattedData = dateFormatter(data);
-
+      formattedData.sensorStatus = "INACTIVE";
+      
       // Validate input data using Zod
       SensorSchema.parse(formattedData);
 
@@ -173,15 +175,19 @@ class SensorService {
     if (!hub) {
       throw new Error('Hub not found.');
     }
-    return SensorDao.getAllSensorsByFacilityId(hub.facilityId);
+    return SensorDao.getSensorsByHubId(hubId);
+  }
+
+  public async getSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return SensorDao.getSensorsByZoneId(zoneId);
+  }
+
+  public async getPlantSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return SensorDao.getPlantSensorsByZoneId(zoneId);
   }
 
   public async getSensorsByFacilityId(facilityId: string): Promise<Sensor[]> {
     return SensorDao.getAllSensorsByFacilityId(facilityId);
-  }
-
-  public async getSensorsNeedingCalibration(): Promise<Sensor[]> {
-    return SensorDao.getSensorsNeedingCalibration();
   }
 
   public async getSensorsNeedingMaintenance(): Promise<Sensor[]> {
@@ -205,39 +211,178 @@ class SensorService {
     }
   }
 
+  public async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
+    return SensorDao.getSensorByIdentifierNumber(identifierNumber);
+  }
+
   public async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
     return SensorDao.getSensorBySerialNumber(serialNumber);
   }
 
-  public async linkSensorToHub(sensorId: string, hubId: string): Promise<Sensor> {
-    // Check if the sensor and hub exist
-    const sensor = await SensorDao.getSensorById(sensorId);
-    const hub = await HubDao.getHubById(hubId);
-    if (!sensor) {
-      throw new Error('Sensor not found');
-    }
-    if (!hub) {
-      throw new Error('Hub not found');
-    }
+  // Update sensor's hubId, lat, long, remarks (if any)
+  public async addSensorToHub(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
+    try {
+      const sensor = await SensorDao.getSensorById(id);
+      if (!sensor) {
+        throw new Error('Sensor not found');
+      }
 
-    // Link the sensor to the hub
-    return SensorDao.linkSensorToHub(sensorId, hubId);
+      const formattedData = dateFormatter(data);
+      SensorSchema.partial().parse(formattedData);
+      console.log(formattedData);
+
+      if (!formattedData.hubId) {
+        throw new Error('Hub ID is required');
+      }
+
+      const hub = await HubDao.getHubById(formattedData.hubId);
+      if (!hub) {
+        throw new Error(`Hub with ID ${formattedData.hubId} not found`);
+      }
+
+      const hubFacility = await FacilityDao.getFacilityById(hub.facilityId);
+      if (!hubFacility) {
+        throw new Error(`Facility for hub ${hub.id} not found`);
+      }
+
+      const sensorFacility = await FacilityDao.getFacilityById(sensor.facilityId);
+      if (!sensorFacility) {
+        throw new Error(`Facility for sensor ${sensor.id} not found`);
+      }
+
+      if (hubFacility.parkId !== sensorFacility.parkId) {
+        throw new Error('Sensor and hub are in different parks');
+      }
+
+      if (sensor.hubId) {
+        throw new Error('Sensor is already assigned to a hub');
+      }
+
+      if (sensor.sensorStatus === 'ACTIVE') {
+        throw new Error('Sensor is already active');
+      } else if (sensor.sensorStatus === 'DECOMMISSIONED') {
+        throw new Error('Sensor is decommissioned. It cannot be used.');
+      } else if (sensor.sensorStatus === 'UNDER_MAINTENANCE') {
+        throw new Error('Sensor is under maintenance. It cannot be used.');
+      }
+
+      if (hub.hubStatus === 'INACTIVE') {
+        throw new Error('Hub is currently inactive. It must be active to add sensors.');
+      } else if (hub.hubStatus === 'DECOMMISSIONED') {
+        throw new Error('Hub is decommissioned. It cannot be used.');
+      } else if (hub.hubStatus === 'UNDER_MAINTENANCE') {
+        throw new Error('Hub is under maintenance. It cannot be used.');
+      }
+
+      if (!hub.zoneId) {
+        throw new Error('Hub is not assigned to a zone. It must be assigned to a zone to add sensors.');
+      }
+
+      if (sensor.hubId) {
+        throw new Error('Sensor is already assigned to a hub');
+      }
+
+      if (sensor.sensorType === SensorTypeEnum.CAMERA) {
+        const camerasInHub = await SensorDao.getSensorsByHubId(hub.id);
+        if (camerasInHub.some(s => s.sensorType === SensorTypeEnum.CAMERA)) {
+          throw new Error('Hub already has a camera sensor');
+        }
+      }
+
+      formattedData.sensorStatus = 'ACTIVE';
+
+      const updateData = formattedData as Prisma.SensorUpdateInput;
+      return SensorDao.updateSensor(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
   }
 
-  public async unlinkSensorToHub(sensorId: string): Promise<Sensor> {
+  public async removeSensorFromHub(id: string): Promise<Sensor> {
+    try {
+      const sensor = await SensorDao.getSensorById(id);
+
+      if (!sensor) {
+        throw new Error('Sensor not found');
+      }
+
+      if (!sensor.hubId) {
+        throw new Error('Sensor is not assigned to any hub');
+      }
+
+      if (sensor.sensorStatus !== 'ACTIVE') {
+        throw new Error('Sensor must be active to be removed from a hub');
+      }
+
+      const updateData: Prisma.SensorUpdateInput = {
+        hub: {
+          disconnect: true,
+        },
+        sensorStatus: 'INACTIVE',
+        lat: null,
+        long: null,
+        remarks: null,
+      };
+
+      return SensorDao.updateSensor(id, updateData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
+      }
+      throw error;
+    }
+  }
+
+  public async getCameraStreamBySensorId(sensorId: string): Promise<{sensor: Sensor, cameraStreamURL: string}> {
     const sensor = await SensorDao.getSensorById(sensorId);
-    const hub = await HubDao.getHubById(sensor.hubId);
     if (!sensor) {
       throw new Error('Sensor not found');
     }
+    if (sensor.sensorType !== 'CAMERA') {
+      throw new Error('Sensor is not a camera');
+    }
+
+    const hub = await HubDao.getHubById(sensor.hubId);
     if (!hub) {
       throw new Error('Hub not found');
     }
-    return SensorDao.unlinkSensorToHub(sensorId);
+    if (hub.hubStatus !== 'ACTIVE') {
+      throw new Error('Hub is not active');
+    }
+
+    const cameraStreamURL = `http://${hub.ipAddress}:8000`;
+
+    return {sensor: sensor, cameraStreamURL: cameraStreamURL };
+  }
+
+  public async getCameraStreamsByZoneId(zoneId: number): Promise<{sensor: Sensor, cameraStreamURL: string}[]> {
+    const sensors = await SensorDao.getSensorsByZoneId(zoneId);
+
+
+    const cameraStreams = await Promise.all(
+      sensors.map(async (sensor) => {
+        try {
+          if (sensor.sensorType === 'CAMERA') {
+            return await this.getCameraStreamBySensorId(sensor.id);
+          }
+          return null;
+        } catch (error) {
+          console.error(`Error getting camera stream for sensor ${sensor.id}:`, error);
+          return null;
+        }
+      })
+    );
+
+    return cameraStreams.filter((stream): stream is {sensor: Sensor, cameraStreamURL: string} => stream !== null);
   }
 
   private generateIdentifierNumber(): string {
-    return `SENS-${uuidv4().substr(0, 8).toUpperCase()}`;
+    return `SE-${uuidv4().substr(0, 5).toUpperCase()}`;
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {
@@ -246,12 +391,11 @@ class SensorService {
 }
 
 const dateFormatter = (data: any) => {
-  const { acquisitionDate, lastCalibratedDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const { acquisitionDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
   // Format dates into JavaScript Date objects
   if (acquisitionDate) formattedData.acquisitionDate = new Date(acquisitionDate);
-  if (lastCalibratedDate) formattedData.lastCalibratedDate = new Date(lastCalibratedDate);
   if (lastMaintenanceDate) formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
   if (nextMaintenanceDate) formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);
 

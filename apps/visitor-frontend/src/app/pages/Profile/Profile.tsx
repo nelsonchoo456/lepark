@@ -21,8 +21,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BsCalendar4Event } from 'react-icons/bs';
 import DeleteAccountModal from './DeleteAccountModal';
 import {
+  AttractionTicketTransactionResponse,
   deleteVisitor,
   DeleteVisitorRequestData,
+  getAttractionTicketTransactionsByVisitorId,
   getFavoriteSpecies,
   GetFavoriteSpeciesResponse,
   sendVerificationEmailWithEmail,
@@ -37,6 +39,8 @@ import SpeciesCard from './components/SpeciesCard';
 import { FaSadTear } from 'react-icons/fa';
 import { AiOutlineFrown, AiOutlineSmile } from 'react-icons/ai';
 import { MdArrowForward } from 'react-icons/md';
+import AttractionBookingCard from './components/AttractionTransactionCard';
+import AttractionTransactionCard from './components/AttractionTransactionCard';
 
 const initialVisitor = {
   id: '',
@@ -62,6 +66,7 @@ const ProfilePage = () => {
   const [changeEmailStatus, setChangeEmailStatus] = useState(false);
 
   const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
+  const [attractionTransactions, setAttractionTransactions] = useState<AttractionTicketTransactionResponse[]>([]);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -108,6 +113,11 @@ const ProfilePage = () => {
           setFavoriteSpecies(data);
         } else {
           console.warn('No favorite species found in the response or data is not an array.');
+        }
+        const attractionResponse = await getAttractionTicketTransactionsByVisitorId(user.id);
+        const attractionData: AttractionTicketTransactionResponse[] = attractionResponse.data;
+        if (Array.isArray(attractionData)) {
+          setAttractionTransactions(attractionData);
         }
       } catch (error) {
         console.error('Error fetching favorite species:', error);
@@ -232,6 +242,14 @@ const ProfilePage = () => {
     navigate(`/discover/${speciesId}`);
   };
 
+  const navigateToViewAttractionTransactions = () => {
+    navigate('/attraction-transaction');
+  };
+
+  const navigateToTransactionDetails = (transactionId: string) => {
+    navigate(`/attraction-transaction/${transactionId}`);
+  };
+
   const handleSendVerificationEmail = async () => {
     try {
       const response = await sendVerificationEmailWithEmail(user?.email || '', user?.id || '');
@@ -291,7 +309,9 @@ const ProfilePage = () => {
             Resend Verification Email
           </Button>
           <p className="mb-4 mt-8">For any issues, contact customer support at admin@lepark.com</p>
-          <p>Click <a onClick={handleLogout}>here</a> to logout.</p>
+          <p>
+            Click <a onClick={handleLogout}>here</a> to logout.
+          </p>
         </div>
       );
     }
@@ -398,53 +418,50 @@ const ProfilePage = () => {
 
       {/* </div> */}
       <ContentWrapper>
-        <div className="flex items-center">
-          <LogoText className="text-xl">My Events</LogoText>
-          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
-            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
-            <Button
-              icon={<MdArrowForward className="text-2xl" />}
-              shape="circle"
-              type="primary"
-              size="large"
-              className="md:bg-transparent md:text-green-500 md:shadow-none"
-            />
-          </div>
+      <div className="flex items-center">
+        <LogoText className="text-xl">My Upcoming Attraction Visits</LogoText>
+        <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+          <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+          <Button
+            icon={<MdArrowForward className="text-2xl" />}
+            shape="circle"
+            type="primary"
+            size="large"
+            className="md:bg-transparent md:text-green-500 md:shadow-none"
+            onClick={navigateToViewAttractionTransactions}
+          />
         </div>
-        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem]">
-          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
-            <BsCalendar4Event className="text-4xl" />
-            <br />
-            No Events here.
-            <br />
-            Check back soon for Events!
-          </div>
-          {/* <EventCard
-            title="Event 1"
-            url="https://media.cntraveler.com/photos/5a90b75389971c2c547af152/16:9/w_2560,c_limit/National-Orchid-Garden_2018_National-Orchid-Garden-(2)-Pls-credit-NParks-for-the-photos).jpg"
-            extra={<a href="#">More</a>}
-          >
-            keewewk
-          </EventCard>
-          <EventCard
-            title="Event 4"
-            url="https://image-tc.galaxy.tf/wijpeg-bg2v4hnwseq2v8akq9py9df8w/singapore-botanic-gardens_standard.jpg?crop=57%2C0%2C867%2C650"
-            extra={<a href="#">More</a>}
-          >
-            rwrewrkeek
-          </EventCard>
-          <EventCard
-            title="Event 2"
-            url="https://cdn.apartmenttherapy.info/image/upload/f_jpg,q_auto:eco,c_fill,g_auto,w_1500,ar_16:9/at%2Freal-estate%2Flongwood-gardens"
-            extra={<a href="#">More</a>}
-          >
-            keewerewk
-          </EventCard>
-          <EventCard title="Event 3" url="https://thinkerten.com/wordpress/wp-content/uploads/2017/04/SBG.jpg" extra={<a href="#">More</a>}>
-            keewerewrk
-          </EventCard> */}
+      </div>
+      <div className="w-full overflow-x-auto py-2 min-h-[13rem]">
+        <div className="flex whitespace-nowrap">
+        {attractionTransactions && attractionTransactions.length > 0 ? (
+            attractionTransactions
+              .filter((transaction) => {
+                const transactionDate = new Date(transaction.attractionDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Set time to the start of the day
+                return transactionDate >= today; // Filter for today and onwards
+              })
+              .sort((a, b) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime()) // Sort by date
+              .map((transaction) => (
+                <div 
+                  key={transaction.id} 
+                  className="inline-block cursor-pointer"
+                  onClick={() => navigateToTransactionDetails(transaction.id)}
+                >
+                  <AttractionTransactionCard transaction={transaction} />
+                </div>
+              ))
+          ) : (
+            <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+              <BsCalendar4Event className="text-4xl" />
+              <br />
+              No Attraction Bookings.
+            </div>
+          )}
         </div>
-      </ContentWrapper>
+      </div>
+    </ContentWrapper>
 
       <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">

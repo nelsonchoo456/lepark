@@ -1,9 +1,9 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { HubResponse, StaffResponse, StaffType, deleteHub } from '@lepark/data-access';
+import { HubResponse, HubStatusEnum, StaffResponse, StaffType, deleteHub, getSensorsByHubId } from '@lepark/data-access';
 import { Button, Card, Flex, Input, Table, TableProps, Tag, Tooltip, message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { FiEye, FiSearch } from 'react-icons/fi';
-import { MdDeleteOutline } from 'react-icons/md';
+import { MdDeleteOutline, MdError } from 'react-icons/md';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -21,6 +21,7 @@ const HubList: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [hubToBeDeleted, setHubToBeDeleted] = useState<HubResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deactivateModalOpen, setDeactivateModalOpen] = useState(false);
 
   const filteredHubs = useMemo(() => {
     return hubs.filter((hub) => Object.values(hub).some((value) => value?.toString().toLowerCase().includes(searchQuery.toLowerCase())));
@@ -54,7 +55,7 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Facility',
+      title: 'Storage Facility',
       dataIndex: 'facilityName',
       key: 'facilityName',
       render: (text, record) => (
@@ -74,14 +75,22 @@ const HubList: React.FC = () => {
       title: 'Hub Status',
       dataIndex: 'hubStatus',
       key: 'hubStatus',
-      render: (text) => {
+      render: (text, record) => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
             return (
-              <Tag color="green" bordered={false}>
-                {formattedStatus}
-              </Tag>
+              <>
+                <Tag color="green" bordered={false}>
+                  {formattedStatus}
+                </Tag>
+                {record.zone?.name && (
+                  <div className="flex">
+                    <p className="opacity-50 mr-2">Zone:</p>
+                    {record.zone?.name}
+                  </div>
+                )}
+              </>
             );
           case 'INACTIVE':
             return (
@@ -110,9 +119,15 @@ const HubList: React.FC = () => {
         { text: formatEnumLabelToRemoveUnderscores('DECOMMISSIONED'), value: 'DECOMMISSIONED' },
       ],
       onFilter: (value, record) => record.hubStatus === value,
+      sorter: (a, b) => {
+        if (a.hubStatus === HubStatusEnum.ACTIVE && b.hubStatus === HubStatusEnum.ACTIVE && a.zone?.name && b.zone?.name) {
+          return a.zone.name.localeCompare(b.zone.name);
+        }
+        return (a.hubStatus ?? '').localeCompare(b.hubStatus ?? '');
+      },
       width: '15%',
     },
- /*   {
+    /*   {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
@@ -130,16 +145,13 @@ const HubList: React.FC = () => {
           <Tooltip title="View Details">
             <Button type="link" icon={<FiEye />} onClick={() => navigateToDetails(record.id)} />
           </Tooltip>
-          {user?.role !== StaffType.VENDOR_MAANGER && (
-            <>
-              <Tooltip title="Edit">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
-              </Tooltip>
-              <Tooltip title="Delete">
-                <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
-              </Tooltip>
-            </>
-          )}
+
+          <Tooltip title="Edit">
+            <Button type="link" icon={<RiEdit2Line />} onClick={() => navigate(`/hubs/${record.id}/edit`)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
+          </Tooltip>
         </Flex>
       ),
       width: '1%',
@@ -164,14 +176,20 @@ const HubList: React.FC = () => {
       width: '15%',
     },
     {
-      title: 'Park, Facility',
+      title: 'Storage Facility',
       render: (_, record) => (
         <div>
-          <p className="font-semibold">{record.park.name}</p>
-          <div className="flex">
-            <p className="opacity-50 mr-2">Facility:</p>
-            {record.facility.name}
-          </div>
+          {record.hubStatus === HubStatusEnum.ACTIVE ? (
+            '-'
+          ) : (
+            <>
+              <p className="font-semibold">{record.park.name}</p>
+              <div className="flex">
+                <p className="opacity-50 mr-2">Facility:</p>
+                {record.facility.name}
+              </div>
+            </>
+          )}
         </div>
       ),
       sorter: (a, b) => {
@@ -190,14 +208,21 @@ const HubList: React.FC = () => {
       title: 'Hub Status',
       dataIndex: 'hubStatus',
       key: 'hubStatus',
-      render: (text) => {
+      render: (text, record) => {
         const formattedStatus = formatEnumLabelToRemoveUnderscores(text);
         switch (text) {
           case 'ACTIVE':
             return (
-              <Tag color="green" bordered={false}>
-                {formattedStatus}
-              </Tag>
+              <>
+                <Tag color="green" bordered={false}>
+                  {formattedStatus}
+                </Tag>
+                <br />
+                <div className="flex">
+                  <p className="opacity-50 mr-2">Zone:</p>
+                  {record.zone?.name && record.zone?.name}
+                </div>
+              </>
             );
           case 'INACTIVE':
             return (
@@ -228,7 +253,7 @@ const HubList: React.FC = () => {
       onFilter: (value, record) => record.hubStatus === value,
       width: '15%',
     },
-   /* {
+    /* {
       title: 'Next Maintenance Date',
       dataIndex: 'nextMaintenanceDate',
       key: 'nextMaintenanceDate',
@@ -258,14 +283,25 @@ const HubList: React.FC = () => {
     },
   ];
 
-  const showDeleteModal = (hub: HubResponse) => {
-    setDeleteModalOpen(true);
-    setHubToBeDeleted(hub);
+  const showDeleteModal = async (hub: HubResponse) => {
+    try {
+      const sensorsRes = await getSensorsByHubId(hub.id);
+      if (sensorsRes.status === 200 && sensorsRes.data.length > 0) {
+        setHubToBeDeleted(hub);
+        setDeactivateModalOpen(true);
+      } else {
+        setHubToBeDeleted(hub);
+        setDeleteModalOpen(true);
+      }
+    } catch (error) {
+      messageApi.error('Failed to check hub sensors');
+    }
   };
 
   const cancelDelete = () => {
     setHubToBeDeleted(null);
     setDeleteModalOpen(false);
+    setDeactivateModalOpen(false);
   };
 
   const deleteHubToBeDeleted = async () => {
@@ -301,15 +337,25 @@ const HubList: React.FC = () => {
         description={`Are you sure you want to delete the hub "${hubToBeDeleted?.name}"?`}
         open={deleteModalOpen}
       />
+      <ConfirmDeleteModal
+        okText="Confirm Deactivate"
+        onConfirm={cancelDelete}
+        open={deactivateModalOpen}
+        onCancel={cancelDelete}
+        title="Unable to delete Hub"
+        footer={null}
+        description={
+          <p>
+            <MdError className="text-error inline mr-2 text-lg" />
+            This Hub has {hubToBeDeleted?.sensors?.length} Sensor(s) assigned to it. Please deactivate the Sensor(s) first.
+          </p>
+        }
+      />
       <Flex justify="end" gap={10}>
         <Input suffix={<FiSearch />} placeholder="Search in Hubs..." className="mb-4 bg-white" variant="filled" onChange={handleSearch} />
-        {[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER].includes(
-          user?.role as StaffType,
-        ) && (
-          <Button type="primary" onClick={() => navigate('/hubs/create')}>
-            Create Hub
-          </Button>
-        )}
+        <Button type="primary" onClick={() => navigate('/hubs/create')}>
+          Create Hub
+        </Button>
       </Flex>
       <Card>
         <Table

@@ -62,6 +62,11 @@ const InformationTab = ({ event, facility, park }: InformationTabProps) => {
       label: 'Max Capacity',
       children: event?.maxCapacity,
     },
+    {
+      key: 'ticketingPolicy',
+      label: 'Ticketing Policy',
+      children: <Typography.Paragraph>{event?.ticketingPolicy}</Typography.Paragraph>,
+    },
   ];
 
   const locationItems = [

@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Sensor, Hub, Facility } from '@prisma/client';
+import { PrismaClient, Prisma, Sensor, Hub, Facility, SensorTypeEnum, SensorStatusEnum } from '@prisma/client';
 import HubDao from './HubDao';
 import ParkDao from './ParkDao';
 import { ParkResponseData } from '../schemas/parkSchema';
@@ -12,34 +12,15 @@ class SensorDao {
 
   async getAllSensors(): Promise<
     (Sensor & {
-      hub?: { id: string; name: string; facilityId: string };
-      facility?: { id: string; name: string; parkId: number };
+      hub?: Hub;
+      facility?: Facility;
       park?: ParkResponseData;
     })[]
   > {
     const sensors = await prisma.sensor.findMany({
       include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-            facilityId: true,
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                parkId: true,
-              },
-            },
-          },
-        },
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
+        hub: true,
+        facility: true,
       },
     });
 
@@ -74,15 +55,18 @@ class SensorDao {
             id: true,
             name: true,
             zoneId: true,
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                parkId: true,
-              },
-            },
+            facility: true,
           },
         },
+      },
+    });
+  }
+
+  async getSensorsByHubId(hubId: string): Promise<Sensor[]> {
+
+    return await prisma.sensor.findMany({
+      where: {
+        hubId,
       },
     });
   }
@@ -139,6 +123,30 @@ class SensorDao {
     });
   }
 
+  async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
+    return prisma.sensor.findUnique({ where: { identifierNumber }, include: { hub: true, facility: true } });
+  }
+
+  async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
+    return prisma.sensor.findUnique({ where: { serialNumber } });
+  }
+
+  async getSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hub: { zoneId } } });
+  }
+
+  async getPlantSensorsByZoneId(zoneId: number): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hub: { zoneId }, sensorType: { in: [SensorTypeEnum.SOIL_MOISTURE, SensorTypeEnum.TEMPERATURE, SensorTypeEnum.LIGHT, SensorTypeEnum.HUMIDITY] } } });
+  }
+
+  async getSensorsByZoneIdAndType(zoneId: number, sensorType: SensorTypeEnum): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hub: { zoneId }, sensorType } });
+  }
+
+  async getSensorsByHubIdAndType(hubId: string, sensorType: SensorTypeEnum): Promise<Sensor[]> {
+    return prisma.sensor.findMany({ where: { hubId, sensorType } });
+  }
+
   async updateSensor(id: string, data: Prisma.SensorUpdateInput): Promise<Sensor> {
     return prisma.sensor.update({
       where: { id },
@@ -146,42 +154,8 @@ class SensorDao {
     });
   }
 
-  async getSensorByIdentifierNumber(identifierNumber: string): Promise<Sensor | null> {
-    return prisma.sensor.findUnique({ where: { identifierNumber } });
-  }
-
-  async getSensorBySerialNumber(serialNumber: string): Promise<Sensor | null> {
-    return prisma.sensor.findUnique({ where: { serialNumber } });
-  }
-
   async deleteSensor(id: string): Promise<void> {
     await prisma.sensor.delete({ where: { id } });
-  }
-
-  async getSensorsNeedingCalibration(): Promise<Sensor[]> {
-    const currentDate = new Date();
-    return prisma.sensor.findMany({
-      where: {
-        lastCalibratedDate: {
-          lte: new Date(currentDate.getTime() - 24 * 60 * 60 * 1000), // More than a day old
-        },
-      },
-      include: {
-        hub: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            parkId: true,
-          },
-        },
-      },
-    });
   }
 
   async getSensorsNeedingMaintenance(): Promise<Sensor[]> {
@@ -207,20 +181,6 @@ class SensorDao {
           },
         },
       },
-    });
-  }
-
-  async linkSensorToHub(sensorId: string, hubId: string): Promise<Sensor> {
-    return prisma.sensor.update({
-      where: { id: sensorId },
-      data: { hubId },
-    });
-  }
-
-  async unlinkSensorToHub(sensorId: string): Promise<Sensor> {
-    return prisma.sensor.update({
-      where: { id: sensorId },
-      data: { hubId: null },
     });
   }
 
