@@ -4,10 +4,11 @@ import { Input, TreeSelect, Card, Tag, Empty } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import { PiTicketFill } from 'react-icons/pi';
-import { useAuth } from '@lepark/common-ui';
+import { ContentWrapper, useAuth } from '@lepark/common-ui';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import { PromotionStatusEnum, DiscountTypeEnum, getAllPromotions, getPromotionsByParkId, PromotionResponse, VisitorResponse } from '@lepark/data-access';
+import withParkGuard from '../../park-context/withParkGuard';
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -180,9 +181,10 @@ const renderPromotionCard = (promotion: PromotionResponse) => {
         ))}
       </div>
     </div>
+
   );
 };
 
 
 
-export default PromotionViewAll;
+export default withParkGuard(PromotionViewAll);
