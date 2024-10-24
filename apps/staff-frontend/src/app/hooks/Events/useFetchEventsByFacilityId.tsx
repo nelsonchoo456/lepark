@@ -30,13 +30,14 @@ export const useFetchEventsByFacilityId = (facilityId: string | null, currentEve
         const fetchedEvents = response.data;
         setEvents(fetchedEvents);
 
+        const today = moment().tz('Asia/Singapore').startOf('day');
         const dates = fetchedEvents
           .filter(e => e.id !== currentEventId)
           .flatMap(e => {
-            const start = moment(e.startDate);
-            const end = moment(e.endDate);
+            const start = moment.max(moment(e.startDate).tz('Asia/Singapore').startOf('day'), today);
+            const end = moment(e.endDate).tz('Asia/Singapore').endOf('day');
             const dates = [];
-            for (let m = moment(start); m.diff(end, 'days') <= 0; m.add(1, 'days')) {
+            for (let m = moment(start); m.isSameOrBefore(end, 'day'); m.add(1, 'days')) {
               dates.push(m.clone());
             }
             return dates;
