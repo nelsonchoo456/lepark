@@ -3822,6 +3822,174 @@ const attractionTransactionStandardData = [
   },
 ];
 
+const feedbacksData = [
+  // Park ID 1 Feedbacks
+  {
+    title: 'Beautiful Flower Garden',
+    description: 'The flower garden near the entrance is absolutely stunning!',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T09:00:00Z',
+    dateResolved: null,
+    needResponse: true
+  },
+  {
+    title: 'Rare Bird Sighting',
+    description: 'I spotted what I believe to be a rare bird species near the lake. Can someone confirm?',
+    feedbackCategory: 'WILDLIFE',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T10:30:00Z',
+    dateResolved: '2024-10-24T14:00:00Z',
+    needResponse: true,
+    remarks: 'Confirmed as rare species. Added to wildlife database. Follow up with visitor appreciation email.'
+  },
+  {
+    title: 'Playground Needs Maintenance',
+    description: 'The swing set in the children\'s playground is squeaking loudly. It might need some oil.',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 1,
+    images: ['https://media.istockphoto.com/id/1363804636/photo/broken-swing.jpg?s=612x612&w=0&k=20&c=nhLMWlE3JjJqF-BrTR7pdTOKCCJyal0GvjFVMr7Mxw8=','https://c8.alamy.com/comp/KCKG6Y/broken-swing-in-school-yard-KCKG6Y.jpg'],
+    staffId: '',
+    dateCreated: '2024-10-22T11:45:00Z',
+    dateResolved: '2024-10-24T16:30:00Z',
+    needResponse: false,
+    remarks: 'Maintenance team oiled swing set. Schedule weekly playground check.'
+  },
+  {
+    title: 'Great Staff Assistance',
+    description: 'The park ranger was extremely helpful in providing information about the local flora.',
+    feedbackCategory: 'STAFF',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T13:15:00Z',
+    dateResolved: null,
+    needResponse: false
+  },
+  {
+    title: 'Litter Problem',
+    description: 'There\'s a lot of litter near the picnic area. More trash bins might help.',
+    feedbackCategory: 'CLEANLINESS',
+    feedbackStatus: 'REJECTED',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T15:00:00Z',
+    dateResolved: '2024-10-24T09:00:00Z',
+    needResponse: true,
+    remarks: 'Recent survey shows sufficient bins. Increased patrol scheduled. Monitor situation for 2 weeks.'
+  },
+  {
+    title: 'Suggestion for Night Tours',
+    description: 'It would be great to have guided night tours to observe nocturnal wildlife.',
+    feedbackCategory: 'SERVICES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T16:45:00Z',
+    dateResolved: null,
+    needResponse: false
+  },
+
+  // Park ID 2 Feedbacks
+  {
+    title: 'Accessibility Improvements Needed',
+    description: 'The path to the main garden isn\'t very wheelchair-friendly. Could this be improved?',
+    feedbackCategory: 'ACCESSIBILITY',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 2,
+    images: ['https://www.kafkagranite.com/wp-content/uploads/2023/04/KfkaWheelchairGranite.jpg','https://www.shutterstock.com/image-photo/dirt-path-through-forest-nature-260nw-106334114.jpg'],
+    staffId: '',
+    dateCreated: '2024-10-22T09:30:00Z',
+    dateResolved: null,
+    needResponse: true
+  },
+  {
+    title: 'Interesting Insect Species',
+    description: 'I noticed an unusual insect near the pond. Is it a native species?',
+    feedbackCategory: 'WILDLIFE',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T11:00:00Z',
+    dateResolved: '2024-10-24T13:30:00Z',
+    needResponse: true,
+    remarks: 'Native species confirmed. New information plaque added near pond. Consider organizing insect awareness program.'
+  },
+  {
+    title: 'Water Fountain Not Working',
+    description: 'The water fountain near the jogging track isn\'t functioning properly.',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T12:15:00Z',
+    dateResolved: null,
+    needResponse: false
+  },
+  {
+    title: 'Excellent Educational Program',
+    description: 'The botanical workshop for kids was fantastic! Please organize more such events.',
+    feedbackCategory: 'EVENTS',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T14:00:00Z',
+    dateResolved: '2024-10-24T15:45:00Z',
+    needResponse: false,
+    remarks: 'Positive feedback noted. Schedule more workshops for next quarter. Update event calendar on website.'
+  },
+  {
+    title: 'Safety Concern',
+    description: 'There\'s a low-hanging branch on the main walking path that could be dangerous.',
+    feedbackCategory: 'SAFETY',
+    feedbackStatus: 'REJECTED',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T15:30:00Z',
+    dateResolved: '2024-10-24T10:00:00Z',
+    needResponse: true,
+    remarks: 'Inspection completed. Branch is within safe height range. Will continue to monitor tree growth.'
+  },
+  {
+    title: 'Request for More Benches',
+    description: 'It would be great to have more benches along the nature trail for resting.',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T17:00:00Z',
+    dateResolved: null,
+    needResponse: false
+  }
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -3849,4 +4017,5 @@ module.exports = {
   announcementsData,
   attractionTransactionLocalData,
   attractionTransactionStandardData,
+  feedbacksData,
 };
