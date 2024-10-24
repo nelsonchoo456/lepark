@@ -23,10 +23,10 @@ const dateFormatter = (data: any) => {
 };
 
 const enumFormatter = (enumValue: string): string => {
-    return enumValue
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+  return enumValue
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 class SensorReadingService {
@@ -141,12 +141,18 @@ class SensorReadingService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ date: string; average: number }[]> {
-    const readings = await this.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+    // Adjust both start and end dates to ensure full day coverage
+    const adjustedStartDate = new Date(startDate);
+    adjustedStartDate.setHours(0, 0, 0, 0);
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    const readings = await this.getSensorReadingsByDateRange(sensorId, adjustedStartDate, adjustedEndDate);
 
     const hourlyAverages = new Map<string, { sum: number; count: number }>();
 
     readings.forEach((reading) => {
-      const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z'; // Group by year, month, day, hour
+      const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z';
       const current = hourlyAverages.get(hourKey) || { sum: 0, count: 0 };
       hourlyAverages.set(hourKey, {
         sum: current.sum + reading.value,
@@ -157,7 +163,7 @@ class SensorReadingService {
     return Array.from(hourlyAverages.entries())
       .map(([hourKey, { sum, count }]) => ({
         date: hourKey,
-        average: Number((sum / count).toFixed(2)), // Round to 2 decimal places
+        average: Number((sum / count).toFixed(2)),
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
@@ -173,6 +179,45 @@ class SensorReadingService {
     hours: number,
   ): Promise<SensorReading[]> {
     return SensorReadingDao.getSensorReadingsByHubIdAndSensorTypeForHoursAgo(hubId, sensorType, hours);
+  }
+
+  public async getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(
+    hubId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ [sensorType: string]: { date: string; average: number }[] }> {
+    // Adjust both start and end dates to ensure full day coverage
+    const adjustedStartDate = new Date(startDate);
+    adjustedStartDate.setHours(0, 0, 0, 0);
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    const sensorTypes = Object.values(SensorTypeEnum);
+    const result: { [sensorType: string]: { date: string; average: number }[] } = {};
+
+    for (const sensorType of sensorTypes) {
+      const readings = await SensorReadingDao.getSensorReadingsByHubIdAndSensorTypeByDateRange(hubId, sensorType, adjustedStartDate, adjustedEndDate);
+
+      const hourlyAverages = new Map<string, { sum: number; count: number }>();
+
+      readings.forEach((reading) => {
+        const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z';
+        const current = hourlyAverages.get(hourKey) || { sum: 0, count: 0 };
+        hourlyAverages.set(hourKey, {
+          sum: current.sum + reading.value,
+          count: current.count + 1,
+        });
+      });
+
+      result[sensorType] = Array.from(hourlyAverages.entries())
+        .map(([hourKey, { sum, count }]) => ({
+          date: hourKey,
+          average: Number((sum / count).toFixed(2)),
+        }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+
+    return result;
   }
 
   public async getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(
@@ -399,19 +444,31 @@ class SensorReadingService {
     trendDescription: string,
     absoluteChange: number,
     rateOfChange: number,
-    timeSpanHours: number
+    timeSpanHours: number,
   ): string {
     const currentTime = new Date(); // Get the current time
 
     switch (sensorType) {
       case SensorTypeEnum.TEMPERATURE:
-        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(
+          2,
+        )} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.HUMIDITY:
-        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(
+          2,
+        )} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.SOIL_MOISTURE:
-        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(
+          2,
+        )} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.LIGHT:
-        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(
+          2,
+        )} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(
+          absoluteChange,
+          rateOfChange,
+          currentTime,
+        )}`;
       default:
         return `The sensor readings have shown a ${trendDescription} trend. Monitor the situation and adjust conditions if necessary.`;
     }
@@ -419,7 +476,7 @@ class SensorReadingService {
 
   private getTemperatureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < 0) {
         return `Unexpected morning temperature drop. Monitor for any sudden weather changes or shading issues.`;
@@ -440,11 +497,11 @@ class SensorReadingService {
       }
       return `Temperature cooling down as expected. No immediate action required.`;
     }
-}
+  }
 
-private getHumidityInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+  private getHumidityInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < -2) {
         return `Humidity dropping quickly this morning. Consider light misting for moisture-sensitive plants.`;
@@ -461,11 +518,11 @@ private getHumidityInsight(absoluteChange: number, rateOfChange: number, current
       }
       return `Evening humidity levels are typical. Watch for signs of excess moisture on foliage.`;
     }
-}
+  }
 
-private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+  private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < -2) {
         return `Soil moisture decreasing faster than usual this morning. Check for drainage issues or adjust watering schedules.`;
@@ -482,11 +539,11 @@ private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, cur
       }
       return `Evening soil moisture levels are normal. Adjust irrigation schedules if necessary.`;
     }
-}
+  }
 
-private getLightInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+  private getLightInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < 50) {
         return `Morning light levels rising slower than expected. Check for cloud cover or shading.`;
@@ -503,7 +560,7 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
       }
       return `Evening light levels dropping as expected. Ensure any artificial lights are adjusted for plant photoperiods.`;
     }
-}
+  }
 
   private getSensorUnit(sensorType: SensorTypeEnum): string {
     switch (sensorType) {
@@ -550,7 +607,9 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
           switch (sensorType) {
             case SensorTypeEnum.TEMPERATURE:
               if (latestReading.value < speciesConditions.minTemp || latestReading.value > speciesConditions.maxTemp) {
-                issues.push(`Temperature out of range: ${latestReading.value}°C (Recommended: ${speciesConditions.minTemp}°C - ${speciesConditions.maxTemp}°C)`);
+                issues.push(
+                  `Temperature out of range: ${latestReading.value}°C (Recommended: ${speciesConditions.minTemp}°C - ${speciesConditions.maxTemp}°C)`,
+                );
               }
               break;
             case SensorTypeEnum.HUMIDITY:
@@ -566,7 +625,11 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
             case SensorTypeEnum.LIGHT: {
               const lightIssue = this.checkLightCondition(latestReading.value, speciesConditions.lightType);
               if (lightIssue) {
-                issues.push(`Light level not ideal: ${latestReading.value} Lux (Recommended: ${this.getLightLuxRecommendation(speciesConditions.lightType)})`);
+                issues.push(
+                  `Light level not ideal: ${latestReading.value} Lux (Recommended: ${this.getLightLuxRecommendation(
+                    speciesConditions.lightType,
+                  )})`,
+                );
               }
               break;
             }
@@ -609,16 +672,15 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
   private getLightLuxRecommendation(lightType: LightTypeEnum): string {
     switch (lightType) {
       case LightTypeEnum.FULL_SUN:
-        return "> 200 Lux";
+        return '> 200 Lux';
       case LightTypeEnum.PARTIAL_SHADE:
-        return "50 - 200 Lux";
+        return '50 - 200 Lux';
       case LightTypeEnum.FULL_SHADE:
-        return "< 50 Lux";
+        return '< 50 Lux';
       default:
-        return "0 Lux";
+        return '0 Lux';
     }
   }
-  
 
   // Get the latest sensor reading for an occurrence (based on nearest sensor)
   public async getLatestSensorReadingForOccurrence(
@@ -670,27 +732,6 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
 
   private deg2rad(deg: number): number {
     return deg * (Math.PI / 180);
-  }
-
-  public async getHourlyAverageSensorReadingsForPastDays(hubId: string, sensorType: SensorTypeEnum, days: number): Promise<{ date: Date; average: number }[]> {
-    const endDate = new Date();
-    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
-    
-    return SensorReadingDao.getHourlyAverageSensorReadingsForDateRange(hubId, sensorType, startDate, endDate);
-  }
-
-  public async getDailyAverageSensorReadingsForPastDays(hubId: string, sensorType: SensorTypeEnum, days: number): Promise<{ date: Date; average: number }[]> {
-    const endDate = new Date();
-    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
-    
-    return SensorReadingDao.getDailyAverageSensorReadingsForDateRange(hubId, sensorType, startDate, endDate);
-  }
-
-  public async getWeeklyAverageSensorReadingsForPastWeeks(hubId: string, sensorType: SensorTypeEnum, weeks: number): Promise<{ date: Date; average: number }[]> {
-    const endDate = new Date();
-    const startDate = new Date(endDate.getTime() - weeks * 7 * 24 * 60 * 60 * 1000);
-    
-    return SensorReadingDao.getWeeklyAverageSensorReadingsForDateRange(hubId, sensorType, startDate, endDate);
   }
 }
 

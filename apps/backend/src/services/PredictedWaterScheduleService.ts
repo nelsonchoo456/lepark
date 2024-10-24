@@ -7,202 +7,105 @@ import axios from 'axios';
 import { RandomForestRegression as RandomForestRegressor } from 'ml-random-forest';
 import SensorReadingService from './SensorReadingService';
 
-interface WeatherReading {
-  station_id: string;
-  value: number;
-}
-
-interface WeatherData {
-  timestamp: string;
-  readings: WeatherReading[];
-}
-
-interface WeatherResponse {
-  items: WeatherData[];
-  api_info: { status: string };
-  metadata: {
-    stations: Array<{
-      id: string;
-      device_id: string;
-      name: string;
-      location: {
-        latitude: number;
-        longitude: number;
-      };
-    }>;
+interface WeatherForecast {
+  date: string;
+  temperature: {
+    low: number;
+    high: number;
+  };
+  relativeHumidity: {
+    low: number;
+    high: number;
+  };
+  forecast: string;
+  wind: {
+    speed: {
+      low: number;
+      high: number;
+    };
+    direction: string;
   };
 }
 
-interface SensorData {
-  hourlyTemperature: number;
-  hourlyHumidity: number;
-  hourlySoilMoisture: number;
-  hourlyLight: number;
-  dailyTemperature: number;
-  dailyHumidity: number;
-  dailySoilMoisture: number;
-  dailyLight: number;
-  weeklyTemperature: number;
-  weeklyHumidity: number;
-  weeklySoilMoisture: number;
-  weeklyLight: number;
+interface SensorDataGroupedByType {
+  [sensorType: string]: { date: string; average: number }[];
 }
 
 class PredictedWaterScheduleService {
-  private baseUrl = 'https://api.data.gov.sg/v1/environment';
+  private baseUrl = 'https://api-open.data.gov.sg/v2/real-time/api';
 
-  private async getWeatherData(endpoint: string, date: string): Promise<WeatherResponse> {
+  private async getTodayWeatherForecast(): Promise<WeatherForecast[]> {
     try {
-      const response = await axios.get(`${this.baseUrl}/${endpoint}`, {
-        params: { date }
-      });
-      return response.data;
+      const response = await axios.get(`${this.baseUrl}/twenty-four-hr-forecast`);
+      const records = response.data.data.records;
+      return records.map((record: any) => ({
+        date: record.date,
+        temperature: record.general.temperature,
+        relativeHumidity: record.general.relativeHumidity,
+        forecast: record.general.forecast.text,
+        wind: record.general.wind,
+      }));
     } catch (error) {
-      console.error(`Error fetching ${endpoint} data:`, error);
-      throw new Error(`Failed to fetch ${endpoint} data`);
+      console.error('Error fetching weather forecast:', error);
+      throw new Error('Failed to fetch weather forecast');
     }
   }
 
-  private findNearestStation(lat: number, long: number, stations: WeatherResponse['metadata']['stations']): string {
-    let nearestStation = stations[0];
-    let minDistance = Number.MAX_VALUE;
-
-    for (const station of stations) {
-      const distance = this.calculateDistance(lat, long, station.location.latitude, station.location.longitude);
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestStation = station;
-      }
-    }
-
-    return nearestStation.id;
+  private async getHistoricalWeatherData(days: number): Promise<WeatherForecast[]> {
+    // Implement this method to fetch historical weather data
+    // For now, return an empty array
+    return [];
   }
 
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Radius of the earth in km
-    const dLat = this.deg2rad(lat2 - lat1);
-    const dLon = this.deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
+  private async getAverageHourlySensorDataData(hubId: string, startDate: Date, endDate: Date): Promise<SensorDataGroupedByType> {
+    return SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(hubId, startDate, endDate);
   }
 
-  private deg2rad(deg: number): number {
-    return deg * (Math.PI / 180);
-  }
-
-  private async getWeatherForecast(lat: number, long: number, days: number): Promise<{ date: Date; rainfall: number; temperature: number }[]> {
-    const forecast = [];
-    const today = new Date();
-    
-    for (let i = 0; i < days; i++) {
-      const date = new Date(today.getTime() + i * 24 * 60 * 60 * 1000);
-      const dateString = date.toISOString().split('T')[0];
-      
-      const [rainfallData, temperatureData] = await Promise.all([
-        this.getWeatherData('rainfall', dateString),
-        this.getWeatherData('air-temperature', dateString)
-      ]);
-
-      const nearestRainfallStationId = this.findNearestStation(lat, long, rainfallData.metadata.stations);
-      const nearestTemperatureStationId = this.findNearestStation(lat, long, temperatureData.metadata.stations);
-
-      // Calculate daily average rainfall and temperature for the nearest stations
-      const dailyRainfall = rainfallData.items.reduce((sum, item) => {
-        const reading = item.readings.find(r => r.station_id === nearestRainfallStationId);
-        return sum + (reading ? reading.value : 0);
-      }, 0) / rainfallData.items.length;
-
-      const dailyTemperature = temperatureData.items.reduce((sum, item) => {
-        const reading = item.readings.find(r => r.station_id === nearestTemperatureStationId);
-        return sum + (reading ? reading.value : 0);
-      }, 0) / temperatureData.items.length;
-
-      forecast.push({
-        date,
-        rainfall: dailyRainfall,
-        temperature: dailyTemperature
-      });
-    }
-
-    return forecast;
-  }
-
-  private async getHistoricalData(hubId: string, days: number): Promise<any[]> {
-    const [
-      hourlyTemperatureData,
-      hourlyHumidityData,
-      hourlySoilMoistureData,
-      hourlyLightData,
-      dailyTemperatureData,
-      dailyHumidityData,
-      dailySoilMoistureData,
-      dailyLightData,
-      weeklyTemperatureData,
-      weeklyHumidityData,
-      weeklySoilMoistureData,
-      weeklyLightData
-    ] = await Promise.all([
-      SensorReadingService.getHourlyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.TEMPERATURE, days),
-      SensorReadingService.getHourlyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.HUMIDITY, days),
-      SensorReadingService.getHourlyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.SOIL_MOISTURE, days),
-      SensorReadingService.getHourlyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.LIGHT, days),
-      SensorReadingService.getDailyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.TEMPERATURE, days),
-      SensorReadingService.getDailyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.HUMIDITY, days),
-      SensorReadingService.getDailyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.SOIL_MOISTURE, days),
-      SensorReadingService.getDailyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.LIGHT, days),
-      SensorReadingService.getWeeklyAverageSensorReadingsForPastWeeks(hubId, SensorTypeEnum.TEMPERATURE, Math.ceil(days/7)),
-      SensorReadingService.getWeeklyAverageSensorReadingsForPastWeeks(hubId, SensorTypeEnum.HUMIDITY, Math.ceil(days/7)),
-      SensorReadingService.getWeeklyAverageSensorReadingsForPastWeeks(hubId, SensorTypeEnum.SOIL_MOISTURE, Math.ceil(days/7)),
-      SensorReadingService.getWeeklyAverageSensorReadingsForPastWeeks(hubId, SensorTypeEnum.LIGHT, Math.ceil(days/7)),
-    ]);
-
-    return hourlyTemperatureData.map((temp, index) => {
-      const date = new Date(temp.date);
-      const dailyIndex = dailyTemperatureData.findIndex(d => new Date(d.date).toDateString() === date.toDateString());
-      const weeklyIndex = weeklyTemperatureData.findIndex(w => date >= new Date(w.date) && date < new Date(new Date(w.date).getTime() + 7 * 24 * 60 * 60 * 1000));
-
-      return {
-        date: temp.date,
-        hourlyTemperature: temp.average,
-        hourlyHumidity: hourlyHumidityData[index]?.average || 0,
-        hourlySoilMoisture: hourlySoilMoistureData[index]?.average || 0,
-        hourlyLight: hourlyLightData[index]?.average || 0,
-        dailyTemperature: dailyTemperatureData[dailyIndex]?.average || 0,
-        dailyHumidity: dailyHumidityData[dailyIndex]?.average || 0,
-        dailySoilMoisture: dailySoilMoistureData[dailyIndex]?.average || 0,
-        dailyLight: dailyLightData[dailyIndex]?.average || 0,
-        weeklyTemperature: weeklyTemperatureData[weeklyIndex]?.average || 0,
-        weeklyHumidity: weeklyHumidityData[weeklyIndex]?.average || 0,
-        weeklySoilMoisture: weeklySoilMoistureData[weeklyIndex]?.average || 0,
-        weeklyLight: weeklyLightData[weeklyIndex]?.average || 0,
-      };
-    });
+  private getRainFactorFromForecast(forecast: string): number {
+    const rainFactors: { [key: string]: number } = {
+      Fair: 0,
+      'Fair (Day)': 0,
+      'Fair (Night)': 0,
+      'Fair and Warm': 0,
+      'Partly Cloudy': 0.1,
+      'Partly Cloudy (Day)': 0.1,
+      'Partly Cloudy (Night)': 0.1,
+      Cloudy: 0.2,
+      Hazy: 0,
+      'Slightly Hazy': 0,
+      Windy: 0,
+      Mist: 0.1,
+      Fog: 0.1,
+      'Light Rain': 0.3,
+      'Moderate Rain': 0.5,
+      'Heavy Rain': 0.8,
+      'Passing Showers': 0.2,
+      'Light Showers': 0.3,
+      Showers: 0.4,
+      'Heavy Showers': 0.6,
+      'Thundery Showers': 0.7,
+      'Heavy Thundery Showers': 0.9,
+      'Heavy Thundery Showers with Gusty Winds': 1,
+    };
+    return rainFactors[forecast] || 0;
   }
 
   private async trainRandomForestModel(trainingData: any[]): Promise<RandomForestRegressor> {
-    const X = trainingData.map(data => [
-      data.hourlyTemperature,
-      data.hourlyHumidity,
-      data.hourlySoilMoisture,
-      data.hourlyLight,
-      data.dailyTemperature,
-      data.dailyHumidity,
-      data.dailySoilMoisture,
-      data.dailyLight,
-      data.weeklyTemperature,
-      data.weeklyHumidity,
-      data.weeklySoilMoisture,
-      data.weeklyLight,
-      data.rainfall,
+    const X = trainingData.map((data) => [
+      data.soilMoisture,
       data.temperature,
-      data.idealSoilMoisture,
+      data.humidity,
+      data.light,
+      data.temperatureLow,
+      data.temperatureHigh,
+      data.humidityLow,
+      data.humidityHigh,
+      this.getRainFactorFromForecast(data.forecast),
+      data.windSpeedLow,
+      data.windSpeedHigh,
+      this.getWindDirectionFactor(data.windDirection),
     ]);
-    const y = trainingData.map(data => data.waterAmount);
-
+    const y = trainingData.map((data) => data.waterAmount);
     const model = new RandomForestRegressor({
       nEstimators: 100,
       treeOptions: { maxDepth: 10 },
@@ -212,100 +115,124 @@ class PredictedWaterScheduleService {
     return model;
   }
 
-  private generateTrainingData(sensorData: SensorData[], weatherData: { date: Date; rainfall: number; temperature: number }[], idealSoilMoisture: number): any[] {
-    return sensorData.map((sensor, index) => ({
-      ...sensor,
-      rainfall: weatherData[index].rainfall,
-      temperature: weatherData[index].temperature,
-      idealSoilMoisture,
-      waterAmount: this.calculateWaterAmount(sensor.hourlySoilMoisture, idealSoilMoisture, weatherData[index].rainfall),
-    }));
-  }
-
-  private calculateWaterAmount(currentSoilMoisture: number, idealSoilMoisture: number, rainfall: number): number {
-    const moistureDeficit = Math.max(0, idealSoilMoisture - currentSoilMoisture);
-    return Math.max(0, moistureDeficit - rainfall);
-  }
-
-  private async getAverageSensorData(hubId: string, hours: number): Promise<SensorData> {
-    const [hourlyAverages, dailyAverages, weeklyAverages] = await Promise.all([
-      SensorReadingService.getAverageSensorReadingsForHubIdAcrossAllSensorTypesForHoursAgo(hubId, hours),
-      SensorReadingService.getDailyAverageSensorReadingsForPastDays(hubId, SensorTypeEnum.TEMPERATURE, 1),
-      SensorReadingService.getWeeklyAverageSensorReadingsForPastWeeks(hubId, SensorTypeEnum.TEMPERATURE, 1),
-    ]);
-    
-    return {
-      hourlyTemperature: hourlyAverages[SensorTypeEnum.TEMPERATURE] || 0,
-      hourlyHumidity: hourlyAverages[SensorTypeEnum.HUMIDITY] || 0,
-      hourlySoilMoisture: hourlyAverages[SensorTypeEnum.SOIL_MOISTURE] || 0,
-      hourlyLight: hourlyAverages[SensorTypeEnum.LIGHT] || 0,
-      dailyTemperature: dailyAverages[0]?.average || 0,
-      dailyHumidity: dailyAverages[0]?.average || 0,
-      dailySoilMoisture: dailyAverages[0]?.average || 0,
-      dailyLight: dailyAverages[0]?.average || 0,
-      weeklyTemperature: weeklyAverages[0]?.average || 0,
-      weeklyHumidity: weeklyAverages[0]?.average || 0,
-      weeklySoilMoisture: weeklyAverages[0]?.average || 0,
-      weeklyLight: weeklyAverages[0]?.average || 0,
-    };
+  private getWindDirectionFactor(direction: string): number {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    return directions.indexOf(direction) / (directions.length - 1);
   }
 
   public async generatePredictedWaterSchedule(hubId: string, days = 7): Promise<PredictedWaterSchedule[]> {
-    const hub = await HubDao.getHubById(hubId);
-    if (!hub) {
-      throw new Error('Hub not found');
-    }
-
-    const occurrences = await OccurrenceDao.getAllOccurrencesByZoneId(hub.zoneId);
-    const species = await Promise.all(occurrences.map(occurrence => SpeciesDao.getSpeciesById(occurrence.speciesId)));
-    const avgIdealSoilMoisture = species.reduce((sum, s) => sum + s.soilMoisture, 0) / species.length;
-
-    // Fetch weather forecast data for the nearest stations
-    const forecastData = await this.getWeatherForecast(hub.lat, hub.long, days);
-
-    // Get historical sensor data for the past 30 days
-    const historicalData = await this.getHistoricalData(hubId, 30);
-
-    // Generate training data
-    const trainingData = this.generateTrainingData(historicalData, forecastData, avgIdealSoilMoisture);
-
+    const historicalWeatherData = await this.getHistoricalWeatherData(100);
+    const historicalSensorData = await this.getAverageHourlySensorDataData(
+      hubId,
+      new Date(new Date().setDate(new Date().getDate() - 100)),
+      new Date(),
+    );
+    const trainingData = this.generateTrainingData(historicalSensorData, historicalWeatherData);
     const model = await this.trainRandomForestModel(trainingData);
+    const predictions: PredictedWaterSchedule[] = [];
+    const today = new Date();
 
-    const schedules: PredictedWaterSchedule[] = [];
+    for (let i = 0; i < days; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
 
-    for (const forecast of forecastData) {
-      const { date, rainfall, temperature } = forecast;
-      const latestReadings = await this.getAverageSensorData(hubId, 1);
+      const weatherForecast = await this.getTodayWeatherForecast();
+      const forecastForDate = weatherForecast.find((f) => new Date(f.date).toDateString() === date.toDateString());
 
-      const predictedWaterAmount = model.predict([[
-        latestReadings.hourlyTemperature,
-        latestReadings.hourlyHumidity,
-        latestReadings.hourlySoilMoisture,
-        latestReadings.hourlyLight,
-        latestReadings.dailyTemperature,
-        latestReadings.dailyHumidity,
-        latestReadings.dailySoilMoisture,
-        latestReadings.dailyLight,
-        latestReadings.weeklyTemperature,
-        latestReadings.weeklyHumidity,
-        latestReadings.weeklySoilMoisture,
-        latestReadings.weeklyLight,
-        rainfall,
-        temperature,
-        avgIdealSoilMoisture,
-      ]]);
-
-      const schedule = await PredictedWaterScheduleDao.createPredictedWaterSchedule({
-        hub: { connect: { id: hubId } },
-        scheduledDate: date,
-        waterAmount: predictedWaterAmount[0],
-        confidence: 0.7, // This could be improved based on model metrics
-      });
-
-      schedules.push(schedule);
+      if (forecastForDate) {
+        const prediction = this.predictWaterSchedule(model, forecastForDate, historicalSensorData);
+        predictions.push({
+          id: '', // This will be generated by the database
+          hubId,
+          scheduledDate: date,
+          waterAmount: prediction.waterAmount,
+          confidence: 0.8, // You might want to calculate this based on the model's performance
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
     }
 
-    return schedules;
+    // Save predictions to database
+    for (const prediction of predictions) {
+      await PredictedWaterScheduleDao.createPredictedWaterSchedule({
+        ...prediction,
+        hub: { connect: { id: hubId } },
+      });
+    }
+
+    return predictions;
+  }
+
+  private generateTrainingData(sensorData: SensorDataGroupedByType, weatherData: WeatherForecast[]): any[] {
+    const trainingData = [];
+
+    for (const weather of weatherData) {
+      const date = new Date(weather.date);
+      const sensorReadings = {
+        soilMoisture: this.getAverageSensorReading(sensorData[SensorTypeEnum.SOIL_MOISTURE], date),
+        temperature: this.getAverageSensorReading(sensorData[SensorTypeEnum.TEMPERATURE], date),
+        humidity: this.getAverageSensorReading(sensorData[SensorTypeEnum.HUMIDITY], date),
+        light: this.getAverageSensorReading(sensorData[SensorTypeEnum.LIGHT], date),
+      };
+
+      trainingData.push({
+        ...sensorReadings,
+        temperatureLow: weather.temperature.low,
+        temperatureHigh: weather.temperature.high,
+        humidityLow: weather.relativeHumidity.low,
+        humidityHigh: weather.relativeHumidity.high,
+        forecast: weather.forecast,
+        windSpeedLow: weather.wind.speed.low,
+        windSpeedHigh: weather.wind.speed.high,
+        windDirection: weather.wind.direction,
+        waterAmount: this.calculateWaterAmount(sensorReadings, weather),
+      });
+    }
+
+    return trainingData;
+  }
+
+  private getAverageSensorReading(readings: { date: string; average: number }[], date: Date): number {
+    const reading = readings.find((r) => new Date(r.date).toDateString() === date.toDateString());
+    return reading ? reading.average : 0;
+  }
+
+  private predictWaterSchedule(
+    model: RandomForestRegressor,
+    weather: WeatherForecast,
+    sensorData: SensorDataGroupedByType,
+  ): { waterAmount: number } {
+    const date = new Date(weather.date);
+    const input = [
+      this.getAverageSensorReading(sensorData[SensorTypeEnum.SOIL_MOISTURE], date),
+      this.getAverageSensorReading(sensorData[SensorTypeEnum.TEMPERATURE], date),
+      this.getAverageSensorReading(sensorData[SensorTypeEnum.HUMIDITY], date),
+      this.getAverageSensorReading(sensorData[SensorTypeEnum.LIGHT], date),
+      weather.temperature.low,
+      weather.temperature.high,
+      weather.relativeHumidity.low,
+      weather.relativeHumidity.high,
+      this.getRainFactorFromForecast(weather.forecast),
+      weather.wind.speed.low,
+      weather.wind.speed.high,
+      this.getWindDirectionFactor(weather.wind.direction),
+    ];
+
+    const waterAmount = model.predict([input])[0];
+
+    return { waterAmount };
+  }
+
+  private calculateWaterAmount(sensorReadings: any, weather: WeatherForecast): number {
+    // Implement a simple calculation for water amount
+    // This is a placeholder and should be replaced with a more sophisticated algorithm
+    const baseAmount = 10; // Base amount in liters
+    const soilMoistureFactor = 1 - sensorReadings.soilMoisture / 100;
+    const temperatureFactor = (weather.temperature.high - 20) / 10; // Assume 20°C is neutral
+    const rainFactor = 1 - this.getRainFactorFromForecast(weather.forecast);
+
+    return baseAmount * soilMoistureFactor * (1 + temperatureFactor) * rainFactor;
   }
 
   public async getPredictedWaterSchedulesByHubId(hubId: string): Promise<PredictedWaterSchedule[]> {

@@ -435,7 +435,7 @@ model PredictedWaterSchedule {
   id              String   @id @default(uuid()) @db.Uuid
   hubId           String   @db.Uuid
   scheduledDate   DateTime
-  waterAmount     Float    // in liters or milliliters
+  waterAmount     Float?    // in liters or milliliters
   confidence      Float    // a value between 0 and 1 indicating prediction confidence
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

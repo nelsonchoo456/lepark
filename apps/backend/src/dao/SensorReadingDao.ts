@@ -66,11 +66,15 @@ class SensorReadingDao {
     sensorType: SensorTypeEnum,
     hours: number,
   ): Promise<number> {
-    const readings = await this.getSensorReadingsByHubIdAndSensorTypeForHoursAgo(hubId, sensorType, hours);
-    if (readings.length === 0) {
-      return 0;
-    }
-    return readings.reduce((sum, reading) => sum + reading.value, 0) / readings.length;
+    const date = new Date(Date.now() - hours * 60 * 60 * 1000);
+    const result = await prisma.sensorReading.aggregate({
+      _avg: { value: true },
+      where: {
+        sensor: { hubId, sensorType },
+        date: { gte: date },
+      },
+    });
+    return result._avg.value || 0;
   }
 
   public async getSensorReadingsByHubIdAndSensorTypeByDateRange(
@@ -79,11 +83,25 @@ class SensorReadingDao {
     startDate: Date,
     endDate: Date,
   ): Promise<SensorReading[]> {
-    return prisma.sensorReading.findMany({ where: { sensor: { hubId, sensorType: sensorType }, date: { gte: startDate, lte: endDate } } });
+    return prisma.sensorReading.findMany({
+      where: {
+        sensor: { hubId, sensorType },
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        sensor: true,
+      },
+    });
   }
 
   public async getLatestSensorReadingByHubIdAndSensorType(hubId: string, sensorType: SensorTypeEnum): Promise<SensorReading | null> {
-    return prisma.sensorReading.findFirst({ where: { sensor: { hubId, sensorType: sensorType } }, orderBy: { date: 'desc' } });
+    return prisma.sensorReading.findFirst({
+      where: { sensor: { hubId, sensorType } },
+      orderBy: { date: 'desc' },
+    });
   }
 
   // Zone
@@ -186,64 +204,51 @@ class SensorReadingDao {
     return result;
   }
 
-  public async getHourlyAverageSensorReadingsForDateRange(
-    hubId: string,
-    sensorType: SensorTypeEnum,
-    startDate: Date,
-    endDate: Date
-  ): Promise<{ date: Date; average: number }[]> {
-    return prisma.$queryRaw`
-      SELECT 
-        date_trunc('hour', "date") as date,
-        AVG(value) as average
-      FROM "SensorReading"
-      JOIN "Sensor" ON "SensorReading"."sensorId" = "Sensor"."id"
-      WHERE "Sensor"."hubId" = ${hubId}
-        AND "Sensor"."sensorType" = ${sensorType}
-        AND "SensorReading"."date" BETWEEN ${startDate} AND ${endDate}
-      GROUP BY date_trunc('hour', "date")
-      ORDER BY date_trunc('hour', "date")
-    `;
-  }
-
   public async getDailyAverageSensorReadingsForDateRange(
     hubId: string,
     sensorType: SensorTypeEnum,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{ date: Date; average: number }[]> {
-    return prisma.$queryRaw`
-      SELECT 
-        date_trunc('day', "date") as date,
-        AVG(value) as average
-      FROM "SensorReading"
-      JOIN "Sensor" ON "SensorReading"."sensorId" = "Sensor"."id"
-      WHERE "Sensor"."hubId" = ${hubId}
-        AND "Sensor"."sensorType" = ${sensorType}
-        AND "SensorReading"."date" BETWEEN ${startDate} AND ${endDate}
-      GROUP BY date_trunc('day', "date")
-      ORDER BY date_trunc('day', "date")
-    `;
+    const readings = await prisma.sensorReading.groupBy({
+      by: ['date'],
+      where: {
+        sensor: { hubId, sensorType },
+        date: { gte: startDate, lte: endDate },
+      },
+      _avg: { value: true },
+    });
+
+    return readings.map((reading) => ({
+      date: new Date(reading.date.setHours(0, 0, 0, 0)),
+      average: reading._avg.value || 0,
+    }));
   }
 
   public async getWeeklyAverageSensorReadingsForDateRange(
     hubId: string,
     sensorType: SensorTypeEnum,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{ date: Date; average: number }[]> {
-    return prisma.$queryRaw`
-      SELECT 
-        date_trunc('week', "date") as date,
-        AVG(value) as average
-      FROM "SensorReading"
-      JOIN "Sensor" ON "SensorReading"."sensorId" = "Sensor"."id"
-      WHERE "Sensor"."hubId" = ${hubId}
-        AND "Sensor"."sensorType" = ${sensorType}
-        AND "SensorReading"."date" BETWEEN ${startDate} AND ${endDate}
-      GROUP BY date_trunc('week', "date")
-      ORDER BY date_trunc('week', "date")
-    `;
+    const readings = await prisma.sensorReading.groupBy({
+      by: ['date'],
+      where: {
+        sensor: { hubId, sensorType },
+        date: { gte: startDate, lte: endDate },
+      },
+      _avg: { value: true },
+    });
+
+    return readings.map((reading) => {
+      const date = new Date(reading.date);
+      date.setDate(date.getDate() - date.getDay()); // Set to the start of the week
+      date.setHours(0, 0, 0, 0);
+      return {
+        date,
+        average: reading._avg.value || 0,
+      };
+    });
   }
 }
 
