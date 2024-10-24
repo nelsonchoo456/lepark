@@ -16,7 +16,7 @@ interface EnhancedEventTicketResponse extends EventTicketResponse {
   eventDate: dayjs.Dayjs;
 }
 
-const DashboardTab: React.FC<DashboardTabProps> = ({ eventId }) => {
+const EventDashboardTab: React.FC<DashboardTabProps> = ({ eventId }) => {
   const [loading, setLoading] = useState(false);
   const [ticketsData, setTicketsData] = useState<EnhancedEventTicketResponse[]>([]);
   const [purchaseDateRange, setPurchaseDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
@@ -429,4 +429,4 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ eventId }) => {
   );
 };
 
-export default DashboardTab;
+export default EventDashboardTab;
