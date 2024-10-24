@@ -20,6 +20,17 @@ interface WeatherData {
 interface WeatherResponse {
   items: WeatherData[];
   api_info: { status: string };
+  metadata: {
+    stations: Array<{
+      id: string;
+      device_id: string;
+      name: string;
+      location: {
+        latitude: number;
+        longitude: number;
+      };
+    }>;
+  };
 }
 
 interface SensorData {
@@ -52,6 +63,37 @@ class PredictedWaterScheduleService {
     }
   }
 
+  private findNearestStation(lat: number, long: number, stations: WeatherResponse['metadata']['stations']): string {
+    let nearestStation = stations[0];
+    let minDistance = Number.MAX_VALUE;
+
+    for (const station of stations) {
+      const distance = this.calculateDistance(lat, long, station.location.latitude, station.location.longitude);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestStation = station;
+      }
+    }
+
+    return nearestStation.id;
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radius of the earth in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  }
+
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
+  }
+
   private async getWeatherForecast(lat: number, long: number, days: number): Promise<{ date: Date; rainfall: number; temperature: number }[]> {
     const forecast = [];
     const today = new Date();
@@ -65,15 +107,18 @@ class PredictedWaterScheduleService {
         this.getWeatherData('air-temperature', dateString)
       ]);
 
-      // Calculate daily average rainfall and temperature
+      const nearestRainfallStationId = this.findNearestStation(lat, long, rainfallData.metadata.stations);
+      const nearestTemperatureStationId = this.findNearestStation(lat, long, temperatureData.metadata.stations);
+
+      // Calculate daily average rainfall and temperature for the nearest stations
       const dailyRainfall = rainfallData.items.reduce((sum, item) => {
-        const itemAvg = item.readings.reduce((s, r) => s + r.value, 0) / item.readings.length;
-        return sum + itemAvg;
+        const reading = item.readings.find(r => r.station_id === nearestRainfallStationId);
+        return sum + (reading ? reading.value : 0);
       }, 0) / rainfallData.items.length;
 
       const dailyTemperature = temperatureData.items.reduce((sum, item) => {
-        const itemAvg = item.readings.reduce((s, r) => s + r.value, 0) / item.readings.length;
-        return sum + itemAvg;
+        const reading = item.readings.find(r => r.station_id === nearestTemperatureStationId);
+        return sum + (reading ? reading.value : 0);
       }, 0) / temperatureData.items.length;
 
       forecast.push({
@@ -215,7 +260,7 @@ class PredictedWaterScheduleService {
     const species = await Promise.all(occurrences.map(occurrence => SpeciesDao.getSpeciesById(occurrence.speciesId)));
     const avgIdealSoilMoisture = species.reduce((sum, s) => sum + s.soilMoisture, 0) / species.length;
 
-    // Fetch weather forecast data
+    // Fetch weather forecast data for the nearest stations
     const forecastData = await this.getWeatherForecast(hub.lat, hub.long, days);
 
     // Get historical sensor data for the past 30 days
