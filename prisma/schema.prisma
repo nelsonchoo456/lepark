@@ -504,6 +504,16 @@ model SensorReading {
   sensor   Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
 
+model HistoricalRainData {
+  id          String   @id @default(uuid()) @db.Uuid
+  stationId   String  
+  stationName String  
+  lat    Float    
+  lng   Float   
+  value    Float 
+  timestamp   DateTime 
+}
+
 enum ParkAssetTypeEnum {
   PLANT_TOOL_AND_EQUIPMENT
   HOSES_AND_PIPES

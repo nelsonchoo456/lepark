@@ -51,59 +51,25 @@ class PredictedWaterScheduleService {
     }
   }
 
-  private async getHistoricalWeatherData(days: number): Promise<WeatherForecast[]> {
-    // Implement this method to fetch historical weather data
-    // For now, return an empty array
-    return [];
-  }
-
   private async getAverageHourlySensorDataData(hubId: string, startDate: Date, endDate: Date): Promise<SensorDataGroupedByType> {
     return SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(hubId, startDate, endDate);
   }
 
-  private getRainFactorFromForecast(forecast: string): number {
-    const rainFactors: { [key: string]: number } = {
-      Fair: 0,
-      'Fair (Day)': 0,
-      'Fair (Night)': 0,
-      'Fair and Warm': 0,
-      'Partly Cloudy': 0.1,
-      'Partly Cloudy (Day)': 0.1,
-      'Partly Cloudy (Night)': 0.1,
-      Cloudy: 0.2,
-      Hazy: 0,
-      'Slightly Hazy': 0,
-      Windy: 0,
-      Mist: 0.1,
-      Fog: 0.1,
-      'Light Rain': 0.3,
-      'Moderate Rain': 0.5,
-      'Heavy Rain': 0.8,
-      'Passing Showers': 0.2,
-      'Light Showers': 0.3,
-      Showers: 0.4,
-      'Heavy Showers': 0.6,
-      'Thundery Showers': 0.7,
-      'Heavy Thundery Showers': 0.9,
-      'Heavy Thundery Showers with Gusty Winds': 1,
-    };
-    return rainFactors[forecast] || 0;
-  }
-
+  // TODO
   private async trainRandomForestModel(trainingData: any[]): Promise<RandomForestRegressor> {
     const X = trainingData.map((data) => [
       data.soilMoisture,
       data.temperature,
       data.humidity,
       data.light,
-      data.temperatureLow,
-      data.temperatureHigh,
-      data.humidityLow,
-      data.humidityHigh,
-      this.getRainFactorFromForecast(data.forecast),
-      data.windSpeedLow,
-      data.windSpeedHigh,
-      this.getWindDirectionFactor(data.windDirection),
+      // data.temperatureLow,
+      // data.temperatureHigh,
+      // data.humidityLow,
+      // data.humidityHigh,
+      // getRainFactorFromForecast(data.forecast),
+      // data.windSpeedLow,
+      // data.windSpeedHigh,
+      // getWindDirectionFactor(data.windDirection),
     ]);
     const y = trainingData.map((data) => data.waterAmount);
     const model = new RandomForestRegressor({
@@ -115,20 +81,67 @@ class PredictedWaterScheduleService {
     return model;
   }
 
-  private getWindDirectionFactor(direction: string): number {
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    return directions.indexOf(direction) / (directions.length - 1);
+  // TODO
+  private generateTrainingData(sensorData: SensorDataGroupedByType, weatherData: WeatherForecast[]): any[] {
+    const trainingData = [];
+
+    for (const weather of weatherData) {
+      const date = new Date(weather.date);
+      const sensorReadings = {
+        soilMoisture: getAverageSensorReading(sensorData[SensorTypeEnum.SOIL_MOISTURE], date),
+        temperature: getAverageSensorReading(sensorData[SensorTypeEnum.TEMPERATURE], date),
+        humidity: getAverageSensorReading(sensorData[SensorTypeEnum.HUMIDITY], date),
+        light: getAverageSensorReading(sensorData[SensorTypeEnum.LIGHT], date),
+      };
+
+      trainingData.push({
+        ...sensorReadings,
+        waterAmount: 1,
+        // waterAmount: this.calculateWaterAmount(sensorReadings, weather),
+      });
+    }
+
+    return trainingData;
   }
 
+  // TODO
+  private predictWaterSchedule(
+    model: RandomForestRegressor,
+    weather: WeatherForecast,
+    sensorData: SensorDataGroupedByType,
+  ): { waterAmount: number } {
+    const date = new Date(weather.date);
+    const input = [
+      getAverageSensorReading(sensorData[SensorTypeEnum.SOIL_MOISTURE], date),
+      getAverageSensorReading(sensorData[SensorTypeEnum.TEMPERATURE], date),
+      getAverageSensorReading(sensorData[SensorTypeEnum.HUMIDITY], date),
+      getAverageSensorReading(sensorData[SensorTypeEnum.LIGHT], date),
+      weather.temperature.low,
+      weather.temperature.high,
+      weather.relativeHumidity.low,
+      weather.relativeHumidity.high,
+      getRainFactorFromForecast(weather.forecast),
+      weather.wind.speed.low,
+      weather.wind.speed.high,
+      getWindDirectionFactor(weather.wind.direction),
+    ];
+
+    const waterAmount = model.predict([input])[0];
+
+    return { waterAmount };
+  }
+
+  // TODO
   public async generatePredictedWaterSchedule(hubId: string, days = 7): Promise<PredictedWaterSchedule[]> {
-    const historicalWeatherData = await this.getHistoricalWeatherData(100);
+    // const historicalWeatherData = await this.getHistoricalWeatherData(100); // put historical rainfall data here
     const historicalSensorData = await this.getAverageHourlySensorDataData(
       hubId,
       new Date(new Date().setDate(new Date().getDate() - 100)),
       new Date(),
     );
-    const trainingData = this.generateTrainingData(historicalSensorData, historicalWeatherData);
+    const trainingData = this.generateTrainingData(historicalSensorData, []);
     const model = await this.trainRandomForestModel(trainingData);
+
     const predictions: PredictedWaterSchedule[] = [];
     const today = new Date();
 
@@ -164,76 +177,17 @@ class PredictedWaterScheduleService {
     return predictions;
   }
 
-  private generateTrainingData(sensorData: SensorDataGroupedByType, weatherData: WeatherForecast[]): any[] {
-    const trainingData = [];
+  // private calculateWaterAmount(sensorReadings: any, weather: WeatherForecast): number {
+  //   // Implement a simple calculation for water amount
+  //   // This is a placeholder and should be replaced with a more sophisticated algorithm
+  //   // const baseAmount = 10; // Base amount in liters
+  //   // const soilMoistureFactor = 1 - sensorReadings.soilMoisture / 100;
+  //   // const temperatureFactor = (weather.temperature.high - 20) / 10; // Assume 20°C is neutral
+  //   // const rainFactor = 1 - getRainFactorFromForecast(weather.forecast);
 
-    for (const weather of weatherData) {
-      const date = new Date(weather.date);
-      const sensorReadings = {
-        soilMoisture: this.getAverageSensorReading(sensorData[SensorTypeEnum.SOIL_MOISTURE], date),
-        temperature: this.getAverageSensorReading(sensorData[SensorTypeEnum.TEMPERATURE], date),
-        humidity: this.getAverageSensorReading(sensorData[SensorTypeEnum.HUMIDITY], date),
-        light: this.getAverageSensorReading(sensorData[SensorTypeEnum.LIGHT], date),
-      };
-
-      trainingData.push({
-        ...sensorReadings,
-        temperatureLow: weather.temperature.low,
-        temperatureHigh: weather.temperature.high,
-        humidityLow: weather.relativeHumidity.low,
-        humidityHigh: weather.relativeHumidity.high,
-        forecast: weather.forecast,
-        windSpeedLow: weather.wind.speed.low,
-        windSpeedHigh: weather.wind.speed.high,
-        windDirection: weather.wind.direction,
-        waterAmount: this.calculateWaterAmount(sensorReadings, weather),
-      });
-    }
-
-    return trainingData;
-  }
-
-  private getAverageSensorReading(readings: { date: string; average: number }[], date: Date): number {
-    const reading = readings.find((r) => new Date(r.date).toDateString() === date.toDateString());
-    return reading ? reading.average : 0;
-  }
-
-  private predictWaterSchedule(
-    model: RandomForestRegressor,
-    weather: WeatherForecast,
-    sensorData: SensorDataGroupedByType,
-  ): { waterAmount: number } {
-    const date = new Date(weather.date);
-    const input = [
-      this.getAverageSensorReading(sensorData[SensorTypeEnum.SOIL_MOISTURE], date),
-      this.getAverageSensorReading(sensorData[SensorTypeEnum.TEMPERATURE], date),
-      this.getAverageSensorReading(sensorData[SensorTypeEnum.HUMIDITY], date),
-      this.getAverageSensorReading(sensorData[SensorTypeEnum.LIGHT], date),
-      weather.temperature.low,
-      weather.temperature.high,
-      weather.relativeHumidity.low,
-      weather.relativeHumidity.high,
-      this.getRainFactorFromForecast(weather.forecast),
-      weather.wind.speed.low,
-      weather.wind.speed.high,
-      this.getWindDirectionFactor(weather.wind.direction),
-    ];
-
-    const waterAmount = model.predict([input])[0];
-
-    return { waterAmount };
-  }
-
-  private calculateWaterAmount(sensorReadings: any, weather: WeatherForecast): number {
-    // Implement a simple calculation for water amount
-    // This is a placeholder and should be replaced with a more sophisticated algorithm
-    const baseAmount = 10; // Base amount in liters
-    const soilMoistureFactor = 1 - sensorReadings.soilMoisture / 100;
-    const temperatureFactor = (weather.temperature.high - 20) / 10; // Assume 20°C is neutral
-    const rainFactor = 1 - this.getRainFactorFromForecast(weather.forecast);
-
-    return baseAmount * soilMoistureFactor * (1 + temperatureFactor) * rainFactor;
-  }
+  //   // return baseAmount * soilMoistureFactor * (1 + temperatureFactor) * rainFactor;
+  //   return 0;
+  // }
 
   public async getPredictedWaterSchedulesByHubId(hubId: string): Promise<PredictedWaterSchedule[]> {
     return PredictedWaterScheduleDao.getPredictedWaterSchedulesByHubId(hubId);
@@ -253,3 +207,43 @@ class PredictedWaterScheduleService {
 }
 
 export default new PredictedWaterScheduleService();
+
+// -- [ Utils ] --
+function getRainFactorFromForecast(forecast: string): number {
+  const rainFactors: { [key: string]: number } = {
+    Fair: 0,
+    'Fair (Day)': 0,
+    'Fair (Night)': 0,
+    'Fair and Warm': 0,
+    'Partly Cloudy': 0.1,
+    'Partly Cloudy (Day)': 0.1,
+    'Partly Cloudy (Night)': 0.1,
+    Cloudy: 0.2,
+    Hazy: 0,
+    'Slightly Hazy': 0,
+    Windy: 0,
+    Mist: 0.1,
+    Fog: 0.1,
+    'Light Rain': 0.3,
+    'Moderate Rain': 0.5,
+    'Heavy Rain': 0.8,
+    'Passing Showers': 0.2,
+    'Light Showers': 0.3,
+    Showers: 0.4,
+    'Heavy Showers': 0.6,
+    'Thundery Showers': 0.7,
+    'Heavy Thundery Showers': 0.9,
+    'Heavy Thundery Showers with Gusty Winds': 1,
+  };
+  return rainFactors[forecast] || 0;
+}
+
+function getAverageSensorReading(readings: { date: string; average: number }[], date: Date): number {
+  const reading = readings.find((r) => new Date(r.date).toDateString() === date.toDateString());
+  return reading ? reading.average : 0;
+}
+
+function getWindDirectionFactor(direction: string): number {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  return directions.indexOf(direction) / (directions.length - 1);
+}

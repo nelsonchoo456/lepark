@@ -2,7 +2,10 @@
   "name": "@lepark/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "seed": "node apps/backend/src/utils/seed.js",
+    "seed-irrigation": "node apps/backend/src/utils/irrigationScheduleSeed.js"
+  },
   "private": true,
   "dependencies": {
     "@ant-design/colors": "^7.1.0",

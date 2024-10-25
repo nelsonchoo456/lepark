@@ -777,10 +777,12 @@ const getRandomItems = (array, count) => {
 const generateMockReadings = (sensorType) => {
   const readings = [];
   const now = new Date();
-  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+  // const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+
+  const hundredDaysAgo = new Date(now.getTime() - 2400 * 60 * 60 * 1000);  // in milliseconds
 
   // Generate readings every 15 minutes from now till 8 hours ago
-  for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
+  for (let time = now; time >= hundredDaysAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
     readings.push(createReading(sensorType, time));
   }
 
