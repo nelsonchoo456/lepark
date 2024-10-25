@@ -109,6 +109,8 @@ import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask
 import SensorMaintenanceList from './pages/Sensor/SensorMaintenanceList';
 import HubMaintenanceList from './pages/Hub/HubMaintenanceList';
 import AssetListMaintenanceSummary from './pages/Asset/AssetListMaintenanceSummary';
+import ParkCrowdLevels from './pages/CrowdInsight/ParkCrowdLevels';
+import ParkCrowdLevelsCalendar from './pages/CrowdInsight/ParkCrowdLevelsCalendar';
 
 export function App() {
   return (
@@ -592,6 +594,11 @@ export function App() {
                   >
                     <Route path="create" element={<AnnouncementCreate />} />
                   </Route>
+                </Route>
+
+                {/* Crowd Insights Routes */}
+                <Route path="/crowdInsights">
+                  <Route index element={<ParkCrowdLevels />} />
                 </Route>
 
                 {/* Catch-all for 404 */}

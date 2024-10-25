@@ -11,6 +11,7 @@ import OccurrenceService from './OccurrenceService';
 import { OccurrenceWithDetails } from './OccurrenceService';
 import OccurrenceDao from '../dao/OccurrenceDao';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { getAugumentedDataset } from '../utils/holtwinters';
 
 const dateFormatter = (data: any) => {
   const { timestamp, ...rest } = data;
@@ -23,10 +24,10 @@ const dateFormatter = (data: any) => {
 };
 
 const enumFormatter = (enumValue: string): string => {
-    return enumValue
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+  return enumValue
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 class SensorReadingService {
@@ -384,19 +385,31 @@ class SensorReadingService {
     trendDescription: string,
     absoluteChange: number,
     rateOfChange: number,
-    timeSpanHours: number
+    timeSpanHours: number,
   ): string {
     const currentTime = new Date(); // Get the current time
 
     switch (sensorType) {
       case SensorTypeEnum.TEMPERATURE:
-        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Temperature has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} °C over ${timeSpanHours.toFixed(
+          2,
+        )} hours (${rateOfChange.toFixed(2)} °C / hour). ${this.getTemperatureInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.HUMIDITY:
-        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Humidity has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} % over ${timeSpanHours.toFixed(
+          2,
+        )} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getHumidityInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.SOIL_MOISTURE:
-        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Soil moisture has shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)}% over ${timeSpanHours.toFixed(
+          2,
+        )} hours (${rateOfChange.toFixed(2)} % / hour). ${this.getSoilMoistureInsight(absoluteChange, rateOfChange, currentTime)}`;
       case SensorTypeEnum.LIGHT:
-        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(2)} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(absoluteChange, rateOfChange, currentTime)}`;
+        return `Light levels have shown a ${trendDescription} trend, changing by ${absoluteChange.toFixed(
+          2,
+        )} Lux over ${timeSpanHours.toFixed(2)} hours (${rateOfChange.toFixed(2)} Lux / hour). ${this.getLightInsight(
+          absoluteChange,
+          rateOfChange,
+          currentTime,
+        )}`;
       default:
         return `The sensor readings have shown a ${trendDescription} trend. Monitor the situation and adjust conditions if necessary.`;
     }
@@ -404,7 +417,7 @@ class SensorReadingService {
 
   private getTemperatureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < 0) {
         return `Unexpected morning temperature drop. Monitor for any sudden weather changes or shading issues.`;
@@ -425,11 +438,11 @@ class SensorReadingService {
       }
       return `Temperature cooling down as expected. No immediate action required.`;
     }
-}
+  }
 
-private getHumidityInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+  private getHumidityInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < -2) {
         return `Humidity dropping quickly this morning. Consider light misting for moisture-sensitive plants.`;
@@ -446,11 +459,11 @@ private getHumidityInsight(absoluteChange: number, rateOfChange: number, current
       }
       return `Evening humidity levels are typical. Watch for signs of excess moisture on foliage.`;
     }
-}
+  }
 
-private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+  private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < -2) {
         return `Soil moisture decreasing faster than usual this morning. Check for drainage issues or adjust watering schedules.`;
@@ -467,11 +480,11 @@ private getSoilMoistureInsight(absoluteChange: number, rateOfChange: number, cur
       }
       return `Evening soil moisture levels are normal. Adjust irrigation schedules if necessary.`;
     }
-}
+  }
 
-private getLightInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
+  private getLightInsight(absoluteChange: number, rateOfChange: number, currentTime: Date): string {
     const hour = currentTime.getHours();
-    
+
     if (hour >= 5 && hour < 12) {
       if (rateOfChange < 50) {
         return `Morning light levels rising slower than expected. Check for cloud cover or shading.`;
@@ -488,7 +501,7 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
       }
       return `Evening light levels dropping as expected. Ensure any artificial lights are adjusted for plant photoperiods.`;
     }
-}
+  }
 
   private getSensorUnit(sensorType: SensorTypeEnum): string {
     switch (sensorType) {
@@ -535,7 +548,9 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
           switch (sensorType) {
             case SensorTypeEnum.TEMPERATURE:
               if (latestReading.value < speciesConditions.minTemp || latestReading.value > speciesConditions.maxTemp) {
-                issues.push(`Temperature out of range: ${latestReading.value}°C (Recommended: ${speciesConditions.minTemp}°C - ${speciesConditions.maxTemp}°C)`);
+                issues.push(
+                  `Temperature out of range: ${latestReading.value}°C (Recommended: ${speciesConditions.minTemp}°C - ${speciesConditions.maxTemp}°C)`,
+                );
               }
               break;
             case SensorTypeEnum.HUMIDITY:
@@ -551,7 +566,11 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
             case SensorTypeEnum.LIGHT: {
               const lightIssue = this.checkLightCondition(latestReading.value, speciesConditions.lightType);
               if (lightIssue) {
-                issues.push(`Light level not ideal: ${latestReading.value} Lux (Recommended: ${this.getLightLuxRecommendation(speciesConditions.lightType)})`);
+                issues.push(
+                  `Light level not ideal: ${latestReading.value} Lux (Recommended: ${this.getLightLuxRecommendation(
+                    speciesConditions.lightType,
+                  )})`,
+                );
               }
               break;
             }
@@ -594,16 +613,15 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
   private getLightLuxRecommendation(lightType: LightTypeEnum): string {
     switch (lightType) {
       case LightTypeEnum.FULL_SUN:
-        return "> 200 Lux";
+        return '> 200 Lux';
       case LightTypeEnum.PARTIAL_SHADE:
-        return "50 - 200 Lux";
+        return '50 - 200 Lux';
       case LightTypeEnum.FULL_SHADE:
-        return "< 50 Lux";
+        return '< 50 Lux';
       default:
-        return "0 Lux";
+        return '0 Lux';
     }
   }
-  
 
   // Get the latest sensor reading for an occurrence (based on nearest sensor)
   public async getLatestSensorReadingForOccurrence(
@@ -655,6 +673,101 @@ private getLightInsight(absoluteChange: number, rateOfChange: number, currentTim
 
   private deg2rad(deg: number): number {
     return deg * (Math.PI / 180);
+  }
+
+  public async getAllSensorReadingsByParkIdAndSensorType(
+    parkId: number,
+    sensorType: SensorTypeEnum,
+  ): Promise<SensorReading[]> {
+    const zones = await ZoneDao.getZonesByParkId(parkId);
+    let allReadings = [];
+
+    for (const zone of zones) {
+      const readings = await SensorReadingDao.getSensorReadingsByZoneIdAndSensorType(zone.id, sensorType);
+      allReadings = allReadings.concat(readings);
+    }
+    return allReadings;
+  }
+
+  public async predictCrowdLevels(parkId: number, daysToPredict: number): Promise<{ date: Date; predictedCrowdLevel: number }[]> {
+    const allData = await this.getAllSensorReadingsByParkIdAndSensorType(parkId, SensorTypeEnum.CAMERA);
+    const endDate = allData[allData.length - 1].date;
+    const startDate = allData[0].date;
+
+    const historicalData = await this.getAggregatedCrowdDataForPark(parkId, startDate, endDate);
+
+    if (historicalData.length < 2) {
+      throw new Error('Insufficient data for prediction');
+    }
+
+    // Aggregate data by day
+    const dailyData = historicalData.reduce((acc, { date, crowdLevel }) => {
+      const day = new Date(date).setHours(0, 0, 0, 0);
+      if (!acc[day]) {
+        acc[day] = { total: 0, count: 0 };
+      }
+      acc[day].total += crowdLevel;
+      acc[day].count += 1;
+      return acc;
+    }, {});
+
+    const dailyCrowdLevels = Object.entries(dailyData).map(
+      ([day, data]: [string, { total: number; count: number }]) => data.total / data.count,
+    );
+
+    // Use the Holt-Winters algorithm to predict future crowd levels
+    const predictions = getAugumentedDataset(dailyCrowdLevels, daysToPredict);
+    console.log('predictions', predictions);
+
+    // Format the predictions into an array of objects with dates and predicted crowd levels
+    const lastHistoricalDate = new Date(Math.max(...Object.keys(dailyData).map(Number)));
+    return predictions.augumentedDataset.map((prediction, index) => ({
+      date: new Date(lastHistoricalDate.getTime() + (index + 1) * 24 * 60 * 60 * 1000), // Add days
+      predictedCrowdLevel: prediction,
+    }));
+  }
+
+  // aggregates all camera sensor readings across all zones in a park and calculates the average crowd level for each day
+  // a few considerations:
+  // 1. It doesn't distinguish between different times of day. A very busy morning and a quiet evening would average out.
+  // 2. It treats all zones equally. If some zones are much larger or more significant than others, this might not be ideal.
+  // 3. If there are multiple cameras in a single zone, their readings are being treated individually rather than averaged per zone first.
+  public async getAggregatedCrowdDataForPark(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ date: Date; crowdLevel: number }[]> {
+    const zones = await ZoneDao.getZonesByParkId(parkId);
+    let allReadings = [];
+
+    for (const zone of zones) {
+      const readings = await SensorReadingDao.getSensorReadingsByZoneIdAndSensorTypeByDateRange(
+        zone.id,
+        SensorTypeEnum.CAMERA,
+        startDate,
+        endDate,
+      );
+      allReadings = allReadings.concat(readings);
+    }
+
+    // Aggregate readings by day
+    const aggregatedReadings = allReadings.reduce<Record<number, { total: number; count: number }>>((acc, reading) => {
+      const day = new Date(reading.date).setHours(0, 0, 0, 0);
+      if (!acc[day]) {
+        acc[day] = { total: 0, count: 0 };
+      }
+      acc[day].total += reading.value;
+      acc[day].count += 1;
+      return acc;
+    }, {});
+
+    // Calculate average crowd level for each day
+    return Object.entries(aggregatedReadings)
+      .map(([day, data]) => ({
+        date: new Date(parseInt(day)),
+        crowdLevel: data.total / data.count,
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
   }
 }
 

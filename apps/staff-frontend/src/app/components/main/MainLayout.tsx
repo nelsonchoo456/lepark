@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap, FiCamera } from 'react-icons/fi';
+import { VideoCameraOutlined } from '@ant-design/icons';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -277,6 +278,14 @@ const MainLayout = () => {
               onClick: () => navigate('/promotion'),
             },
           ],
+        }
+      : null,
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'crowdInsights',
+          icon: <VideoCameraOutlined />,
+          label: 'Crowd Insights',
+          onClick: () => navigate('/crowdInsights'),
         }
       : null,
     {

@@ -35,6 +35,7 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
+const moment = require('moment-timezone');
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -321,6 +322,7 @@ async function seed() {
   console.log(`Total facilities seeded: ${facilityList.length}\n`);
 
   const storeroomId = facilityList[7].id;
+  const storeroomBAMKPId = facilityList[9].id;
 
   const hubList = [];
   for (const hub of hubsData) {
@@ -616,16 +618,28 @@ async function seed() {
 
   // Create the new hub
   let createdNewHubs = [];
+  let countHubs = 0;
   for (const newHub of newHubs) {
-    const createdNewHub = await prisma.hub.create({
-      data: {
-        ...newHub,
-        facilityId: storeroomId, // or any other appropriate facilityId
-      },
-    });
-    createdNewHubs.push(createdNewHub);
-    console.log(`New hub created: ${createdNewHub.name}\n`);
+    if (countHubs < 2) {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    } else {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    }
+    countHubs++;
   }
+  console.log(`Total new hubs created: ${createdNewHubs.length}\n`);
 
   // Create new sensors and associate them with the new hub
   let count = 0;
@@ -639,7 +653,7 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
-    } else {
+    } else if (count < 9) {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
@@ -648,17 +662,35 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
+    } else {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[2].id,
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
     }
     count++;
   }
-  console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
+  console.log(`Total new sensors created and associated with the new hub: ${sensorList.length}\n`);
 
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
-    const readings = generateMockReadings(sensor.sensorType).map((reading) => ({
-      ...reading,
-      sensorId: sensor.id,
-    }));
+    let readings;
+    if (sensor.sensorType === 'CAMERA') {
+      if (sensor.identifierNumber === 'SE-9999X') {
+        readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
+      } else {
+        readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
+      }
+    } else {
+      readings = generateMockReadings(sensor.sensorType).map((reading) => ({
+        ...reading,
+        sensorId: sensor.id,
+      }));
+    }
 
     await prisma.sensorReading.createMany({
       data: readings,
@@ -1055,6 +1087,168 @@ const createReading = (sensorType, date) => {
     value: parseFloat(value.toFixed(2)),
   };
 };
+
+function generateMockCrowdDataForSBG(sensorId, days) {
+  const readings = [];
+  const now = moment().tz('Asia/Singapore');
+  const startDate = moment(now).subtract(days, 'days').startOf('day');
+
+  // Generate random events
+  const events = [];
+  for (let i = 0; i < Math.floor(days / 10); i++) {
+    const eventDay = Math.floor(Math.random() * days);
+    events.push(moment(startDate).add(eventDay, 'days').toDate());
+  }
+
+  for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
+    const hour = time.hour();
+    const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    let baseCrowdLevel = 40 + Math.random() * 30; // Base level 
+
+    // Day of week effect
+    switch (day) {
+      case 0: // Sunday
+      case 6: // Saturday
+        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        break;
+      case 1: // Monday
+        baseCrowdLevel *= 0.6 + Math.random() * 0.2; // Less crowded Mondays
+        break;
+      case 5: // Friday
+        baseCrowdLevel *= 1.2 + Math.random() * 0.3; // More crowded Fridays
+        break;
+      default: // Tuesday to Thursday
+        baseCrowdLevel *= 1 + Math.random() * 0.2; // Slight variation for weekdays
+    }
+
+    // Time of day effect
+    if (hour >= 6 && hour < 9) {
+      baseCrowdLevel *= 1.8 + Math.random() * 0.4;
+    } else if (hour >= 12 && hour < 14) {
+      baseCrowdLevel *= 1.6 + Math.random() * 0.3;
+    } else if (hour >= 17 && hour < 21) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    } else if (hour >= 22 || hour < 6) {
+      baseCrowdLevel *= 0.4 + Math.random() * 0.2;
+    }
+
+    // Weather effect
+    const weatherEffect = Math.random();
+    if (weatherEffect > 0.8) {
+      baseCrowdLevel *= 0.5;
+    } else if (weatherEffect > 0.6) {
+      baseCrowdLevel *= 0.8;
+    } else if (weatherEffect < 0.2) {
+      baseCrowdLevel *= 1.3;
+    }
+
+    // Special event effect
+    if (events.some(eventDate => time.isSame(eventDate, 'day'))) {
+      const eventHourEffect = Math.abs(hour - 19) / 10;
+      baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
+    }
+
+    // Public holiday effect
+    if (Math.random() < 0.05) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    }
+
+    // Add random fluctuations
+    baseCrowdLevel += (Math.random() - 0.5) * 20;
+
+    // Ensure crowd level is within bounds, with a higher minimum
+    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+
+    readings.push({
+      date: time.toDate(),
+      value: crowdLevel,
+      sensorId: sensorId,
+    });
+  }
+
+  return readings;
+}
+
+function generateMockCrowdDataForBAMKP(sensorId, days) {
+  const readings = [];
+  const now = moment().tz('Asia/Singapore');
+  const startDate = moment(now).subtract(days, 'days').startOf('day');
+
+  // Generate random events
+  const events = [];
+  for (let i = 0; i < Math.floor(days / 10); i++) {
+    const eventDay = Math.floor(Math.random() * days);
+    events.push(moment(startDate).add(eventDay, 'days').toDate());
+  }
+
+  for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
+    const hour = time.hour();
+    const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    let baseCrowdLevel = 20 + Math.random() * 30; // base level
+
+    // Day of week effect
+    switch (day) {
+      case 0: // Sunday
+      case 6: // Saturday
+        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        break;
+      case 1: // Monday
+        baseCrowdLevel *= 0.5 + Math.random() * 0.2; // Less crowded Mondays
+        break;
+      case 5: // Friday
+        baseCrowdLevel *= 1.2 + Math.random() * 0.3; // More crowded Fridays
+        break;
+      default: // Tuesday to Thursday
+        baseCrowdLevel *= 1 + Math.random() * 0.2; // Slight variation for weekdays
+    }
+
+    // Time of day effect
+    if (hour >= 6 && hour < 9) {
+      baseCrowdLevel *= 1.8 + Math.random() * 0.4;
+    } else if (hour >= 12 && hour < 14) {
+      baseCrowdLevel *= 1.6 + Math.random() * 0.3;
+    } else if (hour >= 17 && hour < 21) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    } else if (hour >= 22 || hour < 6) {
+      baseCrowdLevel *= 0.4 + Math.random() * 0.2;
+    }
+
+    // Weather effect
+    const weatherEffect = Math.random();
+    if (weatherEffect > 0.8) {
+      baseCrowdLevel *= 0.5;
+    } else if (weatherEffect > 0.6) {
+      baseCrowdLevel *= 0.8;
+    } else if (weatherEffect < 0.2) {
+      baseCrowdLevel *= 1.3;
+    }
+
+    // Special event effect
+    if (events.some(eventDate => time.isSame(eventDate, 'day'))) {
+      const eventHourEffect = Math.abs(hour - 19) / 10;
+      baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
+    }
+
+    // Public holiday effect
+    if (Math.random() < 0.05) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    }
+
+    // Add random fluctuations
+    baseCrowdLevel += (Math.random() - 0.5) * 20;
+
+    // Ensure crowd level is within bounds, with a higher minimum
+    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+
+    readings.push({
+      date: time.toDate(),
+      value: crowdLevel,
+      sensorId: sensorId,
+    });
+  }
+
+  return readings;
+}
 
 seed()
   .catch((e) => {
