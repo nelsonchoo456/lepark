@@ -1652,78 +1652,334 @@ const attractionsData = [
   },
 ];
 
-const maintenanceTasksData = [
+let maintenanceTasksData = [
   {
-    title: 'Repair Broken Bench',
-    description: 'Fix the broken wooden slats on the bench near the main entrance.',
-    taskType: 'REPAIR',
+    title: 'Inspect Playground Facility Equipment',
+    description: 'Check all playground equipment for safety and wear.',
+    taskType: 'INSPECTION',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2024-10-15'),
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Due in 2 days
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-29'),
+    updatedAt: new Date('2024-10-31'),
+    dueDate: new Date('2024-10-31'),
     completedDate: null,
-    images: ['https://example.com/broken-bench.jpg'],
-    remarks: 'Requires replacement wood and tools.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 1000,
   },
   {
-    title: 'Calibrate Temperature Sensor',
-    description: 'Recalibrate the temperature sensor in the Orchid Garden for accurate readings.',
-    taskType: 'CALIBRATION',
+    title: 'Replace Light Bulbs in Visitor Center Facility',
+    description: 'Replace burnt-out light bulbs in the visitor center.',
+    taskType: 'REPAIR',
     taskUrgency: 'NORMAL',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-14'),
-    updatedAt: new Date('2024-10-16'),
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Due in 3 days
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-09'),
+    updatedAt: new Date('2024-10-10'),
+    dueDate: new Date('2024-10-10'),
     completedDate: null,
-    images: ['https://example.com/temperature-sensor.jpg'],
-    remarks: 'Use calibration kit #3.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 2000,
   },
   {
-    title: 'Clean Public Restrooms',
-    description: 'Perform deep cleaning of all public restrooms in the Visitor Center.',
-    taskType: 'CLEANING',
+    title: 'Repair Irrigation System Park Asset',
+    description: 'Fix leaks in the irrigation system.',
+    taskType: 'REPAIR',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-13'),
-    updatedAt: new Date('2024-10-13'),
-    dueDate: new Date('2024-10-13'),
-    completedDate: null,
-    images: ['https://example.com/clean-restroom.jpg'],
-    remarks: 'Use eco-friendly cleaning products.',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-10'),
+    updatedAt: new Date('2024-10-12'),
+    dueDate: new Date('2024-10-10'),
+    completedDate: new Date('2024-10-12'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 3000,
   },
   {
-    title: 'Update Hub Firmware',
-    description: 'Install the latest firmware update on the central data hub.',
-    taskType: 'SOFTWARE_UPDATE',
-    taskUrgency: 'NORMAL',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-16'),
-    updatedAt: new Date('2024-10-16'),
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due in 5 days
+    title: 'Deep Clean Greenhouses Facility',
+    description: 'Perform deep cleaning of all greenhouses.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-27'),
+    updatedAt: new Date('2024-10-28'),
+    dueDate: new Date('2024-10-30'),
     completedDate: null,
-    images: ['https://example.com/data-hub.jpg'],
-    remarks: 'Ensure all data is backed up before updating.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 4000,
   },
   {
-    title: 'Replace Damaged Lawnmower Blade',
-    description: 'Replace the damaged blade on lawnmower #3 with a new one.',
-    taskType: 'REPAIR',
-    taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2024-10-17'),
-    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Due in 1 day
+    title: 'Calibrate Pressure Gauges Asset Facility',
+    description: 'Recalibrate the pressure gauges in the equipment shed.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-12'),
+    updatedAt: new Date('2024-10-13'),
+    dueDate: new Date('2024-10-17'),
     completedDate: null,
-    images: ['https://example.com/lawnmower-blade.jpg'],
-    remarks: 'New blade is in storage room B.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 5000,
   },
+  {
+    title: 'Install New Security Cameras Facility',
+    description: 'Install new security cameras in the park.',
+    taskType: 'HARDWARE_REPLACEMENT',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-25'),
+    updatedAt: new Date('2024-10-26'),
+    dueDate: new Date('2024-10-26'),
+    completedDate: new Date('2024-10-26'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 6000,
+  },
+  {
+    title: 'Check Soil Moisture Sensor',
+    description: 'Ensure all soil moisture sensor is functioning.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'IMMEDIATE',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-28'),
+    updatedAt: new Date('2024-10-28'),
+    dueDate: new Date('2024-10-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 7000,
+  },
+  {
+    title: 'Service Water Fountain Facility',
+    description: 'Perform maintenance on the water fountain.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-29'),
+    updatedAt: new Date('2024-10-31'),
+    dueDate: new Date('2024-10-29'),
+    completedDate: new Date('2024-10-31'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 8000,
+  },
+  {
+    title: 'Test Fire Alarms Facility',
+    description: 'Test all fire alarms for proper functionality.',
+    taskType: 'FIRE_SAFETY',
+    taskUrgency: 'HIGH',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-10'),
+    updatedAt: new Date('2024-10-12'),
+    dueDate: new Date('2024-10-14'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 9000,
+  },
+  {
+    title: 'Update Software on Maintenance Tablets Park Asset',
+    description: 'Install software updates on maintenance tablets.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'CANCELLED',
+    createdAt: new Date('2024-10-30'),
+    updatedAt: new Date('2024-10-30'),
+    dueDate: new Date('2024-10-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 10000,
+  },
+  {
+    title: 'Inspect Park Asset Benches',
+    description: 'Check the benches in the main park area for any wear or damage.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-09'),
+    updatedAt: new Date('2024-09-18'),
+    dueDate: new Date('2024-09-18'),
+    completedDate: new Date('2024-09-18'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 11000,
+  },
+  {
+    title: 'Repair Broken Facility Gate',
+    description: 'Fix the malfunctioning gate at the south entrance.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-02'),
+    dueDate: new Date('2024-09-01'),
+    completedDate: new Date('2024-09-02'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 12000,
+  },
+  {
+    title: 'Deep Clean Restroom Facility',
+    description: 'Perform deep cleaning of the public restrooms.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-16'),
+    dueDate: new Date('2024-09-18'),
+    completedDate: new Date('2024-09-16'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 13000,
+  },
+  {
+    title: 'Calibrate Temperature Sensor Hub',
+    description: 'Recalibrate the temperature sensor in the monitoring hub.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-10'),
+    updatedAt: new Date('2024-09-22'),
+    dueDate: new Date('2024-09-26'),
+    completedDate: new Date('2024-09-22'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 14000,
+  },
+  {
+    title: 'Update Hub Firmware',
+    description: 'Install the latest firmware on the central data hub.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-27'),
+    updatedAt: new Date('2024-09-28'),
+    dueDate: new Date('2024-09-28'),
+    completedDate: new Date('2024-09-28'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 15000,
+  },
+  {
+    title: 'Replace Damaged Facility Roof Tiles',
+    description: 'Replace broken tiles on the visitor center roof.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-03'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-04'),
+    completedDate: new Date('2024-09-30'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 16000,
+  },
+  {
+    title: 'Inspect Sprinkler System Sensor',
+    description: 'Ensure all sprinkler sensors are functioning correctly.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'IMMEDIATE',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-20'),
+    updatedAt: new Date('2024-09-28'),
+    dueDate: new Date('2024-09-28'),
+    completedDate: new Date('2024-09-28'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 17000,
+  },
+  {
+    title: 'Service Park Asset Water Fountain',
+    description: 'Perform maintenance on the main water fountain.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-13'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-14'),
+    completedDate: new Date('2024-09-30'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 18000,
+  },
+  {
+    title: 'Test Emergency Exit Facility Lights',
+    description: 'Test emergency lights for proper functionality.',
+    taskType: 'FIRE_SAFETY',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-03'),
+    dueDate: new Date('2024-09-05'),
+    completedDate: new Date('2024-09-03'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 19000,
+  },
+  {
+    title: 'Update Software on Facility Tablets',
+    description: 'Install software updates on maintenance tablets.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'CANCELLED',
+    createdAt: new Date('2024-09-30'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 20000,
+  },
+  {
+    title: 'Test Park Asset Benches',
+    description: 'Check the benches in the main park area for any wear or damage.',
+    taskType: 'TESTING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-08-01'),
+    updatedAt: new Date('2024-10-25'),
+    dueDate: new Date('2024-09-01'),
+    completedDate: new Date('2024-10-25'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 21000,
+  },
 ];
+
+// Group tasks by status
+const groupedMaintenanceTasks = {
+  OPEN: [],
+  IN_PROGRESS: [],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+maintenanceTasksData.forEach((task) => {
+  groupedMaintenanceTasks[task.taskStatus].push(task);
+});
+
+// Assign positions within each group
+Object.keys(groupedMaintenanceTasks).forEach((status) => {
+  groupedMaintenanceTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedMaintenanceTasks[status].forEach((task, index) => {
+    task.position = (index + 1) * 1000;
+  });
+});
+
+// Flatten the grouped tasks back into a single array
+maintenanceTasksData = Object.values(groupedMaintenanceTasks).flat();
+
+// Sort the maintenanceTasksData array by status and position
+maintenanceTasksData.sort((a, b) => {
+  const statusOrder = { OPEN: 0, IN_PROGRESS: 1, COMPLETED: 2, CANCELLED: 3 };
+  if (a.taskStatus !== b.taskStatus) {
+    return statusOrder[a.taskStatus] - statusOrder[b.taskStatus];
+  }
+  return a.position - b.position;
+});
 
 let plantTasksData = [
   {
@@ -2210,27 +2466,27 @@ let plantTasksData = [
 ];
 
 // Group tasks by status
-const groupedTasks = {
+const groupedPlantTasks = {
   OPEN: [],
   IN_PROGRESS: [],
   COMPLETED: [],
-  CANCELLED: []
+  CANCELLED: [],
 };
 
-plantTasksData.forEach(task => {
-  groupedTasks[task.taskStatus].push(task);
+plantTasksData.forEach((task) => {
+  groupedPlantTasks[task.taskStatus].push(task);
 });
 
 // Assign positions within each group
-Object.keys(groupedTasks).forEach(status => {
-  groupedTasks[status].sort((a, b) => a.createdAt - b.createdAt);
-  groupedTasks[status].forEach((task, index) => {
+Object.keys(groupedPlantTasks).forEach((status) => {
+  groupedPlantTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedPlantTasks[status].forEach((task, index) => {
     task.position = (index + 1) * 1000;
   });
 });
 
 // Flatten the grouped tasks back into a single array
-plantTasksData = Object.values(groupedTasks).flat();
+plantTasksData = Object.values(groupedPlantTasks).flat();
 
 // Sort the plantTasksData array by status and position
 plantTasksData.sort((a, b) => {

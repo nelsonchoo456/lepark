@@ -313,7 +313,7 @@ class PlantTaskService {
     const dueDate = new Date(createdAt);
     switch (urgency) {
       case PlantTaskUrgencyEnum.IMMEDIATE:
-        // Due today (0 days)
+        dueDate.setDate(dueDate.getDate() + 1);
         break;
       case PlantTaskUrgencyEnum.HIGH:
         dueDate.setDate(dueDate.getDate() + 3);
@@ -555,39 +555,58 @@ class PlantTaskService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ bestPerformer: Staff; secondBestPerformer: Staff; thirdBestPerformer: Staff; message: string | null }> {
-    const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
-    const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
-    const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
-    const completedTasks = await this.getParkTaskCompleted(parkId, startDate, endDate);
+    try {
+      const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
+      const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
+      const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
+      const completedTasks = await this.getParkTaskCompleted(parkId, startDate, endDate);
 
-    const staffPerformance = completionRates.map(({ staff, completionRate }) => {
-      const overdue = overdueRates.find((o) => o.staff.id === staff.id)?.overdueRate || 0;
-      const avgTime = avgCompletionTimes.find((a) => a.staff.id === staff.id)?.averageCompletionTime || 0;
-      const tasksCompleted = completedTasks.find((c) => c.staff.id === staff.id)?.taskCompleted || 0;
+      const staffPerformance = completionRates.map(({ staff, completionRate }) => {
+        const overdue = overdueRates.find((o) => o.staff.id === staff.id)?.overdueRate || 0;
+        const avgTime = avgCompletionTimes.find((a) => a.staff.id === staff.id)?.averageCompletionTime || 0;
+        const tasksCompleted = completedTasks.find((c) => c.staff.id === staff.id)?.taskCompleted || 0;
 
-      // Calculate a performance score
-      const performanceScore = completionRate * 0.1 + (100 - overdue) * 0.2 + (100 - avgTime) * 0.1 + tasksCompleted * 0.6;
+        console.log(staff.firstName, completionRate, overdue, avgTime, tasksCompleted);
 
-      return { staff, performanceScore };
-    });
+        // Calculate a performance score
+        let performanceScore = 0;
+        if (completionRate > 0 && overdue > 0 && avgTime > 0 && tasksCompleted > 0) {
+          performanceScore = completionRate * 0.2 + (100 - overdue) * 0.2 + (100 - avgTime) * 0.1 + tasksCompleted * 0.5;
+        } else {
+          performanceScore = 0;
+        }
 
-    // Sort by performance score in descending order
-    staffPerformance.sort((a, b) => b.performanceScore - a.performanceScore);
+        return { staff, performanceScore };
+      });
 
-    if (staffPerformance.length === 0) {
-      throw new Error('No staff performance data available');
+      // Sort by performance score in descending order
+      staffPerformance.sort((a, b) => b.performanceScore - a.performanceScore);
+
+      console.log(staffPerformance);
+
+      if (staffPerformance.length === 0) {
+        throw new Error('No staff performance data available');
+      }
+
+      const bestPerformer = staffPerformance[0];
+      const secondBestPerformer = staffPerformance[1];
+      const thirdBestPerformer = staffPerformance[2];
+
+      return {
+        bestPerformer: bestPerformer.staff,
+        secondBestPerformer: secondBestPerformer.staff,
+        thirdBestPerformer: thirdBestPerformer.staff,
+        message: null,
+      };
+    } catch (error) {
+      console.error('Error fetching staff performance ranking:', error);
+      return {
+        bestPerformer: null,
+        secondBestPerformer: null,
+        thirdBestPerformer: null,
+        message: 'Park has no tasks at this time',
+      };
     }
-
-    const bestPerformer = staffPerformance[0];
-    const secondBestPerformer = staffPerformance[1];
-    const thirdBestPerformer = staffPerformance[2];
-
-    return {
-      bestPerformer: bestPerformer.staff,
-      secondBestPerformer: secondBestPerformer.staff,
-      thirdBestPerformer: thirdBestPerformer.staff,
-      message: null,
-    };
   }
 
   public async getParkStaffAverageCompletionTimeForPastMonths(

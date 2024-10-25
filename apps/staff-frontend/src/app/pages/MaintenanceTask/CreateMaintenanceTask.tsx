@@ -97,23 +97,39 @@ const CreateMaintenanceTask = () => {
       switch (entityType) {
         case 'parkAsset':
           response = await getParkAssetByIdentifierNumber(identifier);
+          if (!response.data) {
+            setSelectedEntity(null);
+            messageApi.error(`${convertCamelCaseToTitleCase(entityType)} not found`);
+            return;
+          } else if (response.data.facility?.parkId === selectedParkId || response.data.facility?.parkId === user?.parkId) {
+            setSelectedEntity(response.data);
+            messageApi.success(`${convertCamelCaseToTitleCase(entityType)} found successfully`);
+          }
           break;
         case 'sensor':
           response = await getSensorByIdentifierNumber(identifier);
+          if (!response.data) {
+            setSelectedEntity(null);
+            messageApi.error(`${convertCamelCaseToTitleCase(entityType)} not found`);
+            return;
+          } else if (response.data.facility?.parkId === selectedParkId || response.data.facility?.parkId === user?.parkId) {
+            setSelectedEntity(response.data);
+            messageApi.success(`${convertCamelCaseToTitleCase(entityType)} found successfully`);
+          }
           break;
         case 'hub':
           response = await getHubByIdentifierNumber(identifier);
+          if (!response.data) {
+            setSelectedEntity(null);
+            messageApi.error(`${convertCamelCaseToTitleCase(entityType)} not found`);
+            return;
+          } else if (response.data.facility?.parkId === selectedParkId || response.data.facility?.parkId === user?.parkId) {
+            setSelectedEntity(response.data);
+            messageApi.success(`${convertCamelCaseToTitleCase(entityType)} found successfully`);
+          }
           break;
         default:
           throw new Error('Invalid entity type');
-      }
-      
-      if (response.data) {
-        setSelectedEntity(response.data);
-        messageApi.success(`${convertCamelCaseToTitleCase(entityType)} found successfully`);
-      } else {
-        setSelectedEntity(null);
-        messageApi.error(`No ${convertCamelCaseToTitleCase(entityType)} found with the given identifier`);
       }
     } catch (error) {
       console.error(`Error fetching ${entityType} details:`, error);

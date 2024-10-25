@@ -5,6 +5,9 @@ import {
   MaintenanceTaskResponse,
   MaintenanceTaskUpdateData,
   OverdueRateMaintenanceTaskData,
+  DelayedTaskTypeData,
+  ParkTaskTypeAverageCompletionTimesForPastMonthsData,
+  ParkTaskTypeOverdueRatesForPastMonthsData,
 } from '../types/maintenancetask';
 import client from './client';
 import { MaintenanceTaskStatusEnum } from '@prisma/client';
@@ -275,7 +278,7 @@ export async function getMaintenanceTasksByStatus(status: MaintenanceTaskStatusE
 }
 
 export async function getParkMaintenanceTaskAverageCompletionTimeForPeriod(
-  parkId: number,
+  parkId: number | null,
   startDate: Date,
   endDate: Date,
 ): Promise<AxiosResponse<CompletionTimeData[]>> {
@@ -294,7 +297,7 @@ export async function getParkMaintenanceTaskAverageCompletionTimeForPeriod(
 }
 
 export async function getParkMaintenanceTaskOverdueRateForPeriod(
-  parkId: number,
+  parkId: number | null,
   startDate: Date,
   endDate: Date,
 ): Promise<AxiosResponse<OverdueRateMaintenanceTaskData[]>> {
@@ -313,13 +316,13 @@ export async function getParkMaintenanceTaskOverdueRateForPeriod(
   }
 }
 
-export async function getParkMaintenanceTaskCriticalTaskTypesForPeriod(
-  parkId: number,
+export async function getParkMaintenanceTaskDelayedTaskTypesForPeriod(
+  parkId: number | null,
   startDate: Date,
   endDate: Date,
-): Promise<AxiosResponse<string[]>> {
+): Promise<AxiosResponse<DelayedTaskTypeData[]>> {
   try {
-    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskCriticalTaskTypesForPeriod`, {
+    const response: AxiosResponse<DelayedTaskTypeData[]> = await client.get(`${URL}/getParkMaintenanceTaskDelayedTaskTypesForPeriod`, {
       params: { parkId, startDate, endDate },
     });
     return response;
@@ -332,15 +335,15 @@ export async function getParkMaintenanceTaskCriticalTaskTypesForPeriod(
   }
 }
 
-export async function getParkMaintenanceTaskTaskTypeEfficiencyRanking(
-  parkId: number,
-  startDate: Date,
-  endDate: Date,
-): Promise<AxiosResponse<string[]>> {
+export async function getParkTaskTypeAverageCompletionTimesForPastMonths(
+  parkId: number | null,
+  months: number,
+): Promise<AxiosResponse<ParkTaskTypeAverageCompletionTimesForPastMonthsData[]>> {
   try {
-    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskTaskTypeEfficiencyRanking`, {
-      params: { parkId, startDate, endDate },
-    });
+    const response: AxiosResponse<ParkTaskTypeAverageCompletionTimesForPastMonthsData[]> = await client.get(
+      `${URL}/getParkTaskTypeAverageCompletionTimesForPastMonths`,
+      { params: { parkId, months } },
+    );
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -351,16 +354,13 @@ export async function getParkMaintenanceTaskTaskTypeEfficiencyRanking(
   }
 }
 
-export async function getParkMaintenanceTaskTrendAnalysis(
-  parkId: number,
-  startDate: Date,
-  endDate: Date,
-  previousStartDate: Date,
-  previousEndDate: Date,
-): Promise<AxiosResponse<string[]>> {
+export async function getParkTaskTypeOverdueRatesForPastMonths(
+  parkId: number | null,
+  months: number,
+): Promise<AxiosResponse<ParkTaskTypeOverdueRatesForPastMonthsData[]>> {
   try {
-    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskTrendAnalysis`, {
-      params: { parkId, startDate, endDate, previousStartDate, previousEndDate },
+    const response: AxiosResponse<ParkTaskTypeOverdueRatesForPastMonthsData[]> = await client.get(`${URL}/getParkTaskTypeOverdueRatesForPastMonths`, {
+      params: { parkId, months },
     });
     return response;
   } catch (error) {
@@ -371,43 +371,3 @@ export async function getParkMaintenanceTaskTrendAnalysis(
     }
   }
 }
-
-export async function getParkMaintenanceTaskOverdueRateAnalysis(
-  parkId: number,
-  startDate: Date,
-  endDate: Date,
-): Promise<AxiosResponse<string[]>> {
-  try {
-    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskOverdueRateAnalysis`, {
-      params: { parkId, startDate, endDate },
-    });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-export async function getParkMaintenanceTaskTaskTypeComparisonAnalysis(
-  parkId: number,
-  startDate: Date,
-  endDate: Date,
-): Promise<AxiosResponse<string[]>> {
-  try {
-    const response: AxiosResponse<string[]> = await client.get(`${URL}/getParkMaintenanceTaskTaskTypeComparisonAnalysis`, {
-      params: { parkId, startDate, endDate },
-    });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-// Add other functions similar to the plantTask API file, such as getParkTaskLoadPercentage, getStaffPerformanceRanking, etc.
