@@ -1,11 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, DatePicker, Select, Row, Col, Typography, Radio, Button, InputNumber, Modal, Form, Tag, Slider } from 'antd';
+import {
+  Table,
+  Card,
+  DatePicker,
+  Select,
+  Row,
+  Col,
+  Typography,
+  Radio,
+  Button,
+  InputNumber,
+  Modal,
+  Form,
+  Tag,
+  Slider,
+  Checkbox,
+  Space,
+  Spin,
+} from 'antd';
 import { Line } from 'react-chartjs-2';
 import dayjs, { Dayjs } from 'dayjs';
 import {
   getAggregatedCrowdDataForPark,
   getAllParks,
   getAllSensorReadingsByParkIdAndSensorType,
+  getPredictedCrowdLevelsForPark,
   getSensorReadingsByZoneIdAndSensorTypeByDateRange,
   getZonesByParkId,
   ParkResponse,
@@ -18,10 +37,11 @@ import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
 import ParkCrowdLevelsCalendar from './ParkCrowdLevelsCalendar';
 import { useParkThresholds } from '../../hooks/CrowdInsights/CalculateCrowdThresholds';
 import moment from 'moment-timezone';
-import { sumBy } from 'lodash';
+import { groupBy, mapValues, merge, sumBy, uniqBy } from 'lodash';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { ColumnType } from 'antd/es/table';
+import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin);
 
@@ -43,6 +63,8 @@ const ParkCrowdLevels: React.FC = () => {
   const [viewMode, setViewMode] = useState<string>('calendar');
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(['actual', 'predicted']);
+  const navigate = useNavigate();
 
   // Fix: Handle the case when parkId is 0 separately
   const parkGeom = parkId === 0 ? undefined : parks.find((p) => p.id === parkId)?.geom;
@@ -131,7 +153,7 @@ const ParkCrowdLevels: React.FC = () => {
         historicalData = historicalResponse.data;
       }
 
-      // Fetch predictions
+      // Fetch future predictions
       const predictionStartDate = today.clone().add(1, 'day').startOf('day');
       const daysToPredict = predictionEndDate.diff(predictionStartDate, 'days') + 1;
       let predictedData;
@@ -146,24 +168,65 @@ const ParkCrowdLevels: React.FC = () => {
         predictedData = predictedResponse.data;
       }
 
-      const combinedData = [
-        ...historicalData.map((item: any) => ({
-          date: moment.tz(item.date, 'Asia/Singapore').format('YYYY-MM-DD'),
-          crowdLevel: item.crowdLevel,
-          predictedCrowdLevel: null,
-        })),
-        ...predictedData.map((item: any) => ({
-          date: moment.tz(item.date, 'Asia/Singapore').format('YYYY-MM-DD'),
-          crowdLevel: null,
-          predictedCrowdLevel: item.predictedCrowdLevel,
-        })),
-      ];
+      // Calculate the number of distinct days
+      const distinctDays = uniqBy(sortedData, (item) => moment.tz(item.date, 'Asia/Singapore').format('YYYY-MM-DD')).length;
+      const pastDaysToPredict = Math.max(distinctDays - 71, 0); // Ensure it's not negative
 
-      // Sort combined data by date
-      combinedData.sort((a, b) => moment.tz(a.date, 'Asia/Singapore').valueOf() - moment.tz(b.date, 'Asia/Singapore').valueOf());
+      // Fetch past predicted crowd levels
+      let pastPredictedData;
+      if (parkId === 0) {
+        const allParksPastPredictions = await Promise.all(parks.map((park) => getPredictedCrowdLevelsForPark(park.id, pastDaysToPredict)));
+        pastPredictedData = allParksPastPredictions[0].data.map((item: { date: any }, index: string | number) => ({
+          date: item.date,
+          predictedCrowdLevel: sumBy(allParksPastPredictions, (prediction) => prediction.data[index].predictedCrowdLevel),
+        }));
+      } else {
+        const pastPredictedResponse = await getPredictedCrowdLevelsForPark(parkId, pastDaysToPredict);
+        pastPredictedData = pastPredictedResponse.data;
+      }
 
-      console.log('Combined data:', combinedData);
-      setCrowdData(combinedData);
+      // Normalize the date format for all data sets
+      const normalizeDate = (date: string) => moment.tz(date, 'Asia/Singapore').format('YYYY-MM-DD');
+
+      const normalizedHistoricalData = historicalData.map((item: { date: string }) => ({
+        ...item,
+        date: normalizeDate(item.date),
+      }));
+
+      const normalizedPredictedData = predictedData.map((item: { date: string }) => ({
+        ...item,
+        date: normalizeDate(item.date),
+      }));
+
+      const normalizedPastPredictedData = pastPredictedData.map((item: { date: string; predictedCrowdLevel: number }) => ({
+        date: normalizeDate(item.date),
+        predictedCrowdLevel: item.predictedCrowdLevel,
+      }));
+
+      // Combine all data
+      const allDates = new Set([
+        ...normalizedHistoricalData.map((item: { date: string }) => item.date),
+        ...normalizedPredictedData.map((item: { date: string }) => item.date),
+        ...normalizedPastPredictedData.map((item: { date: string }) => item.date),
+      ]);
+
+      const combinedData = Array.from(allDates).map((date: string) => {
+        const historical = normalizedHistoricalData.find((item: { date: string }) => item.date === date);
+        const predicted = normalizedPredictedData.find((item: { date: string }) => item.date === date);
+        const pastPredicted = normalizedPastPredictedData.find((item: { date: string }) => item.date === date);
+
+        return {
+          date,
+          crowdLevel: historical?.crowdLevel ?? null,
+          predictedCrowdLevel: pastPredicted?.predictedCrowdLevel ?? predicted?.predictedCrowdLevel ?? null,
+        };
+      });
+
+      // Sort the combined data by date
+      const finalData = combinedData.sort((a, b) => moment(a.date).diff(moment(b.date)));
+
+      //   console.log('Final data:', finalData);
+      setCrowdData(finalData);
     } catch (error) {
       console.error('Error fetching crowd data:', error);
     } finally {
@@ -221,24 +284,36 @@ const ParkCrowdLevels: React.FC = () => {
     );
   });
 
+  const handleDataSeriesChange = (checkedValues: string[]) => {
+    setSelectedDataSeries(checkedValues);
+  };
+
   const chartData = {
     labels: filteredCrowdData.map((d) => dayjs(d.date).format('ddd DD/MM')),
     datasets: [
-      {
-        label: 'Actual',
-        data: filteredCrowdData.map((d) => (d.crowdLevel !== null ? Math.round(d.crowdLevel) : null)),
-        borderColor: 'rgb(75, 192, 192)',
-        fill: false,
-      },
-      {
-        label: 'Predicted',
-        data: filteredCrowdData.map((d) =>
-          d.predictedCrowdLevel !== null ? (d.predictedCrowdLevel !== undefined ? Math.round(d.predictedCrowdLevel) : null) : null,
-        ),
-        borderColor: 'rgb(255, 99, 132)',
-        borderDash: [5, 5],
-        fill: false,
-      },
+      ...(selectedDataSeries.includes('actual')
+        ? [
+            {
+              label: 'Actual',
+              data: filteredCrowdData.map((d) => (d.crowdLevel !== null ? Math.round(d.crowdLevel) : null)),
+              borderColor: 'rgb(75, 192, 192)',
+              fill: false,
+            },
+          ]
+        : []),
+      ...(selectedDataSeries.includes('predicted')
+        ? [
+            {
+              label: 'Predicted',
+              data: filteredCrowdData.map((d) =>
+                d.predictedCrowdLevel !== null ? (d.predictedCrowdLevel !== undefined ? Math.round(d.predictedCrowdLevel) : null) : null,
+              ),
+              borderColor: 'rgb(255, 99, 132)',
+              borderDash: [5, 5],
+              fill: false,
+            },
+          ]
+        : []),
     ],
   };
 
@@ -308,9 +383,36 @@ const ParkCrowdLevels: React.FC = () => {
               position: 'left',
             },
           },
+          todayLine: {
+            type: 'line',
+            xMin: moment().format('ddd DD/MM'),
+            xMax: moment().format('ddd DD/MM'),
+            borderColor: 'rgba(200, 200, 200, 0.7)', // Lighter grey color
+            borderWidth: 2,
+            borderDash: [5, 5], // This creates the dotted effect
+            label: {
+              content: 'Today',
+              enabled: true,
+              position: 'top',
+              backgroundColor: 'rgba(200, 200, 200, 0.7)', // Lighter grey background for label
+              color: 'rgba(60, 60, 60, 1)', // Darker text for contrast
+            },
+          },
         },
       },
     },
+  };
+
+  const disabledDate = (current: Dayjs) => {
+    // Convert current to YYYY-MM-DD format for comparison
+    const currentDateString = current.format('YYYY-MM-DD');
+
+    // Check if the current date exists in crowdData
+    return !crowdData.some((data) => data.date === currentDateString);
+  };
+
+  const handleCompareParksCLick = () => {
+    navigate('/crowdInsights/compareParks');
   };
 
   const breadcrumbItems = [
@@ -326,6 +428,7 @@ const ParkCrowdLevels: React.FC = () => {
     <Radio.Group value={viewMode} onChange={(e) => setViewMode(e.target.value)} className="mb-4">
       <Radio.Button value="calendar">Calendar View</Radio.Button>
       <Radio.Button value="graph">Graph View</Radio.Button>
+      <Radio.Button value="table">Table View</Radio.Button>
     </Radio.Group>
   );
 
@@ -349,16 +452,48 @@ const ParkCrowdLevels: React.FC = () => {
             </div>
           </Col>
         </Row>
-        {viewMode === 'graph' ? (
-          <div style={{ height: '300px' }}>
-            <RangePicker value={selectedDate} onChange={(dates) => setSelectedDate(dates ? (dates as [Dayjs, Dayjs]) : defaultDateRange)} />
-            <Line data={chartData} options={chartOptions as any} />
-            <Table dataSource={filteredCrowdData} columns={columns} rowKey={(record) => record.date} className="mt-4" />
+        {isLoading ? (
+          <div className="flex flex-col justify-center items-center h-64">
+            <Spin size="large" />
+            <p className="mt-5">This will take a moment...</p>
           </div>
-        ) : (
+        ) : viewMode === 'graph' ? (
+          <div className="h-[500px] relative">
+            <div className="flex justify-between items-center mb-4">
+              <Space direction="vertical">
+                <RangePicker
+                  value={selectedDate}
+                  onChange={(dates) => setSelectedDate(dates ? (dates as [Dayjs, Dayjs]) : defaultDateRange)}
+                  disabledDate={disabledDate}
+                />
+                <Checkbox.Group
+                  options={[
+                    { label: 'Actual Crowd Levels', value: 'actual' },
+                    { label: 'Predicted Crowd Levels', value: 'predicted' },
+                  ]}
+                  value={selectedDataSeries}
+                  onChange={handleDataSeriesChange}
+                />
+              </Space>
+              <Button type="primary" onClick={handleCompareParksCLick}>
+                Compare Parks
+              </Button>
+            </div>
+            <div className="h-[calc(100%-80px)]">
+              <Line data={chartData} options={chartOptions as any} />
+            </div>
+          </div>
+        ) : viewMode === 'table' ? (
           <>
-            <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={thresholds} allParks={parks} />
+            <RangePicker
+              value={selectedDate}
+              onChange={(dates) => setSelectedDate(dates ? (dates as [Dayjs, Dayjs]) : defaultDateRange)}
+              disabledDate={disabledDate}
+            />
+            <Table dataSource={filteredCrowdData} columns={columns} rowKey={(record) => record.date} className="mt-4" />
           </>
+        ) : (
+          <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={thresholds} allParks={parks} />
         )}
       </Card>
     </ContentWrapperDark>

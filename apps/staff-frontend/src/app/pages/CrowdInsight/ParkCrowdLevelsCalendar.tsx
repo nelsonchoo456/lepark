@@ -32,7 +32,7 @@ const ParkCrowdLevelsCalendar: React.FC<ParkCrowdLevelsCalendarProps> = ({ crowd
     if (!dataForDate) return null;
 
     const actualLevel = dataForDate.crowdLevel !== null ? Math.round(dataForDate.crowdLevel) : null;
-    const predictedLevel = dataForDate.predictedCrowdLevel !== null ? Math.round(dataForDate.predictedCrowdLevel!) : null;
+    const predictedLevel = dataForDate.predictedCrowdLevel !== null ? Math.round(dataForDate.predictedCrowdLevel) : null;
 
     const renderCrowdLevel = (level: number | null, isPredicted: boolean) => {
       if (level === null) return null;
@@ -51,8 +51,11 @@ const ParkCrowdLevelsCalendar: React.FC<ParkCrowdLevelsCalendarProps> = ({ crowd
 
     return (
       <div className="flex flex-col items-start p-1 h-full">
-        {renderCrowdLevel(actualLevel, false)}
-        {renderCrowdLevel(predictedLevel, true)}
+        {actualLevel !== null ? (
+          renderCrowdLevel(actualLevel, false)
+        ) : (
+          renderCrowdLevel(predictedLevel, true)
+        )}
       </div>
     );
   };

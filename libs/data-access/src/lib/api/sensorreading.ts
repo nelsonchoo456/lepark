@@ -486,3 +486,17 @@ export async function getAllSensorReadingsByParkIdAndSensorType(
     }
   }
 }
+
+export async function getPredictedCrowdLevelsForPark(parkId: number, pastPredictedDays: number): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/getPredictedCrowdLevelsForPark/${parkId}/${pastPredictedDays}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+

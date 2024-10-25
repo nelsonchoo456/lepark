@@ -335,4 +335,13 @@ router.get('/getAllSensorReadingsByParkIdAndSensorType/:parkId/:sensorType', asy
   }
 });
 
+router.get('/getPredictedCrowdLevelsForPark/:parkId/:pastPredictedDays', async (req, res) => {
+  try {
+    const data = await SensorReadingService.getPredictedCrowdLevelsForPark(parseInt(req.params.parkId), parseInt(req.params.pastPredictedDays));
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

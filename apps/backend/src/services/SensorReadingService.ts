@@ -717,7 +717,7 @@ class SensorReadingService {
 
     // Use the Holt-Winters algorithm to predict future crowd levels
     const predictions = getAugumentedDataset(dailyCrowdLevels, daysToPredict);
-    console.log('predictions', predictions);
+    // console.log('predictions', predictions);
 
     // Format the predictions into an array of objects with dates and predicted crowd levels
     const lastHistoricalDate = new Date(Math.max(...Object.keys(dailyData).map(Number)));
@@ -768,6 +768,56 @@ class SensorReadingService {
         crowdLevel: data.total / data.count,
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
+  }
+
+  public async getPredictedCrowdLevelsForPark(parkId: number, pastPredictedDays: number): Promise<{ date: Date; predictedCrowdLevel: number }[]> {
+    const allData = await this.getAllSensorReadingsByParkIdAndSensorType(parkId, SensorTypeEnum.CAMERA);
+    if (allData.length === 0) {
+      throw new Error('No sensor data available');
+    }
+  
+    const latestDate = new Date(Math.max(...allData.map(reading => reading.date.getTime())));
+    const startDate = new Date(Math.min(...allData.map(reading => reading.date.getTime())));
+  
+    // Calculate the end date for historical data
+    const historicalEndDate = new Date(latestDate);
+    historicalEndDate.setDate(latestDate.getDate() - pastPredictedDays);
+  
+    // console.log('Latest date:', latestDate.toISOString());
+    // console.log('Historical end date:', historicalEndDate.toISOString());
+    // console.log('Start date:', startDate.toISOString());
+
+    const historicalData = await this.getAggregatedCrowdDataForPark(parkId, startDate, historicalEndDate);
+
+    if (historicalData.length < 2) {
+      throw new Error('Insufficient data for prediction');
+    }
+
+    // Aggregate data by day
+    const dailyData = historicalData.reduce((acc, { date, crowdLevel }) => {
+      const day = new Date(date).setHours(0, 0, 0, 0);
+      if (!acc[day]) {
+        acc[day] = { total: 0, count: 0 };
+      }
+      acc[day].total += crowdLevel;
+      acc[day].count += 1;
+      return acc;
+    }, {});
+
+    const dailyCrowdLevels = Object.entries(dailyData).map(
+      ([day, data]: [string, { total: number; count: number }]) => data.total / data.count,
+    );
+
+    // Use the Holt-Winters algorithm to predict future crowd levels
+    const predictions = getAugumentedDataset(dailyCrowdLevels, pastPredictedDays);
+    // console.log('predictions', predictions);
+
+    // Format the predictions into an array of objects with dates and predicted crowd levels
+    const lastHistoricalDate = new Date(Math.max(...Object.keys(dailyData).map(Number)));
+    return predictions.augumentedDataset.map((prediction, index) => ({
+      date: new Date(lastHistoricalDate.getTime() + (index + 1) * 24 * 60 * 60 * 1000), // Add days
+      predictedCrowdLevel: prediction,
+    }));
   }
 }
 
