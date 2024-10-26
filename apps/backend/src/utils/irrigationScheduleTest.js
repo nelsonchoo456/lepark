@@ -4,7 +4,6 @@ const { RandomForestRegression: RandomForestRegressor } = require('ml-random-for
 const { getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange, getClosestRainDataPerDate, isSameDay, getAverageSensorReading } = require('../models/irrigationRandomForestModel.js');
 const fs = require('fs');
 const path = require('path');
-const randomForestDirPath = path.resolve(__dirname, '../models/random_forest');
 
 const prisma = new PrismaClient();
 
@@ -54,8 +53,8 @@ const getTodayData = async (hubId) => {
 
   // Fetch today's rainfall data
   const hubDetails = await prisma.hub.findUnique({ where: { id: hubId } });
-  const rainfallData = await getClosestRainDataPerDate(hubDetails.lat, hubDetails.long);
-  const rainfallToday = rainfallData.find((data) => isSameDay(data.timestamp, new Date()))?.value || 0;
+  // TODO HERE
+  const rainfallForecast = await getTodayWeatherForecast();
 
   // Prepare today's data for prediction
   const todayData = {
@@ -63,7 +62,7 @@ const getTodayData = async (hubId) => {
     temperature: getAverageSensorReading(sensorData['TEMPERATURE'], new Date()),
     humidity: getAverageSensorReading(sensorData['HUMIDITY'], new Date()),
     light: getAverageSensorReading(sensorData['LIGHT'], new Date()),
-    rainfall: rainfallToday
+    // rainfall: rainfallToday
   };
 
   return todayData;
