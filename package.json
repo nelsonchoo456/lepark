@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "seed": "node apps/backend/src/utils/seed.js",
-    "seed-irrigation": "node apps/backend/src/utils/irrigationScheduleSeed.js"
+    "seed-irrigation": "node apps/backend/src/utils/irrigationScheduleSeed.js",
+    "predict-irrigation": "node apps/backend/src/utils/irrigationScheduleTest.js"
   },
   "private": true,
   "dependencies": {

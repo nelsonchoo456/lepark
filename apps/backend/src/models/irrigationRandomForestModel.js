@@ -1,6 +1,8 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
 const { RandomForestRegression: RandomForestRegressor } = require('ml-random-forest');
 const fs = require('fs');
+const path = require('path');
+const randomForestDirPath = path.resolve(__dirname, '../models/random_forest');
 
 const prisma = new PrismaClient();
 
@@ -32,7 +34,7 @@ const trainModelsForAllHubs = async (hubs) => {
       models[hub.id] = model;
 
       // Optionally save the model to a file for persistence
-      const modelPath = `./models/${hub.id}_random_forest.json`;
+      const modelPath = `${randomForestDirPath}/${hub.id}.json`;
       fs.writeFileSync(modelPath, JSON.stringify(model.toJSON()), 'utf8');
 
       console.log(`Model trained and saved for hub: ${hub.id}`);
@@ -214,5 +216,10 @@ const isSameDay = (timestamp, date) => {
 
 module.exports = {
   trainModelsForAllHubs,
-  loadSavedModels
+  loadSavedModels,
+  // UTILITY FOR TESTING BELOW - may or not be able to delete later
+  getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange,
+  getClosestRainDataPerDate,
+  isSameDay,
+  getAverageSensorReading
 };

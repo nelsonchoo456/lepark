@@ -4,6 +4,7 @@
 dist
 tmp
 /out-tsc
+/apps/backend/src/models/random_forest
 
 # dependencies
 node_modules
