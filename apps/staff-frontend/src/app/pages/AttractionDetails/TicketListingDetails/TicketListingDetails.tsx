@@ -47,6 +47,8 @@ const TicketListingDetails: React.FC = () => {
   const [ticketData, setTicketData] = useState<any[]>([]);
   const [attractionDateSalesData, setAttractionDateSalesData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('1');
+  const [absolutePurchaseStartDateRange, setAbsolutePurchaseStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [absoluteVisitStartDateRange, setAbsoluteVisitStartDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
   const { user } = useAuth<StaffResponse>();
 
@@ -87,8 +89,10 @@ const TicketListingDetails: React.FC = () => {
 
       if (ticketData.length > 0) {
         setPurchaseDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
+        setAbsolutePurchaseStartDateRange([ticketData[0].purchaseDate, ticketData[ticketData.length - 1].purchaseDate]);
         ticketData.sort((a: any, b: any) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime());
         setAttractionDateRange([ticketData[0].attractionDate, ticketData[ticketData.length - 1].attractionDate]);
+        setAbsoluteVisitStartDateRange([ticketData[0].attractionDate, ticketData[ticketData.length - 1].attractionDate]);
       }
 
       fetchTicketSalesData();
@@ -200,6 +204,14 @@ const TicketListingDetails: React.FC = () => {
 
   const handleAttractionDateRangeChange = (dates: any) => {
     setAttractionDateRange(dates);
+  };
+
+  const resetPurchaseDateRange = async () => {
+    setPurchaseDateRange(absolutePurchaseStartDateRange);
+  };
+
+  const resetVisitDateRange = async () => {
+    setAttractionDateRange(absoluteVisitStartDateRange);
   };
 
   const toggleEditMode = () => {
@@ -494,8 +506,9 @@ const TicketListingDetails: React.FC = () => {
             <TabPane tab="Ticket Sales Over Time" key="1">
               <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                  <div className="flex justify-start">
-                    <Text className="mr-2 pt-1">Purchase Date: </Text>
+                  {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 && (
+                    <div className="flex justify-start">
+                      <Text className="mr-2 pt-1">Purchase Date: </Text>
                     {purchaseDateRange && (
                       <RangePicker
                         value={purchaseDateRange}
@@ -503,7 +516,9 @@ const TicketListingDetails: React.FC = () => {
                         style={{ marginBottom: '20px' }}
                       />
                     )}
-                  </div>
+                      <Button className='ml-2' onClick={resetPurchaseDateRange}>Reset</Button>
+                    </div>
+                  )}
                   {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
                       title="Tickets Sold Over Time (Purchase Date)"
@@ -548,8 +563,9 @@ const TicketListingDetails: React.FC = () => {
                   )}
                 </Col>
                 <Col xs={24} lg={12}>
-                  <div className="flex justify-start">
-                    <Text className="mr-2 pt-1">Visit Date: </Text>
+                  {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 && (
+                    <div className="flex justify-start">
+                      <Text className="mr-2 pt-1">Visit Date: </Text>
                     {attractionDateRange && (
                       <RangePicker
                         value={attractionDateRange}
@@ -557,7 +573,9 @@ const TicketListingDetails: React.FC = () => {
                         style={{ marginBottom: '20px' }}
                       />
                     )}
-                  </div>
+                      <Button className='ml-2' onClick={resetVisitDateRange}>Reset</Button>
+                    </div>
+                  )}
                   {attractionDateSalesData && attractionDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
                       title="Expected Visits Over Time"

@@ -108,8 +108,6 @@ useEffect(() => {
         </NavButton>
       </div>
 
-      {/* </div> */}
-      <QrScanner2/>
       <ContentWrapper>
         {/* Announcements Section */}
         <div>

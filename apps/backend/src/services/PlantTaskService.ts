@@ -57,6 +57,9 @@ class PlantTaskService {
       formattedData.createdAt = createdAt;
       formattedData.taskStatus = taskStatus;
       formattedData.submittingStaffId = submittingStaffId;
+      if (staff.role === StaffRoleEnum.BOTANIST || staff.role === StaffRoleEnum.ARBORIST) {
+        formattedData.assignedStaffId = submittingStaffId;
+      }
       PlantTaskSchema.parse(formattedData);
 
       const maxPosition = await PlantTaskDao.getMaxPositionForStatus(taskStatus);
@@ -310,7 +313,7 @@ class PlantTaskService {
     const dueDate = new Date(createdAt);
     switch (urgency) {
       case PlantTaskUrgencyEnum.IMMEDIATE:
-        // Due today (0 days)
+        dueDate.setDate(dueDate.getDate() + 1);
         break;
       case PlantTaskUrgencyEnum.HIGH:
         dueDate.setDate(dueDate.getDate() + 3);
@@ -365,20 +368,29 @@ class PlantTaskService {
       throw new Error('Plant task not found');
     }
 
-    const maxPosition = await PlantTaskDao.getMaxPositionForStatus(newStatus);
+    const tasksInNewStatus = await PlantTaskDao.getPlantTasksByStatus(newStatus);
+    let newPosition: number;
+
+    if (tasksInNewStatus.length === 0) {
+      newPosition = 1000; // First task in this status
+    } else {
+      // Add to the end of the list
+      newPosition = tasksInNewStatus[tasksInNewStatus.length - 1].position + 1000;
+    }
+
     let updatedTask: PlantTask;
     if (newStatus === PlantTaskStatusEnum.COMPLETED) {
       updatedTask = await PlantTaskDao.updatePlantTask(id, {
         taskStatus: newStatus,
-        position: maxPosition + 1000,
+        position: newPosition,
         completedDate: new Date(),
-        updatedAt: new Date(), // Add this line
+        updatedAt: new Date(),
       });
     } else {
       updatedTask = await PlantTaskDao.updatePlantTask(id, {
         taskStatus: newStatus,
-        position: maxPosition + 1000,
-        updatedAt: new Date(), // Add this line
+        position: newPosition,
+        updatedAt: new Date(),
       });
     }
 
@@ -396,30 +408,27 @@ class PlantTaskService {
     // Sort tasks by position
     tasksInSameStatus.sort((a, b) => a.position - b.position);
 
-    // Find the current index of the task being moved
-    const currentIndex = tasksInSameStatus.findIndex((task) => task.id === id);
-    if (currentIndex === -1) {
-      throw new Error('Task not found in the current status');
+    let newPositionValue: number;
+
+    if (newPosition === 0) {
+      // If moving to the start, set position to half of the first task's position
+      newPositionValue = tasksInSameStatus[0].position / 2;
+    } else if (newPosition >= tasksInSameStatus.length) {
+      // If moving to the end, set position to last task's position + 1000
+      newPositionValue = tasksInSameStatus[tasksInSameStatus.length - 1].position + 1000;
+    } else {
+      // Calculate the middle position between the two tasks
+      const prevTaskPosition = tasksInSameStatus[newPosition - 1].position;
+      const nextTaskPosition = tasksInSameStatus[newPosition].position;
+      newPositionValue = (prevTaskPosition + nextTaskPosition) / 2;
     }
 
-    // Remove the task from its current position
-    const [movedTask] = tasksInSameStatus.splice(currentIndex, 1);
+    // Update the task's position
+    const updatedTask = await PlantTaskDao.updatePlantTask(id, {
+      position: newPositionValue,
+      updatedAt: new Date(),
+    });
 
-    // Insert the task at the new position
-    tasksInSameStatus.splice(newPosition, 0, movedTask);
-
-    // Recalculate positions for all tasks
-    const updatedTasks = tasksInSameStatus.map((task, index) => ({
-      id: task.id,
-      position: (index + 1) * 1000,
-    }));
-
-    // Update all task positions in the database
-    await Promise.all(
-      updatedTasks.map((task) => PlantTaskDao.updatePlantTask(task.id, { position: task.position, updatedAt: new Date() })),
-    );
-
-    const updatedTask = await PlantTaskDao.getPlantTaskById(id);
     if (!updatedTask) {
       throw new Error('Updated task not found');
     }
@@ -546,43 +555,58 @@ class PlantTaskService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ bestPerformer: Staff; secondBestPerformer: Staff; thirdBestPerformer: Staff; message: string | null }> {
-    const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
-    const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
-    const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
-    const completedTasks = await this.getParkTaskCompleted(parkId, startDate, endDate);
+    try {
+      const completionRates = await this.getParkPlantTaskCompletionRates(parkId, startDate, endDate);
+      const overdueRates = await this.getParkPlantTaskOverdueRates(parkId, startDate, endDate);
+      const avgCompletionTimes = await this.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
+      const completedTasks = await this.getParkTaskCompleted(parkId, startDate, endDate);
 
-    const staffPerformance = completionRates.map(({ staff, completionRate }) => {
-      const overdue = overdueRates.find((o) => o.staff.id === staff.id)?.overdueRate || 0;
-      const avgTime = avgCompletionTimes.find((a) => a.staff.id === staff.id)?.averageCompletionTime || 0;
-      const tasksCompleted = completedTasks.find((c) => c.staff.id === staff.id)?.taskCompleted || 0;
+      const staffPerformance = completionRates.map(({ staff, completionRate }) => {
+        const overdue = overdueRates.find((o) => o.staff.id === staff.id)?.overdueRate || 0;
+        const avgTime = avgCompletionTimes.find((a) => a.staff.id === staff.id)?.averageCompletionTime || 0;
+        const tasksCompleted = completedTasks.find((c) => c.staff.id === staff.id)?.taskCompleted || 0;
 
-      // Calculate a performance score
-      // Higher completion rate is better
-      // Lower overdue rate is better
-      // Lower average completion time is better
-      // Higher task load is considered better (more productive)
-      const performanceScore = completionRate * 0.25 + (100 - overdue) * 0.25 + (100 - avgTime) * 0.25 + tasksCompleted * 0.25;
+        console.log(staff.firstName, completionRate, overdue, avgTime, tasksCompleted);
 
-      return { staff, performanceScore };
-    });
+        // Calculate a performance score
+        let performanceScore = 0;
+        if (completionRate > 0 && overdue > 0 && avgTime > 0 && tasksCompleted > 0) {
+          performanceScore = completionRate * 0.2 + (100 - overdue) * 0.2 + (100 - avgTime) * 0.1 + tasksCompleted * 0.5;
+        } else {
+          performanceScore = 0;
+        }
 
-    // Sort by performance score in descending order
-    staffPerformance.sort((a, b) => b.performanceScore - a.performanceScore);
+        return { staff, performanceScore };
+      });
 
-    if (staffPerformance.length === 0) {
-      throw new Error('No staff performance data available');
+      // Sort by performance score in descending order
+      staffPerformance.sort((a, b) => b.performanceScore - a.performanceScore);
+
+      console.log(staffPerformance);
+
+      if (staffPerformance.length === 0) {
+        throw new Error('No staff performance data available');
+      }
+
+      const bestPerformer = staffPerformance[0];
+      const secondBestPerformer = staffPerformance[1];
+      const thirdBestPerformer = staffPerformance[2];
+
+      return {
+        bestPerformer: bestPerformer.staff,
+        secondBestPerformer: secondBestPerformer.staff,
+        thirdBestPerformer: thirdBestPerformer.staff,
+        message: null,
+      };
+    } catch (error) {
+      console.error('Error fetching staff performance ranking:', error);
+      return {
+        bestPerformer: null,
+        secondBestPerformer: null,
+        thirdBestPerformer: null,
+        message: 'Park has no tasks at this time',
+      };
     }
-
-    const bestPerformer = staffPerformance[0];
-    const secondBestPerformer = staffPerformance[1];
-    const thirdBestPerformer = staffPerformance[2];
-
-    return {
-      bestPerformer: bestPerformer.staff,
-      secondBestPerformer: secondBestPerformer.staff,
-      thirdBestPerformer: thirdBestPerformer.staff,
-      message: null,
-    };
   }
 
   public async getParkStaffAverageCompletionTimeForPastMonths(

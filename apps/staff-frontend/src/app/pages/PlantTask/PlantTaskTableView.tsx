@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, message, Tabs, Card } from 'antd';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, message, Tabs, Card, Row, Col } from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -13,6 +13,7 @@ import {
   getAllParks,
   updatePlantTaskDetails,
   PlantTaskUpdateData,
+  updatePlantTaskStatus,
 } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { SCREEN_LG } from '../../config/breakpoints';
@@ -23,6 +24,7 @@ import ViewPlantTaskModal from './ViewPlantTaskModal';
 import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 import { COLORS } from '../../config/colors';
 import dayjs from 'dayjs';
+import { getStatusOrder } from '@lepark/data-utility';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -70,7 +72,13 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
   const [form] = Form.useForm();
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<PlantTaskResponse | null>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
+  const [showStatusChangeLogPrompt, setShowStatusChangeLogPrompt] = useState(false);
+  const [statusChangeTaskId, setStatusChangeTaskId] = useState<string | null>(null);
+  const [newStatus, setNewStatus] = useState<PlantTaskStatusEnum | null>(null);
+  const [oldStatus, setOldStatus] = useState<PlantTaskStatusEnum | null>(null);
+  const [dueDateRange, setDueDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [completedDateRange, setCompletedDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -106,13 +114,24 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     if (editingTask) {
       try {
         await updatePlantTaskDetails(editingTask.id, values);
-        message.success('Task updated successfully');
-        setEditModalVisible(false);
-        onTaskUpdated(); // Refresh the task list
+        
+        if (
+          (editingTask.taskStatus === PlantTaskStatusEnum.OPEN && values.taskStatus === PlantTaskStatusEnum.IN_PROGRESS) ||
+          (editingTask.taskStatus === PlantTaskStatusEnum.IN_PROGRESS && values.taskStatus === PlantTaskStatusEnum.OPEN)
+        ) {
+          setStatusChangeTaskId(editingTask.occurrence?.id || null);
+          setNewStatus(values.taskStatus as PlantTaskStatusEnum);
+          setOldStatus(editingTask.taskStatus);
+          setShowStatusChangeLogPrompt(true);
+          onTaskUpdated();
+        } else {
+          message.success('Task updated successfully');
+          setEditModalVisible(false);
+          onTaskUpdated(); // Refresh the task list
+        }
       } catch (error) {
         console.error('Error updating plant task:', error);
         throw new Error('Failed to update task.' + ' ' + error + '.');
-        // The modal will remain open as we're not calling setEditModalVisible(false) here
       }
     }
   };
@@ -122,25 +141,47 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     setViewModalVisible(true);
   };
 
-  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
-    setDateRange(dates);
+  const handleDueDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDueDateRange(dates);
+  };
+
+  const handleCompletedDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setCompletedDateRange(dates);
   };
 
   const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
-    if (!dateRange || !dateRange[0] || !dateRange[1]) {
-      return tasks;
-    }
-    const [startDate, endDate] = dateRange;
     return tasks.filter((task) => {
-      const dueDate = dayjs(task.dueDate);
-      return (
-        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
-        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
-      );
+      let includeTask = true;
+
+      if (dueDateRange && dueDateRange[0] && dueDateRange[1]) {
+        const dueDate = dayjs(task.dueDate);
+        includeTask = includeTask && (
+          (dueDate.isSame(dueDateRange[0], 'day') || dueDate.isAfter(dueDateRange[0], 'day')) &&
+          (dueDate.isSame(dueDateRange[1], 'day') || dueDate.isBefore(dueDateRange[1], 'day'))
+        );
+      }
+
+      if (completedDateRange && completedDateRange[0] && completedDateRange[1]) {
+        const completedDate = dayjs(task.completedDate);
+        includeTask = includeTask && (
+          (completedDate.isSame(completedDateRange[0], 'day') || completedDate.isAfter(completedDateRange[0], 'day')) &&
+          (completedDate.isSame(completedDateRange[1], 'day') || completedDate.isBefore(completedDateRange[1], 'day'))
+        );
+      }
+
+      return includeTask;
     });
   };
 
-  const filteredPlantTasks = filterTasksByDateRange(plantTasks);
+  const sortedTasks = useMemo(() => {
+    return [...plantTasks].sort((a, b) => {
+      const statusOrderDiff = getStatusOrder(a.taskStatus) - getStatusOrder(b.taskStatus);
+      if (statusOrderDiff !== 0) return statusOrderDiff;
+      return dayjs(a.dueDate).diff(dayjs(b.dueDate));
+    });
+  }, [plantTasks]);
+
+  const filteredPlantTasks = filterTasksByDateRange(sortedTasks);
 
   const limitedToSubmittingTasksOnly =
     user?.role === StaffType.VENDOR_MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT || user?.role === StaffType.PARK_RANGER;
@@ -280,6 +321,14 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
       },
       sorter: (a, b) => moment(a.dueDate).valueOf() - moment(b.dueDate).valueOf(),
       width: '10%',
+    },
+    {
+      title: 'Completed Date',
+      dataIndex: 'completedDate',
+      key: 'completedDate',
+      render: (text) => text ? moment(text).format('D MMM YY') : '',
+      width: '10%',
+      sorter: (a, b) => moment(a.completedDate).valueOf() - moment(b.completedDate).valueOf(),
     },
     {
       title: 'Status',
@@ -455,11 +504,61 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
     },
   };
 
+  const handleStatusChangePrompt = (newStatus: PlantTaskStatusEnum, oldStatus: PlantTaskStatusEnum) => {
+    if (
+      (oldStatus === PlantTaskStatusEnum.OPEN && newStatus === PlantTaskStatusEnum.IN_PROGRESS) ||
+      (oldStatus === PlantTaskStatusEnum.IN_PROGRESS && newStatus === PlantTaskStatusEnum.OPEN)
+    ) {
+      setStatusChangeTaskId(editingTask?.occurrence?.id || null);
+      setNewStatus(newStatus);
+      setOldStatus(oldStatus);
+      setShowStatusChangeLogPrompt(true);
+    } else {
+      setEditModalVisible(false);
+    }
+  };
+
+  const handleStatusChangeLogPromptOk = async () => {
+    setShowStatusChangeLogPrompt(false);
+    if (statusChangeTaskId) {
+      window.open(`/occurrences/${statusChangeTaskId}`, '_blank');
+    }
+    setStatusChangeTaskId(null);
+    setNewStatus(null);
+    setOldStatus(null);
+  };
+
+  const handleStatusChangeLogPromptCancel = async () => {
+    setShowStatusChangeLogPrompt(false);
+    setStatusChangeTaskId(null);
+    setNewStatus(null);
+    setOldStatus(null);
+  };
+
   return (
     <>
-      <div style={{ marginBottom: '16px' }}>
-        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
-      </div>
+      <Row justify="end" style={{ marginBottom: '16px' }}>
+        <Col>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ marginRight: '8px' }}>Due Date Range:</span>
+              <RangePicker 
+                onChange={handleDueDateRangeChange} 
+                style={{ width: '300px' }} 
+                placeholder={['Start Date', 'End Date']} 
+              />
+            </div>
+            <div>
+              <span style={{ marginRight: '8px' }}>Completed Date Range:</span>
+              <RangePicker 
+                onChange={handleCompletedDateRangeChange} 
+                style={{ width: '300px' }} 
+                placeholder={['Start Date', 'End Date']} 
+              />
+            </div>
+          </div>
+        </Col>
+      </Row>
       {tableViewType === 'grouped-status' && renderGroupedTasks('status', tableProps)}
       {tableViewType === 'grouped-urgency' && renderGroupedTasks('urgency', tableProps)}
       {tableViewType === 'all' && (
@@ -482,7 +581,7 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         onSubmit={handleEditSubmit}
         initialValues={editingTask}
         userRole={userRole as StaffType}
-        onStatusChange={handleStatusChange}
+        onStatusChange={handleStatusChangePrompt}
       />
       <ViewPlantTaskModal
         visible={viewModalVisible}
@@ -490,6 +589,16 @@ const PlantTaskTableView: React.FC<PlantTaskTableViewProps> = ({
         task={selectedTask}
         userRole={userRole as StaffType}
       />
+      <Modal
+        title="Create Log"
+        open={showStatusChangeLogPrompt}
+        onOk={handleStatusChangeLogPromptOk}
+        onCancel={handleStatusChangeLogPromptCancel}
+        okText="Yes, create log"
+        cancelText="No, just update task status"
+      >
+        <p>Do you want to create an Activity Log or Status Log for this status change?</p>
+      </Modal>
     </>
   );
 };

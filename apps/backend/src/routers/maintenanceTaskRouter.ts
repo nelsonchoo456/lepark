@@ -1,9 +1,9 @@
 import express from 'express';
-import MaintenanceTaskService from '../services/MaintenanceTaskService'
+import MaintenanceTaskService from '../services/MaintenanceTaskService';
 import { MaintenanceTaskSchemaType } from '../schemas/maintenanceTaskSchema';
 import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 import multer from 'multer';
-import { MaintenanceTaskStatusEnum } from '@prisma/client';
+import { MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum } from '@prisma/client';
 
 const router = express.Router();
 const upload = multer();
@@ -191,42 +191,66 @@ router.put('/updateMaintenanceTaskPosition/:id', authenticateJWTStaff, async (re
   }
 });
 
-router.get('/getParkMaintenanceTaskCompletionRates', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskAverageCompletionTimeForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const staffCompletionRates = await MaintenanceTaskService.getParkMaintenanceTaskCompletionRates(parkId, startDate, endDate);
-    res.status(200).json(staffCompletionRates);
+    const averageCompletionTime = await MaintenanceTaskService.getParkMaintenanceTaskAverageCompletionTimeForPeriod(
+      parkId,
+      startDate,
+      endDate,
+    );
+    res.status(200).json(averageCompletionTime);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get('/getParkMaintenanceTaskOverdueRates', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskOverdueRateForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const staffOverdueRates = await MaintenanceTaskService.getParkMaintenanceTaskOverdueRates(parkId, startDate, endDate);
-    res.status(200).json(staffOverdueRates);
+    const overdueRate = await MaintenanceTaskService.getParkMaintenanceTaskOverdueRateForPeriod(parkId, startDate, endDate);
+    res.status(200).json(overdueRate);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get('/getParkAverageTaskCompletionTime', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskDelayedTaskTypesForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const staffAverageCompletionTimes = await MaintenanceTaskService.getParkAverageTaskCompletionTime(parkId, startDate, endDate);
-    res.status(200).json(staffAverageCompletionTimes);
+    const delayedTaskTypes = await MaintenanceTaskService.getDelayedTaskTypesIdentification(parkId, startDate, endDate);
+    res.status(200).json(delayedTaskTypes);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Add other routes similar to the plantTaskRouter, such as getParkTaskLoadPercentage, getStaffPerformanceRanking, etc.
+router.get('/getParkTaskTypeAverageCompletionTimesForPastMonths', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const months = req.query.months ? parseInt(req.query.months as string, 10) : 1;
+    const averageCompletionTimes = await MaintenanceTaskService.getParkTaskTypeAverageCompletionTimeForPastMonths(parkId, months);
+    res.status(200).json(averageCompletionTimes);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getParkTaskTypeAverageOverdueRatesForPastMonths', authenticateJWTStaff, async (req, res) => {
+  try {
+    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
+    const months = req.query.months ? parseInt(req.query.months as string, 10) : 1;
+    const overdueRates = await MaintenanceTaskService.getParkTaskTypeAverageOverdueRatesForPastMonths(parkId, months);
+    res.status(200).json(overdueRates);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 export default router;

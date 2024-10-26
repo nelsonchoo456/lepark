@@ -78,6 +78,8 @@ const PlantTaskBoardView = ({
   const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
   const [taskBeingCompleted, setTaskBeingCompleted] = useState<PlantTaskResponse | null>(null);
   const [taskCompletionIndex, setTaskCompletionIndex] = useState<number | null>(null);
+  const [showStatusChangeLogPrompt, setShowStatusChangeLogPrompt] = useState(false);
+  const [statusChangeTaskId, setStatusChangeTaskId] = useState<string | null>(null);
 
   const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
@@ -91,7 +93,7 @@ const PlantTaskBoardView = ({
 
     // Check if the task is unassigned and being moved from OPEN to another column
     const movedTask = sourceList[source.index];
-    
+
     if (
       source.droppableId === PlantTaskStatusEnum.OPEN &&
       destination.droppableId !== PlantTaskStatusEnum.OPEN &&
@@ -138,7 +140,14 @@ const PlantTaskBoardView = ({
       }
     }
 
-    if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
+    if (
+      (source.droppableId === PlantTaskStatusEnum.IN_PROGRESS && destination.droppableId === PlantTaskStatusEnum.OPEN) ||
+      (source.droppableId === PlantTaskStatusEnum.OPEN && destination.droppableId === PlantTaskStatusEnum.IN_PROGRESS)
+    ) {
+      console.log('movedTask', movedTask);
+      setStatusChangeTaskId(movedTask.occurrence?.id || null);
+      setShowStatusChangeLogPrompt(true);
+    } else if (destination.droppableId === PlantTaskStatusEnum.COMPLETED) {
       setTaskBeingCompleted(movedTask);
       setTaskCompletionIndex(destination.index);
       setCompletedTaskOccurrenceId(movedTask.occurrence?.id || null);
@@ -245,7 +254,7 @@ const PlantTaskBoardView = ({
         // Add a delay before refreshing data
         setTimeout(() => {
           refreshData();
-        }, 500); // 0.5 second delay
+        }, 100); // 0.1 second delay
       } catch (error) {
         console.error('Failed to assign task:', error);
         message.error('Failed to assign task');
@@ -474,13 +483,25 @@ const PlantTaskBoardView = ({
   const handleLogPromptOk = async () => {
     setShowLogPrompt(false);
     if (completedTaskOccurrenceId) {
-      navigate(`/occurrences/${completedTaskOccurrenceId}`);
+      window.open(`/occurrences/${completedTaskOccurrenceId}`, '_blank');
     }
   };
 
   const handleLogPromptCancel = async () => {
     setShowLogPrompt(false);
     await completeTask();
+  };
+
+  const handleStatusChangeLogPromptOk = async () => {
+    setShowStatusChangeLogPrompt(false);
+    if (statusChangeTaskId) {
+      window.open(`/occurrences/${statusChangeTaskId}`, '_blank');
+    }
+  };
+
+  const handleStatusChangeLogPromptCancel = async () => {
+    setShowStatusChangeLogPrompt(false);
+    setStatusChangeTaskId(null);
   };
 
   const completeTask = async () => {
@@ -671,6 +692,16 @@ const PlantTaskBoardView = ({
         cancelText="No, just complete the task"
       >
         <p>Do you want to create an Activity Log or Status Log for this completed task?</p>
+      </Modal>
+      <Modal
+        title="Create Log"
+        open={showStatusChangeLogPrompt}
+        onOk={handleStatusChangeLogPromptOk}
+        onCancel={handleStatusChangeLogPromptCancel}
+        okText="Yes, create log"
+        cancelText="No, just update task status"
+      >
+        <p>Do you want to create an Activity Log or Status Log for this status change?</p>
       </Modal>
       <ConfirmDeleteModal
         onConfirm={deletePlantTaskConfirmed}

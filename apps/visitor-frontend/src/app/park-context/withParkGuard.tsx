@@ -9,13 +9,20 @@ const withParkGuard = <P extends object>(Component: ComponentType<P>) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-      if (!selectedPark) {
-        navigate('/select-park');
-      }
+      const checkSelectedPark = async () => {
+        if (!selectedPark) {
+          const storedPark = localStorage.getItem('selectedPark');
+          if (!storedPark) {
+            navigate('/select-park');
+          }
+        }
+      };
+
+      checkSelectedPark();
     }, [selectedPark, navigate]);
 
-    // Render the component only if the park is selected
-    return selectedPark ? <Component {...props} /> : null;
+    // Render the component only if the park is selected or stored in local storage
+    return selectedPark || localStorage.getItem('selectedPark') ? <Component {...props} /> : null;
   };
 };
 

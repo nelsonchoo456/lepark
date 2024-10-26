@@ -427,22 +427,51 @@ async function seed() {
     // Ensure we have valid staff data
     if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0) {
       const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
-      // const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+      const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+
+      // First, fetch all facilities with parkId 2
+      const facilitiesInPark2 = await prisma.facility.findMany({
+        where: { parkId: 2 },
+        select: { id: true }
+      });
+
+      const facilityIdsInPark2 = facilitiesInPark2.map(f => f.id);
+
+      // Now filter the lists using these facility IDs
+      const eligibleSensorList = sensorList.filter(sensor => 
+        facilityIdsInPark2.includes(sensor.facilityId)
+      );
+      console.log('eligibleSensorList', eligibleSensorList);
+
+      const eligibleHubList = hubList.filter(hub => 
+        facilityIdsInPark2.includes(hub.facilityId)
+      );
+      console.log('eligibleHubList', eligibleHubList);
+
+      const eligibleParkAssetList = parkAssetList.filter(parkAsset => 
+        facilityIdsInPark2.includes(parkAsset.facilityId)
+      );
+      console.log('eligibleParkAssetList', eligibleParkAssetList);
+
+      const eligibleFacilityList = facilityList.filter(facility => 
+        facility.parkId === 2
+      );
+      console.log('eligibleFacilityList', eligibleFacilityList);
 
       // Determine which entity to associate with the task
       let entityConnection = {};
-      if (maintenanceTask.title.includes('Bench') || maintenanceTask.title.includes('Restroom')) {
-        const randomFacilityIndex = Math.floor(Math.random() * facilityList.length);
-        entityConnection = { facility: { connect: { id: facilityList[randomFacilityIndex].id } } };
-      } else if (maintenanceTask.title.includes('Sensor')) {
-        const randomSensorIndex = Math.floor(Math.random() * sensorList.length);
-        entityConnection = { sensor: { connect: { id: sensorList[randomSensorIndex].id } } };
+      if (maintenanceTask.title.includes('Sensor')) {
+        const randomSensorIndex = Math.floor(Math.random() * eligibleSensorList.length);
+        entityConnection = { sensor: { connect: { id: eligibleSensorList[randomSensorIndex].id } } };
       } else if (maintenanceTask.title.includes('Hub')) {
-        const randomHubIndex = Math.floor(Math.random() * hubList.length);
-        entityConnection = { hub: { connect: { id: hubList[randomHubIndex].id } } };
-      } else if (maintenanceTask.title.includes('Lawnmower')) {
-        const randomParkAssetIndex = Math.floor(Math.random() * parkAssetList.length);
-        entityConnection = { parkAsset: { connect: { id: parkAssetList[randomParkAssetIndex].id } } };
+        const randomHubIndex = Math.floor(Math.random() * eligibleHubList.length);
+        entityConnection = { hub: { connect: { id: eligibleHubList[randomHubIndex].id } } };
+      } else if (maintenanceTask.title.includes('Park Asset')) {
+        const randomParkAssetIndex = Math.floor(Math.random() * eligibleParkAssetList.length);
+        entityConnection = { parkAsset: { connect: { id: eligibleParkAssetList[randomParkAssetIndex].id } } };
+      } else {
+        const randomFacilityIndex = Math.floor(Math.random() * eligibleFacilityList.length);
+        entityConnection = { facility: { connect: { id: eligibleFacilityList[randomFacilityIndex].id } } };
       }
 
       const createdMaintenanceTask = await prisma.maintenanceTask.create({
@@ -452,9 +481,9 @@ async function seed() {
           submittingStaff: {
             connect: { id: eligibleSubmittingStaff[randomSubmittingStaffIndex].id },
           },
-          // assignedStaff: {
-          //   connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
-          // },
+          assignedStaff: {
+            connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
+          },
           ...entityConnection,
         },
       });

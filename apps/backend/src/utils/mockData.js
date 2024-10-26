@@ -1652,80 +1652,336 @@ const attractionsData = [
   },
 ];
 
-const maintenanceTasksData = [
+let maintenanceTasksData = [
   {
-    title: 'Repair Broken Bench',
-    description: 'Fix the broken wooden slats on the bench near the main entrance.',
+    title: 'Inspect Playground Facility Equipment',
+    description: 'Check all playground equipment for safety and wear.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'HIGH',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-29'),
+    updatedAt: new Date('2024-10-31'),
+    dueDate: new Date('2024-10-31'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 1000,
+  },
+  {
+    title: 'Replace Light Bulbs in Visitor Center Facility',
+    description: 'Replace burnt-out light bulbs in the visitor center.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-09'),
+    updatedAt: new Date('2024-10-10'),
+    dueDate: new Date('2024-10-10'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 2000,
+  },
+  {
+    title: 'Repair Irrigation System Park Asset',
+    description: 'Fix leaks in the irrigation system.',
     taskType: 'REPAIR',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2024-10-15'),
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Due in 2 days
-    completedDate: null,
-    images: ['https://example.com/broken-bench.jpg'],
-    remarks: 'Requires replacement wood and tools.',
-    position: 1,
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-10'),
+    updatedAt: new Date('2024-10-12'),
+    dueDate: new Date('2024-10-10'),
+    completedDate: new Date('2024-10-12'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 3000,
   },
   {
-    title: 'Calibrate Temperature Sensor',
-    description: 'Recalibrate the temperature sensor in the Orchid Garden for accurate readings.',
-    taskType: 'CALIBRATION',
-    taskUrgency: 'NORMAL',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-14'),
-    updatedAt: new Date('2024-10-16'),
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Due in 3 days
-    completedDate: null,
-    images: ['https://example.com/temperature-sensor.jpg'],
-    remarks: 'Use calibration kit #3.',
-    position: 2,
-  },
-  {
-    title: 'Clean Public Restrooms',
-    description: 'Perform deep cleaning of all public restrooms in the Visitor Center.',
+    title: 'Deep Clean Greenhouses Facility',
+    description: 'Perform deep cleaning of all greenhouses.',
     taskType: 'CLEANING',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-13'),
-    updatedAt: new Date('2024-10-13'),
-    dueDate: new Date('2024-10-13'),
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-27'),
+    updatedAt: new Date('2024-10-28'),
+    dueDate: new Date('2024-10-30'),
     completedDate: null,
-    images: ['https://example.com/clean-restroom.jpg'],
-    remarks: 'Use eco-friendly cleaning products.',
-    position: 3,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 4000,
+  },
+  {
+    title: 'Calibrate Pressure Gauges Asset Facility',
+    description: 'Recalibrate the pressure gauges in the equipment shed.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-12'),
+    updatedAt: new Date('2024-10-13'),
+    dueDate: new Date('2024-10-17'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 5000,
+  },
+  {
+    title: 'Install New Security Cameras Facility',
+    description: 'Install new security cameras in the park.',
+    taskType: 'HARDWARE_REPLACEMENT',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-25'),
+    updatedAt: new Date('2024-10-26'),
+    dueDate: new Date('2024-10-26'),
+    completedDate: new Date('2024-10-26'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 6000,
+  },
+  {
+    title: 'Check Soil Moisture Sensor',
+    description: 'Ensure all soil moisture sensor is functioning.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'IMMEDIATE',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-28'),
+    updatedAt: new Date('2024-10-28'),
+    dueDate: new Date('2024-10-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 7000,
+  },
+  {
+    title: 'Service Water Fountain Facility',
+    description: 'Perform maintenance on the water fountain.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-29'),
+    updatedAt: new Date('2024-10-31'),
+    dueDate: new Date('2024-10-29'),
+    completedDate: new Date('2024-10-31'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 8000,
+  },
+  {
+    title: 'Test Fire Alarms Facility',
+    description: 'Test all fire alarms for proper functionality.',
+    taskType: 'FIRE_SAFETY',
+    taskUrgency: 'HIGH',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-10'),
+    updatedAt: new Date('2024-10-12'),
+    dueDate: new Date('2024-10-14'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 9000,
+  },
+  {
+    title: 'Update Software on Maintenance Tablets Park Asset',
+    description: 'Install software updates on maintenance tablets.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'CANCELLED',
+    createdAt: new Date('2024-10-30'),
+    updatedAt: new Date('2024-10-30'),
+    dueDate: new Date('2024-10-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 10000,
+  },
+  {
+    title: 'Inspect Park Asset Benches',
+    description: 'Check the benches in the main park area for any wear or damage.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-09'),
+    updatedAt: new Date('2024-09-18'),
+    dueDate: new Date('2024-09-18'),
+    completedDate: new Date('2024-09-18'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 11000,
+  },
+  {
+    title: 'Repair Broken Facility Gate',
+    description: 'Fix the malfunctioning gate at the south entrance.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-02'),
+    dueDate: new Date('2024-09-01'),
+    completedDate: new Date('2024-09-02'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 12000,
+  },
+  {
+    title: 'Deep Clean Restroom Facility',
+    description: 'Perform deep cleaning of the public restrooms.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-16'),
+    dueDate: new Date('2024-09-18'),
+    completedDate: new Date('2024-09-16'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 13000,
+  },
+  {
+    title: 'Calibrate Temperature Sensor Hub',
+    description: 'Recalibrate the temperature sensor in the monitoring hub.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-10'),
+    updatedAt: new Date('2024-09-22'),
+    dueDate: new Date('2024-09-26'),
+    completedDate: new Date('2024-09-22'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 14000,
   },
   {
     title: 'Update Hub Firmware',
-    description: 'Install the latest firmware update on the central data hub.',
+    description: 'Install the latest firmware on the central data hub.',
     taskType: 'SOFTWARE_UPDATE',
     taskUrgency: 'NORMAL',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-16'),
-    updatedAt: new Date('2024-10-16'),
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due in 5 days
-    completedDate: null,
-    images: ['https://example.com/data-hub.jpg'],
-    remarks: 'Ensure all data is backed up before updating.',
-    position: 4,
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-27'),
+    updatedAt: new Date('2024-09-28'),
+    dueDate: new Date('2024-09-28'),
+    completedDate: new Date('2024-09-28'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 15000,
   },
   {
-    title: 'Replace Damaged Lawnmower Blade',
-    description: 'Replace the damaged blade on lawnmower #3 with a new one.',
+    title: 'Replace Damaged Facility Roof Tiles',
+    description: 'Replace broken tiles on the visitor center roof.',
     taskType: 'REPAIR',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2024-10-17'),
-    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Due in 1 day
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-03'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-04'),
+    completedDate: new Date('2024-09-30'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 16000,
+  },
+  {
+    title: 'Inspect Sprinkler System Sensor',
+    description: 'Ensure all sprinkler sensors are functioning correctly.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'IMMEDIATE',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-20'),
+    updatedAt: new Date('2024-09-28'),
+    dueDate: new Date('2024-09-28'),
+    completedDate: new Date('2024-09-28'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 17000,
+  },
+  {
+    title: 'Service Park Asset Water Fountain',
+    description: 'Perform maintenance on the main water fountain.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-13'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-14'),
+    completedDate: new Date('2024-09-30'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 18000,
+  },
+  {
+    title: 'Test Emergency Exit Facility Lights',
+    description: 'Test emergency lights for proper functionality.',
+    taskType: 'FIRE_SAFETY',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-03'),
+    dueDate: new Date('2024-09-05'),
+    completedDate: new Date('2024-09-03'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 19000,
+  },
+  {
+    title: 'Update Software on Facility Tablets',
+    description: 'Install software updates on maintenance tablets.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'CANCELLED',
+    createdAt: new Date('2024-09-30'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-30'),
     completedDate: null,
-    images: ['https://example.com/lawnmower-blade.jpg'],
-    remarks: 'New blade is in storage room B.',
-    position: 5,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 20000,
+  },
+  {
+    title: 'Test Park Asset Benches',
+    description: 'Check the benches in the main park area for any wear or damage.',
+    taskType: 'TESTING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-08-01'),
+    updatedAt: new Date('2024-10-25'),
+    dueDate: new Date('2024-09-01'),
+    completedDate: new Date('2024-10-25'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 21000,
   },
 ];
 
-const plantTasksData = [
+// Group tasks by status
+const groupedMaintenanceTasks = {
+  OPEN: [],
+  IN_PROGRESS: [],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+maintenanceTasksData.forEach((task) => {
+  groupedMaintenanceTasks[task.taskStatus].push(task);
+});
+
+// Assign positions within each group
+Object.keys(groupedMaintenanceTasks).forEach((status) => {
+  groupedMaintenanceTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedMaintenanceTasks[status].forEach((task, index) => {
+    task.position = (index + 1) * 1000;
+  });
+});
+
+// Flatten the grouped tasks back into a single array
+maintenanceTasksData = Object.values(groupedMaintenanceTasks).flat();
+
+// Sort the maintenanceTasksData array by status and position
+maintenanceTasksData.sort((a, b) => {
+  const statusOrder = { OPEN: 0, IN_PROGRESS: 1, COMPLETED: 2, CANCELLED: 3 };
+  if (a.taskStatus !== b.taskStatus) {
+    return statusOrder[a.taskStatus] - statusOrder[b.taskStatus];
+  }
+  return a.position - b.position;
+});
+
+let plantTasksData = [
   {
     title: 'Prune Ginger Plants',
     description: 'Trim overgrown ginger plants in the Ginger Garden to promote healthy growth.',
@@ -1740,7 +1996,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 1,
+    position: 1000,
   },
   {
     title: 'Water Evolution Garden',
@@ -1756,7 +2012,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 2,
+    position: 2000,
   },
   {
     title: 'Fertilize Peach Trees',
@@ -1772,7 +2028,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 3,
+    position: 3000,
   },
   {
     title: 'Inspect Toromiro for Pests',
@@ -1788,7 +2044,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
-    position: 4,
+    position: 4000,
   },
   {
     title: 'Mulch Tropical Trees',
@@ -1804,7 +2060,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 5,
+    position: 5000,
   },
   {
     title: 'Stake Young Mangroves',
@@ -1820,7 +2076,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
-    position: 6,
+    position: 6000,
   },
   {
     title: 'Prune Dead Branches',
@@ -1836,7 +2092,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.tomorrowsharvest.com/wp-content/uploads/2017/08/pruning_clippers-how-to-prune-a-tree.jpg'],
-    position: 7,
+    position: 7000,
   },
   {
     title: 'Replant Shrubs',
@@ -1854,7 +2110,7 @@ const plantTasksData = [
     images: [
       'https://www.treehugger.com/thmb/RkJe_rJWflrzXj7p_w81ZQNQTzA=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__mnn__images__2017__03__replant-tree-bfbbfd18d1334ee0aa03851c6800baaa.jpg',
     ],
-    position: 8,
+    position: 8000,
   },
   {
     title: 'Prune Rosa Gallica',
@@ -1870,7 +2126,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 9,
+    position: 9000,
   },
   {
     title: 'Water Ginger Garden',
@@ -1886,7 +2142,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 10,
+    position: 10000,
   },
   {
     title: 'Water Tropical Trees',
@@ -1902,7 +2158,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 11,
+    position: 11000,
   },
   {
     title: 'Fertilize Rose Garden',
@@ -1918,7 +2174,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
-    position: 12,
+    position: 12000,
   },
   {
     title: 'Inspect Orchids for Pests',
@@ -1934,7 +2190,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 13,
+    position: 13000,
   },
   {
     title: 'Trim Ferns',
@@ -1950,7 +2206,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 14,
+    position: 14000,
   },
   {
     title: 'Soil Maintenance for Peppers',
@@ -1966,7 +2222,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 15,
+    position: 15000,
   },
   {
     title: 'Replant Palm Trees',
@@ -1982,7 +2238,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 16,
+    position: 16000,
   },
   {
     title: 'Water Cacti Garden',
@@ -1998,7 +2254,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 17,
+    position: 17000,
   },
   {
     title: 'Prune Olive Trees',
@@ -2014,7 +2270,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 18,
+    position: 18000,
   },
   {
     title: 'Inspect Citrus for Pests',
@@ -2030,7 +2286,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
-    position: 19,
+    position: 19000,
   },
   {
     title: 'Fertilize Grapevines',
@@ -2046,7 +2302,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 20,
+    position: 20000,
   },
   {
     title: 'Fertilize Fig Trees',
@@ -2062,7 +2318,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 21,
+    position: 21000,
   },
   {
     title: 'Inspect Apple Orchard for Pests',
@@ -2078,7 +2334,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 22,
+    position: 22000,
   },
   {
     title: 'Water Succulent Garden',
@@ -2094,7 +2350,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 23,
+    position: 23000,
   },
   {
     title: 'Prune Bonsai Trees',
@@ -2110,7 +2366,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://www.nytimes.com/2022/05/04/realestate/garden-mulch.html'],
-    position: 24,
+    position: 24000,
   },
   {
     title: 'Debris Removal from Pathways',
@@ -2126,7 +2382,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://contentgrid.homedepot-static.com/hdus/en_US/DTCCOMNEW/Articles/how-to-stake-plants-2023-step-3.jpg'],
-    position: 25,
+    position: 25000,
   },
   {
     title: 'Adjust Sprinklers for Drought',
@@ -2142,7 +2398,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 26,
+    position: 26000,
   },
   {
     title: 'Water Rose Garden',
@@ -2158,7 +2414,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://swanhose.com/cdn/shop/articles/everything-you-should-know-about-deep-watering.jpg?v=1657903183'],
-    position: 27,
+    position: 27000,
   },
   {
     title: 'Replant Gardenias',
@@ -2174,7 +2430,7 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://inaturalist-open-data.s3.amazonaws.com/photos/67571941/original.jpg'],
-    position: 28,
+    position: 28000,
   },
   {
     title: 'Prune Jasmine',
@@ -2189,8 +2445,7 @@ const plantTasksData = [
     submittingStaff: '',
     assignedStaff: '',
     occurrence: '',
-    images: ['https://www.garden.eco/wp-content/uploads/2018/06/when-to-fertilize-peach-trees.jpg'],
-    position: 29,
+    position: 29000,
   },
   {
     title: 'Mulch Garden Beds',
@@ -2206,9 +2461,41 @@ const plantTasksData = [
     assignedStaff: '',
     occurrence: '',
     images: ['https://149533724.v2.pressablecdn.com/wp-content/uploads/2021/04/pruning-basics.jpg'],
-    position: 30,
+    position: 30000,
   },
 ];
+
+// Group tasks by status
+const groupedPlantTasks = {
+  OPEN: [],
+  IN_PROGRESS: [],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+plantTasksData.forEach((task) => {
+  groupedPlantTasks[task.taskStatus].push(task);
+});
+
+// Assign positions within each group
+Object.keys(groupedPlantTasks).forEach((status) => {
+  groupedPlantTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedPlantTasks[status].forEach((task, index) => {
+    task.position = (index + 1) * 1000;
+  });
+});
+
+// Flatten the grouped tasks back into a single array
+plantTasksData = Object.values(groupedPlantTasks).flat();
+
+// Sort the plantTasksData array by status and position
+plantTasksData.sort((a, b) => {
+  const statusOrder = { OPEN: 0, IN_PROGRESS: 1, COMPLETED: 2, CANCELLED: 3 };
+  if (a.taskStatus !== b.taskStatus) {
+    return statusOrder[a.taskStatus] - statusOrder[b.taskStatus];
+  }
+  return a.position - b.position;
+});
 
 const facilitiesData = [
   {
@@ -3491,7 +3778,7 @@ const promotionsData = [
   },
   {
     name: "Children's Day Learning Adventure",
-    description: "Free entry for children to discover nature’s wonders with guided educational tours on Children's Day.",
+    description: "Free entry for children to discover nature's wonders with guided educational tours on Children's Day.",
     discountType: 'FIXED_AMOUNT',
     promoCode: 'KIDSDAYFREE',
     isNParksWide: false,
@@ -3637,7 +3924,7 @@ const announcementsData = [
     content: 'A section of the Therapeutic Gardens (raised planters) will be closed for maintenance works from 6 dec to 16 dec 2024. ',
     updatedAt: '2024-10-15T08:49:23.000Z',
     startDate: '2024-10-14T16:00:00.000Z',
-    endDate: '2024-12-16T15:59:59.000Z',
+    endDate: '2025-02-28T15:59:59.000Z',
     status: 'ACTIVE',
     parkId: 1,
   },

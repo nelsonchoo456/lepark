@@ -1,4 +1,12 @@
-import { Prisma, MaintenanceTask, MaintenanceTaskUrgencyEnum, MaintenanceTaskStatusEnum, Staff, PlantTaskStatusEnum } from '@prisma/client';
+import {
+  Prisma,
+  MaintenanceTask,
+  MaintenanceTaskUrgencyEnum,
+  MaintenanceTaskStatusEnum,
+  Staff,
+  PlantTaskStatusEnum,
+  MaintenanceTaskTypeEnum,
+} from '@prisma/client';
 import { z } from 'zod';
 import { MaintenanceTaskSchema, MaintenanceTaskSchemaType } from '../schemas/maintenanceTaskSchema';
 import MaintenanceTaskDao from '../dao/MaintenanceTaskDao';
@@ -10,6 +18,7 @@ import HubDao from '../dao/HubDao';
 import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
 import aws from 'aws-sdk';
+import ParkDao from '../dao/ParkDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -153,7 +162,7 @@ class MaintenanceTaskService {
   public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
     const maintenanceTasks = await MaintenanceTaskDao.getMaintenanceTasksBySubmittingStaff(staffId);
     return this.addFacilityInfo(maintenanceTasks);
-  } 
+  }
 
   public async updateMaintenanceTask(id: string, data: Partial<MaintenanceTaskSchemaType>): Promise<MaintenanceTask> {
     try {
@@ -238,6 +247,10 @@ class MaintenanceTaskService {
       throw new Error('Staff taking the task not found');
     }
 
+    if (staff.role !== StaffRoleEnum.SUPERADMIN && maintenanceTask.assignedStaffId !== null) {
+      throw new Error('Only Superadmin can assign tasks or you can only take open tasks');
+    }
+
     if (maintenanceTask.taskStatus !== MaintenanceTaskStatusEnum.OPEN) {
       throw new Error('Only open tasks can be taken');
     }
@@ -258,6 +271,19 @@ class MaintenanceTaskService {
     const unassigner = await StaffDao.getStaffById(unassignerStaffId);
     if (!unassigner) {
       throw new Error('Staff returning the task not found');
+    }
+
+    const assignedStaff = await StaffDao.getStaffById(maintenanceTask.assignedStaffId);
+    if (!assignedStaff) {
+      throw new Error('Assigned staff not found');
+    }
+
+    if (unassigner.role !== StaffRoleEnum.SUPERADMIN && unassigner.id !== assignedStaff.id) {
+      throw new Error('Only Superadmin can unassign tasks or you can only unassign your own tasks');
+    }
+
+    if (assignedStaff.parkId !== unassigner.parkId && unassigner.parkId !== null && unassigner.id !== assignedStaff.id) {
+      throw new Error('Only the superadmin can unassign other staffs tasks');
     }
 
     if (unassigner.id !== maintenanceTask.assignedStaffId) {
@@ -324,21 +350,36 @@ class MaintenanceTaskService {
       await this.assignMaintenanceTask(id, staffId);
     }
 
-    const maxPosition = await MaintenanceTaskDao.getMaxPositionForStatus(newStatus);
-    const updateData: any = {
-      taskStatus: newStatus,
-      position: maxPosition + 1000,
-      updatedAt: new Date(),
-    };
+    const tasksInNewStatus = await MaintenanceTaskDao.getMaintenanceTasksByStatus(newStatus);
+    let newPosition: number;
 
+    if (tasksInNewStatus.length === 0) {
+      newPosition = 1000; // First task in this status
+    } else {
+      // Add to the end of the list
+      newPosition = tasksInNewStatus[tasksInNewStatus.length - 1].position + 1000;
+    }
+
+    let updatedTask: MaintenanceTask;
     if (newStatus === MaintenanceTaskStatusEnum.COMPLETED) {
       if (!maintenanceTask.assignedStaffId) {
         throw new Error('Only assigned tasks can be completed');
       }
-      updateData.completedDate = new Date();
+      updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
+        taskStatus: newStatus,
+        position: newPosition,
+        completedDate: new Date(),
+        updatedAt: new Date(),
+      });
+    } else {
+      updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
+        taskStatus: newStatus,
+        position: newPosition,
+        updatedAt: new Date(),
+      });
     }
 
-    return MaintenanceTaskDao.updateMaintenanceTask(id, updateData);
+    return updatedTask;
   }
 
   public async updateMaintenanceTaskPosition(id: string, newPosition: number): Promise<MaintenanceTask> {
@@ -351,27 +392,31 @@ class MaintenanceTaskService {
 
     tasksInSameStatus.sort((a, b) => a.position - b.position);
 
-    const currentIndex = tasksInSameStatus.findIndex((task) => task.id === id);
-    if (currentIndex === -1) {
-      throw new Error('Task not found in the current status');
+    let newPositionValue: number;
+
+    if (newPosition === 0) {
+      // If moving to the start, set position to half of the first task's position
+      newPositionValue = tasksInSameStatus[0].position / 2;
+    } else if (newPosition >= tasksInSameStatus.length) {
+      // If moving to the end, set position to last task's position + 1000
+      newPositionValue = tasksInSameStatus[tasksInSameStatus.length - 1].position + 1000;
+    } else {
+      // Calculate the middle position between the two tasks
+      const prevTaskPosition = tasksInSameStatus[newPosition - 1].position;
+      const nextTaskPosition = tasksInSameStatus[newPosition].position;
+      newPositionValue = (prevTaskPosition + nextTaskPosition) / 2;
     }
 
-    const [movedTask] = tasksInSameStatus.splice(currentIndex, 1);
-    tasksInSameStatus.splice(newPosition, 0, movedTask);
+    // Update the task's position
+    const updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
+      position: newPositionValue,
+      updatedAt: new Date(),
+    });
 
-    const updatedTasks = tasksInSameStatus.map((task, index) => ({
-      id: task.id,
-      position: (index + 1) * 1000,
-    }));
-
-    await Promise.all(
-      updatedTasks.map((task) => MaintenanceTaskDao.updateMaintenanceTask(task.id, { position: task.position, updatedAt: new Date() })),
-    );
-
-    const updatedTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!updatedTask) {
       throw new Error('Updated task not found');
     }
+
     return updatedTask;
   }
 
@@ -408,7 +453,7 @@ class MaintenanceTaskService {
     const dueDate = new Date(createdAt);
     switch (urgency) {
       case MaintenanceTaskUrgencyEnum.IMMEDIATE:
-        // Due today (0 days)
+        dueDate.setDate(dueDate.getDate() + 1);
         break;
       case MaintenanceTaskUrgencyEnum.HIGH:
         dueDate.setDate(dueDate.getDate() + 3);
@@ -427,11 +472,13 @@ class MaintenanceTaskService {
     const enhancedMaintenanceTasks = await Promise.all(
       maintenanceTasks.map(async (maintenanceTask) => {
         let facility;
+        let park;
         if (maintenanceTask.facilityId) {
           facility = await FacilityDao.getFacilityById(maintenanceTask.facilityId);
           if (!facility) {
             throw new Error(`Facility not found for maintenance task ${maintenanceTask.id}`);
           }
+          park = await ParkDao.getParkById(facility.parkId);
         }
 
         if (maintenanceTask.parkAssetId) {
@@ -443,6 +490,7 @@ class MaintenanceTaskService {
           if (!facility) {
             throw new Error(`Facility not found for park asset ${parkAsset.id}`);
           }
+          park = await ParkDao.getParkById(facility.parkId);
         }
 
         if (maintenanceTask.sensorId) {
@@ -455,6 +503,7 @@ class MaintenanceTaskService {
             if (!facility) {
               throw new Error(`Facility not found for sensor ${sensor.id}`);
             }
+            park = await ParkDao.getParkById(facility.parkId);
           }
         }
 
@@ -468,12 +517,16 @@ class MaintenanceTaskService {
             if (!facility) {
               throw new Error(`Facility not found for hub ${hub.id}`);
             }
+            park = await ParkDao.getParkById(facility.parkId);
           }
         }
 
         return {
           ...maintenanceTask,
-          facility,
+          facilityOfFaultyEntity: {
+            ...facility,
+            park: park,
+          },
         };
       }),
     );
@@ -481,69 +534,150 @@ class MaintenanceTaskService {
     return enhancedMaintenanceTasks;
   }
 
-  public async getParkMaintenanceTaskCompletionRates(
+  public async getParkMaintenanceTaskAverageCompletionTimeForPeriod(
     parkId: number,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ staff: Staff; completionRate: number }[]> {
-    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.map((staff) => staff.id);
-    const staffTaskCompletionRates = await Promise.all(
-      staffIdsArray.map(async (staffId) => {
-        const staff = await StaffDao.getStaffById(staffId);
-        if (!staff) {
-          throw new Error('Staff not found');
-        }
-        const completedTasks = await MaintenanceTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
-        const totalTasks = await MaintenanceTaskDao.getStaffTotalTasksForPeriod(staffId, startDate, endDate);
-        const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-        return { staff, completionRate };
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageCompletionTime: number }[]> {
+    const taskCompletionTimes = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const averageCompletionTime = await MaintenanceTaskDao.getAverageTaskTypeCompletionTime(taskType, parkId, startDate, endDate);
+        return { taskType, averageCompletionTime };
       }),
     );
-    return staffTaskCompletionRates;
+    return taskCompletionTimes;
   }
 
-  public async getParkMaintenanceTaskOverdueRates(
+  public async getParkMaintenanceTaskOverdueRateForPeriod(
     parkId: number,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ staff: Staff; overdueRate: number }[]> {
-    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.map((staff) => staff.id);
-    const staffOverdueRates = await Promise.all(
-      staffIdsArray.map(async (staffId) => {
-        const staff = await StaffDao.getStaffById(staffId);
-        if (!staff) {
-          throw new Error('Staff not found');
-        }
-        const overdueTasks = await MaintenanceTaskDao.getStaffOverdueTasksForPeriod(staffId, startDate, endDate);
-        const totalTasks = await MaintenanceTaskDao.getStaffTotalTasksDueForPeriod(staffId, startDate, endDate);
-        const overdueRate = totalTasks > 0 ? (overdueTasks / totalTasks) * 100 : 0;
-        return { staff, overdueRate };
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; overdueRate: number }[]> {
+    const overdueRates = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const overdueRate = await MaintenanceTaskDao.getOverdueRateByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
+        return { taskType, overdueRate };
       }),
     );
-    return staffOverdueRates;
+
+    return overdueRates;
   }
 
-  public async getParkAverageTaskCompletionTime(
+  public async getDelayedTaskTypesIdentification(
     parkId: number,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ staff: Staff; averageCompletionTime: number }[]> {
-    const staffIds = await StaffDao.getAllStaffsByParkId(parkId);
-    const staffIdsArray = staffIds.map((staff) => staff.id);
-    const staffAverageCompletionTimes = await Promise.all(
-      staffIdsArray.map(async (staffId) => {
-        const staff = await StaffDao.getStaffById(staffId);
-        if (!staff) {
-          throw new Error('Staff not found');
+  ): Promise<{ rank: number; taskType: MaintenanceTaskTypeEnum; averageCompletionTime: number; overdueTaskCount: number; completedTaskCount: number }[]> {
+    const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+
+    const overdueTaskCounts = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const count = await MaintenanceTaskDao.getOverdueTaskCountByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
+        return { taskType, count };
+      })
+    );
+
+    const completedTaskCounts = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const count = await MaintenanceTaskDao.getCompletedTaskCountByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
+        return { taskType, count };
+      })
+    );
+
+    const maxCompletionTime = Math.max(...averageCompletionTimes.map((t) => t.averageCompletionTime));
+    const maxOverdueCount = Math.max(...overdueTaskCounts.map((t) => t.count));
+    const maxCompletedCount = Math.max(...completedTaskCounts.map((t) => t.count));
+
+    const delayedTasks = averageCompletionTimes
+      .map((completionTime) => {
+        const overdueCount = overdueTaskCounts.find((count) => count.taskType === completionTime.taskType)?.count || 0;
+        const completedCount = completedTaskCounts.find((count) => count.taskType === completionTime.taskType)?.count || 0;
+
+        // Avoid division by zero
+        const normalizedCompletionTime = maxCompletionTime > 0 ? completionTime.averageCompletionTime / maxCompletionTime : 0;
+        const normalizedOverdueCount = maxOverdueCount > 0 ? overdueCount / maxOverdueCount : 0;
+        const normalizedCompletedCount = maxCompletedCount > 0 ? completedCount / maxCompletedCount : 0;
+
+        // Adjust the scoring formula to include completed tasks
+        const score = normalizedCompletionTime * 0.3 + normalizedOverdueCount * 0.4 - normalizedCompletedCount * 0.3;
+
+        return {
+          taskType: completionTime.taskType,
+          averageCompletionTime: completionTime.averageCompletionTime,
+          overdueTaskCount: overdueCount,
+          completedTaskCount: completedCount,
+          score: score,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    return delayedTasks.slice(0, 3).map((task, index) => ({
+      rank: index + 1,
+      taskType: task.taskType,
+      averageCompletionTime: task.averageCompletionTime,
+      overdueTaskCount: task.overdueTaskCount,
+      completedTaskCount: task.completedTaskCount,
+    }));
+  }
+
+  /* NOT USED BECAUSE LINE CHART HAS 15 VARIABLES TOO CLUTTERED */
+  public async getParkTaskTypeAverageCompletionTimeForPastMonths(
+    parkId: number,
+    months: number,
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageCompletionTimes: number[] }[]> {
+    const currentDate = new Date();
+
+    const taskTypeAverageCompletionTimes = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const monthlyAverages = [];
+        for (let i = 0; i < months; i++) {
+          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
+          monthEndDate.setHours(23, 59, 59, 999);
+
+          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthStartDate.setHours(0, 0, 0, 0);
+
+          const averageCompletionTime = await MaintenanceTaskDao.getAverageTaskTypeCompletionTime(
+            taskType,
+            parkId,
+            monthStartDate,
+            monthEndDate,
+          );
+          monthlyAverages.unshift(averageCompletionTime);
         }
-        const averageCompletionTime = await MaintenanceTaskDao.getStaffAverageTaskCompletionTime(staffId, startDate, endDate);
-        return { staff, averageCompletionTime };
+
+        return { taskType, averageCompletionTimes: monthlyAverages };
       }),
     );
 
-    return staffAverageCompletionTimes;
+    return taskTypeAverageCompletionTimes;
+  }
+
+  public async getParkTaskTypeAverageOverdueRatesForPastMonths(
+    parkId: number,
+    months: number,
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageOverdueRates: number[] }[]> {
+    const currentDate = new Date();
+
+    const taskTypeAverageOverdueRates = await Promise.all(
+      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
+        const monthlyOverdueRates = [];
+        for (let i = 0; i < months; i++) {
+          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
+          monthEndDate.setHours(23, 59, 59, 999);
+
+          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          monthStartDate.setHours(0, 0, 0, 0);
+
+          const overdueRate = await MaintenanceTaskDao.getOverdueRateByTaskTypeForPeriod(taskType, parkId, monthStartDate, monthEndDate);
+          monthlyOverdueRates.unshift(overdueRate);
+        }
+
+        return { taskType, averageOverdueRates: monthlyOverdueRates };
+      }),
+    );
+
+    return taskTypeAverageOverdueRates;
   }
 }
 

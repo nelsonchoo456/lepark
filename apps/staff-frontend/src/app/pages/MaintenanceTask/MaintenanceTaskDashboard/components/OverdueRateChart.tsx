@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Card, DatePicker, Tooltip } from 'antd';
-import { OverdueRateData, StaffResponse, getParkPlantTaskOverdueRates } from '@lepark/data-access';
+import { OverdueRateMaintenanceTaskData, StaffResponse, getParkMaintenanceTaskOverdueRateForPeriod } from '@lepark/data-access';
 import dayjs from 'dayjs';
 import { useAuth } from '@lepark/common-ui';
 import { InfoCircleOutlined } from '@ant-design/icons'; // Optional, using an icon
@@ -9,7 +9,7 @@ import { InfoCircleOutlined } from '@ant-design/icons'; // Optional, using an ic
 const { RangePicker } = DatePicker;
 
 const OverdueRateChart = () => {
-  const [data, setData] = useState<OverdueRateData[]>([]);
+  const [data, setData] = useState<OverdueRateMaintenanceTaskData[]>([]);
   const [startDate, setStartDate] = useState<string>(dayjs().startOf('month').toISOString());
   const [endDate, setEndDate] = useState<string>(dayjs().endOf('month').toISOString());
   const { user } = useAuth<StaffResponse>();
@@ -20,7 +20,7 @@ const OverdueRateChart = () => {
 
   const fetchData = async () => {
     try {
-      const response = await getParkPlantTaskOverdueRates(user?.parkId ?? null, new Date(startDate), new Date(endDate));
+      const response = await getParkMaintenanceTaskOverdueRateForPeriod(user?.parkId ?? null, new Date(startDate), new Date(endDate));
       setData(response.data);
     } catch (error) {
       console.error('Error fetching overdue rate data:', error);
@@ -33,11 +33,11 @@ const OverdueRateChart = () => {
   };
 
   const chartData = {
-    labels: data.map((item) => item.staff.firstName + ' ' + item.staff.lastName),
+    labels: data.map((item) => item.taskType),
     datasets: [
       {
         label: 'Overdue Rate (%)',
-        data: data.map((item) => item.overdueRate.toFixed(2)),
+        data: data.map((item) => item.overdueRate),
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
         borderColor: 'rgba(54, 162, 235, 1)',
         borderWidth: 1,
@@ -59,7 +59,7 @@ const OverdueRateChart = () => {
     plugins: {
       title: {
         display: true,
-        text: 'Plant Task Overdue Rates by Staff',
+        text: 'Maintenance Task Overdue Rates',
       },
     },
     maintainAspectRatio: false,
@@ -71,7 +71,7 @@ const OverdueRateChart = () => {
       title={
         <div>
           Task Overdue Rates
-          <Tooltip title="This chart shows the overdue rates of tasks among different staff members for the selected period.">
+          <Tooltip title="This chart shows the overdue rates of tasks among different task types for the selected period.">
             <InfoCircleOutlined style={{ color: 'rgba(0, 0, 0, 0.45)', marginLeft: '8px' }} />
           </Tooltip>
         </div>

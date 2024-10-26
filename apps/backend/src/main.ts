@@ -97,7 +97,7 @@ app.use('/api/faq', faqRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/announcements', AnnouncementRouter);
 app.use('/api/eventTickets', eventTicketRouter);
-app.use('/api/maintenanceTasks', maintenanceTaskRouter);
+app.use('/api/maintenancetasks', maintenanceTaskRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();

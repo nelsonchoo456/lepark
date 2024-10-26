@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Select, Button, message, Tooltip } from 'antd';
 import { PlantTaskResponse, PlantTaskStatusEnum, PlantTaskTypeEnum, PlantTaskUpdateData, StaffType } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
@@ -12,7 +12,7 @@ interface EditPlantTaskModalProps {
   onSubmit: (values: PlantTaskUpdateData) => Promise<void>;
   initialValues: PlantTaskResponse | null;
   userRole: StaffType;
-  onStatusChange: (newStatus: PlantTaskStatusEnum) => void;
+  onStatusChange: (newStatus: PlantTaskStatusEnum, oldStatus: PlantTaskStatusEnum) => void;
 }
 
 const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
@@ -28,8 +28,9 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    if (initialValues) {
+  // Use useEffect to reset form fields when the modal becomes visible
+  useEffect(() => {
+    if (visible && initialValues) {
       form.setFieldsValue({
         title: initialValues.title,
         taskType: initialValues.taskType,
@@ -40,7 +41,7 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
         remarks: initialValues.remarks,
       });
     }
-  }, [initialValues, form]);
+  }, [visible, initialValues, form]);
 
   const handleSubmit = async () => {
     try {
@@ -88,14 +89,19 @@ const EditPlantTaskModal: React.FC<EditPlantTaskModalProps> = ({
     window.open(`/occurrences/${occurrenceId}`, '_blank', 'noopener,noreferrer');
   };
 
+  const handleCancel = () => {
+    form.resetFields(); // Reset form fields when cancelling
+    onCancel();
+  };
+
   return (
     <>
       <Modal
         title="Edit Plant Task"
         open={visible}
-        onCancel={onCancel}
+        onCancel={handleCancel}
         footer={[
-          <Button key="cancel" onClick={onCancel}>
+          <Button key="cancel" onClick={handleCancel}>
             Cancel
           </Button>,
           <Button key="submit" type="primary" loading={isSubmitting} onClick={handleSubmit}>
