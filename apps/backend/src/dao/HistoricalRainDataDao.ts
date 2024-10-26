@@ -8,6 +8,27 @@ class HistoricalRainDataDao {
     return prisma.historicalRainData.create({ data });
   }
 
+  public async getHistoricalRainDataByDateAndLatLng(date: Date, lat: number, lng: number): Promise<HistoricalRainData | null> {
+    const result = await prisma.$queryRaw<HistoricalRainData[]>(
+      Prisma.sql`
+        SELECT *,
+          (
+            6371 * acos(
+              cos(radians(${lat})) * cos(radians(lat)) *
+              cos(radians(lng) - radians(${lng})) +
+              sin(radians(${lat})) * sin(radians(lat))
+            )
+          ) AS distance
+        FROM "HistoricalRainData"
+        WHERE DATE("timestamp") = DATE(${date})
+        ORDER BY distance
+        LIMIT 1;
+      `
+    );
+
+    return result.length > 0 ? result[0] : null;
+  }
+
   // Create multiple historical rainfall data records
   public async createManyHistoricalRainData(data: Prisma.HistoricalRainDataCreateManyInput[]): Promise<Prisma.BatchPayload> {
     return prisma.historicalRainData.createMany({ data, skipDuplicates: true });

@@ -8,6 +8,10 @@ class HistoricalRainDataService {
     return await HistoricalRainDataDao.createHistoricalRainData(data);
   }
 
+  public async getHistoricalRainDataByDateAndLatLng(date: Date, lat: number, lng: number): Promise<HistoricalRainData> {
+    return await HistoricalRainDataDao.getHistoricalRainDataByDateAndLatLng(date, lat, lng);
+  }
+
   // Purposely skipped the Zod schema verification bc need to call these methods many, many times
   public async createManyHistoricalRainData(data: Prisma.HistoricalRainDataCreateManyInput[]): Promise<Prisma.BatchPayload> {
     return await HistoricalRainDataDao.createManyHistoricalRainData(data);
