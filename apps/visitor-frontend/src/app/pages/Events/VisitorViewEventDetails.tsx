@@ -1,10 +1,10 @@
-import { Tabs, Typography, Tag } from 'antd';
-import { useParams } from 'react-router-dom';
+import { Tabs, Typography, Tag, Button } from 'antd';
+import { useParams, useNavigate } from 'react-router-dom';
 import { LogoText } from '@lepark/common-ui';
 import moment from 'moment';
 import { useRestrictEvents } from '../../hooks/Events/useRestrictEvents';
 import EventInformationTab from './components/EventInformationTab';
-import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel'; // Import the carousel component
+import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
 import withParkGuard from '../../park-context/withParkGuard';
 
 const { Title } = Typography;
@@ -12,6 +12,7 @@ const { Title } = Typography;
 const VisitorViewEventDetails = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const { event, facility, park, loading } = useRestrictEvents(eventId);
+  const navigate = useNavigate();
 
   const tabsItems = [
     {
@@ -21,6 +22,10 @@ const VisitorViewEventDetails = () => {
     },
     // Add other tabs if necessary
   ];
+
+  const navigateToListings = (eventId: string) => {
+    navigate(`/event/${eventId}/listings`);
+  };
 
   return (
     <div className="md:p-4 md:h-screen md:overflow-hidden">
@@ -33,7 +38,7 @@ const VisitorViewEventDetails = () => {
               </LogoText>
             </div>
           </div>
-          <SpeciesCarousel images={event?.images || []} /> {/* Use the carousel component for event images */}
+          <SpeciesCarousel images={event?.images || []} />
         </div>
         <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
           <div className="hidden md:flex items-start">
@@ -50,7 +55,7 @@ const VisitorViewEventDetails = () => {
             className="md:mt-0 md:p-0"
           />
           <div className="mt-4">
-            {/* <LogoText className="text-2xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 mb-2 leading-tight pb-1">
+            <LogoText className="text-2xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 mb-2 leading-tight pb-1">
               Event Schedule
             </LogoText>
             <table className="table-auto text-sm border-collapse border border-gray-300">
@@ -68,7 +73,12 @@ const VisitorViewEventDetails = () => {
                   </tr>
                 )}
               </tbody>
-            </table> */}
+            </table>
+          </div>
+          <div className="mt-4">
+            <Button type="primary" className="w-full" onClick={() => eventId && navigateToListings(eventId)}>
+              Book Now
+            </Button>
           </div>
         </div>
       </div>

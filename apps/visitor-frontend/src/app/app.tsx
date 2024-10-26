@@ -48,6 +48,7 @@ import FAQList from './pages/FAQ/FAQList';
 import FAQView from './pages/FAQ/FAQView';
 
 import FailedPage from './pages/Attractions/FailedPage';
+import ViewEventTicketListings from './pages/Events/ViewEventListings';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -202,10 +203,18 @@ export function App() {
                 <Route path="/event">
                   <Route path="park/:parkId" element={<EventsPerPark />} />
                   <Route path=":eventId" element={<VisitorViewEventDetails />} />
+                  <Route
+                    path=":eventId/listings"
+                    element={
+                      <ProtectedRoute redirectTo="/login">
+                        <ViewEventTicketListings />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
                 <Route path="/faq">
-                  <Route index element={<FAQList/>}/>
-                  <Route path=":faqId" element={<FAQView/>}/>
+                  <Route index element={<FAQList />} />
+                  <Route path=":faqId" element={<FAQView />} />
                 </Route>
               </Route>
             </Routes>
