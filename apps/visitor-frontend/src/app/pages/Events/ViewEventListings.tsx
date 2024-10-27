@@ -58,6 +58,13 @@ const ViewEventTicketListings = () => {
     fetchTickets();
   }, [eventId]);
 
+  const groupedListings = listings.reduce((acc, listing) => {
+    const key = listing.nationality === 'LOCAL' ? 'Local Resident' : 'Standard';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(listing);
+    return acc;
+  }, {} as Record<string, EventTicketListingResponse[]>);
+
   const handleTicketCountChange = (listingId: string, increment: number) => {
     setTicketCounts((prev) => ({
       ...prev,
@@ -71,7 +78,7 @@ const ViewEventTicketListings = () => {
 
   const handleBackToTicketSelection = (currentTickets: TicketDetail[]) => {
     const updatedTicketCounts = currentTickets.reduce((acc, ticket) => {
-      const listing = listings.find((l) => `${l.category}` === ticket.description);
+      const listing = listings.find((l) => `${l.nationality} · ${l.category}` === ticket.description);
       if (listing) {
         acc[listing.id] = ticket.quantity;
       }
@@ -109,7 +116,7 @@ const ViewEventTicketListings = () => {
         const listing = listings.find((l) => l.id === id);
         return {
           id,
-          description: `${listing?.category}`,
+          description: `${listing?.nationality} · ${listing?.category}`,
           quantity,
           price: listing?.price || 0,
         };
@@ -158,19 +165,18 @@ const ViewEventTicketListings = () => {
       case 'select-tickets':
         return (
           <>
-            <Card className="mb-4 shadow-sm">
-              <div className="mb-4">
-                <Title level={4}>Event Tickets</Title>
-              </div>
-              {listings.map(renderListingRow)}
-            </Card>
+            {Object.entries(groupedListings).map(([category, listings]) => (
+              <Card key={category} className="mb-4 shadow-sm">
+                <div className="mb-4">
+                  <Title level={4}>{category}</Title>
+                </div>
+                {listings.map(renderListingRow)}
+              </Card>
+            ))}
             <div className="mt-4 pb-16">
-              <Checkbox
-                className="mb-4 text-sm"
-                checked={termsChecked}
-                onChange={(e: CheckboxChangeEvent) => setTermsChecked(e.target.checked)}
-              >
-                I agree to the terms and conditions for this event
+              <Checkbox className="mb-4 text-sm" checked={termsChecked} onChange={handleTermsCheckbox}>
+                I understand that I will not be permitted from entering if I do not have the necessary proof of identification (e.g. NRIC,
+                Student ID)
               </Checkbox>
               <Button
                 type="primary"
@@ -192,7 +198,7 @@ const ViewEventTicketListings = () => {
               .map(([id, quantity]) => {
                 const listing = listings.find((l) => l.id === id);
                 return {
-                  description: `${listing?.category}` || '',
+                  description: `${listing?.nationality} · ${listing?.category}` || '',
                   quantity,
                   price: listing?.price || 0,
                 };
@@ -211,7 +217,7 @@ const ViewEventTicketListings = () => {
               .map(([id, quantity]) => {
                 const listing = listings.find((l) => l.id === id);
                 return {
-                  description: `${listing?.category}` || '',
+                  description: `${listing?.nationality} · ${listing?.category}` || '',
                   quantity,
                   price: listing?.price || 0,
                 };
@@ -228,6 +234,10 @@ const ViewEventTicketListings = () => {
       default:
         return null;
     }
+  };
+
+  const handleTermsCheckbox = (e: CheckboxChangeEvent) => {
+    setTermsChecked(e.target.checked);
   };
 
   return (
