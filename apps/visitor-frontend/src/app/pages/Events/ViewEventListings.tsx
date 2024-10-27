@@ -115,7 +115,7 @@ const ViewEventTicketListings = () => {
         };
       });
 
-    navigate('/payment', {
+    navigate('/event-payment', {
       state: {
         eventName: event?.title || '',
         eventId: eventId,
@@ -197,8 +197,6 @@ const ViewEventTicketListings = () => {
                   price: listing?.price || 0,
                 };
               })}
-            eventStartDate={dayjs(event?.startDate)}
-            eventEndDate={dayjs(event?.endDate)}
             onBack={handleBackToTicketSelection}
             onNext={handleDateSelected}
           />

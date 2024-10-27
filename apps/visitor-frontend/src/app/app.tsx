@@ -49,6 +49,7 @@ import FAQView from './pages/FAQ/FAQView';
 
 import FailedPage from './pages/Attractions/FailedPage';
 import ViewEventTicketListings from './pages/Events/ViewEventListings';
+import EventPaymentPage from './pages/Events/PaymentPageEvents';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -212,6 +213,14 @@ export function App() {
                     }
                   />
                 </Route>
+                <Route
+                  path="/event-payment"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventPaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/faq">
                   <Route index element={<FAQList />} />
                   <Route path=":faqId" element={<FAQView />} />
