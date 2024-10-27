@@ -7,6 +7,7 @@ import {
   CreateEventTicketTransactionPaymentIntentResponse,
   FetchEventTicketTransactionStripeKeyResponse,
   FetchEventTicketTransactionPaymentResponse,
+  SendEventTicketTransactionEmailData,
 } from '../types/eventTicket';
 import client from './client';
 
@@ -16,10 +17,7 @@ export async function createEventTicketTransaction(
   data: CreateEventTicketTransactionData,
 ): Promise<AxiosResponse<EventTicketTransactionResponse>> {
   try {
-    const response: AxiosResponse<EventTicketTransactionResponse> = await client.post(
-      `${URL}/createEventTicketTransaction`,
-      data,
-    );
+    const response: AxiosResponse<EventTicketTransactionResponse> = await client.post(`${URL}/createEventTicketTransaction`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
@@ -32,9 +30,7 @@ export async function createEventTicketTransaction(
 
 export async function getEventTicketTransactionById(id: string): Promise<AxiosResponse<EventTicketTransactionResponse>> {
   try {
-    const response: AxiosResponse<EventTicketTransactionResponse> = await client.get(
-      `${URL}/viewEventTicketTransactionDetails/${id}`,
-    );
+    const response: AxiosResponse<EventTicketTransactionResponse> = await client.get(`${URL}/viewEventTicketTransactionDetails/${id}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -45,9 +41,7 @@ export async function getEventTicketTransactionById(id: string): Promise<AxiosRe
   }
 }
 
-export async function getEventTicketTransactionsByVisitorId(
-  visitorId: string,
-): Promise<AxiosResponse<EventTicketTransactionResponse[]>> {
+export async function getEventTicketTransactionsByVisitorId(visitorId: string): Promise<AxiosResponse<EventTicketTransactionResponse[]>> {
   try {
     const response: AxiosResponse<EventTicketTransactionResponse[]> = await client.get(
       `${URL}/getEventTicketTransactionsByVisitorId/${visitorId}`,
@@ -62,9 +56,7 @@ export async function getEventTicketTransactionsByVisitorId(
   }
 }
 
-export async function getEventTicketTransactionsByEventId(
-  eventId: string,
-): Promise<AxiosResponse<EventTicketTransactionResponse[]>> {
+export async function getEventTicketTransactionsByEventId(eventId: string): Promise<AxiosResponse<EventTicketTransactionResponse[]>> {
   try {
     const response: AxiosResponse<EventTicketTransactionResponse[]> = await client.get(
       `${URL}/getEventTicketTransactionsByEventId/${eventId}`,
@@ -120,9 +112,7 @@ export async function deleteEventTicket(id: string): Promise<AxiosResponse<void>
 
 export async function getEventTicketsByTransactionId(transactionId: string): Promise<AxiosResponse<EventTicketResponse[]>> {
   try {
-    const response: AxiosResponse<EventTicketResponse[]> = await client.get(
-      `${URL}/getEventTicketsByTransactionId/${transactionId}`,
-    );
+    const response: AxiosResponse<EventTicketResponse[]> = await client.get(`${URL}/getEventTicketsByTransactionId/${transactionId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -146,10 +136,7 @@ export async function getEventTicketsByListingId(listingId: string): Promise<Axi
   }
 }
 
-export async function updateEventTicketStatus(
-  id: string,
-  data: UpdateEventTicketStatusData,
-): Promise<AxiosResponse<EventTicketResponse>> {
+export async function updateEventTicketStatus(id: string, data: UpdateEventTicketStatusData): Promise<AxiosResponse<EventTicketResponse>> {
   try {
     const response: AxiosResponse<EventTicketResponse> = await client.put(`${URL}/updateEventTicketStatus/${id}`, data);
     return response;
@@ -162,9 +149,13 @@ export async function updateEventTicketStatus(
   }
 }
 
-export async function createEventTicketTransactionPaymentIntent(total: number): Promise<AxiosResponse<CreateEventTicketTransactionPaymentIntentResponse>> {
+export async function createEventTicketTransactionPaymentIntent(
+  total: number,
+): Promise<AxiosResponse<CreateEventTicketTransactionPaymentIntentResponse>> {
   try {
-    const response: AxiosResponse<CreateEventTicketTransactionPaymentIntentResponse> = await client.post(`${URL}/create-payment-intent`, { total });
+    const response: AxiosResponse<CreateEventTicketTransactionPaymentIntentResponse> = await client.post(`${URL}/create-payment-intent`, {
+      total,
+    });
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -190,9 +181,7 @@ export async function getEventTicketTransactionStripePublishableKey(): Promise<s
 
 export async function getEventTicketsByEventId(eventId: string): Promise<AxiosResponse<EventTicketResponse[]>> {
   try {
-    const response: AxiosResponse<EventTicketResponse[]> = await client.get(
-      `${URL}/getEventTicketsByEventId/${eventId}`
-    );
+    const response: AxiosResponse<EventTicketResponse[]> = await client.get(`${URL}/getEventTicketsByEventId/${eventId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -202,8 +191,10 @@ export async function getEventTicketsByEventId(eventId: string): Promise<AxiosRe
     }
   }
 }
-  
-export async function fetchEventTicketTransactionPayment(paymentIntentId: string): Promise<AxiosResponse<FetchEventTicketTransactionPaymentResponse>> {
+
+export async function fetchEventTicketTransactionPayment(
+  paymentIntentId: string,
+): Promise<AxiosResponse<FetchEventTicketTransactionPaymentResponse>> {
   try {
     const response: AxiosResponse<FetchEventTicketTransactionPaymentResponse> = await client.get(`${URL}/fetchPayment/${paymentIntentId}`);
     return response;
@@ -223,6 +214,19 @@ export async function verifyEventTicket(ticketId: string): Promise<AxiosResponse
   } catch (error) {
     if (axios.isAxiosError(error) && error.response && error.response.status === 400) {
       throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function sendEventTicketEmail(data: SendEventTicketTransactionEmailData): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.post(`${URL}/sendEventTicketEmail`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
     } else {
       throw error;
     }

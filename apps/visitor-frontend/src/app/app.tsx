@@ -50,6 +50,9 @@ import FAQView from './pages/FAQ/FAQView';
 import FailedPage from './pages/Attractions/FailedPage';
 import ViewEventTicketListings from './pages/Events/ViewEventListings';
 import EventPaymentPage from './pages/Events/PaymentPageEvents';
+import EventCompletionPage from './pages/Events/EventCompletionPage';
+import EventSuccessPage from './pages/Events/EventSuccessPage';
+import EventFailedPage from './pages/Events/EventFailedPage';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -218,6 +221,30 @@ export function App() {
                   element={
                     <ProtectedRoute redirectTo="/login">
                       <EventPaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-payment-completion/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventCompletionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-success"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventSuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-failed"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventFailedPage />
                     </ProtectedRoute>
                   }
                 />

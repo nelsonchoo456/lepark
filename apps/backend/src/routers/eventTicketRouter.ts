@@ -187,20 +187,20 @@ router.get('/fetchPayment/:id', async (req, res) => {
   }
 });
 
-// router.post('/sendEventTicketEmail', async (req, res) => {
-//   try {
-//     const { transactionId, recipientEmail } = req.body;
+router.post('/sendEventTicketEmail', async (req, res) => {
+  try {
+    const { transactionId, recipientEmail } = req.body;
 
-//     if (!transactionId || !recipientEmail) {
-//       return res.status(400).json({ error: 'Transaction ID and recipient email are required' });
-//     }
+    if (!transactionId || !recipientEmail) {
+      return res.status(400).json({ error: 'Transaction ID and recipient email are required' });
+    }
 
-//     await EventTicketService.sendEventTicketEmail(transactionId, recipientEmail);
-//     res.status(200).json({ message: 'Event ticket email sent successfully' });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+    await EventTicketService.sendEventTicketEmail(transactionId, recipientEmail);
+    res.status(200).json({ message: 'Event ticket email sent successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.get('/getEventTicketsByEventId/:eventId', async (req, res) => {
   try {
