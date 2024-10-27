@@ -24,7 +24,9 @@ import {
   AttractionTicketTransactionResponse,
   deleteVisitor,
   DeleteVisitorRequestData,
+  EventTicketTransactionResponse,
   getAttractionTicketTransactionsByVisitorId,
+  getEventTicketTransactionsByVisitorId,
   getFavoriteSpecies,
   GetFavoriteSpeciesResponse,
   sendVerificationEmailWithEmail,
@@ -41,6 +43,7 @@ import { AiOutlineFrown, AiOutlineSmile } from 'react-icons/ai';
 import { MdArrowForward } from 'react-icons/md';
 import AttractionBookingCard from './components/AttractionTransactionCard';
 import AttractionTransactionCard from './components/AttractionTransactionCard';
+import EventTransactionCard from './components/EventTransactionCard';
 
 const initialVisitor = {
   id: '',
@@ -67,6 +70,7 @@ const ProfilePage = () => {
 
   const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
   const [attractionTransactions, setAttractionTransactions] = useState<AttractionTicketTransactionResponse[]>([]);
+  const [eventTransactions, setEventTransactions] = useState<EventTicketTransactionResponse[]>([]);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -118,6 +122,12 @@ const ProfilePage = () => {
         const attractionData: AttractionTicketTransactionResponse[] = attractionResponse.data;
         if (Array.isArray(attractionData)) {
           setAttractionTransactions(attractionData);
+        }
+
+        const eventResponse = await getEventTicketTransactionsByVisitorId(user.id);
+        const eventData: EventTicketTransactionResponse[] = eventResponse.data;
+        if (Array.isArray(eventData)) {
+          setEventTransactions(eventData);
         }
       } catch (error) {
         console.error('Error fetching favorite species:', error);
@@ -247,6 +257,14 @@ const ProfilePage = () => {
   };
 
   const navigateToTransactionDetails = (transactionId: string) => {
+    navigate(`/attraction-transaction/${transactionId}`);
+  };
+
+  const navigateToViewEventTransactions = () => {
+    navigate('/event-transaction');
+  };
+
+  const navigateToEventTransactionDetails = (transactionId: string) => {
     navigate(`/attraction-transaction/${transactionId}`);
   };
 
@@ -418,50 +436,96 @@ const ProfilePage = () => {
 
       {/* </div> */}
       <ContentWrapper>
-      <div className="flex items-center">
-        <LogoText className="text-xl">My Upcoming Attraction Visits</LogoText>
-        <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
-          <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
-          <Button
-            icon={<MdArrowForward className="text-2xl" />}
-            shape="circle"
-            type="primary"
-            size="large"
-            className="md:bg-transparent md:text-green-500 md:shadow-none"
-            onClick={navigateToViewAttractionTransactions}
-          />
+        <div className="flex items-center">
+          <LogoText className="text-xl">My Upcoming Attraction Visits</LogoText>
+          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+            <Button
+              icon={<MdArrowForward className="text-2xl" />}
+              shape="circle"
+              type="primary"
+              size="large"
+              className="md:bg-transparent md:text-green-500 md:shadow-none"
+              onClick={navigateToViewAttractionTransactions}
+            />
+          </div>
         </div>
-      </div>
-      <div className="w-full overflow-x-auto py-2 min-h-[13rem]">
-        <div className="flex whitespace-nowrap">
-        {attractionTransactions && attractionTransactions.length > 0 ? (
-            attractionTransactions
-              .filter((transaction) => {
-                const transactionDate = new Date(transaction.attractionDate);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Set time to the start of the day
-                return transactionDate >= today; // Filter for today and onwards
-              })
-              .sort((a, b) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime()) // Sort by date
-              .map((transaction) => (
-                <div 
-                  key={transaction.id} 
-                  className="inline-block cursor-pointer"
-                  onClick={() => navigateToTransactionDetails(transaction.id)}
-                >
-                  <AttractionTransactionCard transaction={transaction} />
-                </div>
-              ))
-          ) : (
-            <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
-              <BsCalendar4Event className="text-4xl" />
-              <br />
-              No Attraction Bookings.
-            </div>
-          )}
+        <div className="w-full overflow-x-auto py-2 min-h-[13rem]">
+          <div className="flex whitespace-nowrap">
+            {attractionTransactions && attractionTransactions.length > 0 ? (
+              attractionTransactions
+                .filter((transaction) => {
+                  const transactionDate = new Date(transaction.attractionDate);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0); // Set time to the start of the day
+                  return transactionDate >= today; // Filter for today and onwards
+                })
+                .sort((a, b) => new Date(a.attractionDate).getTime() - new Date(b.attractionDate).getTime()) // Sort by date
+                .map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="inline-block cursor-pointer"
+                    onClick={() => navigateToTransactionDetails(transaction.id)}
+                  >
+                    <AttractionTransactionCard transaction={transaction} />
+                  </div>
+                ))
+            ) : (
+              <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+                <BsCalendar4Event className="text-4xl" />
+                <br />
+                No Attraction Bookings.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </ContentWrapper>
+      </ContentWrapper>
+
+      <ContentWrapper>
+        <div className="flex items-center">
+          <LogoText className="text-xl">My Upcoming Events</LogoText>
+          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+            <Button
+              icon={<MdArrowForward className="text-2xl" />}
+              shape="circle"
+              type="primary"
+              size="large"
+              className="md:bg-transparent md:text-green-500 md:shadow-none"
+              onClick={navigateToViewEventTransactions}
+            />
+          </div>
+        </div>
+        <div className="w-full overflow-x-auto py-2 min-h-[13rem]">
+          <div className="flex whitespace-nowrap">
+            {eventTransactions && eventTransactions.length > 0 ? (
+              eventTransactions
+                .filter((transaction) => {
+                  const transactionDate = new Date(transaction.eventDate);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0); // Set time to the start of the day
+                  return transactionDate >= today; // Filter for today and onwards
+                })
+                .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()) // Sort by date
+                .map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="inline-block cursor-pointer"
+                    onClick={() => navigateToEventTransactionDetails(transaction.id)}
+                  >
+                    <EventTransactionCard transaction={transaction} />
+                  </div>
+                ))
+            ) : (
+              <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+                <BsCalendar4Event className="text-4xl" />
+                <br />
+                No Event Bookings.
+              </div>
+            )}
+          </div>
+        </div>
+      </ContentWrapper>
 
       <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
