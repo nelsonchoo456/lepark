@@ -437,6 +437,49 @@ class EmailUtility {
     // Send email
     await transporter.sendMail(mailOptions);
   }
+
+  async sendRequestedEventTicketEmail(recipientEmail: string, transaction: any) {
+    // Create a transporter using Gmail's SMTP settings
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com', // replace with your Gmail email
+        pass: 'ezcr eqfz dxtn vbtr', // replace with your App Password
+      },
+      tls: {
+        rejectUnauthorized: false, // Disable certificate validation
+      },
+    });
+
+    const pdfPath = await this.generateEventTicketPDF(transaction);
+
+    // Email message options
+    const mailOptions = {
+      to: recipientEmail, // recipient
+      subject: 'Your Lepark Event Tickets',
+      html: `
+        <h1>Thank you for your purchase!</h1>
+        <p>Your event tickets are attached to this email. Please present them at the event entrance.</p>
+        <p>Order details:</p>
+        <ul>
+          <li>Order ID: ${transaction.id}</li>
+          <li>Event Date: ${new Date(transaction.eventDate).toDateString()}</li>
+          <li>Total Amount: $${transaction.totalAmount.toFixed(2)}</li>
+        </ul>
+      `,
+      attachments: [
+        {
+          filename: `Lepark-EventTickets-${transaction.id}.pdf`,
+          path: pdfPath,
+        },
+      ],
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+  }
 }
 
 export default new EmailUtility();

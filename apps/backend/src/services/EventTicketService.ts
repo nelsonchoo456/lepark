@@ -299,6 +299,19 @@ class EventTicketService {
     }
   }
 
+  public async sendRequestedEventTicketEmail(transactionId: string, recipientEmail: string): Promise<void> {
+    try {
+      const transaction = await EventTicketDao.getEventTicketTransactionById(transactionId);
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+
+      await EmailUtil.sendRequestedEventTicketEmail(recipientEmail, transaction);
+    } catch (error) {
+      throw new Error(`Failed to send requested attraction ticket email: ${error.message}`);
+    }
+  }
+
   private async updateTicketStatusIfExpired(
     ticket: EventTicket & { eventTicketTransaction?: EventTicketTransaction },
   ): Promise<EventTicket> {

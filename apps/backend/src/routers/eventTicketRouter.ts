@@ -202,6 +202,21 @@ router.post('/sendEventTicketEmail', async (req, res) => {
   }
 });
 
+router.post('/sendRequestedEventTicketEmail', async (req, res) => {
+  try {
+    const { transactionId, recipientEmail } = req.body;
+
+    if (!transactionId || !recipientEmail) {
+      return res.status(400).json({ error: 'Transaction ID and recipient email are required' });
+    }
+
+    await EventTicketService.sendRequestedEventTicketEmail(transactionId, recipientEmail);
+    res.status(200).json({ message: 'Attraction ticket email sent successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/getEventTicketsByEventId/:eventId', async (req, res) => {
   try {
     const tickets = await EventTicketService.getEventTicketsByEventId(req.params.eventId);

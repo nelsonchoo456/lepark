@@ -265,7 +265,7 @@ const ProfilePage = () => {
   };
 
   const navigateToEventTransactionDetails = (transactionId: string) => {
-    navigate(`/attraction-transaction/${transactionId}`);
+    navigate(`/event-transaction/${transactionId}`);
   };
 
   const handleSendVerificationEmail = async () => {
@@ -437,7 +437,7 @@ const ProfilePage = () => {
       {/* </div> */}
       <ContentWrapper>
         <div className="flex items-center">
-          <LogoText className="text-xl">My Upcoming Attraction Visits</LogoText>
+          <LogoText className="text-xl">Attraction Orders</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
             <Button
@@ -483,7 +483,7 @@ const ProfilePage = () => {
 
       <ContentWrapper>
         <div className="flex items-center">
-          <LogoText className="text-xl">My Upcoming Events</LogoText>
+          <LogoText className="text-xl">Event Orders</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
             <Button
