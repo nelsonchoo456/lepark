@@ -16,13 +16,20 @@ interface SelectDateAndReviewProps {
   ticketDetails: TicketDetail[];
   onBack: (currentTickets: TicketDetail[]) => void;
   onNext: (selectedDate: Dayjs) => void;
+  eventStartDate: Dayjs;
+  eventEndDate: Dayjs;
 }
 
-const SelectDateAndReview: React.FC<SelectDateAndReviewProps> = ({ eventName, ticketDetails, onBack, onNext }) => {
-  const today = dayjs().startOf('day');
-  const thirtyDaysLater = today.add(29, 'day'); // 29 days later to include today
-  const [currentMonth, setCurrentMonth] = useState(today);
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(today);
+const SelectDateAndReview: React.FC<SelectDateAndReviewProps> = ({
+  eventName,
+  ticketDetails,
+  onBack,
+  onNext,
+  eventStartDate,
+  eventEndDate,
+}) => {
+  const [currentMonth, setCurrentMonth] = useState<Dayjs>(eventStartDate);
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
 
   const totalPayable = ticketDetails.reduce((sum, detail) => sum + detail.price * detail.quantity, 0);
 
@@ -37,13 +44,16 @@ const SelectDateAndReview: React.FC<SelectDateAndReviewProps> = ({ eventName, ti
   };
 
   const disabledDate = (current: Dayjs) => {
-    return current.isBefore(today, 'day') || current.isAfter(thirtyDaysLater, 'day');
+    const today = dayjs().startOf('day');
+    return (
+      current.isBefore(today, 'day') || // Disable past dates
+      current.isBefore(eventStartDate, 'day') ||
+      current.isAfter(eventEndDate, 'day')
+    );
   };
 
   const handleMonthChange = (date: Dayjs) => {
-    if (date.isSame(today, 'month') || date.isSame(thirtyDaysLater, 'month')) {
-      setCurrentMonth(date);
-    }
+    setCurrentMonth(date);
   };
 
   const handleBack = () => {
@@ -56,22 +66,22 @@ const SelectDateAndReview: React.FC<SelectDateAndReviewProps> = ({ eventName, ti
         fullscreen={false}
         onSelect={handleDateSelect}
         disabledDate={disabledDate}
-        validRange={[today, thirtyDaysLater]}
+        validRange={[eventStartDate, eventEndDate]}
         value={currentMonth}
         onChange={handleMonthChange}
-        headerRender={({ value, onChange }) => {
-          const current = value.clone();
+        headerRender={({ value, type, onChange, onTypeChange }) => {
+          const current = value;
           const nextMonth = current.add(1, 'month').startOf('month');
-          const showNextMonthButton = thirtyDaysLater.isAfter(current.endOf('month'));
-          const showPrevMonthButton = !current.isSame(today, 'month');
+          const showNextMonthButton = eventEndDate.isAfter(current.endOf('month'));
+          const showPrevMonthButton = !current.isSame(eventStartDate, 'month');
 
           return (
             <div className="flex justify-between items-center mb-4">
               <div className="text-xl font-bold">{current.format('MMM YYYY')}</div>
               <div>
                 {showPrevMonthButton && (
-                  <Button type="link" onClick={() => onChange(today)} className="text-green-500 mr-2">
-                    ← {today.format('MMM')}
+                  <Button type="link" onClick={() => onChange(current.subtract(1, 'month'))} className="text-green-500 mr-2">
+                    ← {current.subtract(1, 'month').format('MMM')}
                   </Button>
                 )}
                 {showNextMonthButton && (

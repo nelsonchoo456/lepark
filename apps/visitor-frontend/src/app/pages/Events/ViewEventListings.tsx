@@ -193,6 +193,8 @@ const ViewEventTicketListings = () => {
         return (
           <SelectDateAndReview
             eventName={event?.title || ''}
+            eventStartDate={dayjs(event?.startDate)}
+            eventEndDate={dayjs(event?.endDate)}
             ticketDetails={Object.entries(ticketCounts)
               .filter(([_, quantity]) => quantity > 0)
               .map(([id, quantity]) => {
