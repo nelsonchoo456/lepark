@@ -55,6 +55,7 @@ import EventSuccessPage from './pages/Events/EventSuccessPage';
 import EventFailedPage from './pages/Events/EventFailedPage';
 import EventTransactionDetails from './pages/Profile/ViewEventTransactionDetails';
 import ViewEventTransactions from './pages/Profile/ViewEventTransactions';
+import EventTicketDetails from './pages/Profile/EventTicketDetails';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -263,6 +264,14 @@ export function App() {
                   element={
                     <ProtectedRoute redirectTo="/login">
                       <ViewEventTransactions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-transaction/:transactionId/tickets"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventTicketDetails />
                     </ProtectedRoute>
                   }
                 />
