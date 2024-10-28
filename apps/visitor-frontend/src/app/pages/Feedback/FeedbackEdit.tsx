@@ -109,7 +109,7 @@ const FeedbackEdit = () => {
       const response = await updateFeedback(feedbackId!, updatedFeedbackData, newFiles);
       console.log('Feedback updated:', response.data);
       message.success('Feedback updated successfully');
-      navigate('/feedback');
+      navigate(`/feedback/${feedbackId}`);
     } catch (error) {
       console.error('Error updating feedback:', error);
       message.error('Failed to update feedback. Please try again.');

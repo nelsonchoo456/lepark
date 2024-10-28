@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { FeedbackResponse, getFeedbackById, viewStaffDetails, getParkById, deleteFeedback, VisitorResponse } from '@lepark/data-access';
+import {
+  FeedbackResponse,
+  getFeedbackById,
+  viewStaffDetails,
+  getParkById,
+  deleteFeedback,
+  VisitorResponse
+} from '@lepark/data-access';
 import { Card, Tag, Spin, Button, Image, Popconfirm, message, Modal } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
@@ -8,18 +15,15 @@ import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import { ArrowLeftOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import withParkGuard from '../../park-context/withParkGuard';
+
 const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
-    case "PENDING":
-      return 'yellow';
-    case 'ACCEPTED':
-      return 'green';
-    case 'REJECTED':
-      return 'red';
-    default:
-      return 'default';
+    case "PENDING": return 'yellow';
+    case 'ACCEPTED': return 'green';
+    case 'REJECTED': return 'red';
+    default: return 'default';
   }
 }
 
@@ -27,7 +31,6 @@ const FeedbackView: React.FC = () => {
   const { feedbackId = '' } = useParams();
   const [feedback, setFeedback] = useState<FeedbackResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [resolvedByStaff, setResolvedByStaff] = useState<string>('');
   const [parkName, setParkName] = useState<string>('');
   const { selectedPark } = usePark();
   const navigate = useNavigate();
@@ -37,45 +40,73 @@ const FeedbackView: React.FC = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [fileList, setFileList] = useState<any[]>([]);
 
+  const fetchFeedbackDetails = async () => {
+    try {
+      const response = await getFeedbackById(feedbackId);
+      setFeedback(response.data);
+
+      // Check user permission
+      if (user && response.data.visitorId !== user.id) {
+        setIsAccessDeniedModalVisible(true);
+        return null;
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching feedback:', error);
+      message.error('Failed to fetch feedback details');
+      return null;
+    }
+  };
+
+
+  const fetchParkDetails = async (parkId: number) => {
+    try {
+      const response = await getParkById(parkId);
+      if (response.data && response.data.name) {
+        setParkName(response.data.name);
+      }
+    } catch (error) {
+      console.error('Error fetching park details:', error);
+      // Don't show error message as park name will fallback to 'Unknown'
+    }
+  };
+
+  const processImages = (images: string[]) => {
+    setFileList(images.map((url, index) => ({
+      uid: `-${index}`,
+      name: `image-${index}`,
+      status: 'done',
+      url: url,
+    })));
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
+    const loadAllData = async () => {
       setLoading(true);
       try {
-        const feedbackResponse = await getFeedbackById(feedbackId);
-        setFeedback(feedbackResponse.data);
-        if (user && feedbackResponse.data.visitorId !== user.id) {
-          setIsAccessDeniedModalVisible(true);
-          return;
-        }
+        const feedbackData = await fetchFeedbackDetails();
 
-        if (feedbackResponse.data.staffId) {
-          const staffResponse = await viewStaffDetails(feedbackResponse.data.staffId);
-          setResolvedByStaff(`${staffResponse.data.firstName} ${staffResponse.data.lastName}`);
-        }
+        if (feedbackData) {
+          // Parallel fetch for staff and park details
+          const promises = [];
 
-        if (feedbackResponse.data.parkId) {
-          const parkResponse = await getParkById(feedbackResponse.data.parkId);
-          setParkName(parkResponse.data.name);
-        }
+          if (feedbackData.parkId) {
+            promises.push(fetchParkDetails(feedbackData.parkId));
+          }
 
-        if (feedbackResponse.data.images) {
-          setFileList(feedbackResponse.data.images.map((url, index) => ({
-            uid: `-${index}`,
-            name: `image-${index}`,
-            status: 'done',
-            url: url,
-          })));
+          if (feedbackData.images) {
+            processImages(feedbackData.images);
+          }
+
+          await Promise.allSettled(promises);
         }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        message.error('Failed to load feedback details');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [feedbackId, user]);
+    loadAllData();
+  }, [feedbackId]);
 
   const handleDelete = async () => {
     try {
@@ -107,6 +138,11 @@ const FeedbackView: React.FC = () => {
     return <div>Feedback not found</div>;
   }
 
+
+  if (!feedback) {
+    return <div>Feedback not found</div>;
+  }
+
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
       <ParkHeader cardClassName="h-30 md:h-[160px]">
@@ -120,7 +156,7 @@ const FeedbackView: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/feedback')}
           >
             Back
           </Button>
@@ -133,7 +169,7 @@ const FeedbackView: React.FC = () => {
                   style={{ marginRight: '8px' }}
                   onClick={() => navigate(`/feedback/edit/${feedbackId}`)}
                 >
-                  Edit
+
                 </Button>
                 <Popconfirm
                   title="Are you sure you want to delete this feedback?"
@@ -146,7 +182,7 @@ const FeedbackView: React.FC = () => {
                     danger
                     icon={<DeleteOutlined />}
                   >
-                    Delete
+
                   </Button>
                 </Popconfirm>
               </>
@@ -161,9 +197,6 @@ const FeedbackView: React.FC = () => {
 
             {feedback.dateResolved && (
               <p><strong>Date Resolved:</strong> {new Date(feedback.dateResolved).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
-            )}
-            {resolvedByStaff && (
-              <p><strong>Resolved By:</strong> {resolvedByStaff}</p>
             )}
             <p><strong>Category:</strong> {formatEnumLabel(feedback.feedbackCategory)}</p>
             <p><strong>Response Required:</strong> {feedback.needResponse ? 'Yes' : 'No'}</p>
