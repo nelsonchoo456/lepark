@@ -97,7 +97,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
 
   const navigateToEntity = () => {
     if (initialValues?.parkAsset) {
-      window.open(`/park-assets/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
+      window.open(`/parkasset/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.sensor) {
       window.open(`/sensor/${initialValues.sensor.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.hub) {
