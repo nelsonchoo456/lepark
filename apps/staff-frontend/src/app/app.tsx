@@ -111,6 +111,7 @@ import HubMaintenanceList from './pages/Hub/HubMaintenanceList';
 import AssetListMaintenanceSummary from './pages/Asset/AssetListMaintenanceSummary';
 import ParkCrowdLevels from './pages/CrowdInsight/ParkCrowdLevels';
 import ParkCrowdLevelsCalendar from './pages/CrowdInsight/ParkCrowdLevelsCalendar';
+import CompareParkCrowdLevels from './pages/CrowdInsight/CompareParkCrowdLevels';
 
 export function App() {
   return (
@@ -598,7 +599,27 @@ export function App() {
 
                 {/* Crowd Insights Routes */}
                 <Route path="/crowdInsights">
-                  <Route index element={<ParkCrowdLevels />} />
+                  <Route
+                    index
+                    element={
+                      <>
+                        <RoleProtectedRoute
+                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
+                          redirectTo="/"
+                        />
+                        <ParkCrowdLevels />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="compareParks"
+                    element={
+                      <>
+                        <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
+                        <CompareParkCrowdLevels />
+                      </>
+                    }
+                  />
                 </Route>
 
                 {/* Catch-all for 404 */}

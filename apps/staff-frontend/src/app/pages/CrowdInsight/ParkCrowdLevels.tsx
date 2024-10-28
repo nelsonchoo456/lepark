@@ -17,7 +17,9 @@ import {
   Checkbox,
   Space,
   Spin,
+  Tooltip,
 } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { Line } from 'react-chartjs-2';
 import dayjs, { Dayjs } from 'dayjs';
 import {
@@ -30,20 +32,23 @@ import {
   ParkResponse,
   predictCrowdLevels,
   SensorTypeEnum,
+  StaffResponse,
+  StaffType,
 } from '@lepark/data-access';
 import { SensorReading } from '@prisma/client';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { ContentWrapperDark, LogoText } from '@lepark/common-ui';
+import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import ParkCrowdLevelsCalendar from './ParkCrowdLevelsCalendar';
 import { useParkThresholds } from '../../hooks/CrowdInsights/CalculateCrowdThresholds';
 import moment from 'moment-timezone';
 import { groupBy, mapValues, merge, sumBy, uniqBy } from 'lodash';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { ColumnType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
+import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Legend, annotationPlugin);
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -62,9 +67,11 @@ const ParkCrowdLevels: React.FC = () => {
   const [parkId, setParkId] = useState<number>(0);
   const [viewMode, setViewMode] = useState<string>('calendar');
   const [parks, setParks] = useState<ParkResponse[]>([]);
+  const [restrictedParks, setRestrictedParks] = useState<ParkResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(['actual', 'predicted']);
   const navigate = useNavigate();
+  const { user } = useAuth<StaffResponse>();
 
   // Fix: Handle the case when parkId is 0 separately
   const parkGeom = parkId === 0 ? undefined : parks.find((p) => p.id === parkId)?.geom;
@@ -73,6 +80,10 @@ const ParkCrowdLevels: React.FC = () => {
     parkGeom,
     parks.map((p) => ({ ...p, geometry: p.geom })),
   );
+
+  const { loading: parkLoading } = useRestrictPark(parkId ? parkId.toString() : undefined, {
+    disableNavigation: true,
+  });
 
   useEffect(() => {
     fetchParks();
@@ -87,7 +98,18 @@ const ParkCrowdLevels: React.FC = () => {
   const fetchParks = async () => {
     try {
       const parksResponse = await getAllParks();
-      setParks(parksResponse.data);
+      const allParks = parksResponse.data;
+
+      // Filter parks based on user role
+      const filteredParks = user?.role === StaffType.SUPERADMIN ? allParks : allParks.filter((park) => park.id === user?.parkId);
+
+      setParks(allParks);
+      setRestrictedParks(filteredParks);
+
+      // Set initial parkId if not already set
+      if (parkId === 0 && filteredParks.length === 1) {
+        setParkId(filteredParks[0].id);
+      }
     } catch (error) {
       console.error('Error fetching parks:', error);
     } finally {
@@ -432,25 +454,67 @@ const ParkCrowdLevels: React.FC = () => {
     </Radio.Group>
   );
 
+  const ThresholdExplanation = () => (
+    <div className="flex flex-col gap-2 text-gray-500 text-sm mt-2">
+      <div className="flex items-center gap-2">
+        <InfoCircleOutlined />
+        <Tooltip
+          title={
+            <div>
+              <p>Crowd levels are calculated by:</p>
+              <ol className="pl-4 mt-1">
+                <li>1. Averaging readings from cameras in each zone</li>
+                <li>2. Summing the averages of all zones in the park</li>
+                <li>3. Aggregating by hour to handle different camera frequencies</li>
+              </ol>
+            </div>
+          }
+        >
+          <span className="cursor-help underline">How are crowd levels calculated?</span>
+        </Tooltip>
+      </div>
+      <div className="flex items-center gap-2">
+        <InfoCircleOutlined />
+        <Tooltip
+          title={
+            <div>
+              <p>Crowd thresholds (Low, Moderate, High) are determined by:</p>
+              <ol className="pl-4 mt-1">
+                <li>1. Analyzing historical crowd patterns</li>
+                <li>2. Considering park size and capacity</li>
+                <li>3. Low threshold: 33% of max observed crowds</li>
+                <li>4. Medium threshold: 66% of max observed crowds</li>
+              </ol>
+            </div>
+          }
+        >
+          <span className="cursor-help underline">How are thresholds determined?</span>
+        </Tooltip>
+      </div>
+    </div>
+  );
+
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Row gutter={16} className="mb-4">
           <Col span={12}>{renderViewSelector()}</Col>
-          <Col span={12}>
-            <div className="flex items-center">
-              <span className="mr-2">Park:</span>
-              <Select value={parkId} onChange={setParkId} className="w-full">
-                <Option value={0}>All NParks</Option>
-                {parks.map((park) => (
-                  <Option key={park.id} value={park.id}>
-                    {park.name}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-          </Col>
+          {user?.role === StaffType.SUPERADMIN && (
+            <Col span={12}>
+              <div className="flex items-center">
+                <span className="mr-2">Park:</span>
+                <Select value={parkId} onChange={setParkId} className="w-full">
+                  <Option value={0}>All NParks</Option>
+                  {restrictedParks.map((park) => (
+                    <Option key={park.id} value={park.id}>
+                      {park.name}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            </Col>
+          )}
         </Row>
         {isLoading ? (
           <div className="flex flex-col justify-center items-center h-64">
@@ -475,9 +539,11 @@ const ParkCrowdLevels: React.FC = () => {
                   onChange={handleDataSeriesChange}
                 />
               </Space>
-              <Button type="primary" onClick={handleCompareParksCLick}>
-                Compare Parks
-              </Button>
+              {user?.role === StaffType.SUPERADMIN && (
+                <Button type="primary" onClick={handleCompareParksCLick}>
+                  Compare Parks
+                </Button>
+              )}
             </div>
             <div className="h-[calc(100%-80px)]">
               <Line data={chartData} options={chartOptions as any} />
@@ -493,7 +559,10 @@ const ParkCrowdLevels: React.FC = () => {
             <Table dataSource={filteredCrowdData} columns={columns} rowKey={(record) => record.date} className="mt-4" />
           </>
         ) : (
-          <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={thresholds} allParks={parks} />
+          <>
+            <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={thresholds} allParks={parks} />
+            <ThresholdExplanation />
+          </>
         )}
       </Card>
     </ContentWrapperDark>
