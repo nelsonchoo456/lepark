@@ -206,6 +206,12 @@ const MainLayout = () => {
               label: 'Zones Monitoring',
               onClick: () => navigate('/iot/zones'),
             },
+            // {
+            //   key: 'irrigation-monitoring',
+            //   icon: <TbDeviceAnalytics />,
+            //   label: 'Irrigation Monitoring',
+            //   onClick: () => navigate('/iot/zones'),
+            // },
             {
               key: 'iot-map',
               icon: <FiMap />,

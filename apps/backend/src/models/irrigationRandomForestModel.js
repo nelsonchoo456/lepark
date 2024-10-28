@@ -1,46 +1,42 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
 const { RandomForestRegression: RandomForestRegressor } = require('ml-random-forest');
-const fs = require('fs');
 const path = require('path');
-const randomForestDirPath = path.resolve(__dirname, '../models/random_forest');
 
 const prisma = new PrismaClient();
 
 const numDays = 100;
-
-// Object to store trained models for each hub
-const models = {};
+const SENSOR_TYPE_ENUMS = ["TEMPERATURE", "HUMIDITY", "SOIL_MOISTURE", "LIGHT", "CAMERA"]
+const models = {}; // Object to store trained models for each hub
 
 // Function to train models for each hub
+const trainModelForHub = async (hub) => {
+  try {
+    // Fetch historical sensor data
+    const historicalSensorData = await getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(
+      hub.id,
+      new Date(new Date().setDate(new Date().getDate() - 100)),
+      new Date(),
+    );
+
+    // Generate training data using the service method
+    const historicalRainfallData = await getClosestRainDataPerDate(hub.lat, hub.long);
+    const trainingData = generateTrainingData(historicalSensorData, historicalRainfallData);
+
+    // Train the Random Forest model
+    const model = await trainRandomForestModel(trainingData);
+
+    // Save the trained model for the hub
+    models[hub.id] = model;
+
+    await saveModelToDatabase(hub.id, model);
+  } catch (error) {
+    console.error(`Error training model for hub ${hub.id}:`, error);
+  }
+}
+
 const trainModelsForAllHubs = async (hubs) => {
   for (const hub of hubs) {
-    console.log(hub.id)
-    try {
-      // Fetch historical sensor data
-      const historicalSensorData = await getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(
-        hub.id,
-        new Date(new Date().setDate(new Date().getDate() - 100)),
-        new Date(),
-      );
-
-      // Generate training data using the service method
-      const historicalRainfallData = await getClosestRainDataPerDate(hub.lat, hub.long);
-      const trainingData = generateTrainingData(historicalSensorData, historicalRainfallData);
-
-      // Train the Random Forest model
-      const model = await trainRandomForestModel(trainingData);
-
-      // Save the trained model for the hub
-      models[hub.id] = model;
-
-      // Optionally save the model to a file for persistence
-      const modelPath = `${randomForestDirPath}/${hub.id}.json`;
-      fs.writeFileSync(modelPath, JSON.stringify(model.toJSON()), 'utf8');
-
-      console.log(`Model trained and saved for hub: ${hub.id}`);
-    } catch (error) {
-      console.error(`Error training model for hub ${hub.id}:`, error);
-    }
+    trainModelForHub(hub);
   }
 };
 
@@ -63,16 +59,20 @@ const trainRandomForestModel = async (trainingData) => {
 };
 
 // Function to load saved models at startup
-const loadSavedModels = (hubIds) => {
-  for (const hubId of hubIds) {
-    const modelPath = `./models/${hubId}_random_forest.json`;
-    if (fs.existsSync(modelPath)) {
-      const modelData = JSON.parse(fs.readFileSync(modelPath, 'utf8'));
-      models[hubId] = RandomForestRegressor.load(modelData);
-      console.log(`Model loaded for hub: ${hubId}`);
+const loadSavedModels = async (hubId) => {
+  try {
+    const result = await prisma.rfModel.findFirst({
+      where: { hubId: hubId },
+    });
+
+    if (result && result.modelData) {
+      models[hubId] = RandomForestRegressor.load(result.modelData); // Load model from JSON
+      console.log(`Model loaded from database for hub: ${hubId}`);
     } else {
-      console.warn(`No saved model found for hub: ${hubId}`);
+      console.warn(`No model found in database for hub: ${hubId}`);
     }
+  } catch (error) {
+    console.error(`Error loading model from database for hub ${hubId}:`, error);
   }
 };
 
@@ -118,7 +118,7 @@ const generateTrainingData = (sensorData, historicalRainfallData) => {
       light: getAverageSensorReading(sensorData['LIGHT'], date),
       rainfall: rainfallRecord ? rainfallRecord.value : 0
     };
-    readings.water = getIrrigationDecision(readings);
+    readings.water = getIrrigationDecision(readings, date);
 
     trainingData.push(readings);
   }
@@ -126,35 +126,43 @@ const generateTrainingData = (sensorData, historicalRainfallData) => {
   return trainingData;
 };
 
-const getIrrigationDecision = (readings) => {
+const getIrrigationDecision = (readings, date) => {
   // Dynamic decision logic for whether to turn on the irrigation
   let water = 0;
 
-  // Decision thresholds and weights
-  const soilMoistureThresholdLow = 20; // Very low moisture, critical for irrigation
-  const soilMoistureThresholdModerate = 40; // Moderate moisture, may or may not need irrigation
+  // 1. Determine season
+  const month = date.getMonth() + 1; // getMonth() is zero-based
+  let season;
+  if (month >= 12 || month <= 3) {
+    season =  'wet'; // Northeast Monsoon (wet season)
+  } else if (month >= 6 && month <= 9) {
+    season = 'dry'; // Southwest Monsoon (drier season)
+  } else {
+    season = 'mixed'; // Inter-monsoon period
+  }
+
+  // 2. Decision thresholds and weights, based on season
+  const soilMoistureThresholdLow = season === 'dry' ? 25 : 30;
+  const soilMoistureThresholdModerate = season === 'dry' ? 45 : 50;
   const temperatureThresholdHigh = 35; // High temperature, increases irrigation need
   const humidityThresholdLow = 40; // Low humidity, increases irrigation need
 
   // Weighted conditions for irrigation decision
-  if (readings.soilMoisture < soilMoistureThresholdLow) {
-    // High priority: Low soil moisture, irrigation needed
-    water = 1;
+  if (readings.rainfall === 1) {
+    water = 0; // Sufficient rainfall, no irrigation needed
+  } else if (readings.soilMoisture < soilMoistureThresholdLow) {
+    water = 1; // Critical low moisture, irrigation needed
   } else if (readings.soilMoisture < soilMoistureThresholdModerate) {
     if (
-      readings.temperature > temperatureThresholdHigh ||
-      readings.humidity < humidityThresholdLow
+      (readings.temperature > temperatureThresholdHigh) ||
+      (readings.humidity < humidityThresholdLow)
     ) {
-      // High temperature or low humidity indicates increased water need
-      water = 1;
+      water = 1; // High temperature or low humidity triggers irrigation
     }
   }
+
   return water
 }
-
-const SENSOR_TYPE_ENUMS = [
-  "TEMPERATURE", "HUMIDITY", "SOIL_MOISTURE", "LIGHT", "CAMERA"
-]
 
 const getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange = async (
   hubId,
@@ -212,6 +220,24 @@ const isSameDay = (timestamp, date) => {
     timestamp.getMonth() === date.getMonth() &&
     timestamp.getFullYear() === date.getFullYear()
   );
+};
+
+const saveModelToDatabase = async (hubId, model) => {
+  try {
+    await prisma.rfModel.upsert({
+      where: { hubId: hubId },
+      update: {
+        modelData: model.toJSON(), // Update model data if hubId exists
+      },
+      create: {
+        hubId: hubId,
+        modelData: model.toJSON(), // Create a new record if hubId doesn't exist
+      },
+    });
+    console.log(`Model saved to database for hub: ${hubId}`);
+  } catch (error) {
+    console.error(`Error saving model to database for hub ${hubId}:`, error);
+  }
 };
 
 module.exports = {
