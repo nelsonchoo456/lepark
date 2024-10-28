@@ -39,13 +39,13 @@ import { SensorReading } from '@prisma/client';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import ParkCrowdLevelsCalendar from './ParkCrowdLevelsCalendar';
-import { useParkThresholds } from '../../hooks/CrowdInsights/CalculateCrowdThresholds';
+import { useParkThresholds } from './CalculateCrowdThresholds';
 import moment from 'moment-timezone';
 import { groupBy, mapValues, merge, sumBy, uniqBy } from 'lodash';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { ColumnType } from 'antd/es/table';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Legend, annotationPlugin);
@@ -64,7 +64,8 @@ const ParkCrowdLevels: React.FC = () => {
   const [crowdData, setCrowdData] = useState<CrowdData[]>([]);
   const defaultDateRange: [Dayjs, Dayjs] = [dayjs().subtract(20, 'days'), dayjs().add(10, 'days')];
   const [selectedDate, setSelectedDate] = useState<[Dayjs, Dayjs]>(defaultDateRange);
-  const [parkId, setParkId] = useState<number>(0);
+  const { state } = useLocation();
+  const [parkId, setParkId] = useState<number>(state?.selectedParkId || 0);
   const [viewMode, setViewMode] = useState<string>('calendar');
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [restrictedParks, setRestrictedParks] = useState<ParkResponse[]>([]);
@@ -72,7 +73,7 @@ const ParkCrowdLevels: React.FC = () => {
   const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(['actual', 'predicted']);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
-
+  
   // Fix: Handle the case when parkId is 0 separately
   const parkGeom = parkId === 0 ? undefined : parks.find((p) => p.id === parkId)?.geom;
   const thresholds = useParkThresholds(
@@ -84,6 +85,13 @@ const ParkCrowdLevels: React.FC = () => {
   const { loading: parkLoading } = useRestrictPark(parkId ? parkId.toString() : undefined, {
     disableNavigation: true,
   });
+
+  useEffect(() => {
+    // Update parkId if it comes from navigation state
+    if (state?.selectedParkId) {
+      setParkId(state.selectedParkId);
+    }
+  }, [state]);
 
   useEffect(() => {
     fetchParks();
