@@ -20,11 +20,21 @@ const formatEnumLabel = formatEnumLabelToRemoveUnderscores;
 
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
-    case "PENDING": return 'yellow';
-    case 'ACCEPTED': return 'green';
-    case 'REJECTED': return 'red';
-    default: return 'default';
+    case "PENDING":
+      return 'yellow';
+    case 'ACCEPTED':
+    case 'REJECTED':
+      return 'green';
+    default:
+      return 'default';
   }
+}
+
+const getDisplayStatus = (status: string) => {
+  if (status === 'ACCEPTED' || status === 'REJECTED') {
+    return 'RESOLVED';
+  }
+  return status;
 }
 
 const FeedbackView: React.FC = () => {
@@ -193,17 +203,21 @@ const FeedbackView: React.FC = () => {
           <h1 className="text-xl font-semibold text-green-500">{feedback.title}</h1>
 
           <div className="mt-4">
-            <p><strong>Status:</strong> <Tag color={getFeedbackStatusColor(feedback.feedbackStatus)}>{formatEnumLabel(feedback.feedbackStatus)}</Tag></p>
+  <p><strong>Status:</strong> <Tag color={getFeedbackStatusColor(feedback.feedbackStatus)}>
+    {formatEnumLabel(getDisplayStatus(feedback.feedbackStatus))}
+  </Tag></p>
 
-            {feedback.dateResolved && (
-              <p><strong>Date Resolved:</strong> {new Date(feedback.dateResolved).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
-            )}
-            <p><strong>Category:</strong> {formatEnumLabel(feedback.feedbackCategory)}</p>
-            <p><strong>Response Required:</strong> {feedback.needResponse ? 'Yes' : 'No'}</p>
-            <br/>
-            <p><strong>Date Created:</strong> {new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
-            <p><strong>Park:</strong> {parkName || 'Unknown'}</p>
-          </div>
+  {feedback.dateResolved && (
+    <p><strong>Date Resolved:</strong> {new Date(feedback.dateResolved).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
+  )}
+  <p><strong>Category:</strong> {formatEnumLabel(feedback.feedbackCategory)}</p>
+  {feedback.needResponse && (
+    <p className="italic text-green-500">You have requested for a response. NParks will get back to you soon via email.</p>
+  )}
+  <br/>
+  <p><strong>Date Created:</strong> {new Date(feedback.dateCreated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}</p>
+  <p><strong>Park:</strong> {parkName || 'Unknown'}</p>
+</div>
 
           {fileList.length > 0 && (
             <div className="mt-4">

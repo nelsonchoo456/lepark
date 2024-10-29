@@ -17,12 +17,18 @@ const getFeedbackStatusColor = (status: string) => {
     case "PENDING":
       return 'yellow';
     case 'ACCEPTED':
-      return 'green';
     case 'REJECTED':
-      return 'red';
+      return 'green';
     default:
       return 'default';
   }
+}
+
+const getDisplayStatus = (status: string) => {
+  if (status === 'ACCEPTED' || status === 'REJECTED') {
+    return 'RESOLVED';
+  }
+  return status;
 }
 
 const FeedbackCard: React.FC<FeedbackCardProps> = ({ date, title, category, parkId, onClick, status }) => {
@@ -54,7 +60,9 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({ date, title, category, park
       <div className="flex flex-col">
         <div className="flex items-center justify-between">
           <div className="truncate flex-1">{title}</div>
-          <Tag color={getFeedbackStatusColor(status)}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>
+          <Tag color={getFeedbackStatusColor(status)}>
+            {formatEnumLabelToRemoveUnderscores(getDisplayStatus(status))}
+          </Tag>
         </div>
         <div className="flex items-center text-xs text-gray-500 mt-1">
           <span className="mr-3">{date}</span>
