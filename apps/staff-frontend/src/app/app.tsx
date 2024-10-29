@@ -106,6 +106,7 @@ import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails
 import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
 import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
 import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
+import ZonePredictiveIrrigation from './pages/IoT/ZonePredictiveIrrigation';
 
 export function App() {
   return (
@@ -551,6 +552,7 @@ export function App() {
                   <Route path="zones" element={<ZoneIoTDashboard />} />
                   <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
                   <Route path="zones/:zoneId/camera-streams" element={<ZoneCameraStreamsPage />} />
+                  <Route path="zones/:zoneId/predictive-irrigation" element={<ZonePredictiveIrrigation />} />
                 </Route>
 
                 {/* FAQ Routes */}

@@ -428,6 +428,9 @@ model Hub {
   maintenanceTasks   MaintenanceTask[]
   predictedWaterSchedules PredictedWaterSchedule[]
 
+  rfModel            RfModel?      
+  rfModelId          String?       @db.Uuid
+
   @@index([zoneId])
 }
 
@@ -508,11 +511,20 @@ model HistoricalRainData {
   id          String   @id @default(uuid()) @db.Uuid
   stationId   String  
   stationName String  
-  lat    Float    
-  lng   Float   
-  value    Float 
+  lat         Float    
+  lng         Float   
+  value       Float 
   timestamp   DateTime 
 }
+
+model RfModel {
+  id        String   @id @default(uuid()) @db.Uuid
+  hubId     String @unique @db.Uuid
+  hub       Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  modelData Json
+  createdAt DateTime @default(now())
+}
+
 
 enum ParkAssetTypeEnum {
   PLANT_TOOL_AND_EQUIPMENT

@@ -8,6 +8,12 @@ const numDays = 100;
 const SENSOR_TYPE_ENUMS = ["TEMPERATURE", "HUMIDITY", "SOIL_MOISTURE", "LIGHT", "CAMERA"]
 const models = {}; // Object to store trained models for each hub
 
+const trainModelsForAllHubs = async (hubs) => {
+  for (const hub of hubs) {
+    trainModelForHub(hub);
+  }
+};
+
 // Function to train models for each hub
 const trainModelForHub = async (hub) => {
   try {
@@ -33,12 +39,6 @@ const trainModelForHub = async (hub) => {
     console.error(`Error training model for hub ${hub.id}:`, error);
   }
 }
-
-const trainModelsForAllHubs = async (hubs) => {
-  for (const hub of hubs) {
-    trainModelForHub(hub);
-  }
-};
 
 const trainRandomForestModel = async (trainingData) => {
   const X = trainingData.map((data) => [
@@ -76,9 +76,11 @@ const loadSavedModels = async (hubId) => {
   }
 };
 
-// -- [ UTILS BELOW ] --
+// -- [ PRIVATE UTILS ] --
+// PREDICTION
+// Data preparation:
+// Fetch API weather forecast
 const getClosestRainDataPerDate = async (lat, lng) => {
-  // Raw SQL query to get one rainfall data per date, closest to the given lat and lng
   const result = await prisma.$queryRaw(
     Prisma.sql`
       SELECT DISTINCT ON (DATE("timestamp")) *,
@@ -102,6 +104,10 @@ const getAverageSensorReading = (readings, date) => {
   return reading ? reading.average : 0;
 };
 
+// -- [ PRIVATE ] --
+// TRAINING
+// Data preparation:
+// Generate Training Data
 const generateTrainingData = (sensorData, historicalRainfallData) => {
   const today = new Date();
   const trainingData = [];
@@ -122,6 +128,7 @@ const generateTrainingData = (sensorData, historicalRainfallData) => {
 
     trainingData.push(readings);
   }
+  console.log("end of irrigation decision")
 
   return trainingData;
 };
@@ -142,21 +149,23 @@ const getIrrigationDecision = (readings, date) => {
   }
 
   // 2. Decision thresholds and weights, based on season
-  const soilMoistureThresholdLow = season === 'dry' ? 25 : 30;
-  const soilMoistureThresholdModerate = season === 'dry' ? 45 : 50;
+  const soilMoistureThresholdLow = season === 'dry' ? 59.2 : 59.5;
+  const soilMoistureThresholdModerate = season === 'dry' ? 59.5 : 59.7;
   const temperatureThresholdHigh = 35; // High temperature, increases irrigation need
-  const humidityThresholdLow = 40; // Low humidity, increases irrigation need
+  const humidityThresholdLow = 80; // Low humidity, increases irrigation need
 
   // Weighted conditions for irrigation decision
   if (readings.rainfall === 1) {
     water = 0; // Sufficient rainfall, no irrigation needed
   } else if (readings.soilMoisture < soilMoistureThresholdLow) {
     water = 1; // Critical low moisture, irrigation needed
+    console.log("Water" , date)
   } else if (readings.soilMoisture < soilMoistureThresholdModerate) {
     if (
       (readings.temperature > temperatureThresholdHigh) ||
       (readings.humidity < humidityThresholdLow)
     ) {
+      console.log("Water" , date)
       water = 1; // High temperature or low humidity triggers irrigation
     }
   }
@@ -243,6 +252,7 @@ const saveModelToDatabase = async (hubId, model) => {
 module.exports = {
   trainModelsForAllHubs,
   loadSavedModels,
+
   // UTILITY FOR TESTING BELOW - may or not be able to delete later
   getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange,
   getClosestRainDataPerDate,

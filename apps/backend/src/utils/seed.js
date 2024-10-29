@@ -789,36 +789,71 @@ const generateMockReadings = (sensorType) => {
   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
 };
 
+const dailySeedMap = new Map();
+const generateDailySeed = (sensorType, date) => { // Simulate changing daily average
+  const dateKey = `${date.toDateString()}-${sensorType}`;
+
+  // Check if the seed already exists in the map
+  if (dailySeedMap.has(dateKey)) {
+    return dailySeedMap.get(dateKey);
+  }
+  // Define seed ranges for each sensor type
+  let seedRange;
+  switch (sensorType) {
+    case 'SOIL_MOISTURE':
+      seedRange = 3;
+      break;
+    case 'TEMPERATURE':
+      seedRange = 3;
+      break;
+    case 'HUMIDITY':
+      seedRange = 4;
+      break;
+    case 'LIGHT':
+      seedRange = 10;
+      break;
+    default:
+      seedRange = 3;
+  }
+
+  // Generate a new seed for the day
+  const seed = (date.getDate() % 7) * (Math.random() * seedRange - seedRange / 2);
+  dailySeedMap.set(dateKey, seed);
+  return seed;
+};
+
+
 const createReading = (sensorType, date) => {
   const hour = date.getHours();
+  const dailySeed = generateDailySeed(sensorType, date);
   let value;
 
   switch (sensorType) {
     case 'SOIL_MOISTURE':
       // Simulate watering at 6 AM and 6 PM
       if (hour === 6 || hour === 18) {
-        value = 70 + Math.random() * 10; // 70-80%
+        value = 70 + Math.random() * 10 + dailySeed; // 70-80%
       } else if (hour >= 12 && hour <= 16) {
         // Greater decrease from 12 PM to 4 PM
         const hoursFrom12 = hour - 12;
-        value = 65 - hoursFrom12 * 4 + Math.random() * 5; // Steeper decline
+        value = 65 - hoursFrom12 * 4 + Math.random() * 5 + dailySeed; // Steeper decline
       } else {
         // Gradual decrease in moisture for other hours
-        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5;
+        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5 + dailySeed;
       }
       break;
     case 'TEMPERATURE':
       // Simulate daily temperature cycle
-      value = 22 + Math.sin(((hour - 6) * Math.PI) / 12) * 5 + Math.random() * 2;
+      value = 22 + Math.sin(((hour - 6) * Math.PI) / 12) * 5 + Math.random() * 2 + dailySeed;
       break;
     case 'HUMIDITY':
       // Inverse relationship with temperature
-      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5;
+      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5 + dailySeed;
       break;
     case 'LIGHT':
       if (hour >= 6 && hour < 18) {
         // Daylight hours
-        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50;
+        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50 + dailySeed;
       } else {
         // Night time
         value = Math.random() * 5; // Very low light at night

@@ -29,6 +29,14 @@ class HistoricalRainDataDao {
     return result.length > 0 ? result[0] : null;
   }
 
+  public async getLatestHistoricalRainData(): Promise<HistoricalRainData | null> {
+    return await prisma.historicalRainData.findFirst({
+      orderBy: {
+        timestamp: 'desc',
+      },
+    });
+  }
+
   // Create multiple historical rainfall data records
   public async createManyHistoricalRainData(data: Prisma.HistoricalRainDataCreateManyInput[]): Promise<Prisma.BatchPayload> {
     return prisma.historicalRainData.createMany({ data, skipDuplicates: true });

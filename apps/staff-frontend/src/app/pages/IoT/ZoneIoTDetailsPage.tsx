@@ -26,6 +26,20 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTit
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
+export const getSensorIcon = (sensorType: SensorTypeEnum) => {
+  switch (sensorType) {
+    case SensorTypeEnum.TEMPERATURE:
+      return <FiThermometer />;
+    case SensorTypeEnum.HUMIDITY:
+      return <FiDroplet />;
+    case SensorTypeEnum.LIGHT:
+      return <FiSun />;
+    case SensorTypeEnum.SOIL_MOISTURE:
+      return <FiWind />;
+    default:
+      return null;
+  }
+};
 
 const ZoneIoTDetailsPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
@@ -90,21 +104,6 @@ const ZoneIoTDetailsPage: React.FC = () => {
         return 'red';
       default:
         return 'default';
-    }
-  };
-
-  const getSensorIcon = (sensorType: SensorTypeEnum) => {
-    switch (sensorType) {
-      case SensorTypeEnum.TEMPERATURE:
-        return <FiThermometer />;
-      case SensorTypeEnum.HUMIDITY:
-        return <FiDroplet />;
-      case SensorTypeEnum.LIGHT:
-        return <FiSun />;
-      case SensorTypeEnum.SOIL_MOISTURE:
-        return <FiWind />;
-      default:
-        return null;
     }
   };
 
