@@ -47,41 +47,8 @@ class EventTicketService {
       const formattedData = dateFormatter(data);
       const { tickets, ...transactionData } = formattedData;
 
-      const result = await prisma.$transaction(async (prismaClient) => {
-        // Fetch all required listings in one query
-        const listingIds = tickets.map((ticket) => ticket.listingId);
-        const listings = await prismaClient.eventTicketListing.findMany({
-          where: { id: { in: listingIds } },
-        });
-
-        // Create a map for quick price lookup
-        const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
-
-        // Create the transaction
-        const createdTransaction = await prismaClient.eventTicketTransaction.create({
-          data: {
-            ...transactionData,
-            eventTickets: {
-              create: tickets.flatMap((ticket) => {
-                const price = listingPriceMap.get(ticket.listingId);
-                if (price === undefined) {
-                  throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
-                }
-                return Array(ticket.quantity).fill({
-                  price: price,
-                  status: EventTicketStatusEnum.VALID,
-                  eventTicketListingId: ticket.listingId,
-                });
-              }),
-            },
-          },
-          include: {
-            eventTickets: true,
-          },
-        });
-
-        return createdTransaction;
-      });
+      // Create the transaction with tickets
+      const result = await EventTicketDao.createEventTicketTransaction(transactionData, tickets);
 
       return result;
     } catch (error) {
