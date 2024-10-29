@@ -15,11 +15,53 @@ import { RangePickerProps } from 'antd/es/date-picker';
 import { Line } from 'react-chartjs-2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { getSensorIcon } from '../ZoneIoTDetailsPage';
+import { IconType } from 'react-icons';
+import { WiRain, WiThunderstorm, WiShowers } from 'react-icons/wi';
 const { RangePicker } = DatePicker;
 
 interface HubPredictiveIrrigationTabProps {
   hub: HubResponse;
 }
+
+export const getWeatherForecast = (textForecast: string) => {
+  let Icon: IconType;
+  let color: string;
+
+  // Determine icon and color based on forecast severity
+  switch (textForecast) {
+    case 'Light Rain':
+    case 'Light Showers':
+      Icon = WiRain;
+      color = '#ADD8E6'; // Light blue
+      break;
+    case 'Moderate Rain':
+    case 'Showers':
+    case 'Passing Showers':
+      Icon = WiShowers;
+      color = '#0000FF'; // Blue
+      break;
+    case 'Heavy Rain':
+    case 'Heavy Showers':
+    case 'Thundery Showers':
+      Icon = WiThunderstorm;
+      color = '#1E90FF'; // Dodger blue
+      break;
+    case 'Heavy Thundery Showers':
+    case 'Heavy Thundery Showers with Gusty Winds':
+      Icon = WiThunderstorm;
+      color = '#FF0000'; // Red
+      break;
+    default:
+      Icon = WiShowers;
+      color = '#808080'; // Grey for undefined cases
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', color }}>
+      <Icon size={33} style={{ marginRight: '8px' }} />
+      <span className='text-xl'>{textForecast}</span>
+    </div>
+  );
+};
 
 const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(10, 'days'), dayjs()]);
@@ -34,15 +76,15 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
   useEffect(() => {
     if (hasModel) {
       fetchReadings();
-      fetchPredictive();  
-    }   
+      fetchPredictive();
+    }
   }, [hasModel, dateRange]);
 
   useEffect(() => {
     if (hub) {
       fetchModel(hub);
-    };
-  }, [hub])
+    }
+  }, [hub]);
 
   const fetchModel = async (hub: HubResponse) => {
     try {
@@ -60,7 +102,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
       //   });
       // }
     }
-  }
+  };
 
   const fetchReadings = async () => {
     try {
@@ -95,7 +137,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
       setTrainLoading(false);
     } catch (error) {
       setTrainLoading(false);
-      if (error === "Insufficent sensors readings to train model") {
+      if (error === 'Insufficent sensors readings to train model') {
         messageApi.open({
           type: 'error',
           content: error,
@@ -187,20 +229,24 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
   };
 
   if (!hasModel) {
-    return <>
-      {contextHolder}
-      <Card styles={{ body: { padding: '1rem' } }} className="mb-4">
-        Actions:
-        <Button onClick={handleTrainModelForThisHub} loading={trainLoading} className='ml-4' type='primary'>Train Model for this Hub</Button>
-      </Card>
-      <Empty description="No model trained for this hub"/>
-    </>
+    return (
+      <>
+        {contextHolder}
+        <Card styles={{ body: { padding: '1rem' } }} className="mb-4">
+          Actions:
+          <Button onClick={handleTrainModelForThisHub} loading={trainLoading} className="ml-4" type="primary">
+            Train Model for this Hub
+          </Button>
+        </Card>
+        <Empty description="No model trained for this hub" />
+      </>
+    );
   }
 
   return (
     <>
       {contextHolder}
-      <Divider orientation='left'>Irrigation Recommendation</Divider>
+      <Divider orientation="left">Irrigation Recommendation</Divider>
       <Card styles={{ body: { padding: '1rem' } }} className="mb-4">
         {predictive && predictive.sensorData ? (
           <div className="w-full flex gap-2">
@@ -211,7 +257,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
                 prefix={getSensorIcon(SensorTypeEnum.TEMPERATURE)}
                 suffix={getSensorUnit(SensorTypeEnum.TEMPERATURE)}
               />
-              <span className='text-secondary italic'>in past 1h</span>
+              <span className="text-secondary italic">in past 1h</span>
             </div>
             <div className="flex-[1]">
               <Statistic
@@ -220,7 +266,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
                 prefix={getSensorIcon(SensorTypeEnum.HUMIDITY)}
                 suffix={getSensorUnit(SensorTypeEnum.HUMIDITY)}
               />
-              <span className='text-secondary italic'>in past 1h</span>
+              <span className="text-secondary italic">in past 1h</span>
             </div>
             <div className="flex-[1]">
               <Statistic
@@ -229,13 +275,12 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
                 prefix={getSensorIcon(SensorTypeEnum.LIGHT)}
                 suffix={getSensorUnit(SensorTypeEnum.LIGHT)}
               />
-              <span className='text-secondary italic'>in past 1h</span>
+              <span className="text-secondary italic">in past 1h</span>
             </div>
             <div className="flex-[1]">
-              <span className='text-secondary'>24h Weather Forecast</span>
-              {/* <div className='text-2xl flex justify-center'>
-                <TiWeatherCloudy />
-              </div> */}
+              <span className="text-secondary">24h Weather Forecast</span>
+
+              {getWeatherForecast(predictive.forecast)}
             </div>
             {predictive.irrigate > 0.5 ? (
               <div className="flex-[1] rounded border p-4 bg-green-50/60">
@@ -266,7 +311,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
         </Flex>
       ) : data ? (
         <>
-          <Divider orientation='left'>Historical Hourly Averages</Divider>
+          <Divider orientation="left">Historical Hourly Averages</Divider>
           <Flex justify="end">
             <Row justify="end" style={{ marginBottom: 16 }}>
               <Col>
