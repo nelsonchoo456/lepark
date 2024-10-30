@@ -7,12 +7,6 @@ const prisma = new PrismaClient();
 // -- [ FUNCTIONS: Seeding Rainfall Data ] --
 async function seedHistoricalRainfallData(days) {
   try {
-    const sensorReadings = await prisma.sensorReading.count();
-    if (sensorReadings === 0) {
-      console.error('Unable to seed irrigation schedule with no sensor readings.');
-      return;
-    }
-
     const historicalRainDataCount = await prisma.historicalRainData.count();
     if (historicalRainDataCount > 0) {
       console.error('Historical rainfall data has been previously seeded. Please clear the table to re-seed the data.');
@@ -87,12 +81,6 @@ async function createManyHistoricalRainData(data) {
   return await prisma.historicalRainData.createMany({ data, skipDuplicates: true });
 }
 
-// -- [ RUN ] --
-seedHistoricalRainfallData(100)
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await trainModelsForActiveHubs();
-  });
+module.exports = {
+  seedHistoricalRainfallData
+};
