@@ -422,18 +422,413 @@ async function seed() {
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
 
-  // Function to generate random dates within a range
-  function randomDate(start, end) {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  }
+  // Fixed arrays of dates with varying intervals for maintenance tasks
+  const fixedDates1 = [
+    '2010-12-05', // Rainy season
+    //'2010-12-25', // Rainy season
+    '2011-01-13', // Rainy season
+    '2011-01-30', // Rainy season
+    '2011-03-02',
+    '2011-04-11',
+    '2011-06-05', // Rainy season
+    '2011-07-02', // Rainy season
+    '2011-08-02',
+    '2011-10-11',
+    '2011-12-01', // Rainy season
+    //'2011-12-23', // Rainy season
+    '2012-01-12', // Rainy season
+    '2012-01-25', // Rainy season
+    '2012-02-01',
+    '2012-04-23',
+    '2012-06-01', // Rainy season
+    '2012-07-05', // Rainy season
+    '2012-08-10',
+    '2012-10-15',
+    '2012-12-02', // Rainy season
+    '2012-12-25', // Rainy season
+    //'2013-01-10', // Rainy season
+    '2013-01-23', // Rainy season
+    '2013-02-15',
+    '2013-04-28',
+    '2013-06-05', // Rainy season
+    '2013-07-01', // Rainy season
+    '2013-08-01',
+    '2013-10-02',
+    '2013-12-02', // Rainy season
+    //'2013-12-25', // Rainy season
+    '2014-01-15', // Rainy season
+    '2014-01-31', // Rainy season
+    '2014-03-05',
+    '2014-04-18',
+    '2014-06-02', // Rainy season
+    '2014-07-01', // Rainy season
+    '2014-08-04',
+    '2014-10-10',
+    '2014-12-05', // Rainy season
+    //'2014-12-25', // Rainy season
+    '2015-01-13', // Rainy season
+    '2015-01-30', // Rainy season
+    '2015-03-02',
+    '2015-04-11',
+    '2015-06-05', // Rainy season
+    '2015-07-02', // Rainy season
+    '2015-08-02',
+    '2015-10-11',
+    '2015-12-01', // Rainy season
+    //'2015-12-23', // Rainy season
+    '2016-01-12', // Rainy season
+    '2016-01-25', // Rainy season
+    '2016-02-01',
+    '2016-04-23',
+    '2016-06-01', // Rainy season
+    '2016-07-05', // Rainy season
+    '2016-08-10',
+    '2016-10-15',
+    '2016-12-02', // Rainy season
+    '2016-12-25', // Rainy season
+    //'2017-01-10', // Rainy season
+    '2017-01-23', // Rainy season
+    '2017-02-15',
+    '2017-04-28',
+    '2017-06-05', // Rainy season
+    '2017-07-01', // Rainy season
+    '2017-08-01',
+    '2017-10-02',
+    '2017-12-02', // Rainy season
+    //'2017-12-25', // Rainy season
+    '2018-01-15', // Rainy season
+    '2018-01-31', // Rainy season
+    '2018-03-05',
+    '2018-04-18',
+    '2018-06-02', // Rainy season
+    '2018-07-01', // Rainy season
+    '2018-08-04',
+    '2018-10-10',
+    '2018-12-05', // Rainy season
+    //'2018-12-25', // Rainy season
+    '2019-01-13', // Rainy season
+    '2019-01-30', // Rainy season
+    '2019-03-02',
+    '2019-04-11',
+    '2019-06-05', // Rainy season
+    '2019-07-02', // Rainy season
+    '2019-08-02',
+    '2019-10-11',
+    '2019-12-01', // Rainy season
+    //'2019-12-23', // Rainy season
+    '2020-01-12', // Rainy season
+    '2020-01-25', // Rainy season
+    '2020-02-01',
+    '2020-04-23',
+    '2020-06-01', // Rainy season
+    '2020-07-05', // Rainy season
+    '2020-08-10',
+    '2020-10-15',
+    '2020-12-02', // Rainy season
+    '2020-12-25', // Rainy season
+    //'2021-01-10', // Rainy season
+    '2021-01-23', // Rainy season
+    '2021-02-15',
+    '2021-04-28',
+    '2021-06-05', // Rainy season
+    '2021-07-01', // Rainy season
+    '2021-08-01',
+    '2021-10-02',
+    '2021-12-02', // Rainy season
+    //'2021-12-25', // Rainy season
+    '2022-01-15', // Rainy season
+    '2022-01-31', // Rainy season
+    '2022-03-05',
+    '2022-04-18',
+    '2022-06-02', // Rainy season
+    '2022-07-01', // Rainy season
+    '2022-08-04',
+    '2022-10-10',
+    '2022-12-05', // Rainy season
+    //'2022-12-25', // Rainy season
+    '2023-01-13', // Rainy season
+    '2023-01-31', // Rainy season
+    '2023-03-05',
+    '2023-04-18',
+    '2023-06-02', // Rainy season
+    '2023-07-01', // Rainy season
+    '2023-08-04',
+    '2023-10-10',
+    '2023-12-05', // Rainy season
+    //'2023-12-25', // Rainy season
+    '2024-01-13', // Rainy season
+    '2024-01-31', // Rainy season
+    '2024-03-05',
+    '2024-04-18',
+    '2024-06-02', // Rainy season
+    '2024-07-01', // Rainy season
+    '2024-08-04',
+    '2024-10-10',
+  ];
 
-  // Generate mock maintenance Task data
-  function generateMockMaintenanceTask(assetId, numberOfEntries) {
-    console.log(`Generating ${numberOfEntries} mock maintenance entries for asset ${assetId}`);
-    const startDate = new Date(2024, 3, 1);
-    const endDate = new Date();
+  const fixedDates2 = [
+    '2010-12-01', // Rainy season
+    '2010-12-27', // Rainy season
+    //'2011-01-12', // Rainy season
+    '2011-01-20', // Rainy season
+    '2011-03-11',
+    '2011-04-20',
+    '2011-06-23', // Rainy season
+    '2011-08-26',
+    '2011-10-01',
+    '2011-12-15', // Rainy season
+    '2011-12-29', // Rainy season
+    //'2012-01-10', // Rainy season
+    '2012-01-25', // Rainy season
+    '2012-03-01',
+    '2012-04-10',
+    '2012-06-15', // Rainy season
+    '2012-08-03',
+    '2012-10-17',
+    '2012-12-02', // Rainy season
+    '2012-12-29', // Rainy season
+    '2013-01-05', // Rainy season
+    '2013-01-18', // Rainy season
+    '2013-03-10',
+    '2013-04-22',
+    '2013-06-07', // Rainy season
+    '2013-08-08',
+    '2013-10-15',
+    '2013-12-01', // Rainy season
+    '2013-12-25', // Rainy season
+    //'2014-01-12', // Rainy season
+    '2014-01-20', // Rainy season
+    '2014-03-12',
+    '2014-04-21',
+    '2014-06-02', // Rainy season
+    '2014-08-01',
+    '2014-10-12',
+    '2014-12-12', // Rainy season
+    '2014-12-28', // Rainy season
+    //'2015-01-10', // Rainy season
+    '2015-01-20', // Rainy season
+    '2015-03-11',
+    '2015-04-20',
+    '2015-06-23', // Rainy season
+    '2015-08-26',
+    '2015-10-01',
+    '2015-12-01', // Rainy season
+    '2015-12-27', // Rainy season
+    //'2016-01-12', // Rainy season
+    '2016-01-20', // Rainy season
+    '2016-03-18',
+    '2016-04-21',
+    '2016-06-10', // Rainy season
+    '2016-08-02',
+    '2016-10-02',
+    '2016-12-12', // Rainy season
+    '2016-12-25', // Rainy season
+    '2017-01-10', // Rainy season
+    '2017-01-21', // Rainy season
+    '2017-02-17',
+    '2017-04-01',
+    '2017-06-23', // Rainy season
+    '2017-09-15',
+    '2017-10-01',
+    '2017-11-28', // Rainy season
+    '2017-12-10', // Rainy season
+    //'2018-01-01', // Rainy season
+    '2018-01-20', // Rainy season
+    '2018-02-14',
+    '2018-04-05',
+    '2018-06-10', // Rainy season
+    '2018-09-05',
+    '2018-10-11',
+    '2018-12-10', // Rainy season
+    '2018-12-23', // Rainy season
+    //'2019-01-12', // Rainy season
+    '2019-01-20', // Rainy season
+    '2019-03-08',
+    '2019-04-20',
+    '2019-06-15', // Rainy season
+    '2019-08-01',
+    '2019-10-06',
+    '2019-12-11', // Rainy season
+    '2019-12-25', // Rainy season
+    //'2020-01-12', // Rainy season
+    '2020-01-20', // Rainy season
+    '2020-03-18',
+    '2020-04-21',
+    '2020-06-10', // Rainy season
+    '2020-08-02',
+    '2020-10-02',
+    '2020-12-12', // Rainy season
+    '2020-12-25', // Rainy season
+    '2021-01-10', // Rainy season
+    '2021-01-21', // Rainy season
+    '2021-02-17',
+    '2021-04-01',
+    '2021-06-23', // Rainy season
+    '2021-09-15',
+    '2021-10-01',
+    '2021-11-28', // Rainy season
+    '2021-12-10', // Rainy season
+    //'2022-01-01', // Rainy season
+    '2022-01-20', // Rainy season
+    '2022-02-14',
+    '2022-04-05',
+    '2022-06-10', // Rainy season
+    '2022-09-05',
+    '2022-10-11',
+    '2022-12-10', // Rainy season
+    '2022-12-23', // Rainy season
+    //'2023-01-12', // Rainy season
+    '2023-01-20', // Rainy season
+    '2023-03-08',
+    '2023-04-20',
+    '2023-06-15', // Rainy season
+    '2023-08-01',
+    '2023-10-06',
+    '2023-12-11', // Rainy season
+    '2023-12-25', // Rainy season
+    //'2024-01-12', // Rainy season
+    '2024-01-20', // Rainy season
+    '2024-03-08',
+    '2024-04-20',
+    '2024-06-15', // Rainy season
+    '2024-08-01',
+    '2024-10-06',
+  ];
 
-    const tasks = Array.from({ length: numberOfEntries }, (_, index) => ({
+  const fixedDates3 = [
+    '2010-12-11', // Rainy season
+    '2010-12-25', // Rainy season
+    //'2011-01-12', // Rainy season
+    '2011-01-20', // Rainy season
+    '2011-03-18',
+    '2011-04-21',
+    '2011-06-10', // Rainy season
+    '2011-08-02',
+    '2011-10-02',
+    '2011-12-12', // Rainy season
+    '2011-12-25', // Rainy season
+    '2012-01-10', // Rainy season
+    '2012-01-21', // Rainy season
+    '2012-02-17',
+    '2012-04-01',
+    '2012-06-23', // Rainy season
+    '2012-09-15',
+    '2012-10-01',
+    '2012-11-28', // Rainy season
+    '2012-12-10', // Rainy season
+    //'2013-01-01', // Rainy season
+    '2013-01-20', // Rainy season
+    '2013-02-14',
+    '2013-04-05',
+    '2013-06-10', // Rainy season
+    '2013-09-05',
+    '2013-10-11',
+    '2013-12-10', // Rainy season
+    '2013-12-23', // Rainy season
+    //'2014-01-12', // Rainy season
+    '2014-01-20', // Rainy season
+    '2014-03-08',
+    '2014-04-20',
+    '2014-06-15', // Rainy season
+    '2014-08-01',
+    '2014-10-06',
+    '2014-12-11', // Rainy season
+    '2014-12-25', // Rainy season
+    //'2015-01-12', // Rainy season
+    '2015-01-20', // Rainy season
+    '2015-03-18',
+    '2015-04-21',
+    '2015-06-10', // Rainy season
+    '2015-08-02',
+    '2015-10-02',
+    '2015-12-12', // Rainy season
+    '2015-12-25', // Rainy season
+    '2016-01-10', // Rainy season
+    '2016-01-21', // Rainy season
+    '2016-02-17',
+    '2016-04-01',
+    '2016-06-23', // Rainy season
+    '2016-09-15',
+    '2016-10-01',
+    '2016-11-28', // Rainy season
+    '2016-12-10', // Rainy season
+    //'2017-01-01', // Rainy season
+    '2017-01-20', // Rainy season
+    '2017-02-14',
+    '2017-04-05',
+    '2017-06-10', // Rainy season
+    '2017-09-05',
+    '2017-10-11',
+    '2017-12-10', // Rainy season
+    '2017-12-23', // Rainy season
+    //'2018-01-12', // Rainy season
+    '2018-01-20', // Rainy season
+    '2018-03-08',
+    '2018-04-20',
+    '2018-06-15', // Rainy season
+    '2018-08-01',
+    '2018-10-06',
+    '2018-12-11', // Rainy season
+    '2018-12-25', // Rainy season
+    //'2019-01-12', // Rainy season
+    '2019-01-20', // Rainy season
+    '2019-03-18',
+    '2019-04-21',
+    '2019-06-10', // Rainy season
+    '2019-08-02',
+    '2019-10-02',
+    '2019-12-12', // Rainy season
+    '2019-12-25', // Rainy season
+    '2020-01-10', // Rainy season
+    '2020-01-21', // Rainy season
+    '2020-02-17',
+    '2020-04-01',
+    '2020-06-23', // Rainy season
+    '2020-09-15',
+    '2020-10-01',
+    '2020-11-28', // Rainy season
+    '2020-12-10', // Rainy season
+    //'2021-01-01', // Rainy season
+    '2021-01-20', // Rainy season
+    '2021-02-14',
+    '2021-04-05',
+    '2021-06-10', // Rainy season
+    '2021-09-05',
+    '2021-10-11',
+    '2021-12-10', // Rainy season
+    '2021-12-23', // Rainy season
+    //'2022-01-12', // Rainy season
+    '2022-01-20', // Rainy season
+    '2022-03-08',
+    '2022-04-20',
+    '2022-06-15', // Rainy season
+    '2022-08-01',
+    '2022-10-06',
+    '2022-12-11', // Rainy season
+    '2022-12-25', // Rainy season
+    //'2023-01-12', // Rainy season
+    '2023-01-20', // Rainy season
+    '2023-03-08',
+    '2023-04-20',
+    '2023-06-15', // Rainy season
+    '2023-08-01',
+    '2023-10-06',
+    '2023-12-11', // Rainy season
+    '2023-12-25', // Rainy season
+    //'2024-01-12', // Rainy season
+    '2024-01-20', // Rainy season
+    '2024-03-08',
+    '2024-04-20',
+    '2024-06-15', // Rainy season
+    '2024-08-01',
+    '2024-10-06',
+  ];
+
+  // Function to generate mock maintenance Task data with fixed dates
+  function generateMockMaintenanceTask(assetId, fixedDates) {
+    console.log(`Generating mock maintenance entries for asset ${assetId}`);
+
+    const tasks = fixedDates.map((date, index) => ({
       title: `Maintenance Task #${index + 1} for ${assetId}`,
       description: `Completed maintenance task #${index + 1} for ${assetId}.`,
       taskStatus: 'COMPLETED',
@@ -441,21 +836,21 @@ async function seed() {
       taskUrgency: 'NORMAL',
       createdAt: new Date(),
       updatedAt: new Date(),
-      dueDate: new Date(),
-      completedDate: randomDate(startDate, endDate),
+      dueDate: new Date(date),
+      completedDate: new Date(date),
       images: ['https://example.com/maintenance-task-image.jpg'],
       remarks: `Remarks for maintenance task #${index + 1}.`,
       position: index + 1,
-    })).sort((a, b) => a.completedDate - b.completedDate);
+    }));
 
-    console.log('Mock tasks generated and sorted by date');
+    console.log('Mock tasks generated with fixed dates');
     return tasks;
   }
 
   // Generate completed maintenance tasks for the sensor with title SE-22222
   const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
   if (sensor) {
-    const maintenanceTasks = generateMockMaintenanceTask(sensor.identifierNumber, 12);
+    const maintenanceTasks = generateMockMaintenanceTask(sensor.identifierNumber, fixedDates1);
     maintenanceTasks.forEach((task) => {
       maintenanceTasksData.push({
         title: task.title,
@@ -469,15 +864,16 @@ async function seed() {
         completedDate: task.completedDate,
         images: task.images,
         remarks: task.remarks,
-        sensor: { connect: { serialNumber: sensor.serialNumber } },
         position: task.position,
+        sensor: { connect: { serialNumber: sensor.serialNumber } },
       });
     });
   }
 
+  // Generate completed maintenance tasks for the hub with title HB-11111
   const hub = hubsData.find((h) => h.identifierNumber === 'HB-11111');
   if (hub) {
-    const maintenanceTasks = generateMockMaintenanceTask(hub.identifierNumber, 12);
+    const maintenanceTasks = generateMockMaintenanceTask(hub.identifierNumber, fixedDates2);
     maintenanceTasks.forEach((task) => {
       maintenanceTasksData.push({
         title: task.title,
@@ -491,15 +887,16 @@ async function seed() {
         completedDate: task.completedDate,
         images: task.images,
         remarks: task.remarks,
-        hub: { connect: { serialNumber: hub.serialNumber } },
         position: task.position,
+        hub: { connect: { serialNumber: hub.serialNumber } },
       });
     });
   }
 
-  const parkAsset = parkAssetsData.find((pa) => pa.identifierNumber === 'HP-HR2515DK');
+  // Generate completed maintenance tasks for the park asset with title HP-HR2515DK
+  const parkAsset = parkAssetsData.find((p) => p.identifierNumber === 'HP-HR2515DK');
   if (parkAsset) {
-    const maintenanceTasks = generateMockMaintenanceTask(parkAsset.identifierNumber, 12);
+    const maintenanceTasks = generateMockMaintenanceTask(parkAsset.identifierNumber, fixedDates3);
     maintenanceTasks.forEach((task) => {
       maintenanceTasksData.push({
         title: task.title,
@@ -513,8 +910,8 @@ async function seed() {
         completedDate: task.completedDate,
         images: task.images,
         remarks: task.remarks,
-        parkAsset: { connect: { serialNumber: parkAsset.serialNumber } },
         position: task.position,
+        parkAsset: { connect: { serialNumber: parkAsset.serialNumber } },
       });
     });
   }
@@ -1103,7 +1500,7 @@ function generateMockCrowdDataForSBG(sensorId, days) {
   for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
     const hour = time.hour();
     const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-    let baseCrowdLevel = 40 + Math.random() * 30; // Base level 
+    let baseCrowdLevel = 40 + Math.random() * 30; // Base level
 
     // Day of week effect
     switch (day) {
@@ -1143,7 +1540,7 @@ function generateMockCrowdDataForSBG(sensorId, days) {
     }
 
     // Special event effect
-    if (events.some(eventDate => time.isSame(eventDate, 'day'))) {
+    if (events.some((eventDate) => time.isSame(eventDate, 'day'))) {
       const eventHourEffect = Math.abs(hour - 19) / 10;
       baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
     }
@@ -1224,7 +1621,7 @@ function generateMockCrowdDataForBAMKP(sensorId, days) {
     }
 
     // Special event effect
-    if (events.some(eventDate => time.isSame(eventDate, 'day'))) {
+    if (events.some((eventDate) => time.isSame(eventDate, 'day'))) {
       const eventHourEffect = Math.abs(hour - 19) / 10;
       baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
     }

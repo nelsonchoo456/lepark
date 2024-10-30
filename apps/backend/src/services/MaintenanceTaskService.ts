@@ -674,17 +674,16 @@ class MaintenanceTaskService {
       .slice(1)
       .map((date, index) => Math.round((date.getTime() - completedDates[index].getTime()) / (1000 * 60 * 60 * 24)));
     console.log('intervals:', intervals);
-    const predictions = getAugumentedDataset(intervals, 5);
+    const predictions = getAugumentedDataset(intervals, 8); // Ensure `m` is set to 8
     console.log('predictions:', predictions);
-    const lastCompletedDate = completedDates[completedDates.length - 1];
-    const nextMaintenanceDates = predictions.augumentedDataset
-      .slice(-5)
-      .map((interval) => {
-        const nextDate = new Date(lastCompletedDate);
-        nextDate.setDate(nextDate.getDate() + Math.round(interval));
-        return nextDate;
-      })
-      .sort((a, b) => a.getTime() - b.getTime()); // Sort the dates from soonest to furthest
+
+    const nextMaintenanceDates = [];
+    let currentDate = new Date(completedDates[completedDates.length - 1]);
+
+    predictions.augumentedDataset.forEach((interval) => {
+      currentDate = new Date(currentDate.getTime() + interval * 24 * 60 * 60 * 1000); // Add interval days to current date
+      nextMaintenanceDates.push(new Date(currentDate));
+    });
     console.log('nextMaintenanceDates:', nextMaintenanceDates);
     const nextMaintenanceDate = nextMaintenanceDates[0];
 
