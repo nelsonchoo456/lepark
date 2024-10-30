@@ -58,7 +58,7 @@ export const getWeatherForecast = (textForecast: string) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', color }}>
       <Icon size={33} style={{ marginRight: '8px' }} />
-      <span className='text-xl'>{textForecast}</span>
+      <span className="text-xl">{textForecast}</span>
     </div>
   );
 };
@@ -108,6 +108,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
     try {
       setDataLoading(true);
       const response = await getHistoricalSensorsRainfallDataByHub(hub.id, dateRange[0].toDate(), dateRange[1].toDate());
+      console.log(response.data.data);
       setData(response.data.data);
       setDataLoading(false);
     } catch (error) {
@@ -297,6 +298,20 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
                 <Tag bordered={false} className="bg-gray-200">
                   <strong className="text-lg text-gray-700">No</strong>
                 </Tag>
+                <div className="mt-2">
+                  <span
+                    className={`text-xs ${
+                      predictive.irrigate >= 0.3 ? 'text-green-600' : predictive.irrigate >= 0.1 ? 'text-yellow-500' : 'text-red-500'
+                    }`}
+                  >
+                    {predictive.irrigate >= 0.3
+                      ? 'High Confidence Level '
+                      : predictive.irrigate >= 0.1
+                      ? 'Moderate Confidence Level '
+                      : 'Low Confidence Level '}
+                      {/* ({(predictive.irrigate * 100).toFixed(1)}%) */}
+                  </span>
+                </div>
               </div>
             )}
           </div>

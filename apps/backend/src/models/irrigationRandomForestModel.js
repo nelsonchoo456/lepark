@@ -159,13 +159,11 @@ const getIrrigationDecision = (readings, date) => {
     water = 0; // Sufficient rainfall, no irrigation needed
   } else if (readings.soilMoisture < soilMoistureThresholdLow) {
     water = 1; // Critical low moisture, irrigation needed
-    console.log("Water" , date)
   } else if (readings.soilMoisture < soilMoistureThresholdModerate) {
     if (
       (readings.temperature > temperatureThresholdHigh) ||
       (readings.humidity < humidityThresholdLow)
     ) {
-      console.log("Water" , date)
       water = 1; // High temperature or low humidity triggers irrigation
     }
   }

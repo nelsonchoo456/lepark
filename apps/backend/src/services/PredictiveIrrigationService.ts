@@ -43,17 +43,9 @@ class PredictiveIrrigationService {
       // // Generate training data using the service method
       const historicalRainfallData = await this.getClosestRainDataPerDateByDateRange(hub.lat, hub.long, startDate, endDate);
 
-      return { ...historicalSensorData, rainfall: historicalRainfallData }
-      // const trainingData = this.generateTrainingData(historicalSensorData, historicalRainfallData);
-  
-      // console.log(trainingData);
-      // // Train the Random Forest model
-      // const model = await this.trainRandomForestModel(trainingData);
-  
-      // // Save the trained model for the hub
-      // models[hub.id] = model;
-  
-      // await this.saveModelToDatabase(hub.id, model);
+      const waterData = await calculateWaterData(historicalSensorData, historicalRainfallData);
+
+      return { ...historicalSensorData, water: waterData, rainfall: historicalRainfallData }
     } catch (error) {
       console.error(`Error training model for hub ${hub.id}:`, error);
     }
@@ -394,10 +386,10 @@ const getIrrigationDecision = (readings, date) => {
   }
 
   // 2. Decision thresholds and weights, based on season
-  const soilMoistureThresholdLow = season === 'dry' ? 25 : 30;
-  const soilMoistureThresholdModerate = season === 'dry' ? 45 : 50;
-  const temperatureThresholdHigh = 35; // High temperature, increases irrigation need
-  const humidityThresholdLow = 40; // Low humidity, increases irrigation need
+  const soilMoistureThresholdLow = season === 'dry' ? 59.2 : 59.5;
+  const soilMoistureThresholdModerate = season === 'dry' ? 59.5 : 59.7;
+  const temperatureThresholdHigh = 31; // High temperature, increases irrigation need
+  const humidityThresholdLow = 80; // Low humidity, increases irrigation need
 
   // Weighted conditions for irrigation decision
   if (readings.rainfall === 1) {
@@ -415,5 +407,46 @@ const getIrrigationDecision = (readings, date) => {
 
   return water
 }
+
+const calculateWaterData = async (sensorData, rainfallData) => {
+  // Helper function to get the daily reading based on target time or fallback to first entry
+  const getDailyReading = (data, date) => {
+    const targetTime = `${date}T21:00:00.000Z`; // Target time at 20:00:00
+    return data.find((item) => item.date === targetTime) || data[0];
+  };
+  const getRainfallForDate = (data, date) => {
+    return data.find((item) => item.timestamp.toString().startsWith(date))?.value || 0;
+  };
+
+  // Get unique dates from sensor data to iterate over
+  const dates = [...new Set(sensorData.TEMPERATURE.map((entry) => entry.date.split('T')[0]))];
+
+  // Calculate water data for each day
+  return dates.map((date: string) => {
+    // Extract daily readings for each sensor type
+    const tempReading = getDailyReading(sensorData.TEMPERATURE, date);
+    const soilMoistureReading = getDailyReading(sensorData.SOIL_MOISTURE, date);
+    const humidityReading = getDailyReading(sensorData.HUMIDITY, date);
+    const lightReading = getDailyReading(sensorData.LIGHT, date);
+    const rainfall = getRainfallForDate(rainfallData, date);
+
+    // Construct the readings object for the day
+    const readings = {
+      temperature: tempReading?.average || 0,
+      soilMoisture: soilMoistureReading?.average || 0,
+      humidity: humidityReading?.average || 0,
+      light: lightReading?.average || 0,
+      rainfall: rainfall || 0
+    };
+
+    console.log("readings", readings)
+
+    // Calculate the irrigation decision
+    const water = getIrrigationDecision(readings, new Date(date));
+
+    // Return object with date and water value
+    return { date, value: water };
+  });
+};
 
 
