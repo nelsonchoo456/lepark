@@ -28,13 +28,45 @@ router.get('/getHistoricalSensorsRainfallData/:hubId', async (req: Request, res:
       parsedEndDate);
 
     if (data === null) {
-      return res.status(404).json({ message: 'No prediction available for today' });
+      return res.status(404).json({ message: 'No data found for this hub.' });
     }
 
     res.json({ hubId, data });
   } catch (error) {
-    console.error('Error fetching predicted irrigation:', error);
-    res.status(500).json({ error: 'Failed to fetch predicted irrigation: ' + error });
+    console.error('Error fetching historical data:', error);
+    res.status(500).json({ error: 'Failed to fetch historical data: ' + error });
+  }
+});
+
+router.get('/getHubHistoricalRainfallData/:hubId', async (req: Request, res: Response) => {
+  const { hubId } = req.params;
+  const { startDate, endDate } = req.query;
+
+  const parsedStartDate = new Date(startDate as string);
+  const parsedEndDate = new Date(endDate as string);
+  // Check for invalid dates
+  if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+    return res.status(400).json({ error: 'Invalid date format' });
+  }
+
+  try {
+    const hub = await HubService.getHubById(hubId);
+
+    if (!hub) {
+      return res.status(404).json({ error: 'Hub not found' });
+    }
+
+    const data = await PredictiveIrrigationService.getHubHistoricalRainfallData(hub, parsedStartDate,
+      parsedEndDate);
+
+    if (data === null) {
+      return res.status(404).json({ message: 'No rain data found for this hub.' });
+    }
+
+    res.json({ hubId, data });
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    res.status(500).json({ error: 'Failed to fetch historical data: ' + error });
   }
 });
 

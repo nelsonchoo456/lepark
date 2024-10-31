@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, PredictedWaterSchedule, SensorTypeEnum, Hub, RfModel } from '@prisma/client';
+import { Prisma, PrismaClient, PredictedWaterSchedule, SensorTypeEnum, Hub, RfModel, HubStatusEnum } from '@prisma/client';
 import axios from 'axios';
 import { RandomForestRegression as RandomForestRegressor } from 'ml-random-forest';
 import SensorReadingService from './SensorReadingService';
@@ -15,9 +15,6 @@ interface WeatherForecast {
   forecast: string;
   rainfall: number
 }
-
-
-
 interface SensorDataGroupedByType {
   [sensorType: string]: { date: string; average: number }[];
 }
@@ -28,7 +25,6 @@ class PredictiveIrrigationService {
   private models: { [hubId: number]: any } = {};
   constructor() {
     this.loadAllModels();
-    // this.seedHistoricalRainfallData();
   }
 
   // -- [ PUBLIC ] --
@@ -40,16 +36,25 @@ class PredictiveIrrigationService {
         endDate
       );
       
-      // // Generate training data using the service method
-      const historicalRainfallData = await this.getClosestRainDataPerDateByDateRange(hub.lat, hub.long, startDate, endDate);
+      // // // Generate training data using the service method
+      // const historicalRainfallData = await this.getClosestRainDataPerDateBoolean(hub.lat, hub.long);
 
-      const waterData = await calculateWaterData(historicalSensorData, historicalRainfallData);
-
-      return { ...historicalSensorData, water: waterData, rainfall: historicalRainfallData }
+      return historicalSensorData
     } catch (error) {
       console.error(`Error training model for hub ${hub.id}:`, error);
     }
   }
+
+    // -- [ PUBLIC ] --
+    public async getHubHistoricalRainfallData(hub: Hub, startDate: Date, endDate: Date) {
+      try {
+        const historicalRainfallData = await this.getClosestRainDataPerDateBoolean(hub.lat, hub.long);
+  
+        return historicalRainfallData;
+      } catch (error) {
+        console.error(`Error training model for hub ${hub.id}:`, error);
+      }
+    }
   
 
   // -- [ PUBLIC ] --
@@ -95,12 +100,13 @@ class PredictiveIrrigationService {
         throw new Error(`No sensor data found for hub ${hub.id} today.`);
       } 
 
+      const rainfallData = await this.getTodayWeatherForecast(hub.lat, hub.long);
+
       const input = [
         sensorData.soilMoisture || 0,
         sensorData.temperature || 0,
         sensorData.humidity || 0,
         sensorData.light || 0,
-        sensorData.rainfall || 0,
       ]
 
       const model = this.models[hub.id];
@@ -110,7 +116,7 @@ class PredictiveIrrigationService {
       }
 
       const prediction = model.predict([input])[0];
-      return ({ hubId: hub.id, irrigate: prediction, forecast: sensorData.forecast, sensorData: sensorData });
+      return ({ hubId: hub.id, rainfall: prediction, forecast: rainfallData.forecast, sensorData: sensorData });
     } catch (error) {
       console.error(`Error predicting irrigation for hub ${hub.id}:`, error);
       throw error;
@@ -202,14 +208,14 @@ class PredictiveIrrigationService {
       endOfDay.setHours(23, 59, 59, 999);
 
       const sensorReadings = await SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(hub.id, startOfDay, endOfDay);
-      const rainfallData = await this.getTodayWeatherForecast(hub.lat, hub.long);
+      // const rainfallData = await this.getTodayWeatherForecast(hub.lat, hub.long);
 
       const testData = {
         soilMoisture: sensorReadings['SOIL_MOISTURE'].slice(-1)[0].average,
         temperature: sensorReadings['TEMPERATURE'].slice(-1)[0].average,
         humidity: sensorReadings['HUMIDITY'].slice(-1)[0].average,
         light: sensorReadings['LIGHT'].slice(-1)[0].average,
-        ...rainfallData
+        // ...rainfallData
       }
 
       return testData;
@@ -250,10 +256,10 @@ class PredictiveIrrigationService {
   // TRAINING
   // Data preparation:
   // Fetch historical rainfall for given past day
-  private async getClosestRainDataPerDate(lat: number, lng: number) {
-    const result = await prisma.$queryRaw(
+  private async getClosestRainDataPerDateBoolean(lat: number, lng: number) {
+    const result: any[] = await prisma.$queryRaw(
       Prisma.sql`
-        SELECT DISTINCT ON (DATE("timestamp")) *,
+        SELECT *,
           (
             6371 * acos(
               cos(radians(${lat})) * cos(radians(lat)) *
@@ -266,17 +272,46 @@ class PredictiveIrrigationService {
       `
     );
   
-    return result;
+    // Track daily rain presence using an object
+    const dailyRainPresence = {};
+  
+    for (const record of result) {
+      const date = record.timestamp.toISOString().split('T')[0]; // Get the date part
+  
+      // Skip further checks if we already know it rained on this date
+      if (dailyRainPresence[date] === 1) continue;
+  
+      // If value > 0, mark as 1 (rainy day)
+      dailyRainPresence[date] = record.value > 0 ? 1 : (dailyRainPresence[date] || 0);
+    }
+  
+    return dailyRainPresence;
   };
 
-  // -- [ PRIVATE ] --
-  // TRAINING
-  // Data preparation:
-  // Fetch historical rainfall for given past day
-  private async getClosestRainDataPerDateByDateRange(lat: number, lng: number, startDate: Date, endDate: Date) {
-    const result = await prisma.$queryRaw(
+  private async getClosestRainDataPerDate(lat: number, lng: number) {
+    const parseTimestamp = (timestamp) => {
+      return new Date(timestamp).getTime();
+    }
+    
+    const calculateAUC = (data: any) => {
+      let auc = 0;
+      data.sort((a, b) => parseTimestamp(a.timestamp) - parseTimestamp(b.timestamp));
+      // Loop through the data to calculate the trapezoidal area
+      for (let i = 1; i < data.length; i++) {
+        const prev = data[i - 1];
+        const curr = data[i];
+    
+        const timeDiff = (parseTimestamp(curr.timestamp) - parseTimestamp(prev.timestamp)) / 1000; // Calculate the time difference in seconds
+        const area = 0.5 * (prev.value + curr.value) * timeDiff; // Calculate the area of the trapezoid
+        auc += area; // Add to total AUC
+      }
+  
+      return auc;
+    }
+  
+    const result: any[] = await prisma.$queryRaw(
       Prisma.sql`
-        SELECT DISTINCT ON (DATE("timestamp")) *,
+        SELECT *,
           (
             6371 * acos(
               cos(radians(${lat})) * cos(radians(lat)) *
@@ -285,12 +320,22 @@ class PredictiveIrrigationService {
             )
           ) AS distance
         FROM "HistoricalRainData"
-        WHERE DATE("timestamp") BETWEEN ${startDate} AND ${endDate}
         ORDER BY DATE("timestamp"), distance
       `
     );
+
+    const resultsGroupedByDay = result.reduce((acc, record) => {
+      const date = record.timestamp.toISOString().split('T')[0]; // Get the date part
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(record);
+      return acc;
+    }, {});
+    const dailyAUC = {};
+    for (const date in resultsGroupedByDay) {
+      dailyAUC[date] = calculateAUC(resultsGroupedByDay[date]);
+    }
   
-    return result;
+    return dailyAUC;
   };
 
   // -- [ PRIVATE ] --

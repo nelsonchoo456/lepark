@@ -8,13 +8,13 @@ const numDays = 100;
 const SENSOR_TYPE_ENUMS = ["TEMPERATURE", "HUMIDITY", "SOIL_MOISTURE", "LIGHT", "CAMERA"]
 const models = {}; // Object to store trained models for each hub
 
+
 const trainModelsForAllHubs = async (hubs) => {
   for (const hub of hubs) {
     trainModelForHub(hub);
   }
 };
 
-// Function to train models for each hub
 const trainModelForHub = async (hub) => {
   try {
     // Fetch historical sensor data
@@ -24,12 +24,11 @@ const trainModelForHub = async (hub) => {
       new Date(),
     );
 
-    // Generate training data using the service method
-    const historicalRainfallData = await getClosestRainDataPerDate(hub.lat, hub.long);
-    const trainingData = generateTrainingData(historicalSensorData, historicalRainfallData);
+    const rainfallData = await getClosestRainDataPerDate(hub.lat, hub.long);
+    const trainingData = generateTrainingData(historicalSensorData, rainfallData);
 
     // Train the Random Forest model
-    const model = await trainRandomForestModel(trainingData);
+    const model = await trainRandomForestModel(trainingData, rainfallData);
 
     // Save the trained model for the hub
     models[hub.id] = model;
@@ -40,15 +39,15 @@ const trainModelForHub = async (hub) => {
   }
 }
 
-const trainRandomForestModel = async (trainingData) => {
+const trainRandomForestModel = async (trainingData, rainfallData) => {
   const X = trainingData.map((data) => [
     data.soilMoisture,
     data.temperature,
     data.humidity,
     data.light,
-    data.rainfall
   ]);
-  const y = trainingData.map((data) => data.water);
+
+  const y = Object.values(rainfallData);
   const model = new RandomForestRegressor({
     nEstimators: 100,
     treeOptions: { maxDepth: 10 },
@@ -79,11 +78,31 @@ const loadSavedModels = async (hubId) => {
 // -- [ PRIVATE UTILS ] --
 // PREDICTION
 // Data preparation:
-// Fetch API weather forecast
+// Fetch (Y-data) actual historical rainfall data
 const getClosestRainDataPerDate = async (lat, lng) => {
+  const parseTimestamp = (timestamp) =>{
+    return new Date(timestamp);
+  }
+  
+  const calculateAUC = (data) => {
+    let auc = 0;
+    data.sort((a, b) => parseTimestamp(a.timestamp) - parseTimestamp(b.timestamp));
+    // Loop through the data to calculate the trapezoidal area
+    for (let i = 1; i < data.length; i++) {
+      const prev = data[i - 1];
+      const curr = data[i];
+  
+      const timeDiff = (parseTimestamp(curr.timestamp) - parseTimestamp(prev.timestamp)) / 1000; // Calculate the time difference in seconds
+      const area = 0.5 * (prev.value + curr.value) * timeDiff; // Calculate the area of the trapezoid
+      auc += area; // Add to total AUC
+    }
+
+    return auc;
+  }
+
   const result = await prisma.$queryRaw(
     Prisma.sql`
-      SELECT DISTINCT ON (DATE("timestamp")) *,
+      SELECT *,
         (
           6371 * acos(
             cos(radians(${lat})) * cos(radians(lat)) *
@@ -95,8 +114,18 @@ const getClosestRainDataPerDate = async (lat, lng) => {
       ORDER BY DATE("timestamp"), distance
     `
   );
+  const resultsGroupedByDay = result.reduce((acc, record) => {
+    const date = record.timestamp.toISOString().split('T')[0]; // Get the date part
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(record);
+    return acc;
+  }, {});
+  const dailyAUC = {};
+  for (const date in resultsGroupedByDay) {
+    dailyAUC[date] = calculateAUC(resultsGroupedByDay[date]);
+  }
 
-  return result;
+  return dailyAUC;
 };
 
 const getAverageSensorReading = (readings, date) => {
@@ -104,11 +133,11 @@ const getAverageSensorReading = (readings, date) => {
   return reading ? reading.average : 0;
 };
 
-// -- [ PRIVATE ] --
+// -- [ PRIVATE UTILS ] --
 // TRAINING
 // Data preparation:
 // Generate Training Data
-const generateTrainingData = (sensorData, historicalRainfallData) => {
+const generateTrainingData = (sensorData) => {
   const today = new Date();
   const trainingData = [];
 
@@ -116,61 +145,23 @@ const generateTrainingData = (sensorData, historicalRainfallData) => {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
 
-    const rainfallRecord = historicalRainfallData.find((data) => isSameDay(data.timestamp, date))
     const readings = {
       soilMoisture: getAverageSensorReading(sensorData['SOIL_MOISTURE'], date),
       temperature: getAverageSensorReading(sensorData['TEMPERATURE'], date),
       humidity: getAverageSensorReading(sensorData['HUMIDITY'], date),
       light: getAverageSensorReading(sensorData['LIGHT'], date),
-      rainfall: rainfallRecord ? rainfallRecord.value : 0
     };
-    readings.water = getIrrigationDecision(readings, date);
 
     trainingData.push(readings);
   }
-  console.log("end of irrigation decision")
 
   return trainingData;
 };
 
-const getIrrigationDecision = (readings, date) => {
-  // Dynamic decision logic for whether to turn on the irrigation
-  let water = 0;
-
-  // 1. Determine season
-  const month = date.getMonth() + 1; // getMonth() is zero-based
-  let season;
-  if (month >= 12 || month <= 3) {
-    season =  'wet'; // Northeast Monsoon (wet season)
-  } else if (month >= 6 && month <= 9) {
-    season = 'dry'; // Southwest Monsoon (drier season)
-  } else {
-    season = 'mixed'; // Inter-monsoon period
-  }
-
-  // 2. Decision thresholds and weights, based on season
-  const soilMoistureThresholdLow = season === 'dry' ? 59.2 : 59.5;
-  const soilMoistureThresholdModerate = season === 'dry' ? 59.5 : 59.7;
-  const temperatureThresholdHigh = 35; // High temperature, increases irrigation need
-  const humidityThresholdLow = 80; // Low humidity, increases irrigation need
-
-  // Weighted conditions for irrigation decision
-  if (readings.rainfall === 1) {
-    water = 0; // Sufficient rainfall, no irrigation needed
-  } else if (readings.soilMoisture < soilMoistureThresholdLow) {
-    water = 1; // Critical low moisture, irrigation needed
-  } else if (readings.soilMoisture < soilMoistureThresholdModerate) {
-    if (
-      (readings.temperature > temperatureThresholdHigh) ||
-      (readings.humidity < humidityThresholdLow)
-    ) {
-      water = 1; // High temperature or low humidity triggers irrigation
-    }
-  }
-
-  return water
-}
-
+// -- [ PRIVATE UTILS ] --
+// TRAINING
+// Data preparation:
+// Generate Training Data
 const getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange = async (
   hubId,
   startDate,
@@ -250,10 +241,4 @@ const saveModelToDatabase = async (hubId, model) => {
 module.exports = {
   trainModelsForAllHubs,
   loadSavedModels,
-
-  // UTILITY FOR TESTING BELOW - may or not be able to delete later
-  getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange,
-  getClosestRainDataPerDate,
-  isSameDay,
-  getAverageSensorReading
 };

@@ -1,4 +1,5 @@
 import {
+  getHistoricalRainfallDataByHub,
   getHistoricalSensorsRainfallDataByHub,
   getModelForHub,
   getPredictionForHub,
@@ -69,14 +70,15 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
   const [hasModel, setHasModel] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [data, setData] = useState<any>();
+  const [rainfallData, setRainfallData] = useState<any>();
   const [predictiveLoading, setPredictiveLoading] = useState(false);
   const [predictive, setPredictive] = useState<PredictiveIrrigation>();
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (hasModel) {
-      fetchReadings();
       fetchPredictive();
+      fetchData();
     }
   }, [hasModel, dateRange]);
 
@@ -95,24 +97,33 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
         setHasModel(false);
       }
     } catch (error) {
-      // if (error === "Insufficent sensors readings to train model") {
-      //   messageApi.open({
-      //     type: 'error',
-      //     content: error,
-      //   });
-      // }
+      //
     }
+  };
+
+  const fetchData = async () => {
+    await fetchReadings();
+    await fetchRainfall();
   };
 
   const fetchReadings = async () => {
     try {
       setDataLoading(true);
       const response = await getHistoricalSensorsRainfallDataByHub(hub.id, dateRange[0].toDate(), dateRange[1].toDate());
-      console.log(response.data.data);
       setData(response.data.data);
       setDataLoading(false);
     } catch (error) {
       setDataLoading(false);
+      console.error('Error fetching sensor readings:', error);
+    }
+  };
+
+  const fetchRainfall = async () => {
+    try {
+      const response = await getHistoricalRainfallDataByHub(hub.id, dateRange[0].toDate(), dateRange[1].toDate());
+      console.log(response.data.data);
+      setRainfallData(response.data.data);
+    } catch (error) {
       console.error('Error fetching sensor readings:', error);
     }
   };
@@ -202,6 +213,10 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
             text: label,
           },
         },
+        y1: {
+          beginAtZero: true,
+          display: false, // Hide y1 axis
+        },
         x: {
           title: {
             display: true,
@@ -215,17 +230,50 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
     };
   };
 
+  // const getChartData = (data: any, label: string) => {
+  //   return {
+  //     labels: data.map((reading: any) => dayjs(reading.date).format('YYYY-MM-DD HH:mm')),
+  //     datasets: [
+  //       {
+  //         label: label,
+  //         data: data.map((reading: any) => reading.average),
+  //         borderColor: 'rgb(75, 192, 192)',
+  //         tension: 0.1,
+  //       },
+  //       {
+  //         label: 'Rainfall',
+  //         data: data.map((reading: { date: string }) => rainfallData[dayjs(reading.date).format('YYYY-MM-DD')] || 0),
+  //         backgroundColor: 'rgba(54, 162, 235, 0.5)',
+  //         type: 'bar',
+  //         yAxisID: 'y1', // Secondary y-axis for rainfall data
+  //       },
+  //     ],
+  //   };
+  // };
   const getChartData = (data: any, label: string) => {
+    // Conditionally add rainfall dataset only if rainfallData is available
+    const datasets: any = [
+      {
+        label: label,
+        data: data.map((reading: any) => reading.average),
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1,
+      },
+    ];
+
+    if (rainfallData) {
+      datasets.push({
+        label: 'Rainfall',
+        data: data.map((reading: { date: string }) => rainfallData[dayjs(reading.date).format('YYYY-MM-DD')] || 0),
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        type: 'bar',
+        yAxisID: 'y1', // Secondary y-axis for rainfall data
+      });
+    }
+
     return {
       labels: data.map((reading: any) => dayjs(reading.date).format('YYYY-MM-DD HH:mm')),
-      datasets: [
-        {
-          label: label,
-          data: data.map((reading: any) => reading.average),
-          borderColor: 'rgb(75, 192, 192)',
-          tension: 0.1,
-        },
-      ],
+      datasets,
     };
   };
 
@@ -278,41 +326,55 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
               />
               <span className="text-secondary italic">in past 1h</span>
             </div>
-            <div className="flex-[1]">
+            {/* <div className="flex-[1]">
               <span className="text-secondary">24h Weather Forecast</span>
 
               {getWeatherForecast(predictive.forecast)}
-            </div>
-            {predictive.irrigate > 0.5 ? (
-              <div className="flex-[1] rounded border p-4 bg-green-50/60">
-                <strong className="text-green-500">Irrigation Need</strong>
-                <br />
-                <Tag bordered={false} color="green">
-                  <strong className="text-green-600 text-lg">Yes</strong>
-                </Tag>
-              </div>
-            ) : (
-              <div className="flex-[1] rounded border p-4 bg-gray-50">
-                <strong className="text-gray-500">Irrigation Need</strong>
-                <br />
-                <Tag bordered={false} className="bg-gray-200">
-                  <strong className="text-lg text-gray-700">No</strong>
-                </Tag>
-                <div className="mt-2">
-                  <span
-                    className={`text-xs ${
-                      predictive.irrigate >= 0.3 ? 'text-green-600' : predictive.irrigate >= 0.1 ? 'text-yellow-500' : 'text-red-500'
-                    }`}
-                  >
-                    {predictive.irrigate >= 0.3
-                      ? 'High Confidence Level '
-                      : predictive.irrigate >= 0.1
-                      ? 'Moderate Confidence Level '
-                      : 'Low Confidence Level '}
-                      {/* ({(predictive.irrigate * 100).toFixed(1)}%) */}
-                  </span>
+            </div> */}
+            {predictive.rainfall > 90 ? (
+              <>
+                <div className="flex-[1] rounded border p-4 bg-sky-50/60">
+                  <strong className="text-sky-500">Rainfall Expectation Today</strong>
+                  <br />
+                  <Tag bordered={false} color="blue">
+                    <strong className="text-sky-600 text-lg">Yes</strong>
+                  </Tag>
+                  <br />
+                  {predictive.rainfall < 130 ? (
+                    <div className="text-xs italic mt-1 text-gray-500/50">Low Confidence Level</div>
+                  ) : predictive.rainfall < 300 ? (
+                    <div className="text-xs italic mt-1 text-mustard-400">Moderate Confidence Level</div>
+                  ) : (
+                    <div className="text-xs italic mt-1 text-green-400">High Confidence Level</div>
+                  )}
                 </div>
-              </div>
+                <div className="flex-[1] rounded border p-4 bg-gray-50">
+                  <strong className="text-gray-500">Irrigation Need</strong>
+                  <br />
+                  <Tag bordered={false} className="bg-gray-400">
+                    <strong className="text-gray-600 text-lg">No</strong>
+                  </Tag>
+                  <br />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex-[1] rounded border p-4 bg-gray-50">
+                  <strong className="text-gray-500">Rainfall Expectation Today</strong>
+                  <br />
+                  <Tag bordered={false} className="bg-gray-200">
+                    <strong className="text-lg text-gray-700">No</strong>
+                  </Tag>
+                </div>
+                <div className="flex-[1] rounded border p-4 bg-green-50/60">
+                  <strong className="text-green-500">Irrigation Need</strong>
+                  <br />
+                  <Tag bordered={false} color="green">
+                    <strong className="text-green-600 text-lg">Yes</strong>
+                  </Tag>
+                  <br />
+                </div>
+              </>
             )}
           </div>
         ) : (
@@ -326,7 +388,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
         </Flex>
       ) : data ? (
         <>
-          <Divider orientation="left">Historical Hourly Averages</Divider>
+          <Divider orientation="left">Historical Rainfall Data</Divider>
           <Flex justify="end">
             <Row justify="end" style={{ marginBottom: 16 }}>
               <Col>

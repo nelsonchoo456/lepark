@@ -22,6 +22,25 @@ export async function getHistoricalSensorsRainfallDataByHub(
   }
 }
 
+export async function getHistoricalRainfallDataByHub(
+  hubId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/getHubHistoricalRainfallData/${hubId}`, {
+      params: { startDate, endDate },
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function getPredictionForHub(
   hubId: string,
 ): Promise<AxiosResponse<any>> {

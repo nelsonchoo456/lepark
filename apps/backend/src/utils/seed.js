@@ -1,4 +1,5 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
+const { trainModelsForAllHubs } = require('../models/irrigationRandomForestModel.js');
 const {
   parksData,
   zonesData,
@@ -563,6 +564,9 @@ async function seed() {
   }
   console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
 
+  console.log(`Training predictive rainfall models...`);
+  await trainModelsForActiveHubs()
+
   //console.log('Seeding decarbonization areas...');
   const decarbonizationAreaList = [];
   for (const area of decarbonizationAreasData) {
@@ -938,11 +942,17 @@ const createReading = (sensorType, date, rainfallAmount) => {
   };
 };
 
-seed()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+async function trainModelsForActiveHubs() {
+  const hubs = await prisma.hub.findMany({ where: { hubStatus: "ACTIVE" }});
+  await trainModelsForAllHubs(hubs);
+}
+
+// seed()
+//   .catch((e) => {
+//     console.error(e);
+//     process.exit(1);
+//   })
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });
+trainModelsForActiveHubs()
