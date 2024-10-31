@@ -442,3 +442,61 @@ export async function getUnhealthyOccurrences(zoneId: number): Promise<AxiosResp
     }
   }
 }
+
+// Crowd Prediction Routes
+
+export async function predictCrowdLevels(parkId: number, daysToPredict: number): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/predictCrowdLevels/${parkId}/${daysToPredict}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAggregatedCrowdDataForPark(parkId: number, startDate: Date, endDate: Date): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/getAggregatedCrowdDataForPark/${parkId}/${startDate}/${endDate}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getAllSensorReadingsByParkIdAndSensorType(
+  parkId: number,
+  sensorType: SensorTypeEnum,
+): Promise<AxiosResponse<SensorReadingResponse[]>> {
+  try {
+    const response: AxiosResponse<SensorReadingResponse[]> = await client.get(`${URL}/getAllSensorReadingsByParkIdAndSensorType/${parkId}/${sensorType}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getPredictedCrowdLevelsForPark(parkId: number, pastPredictedDays: number): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/getPredictedCrowdLevelsForPark/${parkId}/${pastPredictedDays}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+

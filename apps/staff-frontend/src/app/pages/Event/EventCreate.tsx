@@ -117,14 +117,33 @@ const EventCreate = () => {
     form.setFieldsValue({ facilityId: undefined }); // Reset facility selection
   };
 
+  const dateToSGT = (date: moment.Moment, isEndDate: boolean = false) => {
+    return moment.tz(date.format('YYYY-MM-DD'), 'Asia/Singapore')[isEndDate ? 'endOf' : 'startOf']('day');
+  };
+
+  const onDateRangeChange = (dates: [moment.Moment, moment.Moment] | null) => {
+    setSelectedDateRange(dates);
+    if (dates) {
+      const startDateSGT = dateToSGT(dates[0]);
+      const endDateSGT = dateToSGT(dates[1], true);
+      // console.log('Start Date (SGT):', startDateSGT.format('YYYY-MM-DD HH:mm:ss'));
+      // console.log('End Date (SGT):', endDateSGT.format('YYYY-MM-DD HH:mm:ss'));
+    }
+    // Clear the timeRange field when dates change
+    form.setFieldsValue({ timeRange: undefined });
+  };
+
   const disabledDate = (current: moment.Moment) => {
     // Can't select days before today and today
-    if (current && current < moment().endOf('day')) {
+    if (current && current < moment().tz('Asia/Singapore').endOf('day')) {
       return true;
     }
-
+  
     // Check if the date is in the bookedDates array
-    return bookedDates.some((bookedDate) => bookedDate.isSame(current, 'day'));
+    console.log('bookedDates', bookedDates);
+    return bookedDates.some((bookedDate) => 
+      current.isSame(moment(bookedDate).tz('Asia/Singapore'), 'day')
+    );
   };
 
   const selectedDayOperatingHours = useMemo(() => {
@@ -183,11 +202,11 @@ const EventCreate = () => {
     };
   }, [operatingHours, selectedDateRange]);
 
-  const onDateRangeChange = (dates: [moment.Moment, moment.Moment] | null) => {
-    setSelectedDateRange(dates);
-    // Clear the timeRange field when dates change
-    form.setFieldsValue({ timeRange: undefined });
-  };
+  // const onDateRangeChange = (dates: [moment.Moment, moment.Moment] | null) => {
+  //   setSelectedDateRange(dates);
+  //   // Clear the timeRange field when dates change
+  //   form.setFieldsValue({ timeRange: undefined });
+  // };
 
   const disabledTime = (current: moment.Moment, type: 'start' | 'end') => {
     if (!selectedDayOperatingHours) return {};
@@ -224,15 +243,21 @@ const EventCreate = () => {
       const values = await form.validateFields();
       const { dateRange, timeRange, parkId, ...rest } = values;
 
-      const startDateTime = dateRange[0].clone().hour(timeRange[0].hour()).minute(timeRange[0].minute()).second(0);
-      const endDateTime = dateRange[1].clone().hour(timeRange[1].hour()).minute(timeRange[1].minute()).second(0);
+      const startDateTime = dateToSGT(dateRange[0])
+        .hour(timeRange[0].hour())
+        .minute(timeRange[0].minute())
+        .second(0);
+      const endDateTime = dateToSGT(dateRange[1], true)
+        .hour(timeRange[1].hour())
+        .minute(timeRange[1].minute())
+        .second(0);
 
       const finalData = {
         ...rest,
-        startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        startDate: startDateTime.format(),
+        endDate: endDateTime.format(),
+        startTime: startDateTime.format(),
+        endTime: endDateTime.format(),
         status: EventStatusEnum.UPCOMING,
       };
 

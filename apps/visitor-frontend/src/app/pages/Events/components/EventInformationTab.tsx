@@ -1,4 +1,4 @@
-import { Descriptions, Tag } from 'antd';
+import { Descriptions, Tag, Typography } from 'antd';
 import { EventResponse, EventStatusEnum, EventTypeEnum, EventSuitabilityEnum } from '@lepark/data-access';
 import moment from 'moment';
 import { AiOutlineCheck, AiOutlineClose } from 'react-icons/ai';
@@ -17,19 +17,13 @@ const EventInformationTab = ({ event }: { event: EventResponse }) => {
     if (typeof value === 'boolean') {
       return value ? <AiOutlineCheck className="text-green-500" /> : <AiOutlineClose className="text-red-500" />;
     }
+    if (key === 'type' || key === 'suitability') {
+      return formatEnumLabelToRemoveUnderscores(value);
+    }
     return value;
   };
 
-  const excludeKeys = [
-    'id',
-    'images',
-    'description',
-    'title',
-    'facilityId',
-    'status',
-    'endTime',
-    'startTime',
-  ];
+  const excludeKeys = ['id', 'images', 'description', 'title', 'facilityId', 'status', 'endTime', 'startTime'];
 
   const descriptionsItems = Object.entries(event)
     .filter(([key]) => !excludeKeys.includes(key))
@@ -41,6 +35,17 @@ const EventInformationTab = ({ event }: { event: EventResponse }) => {
 
   return (
     <div>
+      <div>
+        <Typography.Paragraph
+          ellipsis={{
+            rows: 3,
+            expandable: true,
+            symbol: 'more',
+          }}
+        >
+          {event?.description}
+        </Typography.Paragraph>
+      </div>
       <Descriptions
         items={[
           ...descriptionsItems,

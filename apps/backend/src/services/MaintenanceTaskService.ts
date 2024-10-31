@@ -19,6 +19,7 @@ import { fromZodError } from 'zod-validation-error';
 import { StaffRoleEnum } from '@prisma/client';
 import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
+import { getAugumentedDataset } from '../utils/holtwinters';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -371,6 +372,9 @@ class MaintenanceTaskService {
         completedDate: new Date(),
         updatedAt: new Date(),
       });
+      if (updatedTask) {
+        await this.predictAndUpdateNextMaintenanceDates(maintenanceTask);
+      }
     } else {
       updatedTask = await MaintenanceTaskDao.updateMaintenanceTask(id, {
         taskStatus: newStatus,
@@ -678,6 +682,57 @@ class MaintenanceTaskService {
     );
 
     return taskTypeAverageOverdueRates;
+  }
+
+  public async predictAndUpdateNextMaintenanceDates(maintenanceTask: MaintenanceTask): Promise<void> {
+    let associatedEntity: any;
+    let entityType: 'ParkAsset' | 'Sensor' | 'Hub';
+    if (maintenanceTask.parkAssetId) {
+      associatedEntity = await ParkAssetDao.getParkAssetById(maintenanceTask.parkAssetId);
+      entityType = 'ParkAsset';
+    } else if (maintenanceTask.sensorId) {
+      associatedEntity = await SensorDao.getSensorById(maintenanceTask.sensorId);
+      entityType = 'Sensor';
+    } else if (maintenanceTask.hubId) {
+      associatedEntity = await HubDao.getHubById(maintenanceTask.hubId);
+      entityType = 'Hub';
+    }
+
+    if (!associatedEntity) {
+      return;
+    }
+    const completedTasks = await MaintenanceTaskDao.getCompletedMaintenanceTasksByEntityId(associatedEntity.id, entityType);
+    const completedDates = completedTasks.map((task) => task.completedDate).sort((a, b) => a.getTime() - b.getTime());
+    console.log('completedDates:', completedDates);
+
+    if (completedDates.length < 2) {
+      return;
+    }
+
+    const intervals = completedDates
+      .slice(1)
+      .map((date, index) => Math.round((date.getTime() - completedDates[index].getTime()) / (1000 * 60 * 60 * 24)));
+    console.log('intervals:', intervals);
+    const predictions = getAugumentedDataset(intervals, 8); // Ensure `m` is set to 8
+    console.log('predictions:', predictions);
+
+    const nextMaintenanceDates = [];
+    let currentDate = new Date(completedDates[completedDates.length - 1]);
+
+    predictions.augumentedDataset.forEach((interval) => {
+      currentDate = new Date(currentDate.getTime() + interval * 24 * 60 * 60 * 1000); // Add interval days to current date
+      nextMaintenanceDates.push(new Date(currentDate));
+    });
+    console.log('nextMaintenanceDates:', nextMaintenanceDates);
+    const nextMaintenanceDate = nextMaintenanceDates[0];
+
+    if (entityType === 'ParkAsset') {
+      await ParkAssetDao.updateParkAsset(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    } else if (entityType === 'Sensor') {
+      await SensorDao.updateSensor(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    } else if (entityType === 'Hub') {
+      await HubDao.updateHubDetails(associatedEntity.id, { nextMaintenanceDate, nextMaintenanceDates });
+    }
   }
 }
 

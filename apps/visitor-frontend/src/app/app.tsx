@@ -48,6 +48,14 @@ import FAQList from './pages/FAQ/FAQList';
 import FAQView from './pages/FAQ/FAQView';
 
 import FailedPage from './pages/Attractions/FailedPage';
+import ViewEventTicketListings from './pages/Events/ViewEventListings';
+import EventPaymentPage from './pages/Events/PaymentPageEvents';
+import EventCompletionPage from './pages/Events/EventCompletionPage';
+import EventSuccessPage from './pages/Events/EventSuccessPage';
+import EventFailedPage from './pages/Events/EventFailedPage';
+import EventTransactionDetails from './pages/Profile/ViewEventTransactionDetails';
+import ViewEventTransactions from './pages/Profile/ViewEventTransactions';
+import EventTicketDetails from './pages/Profile/EventTicketDetails';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -202,10 +210,74 @@ export function App() {
                 <Route path="/event">
                   <Route path="park/:parkId" element={<EventsPerPark />} />
                   <Route path=":eventId" element={<VisitorViewEventDetails />} />
+                  <Route
+                    path=":eventId/listings"
+                    element={
+                      <ProtectedRoute redirectTo="/login">
+                        <ViewEventTicketListings />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
+                <Route
+                  path="/event-payment"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventPaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-payment-completion/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventCompletionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-success"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventSuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-failed"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventFailedPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-transaction/:transactionId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventTransactionDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-transaction"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <ViewEventTransactions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/event-transaction/:transactionId/tickets"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <EventTicketDetails />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/faq">
-                  <Route index element={<FAQList/>}/>
-                  <Route path=":faqId" element={<FAQView/>}/>
+                  <Route index element={<FAQList />} />
+                  <Route path=":faqId" element={<FAQView />} />
                 </Route>
               </Route>
             </Routes>

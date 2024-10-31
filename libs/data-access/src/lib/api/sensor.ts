@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { SensorData, SensorResponse, SensorUpdateData } from '../types/sensor';
 import client from './client';
-import { MaintenanceHistoryResponse } from '../types/maintenancehistory';
+import { MaintenanceTaskResponse } from '@lepark/data-access';
 
 const URL = '/sensors';
 
@@ -208,9 +208,9 @@ export async function removeSensorFromHub(id: string): Promise<AxiosResponse<Sen
   }
 }
 
-export async function getMaintenanceHistoryBySensorId(sensorId: string): Promise<AxiosResponse<MaintenanceHistoryResponse[]>> {
+export async function getMaintenanceTaskBySensorId(sensorId: string): Promise<AxiosResponse<MaintenanceTaskResponse[]>> {
   try {
-    const response: AxiosResponse<MaintenanceHistoryResponse[]> = await client.get(`${URL}/getMaintenanceHistory/${sensorId}`);
+    const response: AxiosResponse<MaintenanceTaskResponse[]> = await client.get(`${URL}/getMaintenanceTask/${sensorId}`);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

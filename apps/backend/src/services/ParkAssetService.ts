@@ -221,14 +221,11 @@ function ensureAllFieldsPresent(data: ParkAssetSchemaType): Prisma.ParkAssetCrea
 }
 
 const dateFormatter = (data: any) => {
-  const { acquisitionDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const { acquisitionDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
   if (acquisitionDate) {
     formattedData.acquisitionDate = new Date(acquisitionDate);
-  }
-  if (lastMaintenanceDate) {
-    formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
   }
   if (nextMaintenanceDate) {
     formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);

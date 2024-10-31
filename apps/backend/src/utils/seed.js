@@ -27,11 +27,15 @@ const {
   announcementsData,
   attractionTransactionLocalData,
   attractionTransactionStandardData,
+  eventTicketListingsData,
+  eventTransactionLocalData,
+  eventTransactionStandardData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
+const moment = require('moment-timezone');
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -318,6 +322,7 @@ async function seed() {
   console.log(`Total facilities seeded: ${facilityList.length}\n`);
 
   const storeroomId = facilityList[7].id;
+  const storeroomBAMKPId = facilityList[9].id;
 
   const hubList = [];
   for (const hub of hubsData) {
@@ -378,7 +383,21 @@ async function seed() {
     });
     eventList.push(createdEvent);
   }
-  console.log(`Total events seeded: ${eventList.length}\n`);
+
+  const eventTicketListingsList = [];
+
+  for (const event of eventList) {
+    const currentListings = [];
+    for (const listing of eventTicketListingsData) {
+      listing.eventId = event.id;
+      const eventListing = await prisma.eventTicketListing.create({
+        data: listing,
+      });
+      currentListings.push(eventListing);
+    }
+    eventTicketListingsList.push(currentListings);
+  }
+  console.log(`Total events (with listings) seeded: ${eventList.length}\n`);
 
   const attractionList = [];
   for (const attraction of attractionsData) {
@@ -388,7 +407,7 @@ async function seed() {
     attractionList.push(createdAttraction);
   }
 
-  const attractionListingsList = [];
+  const attractionTicketListingsList = [];
 
   for (const attraction of attractionList) {
     const currentListings = [];
@@ -399,9 +418,503 @@ async function seed() {
       });
       currentListings.push(attractionListing);
     }
-    attractionListingsList.push(currentListings);
+    attractionTicketListingsList.push(currentListings);
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
+
+  // Fixed arrays of dates with varying intervals for maintenance tasks
+  const fixedDates1 = [
+    '2010-12-05', // Rainy season
+    //'2010-12-25', // Rainy season
+    '2011-01-13', // Rainy season
+    '2011-01-30', // Rainy season
+    '2011-03-02',
+    '2011-04-11',
+    '2011-06-05', // Rainy season
+    '2011-07-02', // Rainy season
+    '2011-08-02',
+    '2011-10-11',
+    '2011-12-01', // Rainy season
+    //'2011-12-23', // Rainy season
+    '2012-01-12', // Rainy season
+    '2012-01-25', // Rainy season
+    '2012-02-01',
+    '2012-04-23',
+    '2012-06-01', // Rainy season
+    '2012-07-05', // Rainy season
+    '2012-08-10',
+    '2012-10-15',
+    '2012-12-02', // Rainy season
+    '2012-12-25', // Rainy season
+    //'2013-01-10', // Rainy season
+    '2013-01-23', // Rainy season
+    '2013-02-15',
+    '2013-04-28',
+    '2013-06-05', // Rainy season
+    '2013-07-01', // Rainy season
+    '2013-08-01',
+    '2013-10-02',
+    '2013-12-02', // Rainy season
+    //'2013-12-25', // Rainy season
+    '2014-01-15', // Rainy season
+    '2014-01-31', // Rainy season
+    '2014-03-05',
+    '2014-04-18',
+    '2014-06-02', // Rainy season
+    '2014-07-01', // Rainy season
+    '2014-08-04',
+    '2014-10-10',
+    '2014-12-05', // Rainy season
+    //'2014-12-25', // Rainy season
+    '2015-01-13', // Rainy season
+    '2015-01-30', // Rainy season
+    '2015-03-02',
+    '2015-04-11',
+    '2015-06-05', // Rainy season
+    '2015-07-02', // Rainy season
+    '2015-08-02',
+    '2015-10-11',
+    '2015-12-01', // Rainy season
+    //'2015-12-23', // Rainy season
+    '2016-01-12', // Rainy season
+    '2016-01-25', // Rainy season
+    '2016-02-01',
+    '2016-04-23',
+    '2016-06-01', // Rainy season
+    '2016-07-05', // Rainy season
+    '2016-08-10',
+    '2016-10-15',
+    '2016-12-02', // Rainy season
+    '2016-12-25', // Rainy season
+    //'2017-01-10', // Rainy season
+    '2017-01-23', // Rainy season
+    '2017-02-15',
+    '2017-04-28',
+    '2017-06-05', // Rainy season
+    '2017-07-01', // Rainy season
+    '2017-08-01',
+    '2017-10-02',
+    '2017-12-02', // Rainy season
+    //'2017-12-25', // Rainy season
+    '2018-01-15', // Rainy season
+    '2018-01-31', // Rainy season
+    '2018-03-05',
+    '2018-04-18',
+    '2018-06-02', // Rainy season
+    '2018-07-01', // Rainy season
+    '2018-08-04',
+    '2018-10-10',
+    '2018-12-05', // Rainy season
+    //'2018-12-25', // Rainy season
+    '2019-01-13', // Rainy season
+    '2019-01-30', // Rainy season
+    '2019-03-02',
+    '2019-04-11',
+    '2019-06-05', // Rainy season
+    '2019-07-02', // Rainy season
+    '2019-08-02',
+    '2019-10-11',
+    '2019-12-01', // Rainy season
+    //'2019-12-23', // Rainy season
+    '2020-01-12', // Rainy season
+    '2020-01-25', // Rainy season
+    '2020-02-01',
+    '2020-04-23',
+    '2020-06-01', // Rainy season
+    '2020-07-05', // Rainy season
+    '2020-08-10',
+    '2020-10-15',
+    '2020-12-02', // Rainy season
+    '2020-12-25', // Rainy season
+    //'2021-01-10', // Rainy season
+    '2021-01-23', // Rainy season
+    '2021-02-15',
+    '2021-04-28',
+    '2021-06-05', // Rainy season
+    '2021-07-01', // Rainy season
+    '2021-08-01',
+    '2021-10-02',
+    '2021-12-02', // Rainy season
+    //'2021-12-25', // Rainy season
+    '2022-01-15', // Rainy season
+    '2022-01-31', // Rainy season
+    '2022-03-05',
+    '2022-04-18',
+    '2022-06-02', // Rainy season
+    '2022-07-01', // Rainy season
+    '2022-08-04',
+    '2022-10-10',
+    '2022-12-05', // Rainy season
+    //'2022-12-25', // Rainy season
+    '2023-01-13', // Rainy season
+    '2023-01-31', // Rainy season
+    '2023-03-05',
+    '2023-04-18',
+    '2023-06-02', // Rainy season
+    '2023-07-01', // Rainy season
+    '2023-08-04',
+    '2023-10-10',
+    '2023-12-05', // Rainy season
+    //'2023-12-25', // Rainy season
+    '2024-01-13', // Rainy season
+    '2024-01-31', // Rainy season
+    '2024-03-05',
+    '2024-04-18',
+    '2024-06-02', // Rainy season
+    '2024-07-01', // Rainy season
+    '2024-08-04',
+    '2024-10-10',
+  ];
+
+  const fixedDates2 = [
+    '2010-12-01', // Rainy season
+    '2010-12-27', // Rainy season
+    //'2011-01-12', // Rainy season
+    '2011-01-20', // Rainy season
+    '2011-03-11',
+    '2011-04-20',
+    '2011-06-23', // Rainy season
+    '2011-08-26',
+    '2011-10-01',
+    '2011-12-15', // Rainy season
+    '2011-12-29', // Rainy season
+    //'2012-01-10', // Rainy season
+    '2012-01-25', // Rainy season
+    '2012-03-01',
+    '2012-04-10',
+    '2012-06-15', // Rainy season
+    '2012-08-03',
+    '2012-10-17',
+    '2012-12-02', // Rainy season
+    '2012-12-29', // Rainy season
+    '2013-01-05', // Rainy season
+    '2013-01-18', // Rainy season
+    '2013-03-10',
+    '2013-04-22',
+    '2013-06-07', // Rainy season
+    '2013-08-08',
+    '2013-10-15',
+    '2013-12-01', // Rainy season
+    '2013-12-25', // Rainy season
+    //'2014-01-12', // Rainy season
+    '2014-01-20', // Rainy season
+    '2014-03-12',
+    '2014-04-21',
+    '2014-06-02', // Rainy season
+    '2014-08-01',
+    '2014-10-12',
+    '2014-12-12', // Rainy season
+    '2014-12-28', // Rainy season
+    //'2015-01-10', // Rainy season
+    '2015-01-20', // Rainy season
+    '2015-03-11',
+    '2015-04-20',
+    '2015-06-23', // Rainy season
+    '2015-08-26',
+    '2015-10-01',
+    '2015-12-01', // Rainy season
+    '2015-12-27', // Rainy season
+    //'2016-01-12', // Rainy season
+    '2016-01-20', // Rainy season
+    '2016-03-18',
+    '2016-04-21',
+    '2016-06-10', // Rainy season
+    '2016-08-02',
+    '2016-10-02',
+    '2016-12-12', // Rainy season
+    '2016-12-25', // Rainy season
+    '2017-01-10', // Rainy season
+    '2017-01-21', // Rainy season
+    '2017-02-17',
+    '2017-04-01',
+    '2017-06-23', // Rainy season
+    '2017-09-15',
+    '2017-10-01',
+    '2017-11-28', // Rainy season
+    '2017-12-10', // Rainy season
+    //'2018-01-01', // Rainy season
+    '2018-01-20', // Rainy season
+    '2018-02-14',
+    '2018-04-05',
+    '2018-06-10', // Rainy season
+    '2018-09-05',
+    '2018-10-11',
+    '2018-12-10', // Rainy season
+    '2018-12-23', // Rainy season
+    //'2019-01-12', // Rainy season
+    '2019-01-20', // Rainy season
+    '2019-03-08',
+    '2019-04-20',
+    '2019-06-15', // Rainy season
+    '2019-08-01',
+    '2019-10-06',
+    '2019-12-11', // Rainy season
+    '2019-12-25', // Rainy season
+    //'2020-01-12', // Rainy season
+    '2020-01-20', // Rainy season
+    '2020-03-18',
+    '2020-04-21',
+    '2020-06-10', // Rainy season
+    '2020-08-02',
+    '2020-10-02',
+    '2020-12-12', // Rainy season
+    '2020-12-25', // Rainy season
+    '2021-01-10', // Rainy season
+    '2021-01-21', // Rainy season
+    '2021-02-17',
+    '2021-04-01',
+    '2021-06-23', // Rainy season
+    '2021-09-15',
+    '2021-10-01',
+    '2021-11-28', // Rainy season
+    '2021-12-10', // Rainy season
+    //'2022-01-01', // Rainy season
+    '2022-01-20', // Rainy season
+    '2022-02-14',
+    '2022-04-05',
+    '2022-06-10', // Rainy season
+    '2022-09-05',
+    '2022-10-11',
+    '2022-12-10', // Rainy season
+    '2022-12-23', // Rainy season
+    //'2023-01-12', // Rainy season
+    '2023-01-20', // Rainy season
+    '2023-03-08',
+    '2023-04-20',
+    '2023-06-15', // Rainy season
+    '2023-08-01',
+    '2023-10-06',
+    '2023-12-11', // Rainy season
+    '2023-12-25', // Rainy season
+    //'2024-01-12', // Rainy season
+    '2024-01-20', // Rainy season
+    '2024-03-08',
+    '2024-04-20',
+    '2024-06-15', // Rainy season
+    '2024-08-01',
+    '2024-10-06',
+  ];
+
+  const fixedDates3 = [
+    '2010-12-11', // Rainy season
+    '2010-12-25', // Rainy season
+    //'2011-01-12', // Rainy season
+    '2011-01-20', // Rainy season
+    '2011-03-18',
+    '2011-04-21',
+    '2011-06-10', // Rainy season
+    '2011-08-02',
+    '2011-10-02',
+    '2011-12-12', // Rainy season
+    '2011-12-25', // Rainy season
+    '2012-01-10', // Rainy season
+    '2012-01-21', // Rainy season
+    '2012-02-17',
+    '2012-04-01',
+    '2012-06-23', // Rainy season
+    '2012-09-15',
+    '2012-10-01',
+    '2012-11-28', // Rainy season
+    '2012-12-10', // Rainy season
+    //'2013-01-01', // Rainy season
+    '2013-01-20', // Rainy season
+    '2013-02-14',
+    '2013-04-05',
+    '2013-06-10', // Rainy season
+    '2013-09-05',
+    '2013-10-11',
+    '2013-12-10', // Rainy season
+    '2013-12-23', // Rainy season
+    //'2014-01-12', // Rainy season
+    '2014-01-20', // Rainy season
+    '2014-03-08',
+    '2014-04-20',
+    '2014-06-15', // Rainy season
+    '2014-08-01',
+    '2014-10-06',
+    '2014-12-11', // Rainy season
+    '2014-12-25', // Rainy season
+    //'2015-01-12', // Rainy season
+    '2015-01-20', // Rainy season
+    '2015-03-18',
+    '2015-04-21',
+    '2015-06-10', // Rainy season
+    '2015-08-02',
+    '2015-10-02',
+    '2015-12-12', // Rainy season
+    '2015-12-25', // Rainy season
+    '2016-01-10', // Rainy season
+    '2016-01-21', // Rainy season
+    '2016-02-17',
+    '2016-04-01',
+    '2016-06-23', // Rainy season
+    '2016-09-15',
+    '2016-10-01',
+    '2016-11-28', // Rainy season
+    '2016-12-10', // Rainy season
+    //'2017-01-01', // Rainy season
+    '2017-01-20', // Rainy season
+    '2017-02-14',
+    '2017-04-05',
+    '2017-06-10', // Rainy season
+    '2017-09-05',
+    '2017-10-11',
+    '2017-12-10', // Rainy season
+    '2017-12-23', // Rainy season
+    //'2018-01-12', // Rainy season
+    '2018-01-20', // Rainy season
+    '2018-03-08',
+    '2018-04-20',
+    '2018-06-15', // Rainy season
+    '2018-08-01',
+    '2018-10-06',
+    '2018-12-11', // Rainy season
+    '2018-12-25', // Rainy season
+    //'2019-01-12', // Rainy season
+    '2019-01-20', // Rainy season
+    '2019-03-18',
+    '2019-04-21',
+    '2019-06-10', // Rainy season
+    '2019-08-02',
+    '2019-10-02',
+    '2019-12-12', // Rainy season
+    '2019-12-25', // Rainy season
+    '2020-01-10', // Rainy season
+    '2020-01-21', // Rainy season
+    '2020-02-17',
+    '2020-04-01',
+    '2020-06-23', // Rainy season
+    '2020-09-15',
+    '2020-10-01',
+    '2020-11-28', // Rainy season
+    '2020-12-10', // Rainy season
+    //'2021-01-01', // Rainy season
+    '2021-01-20', // Rainy season
+    '2021-02-14',
+    '2021-04-05',
+    '2021-06-10', // Rainy season
+    '2021-09-05',
+    '2021-10-11',
+    '2021-12-10', // Rainy season
+    '2021-12-23', // Rainy season
+    //'2022-01-12', // Rainy season
+    '2022-01-20', // Rainy season
+    '2022-03-08',
+    '2022-04-20',
+    '2022-06-15', // Rainy season
+    '2022-08-01',
+    '2022-10-06',
+    '2022-12-11', // Rainy season
+    '2022-12-25', // Rainy season
+    //'2023-01-12', // Rainy season
+    '2023-01-20', // Rainy season
+    '2023-03-08',
+    '2023-04-20',
+    '2023-06-15', // Rainy season
+    '2023-08-01',
+    '2023-10-06',
+    '2023-12-11', // Rainy season
+    '2023-12-25', // Rainy season
+    //'2024-01-12', // Rainy season
+    '2024-01-20', // Rainy season
+    '2024-03-08',
+    '2024-04-20',
+    '2024-06-15', // Rainy season
+    '2024-08-01',
+    '2024-10-06',
+  ];
+
+  // Function to generate mock maintenance Task data with fixed dates
+  function generateMockMaintenanceTask(assetId, fixedDates) {
+    console.log(`Generating mock maintenance entries for asset ${assetId}`);
+
+    const tasks = fixedDates.map((date, index) => ({
+      title: `Maintenance Task #${index + 1} for ${assetId}`,
+      description: `Completed maintenance task #${index + 1} for ${assetId}.`,
+      taskStatus: 'COMPLETED',
+      taskType: 'INSPECTION',
+      taskUrgency: 'NORMAL',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(date),
+      completedDate: new Date(date),
+      images: ['https://example.com/maintenance-task-image.jpg'],
+      remarks: `Remarks for maintenance task #${index + 1}.`,
+      position: index + 1,
+    }));
+
+    console.log('Mock tasks generated with fixed dates');
+    return tasks;
+  }
+
+  // Generate completed maintenance tasks for the sensor with title SE-22222
+  const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
+  if (sensor) {
+    const maintenanceTasks = generateMockMaintenanceTask(sensor.identifierNumber, fixedDates1);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        position: task.position,
+        sensor: { connect: { serialNumber: sensor.serialNumber } },
+      });
+    });
+  }
+
+  // Generate completed maintenance tasks for the hub with title HB-11111
+  const hub = hubsData.find((h) => h.identifierNumber === 'HB-11111');
+  if (hub) {
+    const maintenanceTasks = generateMockMaintenanceTask(hub.identifierNumber, fixedDates2);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        position: task.position,
+        hub: { connect: { serialNumber: hub.serialNumber } },
+      });
+    });
+  }
+
+  // Generate completed maintenance tasks for the park asset with title HP-HR2515DK
+  const parkAsset = parkAssetsData.find((p) => p.identifierNumber === 'HP-HR2515DK');
+  if (parkAsset) {
+    const maintenanceTasks = generateMockMaintenanceTask(parkAsset.identifierNumber, fixedDates3);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        position: task.position,
+        parkAsset: { connect: { serialNumber: parkAsset.serialNumber } },
+      });
+    });
+  }
 
   const maintenanceTasksList = [];
   for (const maintenanceTask of maintenanceTasksData) {
@@ -531,16 +1044,28 @@ async function seed() {
 
   // Create the new hub
   let createdNewHubs = [];
+  let countHubs = 0;
   for (const newHub of newHubs) {
-    const createdNewHub = await prisma.hub.create({
-      data: {
-        ...newHub,
-        facilityId: storeroomId, // or any other appropriate facilityId
-      },
-    });
-    createdNewHubs.push(createdNewHub);
-    console.log(`New hub created: ${createdNewHub.name}\n`);
+    if (countHubs < 2) {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    } else {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    }
+    countHubs++;
   }
+  console.log(`Total new hubs created: ${createdNewHubs.length}\n`);
 
   // Create new sensors and associate them with the new hub
   let count = 0;
@@ -554,7 +1079,7 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
-    } else {
+    } else if (count < 9) {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
@@ -563,17 +1088,35 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
+    } else {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[2].id,
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
     }
     count++;
   }
-  console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
+  console.log(`Total new sensors created and associated with the new hub: ${sensorList.length}\n`);
 
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
-    const readings = generateMockReadings(sensor.sensorType).map((reading) => ({
-      ...reading,
-      sensorId: sensor.id,
-    }));
+    let readings;
+    if (sensor.sensorType === 'CAMERA') {
+      if (sensor.identifierNumber === 'SE-9999X') {
+        readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
+      } else {
+        readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
+      }
+    } else {
+      readings = generateMockReadings(sensor.sensorType).map((reading) => ({
+        ...reading,
+        sensorId: sensor.id,
+      }));
+    }
 
     await prisma.sensorReading.createMany({
       data: readings,
@@ -658,7 +1201,7 @@ async function seed() {
   const transactionList = [];
   const aaronId = visitorList[1].id;
   const flowerDomeId = attractionList[2].id;
-  const flowerDomeListings = attractionListingsList[2];
+  const flowerDomeListings = attractionTicketListingsList[2];
   for (const transaction of attractionTransactionLocalData) {
     transaction.visitorId = aaronId;
     transaction.attractionId = flowerDomeId;
@@ -758,6 +1301,110 @@ async function seed() {
   }
 
   console.log(`Total attraction transactions seeded: ${transactionList.length}\n`);
+
+  const eventTransactionList = [];
+  const wildlifeTalkEventId = eventList[0].id;
+  const wildlifeTalkEventListings = eventTicketListingsList[0];
+
+  for (const transaction of eventTransactionLocalData) {
+    transaction.visitorId = aaronId;
+    transaction.eventId = wildlifeTalkEventId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = wildlifeTalkEventListings[i].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.eventTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.eventTicketTransaction.create({
+        data: {
+          ...transactionData,
+          eventTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                eventTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          eventTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    eventTransactionList.push(result);
+  }
+
+  for (const transaction of eventTransactionStandardData) {
+    transaction.visitorId = aaronId;
+    transaction.eventId = wildlifeTalkEventId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = wildlifeTalkEventListings[i + 4].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.eventTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.eventTicketTransaction.create({
+        data: {
+          ...transactionData,
+          eventTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                eventTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          eventTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    eventTransactionList.push(result);
+  }
+
+  console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -866,6 +1513,168 @@ const createReading = (sensorType, date) => {
     value: parseFloat(value.toFixed(2)),
   };
 };
+
+function generateMockCrowdDataForSBG(sensorId, days) {
+  const readings = [];
+  const now = moment().tz('Asia/Singapore');
+  const startDate = moment(now).subtract(days, 'days').startOf('day');
+
+  // Generate random events
+  const events = [];
+  for (let i = 0; i < Math.floor(days / 10); i++) {
+    const eventDay = Math.floor(Math.random() * days);
+    events.push(moment(startDate).add(eventDay, 'days').toDate());
+  }
+
+  for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
+    const hour = time.hour();
+    const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    let baseCrowdLevel = 40 + Math.random() * 30; // Base level
+
+    // Day of week effect
+    switch (day) {
+      case 0: // Sunday
+      case 6: // Saturday
+        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        break;
+      case 1: // Monday
+        baseCrowdLevel *= 0.6 + Math.random() * 0.2; // Less crowded Mondays
+        break;
+      case 5: // Friday
+        baseCrowdLevel *= 1.2 + Math.random() * 0.3; // More crowded Fridays
+        break;
+      default: // Tuesday to Thursday
+        baseCrowdLevel *= 1 + Math.random() * 0.2; // Slight variation for weekdays
+    }
+
+    // Time of day effect
+    if (hour >= 6 && hour < 9) {
+      baseCrowdLevel *= 1.8 + Math.random() * 0.4;
+    } else if (hour >= 12 && hour < 14) {
+      baseCrowdLevel *= 1.6 + Math.random() * 0.3;
+    } else if (hour >= 17 && hour < 21) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    } else if (hour >= 22 || hour < 6) {
+      baseCrowdLevel *= 0.4 + Math.random() * 0.2;
+    }
+
+    // Weather effect
+    const weatherEffect = Math.random();
+    if (weatherEffect > 0.8) {
+      baseCrowdLevel *= 0.5;
+    } else if (weatherEffect > 0.6) {
+      baseCrowdLevel *= 0.8;
+    } else if (weatherEffect < 0.2) {
+      baseCrowdLevel *= 1.3;
+    }
+
+    // Special event effect
+    if (events.some((eventDate) => time.isSame(eventDate, 'day'))) {
+      const eventHourEffect = Math.abs(hour - 19) / 10;
+      baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
+    }
+
+    // Public holiday effect
+    if (Math.random() < 0.05) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    }
+
+    // Add random fluctuations
+    baseCrowdLevel += (Math.random() - 0.5) * 20;
+
+    // Ensure crowd level is within bounds, with a higher minimum
+    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+
+    readings.push({
+      date: time.toDate(),
+      value: crowdLevel,
+      sensorId: sensorId,
+    });
+  }
+
+  return readings;
+}
+
+function generateMockCrowdDataForBAMKP(sensorId, days) {
+  const readings = [];
+  const now = moment().tz('Asia/Singapore');
+  const startDate = moment(now).subtract(days, 'days').startOf('day');
+
+  // Generate random events
+  const events = [];
+  for (let i = 0; i < Math.floor(days / 10); i++) {
+    const eventDay = Math.floor(Math.random() * days);
+    events.push(moment(startDate).add(eventDay, 'days').toDate());
+  }
+
+  for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
+    const hour = time.hour();
+    const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    let baseCrowdLevel = 20 + Math.random() * 30; // base level
+
+    // Day of week effect
+    switch (day) {
+      case 0: // Sunday
+      case 6: // Saturday
+        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        break;
+      case 1: // Monday
+        baseCrowdLevel *= 0.5 + Math.random() * 0.2; // Less crowded Mondays
+        break;
+      case 5: // Friday
+        baseCrowdLevel *= 1.2 + Math.random() * 0.3; // More crowded Fridays
+        break;
+      default: // Tuesday to Thursday
+        baseCrowdLevel *= 1 + Math.random() * 0.2; // Slight variation for weekdays
+    }
+
+    // Time of day effect
+    if (hour >= 6 && hour < 9) {
+      baseCrowdLevel *= 1.8 + Math.random() * 0.4;
+    } else if (hour >= 12 && hour < 14) {
+      baseCrowdLevel *= 1.6 + Math.random() * 0.3;
+    } else if (hour >= 17 && hour < 21) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    } else if (hour >= 22 || hour < 6) {
+      baseCrowdLevel *= 0.4 + Math.random() * 0.2;
+    }
+
+    // Weather effect
+    const weatherEffect = Math.random();
+    if (weatherEffect > 0.8) {
+      baseCrowdLevel *= 0.5;
+    } else if (weatherEffect > 0.6) {
+      baseCrowdLevel *= 0.8;
+    } else if (weatherEffect < 0.2) {
+      baseCrowdLevel *= 1.3;
+    }
+
+    // Special event effect
+    if (events.some((eventDate) => time.isSame(eventDate, 'day'))) {
+      const eventHourEffect = Math.abs(hour - 19) / 10;
+      baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
+    }
+
+    // Public holiday effect
+    if (Math.random() < 0.05) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    }
+
+    // Add random fluctuations
+    baseCrowdLevel += (Math.random() - 0.5) * 20;
+
+    // Ensure crowd level is within bounds, with a higher minimum
+    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+
+    readings.push({
+      date: time.toDate(),
+      value: crowdLevel,
+      sensorId: sensorId,
+    });
+  }
+
+  return readings;
+}
 
 seed()
   .catch((e) => {
