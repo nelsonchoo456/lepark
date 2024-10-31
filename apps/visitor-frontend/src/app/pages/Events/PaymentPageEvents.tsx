@@ -1,0 +1,116 @@
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Typography, Card } from 'antd';
+import { LogoText } from '@lepark/common-ui';
+import { Elements } from '@stripe/react-stripe-js';
+import { Appearance, Stripe, StripeElementsOptions, loadStripe } from '@stripe/stripe-js';
+import EventStripeForm from './components/EventStripeForm';
+import { createPaymentIntent, getStripePublishableKey } from '@lepark/data-access';
+
+const { Title, Text } = Typography;
+
+interface PaymentPageProps {
+  eventName: string;
+  eventId: string;
+  selectedDate: string;
+  ticketDetails: {
+    id: string;
+    description: string;
+    quantity: number;
+    price: number;
+  }[];
+  subtotal: number;
+  discount: number;
+  totalPayable: number;
+}
+
+const EventPaymentPage: React.FC = () => {
+  const location = useLocation();
+  const { eventName, eventId, selectedDate, ticketDetails, subtotal, discount, totalPayable } = location.state as PaymentPageProps;
+
+  const [stripePromise, setStripePromise] = useState<Stripe | null>(null);
+  const [clientSecret, setClientSecret] = useState<string>('');
+  const [paymentIntentId, setPaymentIntentId] = useState<string>('');
+
+  const appearance: Appearance = {
+    theme: 'stripe',
+  };
+  const options: StripeElementsOptions | undefined = {
+    clientSecret,
+    appearance,
+  };
+
+  useEffect(() => {
+    const initializeStripeAndCreatePaymentIntent = async () => {
+      try {
+        // Initialize Stripe
+        const publishableKey = await getStripePublishableKey();
+        setStripePromise(await loadStripe(publishableKey));
+
+        // Create payment intent only if totalPayable is greater than 0
+        if (totalPayable > 0) {
+          const response = await createPaymentIntent(totalPayable);
+          setClientSecret(response.data.clientSecret);
+          setPaymentIntentId(response.data.id);
+        }
+      } catch (error) {
+        console.error('Error initializing Stripe or creating payment intent:', error);
+        // Handle error (e.g., show error message to user)
+      }
+    };
+
+    initializeStripeAndCreatePaymentIntent();
+  }, [totalPayable]);
+
+  return (
+    <div className="p-4 h-full overflow-auto">
+      <LogoText className="text-2xl font-semibold mb-4">Payment</LogoText>
+      <Card className="mb-4">
+        <Title level={4}>Order Summary</Title>
+        <Text>Event: {eventName}</Text>
+        <Text className="block">Date: {selectedDate}</Text>
+        <Title level={5} className="mt-4">
+          Tickets
+        </Title>
+        {ticketDetails.map((detail, index) => (
+          <Text key={index} className="block">
+            {detail.quantity} x {detail.description} - S${(detail.price * detail.quantity).toFixed(2)}
+          </Text>
+        ))}
+        <Text className="block mt-4">Subtotal: S${subtotal.toFixed(2)}</Text>
+        {discount > 0 && <Text className="block text-green-600">Discount: -S${discount.toFixed(2)}</Text>}
+        <Title level={4} className="mt-4">
+          Total Payable: S${totalPayable.toFixed(2)}
+        </Title>
+      </Card>
+      {totalPayable > 0 ? (
+        stripePromise && clientSecret ? (
+          <Elements options={options} stripe={stripePromise}>
+            <EventStripeForm
+              ticketDetails={ticketDetails}
+              totalPayable={totalPayable}
+              eventName={eventName}
+              selectedDate={selectedDate}
+              paymentIntentId={paymentIntentId}
+              eventId={eventId}
+            />
+          </Elements>
+        ) : (
+          <div>Loading payment form...</div>
+        )
+      ) : (
+        <EventStripeForm
+          ticketDetails={ticketDetails}
+          totalPayable={totalPayable}
+          eventName={eventName}
+          selectedDate={selectedDate}
+          paymentIntentId=""
+          eventId={eventId}
+          isFreeTicket={true}
+        />
+      )}
+    </div>
+  );
+};
+
+export default EventPaymentPage;

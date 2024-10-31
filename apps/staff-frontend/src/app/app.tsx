@@ -112,6 +112,7 @@ import AssetListMaintenanceSummary from './pages/Asset/AssetListMaintenanceSumma
 import ParkCrowdLevels from './pages/CrowdInsight/ParkCrowdLevels';
 import ParkCrowdLevelsCalendar from './pages/CrowdInsight/ParkCrowdLevelsCalendar';
 import CompareParkCrowdLevels from './pages/CrowdInsight/CompareParkCrowdLevels';
+import VerifyEventTicket from './pages/VerifyTicket/VerifyEventTicket';
 
 export function App() {
   return (
@@ -577,6 +578,16 @@ export function App() {
                     <>
                       <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
                       <VerifyTicket />
+                    </>
+                  }
+                />
+
+                <Route
+                  path="/verify-event-ticket/:ticketId"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                      <VerifyEventTicket />
                     </>
                   }
                 />

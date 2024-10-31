@@ -4,8 +4,43 @@ const prisma = new PrismaClient();
 
 class AttractionTicketDao {
   // AttractionTicketTransaction
-  async createAttractionTicketTransaction(data: Prisma.AttractionTicketTransactionCreateInput): Promise<AttractionTicketTransaction> {
-    return prisma.attractionTicketTransaction.create({ data });
+  async createAttractionTicketTransaction(
+    transactionData: Prisma.AttractionTicketTransactionCreateInput,
+    tickets: { listingId: string; quantity: number }[],
+  ): Promise<AttractionTicketTransaction> {
+    return prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.attractionTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      return prismaClient.attractionTicketTransaction.create({
+        data: {
+          ...transactionData,
+          attractionTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: AttractionTicketStatusEnum.VALID,
+                attractionTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          attractionTickets: true,
+        },
+      });
+    });
   }
 
   async getAttractionTicketTransactionById(id: string): Promise<AttractionTicketTransaction | null> {
