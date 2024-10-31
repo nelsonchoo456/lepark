@@ -167,7 +167,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
     } else if (initialValues?.parkAsset?.id) {
       url = `/parkasset/${initialValues.parkAsset.id}/edit`;
     } else if (initialValues?.sensor?.id) {
-      url = `/sensors/${initialValues.sensor.id}/edit`;
+      url = `/sensor/${initialValues.sensor.id}/edit`;
     } else if (initialValues?.hub?.id) {
       url = `/hubs/${initialValues.hub.id}/edit`;
     }

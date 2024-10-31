@@ -438,15 +438,31 @@ export function App() {
                 {/* Facility Routes */}
                 <Route path="/facilities">
                   <Route index element={<FacilityList />} />
+
                   <Route
                     element={
                       <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
                         redirectTo="/"
                       />
                     }
                   >
                     <Route path="create" element={<FacilityCreate />} />
+                  </Route>
+                  <Route
+                    element={
+                      <RoleProtectedRoute
+                        allowedRoles={[
+                          StaffType.SUPERADMIN,
+                          StaffType.MANAGER,
+                          StaffType.LANDSCAPE_ARCHITECT,
+                          StaffType.PARK_RANGER,
+                          StaffType.VENDOR_MANAGER,
+                        ]}
+                        redirectTo="/"
+                      />
+                    }
+                  >
                     <Route path=":facilityId/edit" element={<FacilityEdit />} />
                     <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
                   </Route>

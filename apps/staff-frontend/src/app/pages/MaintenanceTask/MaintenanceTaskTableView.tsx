@@ -584,7 +584,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       } else if (editedTask.parkAssetId) {
         url = `/parkasset/${editedTask.parkAssetId}/edit`;
       } else if (editedTask.sensorId) {
-        url = `/sensors/${editedTask.sensorId}/edit`;
+        url = `/sensor/${editedTask.sensorId}/edit`;
       } else if (editedTask.hubId) {
         url = `/hubs/${editedTask.hubId}/edit`;
       }

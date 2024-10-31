@@ -380,7 +380,7 @@ const MaintenanceTaskBoardView = ({
       } else if (movedTaskObjectId.type === 'parkAsset') {
         url = `/parkasset/${movedTaskObjectId.id}/edit`;
       } else if (movedTaskObjectId.type === 'sensor') {
-        url = `/sensors/${movedTaskObjectId.id}/edit`;
+        url = `/sensor/${movedTaskObjectId.id}/edit`;
       } else if (movedTaskObjectId.type === 'hub') {
         url = `/hubs/${movedTaskObjectId.id}/edit`;
       }
