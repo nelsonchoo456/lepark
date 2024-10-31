@@ -26,7 +26,6 @@ import {
   getParkAssetByIdentifierNumber,
   getHubByIdentifierNumber,
   getFacilityById,
-  getParkById,
 } from '@lepark/data-access';
 import { Button, Card, Form, Result, message, Divider, Input, Select, DatePicker, Radio, Avatar, Space } from 'antd';
 import { FaBuilding, FaTree, FaSatelliteDish, FaWifi, FaSearch } from 'react-icons/fa';
@@ -37,7 +36,7 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
-const CreateMaintenanceTask: React.FC = () => {
+const CreateMaintenanceTask = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,7 +91,7 @@ const CreateMaintenanceTask: React.FC = () => {
     }
   }, [selectedParkId]);
 
-  const fetchParks = useCallback(async () => {
+  const fetchParks = async () => {
     try {
       const response = await getAllParks();
       setParks(response.data);
@@ -100,21 +99,9 @@ const CreateMaintenanceTask: React.FC = () => {
       console.error('Error fetching parks:', error);
       messageApi.error('Failed to fetch parks');
     }
-  }, [messageApi]);
+  };
 
-  const fetchParkDetails = useCallback(async (parkId: number) => {
-    try {
-      const parkResponse = await getParkById(parkId);
-      form.setFieldsValue({ parkId: parkId.toString() });
-      setSelectedParkId(parkId);
-      fetchFacilities(parkId);
-    } catch (error) {
-      console.error('Error fetching park details:', error);
-      messageApi.error('Failed to fetch park details');
-    }
-  }, [form, messageApi]);
-
-  const fetchFacilities = useCallback(async (parkId: number) => {
+  const fetchFacilities = async (parkId: number) => {
     try {
       const response = await getFacilitiesByParkId(parkId);
       setFacilities(response.data);
@@ -122,67 +109,9 @@ const CreateMaintenanceTask: React.FC = () => {
       console.error('Error fetching facilities:', error);
       messageApi.error('Failed to fetch facilities');
     }
-  }, [messageApi]);
+  };
 
-  useEffect(() => {
-    if (user?.role === StaffType.SUPERADMIN) {
-      fetchParks();
-    }
-  }, [user?.role, fetchParks]);
-
-  useEffect(() => {
-    if (feedbackTitle || feedbackDescription) {
-      form.setFieldsValue({
-        title: feedbackTitle,
-        description: feedbackDescription
-      });
-    }
-
-    if (user?.role === StaffType.SUPERADMIN && feedbackParkId) {
-      fetchParkDetails(feedbackParkId);
-    } else if (user?.parkId) {
-      fetchFacilities(user.parkId);
-    }
-  }, [feedbackTitle, feedbackDescription, feedbackParkId, user?.role, user?.parkId, form, fetchParkDetails, fetchFacilities]);
-
-   useEffect(() => {
-    if (feedbackImages && feedbackImages.length > 0) {
-      const fetchImages = async () => {
-        const fetchedFiles: File[] = [];
-        const fetchedPreviews: string[] = [];
-
-        for (const imageUrl of feedbackImages) {
-          try {
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const fileName = imageUrl.split('/').pop() || 'image.jpg';
-            const file = new File([blob], fileName, { type: blob.type });
-            fetchedFiles.push(file);
-            fetchedPreviews.push(URL.createObjectURL(blob));
-          } catch (error) {
-            console.error('Error fetching image:', error);
-          }
-        }
-
-        // Replace the existing feedback files and previews instead of appending
-        setFeedbackFiles(fetchedFiles);
-        setFeedbackPreviews(fetchedPreviews);
-      };
-
-      fetchImages();
-    }
-  }, [feedbackImages]);
-
-  useEffect(() => {
-    if (selectedParkId) {
-      fetchFacilities(selectedParkId);
-    }
-  }, [selectedParkId, fetchFacilities]);
-
-  const allFiles = React.useMemo(() => [...feedbackFiles, ...selectedFiles], [feedbackFiles, selectedFiles]);
-  const allPreviews = React.useMemo(() => [...feedbackPreviews, ...previewImages], [feedbackPreviews, previewImages]);
-
-  const fetchEntityDetails = useCallback(async (entityType: string, identifier: string) => {
+  const fetchEntityDetails = async (entityType: string, identifier: string) => {
     setIsSearching(true);
     try {
       let response;
@@ -223,14 +152,6 @@ const CreateMaintenanceTask: React.FC = () => {
         default:
           throw new Error('Invalid entity type');
       }
-
-      if (response.data) {
-        setSelectedEntity(response.data);
-        messageApi.success(`${convertCamelCaseToTitleCase(entityType)} found successfully`);
-      } else {
-        setSelectedEntity(null);
-        messageApi.error(`No ${convertCamelCaseToTitleCase(entityType)} found with the given identifier`);
-      }
     } catch (error) {
       console.error(`Error fetching ${entityType} details:`, error);
       setSelectedEntity(null);
@@ -238,7 +159,17 @@ const CreateMaintenanceTask: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [messageApi]);
+  };
+
+  const taskTypeOptions = Object.values(MaintenanceTaskTypeEnum).map((type) => ({
+    value: type,
+    label: formatEnumLabelToRemoveUnderscores(type),
+  }));
+
+  const taskUrgencyOptions = Object.values(MaintenanceTaskUrgencyEnum).map((urgency) => ({
+    value: urgency,
+    label: formatEnumLabelToRemoveUnderscores(urgency),
+  }));
 
   const handleSubmit = async () => {
     try {
@@ -248,12 +179,12 @@ const CreateMaintenanceTask: React.FC = () => {
 
       const values = await form.validateFields();
 
-      if (allFiles.length === 0) {
+      if (selectedFiles.length === 0) {
         messageApi.error('Please upload at least one image.');
         return;
       }
 
-      if (allFiles.length > 3) {
+      if (selectedFiles.length > 3) {
         messageApi.error('You can upload a maximum of 3 images.');
         return;
       }
@@ -282,7 +213,7 @@ const CreateMaintenanceTask: React.FC = () => {
 
       console.log('Maintenance Task Data:', taskData);
 
-      const taskResponse = await createMaintenanceTask(taskData, user.id, allFiles);
+      const taskResponse = await createMaintenanceTask(taskData, user.id, selectedFiles);
       console.log('Maintenance Task created:', taskResponse.data);
       setCreatedMaintenanceTask(taskResponse.data);
     } catch (error) {
@@ -318,17 +249,17 @@ const CreateMaintenanceTask: React.FC = () => {
   const handleParkChange = (value: string) => {
     const parkId = parseInt(value, 10);
     setSelectedParkId(parkId);
-    form.setFieldsValue({ entityType: null, entityId: null });
+    form.setFieldsValue({ zoneId: null, occurrenceId: null, entityType: null, entityId: null });
+    setZones([]);
     setSelectedEntityType(null);
     setSelectedEntity(null);
-    fetchFacilities(parkId);
   };
 
   const handleEntityTypeChange = (value: string) => {
     setSelectedEntityType(value);
     form.setFieldsValue({ entityId: null });
     setSelectedEntity(null);
-    setEntityIdInput('');
+    setEntityIdInput(''); // Clear the identifier input field
   };
 
   const handleEntityIdSearch = () => {
@@ -363,6 +294,39 @@ const CreateMaintenanceTask: React.FC = () => {
   const renderEntityCard = () => {
     if (!selectedEntity) return null;
 
+    let entityType = selectedEntityType || '';
+    const icon = getEntityIcon(entityType);
+
+    const getEntityType = () => {
+      if ('facilityType' in selectedEntity) return formatEnumLabelToRemoveUnderscores(selectedEntity.facilityType);
+      if ('parkAssetType' in selectedEntity) return formatEnumLabelToRemoveUnderscores(selectedEntity.parkAssetType);
+      if ('sensorType' in selectedEntity) return formatEnumLabelToRemoveUnderscores(selectedEntity.sensorType);
+      return null; // For hub, we don't show the type
+    };
+
+    const getEntityLocation = () => {
+      if (!selectedEntity) return null;
+
+      if ('facilityType' in selectedEntity) return null; // For facility, we don't show the location
+      if ('parkAssetType' in selectedEntity) return selectedEntity.facility?.name || 'Unknown';
+      if ('sensorType' in selectedEntity) return selectedEntity.facility?.name || 'Unknown';
+      if ('hubStatus' in selectedEntity) return selectedEntity.facility?.name || 'Unknown';
+
+      return 'Unknown';
+    };
+
+    const location = getEntityLocation();
+    entityType = getEntityType() || '';
+
+    const getEntityImage = () => {
+      if (selectedEntity.images && selectedEntity.images.length > 0) {
+        return selectedEntity.images[0];
+      }
+      return null;
+    };
+
+    const entityImage = getEntityImage();
+
     return (
       <Card className="mb-4">
         <Card.Meta
@@ -387,16 +351,6 @@ const CreateMaintenanceTask: React.FC = () => {
     );
   };
 
-  const taskTypeOptions = Object.values(MaintenanceTaskTypeEnum).map((type) => ({
-    value: type,
-    label: formatEnumLabelToRemoveUnderscores(type),
-  }));
-
-  const taskUrgencyOptions = Object.values(MaintenanceTaskUrgencyEnum).map((urgency) => ({
-    value: urgency,
-    label: formatEnumLabelToRemoveUnderscores(urgency),
-  }));
-
   return (
     <ContentWrapperDark>
       {contextHolder}
@@ -404,6 +358,7 @@ const CreateMaintenanceTask: React.FC = () => {
       <Card>
         {!createdMaintenanceTask ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" onFinish={handleSubmit}>
+            <Divider orientation="left">Maintenance Task Details</Divider>
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
                 <Select
@@ -413,7 +368,6 @@ const CreateMaintenanceTask: React.FC = () => {
                   filterOption={filterOption}
                   options={parks.map((park) => ({ value: park.id.toString(), label: park.name }))}
                   onChange={handleParkChange}
-                  disabled={!!feedbackParkId}
                 />
               </Form.Item>
             )}
@@ -451,7 +405,7 @@ const CreateMaintenanceTask: React.FC = () => {
                     placeholder={`Enter Identifier Number of ${convertCamelCaseToTitleCase(selectedEntityType)}`}
                     value={entityIdInput}
                     onChange={(e) => setEntityIdInput(e.target.value)}
-                    style={{ width: 200 }}
+                    style={{ width: '300px' }}
                   />
                   <Button icon={<FaSearch />} onClick={handleEntityIdSearch} type="primary" loading={isSearching}>
                     Search
@@ -471,12 +425,7 @@ const CreateMaintenanceTask: React.FC = () => {
             >
               <Input placeholder="Give this Maintenance Task a title!" />
             </Form.Item>
-            <Form.Item
-              name="description"
-              label="Description"
-              rules={[{ required: true }]}
-              initialValue={feedbackDescription}
-            >
+            <Form.Item name="description" label="Description" rules={[{ required: true }]}>
               <TextArea placeholder="Describe the Maintenance Task" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
             <Form.Item name="taskType" label="Task Type" rules={[{ required: true }]}>
@@ -503,38 +452,30 @@ const CreateMaintenanceTask: React.FC = () => {
                 onChange={handleFileChange}
                 accept="image/png, image/jpeg"
                 onClick={onInputClick}
-                disabled={allFiles.length >= 3}
+                disabled={selectedFiles.length >= 3}
               />
             </Form.Item>
-            {allPreviews.length > 0 && (
+            {previewImages?.length > 0 && (
               <Form.Item label="Image Previews" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
                 <div className="flex flex-wrap gap-2">
-                  {allPreviews.map((imgSrc, index) => (
+                  {previewImages.map((imgSrc, index) => (
                     <img
                       key={index}
                       src={imgSrc}
                       alt={`Preview ${index}`}
                       className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => {
-                        if (index < feedbackPreviews.length) {
-                          // Remove feedback image
-                          setFeedbackFiles(prev => prev.filter((_, i) => i !== index));
-                          setFeedbackPreviews(prev => prev.filter((_, i) => i !== index));
-                        } else {
-                          // Remove uploaded image
-                          removeImage(index - feedbackPreviews.length);
-                        }
-                      }}
+                      onClick={() => removeImage(index)}
                     />
                   ))}
                 </div>
               </Form.Item>
             )}
-            {allFiles.length >= 3 && (
+            {selectedFiles.length >= 3 && (
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <p className="text-yellow-500">Maximum number of images (3) reached.</p>
               </Form.Item>
             )}
+
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Button type="primary" htmlType="submit" className="w-full">
                 Create Maintenance Task
