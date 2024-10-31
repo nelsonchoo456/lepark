@@ -64,8 +64,13 @@ const MaintenanceTaskBoardView = ({
   const [editingTask, setEditingTask] = useState<MaintenanceTaskResponse | null>(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
-  const [movedTaskObjectId, setMovedTaskObjectId] = useState<{ type: 'facility' | 'parkAsset' | 'sensor' | 'hub', id: string } | null>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [movedTaskObjectId, setMovedTaskObjectId] = useState<{ type: 'facility' | 'parkAsset' | 'sensor' | 'hub'; id: string } | null>(
+    null,
+  );
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([
+    dayjs().startOf('month').subtract(1, 'month'),
+    dayjs().endOf('month').add(1, 'month'),
+  ]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [maintenanceTaskToBeDeleted, setMaintenanceTaskToBeDeleted] = useState<MaintenanceTaskResponse | null>(null);
   const [taskBeingMoved, setTaskBeingMoved] = useState<MaintenanceTaskResponse | null>(null);
@@ -82,8 +87,7 @@ const MaintenanceTaskBoardView = ({
     const destList = getList(destination.droppableId as MaintenanceTaskStatusEnum);
 
     // Prevent unassigned tasks from being moved directly to COMPLETE
-    if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
-        destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
+    if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
       message.error('Tasks must be assigned before they can be completed.');
       return;
     }
@@ -102,7 +106,8 @@ const MaintenanceTaskBoardView = ({
         console.error('Error updating task position:', error);
         message.error('Failed to update task position');
       }
-    } else { // Moving from one list to another
+    } else {
+      // Moving from one list to another
       const sourceClone = Array.from(sourceList);
       const destClone = Array.from(destList);
       const [movedTask] = sourceClone.splice(source.index, 1);
@@ -113,14 +118,15 @@ const MaintenanceTaskBoardView = ({
       updateListState(destination.droppableId as MaintenanceTaskStatusEnum, destClone);
 
       try {
-        if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && 
-            destination.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS) {
+        if (source.droppableId === MaintenanceTaskStatusEnum.OPEN && destination.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS) {
           await assignMaintenanceTask(movedTask.id, user?.id || '');
           message.success('Task has been assigned and updated successfully');
         } else if (destination.droppableId === MaintenanceTaskStatusEnum.COMPLETED) {
           message.success('Task marked as completed');
-        } else if (source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS && 
-                   destination.droppableId === MaintenanceTaskStatusEnum.OPEN) {
+        } else if (
+          source.droppableId === MaintenanceTaskStatusEnum.IN_PROGRESS &&
+          destination.droppableId === MaintenanceTaskStatusEnum.OPEN
+        ) {
           await unassignMaintenanceTask(movedTask.id, user?.id || '');
           message.success('Task has been unassigned and updated successfully');
         } else {
@@ -129,7 +135,7 @@ const MaintenanceTaskBoardView = ({
 
         await updateMaintenanceTaskStatus(movedTask.id, destination.droppableId as MaintenanceTaskStatusEnum, user?.id);
         await updateMaintenanceTaskPosition(movedTask.id, destination.index);
-        
+
         // Refresh data to show changes immediately
         await refreshData();
 
@@ -149,7 +155,6 @@ const MaintenanceTaskBoardView = ({
 
           setShowLogPrompt(true);
         }
-
       } catch (error) {
         console.error('Error updating task:', error);
         message.error('Failed to update task');
@@ -165,11 +170,11 @@ const MaintenanceTaskBoardView = ({
       case MaintenanceTaskStatusEnum.OPEN:
         return open;
       case MaintenanceTaskStatusEnum.IN_PROGRESS:
-        return userRole === StaffType.SUPERADMIN ? inProgress : inProgress.filter(task => task.assignedStaffId === user?.id);
+        return userRole === StaffType.SUPERADMIN ? inProgress : inProgress.filter((task) => task.assignedStaffId === user?.id);
       case MaintenanceTaskStatusEnum.COMPLETED:
-        return userRole === StaffType.SUPERADMIN ? completed : completed.filter(task => task.assignedStaffId === user?.id);
+        return userRole === StaffType.SUPERADMIN ? completed : completed.filter((task) => task.assignedStaffId === user?.id);
       case MaintenanceTaskStatusEnum.CANCELLED:
-        return userRole === StaffType.SUPERADMIN ? cancelled : cancelled.filter(task => task.assignedStaffId === user?.id);
+        return userRole === StaffType.SUPERADMIN ? cancelled : cancelled.filter((task) => task.assignedStaffId === user?.id);
       default:
         return [];
     }
@@ -300,13 +305,13 @@ const MaintenanceTaskBoardView = ({
           </div>
         }
         styles={{
-          body: { 
+          body: {
             flex: 1,
-            display: 'flex', 
-            flexDirection: 'column', 
+            display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'space-between',
             overflow: 'hidden',
-          }
+          },
         }}
       >
         <div>
@@ -317,9 +322,7 @@ const MaintenanceTaskBoardView = ({
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <UserOutlined style={{ marginRight: 4, color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }} />
               <Typography.Text style={{ fontSize: '0.8rem', color: task.assignedStaffId ? '#1890ff' : '#d9d9d9' }}>
-                {task.assignedStaffId
-                  ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}`
-                  : ''}
+                {task.assignedStaffId ? `${task.assignedStaff?.firstName} ${task.assignedStaff?.lastName}` : ''}
               </Typography.Text>
             </div>
           </div>
@@ -341,22 +344,25 @@ const MaintenanceTaskBoardView = ({
             </div>
           )}
         </div>
-        
-        <div className='flex justify-between mt-1'>
-          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>
-            Due: {moment(task.dueDate).format('D MMM YY')}
-          </Typography.Text>
+
+        <div className="flex justify-between mt-1">
+          <Typography.Text style={{ fontSize: '0.8rem', fontWeight: 500 }}>Due: {moment(task.dueDate).format('D MMM YY')}</Typography.Text>
           <div>
-            {isOverdue && task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
-              <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
-                OVERDUE
-              </Tag>
-            )}
-            {isDueSoon && !isOverdue && task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED && task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
-              <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
-                DUE SOON
-              </Tag>
-            )}
+            {isOverdue &&
+              task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+              task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
+                <Tag color="red" style={{ fontSize: '0.7rem' }} bordered={false}>
+                  OVERDUE
+                </Tag>
+              )}
+            {isDueSoon &&
+              !isOverdue &&
+              task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+              task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
+                <Tag color="gold" style={{ fontSize: '0.7rem' }} bordered={false}>
+                  DUE SOON
+                </Tag>
+              )}
           </div>
         </div>
       </Card>
@@ -364,12 +370,12 @@ const MaintenanceTaskBoardView = ({
   };
 
   const handleDeleteTasks = async (taskType: string) => {
-    if (taskType === "COMPLETED" || taskType === "CANCELLED") {
+    if (taskType === 'COMPLETED' || taskType === 'CANCELLED') {
       await deleteMaintenanceTasksByStatus(taskType);
       message.success('Cleared Tasks.');
       refreshData();
     }
-  }
+  };
 
   const handleLogPromptOk = () => {
     setShowLogPrompt(false);
@@ -409,9 +415,12 @@ const MaintenanceTaskBoardView = ({
       return tasks;
     }
     const [startDate, endDate] = dateRange;
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       const dueDate = dayjs(task.dueDate);
-      return (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) && (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'));
+      return (
+        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
+        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
+      );
     });
   };
 
@@ -453,6 +462,7 @@ const MaintenanceTaskBoardView = ({
     <Spin spinning={loading} tip="Loading tasks...">
       <div style={{ marginBottom: '16px' }}>
         <RangePicker
+          value={dateRange}
           onChange={handleDateRangeChange}
           style={{ width: '100%' }}
           placeholder={['Start Date', 'End Date']}
@@ -469,14 +479,20 @@ const MaintenanceTaskBoardView = ({
             // <Col span={6} key={status.value}>
             <Col xs={24} md={24} lg={6} key={status.value}>
               <Card
-                title={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (status.value === "COMPLETED" || status.value === "CANCELLED") ?
-                  <div className="flex justify-between">
-                    <div>{status.title}</div>
-                    <Dropdown menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}>
-                      <MoreOutlined style={{ cursor: 'pointer' }} />
-                    </Dropdown>
-                  </div>
-                  : status.title
+                title={
+                  (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) &&
+                  (status.value === 'COMPLETED' || status.value === 'CANCELLED') ? (
+                    <div className="flex justify-between">
+                      <div>{status.title}</div>
+                      <Dropdown
+                        menu={{ items: [{ key: 'delete', danger: true, label: 'Clear', onClick: () => handleDeleteTasks(status.value) }] }}
+                      >
+                        <MoreOutlined style={{ cursor: 'pointer' }} />
+                      </Dropdown>
+                    </div>
+                  ) : (
+                    status.title
+                  )
                 }
                 styles={{
                   header: { backgroundColor: status.color, color: 'white' },
@@ -492,7 +508,8 @@ const MaintenanceTaskBoardView = ({
                           draggableId={task.id}
                           index={index}
                           isDragDisabled={
-                            task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED || task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED
+                            task.taskStatus === MaintenanceTaskStatusEnum.COMPLETED ||
+                            task.taskStatus === MaintenanceTaskStatusEnum.CANCELLED
                           }
                         >
                           {(provided, snapshot) => (
@@ -541,7 +558,11 @@ const MaintenanceTaskBoardView = ({
         okText="Yes, edit status"
         cancelText="No, just update the task"
       >
-        <p>Do you want to edit the status of the {taskBeingMoved?.parkAsset ? 'Park Asset' : taskBeingMoved?.sensor ? 'Sensor' : taskBeingMoved?.hub ? 'Hub' : 'Facility'} "{taskBeingMoved?.parkAsset?.name || taskBeingMoved?.sensor?.name || taskBeingMoved?.hub?.name || taskBeingMoved?.facility?.name}"?</p>
+        <p>
+          Do you want to edit the status of the{' '}
+          {taskBeingMoved?.parkAsset ? 'Park Asset' : taskBeingMoved?.sensor ? 'Sensor' : taskBeingMoved?.hub ? 'Hub' : 'Facility'} "
+          {taskBeingMoved?.parkAsset?.name || taskBeingMoved?.sensor?.name || taskBeingMoved?.hub?.name || taskBeingMoved?.facility?.name}"?
+        </p>
       </Modal>
       <ConfirmDeleteModal
         onConfirm={deleteMaintenanceTaskConfirmed}
