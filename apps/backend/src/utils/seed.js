@@ -30,12 +30,22 @@ const {
   eventTicketListingsData,
   eventTransactionLocalData,
   eventTransactionStandardData,
+  feedbacksData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
 const moment = require('moment-timezone');
+
+const findStaffByRoleAndPark = (staffList, role, parkId) => {
+  return staffList.find(staff => staff.role === role && staff.parkId === parkId);
+};
+
+const findVisitorByFirstName = (visitorList, firstName) => {
+  return visitorList.find(visitor => visitor.firstName.toLowerCase() === firstName.toLowerCase());
+};
+
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -97,7 +107,7 @@ async function createPark(data) {
       ${data.description},
       ${data.address},
       ${data.contactNumber},
-      ${openingHoursArray}::timestamp[], 
+      ${openingHoursArray}::timestamp[],
       ${closingHoursArray}::timestamp[],
       ${imagesParam},
       ST_GeomFromText(${data.geom}, 4326),
@@ -176,7 +186,7 @@ async function createZone(data) {
     VALUES (
       ${data.name},
       ${data.description},
-      ${openingHoursArray}::timestamp[], 
+      ${openingHoursArray}::timestamp[],
       ${closingHoursArray}::timestamp[],
       ${geomParam},
       ${pathsParam},
@@ -1165,6 +1175,50 @@ async function seed() {
   }
 
   console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
+
+  const staffMap = staffList.reduce((acc, staff) => {
+  const emailPrefix = staff.email.split('@')[0];
+  acc[emailPrefix] = staff.id;
+  return acc;
+}, {});
+
+const populatedFeedbacks = feedbacksData.map((feedback, index) => {
+  let visitorId, staffId;
+
+  // Assign visitor IDs
+  if (feedback.parkId === 1) {
+    visitorId = index < 3 ? visitorList[0].id : visitorList[1].id; // Ely for first 3, Aaron for rest
+  } else if (feedback.parkId === 2) {
+    visitorId = index < 9 ? visitorList[0].id : visitorList[1].id; // Ely for first 9, Aaron for rest
+  }
+
+  // Assign staffId only if the feedback is ACCEPTED or REJECTED
+  if (feedback.feedbackStatus === 'ACCEPTED' || feedback.feedbackStatus === 'REJECTED') {
+    if (feedback.parkId === 1) {
+      staffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
+    } else if (feedback.parkId === 2) {
+      if (feedback.title === 'Excellent Educational Program' || feedback.title === 'Safety Concern') {
+        staffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
+      } else if (index < 9) {
+        staffId = staffMap['superadmin'];
+      } else {
+        staffId = staffMap['parkranger2'];
+      }
+    }
+  }
+
+  return { ...feedback, visitorId, staffId };
+});
+
+
+ const feedbackList = [];
+for (const feedback of populatedFeedbacks) {
+  const createdFeedback = await prisma.feedback.create({
+    data: feedback,
+  });
+  feedbackList.push(createdFeedback);
+}
+console.log(`Total feedbacks seeded: ${feedbackList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -1201,7 +1255,9 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   }
 
   console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
+
 }
+
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {

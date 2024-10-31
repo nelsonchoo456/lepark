@@ -40,6 +40,7 @@ model Staff {
   submittedPlantTasks       PlantTask[]       @relation("submittingStaff")
   assignedMaintenanceTasks  MaintenanceTask[] @relation("assignedStaff")
   submittedMaintenanceTasks MaintenanceTask[] @relation("submittingStaff")
+  Feedback                  Feedback[]
 }
 
 enum ConservationStatusEnum {
@@ -128,13 +129,11 @@ model Occurrence {
   zoneId              Int
   plantTasks          PlantTask[]
 
-  // decarbonizationAreaId String @db.Uuid
   images       String[]
   activityLogs ActivityLog[]
   statusLogs   StatusLog[]
 
   species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
-  // decarbonizationArea DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
 
   @@index([zoneId])
 }
@@ -389,7 +388,8 @@ model Visitor {
   eventTicketTransactions      EventTicketTransaction[]
   promotionsRedeemed           Promotion[]                   @relation("VisitorPromotionsRedeemed")
 
-  bookings                     Booking[]
+  bookings Booking[]
+  Feedback Feedback[]
 }
 
 enum HubStatusEnum {
@@ -517,16 +517,16 @@ enum ParkAssetConditionEnum {
 }
 
 model ParkAsset {
-  id                   String              @id @default(uuid()) @db.Uuid
-  identifierNumber     String              @unique
-  serialNumber         String?             @unique
-  name                 String
-  parkAssetType        ParkAssetTypeEnum
-  description          String?
-  parkAssetStatus      ParkAssetStatusEnum
-  acquisitionDate      DateTime
-  nextMaintenanceDate  DateTime? // Keep this field
-  nextMaintenanceDates DateTime[]
+  id                    String                 @id @default(uuid()) @db.Uuid
+  identifierNumber      String                 @unique
+  serialNumber          String?                @unique
+  name                  String
+  parkAssetType         ParkAssetTypeEnum
+  description           String?
+  parkAssetStatus       ParkAssetStatusEnum
+  acquisitionDate       DateTime
+  nextMaintenanceDate   DateTime? // Keep this field
+  nextMaintenanceDates  DateTime[]
   supplier              String
   supplierContactNumber String
   parkAssetCondition    ParkAssetConditionEnum
@@ -578,9 +578,9 @@ model Facility {
   parkAssets          ParkAsset[]
   sensors             Sensor[]
   maintenanceTasks    MaintenanceTask[]
+  bookings            Booking[]
 
   @@index([parkId])
-  bookings            Booking[]
 }
 
 enum FacilityTypeEnum {
@@ -734,6 +734,43 @@ model SequestrationHistory {
   decarbonizationArea   DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
 }
 
+model Feedback {
+  id               String               @id @default(uuid()) @db.Uuid
+  dateCreated      DateTime             @default(now())
+  dateResolved     DateTime?
+  title            String
+  description      String
+  feedbackCategory FeedbackCategoryEnum
+  images           String[]
+  feedbackStatus   FeedbackStatusEnum
+  remarks          String?
+  parkId           Int
+  needResponse     Boolean
+
+  staffId   String? @db.Uuid
+  staff     Staff?  @relation(fields: [staffId], references: [id])
+  visitorId String  @db.Uuid
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+}
+
+enum FeedbackCategoryEnum {
+  FACILITIES
+  SERVICES
+  STAFF
+  SAFETY
+  CLEANLINESS
+  ACCESSIBILITY
+  EVENTS
+  WILDLIFE
+  OTHER
+}
+
+enum FeedbackStatusEnum {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
@@ -814,20 +851,20 @@ model Announcement {
 }
 
 model Booking {
-  id                String                 @id @default(uuid()) @db.Uuid
-  bookingPurpose    String
-  pax               Int
-  bookingStatus BookingStatusEnum
-  dateStart         DateTime
-  dateEnd           DateTime
-  dateBooked        DateTime
+  id              String            @id @default(uuid()) @db.Uuid
+  bookingPurpose  String
+  pax             Int
+  bookingStatus   BookingStatusEnum
+  dateStart       DateTime
+  dateEnd         DateTime
+  dateBooked      DateTime
   // applicationStatusDate   DateTime
-  paymentDeadline   DateTime?
-  visitorRemarks    String
-  facilityId        String                    @db.Uuid
-  facility          Facility                  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  visitorId         String                    @db.Uuid
-  visitor           Visitor                   @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  paymentDeadline DateTime?
+  visitorRemarks  String
+  facilityId      String            @db.Uuid
+  facility        Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  visitorId       String            @db.Uuid
+  visitor         Visitor           @relation(fields: [visitorId], references: [id], onDelete: Cascade)
 }
 
 enum BookingStatusEnum {

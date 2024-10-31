@@ -113,6 +113,8 @@ import ParkCrowdLevels from './pages/CrowdInsight/ParkCrowdLevels';
 import ParkCrowdLevelsCalendar from './pages/CrowdInsight/ParkCrowdLevelsCalendar';
 import CompareParkCrowdLevels from './pages/CrowdInsight/CompareParkCrowdLevels';
 import VerifyEventTicket from './pages/VerifyTicket/VerifyEventTicket';
+import FeedbackList from './pages/Feedback/FeedbackList';
+import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 
 export function App() {
   return (
@@ -647,6 +649,17 @@ export function App() {
                       </>
                     }
                   />
+                </Route>
+
+                {/* Feedback Routes */}
+                <Route
+                  path="/feedback"
+                  element={
+                    <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                  }
+                >
+                  <Route index element={<FeedbackList />} />
+                  <Route path=":feedbackId" element={<FeedbackViewDetails />} />
                 </Route>
 
                 {/* Catch-all for 404 */}

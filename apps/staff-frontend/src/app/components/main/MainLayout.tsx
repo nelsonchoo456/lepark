@@ -17,6 +17,7 @@ import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/dat
 import { MdBuild, MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
 import { AiOutlinePercentage } from 'react-icons/ai';
+import { VscFeedback } from "react-icons/vsc";
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -311,6 +312,15 @@ const MainLayout = () => {
       label: 'FAQ',
       onClick: () => navigate('/faq'),
     },
+
+    userRole === 'SUPERADMIN' || userRole === 'MANAGER' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'feedback',
+          icon: <VscFeedback />,
+          label: 'Feedback',
+          onClick: () => navigate('/feedback'),
+        }
+      : null,
     {
       key: 'announcement',
       icon: <FiMessageSquare />,

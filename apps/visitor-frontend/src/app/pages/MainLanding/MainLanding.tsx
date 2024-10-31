@@ -234,6 +234,26 @@ useEffect(() => {
    <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
 <br/>
 <br/>
+
+ <div className="flex justify-between items-center">
+     <LogoText className="font-bold text-lg">Feedback</LogoText>
+     <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+       <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+       <Link to="/feedback/create">
+         <Button
+           icon={<MdArrowForward className="text-2xl" />}
+           shape="circle"
+           type="primary"
+           size="large"
+           className="md:bg-transparent md:text-green-500 md:shadow-none"
+         />
+       </Link>
+     </div>
+   </div>
+   <p className="text-gray-500">Have something to say? We'd love to hear from you!</p>
+   <br/>
+   <br/>
+
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
