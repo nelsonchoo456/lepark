@@ -89,7 +89,7 @@ const ViewMaintenanceTaskModal: React.FC<ViewMaintenanceTaskModalProps> = ({ vis
 
   const navigateToEntity = () => {
     if (task.parkAsset) {
-      window.open(`/park-assets/${task.parkAsset.id}`, '_blank', 'noopener,noreferrer');
+      window.open(`/parkasset/${task.parkAsset.id}`, '_blank', 'noopener,noreferrer');
     } else if (task.sensor) {
       window.open(`/sensor/${task.sensor.id}`, '_blank', 'noopener,noreferrer');
     } else if (task.hub) {
