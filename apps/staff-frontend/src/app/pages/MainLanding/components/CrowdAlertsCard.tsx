@@ -1,4 +1,4 @@
-import { Card, List, Empty, Button } from 'antd';
+import { Card, List, Empty, Button, Spin } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 import { LogoText } from '@lepark/common-ui';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +9,27 @@ import { sectionHeaderIconStyles } from '../Manager/ManagerMainLanding';
 interface CrowdAlertsCardProps {
   alerts: CrowdAlert[];
   isSuperAdmin?: boolean;
+  loading?: boolean;
 }
 
-export const CrowdAlertsCard = ({ alerts, isSuperAdmin = false }: CrowdAlertsCardProps) => {
+export const CrowdAlertsCard = ({ alerts, loading = false, isSuperAdmin = false }: CrowdAlertsCardProps) => {
   const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <Card className="w-full" styles={{ body: { padding: '1rem' } }}>
+        <div className="flex items-center mb-4">
+          <div className={`${sectionHeaderIconStyles} bg-red-400 text-white`}>
+            <TeamOutlined />
+          </div>
+          <LogoText className="text-lg">Upcoming Crowd Alerts</LogoText>
+        </div>
+        <div className="flex justify-center items-center py-8">
+          <Spin />
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full" styles={{ body: { padding: '1rem' } }}>

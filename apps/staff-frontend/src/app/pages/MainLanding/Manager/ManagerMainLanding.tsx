@@ -10,10 +10,12 @@ import { useFetchAnnouncements } from '../../../hooks/Announcements/useFetchAnno
 import {
   AnnouncementResponse,
   getAllAssignedPlantTasks,
+  getAllParks,
   getAllPlantTasks,
   getAnnouncementsByParkId,
   getNParksAnnouncements,
   getPlantTasksByParkId,
+  ParkResponse,
   PlantTaskResponse,
   PlantTaskStatusEnum,
   StaffResponse,
@@ -26,7 +28,7 @@ import moment from 'moment';
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { useNavigate } from 'react-router-dom';
 import { useCrowdCounts } from '../../../hooks/CrowdInsights/useCrowdCounts';
-import { checkForUpcomingCrowdAlerts, CrowdAlert } from '../../../hooks/CrowdInsights/useCrowdAlerts';
+import { CrowdAlert, useCrowdAlerts } from '../../../hooks/CrowdInsights/useCrowdAlerts';
 import dayjs from 'dayjs';
 import { LiveVisitorCard } from '../components/LiveVisitorCard';
 import { WeeklyVisitorCard } from '../components/WeeklyVisitorCard';
@@ -36,6 +38,7 @@ export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-
 export const sectionStyles = 'pr-4';
 export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-center justify-center mr-2';
 export const sectionHeader = 'flex cursor-pointer w-full hover:underline hover:text-green-400';
+
 export const renderSectionHeader = (title: string, onClick?: () => void) => {
   return (
     <div className="sticky top-0 pt-4 z-20 bg-gray-100">
@@ -50,6 +53,7 @@ export const renderSectionHeader = (title: string, onClick?: () => void) => {
 const ManagerMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
+  const [parks, setParks] = useState<ParkResponse[]>([]);
   const { total, parks: parkCrowds, loading } = useCrowdCounts(user?.parkId);
   const [crowdAlerts, setCrowdAlerts] = useState<CrowdAlert[]>([]);
 
@@ -61,6 +65,7 @@ const ManagerMainLanding = () => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
       fetchPlantTasks();
+      fetchParks();
     }
   }, [user]);
 
@@ -74,19 +79,22 @@ const ManagerMainLanding = () => {
     }
   };
 
-  // Fetch alerts for this park only
-  useEffect(() => {
-    if (user?.parkId) {
-      const fetchAlerts = async () => {
-        const alerts = await checkForUpcomingCrowdAlerts(user.parkId);
-        setCrowdAlerts(alerts);
-      };
-
-      fetchAlerts();
-      const interval = setInterval(fetchAlerts, 5 * 60 * 1000);
-      return () => clearInterval(interval);
+  const fetchParks = async () => {
+    try {
+      const response = await getAllParks();
+      if (response.status === 200) {
+        setParks(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching parks:', error);
     }
-  }, [user?.parkId]);
+  };
+
+  const { alerts, isLoading: alertsLoading } = useCrowdAlerts({
+    parkId: user?.parkId,
+    parks, // Use the full park data
+    days: 7,
+  });
 
   const fetchPlantTasks = async () => {
     try {
@@ -233,7 +241,7 @@ const ManagerMainLanding = () => {
               <WeeklyVisitorCard loading={loading} parkData={parkCrowds[0]} />
             </div>
             <div className="flex-[1]">
-              <CrowdAlertsCard alerts={crowdAlerts} />
+              <CrowdAlertsCard alerts={alerts} loading={alertsLoading} />
             </div>
           </div>
         </div>

@@ -33,7 +33,7 @@ import { TbTrees, TbUsers } from 'react-icons/tb';
 import dayjs from 'dayjs';
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { useNavigate } from 'react-router-dom';
-import { checkForUpcomingCrowdAlerts, CrowdAlert } from '../../../hooks/CrowdInsights/useCrowdAlerts';
+import { CrowdAlert, useCrowdAlerts } from '../../../hooks/CrowdInsights/useCrowdAlerts';
 import { useCrowdCounts } from '../../../hooks/CrowdInsights/useCrowdCounts';
 import { LiveVisitorCard } from '../components/LiveVisitorCard';
 import { CrowdAlertsCard } from '../components/CrowdAlertsCard';
@@ -68,7 +68,6 @@ const SuperadminMainLanding = () => {
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
   const navigate = useNavigate();
   const [crowdAlerts, setCrowdAlerts] = useState<CrowdAlert[]>([]);
-
   const { total, parks: parkCrowds, loading } = useCrowdCounts();
 
   useEffect(() => {
@@ -78,18 +77,11 @@ const SuperadminMainLanding = () => {
     }
   }, [user]);
 
-  // Fetch alerts
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      const alerts = await checkForUpcomingCrowdAlerts();
-      setCrowdAlerts(alerts);
-    };
-
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 5 * 60 * 1000); // Check every 5 minutes
-
-    return () => clearInterval(interval);
-  }, []);
+  const { alerts, isLoading: alertsLoading } = useCrowdAlerts({
+    parkId: 0, // 0 for all parks
+    parks,
+    days: 7,
+  });
 
   const fetchParks = async () => {
     try {
@@ -248,7 +240,7 @@ const SuperadminMainLanding = () => {
               <WeeklyVisitorCard loading={loading} parkData={null} parkCrowds={parkCrowds} isSuperAdmin={true} />
             </div>
             <div className="flex-[1]">
-              <CrowdAlertsCard alerts={crowdAlerts} isSuperAdmin={true} />
+              <CrowdAlertsCard alerts={alerts} loading={alertsLoading} isSuperAdmin={true} />
             </div>
           </div>
         </div>
