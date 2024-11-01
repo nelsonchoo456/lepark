@@ -8,15 +8,18 @@ import {
   AttractionResponse,
   OccurrenceResponse,
   FacilityWithEvents,
+  ParkResponse,
+  getOccurrencesByParkId,
 } from '@lepark/data-access';
 import { pointInsidePolygonGeom } from '../../../components/map/functions/functions';
 import { HoverItem } from '../interfaces/interfaces';
+import dayjs from 'dayjs';
 
 interface UseMapDataProps {
-  zone: any; // Replace 'any' with the appropriate type for your zone object
+  park: ParkResponse; // Replace 'any' with the appropriate type for your zone object
 }
 
-export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
+export const useFetchMarkersByParkGroup = ({ park }: UseMapDataProps) => {
   const [occurrences, setOccurrences] = useState<OccurrenceResponse[]>();
   const [attractions, setAttractions] = useState<AttractionResponse[]>();
   const [facilities, setFacilities] = useState<FacilityWithEvents[]>();
@@ -30,15 +33,15 @@ export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
   const [hovered, setHovered] = useState<HoverItem | null>(null)
 
   useEffect(() => {
-    if (zone.id) {
+    if (park.id) {
       fetchAttractions();
       fetchFacilities();
       fetchEvents();
     }
-  }, [zone]);
+  }, [park]);
 
   const fetchOccurrences = async () => {
-    const occurrenceRes = await getOccurrencesByZoneId(zone.id);
+    const occurrenceRes = await getOccurrencesByParkId(park.id);
     console.log(occurrenceRes.data);
     if (occurrenceRes.status === 200) {
       setOccurrences(occurrenceRes.data);
@@ -46,19 +49,18 @@ export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
   };
 
   const fetchAttractions = async () => {
-    const attractionsRes = await getAttractionsByParkId(zone.parkId);
+    const attractionsRes = await getAttractionsByParkId(park.id);
     if (attractionsRes.status === 200) {
-      const filteredAttractions = attractionsRes.data.filter((attraction) => pointInsidePolygonGeom(attraction, zone.geom.coordinates[0]));
-      setAttractions(filteredAttractions);
+      // const filteredAttractions = attractionsRes.data.filter((attraction) => pointInsidePolygonGeom(attraction, zone.geom.coordinates[0]));
+      setAttractions(attractionsRes.data);
     }
   };
 
   const fetchFacilities = async () => {
-    const facilitiesRes = await getFacilitiesByParkId(zone.parkId);
+    const facilitiesRes = await getFacilitiesByParkId(park.id);
     if (facilitiesRes.status === 200) {
       const filteredFacilities = facilitiesRes.data.filter(
-        (facility) =>
-          facility.lat && facility.long && pointInsidePolygonGeom({ lat: facility.lat, lng: facility.long }, zone.geom.coordinates[0]),
+        (facility) => facility.isPublic
       );
       const facilitiesWithEvents = await Promise.all(
         filteredFacilities.map(async (facility) => {
@@ -66,7 +68,7 @@ export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
           try {
             const eventsRes = await getEventsByFacilityId(facility.id);
             if (eventsRes.status === 200) {
-              facilityWithEvents.events = eventsRes.data;
+              facilityWithEvents.events = eventsRes.data.filter((event) => dayjs(event.endDate).isBefore(dayjs().startOf('day')) );
             }
             return facilityWithEvents;
           } catch (error) {
@@ -79,7 +81,7 @@ export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
   };
 
   const fetchEvents = async () => {
-    const eventsRes = await getEventsByFacilityId(zone.parkId);
+    const eventsRes = await getEventsByFacilityId(park.id + "");
     if (eventsRes.status === 200) {
       const eventsData = eventsRes.data;
       const facilityMap: Record<string, FacilityWithEvents> = {};

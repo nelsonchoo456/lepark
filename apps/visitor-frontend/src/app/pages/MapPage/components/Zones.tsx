@@ -5,7 +5,7 @@ import { Button, Select, Tooltip, Typography } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2';
 import { FaLandmark, FaStar, FaTicket } from 'react-icons/fa6';
-import { useFetchMarkersGroup } from '../../../components/map/hooks/useFetchMarkersGroup';
+import { useFetchMarkersByZoneGroup } from '../../../components/map/hooks/useFetchMarkersByZoneGroup';
 import { HoverItem } from '../../../components/map/interfaces/interfaces';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { TbTicket } from 'react-icons/tb';
@@ -13,6 +13,9 @@ import { COLORS } from '../../../config/colors';
 import { MdArrowOutward } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import FacilityEventsPictureMarker from '../../../components/map/FacilityEventsPictureMarker';
+import { useFetchMarkersByParkGroup } from '../../../components/map/hooks/useFetchMarkersByParkGroup';
+import { useMap } from 'react-leaflet';
+import MarkerLabel from '../../../components/map/MarkerLabel';
 
 interface OneZoneProps {
   zone: ZoneResponse;
@@ -36,6 +39,8 @@ interface MarkersGroupProps {
   showEvents?: boolean;
 
   setShowEvents?: (show: boolean) => void;
+
+  zoomLevel?: number;
 }
 
 // -- [ LAYER 1 ] --
@@ -59,23 +64,25 @@ const Zones = ({ park }: ZonesProps) => {
       setZones([]);
     }
   };
-  return zones?.map((z) => <OneZone zone={z} />);
-};
-
-// -- [ LAYER 2 ] --
-// Zone
-const OneZone = ({ zone }: OneZoneProps) => {
   return (
     <>
-      <MarkersHandlers zone={zone} />
-      <PolygonWithLabel entityId={zone.id} geom={zone.geom} color="transparent" fillOpacity={0.5} />
+      {zones?.map((z) => (
+        <OneZone zone={z} />
+      ))}{' '}
+      <MarkersHandlers park={park} />
     </>
   );
 };
 
-// -- [ LAYER 3a ] --
+// -- [ LAYER 2b ] --
+// Zone
+const OneZone = ({ zone }: OneZoneProps) => {
+  return <PolygonWithLabel entityId={zone.id} geom={zone.geom} color="transparent" fillOpacity={0.5} polygonLabel={zone.name} labelFields={{ fontSize: "14px" }}/>;
+};
+
+// -- [ LAYER 2a ] --
 // Handlers for Attractions, Events, Facilities
-const MarkersHandlers = ({ zone }: OneZoneProps) => {
+const MarkersHandlers = ({ park }: ZonesProps) => {
   const {
     attractions,
     facilities,
@@ -88,7 +95,9 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
     setShowEvents,
     hovered,
     setHovered,
-  } = useFetchMarkersGroup({ zone });
+  } = useFetchMarkersByParkGroup({ park });
+  const map = useMap(); // Access the map instance
+  const [zoomLevel, setZoomLevel] = useState(map.getZoom());
 
   useEffect(() => {
     if (attractions && facilities) {
@@ -97,6 +106,17 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
       setShowFacilities(true);
     }
   }, [attractions, facilities]);
+
+  useEffect(() => {
+    const handleZoom = () => {
+      setZoomLevel(map.getZoom());
+    };
+
+    map.on('zoom', handleZoom); // Listen to zoom changes
+    return () => {
+      map.off('zoom', handleZoom); // Cleanup listener
+    };
+  }, [map]);
 
   return (
     <>
@@ -144,7 +164,6 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
           </div>
         </div>
       </div>
-      <PolygonWithLabel entityId={zone.id} geom={zone.geom} color="transparent" fillOpacity={0.5} />
       <MarkersGroup
         attractions={attractions}
         facilities={facilities}
@@ -155,12 +174,13 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
         showFacilities={showFacilities}
         showEvents={showEvents}
         setShowEvents={setShowEvents}
+        zoomLevel={zoomLevel}
       />
     </>
   );
 };
 
-// -- [ LAYER 3b ] --
+// -- [ LAYER 3 ] --
 // Markers for Attractions, Events, Facilities
 const MarkersGroup = ({
   attractions,
@@ -172,6 +192,7 @@ const MarkersGroup = ({
   showFacilities,
   showEvents,
   setShowEvents,
+  zoomLevel,
 }: MarkersGroupProps) => {
   const navigate = useNavigate();
 
@@ -180,46 +201,49 @@ const MarkersGroup = ({
       {showAttractions &&
         attractions &&
         attractions.map((attraction) => (
-          <PictureMarker
-            key={attraction.id}
-            id={attraction.id}
-            entityType="ATTRACTION"
-            circleWidth={30}
-            lat={attraction.lat}
-            lng={attraction.lng}
-            backgroundColor={COLORS.mustard[300]}
-            icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
-            tooltipLabel={attraction.title}
-            hovered={hovered}
-            setHovered={() =>
-              setHovered &&
-              setHovered({
-                ...attraction,
-                title: (
-                  <div className="flex justify-between items-center">
-                    {attraction.title}
-                    {/* <ParkStatusTag>{attraction.status}</ParkStatusTag> */}
-                  </div>
-                ),
-                image: attraction.images ? attraction.images[0] : null,
-                entityType: 'ATTRACTION',
-                children: (
-                  <div className="h-full w-full flex flex-col justify-between">
-                    <div>
-                      <Typography.Paragraph ellipsis={{ rows: 3 }}>{attraction.description}</Typography.Paragraph>
+          <>
+            {zoomLevel && zoomLevel > 16 && <MarkerLabel lat={attraction.lat} lng={attraction.lng} entityId={attraction.id} fillColor={COLORS.mustard[200]} textColor={COLORS.mustard[700]} label={attraction.title} />}
+            <PictureMarker
+              key={attraction.id}
+              id={attraction.id}
+              entityType="ATTRACTION"
+              circleWidth={30}
+              lat={attraction.lat}
+              lng={attraction.lng}
+              backgroundColor={COLORS.mustard[300]}
+              icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+              // tooltipLabel={attraction.title}
+              hovered={hovered}
+              setHovered={() =>
+                setHovered &&
+                setHovered({
+                  ...attraction,
+                  title: (
+                    <div className="flex justify-between items-center">
+                      {attraction.title}
+                      {/* <ParkStatusTag>{attraction.status}</ParkStatusTag> */}
                     </div>
-                    <div className="flex justify-end">
-                      <Tooltip title="View Attraction details">
-                        <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
-                          <MdArrowOutward />
-                        </Button>
-                      </Tooltip>
+                  ),
+                  image: attraction.images ? attraction.images[0] : null,
+                  entityType: 'ATTRACTION',
+                  children: (
+                    <div className="h-full w-full flex flex-col justify-between">
+                      <div>
+                        <Typography.Paragraph ellipsis={{ rows: 3 }}>{attraction.description}</Typography.Paragraph>
+                      </div>
+                      <div className="flex justify-end">
+                        <Tooltip title="View Attraction details">
+                          <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
+                            <MdArrowOutward />
+                          </Button>
+                        </Tooltip>
+                      </div>
                     </div>
-                  </div>
-                ),
-              })
-            }
-          />
+                  ),
+                })
+              }
+            />
+          </>
         ))}
 
       {(showFacilities || showEvents) &&
@@ -227,7 +251,8 @@ const MarkersGroup = ({
         facilities.map(
           (facility) =>
             facility.lat &&
-            facility.long && (
+            facility.long && (<>
+              {zoomLevel && zoomLevel > 16 && <MarkerLabel lat={facility.lat} lng={facility.long} entityId={facility.id} fillColor={COLORS.sky[200]} textColor={COLORS.sky[700]} label={facility.name} position='bottom'/>}
               <FacilityEventsPictureMarker
                 facility={{ ...facility, events: [] }}
                 circleWidth={38}
@@ -240,7 +265,7 @@ const MarkersGroup = ({
                 hovered={hovered}
                 setHovered={setHovered}
               />
-            ),
+            </>),
         )}
     </>
   );
