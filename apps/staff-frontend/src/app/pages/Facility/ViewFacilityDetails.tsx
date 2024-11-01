@@ -1,17 +1,16 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { getFacilityById, FacilityResponse, StaffResponse, StaffType, FacilityStatusEnum, FacilityTypeEnum } from '@lepark/data-access';
+import { FacilityStatusEnum, StaffResponse, StaffType } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { Button, Card, Descriptions, Tabs, Tag } from 'antd';
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { FaCalendarCheck, FaCalendarTimes, FaCloudRain, FaUmbrella, FaUsers, FaUserSlash } from 'react-icons/fa';
+import { RiEdit2Line } from 'react-icons/ri';
+import { useNavigate, useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
-import moment from 'moment';
+import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
+import BookingTable from './components/BookingTable';
+import FacilityCarousel from './components/FacilityCarousel';
 import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
-import FacilityCarousel from './components/FacilityCarousel';
-import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
-import { RiEdit2Line } from 'react-icons/ri';
-import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
-import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
@@ -47,11 +46,23 @@ const ViewFacilityDetails = () => {
       children: (() => {
         switch (facility?.facilityStatus) {
           case FacilityStatusEnum.OPEN:
-            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}
+              </Tag>
+            );
           case FacilityStatusEnum.UNDER_MAINTENANCE:
-            return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}
+              </Tag>
+            );
           case FacilityStatusEnum.CLOSED:
-            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}
+              </Tag>
+            );
           default:
             return <Tag>{facility?.facilityStatus}</Tag>;
         }
@@ -71,6 +82,14 @@ const ViewFacilityDetails = () => {
       children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
     },
   ];
+
+  if (facility?.isBookable) {
+    tabsItems.push({
+      key: 'bookings',
+      label: 'Bookings',
+      children: <BookingTable facilityId={facility.id} />,
+    });
+  }
 
   return (
     <ContentWrapperDark>

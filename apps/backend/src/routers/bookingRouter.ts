@@ -74,4 +74,14 @@ router.get('/getBookingsByFacilityId/:facilityId', async (req, res) => {
   }
 });
 
+router.get('/getBookingsByParkId/:parkId', async (req, res) => {
+  try {
+    const parkId = parseInt(req.params.parkId);
+    const bookings = await BookingService.getBookingsByParkId(parkId);
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

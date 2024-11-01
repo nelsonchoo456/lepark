@@ -116,6 +116,8 @@ import CompareParkCrowdLevels from './pages/CrowdInsight/CompareParkCrowdLevels'
 import VerifyEventTicket from './pages/VerifyTicket/VerifyEventTicket';
 import FeedbackList from './pages/Feedback/FeedbackList';
 import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
+import BookingList from './pages/Booking/BookingList';
+import ViewBookingDetails from './pages/Booking/ViewBookingDetails';
 
 export function App() {
   return (
@@ -468,6 +470,10 @@ export function App() {
                   >
                     <Route path=":facilityId/edit" element={<FacilityEdit />} />
                     <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
+                    <Route path="bookings">
+                      <Route path=":bookingId" element={<ViewBookingDetails />} />
+                      <Route index element={<BookingList />} />
+                    </Route>
                   </Route>
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>

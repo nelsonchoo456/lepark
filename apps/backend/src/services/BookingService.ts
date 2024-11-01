@@ -6,6 +6,7 @@ import FacilityDao from '../dao/FacilityDao';
 import VisitorDao from '../dao/VisitorDao';
 import { BookingSchema, BookingSchemaType } from '../schemas/bookingSchema';
 import EmailUtil from '../utils/EmailUtil';
+import ParkDao from '../dao/ParkDao';
 
 class BookingService {
   public async createBooking(data: BookingSchemaType): Promise<Booking> {
@@ -95,6 +96,25 @@ class BookingService {
       throw new Error('Facility not found');
     }
     return BookingDao.getBookingsByFacilityId(facilityId);
+  }
+
+  public async getBookingsByParkId(parkId: number): Promise<Booking[]> {
+    const park = await ParkDao.getParkById(parkId);
+    if (!park) {
+      throw new Error('Park not found');
+    }
+
+    const bookings = await BookingDao.getAllBookings();
+    const filteredBookings: Booking[] = [];
+
+    for (const booking of bookings) {
+      const facility = await FacilityDao.getFacilityById(booking.facilityId);
+      if (facility && facility.parkId === parkId) {
+        filteredBookings.push(booking);
+      }
+    }
+
+    return filteredBookings;
   }
 }
 
