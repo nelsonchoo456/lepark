@@ -31,9 +31,9 @@ export const useFetchMarkersGroup = ({ zone }: UseMapDataProps) => {
 
   useEffect(() => {
     if (zone.id) {
-      fetchOccurrences();
       fetchAttractions();
       fetchFacilities();
+      fetchEvents();
     }
   }, [zone]);
 

@@ -1,12 +1,18 @@
 import { AttractionResponse, FacilityWithEvents, getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
 import { useEffect, useState } from 'react';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { Button, Select } from 'antd';
+import { Button, Select, Tooltip, Typography } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2';
 import { FaLandmark, FaStar, FaTicket } from 'react-icons/fa6';
 import { useFetchMarkersGroup } from '../../../components/map/hooks/useFetchMarkersGroup';
 import { HoverItem } from '../../../components/map/interfaces/interfaces';
+import PictureMarker from '../../../components/map/PictureMarker';
+import { TbTicket } from 'react-icons/tb';
+import { COLORS } from '../../../config/colors';
+import { MdArrowOutward } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
+import FacilityEventsPictureMarker from '../../../components/map/FacilityEventsPictureMarker';
 
 interface OneZoneProps {
   zone: ZoneResponse;
@@ -87,12 +93,10 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
   useEffect(() => {
     if (attractions && facilities) {
       setShowAttractions(true);
-    setShowEvents(true);
-    setShowFacilities(true)
+      setShowEvents(true);
+      setShowFacilities(true);
     }
-    
-  }, [attractions, facilities])
-  
+  }, [attractions, facilities]);
 
   return (
     <>
@@ -111,18 +115,16 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
         <Select showSearch defaultActiveFirstOption={false} suffixIcon={<FiSearch />} filterOption={false} className="w-full" />
         <div className="flex flex-col items-end justify-end mt-2 gap-2">
           <div
-            key={"facilities-vis"}
-            onClick={() => setShowFacilities(prev => !prev)}
-            className={`flex flex-col items-center text-white w-16 py-2 rounded-md ${
-              showFacilities ? 'bg-sky-400' : 'bg-sky-200'
-            }`}
+            key={'facilities-vis'}
+            onClick={() => setShowFacilities((prev) => !prev)}
+            className={`flex flex-col items-center text-white w-16 py-2 rounded-md ${showFacilities ? 'bg-sky-400' : 'bg-sky-200'}`}
           >
             <FaLandmark />
             <div style={{ fontSize: '0.7rem' }}>Facilities</div>
           </div>
           <div
-            key={"attractions-vis"}
-            onClick={()=> setShowAttractions(prev => !prev)}
+            key={'attractions-vis'}
+            onClick={() => setShowAttractions((prev) => !prev)}
             className={`flex flex-col items-center text-white w-16 py-2 rounded-md ${
               showAttractions === true ? 'bg-mustard-400' : 'bg-mustard-200'
             }`}
@@ -131,8 +133,8 @@ const MarkersHandlers = ({ zone }: OneZoneProps) => {
             <div style={{ fontSize: '0.7rem' }}>Attractions</div>
           </div>
           <div
-            key={"events-vis"}
-            onClick={() => setShowEvents(prev => !prev)}
+            key={'events-vis'}
+            onClick={() => setShowEvents((prev) => !prev)}
             className={`flex flex-col items-center text-white w-16 py-2 rounded-md ${
               showEvents ? 'bg-highlightGreen-400' : 'bg-highlightGreen-200'
             }`}
@@ -171,8 +173,77 @@ const MarkersGroup = ({
   showEvents,
   setShowEvents,
 }: MarkersGroupProps) => {
-  return <>
-  </>;
+  const navigate = useNavigate();
+
+  return (
+    <>
+      {showAttractions &&
+        attractions &&
+        attractions.map((attraction) => (
+          <PictureMarker
+            key={attraction.id}
+            id={attraction.id}
+            entityType="ATTRACTION"
+            circleWidth={30}
+            lat={attraction.lat}
+            lng={attraction.lng}
+            backgroundColor={COLORS.mustard[300]}
+            icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+            tooltipLabel={attraction.title}
+            hovered={hovered}
+            setHovered={() =>
+              setHovered &&
+              setHovered({
+                ...attraction,
+                title: (
+                  <div className="flex justify-between items-center">
+                    {attraction.title}
+                    {/* <ParkStatusTag>{attraction.status}</ParkStatusTag> */}
+                  </div>
+                ),
+                image: attraction.images ? attraction.images[0] : null,
+                entityType: 'ATTRACTION',
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div>
+                      <Typography.Paragraph ellipsis={{ rows: 3 }}>{attraction.description}</Typography.Paragraph>
+                    </div>
+                    <div className="flex justify-end">
+                      <Tooltip title="View Attraction details">
+                        <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </Tooltip>
+                    </div>
+                  </div>
+                ),
+              })
+            }
+          />
+        ))}
+
+      {(showFacilities || showEvents) &&
+        facilities &&
+        facilities.map(
+          (facility) =>
+            facility.lat &&
+            facility.long && (
+              <FacilityEventsPictureMarker
+                facility={{ ...facility, events: [] }}
+                circleWidth={38}
+                events={facility.events}
+                lat={facility.lat}
+                lng={facility.long}
+                facilityType={facility.facilityType}
+                showFacilities={showFacilities || false}
+                showEvents={showEvents || false}
+                hovered={hovered}
+                setHovered={setHovered}
+              />
+            ),
+        )}
+    </>
+  );
 };
 
 export default Zones;
