@@ -1,4 +1,4 @@
-import { Facility, Hub, Prisma, Sensor, SensorTypeEnum } from '@prisma/client';
+import { Facility, Hub, Prisma, Sensor, SensorTypeEnum, SensorUnitEnum } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SensorSchema, SensorSchemaType } from '../schemas/sensorSchema';
@@ -30,7 +30,7 @@ class SensorService {
 
       const formattedData = dateFormatter(data);
       formattedData.sensorStatus = "INACTIVE";
-      
+      formattedData.sensorUnit = getSensorUnitFromType(formattedData.sensorType);
       // Validate input data using Zod
       SensorSchema.parse(formattedData);
 
@@ -414,6 +414,23 @@ function ensureAllFieldsPresent(data: SensorSchemaType): Prisma.SensorCreateInpu
     throw new Error('Missing required fields for sensor creation');
   }
   return data as Prisma.SensorCreateInput;
+}
+
+function getSensorUnitFromType(sensorType: SensorTypeEnum): SensorUnitEnum {
+  switch (sensorType) {
+    case SensorTypeEnum.TEMPERATURE:
+      return SensorUnitEnum.DEGREES_CELSIUS;
+    case SensorTypeEnum.HUMIDITY:
+      return SensorUnitEnum.PERCENT;
+    case SensorTypeEnum.SOIL_MOISTURE:
+      return SensorUnitEnum.PERCENT;
+    case SensorTypeEnum.LIGHT:
+      return SensorUnitEnum.LUX;
+    case SensorTypeEnum.CAMERA:
+      return SensorUnitEnum.PAX;
+    default:
+      return SensorUnitEnum.PERCENT;
+  } 
 }
 
 export default new SensorService();
