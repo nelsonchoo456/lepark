@@ -244,15 +244,24 @@ const ParkCrowdLevels: React.FC = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: { dataset: { label: string }; parsed: { y: number | null } }) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
+          label: function (context: { dataset: { label: string; }; raw: any; dataIndex: any; chart: { data: { datasets: any[]; }; }; }) {
+            const label = context.dataset.label || '';
+            const currentValue = context.raw;
+            const index = context.dataIndex;
+  
+            // Find the value of the other dataset at the same index
+            const otherDataset = context.chart.data.datasets.find((dataset) => dataset.label !== label);
+            const otherValue = otherDataset ? otherDataset.data[index] : null;
+  
+            // Calculate the difference, if both values exist
+            let difference = '';
+            if (currentValue !== null && otherValue !== null) {
+              const diffValue = Math.abs(currentValue - otherValue);
+              const direction = currentValue > otherValue ? 'higher' : 'lower';
+              difference = ` (${diffValue} ${direction})`; // Add "higher" or "lower" based on the direction
             }
-            if (context.parsed.y !== null) {
-              label += Math.round(context.parsed.y);
-            }
-            return label;
+  
+            return `${label}: ${currentValue}${difference}`;
           },
         },
       },
