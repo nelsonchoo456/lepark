@@ -36,6 +36,13 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
+interface LocationState {
+  title?: string;
+  description?: string;
+  images?: string[];
+  parkId?: number;
+}
+
 const CreateMaintenanceTask = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -44,6 +51,7 @@ const CreateMaintenanceTask = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [createdMaintenanceTask, setCreatedMaintenanceTask] = useState<MaintenanceTaskResponse | null>(null);
   const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
+
 
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [zones, setZones] = useState<ZoneResponse[]>([]);
@@ -56,6 +64,58 @@ const CreateMaintenanceTask = () => {
   const [showDueDate, setShowDueDate] = useState(false);
   const [entityIdInput, setEntityIdInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+
+
+  const feedbackData = location.state as LocationState;
+
+  const [feedbackPreviews, setFeedbackPreviews] = useState<string[]>([]);
+const { title: feedbackTitle, description: feedbackDescription, images: feedbackImages, parkId: feedbackParkId } = location.state || {};
+
+const urlToFile = async (url: string): Promise<File> => {
+  try {
+    // Add no-cors mode to the fetch request
+    const response = await fetch(url, {
+      mode: 'no-cors'
+    });
+
+    // For S3 URLs, construct filename from the URL
+    const filename = url.split('/').pop()?.split('?')[0] || 'image.jpg';
+
+    // Since we can't directly access the blob with no-cors,
+    // we'll create a new Image and convert it to a blob
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';  // Try to request with CORS
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], filename, { type: 'image/png' });
+            resolve(file);
+          } else {
+            reject(new Error('Failed to convert image to blob'));
+          }
+        }, 'image/png');
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      // Add timestamp to bypass cache
+      img.src = `${url}?t=${new Date().getTime()}`;
+    });
+  } catch (error) {
+    console.error('Error converting URL to File:', error);
+    throw error;
+  }
+};
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -76,6 +136,50 @@ const CreateMaintenanceTask = () => {
       form.setFieldsValue({ dueDate: dayjs(dueDate) });
     }
   }, [location.search]);
+
+
+
+  useEffect(() => {
+  if (feedbackTitle || feedbackDescription) {
+    form.setFieldsValue({
+      title: feedbackTitle,
+      description: feedbackDescription
+    });
+  }
+
+  if (user?.role === StaffType.SUPERADMIN && feedbackParkId) {
+    form.setFieldsValue({ parkId: feedbackParkId.toString() });
+    setSelectedParkId(feedbackParkId);
+  }
+
+  // Set feedback images for preview
+  if (feedbackImages && feedbackImages.length > 0) {
+    setFeedbackPreviews(feedbackImages);
+  }
+}, [feedbackTitle, feedbackDescription, feedbackImages, feedbackParkId, form, user]);
+
+
+   useEffect(() => {
+    if (feedbackData) {
+      // Set form values from feedback
+      form.setFieldsValue({
+        title: feedbackData.title,
+        description: feedbackData.description,
+      });
+
+      // Handle parkId if present
+      if (feedbackData.parkId) {
+        setSelectedParkId(feedbackData.parkId);
+        form.setFieldsValue({ parkId: feedbackData.parkId.toString() });
+      }
+
+      // Set feedback images
+      if (feedbackData.images && feedbackData.images.length > 0) {
+        setFeedbackPreviews(feedbackData.images);
+      }
+    }
+  }, [feedbackData, form]);
+
 
   useEffect(() => {
     if (user?.role === StaffType.SUPERADMIN) {
@@ -179,26 +283,31 @@ const CreateMaintenanceTask = () => {
 
       const values = await form.validateFields();
 
-      if (selectedFiles.length === 0) {
+      // Check if we have either feedback images or newly uploaded files
+      if (feedbackPreviews.length === 0 && selectedFiles.length === 0) {
         messageApi.error('Please upload at least one image.');
         return;
       }
 
-      if (selectedFiles.length > 3) {
+      const totalImages = feedbackPreviews.length + selectedFiles.length;
+      if (totalImages > 3) {
         messageApi.error('You can upload a maximum of 3 images.');
         return;
       }
 
+      // Convert feedback preview URLs to Files
+      const feedbackFiles = await Promise.all(
+        feedbackPreviews.map(url => urlToFile(url))
+      );
+
+      // Combine all files
+      const allFiles = [...feedbackFiles, ...selectedFiles];
+
       const { parkId, hasDueDate, dueDate, entityType, entityId, ...maintenanceTaskData } = values;
 
-      // Debugging: Log the raw dueDate value
-      console.log('Raw dueDate value from form:', dueDate);
-      console.log('hasDueDate', hasDueDate);
-      // Ensure dueDate is correctly parsed and converted
       let formattedDueDate = null;
       if (dueDate) {
         formattedDueDate = dayjs(dueDate).toISOString();
-        console.log('Formatted dueDate value:', formattedDueDate);
       }
 
       const taskData = {
@@ -209,19 +318,16 @@ const CreateMaintenanceTask = () => {
         parkAssetId: entityType === 'parkAsset' ? selectedEntity?.id : null,
         sensorId: entityType === 'sensor' ? selectedEntity?.id : null,
         hubId: entityType === 'hub' ? selectedEntity?.id : null,
+        images: [] // Add empty images array since actual images will be uploaded separately
       };
 
-      console.log('Maintenance Task Data:', taskData);
-
-      const taskResponse = await createMaintenanceTask(taskData, user.id, selectedFiles);
-      console.log('Maintenance Task created:', taskResponse.data);
+      const taskResponse = await createMaintenanceTask(taskData, user.id, allFiles);
       setCreatedMaintenanceTask(taskResponse.data);
     } catch (error) {
       console.error('Error creating Maintenance Task:', error);
       messageApi.error('Failed to create Maintenance Task. Please try again.');
     }
   };
-
   const handleDueDateToggle = (value: string) => {
     const checked = value === 'yes';
     setShowDueDate(checked);
@@ -290,6 +396,8 @@ const CreateMaintenanceTask = () => {
         return null;
     }
   };
+
+  const allPreviews = [...feedbackPreviews, ...previewImages];
 
   const renderEntityCard = () => {
     if (!selectedEntity) return null;
@@ -446,35 +554,58 @@ const CreateMaintenanceTask = () => {
               </Form.Item>
             )}
             <Form.Item label="Upload Images" required tooltip="At least 1 image is required, maximum 3 images">
-              <ImageInput
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                accept="image/png, image/jpeg"
-                onClick={onInputClick}
-                disabled={selectedFiles.length >= 3}
-              />
-            </Form.Item>
-            {previewImages?.length > 0 && (
-              <Form.Item label="Image Previews" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
-                <div className="flex flex-wrap gap-2">
-                  {previewImages.map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => removeImage(index)}
-                    />
-                  ))}
-                </div>
-              </Form.Item>
-            )}
-            {selectedFiles.length >= 3 && (
-              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <p className="text-yellow-500">Maximum number of images (3) reached.</p>
-              </Form.Item>
-            )}
+  <ImageInput
+    type="file"
+    multiple
+    onChange={handleFileChange}
+    accept="image/png, image/jpeg"
+    onClick={onInputClick}
+    disabled={allPreviews.length >= 3}
+  />
+</Form.Item>
+{(feedbackPreviews.length > 0 || previewImages.length > 0) && (
+  <Form.Item label="Image Previews" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
+    <div className="flex flex-wrap gap-2">
+      {feedbackPreviews.map((imgSrc, index) => (
+        <div key={`feedback-${index}`} className="relative group">
+          <img
+            src={imgSrc}
+            alt={`Feedback Preview ${index}`}
+            className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+          />
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            onClick={() => {
+              setFeedbackPreviews(prev => prev.filter((_, i) => i !== index));
+            }}
+          >
+            <span className="text-white">Remove</span>
+          </div>
+        </div>
+      ))}
+      {previewImages.map((imgSrc, index) => (
+        <div key={`upload-${index}`} className="relative group">
+          <img
+            src={imgSrc}
+            alt={`Upload Preview ${index}`}
+            className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+          />
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            onClick={() => removeImage(index)}
+          >
+            <span className="text-white">Remove</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </Form.Item>
+)}
+{allPreviews.length >= 3 && (
+  <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+    <p className="text-yellow-500">Maximum number of images (3) reached.</p>
+  </Form.Item>
+)}
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Button type="primary" htmlType="submit" className="w-full">
