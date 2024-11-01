@@ -241,7 +241,7 @@ const MapTab = ({ park }: MapTabProps) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />
-          {/* <HeatmapLayer/> */}
+          <HeatmapLayer/>
           
           {showDecarb &&
             decarbAreas &&

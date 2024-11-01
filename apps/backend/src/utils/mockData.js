@@ -1613,8 +1613,8 @@ const attractionsData = [
     status: 'OPEN',
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.314601354444774,
-    lng: 103.80999147892,
+    lat: 1.3096208075727624,
+    lng: 103.81668090820314,
     parkId: 2,
   },
   {
@@ -1646,8 +1646,8 @@ const attractionsData = [
     status: 'OPEN',
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.313818486250098,
-    lng: 103.8106995820999,
+    lat: 1.307774512896767,
+    lng: 103.8168096542358,
     parkId: 2,
   },
 ];
