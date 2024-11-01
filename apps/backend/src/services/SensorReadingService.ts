@@ -936,6 +936,7 @@ class SensorReadingService {
   // Get the average crowd level reading from each camera sensor in the park for the past hour
   public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<Array<{
     sensorId: string;
+    zoneId: number;
     lat: number;
     long: number;
     averageValue: number;
@@ -957,7 +958,6 @@ class SensorReadingService {
             oneHourAgo,
             new Date()
           );
-          console.log('readings for sensor', sensor.id, readings);
           
           // Only include sensors that have readings in the last hour
           if (readings.length > 0) {
@@ -966,6 +966,7 @@ class SensorReadingService {
             
             sensorAverages.push({
               sensorId: sensor.id,
+              zoneId: zone.id,
               lat: sensor.lat,
               long: sensor.long,
               averageValue: average,
@@ -973,6 +974,10 @@ class SensorReadingService {
             });
           }
         }
+      }
+
+      if (sensorAverages.length === 0) {
+        throw new Error('No camera readings available in the last hour');
       }
   
       return sensorAverages;
