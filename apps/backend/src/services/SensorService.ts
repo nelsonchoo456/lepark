@@ -386,6 +386,14 @@ class SensorService {
   }
 
   public async isSerialNumberDuplicate(serialNumber: string, excludeSensorId?: string): Promise<boolean> {
+    if (!serialNumber || typeof serialNumber !== 'string') {
+      throw new Error('Serial number is required');
+    }
+
+    if (!excludeSensorId || typeof excludeSensorId !== 'string') {
+      throw new Error('Sensor ID to exclude is required');
+    }
+
     return SensorDao.isSerialNumberDuplicate(serialNumber, excludeSensorId);
   }
 }
