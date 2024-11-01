@@ -1,6 +1,8 @@
-import { ParkResponse, getAllParks, predictCrowdLevels } from '@lepark/data-access';
+import { useState, useEffect, useMemo } from 'react';
+import { ParkResponse } from '@lepark/data-access';
 import moment from 'moment';
 import { calculateParkAreaAndThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
+import { useFetchCrowdDataForCrowdAlerts } from './useFetchCrowdDataForCrowdAlerts';
 
 export interface CrowdAlert {
   parkId: number;
@@ -10,45 +12,111 @@ export interface CrowdAlert {
   date: string;
 }
 
-export const checkForUpcomingCrowdAlerts = async (
-  parkId: number = 0, // default to all parks
-  days: number = 7, // default to 7 days
-): Promise<CrowdAlert[]> => {
-  try {
-    const parksResponse = await getAllParks();
-    const allParks = parksResponse.data;
-    const today = moment().startOf('day');
-    const endDate = moment().add(days, 'days').endOf('day');
+interface UseCrowdAlertsProps {
+  parkId?: number;
+  parks: ParkResponse[];
+  days?: number;
+}
 
-    // Get predictions for the specified park or all parks
-    const parksToCheck = parkId === 0 ? allParks : allParks.filter((p) => p.id === parkId);
-    const alerts: CrowdAlert[] = [];
+interface CrowdData {
+  date: string;
+  crowdLevel: number | null;
+  predictedCrowdLevel: number | null;
+  parkId: number;
+}
 
-    // Process each park
-    for (const park of parksToCheck) {
-      const daysToPredict = endDate.diff(today, 'days') + 1;
-      const response = await predictCrowdLevels(park.id, daysToPredict);
-      const { thresholds } = calculateParkAreaAndThresholds(park.geom);
+export const useCrowdAlerts = ({ parkId = 0, parks, days = 7 }: UseCrowdAlertsProps) => {
+  const [alerts, setAlerts] = useState<CrowdAlert[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-      // Check each prediction
-      for (const prediction of response.data) {
-        const date = moment(prediction.date);
-        if (date.isBetween(today, endDate) && prediction.predictedCrowdLevel > thresholds.moderate) {
-          alerts.push({
-            parkId: park.id,
-            parkName: park.name,
-            predictedCrowd: prediction.predictedCrowdLevel,
-            threshold: thresholds.moderate,
-            date: prediction.date,
-          });
-        }
+  // Memoize parksToProcess to prevent unnecessary recalculations
+  const parksToProcess = useMemo(() => 
+    parkId === 0 ? parks : parks.filter((p) => p.id === parkId),
+    [parkId, parks]
+  );
+
+  // Fetch crowd data for the current park configuration
+  const { crowdData, isLoading: isCrowdDataLoading, error: crowdDataError } = useFetchCrowdDataForCrowdAlerts({
+    parkId: parkId,
+    parks: parksToProcess,
+  });
+
+  // Helper function to process alerts for a single park
+  const processParksAlerts = (
+    park: ParkResponse,
+    crowdData: CrowdData[],
+    dateRange: { startDate: moment.Moment; endDate: moment.Moment }
+  ): CrowdAlert[] => {
+    const { thresholds } = calculateParkAreaAndThresholds(park.geom);
+  
+    // Filter crowd data for this specific park when parkId is available
+    const parkCrowdData = parkId === 0 
+      ? crowdData.filter(data => data.parkId === park.id)
+      : crowdData;
+  
+    return parkCrowdData
+      .filter((data) => {
+        const date = moment(data.date);
+        return (
+          data.predictedCrowdLevel !== null &&
+          data.predictedCrowdLevel > thresholds.moderate &&
+          date.isSameOrAfter(dateRange.startDate) &&
+          date.isSameOrBefore(dateRange.endDate)
+        );
+      })
+      .map((data) => ({
+        parkId: park.id,
+        parkName: park.name,
+        predictedCrowd: data.predictedCrowdLevel!,
+        threshold: thresholds.moderate,
+        date: data.date,
+      }));
+  };
+  
+  // Helper function to sort alerts
+  const sortAlerts = (alerts: CrowdAlert[]): CrowdAlert[] => {
+    return alerts.sort((a, b) => {
+      const dateCompare = moment(a.date).diff(moment(b.date));
+      return dateCompare === 0 ? b.predictedCrowd - a.predictedCrowd : dateCompare;
+    });
+  };
+
+  useEffect(() => {
+    if (isCrowdDataLoading || !crowdData || crowdData.length === 0) return;
+
+    const processAllAlerts = () => {
+      try {
+        setIsProcessing(true);
+        const dateRange = {
+          startDate: moment().startOf('day'),
+          endDate: moment().add(days, 'days').endOf('day'),
+        };
+
+        const newAlerts: CrowdAlert[] = [];
+
+        // Process alerts for each park
+        parksToProcess.forEach(park => {
+          const parkAlerts = processParksAlerts(park, crowdData, dateRange);
+          newAlerts.push(...parkAlerts);
+        });
+
+        setAlerts(sortAlerts(newAlerts));
+        setError(null);
+      } catch (err) {
+        console.error('Error processing alerts:', err);
+        setError('Failed to process alerts');
+      } finally {
+        setIsProcessing(false);
       }
-    }
+    };
 
-    // Sort alerts by date
-    return alerts.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
-  } catch (error) {
-    console.error('Error checking for crowd alerts:', error);
-    return [];
-  }
+    processAllAlerts();
+  }, [crowdData, parksToProcess, days]);
+
+  return {
+    alerts,
+    isLoading: isCrowdDataLoading || isProcessing,
+    error: error || crowdDataError,
+  };
 };

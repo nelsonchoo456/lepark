@@ -27,20 +27,12 @@ interface CreateDetailsStepProps {
   handleCurrStep: (step: number) => void;
   form: FormInstance;
   parks: ParkResponse[];
-  previewImages: string[];
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  removeImage: (index: number) => void;
-  onInputClick: (event: React.MouseEvent<HTMLInputElement>) => void;
 }
 
 const CreateDetailsStep = ({
   handleCurrStep,
   form,
   parks,
-  previewImages,
-  handleFileChange,
-  removeImage,
-  onInputClick,
 }: CreateDetailsStepProps) => {
   const [messageApi, contextHolder] = message.useMessage();
   const { user } = useAuth<StaffResponse>();

@@ -74,6 +74,7 @@ const FeedbackViewDetails = () => {
   return withoutUnderscores.charAt(0).toUpperCase() + withoutUnderscores.slice(1);
 };
     const handleCreatePlantTask = () => {
+  if (feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE) {
     navigate('/plant-tasks/create', {
       state: {
         title: feedback?.title,
@@ -82,9 +83,10 @@ const FeedbackViewDetails = () => {
         parkId: feedback?.parkId
       }
     });
-  };
+  }
+};
 
-  const handleCreateMaintenanceTask = () => {
+const handleCreateMaintenanceTask = () => {
   navigate('/maintenance-tasks/create', {
     state: {
       title: feedback?.title,

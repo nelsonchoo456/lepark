@@ -24,6 +24,14 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const { TextArea } = Input;
 
+// Add LocationState interface
+interface LocationState {
+  title?: string;
+  description?: string;
+  images?: string[];
+  parkId?: number;
+}
+
 const CreatePlantTask = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -43,12 +51,48 @@ const CreatePlantTask = () => {
   const [isOccurrenceDisabled, setIsOccurrenceDisabled] = useState(true);
 
   const [showDueDate, setShowDueDate] = useState(false);
-
-  const [feedbackFiles, setFeedbackFiles] = useState<File[]>([]);
   const [feedbackPreviews, setFeedbackPreviews] = useState<string[]>([]);
 
   const location = useLocation();
+  const feedbackData = location.state as LocationState;
   const { title: feedbackTitle, description: feedbackDescription, images: feedbackImages, parkId: feedbackParkId } = location.state || {};
+
+  // Update urlToFile function
+  const urlToFile = async (url: string): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const filename = url.split('/').pop()?.split('?')[0] || 'image.jpg';
+              const file = new File([blob], filename, { type: 'image/jpeg' });
+              resolve(file);
+            } else {
+              reject(new Error('Failed to convert image to blob'));
+            }
+          }, 'image/jpeg');
+        } else {
+          reject(new Error('Failed to get canvas context'));
+        }
+      };
+
+      img.onerror = () => {
+        reject(new Error(`Failed to load image from URL: ${url}`));
+      };
+
+      img.src = `${url}?t=${new Date().getTime()}`;
+    });
+  };
 
   useEffect(() => {
     if (feedbackTitle || feedbackDescription) {
@@ -66,32 +110,11 @@ const CreatePlantTask = () => {
     }
 
     if (feedbackImages && feedbackImages.length > 0) {
-      const fetchImages = async () => {
-        const fetchedFiles: File[] = [];
-        const fetchedPreviews: string[] = [];
-
-        for (const imageUrl of feedbackImages) {
-          try {
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const fileName = imageUrl.split('/').pop() || 'image.jpg';
-            const file = new File([blob], fileName, { type: blob.type });
-            fetchedFiles.push(file);
-            fetchedPreviews.push(URL.createObjectURL(blob));
-          } catch (error) {
-            console.error('Error fetching image:', error);
-          }
-        }
-
-        setFeedbackFiles(fetchedFiles);
-        setFeedbackPreviews(fetchedPreviews);
-      };
-
-      fetchImages();
+      setFeedbackPreviews(feedbackImages);
     }
   }, [feedbackTitle, feedbackDescription, feedbackImages, feedbackParkId, form, user]);
 
-  const allFiles = [...feedbackFiles, ...selectedFiles];
+  // Add allPreviews constant
   const allPreviews = [...feedbackPreviews, ...previewImages];
 
   useEffect(() => {
@@ -106,7 +129,6 @@ const CreatePlantTask = () => {
       form.setFieldsValue({ parkId: parkId.toString() });
       setSelectedParkId(parkId);
       fetchZones(parkId);
-      fetchOccurrences(parkId);
     } catch (error) {
       console.error('Error fetching park details:', error);
       messageApi.error('Failed to fetch park details');
@@ -134,10 +156,13 @@ const CreatePlantTask = () => {
     }
   };
 
-  const fetchOccurrences = async (parkId: number) => {
+  const fetchOccurrences = async (parkId: number, zoneId: number) => {
     try {
       const response = await getOccurrencesByParkId(parkId);
-      setOccurrences(response.data.filter((occurrence) => !selectedZoneId || occurrence.zoneId === selectedZoneId));
+      const filteredOccurrences = response.data.filter(
+        (occurrence) => occurrence.zoneId === zoneId
+      );
+      setOccurrences(filteredOccurrences);
       setIsOccurrenceDisabled(false);
     } catch (error) {
       console.error('Error fetching occurrences:', error);
@@ -155,38 +180,51 @@ const CreatePlantTask = () => {
     label: formatEnumLabelToRemoveUnderscores(urgency),
   }));
 
-  const handleSubmit = async () => {
+  // Update handleSubmit with better error handling
+  const handleSubmit = async (values: any) => {
     try {
       if (!user) {
         throw new Error('User not authenticated');
       }
 
-      const values = await form.validateFields();
-
-      if (allFiles.length === 0) {
-        messageApi.error('Please upload at least one image.');
+      if (feedbackPreviews.length === 0 && selectedFiles.length === 0) {
+        messageApi.error('Please upload at least one image');
         return;
       }
 
-      if (allFiles.length > 3) {
-        messageApi.error('You can upload a maximum of 3 images.');
-        return;
-      }
+      const feedbackFiles = await Promise.all(
+        feedbackPreviews.map(async (url) => {
+          try {
+            return await urlToFile(url);
+          } catch (error) {
+            console.error(`Failed to convert image URL to file: ${url}`, error);
+            messageApi.error(`Failed to process one of the images. Please try removing and re-adding it.`);
+            throw error;
+          }
+        })
+      );
 
-      const { parkId, zoneId, hasDueDate, dueDate, ...plantTaskData } = values;
+      const allFiles = [...feedbackFiles, ...selectedFiles];
+
       const taskData = {
-        ...plantTaskData,
-        dueDate: hasDueDate ? dayjs(dueDate).toISOString() : null,
-        submittingStaffId: user.id
+        title: values.title,
+        description: values.description,
+        taskType: values.taskType,
+        taskUrgency: values.taskUrgency,
+        taskStatus: 'OPEN' as const,
+        dueDate: values.dueDate?.toDate() || null,
+        occurrenceId: values.occurrenceId.toString(),
+        submittingStaffId: user.id,
+        position: 5001,
+        images: []
       };
-      console.log('plantTaskData', taskData);
 
-      const taskResponse = await createPlantTask(taskData, user.id, allFiles);
-      console.log('Plant Task created:', taskResponse.data);
-      setCreatedPlantTask(taskResponse.data);
+      const response = await createPlantTask(taskData, user.id, allFiles);
+      setCreatedPlantTask(response.data);
+      messageApi.success('Plant Task created successfully');
     } catch (error) {
-      console.error('Error creating Plant Task:', error);
-      messageApi.error('Failed to create Plant Task. Please try again.');
+      console.error('Error creating plant task:', error);
+      messageApi.error('Failed to create plant task. Please try again.');
     }
   };
 
@@ -229,7 +267,10 @@ const CreatePlantTask = () => {
     setSelectedZoneId(zoneId);
     form.setFieldsValue({ occurrenceId: null });
     setOccurrences([]);
-    fetchOccurrences(selectedParkId!);
+
+    if (selectedParkId && zoneId) {
+      fetchOccurrences(selectedParkId, zoneId);
+    }
   };
 
   return (
@@ -237,7 +278,7 @@ const CreatePlantTask = () => {
       {contextHolder}
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
-         {!createdPlantTask ? (
+        {!createdPlantTask ? (
           <Form form={form} labelCol={{ span: 8 }} className="max-w-[600px] mx-auto mt-8" onFinish={handleSubmit}>
             {user?.role === StaffType.SUPERADMIN && (
               <Form.Item name="parkId" label="Park" rules={[{ required: true }]}>
@@ -273,7 +314,7 @@ const CreatePlantTask = () => {
                 disabled={isOccurrenceDisabled}
               />
             </Form.Item>
-             <Form.Item
+            <Form.Item
               name="title"
               label="Title"
               rules={[{ required: true }, { min: 3, message: 'Valid title must be at least 3 characters long' }, { max: 100, message: 'Valid title must be at most 100 characters long' }]}
@@ -323,39 +364,52 @@ const CreatePlantTask = () => {
                 onChange={handleFileChange}
                 accept="image/png, image/jpeg"
                 onClick={onInputClick}
-                disabled={allFiles.length >= 3}
+                disabled={allPreviews.length >= 3}
               />
             </Form.Item>
-            {allPreviews.length > 0 && (
+            {(feedbackPreviews.length > 0 || previewImages.length > 0) && (
               <Form.Item label="Image Previews" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
                 <div className="flex flex-wrap gap-2">
-                  {allPreviews.map((imgSrc, index) => (
-                    <img
-                      key={index}
-                      src={imgSrc}
-                      alt={`Preview ${index}`}
-                      className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
-                      onClick={() => {
-                        if (index < feedbackPreviews.length) {
-                          // Remove feedback image
-                          setFeedbackFiles(prev => prev.filter((_, i) => i !== index));
+                  {feedbackPreviews.map((imgSrc, index) => (
+                    <div key={`feedback-${index}`} className="relative group">
+                      <img
+                        src={imgSrc}
+                        alt={`Feedback Preview ${index}`}
+                        className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      />
+                      <div
+                        className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        onClick={() => {
                           setFeedbackPreviews(prev => prev.filter((_, i) => i !== index));
-                        } else {
-                          // Remove uploaded image
-                          removeImage(index - feedbackPreviews.length);
-                        }
-                      }}
-                    />
+                        }}
+                      >
+                        <span className="text-white">Remove</span>
+                      </div>
+                    </div>
+                  ))}
+                  {previewImages.map((imgSrc, index) => (
+                    <div key={`upload-${index}`} className="relative group">
+                      <img
+                        src={imgSrc}
+                        alt={`Upload Preview ${index}`}
+                        className="w-20 h-20 object-cover rounded border-[1px] border-green-100"
+                      />
+                      <div
+                        className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        onClick={() => removeImage(index)}
+                      >
+                        <span className="text-white">Remove</span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </Form.Item>
             )}
-            {allFiles.length >= 3 && (
+            {allPreviews.length >= 3 && (
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <p className="text-yellow-500">Maximum number of images (3) reached.</p>
               </Form.Item>
             )}
-
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Button type="primary" htmlType="submit" className="w-full">
                 Create Plant Task
