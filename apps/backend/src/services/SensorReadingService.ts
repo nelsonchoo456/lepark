@@ -932,6 +932,55 @@ class SensorReadingService {
       predictedCrowdLevel: prediction,
     }));
   }
+
+  // Get the average crowd level reading from each camera sensor in the park for the past hour
+  public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<Array<{
+    sensorId: string;
+    lat: number;
+    long: number;
+    averageValue: number;
+    readingCount: number;
+  }>> {
+    try {
+      const zones = await ZoneDao.getZonesByParkId(parkId);
+      let sensorAverages = [];
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  
+      for (const zone of zones) {
+        // Get all camera sensors in the zone
+        const sensors = await SensorDao.getSensorsByZoneIdAndType(zone.id, SensorTypeEnum.CAMERA);
+        
+        for (const sensor of sensors) {
+          // Get all readings from the past hour for this sensor
+          const readings = await SensorReadingDao.getSensorReadingsByDateRange(
+            sensor.id,
+            oneHourAgo,
+            new Date()
+          );
+          console.log('readings for sensor', sensor.id, readings);
+          
+          // Only include sensors that have readings in the last hour
+          if (readings.length > 0) {
+            const sum = readings.reduce((acc, reading) => acc + reading.value, 0);
+            const average = Number((sum / readings.length).toFixed(2));
+            
+            sensorAverages.push({
+              sensorId: sensor.id,
+              lat: sensor.lat,
+              long: sensor.long,
+              averageValue: average,
+              readingCount: readings.length
+            });
+          }
+        }
+      }
+  
+      return sensorAverages;
+    } catch (error) {
+      console.error('Error getting past hour crowd data by sensors:', error);
+      throw error;
+    }
+  }
 }
 
 export default new SensorReadingService();

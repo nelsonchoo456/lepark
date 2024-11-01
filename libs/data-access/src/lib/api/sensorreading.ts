@@ -500,3 +500,17 @@ export async function getPredictedCrowdLevelsForPark(parkId: number, pastPredict
   }
 }
 
+export async function getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<AxiosResponse<any>> {
+  try {
+    const response: AxiosResponse<any> = await client.get(`${URL}/getPastOneHourCrowdDataBySensorsForPark/${parkId}`);
+    console.log('response', response);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
