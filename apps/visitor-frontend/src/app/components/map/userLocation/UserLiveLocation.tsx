@@ -11,7 +11,7 @@ const UserLiveLocationMap = () => {
   // const [position, setPosition] = useState<number[]>([51.505, -0.09]); // default location
   const [lat, setLat] = useState<number>();
   const [lng, setLng] = useState<number>();
-  const circleWidth = 25
+  const circleWidth = 32
   const backgroundColor = COLORS.pastelPink[700]
 
   // Custom icon for the user's location marker
