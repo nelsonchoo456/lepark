@@ -878,7 +878,7 @@ async function seed() {
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
   await seedHistoricalRainfallData(100);// 100 days
-  console.log(`Seeded historical rainfall data for 100 days.`);
+  console.log(`Seeded historical rainfall data for 100 days.\n`);
 
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
