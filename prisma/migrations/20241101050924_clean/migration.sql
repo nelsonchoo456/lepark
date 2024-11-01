@@ -366,8 +366,22 @@ CREATE TABLE "Hub" (
     "zoneId" INTEGER,
     "facilityId" UUID,
     "lastDataUpdateDate" TIMESTAMP(3),
+    "rfModelId" UUID,
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PredictedWaterSchedule" (
+    "id" UUID NOT NULL,
+    "hubId" UUID NOT NULL,
+    "scheduledDate" TIMESTAMP(3) NOT NULL,
+    "waterAmount" DOUBLE PRECISION,
+    "confidence" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PredictedWaterSchedule_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -403,6 +417,29 @@ CREATE TABLE "SensorReading" (
     "sensorId" UUID NOT NULL,
 
     CONSTRAINT "SensorReading_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "HistoricalRainData" (
+    "id" UUID NOT NULL,
+    "stationId" TEXT NOT NULL,
+    "stationName" TEXT NOT NULL,
+    "lat" DOUBLE PRECISION NOT NULL,
+    "lng" DOUBLE PRECISION NOT NULL,
+    "value" DOUBLE PRECISION NOT NULL,
+    "timestamp" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "HistoricalRainData_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RfModel" (
+    "id" UUID NOT NULL,
+    "hubId" UUID NOT NULL,
+    "modelData" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "RfModel_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -657,10 +694,16 @@ CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
 CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
+CREATE INDEX "PredictedWaterSchedule_hubId_scheduledDate_idx" ON "PredictedWaterSchedule"("hubId", "scheduledDate");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Sensor_identifierNumber_key" ON "Sensor"("identifierNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Sensor_serialNumber_key" ON "Sensor"("serialNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RfModel_hubId_key" ON "RfModel"("hubId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ParkAsset_identifierNumber_key" ON "ParkAsset"("identifierNumber");
@@ -720,6 +763,9 @@ ALTER TABLE "EventTicketTransaction" ADD CONSTRAINT "EventTicketTransaction_visi
 ALTER TABLE "Hub" ADD CONSTRAINT "Hub_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PredictedWaterSchedule" ADD CONSTRAINT "PredictedWaterSchedule_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -727,6 +773,9 @@ ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_facilityId_fkey" FOREIGN KEY ("facil
 
 -- AddForeignKey
 ALTER TABLE "SensorReading" ADD CONSTRAINT "SensorReading_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RfModel" ADD CONSTRAINT "RfModel_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;

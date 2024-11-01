@@ -1,15 +1,13 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { createDecarbonizationArea, DecarbonizationAreaResponse, StaffResponse } from '@lepark/data-access';
+import { DecarbonizationAreaResponse, StaffResponse } from '@lepark/data-access';
 import { Button, Card, Flex, Form, message, Result, Steps, Tooltip } from 'antd';
 import { LatLng } from 'leaflet';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { latLngArrayToPolygon } from '../../components/map/functions/functions';
-import useUploadImages from '../../hooks/Images/useUploadImages';
 import { useFetchParks } from '../../hooks/Parks/useFetchParks';
-import CreateDetailsStep from './components/CreateDetailsStep';
 import CreateMapStep from './components/CreateMapStep';
+import CreateDetailsStep from './components/CreateDetailsStep';
 
 const center = {
   lat: 1.3503881629328163,
@@ -25,7 +23,6 @@ const CreateDecarbonizationArea = () => {
   const { user, updateUser } = useAuth<StaffResponse>();
   const { parks, restrictedParkId, loading } = useFetchParks();
   const [currStep, setCurrStep] = useState<number>(0);
-  const { selectedFiles, previewImages, handleFileChange, removeImage, onInputClick } = useUploadImages();
   const [createdData, setCreatedData] = useState<DecarbonizationAreaResponse | null>();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -86,10 +83,6 @@ const CreateDecarbonizationArea = () => {
           handleCurrStep={handleCurrStep}
           form={form}
           parks={parks}
-          previewImages={previewImages}
-          handleFileChange={handleFileChange}
-          removeImage={removeImage}
-          onInputClick={onInputClick}
         />
       ),
     },
