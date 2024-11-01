@@ -1,5 +1,5 @@
 import { AttractionResponse, FacilityWithEvents, getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { Button, Empty, Select, Tooltip, Typography } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
@@ -18,6 +18,7 @@ import { useMap } from 'react-leaflet';
 import MarkerLabel from '../../../components/map/MarkerLabel';
 import { BiSolidCalendarEvent } from 'react-icons/bi';
 import { IoMdClose } from 'react-icons/io';
+import UserLiveLocationMap from '../../../components/map/userLocation/UserLiveLocation';
 
 interface OneZoneProps {
   zone: ZoneResponse;
@@ -120,10 +121,7 @@ const Zones = ({ park }: ZonesProps) => {
         hovered={hovered}
         setHovered={setHovered}
       />
-      {hovered && (
-        <Information hoverItem={hovered} setHovered={setHovered}>
-        </Information>
-      )}
+      {hovered && <Information hoverItem={hovered} setHovered={setHovered}></Information>}
     </>
   );
 };
@@ -163,14 +161,92 @@ const MarkersHandlers = ({
 }: MarkersHandlerProps) => {
   const map = useMap(); // Access the map instance
   const [zoomLevel, setZoomLevel] = useState(map.getZoom());
+  const [lat, setLat] = useState<number>();
+  const [lng, setLng] = useState<number>();
 
-  // useEffect(() => {
-  //   if (attractions && facilities) {
-  //     setShowAttractions(true);
-  //     setShowEvents(true);
-  //     setShowFacilities(true);
-  //   }
-  // }, [attractions, facilities]);
+  const searchOptions = useMemo(
+    () => [
+      ...(attractions || []).map((item) => ({
+        label: <div className="bg-mustard-100 px-1 rounded">{item.title}</div>,
+        value: `attraction_${item.id}`,
+        searchVal: `${item.title.toLowerCase()}-attraction`,
+      })),
+      ...(facilities || []).map((item) => ({
+        label: <div className="bg-sky-100 px-1 rounded">{item.name}</div>,
+        value: `facility_${item.id}`,
+        searchVal: `${item.name.toLowerCase()}-${item.facilityType.toLowerCase()}-facility`,
+      })),
+      ...(facilities || [])
+        .flatMap((fac) => 
+          fac.events.map((event) => ({
+            label: <div className="bg-highlightGreen-100 px-1 rounded">{event.title}</div>,
+            value: `event_${event.id}`,
+            searchVal: `${event.title.toLowerCase()}-${fac.name.toLowerCase()}-${fac.facilityType.toLowerCase()}-event`,
+          }))
+        ),
+    ],
+    [attractions, facilities, facilityEvents],
+  );
+
+  const [filteredOptions, setFilteredOptions] = useState(searchOptions);
+
+  const handleSelect = (value: string) => {
+    const [type, id] = value.split('_');
+
+    const selectedMarker: any = (
+      attractions?.find((attraction) => attraction.id === id) ||
+      facilities?.find((facility) => facility.id === id) ||
+      facilityEvents?.flatMap((facility) => facility.events).find((event) => event.id === id)
+    );
+
+    if (selectedMarker) {
+      switch (type) {
+        case 'attraction':
+          map.setView([selectedMarker.lat, selectedMarker.lng], 18)
+          // navigate(`/attraction/${id}`);
+          break;
+        case 'facility':
+          map.setView([selectedMarker.lat, selectedMarker.long], 18)
+          // navigate(`/facility/${id}`);
+          break;
+        case 'event':
+          map.setView([selectedMarker.lat, selectedMarker.lng], 18)
+          // navigate(`/event/${id}`);
+          break;
+        default:
+          break;
+      }
+    }
+    
+  };
+
+  const handleSearch = (value: string) => {
+    const filtered = searchOptions.filter((option) => option.searchVal.includes(value.trim().toLowerCase()));
+    setFilteredOptions(filtered);
+  };
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLat(latitude);
+          setLng(longitude);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 60000,
+          timeout: 60000,
+        },
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  }, []);
 
   useEffect(() => {
     const handleZoom = () => {
@@ -192,26 +268,29 @@ const MarkersHandlers = ({
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 400,
-          // backgroundColor: "white", 
           width: '100%',
           padding: '0 1rem 0 3.6rem',
         }}
       >
-        <Select showSearch defaultActiveFirstOption={false} suffixIcon={<FiSearch />} filterOption={false} className="w-full" />
+        <Select
+          onSearch={handleSearch}
+          onSelect={handleSelect}
+          showSearch
+          defaultActiveFirstOption={false}
+          suffixIcon={<FiSearch />}
+          filterOption={false}
+          options={filteredOptions}
+          className="w-full"
+        />
       </div>
       <div
         style={{
           position: 'absolute',
           top: '3.5rem',
-          right: '1rem', 
+          right: '1rem',
           zIndex: 400,
-          // backgroundColor: "white",
-          // width: '100%',
-          // padding: '0 1rem 0 3.6rem',
-          // maxWidth: '600px',
         }}
       >
-        
         <div className="flex flex-col items-end justify-end mt-2 gap-2">
           <div
             key={'facilities-vis'}
@@ -243,6 +322,21 @@ const MarkersHandlers = ({
           </div>
         </div>
       </div>
+      {lat && lng && zoomLevel && zoomLevel > 14 && (
+        <>
+          <MarkerLabel
+            lat={lat}
+            lng={lng}
+            entityId={'user-loc'}
+            fillColor={'#33d6d6'}
+            textColor={'white'}
+            label={'You are here!'}
+            fillOpacity={99}
+          />
+          <UserLiveLocationMap />
+        </>
+      )}
+
       <MarkersGroup
         attractions={attractions}
         facilities={facilities}
@@ -254,7 +348,7 @@ const MarkersHandlers = ({
         showEvents={showEvents}
         setShowEvents={setShowEvents}
         zoomLevel={zoomLevel}
-      /> 
+      />
     </>
   );
 };
@@ -274,6 +368,11 @@ const MarkersGroup = ({
   zoomLevel,
 }: MarkersGroupProps) => {
   const navigate = useNavigate();
+  const map = useMap(); 
+
+  const zoom = (lat: number, lng: number) => {
+    map.setView([lat, lng], 18)
+  }
 
   return (
     <>
@@ -302,7 +401,8 @@ const MarkersGroup = ({
               icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
               // tooltipLabel={attraction.title}
               hovered={hovered}
-              setHovered={() =>
+              setHovered={() => {
+                zoom(attraction.lat, attraction.lng)
                 setHovered &&
                 setHovered({
                   ...attraction,
@@ -329,7 +429,7 @@ const MarkersGroup = ({
                     </div>
                   ),
                 })
-              }
+              }}
             />
           </>
         ))}
@@ -404,12 +504,12 @@ const Information = ({ hoverItem, setHovered }: InformationProps) => {
             <TbTicket className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Occurrence</div>
           </div>
-        ) :
-        <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
-          <BiSolidCalendarEvent className="text-lg text-white" />
-          <div className="text-base text-white font-semibold ml-2">Marker</div>
-        </div>
-        }
+        ) : (
+          <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
+            <BiSolidCalendarEvent className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Marker</div>
+          </div>
+        )}
 
         <Button shape="circle" icon={<IoMdClose />} onClick={() => setHovered(null)}></Button>
       </div>

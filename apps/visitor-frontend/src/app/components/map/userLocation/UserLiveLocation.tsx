@@ -5,14 +5,18 @@ import { COLORS } from '../../../config/colors';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CustomMarker, CustomMarkerInner } from '@lepark/common-ui';
 import { IoHappyOutline } from 'react-icons/io5';
-import { FaFaceSmile } from 'react-icons/fa6';
+import { FaFaceSmile, FaLocationArrow } from 'react-icons/fa6';
 
+interface UserLiveLocationMapProps {
+  lat: number,
+  lng: number,
+}
 const UserLiveLocationMap = () => {
   // const [position, setPosition] = useState<number[]>([51.505, -0.09]); // default location
   const [lat, setLat] = useState<number>();
   const [lng, setLng] = useState<number>();
-  const circleWidth = 32
-  const backgroundColor = COLORS.pastelPink[700]
+  const circleWidth = 40
+  const backgroundColor = "#33d6d6"
 
   // Custom icon for the user's location marker
   const userIcon = new L.Icon({
@@ -27,7 +31,7 @@ const UserLiveLocationMap = () => {
     const iconHTML = renderToStaticMarkup(
       <CustomMarker $circleWidth={circleWidth} $backgroundColor={backgroundColor}>
         <CustomMarkerInner $circleWidth={circleWidth} $backgroundColor={backgroundColor}>
-          <FaFaceSmile style={{ fontSize: "1.7rem", color: COLORS.mustard[400] }}/>
+          <FaLocationArrow style={{ fontSize: "1.3rem", color: "white" }}/>
         </CustomMarkerInner>
       </CustomMarker>
     )
@@ -66,11 +70,10 @@ const UserLiveLocationMap = () => {
   return lat && lng ? (
     <>
       <Marker position={[lat, lng]} icon={getCustomIcon()} />
-      {/* <Marker position={[lat, lng]} icon={userIcon} /> */}
       <Circle
         center={[lat, lng]}
-        radius={50} // Radius in meters
-        pathOptions={{ color: COLORS.pastelPink[300], fillColor: COLORS.pastelPink[400], fillOpacity: 0.3 }}
+        radius={100} // Radius in meters
+        pathOptions={{ color: backgroundColor, fillColor: backgroundColor, fillOpacity: 0.3 }}
       />
     </>
   ) : null;

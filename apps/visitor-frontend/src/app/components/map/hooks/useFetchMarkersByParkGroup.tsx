@@ -68,7 +68,7 @@ export const useFetchMarkersByParkGroup = ({ park }: UseMapDataProps) => {
           try {
             const eventsRes = await getEventsByFacilityId(facility.id);
             if (eventsRes.status === 200) {
-              facilityWithEvents.events = eventsRes.data.filter((event) => dayjs(event.endDate).isBefore(dayjs().startOf('day')) );
+              facilityWithEvents.events = eventsRes.data.filter((event) => dayjs(event.endDate).isAfter(dayjs().startOf('day')) );
             }
             return facilityWithEvents;
           } catch (error) {

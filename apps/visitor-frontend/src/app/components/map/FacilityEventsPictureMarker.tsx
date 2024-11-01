@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import L, { DivIcon } from 'leaflet';
 import { Tooltip as AntdTooltip, Button, Tag } from 'antd';
-import { Marker, Tooltip } from 'react-leaflet';
+import { Marker, Tooltip, useMap } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EventResponse, EventStatusEnum, FacilityResponse, FacilityStatusEnum } from '@lepark/data-access';
 import { MdArrowOutward } from 'react-icons/md';
@@ -56,6 +56,11 @@ function FacilityEventsPictureMarker({
 }: FacilityEventsPictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
   const navigate = useNavigate();
+  const map = useMap(); 
+
+  const zoom = (lat: number, lng: number) => {
+    map.setView([lat, lng], 18)
+  }
 
   const eventMarkerGap = 16;
 
@@ -116,6 +121,7 @@ function FacilityEventsPictureMarker({
 
   const onEventCardClick = (event: EventResponse) => {
     setShowEvents && setShowEvents(true);
+    zoom(lat, lng)
     setHovered &&
       setHovered({
         ...event,
@@ -175,7 +181,8 @@ function FacilityEventsPictureMarker({
           // tooltipLabel={facility.name}
           facilityType={facility.facilityType}
           hovered={hovered}
-          setHovered={() =>
+          setHovered={() => {
+            zoom(lat, lng)
             setHovered &&
             setHovered({
               ...facility,
@@ -248,7 +255,7 @@ function FacilityEventsPictureMarker({
                 </div>
               ),
             })
-          }
+          }}
         />
       )}
       {showEvents &&
