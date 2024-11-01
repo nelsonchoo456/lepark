@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ParkResponse } from '@lepark/data-access';
 import moment from 'moment';
-import { calculateParkAreaAndThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
+import { useParkThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
 import { useFetchCrowdDataForCrowdAlerts } from './useFetchCrowdDataForCrowdAlerts';
 
 export interface CrowdAlert {
@@ -42,15 +42,15 @@ export const useCrowdAlerts = ({ parkId = 0, parks, days = 7 }: UseCrowdAlertsPr
     parks: parksToProcess,
   });
 
-  // Helper function to process alerts for a single park
-  const processParksAlerts = (
+   // Helper function to process alerts for a single park
+   const processParksAlerts = async (
     park: ParkResponse,
     crowdData: CrowdData[],
     dateRange: { startDate: moment.Moment; endDate: moment.Moment }
-  ): CrowdAlert[] => {
-    const { thresholds } = calculateParkAreaAndThresholds(park.geom);
+  ): Promise<CrowdAlert[]> => {
+    const thresholds = await useParkThresholds(park.id, park.geom, parks);
+    console.log(`thresholds of ${park.id}`, thresholds);
   
-    // Filter crowd data for this specific park when parkId is available
     const parkCrowdData = parkId === 0 
       ? crowdData.filter(data => data.parkId === park.id)
       : crowdData;
@@ -85,7 +85,7 @@ export const useCrowdAlerts = ({ parkId = 0, parks, days = 7 }: UseCrowdAlertsPr
   useEffect(() => {
     if (isCrowdDataLoading || !crowdData || crowdData.length === 0) return;
 
-    const processAllAlerts = () => {
+    const processAllAlerts = async () => {
       try {
         setIsProcessing(true);
         const dateRange = {
@@ -93,13 +93,13 @@ export const useCrowdAlerts = ({ parkId = 0, parks, days = 7 }: UseCrowdAlertsPr
           endDate: moment().add(days, 'days').endOf('day'),
         };
 
-        const newAlerts: CrowdAlert[] = [];
-
-        // Process alerts for each park
-        parksToProcess.forEach(park => {
-          const parkAlerts = processParksAlerts(park, crowdData, dateRange);
-          newAlerts.push(...parkAlerts);
-        });
+        // Process alerts for all parks concurrently and wait for results
+        const alertPromises = parksToProcess.map(park => 
+          processParksAlerts(park, crowdData, dateRange)
+        );
+        
+        const parkAlertArrays = await Promise.all(alertPromises);
+        const newAlerts = parkAlertArrays.flat();
 
         setAlerts(sortAlerts(newAlerts));
         setError(null);

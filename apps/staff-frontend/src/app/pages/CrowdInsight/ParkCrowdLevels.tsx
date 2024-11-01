@@ -71,7 +71,8 @@ const ParkCrowdLevels: React.FC = () => {
   const [restrictedParks, setRestrictedParks] = useState<ParkResponse[]>([]);
   const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(['actual', 'predicted']);
   const navigate = useNavigate();
-  const { user } = useAuth<StaffResponse>();
+  const { user } = useAuth<StaffResponse>()
+  const [resolvedThresholds, setResolvedThresholds] = useState<{ low: number; moderate: number }>({ low: 0, moderate: 0 });
 
   // Use the custom hook for crowd data
   const { crowdData, isLoading, error } = useFetchCrowdData({
@@ -80,11 +81,17 @@ const ParkCrowdLevels: React.FC = () => {
   });
 
   const parkGeom = parkId === 0 ? undefined : parks.find((p) => p.id === parkId)?.geom;
-  const thresholds = useParkThresholds(
-    parkId,
-    parkGeom,
-    parks.map((p) => ({ ...p, geometry: p.geom })),
-  );
+  useEffect(() => {
+    const fetchThresholds = async () => {
+      const thresholdsData = await useParkThresholds(
+        parkId,
+        parkGeom,
+        parks.map((p) => ({ ...p, geometry: p.geom }))
+      );
+      setResolvedThresholds(thresholdsData);
+    };
+    fetchThresholds();
+  }, [parkId, parkGeom, parks]);
 
   const { loading: parkLoading } = useRestrictPark(parkId ? parkId.toString() : undefined, {
     disableNavigation: true,
@@ -272,8 +279,8 @@ const ParkCrowdLevels: React.FC = () => {
         annotations: {
           lowLine: {
             type: 'line',
-            yMin: thresholds.low,
-            yMax: thresholds.low,
+            yMin: resolvedThresholds.low,
+            yMax: resolvedThresholds.low,
             borderColor: '#a3d4c7',
             borderWidth: 1,
             label: {
@@ -284,8 +291,8 @@ const ParkCrowdLevels: React.FC = () => {
           },
           mediumLine: {
             type: 'line',
-            yMin: thresholds.moderate,
-            yMax: thresholds.moderate,
+            yMin: resolvedThresholds.moderate,
+            yMax: resolvedThresholds.moderate,
             borderColor: '#ffe082',
             borderWidth: 1,
             label: {
@@ -450,7 +457,7 @@ const ParkCrowdLevels: React.FC = () => {
           </>
         ) : (
           <>
-            <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={thresholds} allParks={parks} />
+            <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={resolvedThresholds} allParks={parks} />
             <ThresholdExplanation />
           </>
         )}

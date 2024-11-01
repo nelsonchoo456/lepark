@@ -1,7 +1,7 @@
 import { getAllParks, getAggregatedCrowdDataForPark, getParkById } from '@lepark/data-access';
 import moment from 'moment';
 import { useState, useEffect } from 'react';
-import { calculateParkAreaAndThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
+import { useParkThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
 
 export interface ParkVisitorCount {
   parkId: number;
@@ -42,7 +42,7 @@ export const useCrowdCounts = (parkId?: number, refreshInterval = 5 * 60 * 1000)
 
       const parkCounts = await Promise.all(
         parksToProcess.map(async (park) => {
-          const { thresholds } = calculateParkAreaAndThresholds(park.geom);
+          const thresholds = useParkThresholds(park.id, park.geom, allParks);
 
           const [todayData, weeklyData] = await Promise.all([
             getAggregatedCrowdDataForPark(park.id, today.toDate(), moment().endOf('day').toDate()),
@@ -57,8 +57,8 @@ export const useCrowdCounts = (parkId?: number, refreshInterval = 5 * 60 * 1000)
             parkName: park.name,
             liveCount: Math.round(liveCount),
             weeklyCount: Math.round(weeklyCount),
-            threshold: thresholds.moderate,
-            isOverThreshold: liveCount > thresholds.moderate,
+            threshold: (await thresholds).moderate,
+            isOverThreshold: liveCount > (await thresholds).moderate,
           };
         }),
       );
