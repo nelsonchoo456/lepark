@@ -527,7 +527,7 @@ const PlantTaskBoardView = ({
   };
 
   const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
-    setDateRange(dates);
+    setDateRange(dates || [null, null]);
   };
 
   const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
