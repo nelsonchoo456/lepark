@@ -64,7 +64,7 @@ import ZoneEditMap from './pages/ZoneEditMap/ZoneEditMap';
 import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
-import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
+// import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
 import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
 import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
@@ -106,6 +106,7 @@ import EventTicketListingDetails from './pages/EventDetails/TicketListingDetails
 import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
 import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
 import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
+import ZonePredictiveIrrigation from './pages/IoT/ZonePredictiveIrrigation';
 import SensorMaintenanceList from './pages/Sensor/SensorMaintenanceList';
 import HubMaintenanceList from './pages/Hub/HubMaintenanceList';
 import AssetListMaintenanceSummary from './pages/Asset/AssetListMaintenanceSummary';
@@ -579,6 +580,7 @@ export function App() {
                   <Route path="zones" element={<ZoneIoTDashboard />} />
                   <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
                   <Route path="zones/:zoneId/camera-streams" element={<ZoneCameraStreamsPage />} />
+                  <Route path="zones/:zoneId/predictive-irrigation" element={<ZonePredictiveIrrigation />} />
                 </Route>
 
                 {/* FAQ Routes */}

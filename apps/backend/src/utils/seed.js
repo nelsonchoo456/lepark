@@ -1,4 +1,5 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
+const { trainModelsForAllHubs } = require('../models/irrigationRandomForestModel.js');
 const {
   parksData,
   zonesData,
@@ -36,6 +37,7 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
+const { seedHistoricalRainfallData } = require('./irrigationScheduleSeed');
 const moment = require('moment-timezone');
 
 const findStaffByRoleAndPark = (staffList, role, parkId) => {
@@ -872,8 +874,15 @@ async function seed() {
   }
   console.log(`Total new sensors created and associated with the new hub: ${sensorList.length}\n`);
 
+  console.log(`Seeding historical rainfall data. This may take a while...\n`);
+  // -- [ PREDICTIVE IRRIGATION ] --
+  // Function seeds historical rain data for n days
+  await seedHistoricalRainfallData(100);// 100 days
+  console.log(`Seeded historical rainfall data for 100 days.\n`);
+
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
+
     let readings;
     if (sensor.sensorType === 'CAMERA') {
       if (sensor.identifierNumber === 'SE-9999X') {
@@ -882,7 +891,10 @@ async function seed() {
         readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
       }
     } else {
-      readings = generateMockReadings(sensor.sensorType).map((reading) => ({
+      const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
+      const rainfallDataForHub = await getClosestRainDataPerDate(hub.lat, hub.long);
+
+      readings = generateMockReadings(sensor.sensorType, rainfallDataForHub).map((reading) => ({
         ...reading,
         sensorId: sensor.id,
       }));
@@ -893,6 +905,9 @@ async function seed() {
     });
   }
   console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
+
+  console.log(`Training predictive rainfall models...`);
+  await trainModelsForActiveHubs()
 
   //console.log('Seeding decarbonization areas...');
   const decarbonizationAreaList = [];
@@ -1176,10 +1191,14 @@ async function seed() {
 
   console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
 
+  console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
+
   const staffMap = staffList.reduce((acc, staff) => {
   const emailPrefix = staff.email.split('@')[0];
   acc[emailPrefix] = staff.id;
   return acc;
+
+  // await trainModelsForActiveHubs();
 }, {});
 
 const populatedFeedbacks = feedbacksData.map((feedback, index) => {
@@ -1265,50 +1284,137 @@ const getRandomItems = (array, count) => {
   return shuffled.slice(0, count);
 };
 
+// Fetch historical rainfall data, closest to lat lng
+const getClosestRainDataPerDate = async (lat, lng) => {
+  const parseTimestamp = (timestamp) =>{
+    return new Date(timestamp);
+  }
+  
+  const calculateAUC = (data) => {
+    let auc = 0;
+    data.sort((a, b) => parseTimestamp(a.timestamp) - parseTimestamp(b.timestamp));
+    // Loop through the data to calculate the trapezoidal area
+    for (let i = 1; i < data.length; i++) {
+      const prev = data[i - 1];
+      const curr = data[i];
+  
+      const timeDiff = (parseTimestamp(curr.timestamp) - parseTimestamp(prev.timestamp)) / 1000; // Calculate the time difference in seconds
+      const area = 0.5 * (prev.value + curr.value) * timeDiff; // Calculate the area of the trapezoid
+      auc += area; // Add to total AUC
+    }
+
+    return auc;
+  }
+
+  const result = await prisma.$queryRaw(
+    Prisma.sql`
+      SELECT *,
+        (
+          6371 * acos(
+            cos(radians(${lat})) * cos(radians(lat)) *
+            cos(radians(lng) - radians(${lng})) +
+            sin(radians(${lat})) * sin(radians(lat))
+          )
+        ) AS distance
+      FROM "HistoricalRainData"
+      ORDER BY DATE("timestamp"), distance
+    `
+  );
+
+  const resultsGroupedByDay = result.reduce((acc, record) => {
+    const date = record.timestamp.toISOString().split('T')[0]; // Get the date part
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(record);
+    return acc;
+  }, {});
+  const dailyAUC = {};
+  for (const date in resultsGroupedByDay) {
+    dailyAUC[date] = calculateAUC(resultsGroupedByDay[date]);
+  }
+
+  return dailyAUC;
+};
+
 // Generate mock sensor readings
-const generateMockReadings = (sensorType) => {
+const generateMockReadings = (sensorType, rainfallData) => {
+
   const readings = [];
   const now = new Date();
-  const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+  // const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+
+  const hundredDaysAgo = new Date(now.getTime() - 2400 * 60 * 60 * 1000);  // 100 days in milliseconds
 
   // Generate readings every 15 minutes from now till 8 hours ago
-  for (let time = now; time >= eightHoursAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
-    readings.push(createReading(sensorType, time));
+  for (let time = now; time >= hundredDaysAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
+    const dateStr = time.toISOString().split('T')[0];
+    const rainfallForDay = rainfallData[dateStr] || 0;
+
+    readings.push(createReading(sensorType, time, rainfallForDay));
   }
 
   return readings.sort((a, b) => b.date - a.date); // Sort by date, most recent first
 };
 
-const createReading = (sensorType, date) => {
+const createReading = (sensorType, date, rainfallAmount) => {
   const hour = date.getHours();
+  const maxHumidityIncrease = 30;
   let value;
 
   switch (sensorType) {
     case 'SOIL_MOISTURE':
       // Simulate watering at 6 AM and 6 PM
       if (hour === 6 || hour === 18) {
-        value = 70 + Math.random() * 10; // 70-80%
+        value = 70 + Math.random() * 10 // 70-80%
       } else if (hour >= 12 && hour <= 16) {
         // Greater decrease from 12 PM to 4 PM
         const hoursFrom12 = hour - 12;
-        value = 65 - hoursFrom12 * 4 + Math.random() * 5; // Steeper decline
+        value = 65 - hoursFrom12 * 4 + Math.random() * 5 // Steeper decline
       } else {
         // Gradual decrease in moisture for other hours
-        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5;
+        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5
+      }
+      // Adjust soil moisture based on rainfall
+      // Adjust temperature based on rainfall, capped at 4.2
+      if (rainfallAmount) {
+        value += 
+          rainfallAmount < 200 ? 2
+          : rainfallAmount < 600 ? rainfallAmount / 100 
+          : rainfallAmount < 1200 ? rainfallAmount / 80 
+          : Math.min(rainfallAmount / 100, 20);
       }
       break;
     case 'TEMPERATURE':
       // Simulate daily temperature cycle
-      value = 22 + Math.sin(((hour - 6) * Math.PI) / 12) * 5 + Math.random() * 2;
+      value = 27 + Math.sin(((hour - 6) * Math.PI) / 12) * 3.5 + Math.random() * 2
+      // Adjust temperature based on rainfall, capped at 4.2
+      if (rainfallAmount) {
+        value -= 
+          rainfallAmount < 600 ? rainfallAmount / 180 
+          : Math.min(rainfallAmount / 180, 4.2);
+      }
       break;
     case 'HUMIDITY':
       // Inverse relationship with temperature
-      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5;
+      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5
+      // Adjust humidity based on rainfall
+      if (rainfallAmount) {
+        const rainyHours = Math.min(Math.ceil(rainfallAmount / 1000), 6); // Max 6 consecutive rainy hours
+        const startRainHour = 6 + Math.floor(Math.random() * (12 - rainyHours)); // Random start between 6 AM and 6 PM
+        const endRainHour = startRainHour + rainyHours;
+        if (hour >= startRainHour && hour < endRainHour) {
+          value += Math.min(rainfallAmount / 100, maxHumidityIncrease); // Increase based on rainfall, capped at maxHumidityIncrease
+        } else if (hour >= endRainHour && hour < endRainHour + 2) {
+          // Slight elevation in the two hours following the rain
+          value += Math.min(rainfallAmount / 300, maxHumidityIncrease / 2); // Half of the increase for residual humidity
+        }
+      }
+      value = Math.min(value, 100);
       break;
     case 'LIGHT':
       if (hour >= 6 && hour < 18) {
         // Daylight hours
-        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50;
+        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50
+        value -= Math.min(rainfallAmount / 700, 2);
       } else {
         // Night time
         value = Math.random() * 5; // Very low light at night
@@ -1329,6 +1435,11 @@ const createReading = (sensorType, date) => {
     value: parseFloat(value.toFixed(2)),
   };
 };
+
+async function trainModelsForActiveHubs() {
+  const hubs = await prisma.hub.findMany({ where: { hubStatus: "ACTIVE" }});
+  await trainModelsForAllHubs(hubs);
+}
 
 function generateMockCrowdDataForSBG(sensorId, days) {
   const readings = [];

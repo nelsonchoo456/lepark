@@ -22,8 +22,15 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
 
 const { Text } = Typography;
+
+const ZoneIotStatistic = styled(Statistic)`
+  .ant-statistic-content {
+    font-size: 20px;
+  }
+`
 
 const ZoneIoTDashboard: React.FC = () => {
   const { zonesWithIoT, loading } = useFetchZones();
@@ -148,11 +155,12 @@ const ZoneIoTDashboard: React.FC = () => {
                     <Button type="link" icon={<FiEye />} onClick={() => navigateToZoneDetails(zone.id)} />
                   </Tooltip>
                 }
+                styles={{ body: { padding: "1rem"} }}
               >
                 <Flex vertical gap="small">
                 <Row gutter={16}>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Temperature"
                         value={metrics[SensorTypeEnum.TEMPERATURE]?.toFixed(2) || 0}
                         suffix={
@@ -164,7 +172,7 @@ const ZoneIoTDashboard: React.FC = () => {
                       />
                     </Col>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Humidity"
                         value={metrics[SensorTypeEnum.HUMIDITY]?.toFixed(2) || 0}
                         suffix={<>%{renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}</>}
@@ -173,14 +181,14 @@ const ZoneIoTDashboard: React.FC = () => {
                   </Row>
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Soil Moisture"
                         value={metrics[SensorTypeEnum.SOIL_MOISTURE]?.toFixed(2) || 0}
                         suffix={<>%{renderDifference(SensorTypeEnum.SOIL_MOISTURE, zone.id)}</>}
                       />
                     </Col>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Light"
                         value={metrics[SensorTypeEnum.LIGHT]?.toFixed(2) || 0}
                         suffix={
@@ -192,7 +200,7 @@ const ZoneIoTDashboard: React.FC = () => {
                       />
                     </Col>
                   </Row>
-                  <Statistic
+                  <ZoneIotStatistic
                     title={
                       <Tooltip title="Active sensors are those that have sent data within the past hour">
                         <span>Active Sensors</span>

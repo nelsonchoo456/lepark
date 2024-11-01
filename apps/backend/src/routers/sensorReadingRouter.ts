@@ -170,6 +170,20 @@ router.get('/getSensorReadingsByHubIdAndSensorTypeByDateRange/:hubId/:sensorType
   }
 });
 
+router.get('/getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange/:hubId', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const readings = await SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(
+      req.params.hubId,
+      new Date(startDate as string),
+      new Date(endDate as string),
+    );
+    res.status(200).json(readings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/getLatestSensorReadingByHubIdAndSensorType/:hubId/:sensorType', async (req, res) => {
   try {
     const reading = await SensorReadingService.getLatestSensorReadingByHubIdAndSensorType(

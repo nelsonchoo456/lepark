@@ -428,8 +428,26 @@ model Hub {
   maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
   maintenanceTasks   MaintenanceTask[]
+  predictedWaterSchedules PredictedWaterSchedule[]
+
+  rfModel            RfModel?      
+  rfModelId          String?       @db.Uuid
 
   @@index([zoneId])
+}
+
+model PredictedWaterSchedule {
+  id              String   @id @default(uuid()) @db.Uuid
+  hubId           String   @db.Uuid
+  scheduledDate   DateTime
+  waterAmount     Float?    // in liters or milliliters
+  confidence      Float    // a value between 0 and 1 indicating prediction confidence
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  hub             Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@index([hubId, scheduledDate])
 }
 
 enum SensorTypeEnum {
@@ -490,6 +508,25 @@ model SensorReading {
   sensorId String   @db.Uuid
   sensor   Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
+
+model HistoricalRainData {
+  id          String   @id @default(uuid()) @db.Uuid
+  stationId   String  
+  stationName String  
+  lat         Float    
+  lng         Float   
+  value       Float 
+  timestamp   DateTime 
+}
+
+model RfModel {
+  id        String   @id @default(uuid()) @db.Uuid
+  hubId     String @unique @db.Uuid
+  hub       Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  modelData Json
+  createdAt DateTime @default(now())
+}
+
 
 enum ParkAssetTypeEnum {
   PLANT_TOOL_AND_EQUIPMENT

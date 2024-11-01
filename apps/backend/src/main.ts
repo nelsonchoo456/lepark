@@ -35,6 +35,8 @@ import feedbackRouter from './routers/feedbackRouter';
 import AnnouncementRouter from './routers/announcementRouter';
 import eventTicketRouter from './routers/eventTicketRouter';
 import maintenanceTaskRouter from './routers/maintenanceTaskRouter';
+import predictedWaterScheduleRouter from './routers/predictedWaterScheduleRouter';
+import predictiveIrrigationRouter from './routers/predictiveIrrigationRouter';
 import bookingRouter from './routers/bookingRouter';
 
 dotenv.config();
@@ -99,6 +101,8 @@ app.use('/api/feedback', feedbackRouter);
 app.use('/api/announcements', AnnouncementRouter);
 app.use('/api/eventTickets', eventTicketRouter);
 app.use('/api/maintenancetasks', maintenanceTaskRouter);
+app.use('/api/predictedwaterschedules', predictedWaterScheduleRouter);
+app.use('/api/predictiveirrigation', predictiveIrrigationRouter);
 app.use('/api/bookings', bookingRouter);
 
 const port = process.env.PORT || 3333;

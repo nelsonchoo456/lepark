@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge } from 'antd';
-import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera } from 'react-icons/fi';
+import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera, FiCloudRain } from 'react-icons/fi';
 import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
@@ -26,6 +26,20 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTit
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
+export const getSensorIcon = (sensorType: SensorTypeEnum) => {
+  switch (sensorType) {
+    case SensorTypeEnum.TEMPERATURE:
+      return <FiThermometer />;
+    case SensorTypeEnum.HUMIDITY:
+      return <FiDroplet />;
+    case SensorTypeEnum.LIGHT:
+      return <FiSun />;
+    case SensorTypeEnum.SOIL_MOISTURE:
+      return <FiWind />;
+    default:
+      return null;
+  }
+};
 
 const ZoneIoTDetailsPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
@@ -90,21 +104,6 @@ const ZoneIoTDetailsPage: React.FC = () => {
         return 'red';
       default:
         return 'default';
-    }
-  };
-
-  const getSensorIcon = (sensorType: SensorTypeEnum) => {
-    switch (sensorType) {
-      case SensorTypeEnum.TEMPERATURE:
-        return <FiThermometer />;
-      case SensorTypeEnum.HUMIDITY:
-        return <FiDroplet />;
-      case SensorTypeEnum.LIGHT:
-        return <FiSun />;
-      case SensorTypeEnum.SOIL_MOISTURE:
-        return <FiWind />;
-      default:
-        return null;
     }
   };
 
@@ -226,6 +225,11 @@ const ZoneIoTDetailsPage: React.FC = () => {
               <Tooltip title="View Camera Streams">
                 <Link to={`/iot/zones/${zoneId}/camera-streams`}>
                   <Button type="link" icon={<FiCamera />} />
+                </Link>
+              </Tooltip>
+              <Tooltip title="View Rainfall Forecast">
+                <Link to={`/iot/zones/${zoneId}/predictive-irrigation`}>
+                  <Button type="link" icon={<FiCloudRain />} />
                 </Link>
               </Tooltip>
             </Space>

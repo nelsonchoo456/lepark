@@ -35,6 +35,7 @@ import ParkStatusTag from './ParkStatusTag';
 import { SCREEN_LG } from '../../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { parseGeom } from '../../DecarbonizationAreaDetails/components/MapTab';
+import HeatmapLayer from '../../../components/map/HeatMapLayer';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -240,6 +241,8 @@ const MapTab = ({ park }: MapTabProps) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />
+          {/* <HeatmapLayer/> */}
+          
           {showDecarb &&
             decarbAreas &&
             decarbAreas.map((decarb) => (

@@ -73,3 +73,7 @@ export * from './lib/types/eventTicket';
 
 export * from './lib/api/maintenancetask';
 export * from './lib/types/maintenancetask';
+
+export * from './lib/types/predictiveIrrigation';
+export * from './lib/api/predictiveirrigation';
+

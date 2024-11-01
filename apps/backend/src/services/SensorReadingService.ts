@@ -142,12 +142,18 @@ class SensorReadingService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ date: string; average: number }[]> {
-    const readings = await this.getSensorReadingsByDateRange(sensorId, startDate, endDate);
+    // Adjust both start and end dates to ensure full day coverage
+    const adjustedStartDate = new Date(startDate);
+    adjustedStartDate.setHours(0, 0, 0, 0);
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    const readings = await this.getSensorReadingsByDateRange(sensorId, adjustedStartDate, adjustedEndDate);
 
     const hourlyAverages = new Map<string, { sum: number; count: number }>();
 
     readings.forEach((reading) => {
-      const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z'; // Group by year, month, day, hour
+      const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z';
       const current = hourlyAverages.get(hourKey) || { sum: 0, count: 0 };
       hourlyAverages.set(hourKey, {
         sum: current.sum + reading.value,
@@ -158,7 +164,7 @@ class SensorReadingService {
     return Array.from(hourlyAverages.entries())
       .map(([hourKey, { sum, count }]) => ({
         date: hourKey,
-        average: Number((sum / count).toFixed(2)), // Round to 2 decimal places
+        average: Number((sum / count).toFixed(2)),
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
@@ -176,6 +182,45 @@ class SensorReadingService {
     return SensorReadingDao.getSensorReadingsByHubIdAndSensorTypeForHoursAgo(hubId, sensorType, hours);
   }
 
+  public async getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(
+    hubId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ [sensorType: string]: { date: string; average: number }[] }> {
+    // Adjust both start and end dates to ensure full day coverage
+    const adjustedStartDate = new Date(startDate);
+    adjustedStartDate.setHours(0, 0, 0, 0);
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+
+    const sensorTypes = Object.values(SensorTypeEnum);
+    const result: { [sensorType: string]: { date: string; average: number }[] } = {};
+
+    for (const sensorType of sensorTypes) {
+      const readings = await SensorReadingDao.getSensorReadingsByHubIdAndSensorTypeByDateRange(hubId, sensorType, adjustedStartDate, adjustedEndDate);
+
+      const hourlyAverages = new Map<string, { sum: number; count: number }>();
+
+      readings.forEach((reading) => {
+        const hourKey = new Date(reading.date).toISOString().slice(0, 13) + ':00:00.000Z';
+        const current = hourlyAverages.get(hourKey) || { sum: 0, count: 0 };
+        hourlyAverages.set(hourKey, {
+          sum: current.sum + reading.value,
+          count: current.count + 1,
+        });
+      });
+
+      result[sensorType] = Array.from(hourlyAverages.entries())
+        .map(([hourKey, { sum, count }]) => ({
+          date: hourKey,
+          average: Number((sum / count).toFixed(2)),
+        }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+
+    return result;
+  }
+
   public async getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(
     hubId: string,
     sensorType: SensorTypeEnum,
@@ -186,6 +231,21 @@ class SensorReadingService {
       return 0;
     }
     return readings.reduce((sum, reading) => sum + reading.value, 0) / readings.length;
+  }
+
+  public async getAverageSensorReadingsForHubIdAcrossAllSensorTypesForHoursAgo(
+    hubId: string,
+    hours: number,
+  ): Promise<{ [sensorType: string]: number }> {
+    const sensorTypes = Object.values(SensorTypeEnum);
+    const averages: { [sensorType: string]: number } = {};
+
+    for (const sensorType of sensorTypes) {
+      const average = await SensorReadingDao.getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo(hubId, sensorType, hours);
+      averages[sensorType] = average;
+    }
+
+    return averages;
   }
 
   public async getSensorReadingsByHubIdAndSensorTypeByDateRange(

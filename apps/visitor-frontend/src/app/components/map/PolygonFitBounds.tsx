@@ -64,7 +64,7 @@ const PolygonFitBounds = ({ geom, adjustLatLng, lat, lng, polygonLabel, color, f
       geom.coordinates.length > 0 && (
       <Polygon
         positions={geom.coordinates[0].map((item: number[]) => [item[1], item[0]])}
-        pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
+        pathOptions={{ color: `${color ? color : "transparent"}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
         {...polygonFields}
       />
     )}
