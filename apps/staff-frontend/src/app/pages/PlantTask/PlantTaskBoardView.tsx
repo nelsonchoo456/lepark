@@ -73,7 +73,10 @@ const PlantTaskBoardView = ({
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const [completedTaskOccurrenceId, setCompletedTaskOccurrenceId] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([
+    dayjs().startOf('month').subtract(1, 'month'),
+    dayjs().endOf('month').add(1, 'month'),
+  ]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [plantTaskToBeDeleted, setPlantTaskToBeDeleted] = useState<PlantTaskResponse | null>(null);
   const [taskBeingCompleted, setTaskBeingCompleted] = useState<PlantTaskResponse | null>(null);
@@ -524,7 +527,7 @@ const PlantTaskBoardView = ({
   };
 
   const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
-    setDateRange(dates);
+    setDateRange(dates || [null, null]);
   };
 
   const filterTasksByDateRange = (tasks: PlantTaskResponse[]) => {
@@ -578,7 +581,7 @@ const PlantTaskBoardView = ({
   return (
     <Spin spinning={loading} tip="Loading tasks...">
       <div style={{ marginBottom: '16px' }}>
-        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
+        <RangePicker value={dateRange} onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Row gutter={[16, 16]} className="mb-4">

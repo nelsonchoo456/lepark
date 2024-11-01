@@ -62,6 +62,9 @@ export * from './lib/types/sensorreading';
 
 export * from './lib/api/faq';
 export * from './lib/types/faq';
+
+export * from './lib/api/feedback';
+export * from './lib/types/feedback';
 export * from './lib/api/announcement';
 export * from './lib/types/announcement';
 
@@ -71,6 +74,6 @@ export * from './lib/types/eventTicket';
 export * from './lib/api/maintenancetask';
 export * from './lib/types/maintenancetask';
 
-export * from './lib/api/predictiveIrrigation';
 export * from './lib/types/predictiveIrrigation';
+export * from './lib/api/predictiveirrigation';
 

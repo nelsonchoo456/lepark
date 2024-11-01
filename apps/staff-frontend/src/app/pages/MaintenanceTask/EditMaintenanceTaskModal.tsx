@@ -97,7 +97,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
 
   const navigateToEntity = () => {
     if (initialValues?.parkAsset) {
-      window.open(`/park-assets/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
+      window.open(`/parkasset/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.sensor) {
       window.open(`/sensor/${initialValues.sensor.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.hub) {
@@ -167,7 +167,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
     } else if (initialValues?.parkAsset?.id) {
       url = `/parkasset/${initialValues.parkAsset.id}/edit`;
     } else if (initialValues?.sensor?.id) {
-      url = `/sensors/${initialValues.sensor.id}/edit`;
+      url = `/sensor/${initialValues.sensor.id}/edit`;
     } else if (initialValues?.hub?.id) {
       url = `/hubs/${initialValues.hub.id}/edit`;
     }

@@ -13,7 +13,7 @@ class ParkAssetDao {
   async getAllParkAssets(): Promise<(ParkAsset & { facility?: Facility; park?: ParkResponseData })[]> {
     const parkAssets = await prisma.parkAsset.findMany({
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: true,
       },
     });
@@ -46,7 +46,7 @@ class ParkAssetDao {
     return prisma.parkAsset.findUnique({
       where: { id },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: {
           select: {
             id: true,
@@ -75,7 +75,7 @@ class ParkAssetDao {
     return prisma.parkAsset.findMany({
       where: { parkAssetType },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
@@ -84,7 +84,7 @@ class ParkAssetDao {
     return prisma.parkAsset.findMany({
       where: { parkAssetStatus },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
@@ -93,7 +93,7 @@ class ParkAssetDao {
     return prisma.parkAsset.findMany({
       where: { parkAssetCondition },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }  */
@@ -107,7 +107,7 @@ class ParkAssetDao {
         },
       },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
@@ -136,7 +136,7 @@ class ParkAssetDao {
     return prisma.parkAsset.findUnique({
       where: { identifierNumber },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: true,
       },
     });
@@ -146,7 +146,7 @@ class ParkAssetDao {
     return prisma.parkAsset.findFirst({
       where: { serialNumber },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: {
           select: {
             id: true,

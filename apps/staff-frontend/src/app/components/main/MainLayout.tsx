@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap, FiCamera } from 'react-icons/fi';
+import { VideoCameraOutlined } from '@ant-design/icons';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
 import { GrMapLocation } from 'react-icons/gr';
@@ -13,9 +14,10 @@ import { PiPottedPlant } from 'react-icons/pi';
 import { PiToolboxBold } from 'react-icons/pi';
 import type { MenuProps } from 'antd';
 import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { MdSensors } from 'react-icons/md';
+import { MdBuild, MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
 import { AiOutlinePercentage } from 'react-icons/ai';
+import { VscFeedback } from "react-icons/vsc";
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -227,6 +229,37 @@ const MainLayout = () => {
       label: 'Park Assets',
       onClick: () => navigate('/parkasset'),
     },
+    userRole === StaffType.SUPERADMIN ||
+    userRole === StaffType.MANAGER ||
+    userRole === StaffType.ARBORIST ||
+    userRole === StaffType.BOTANIST ||
+    userRole === StaffType.VENDOR_MANAGER
+      ? {
+          key: 'maintenance',
+          label: 'Predictive Maintenance',
+          icon: <MdBuild />,
+          children: [
+            {
+              key: 'sensor',
+              icon: <MdSensors />,
+              label: 'Sensors',
+              onClick: () => navigate('/sensor/maintenance'),
+            },
+            {
+              key: 'hubs',
+              icon: <FaNetworkWired />,
+              label: 'Hubs',
+              onClick: () => navigate('/hubs/maintenance'),
+            },
+            {
+              key: 'zones',
+              icon: <PiToolboxBold />,
+              label: 'Park Assets',
+              onClick: () => navigate('/parkAsset/maintenance'),
+            },
+          ],
+        }
+      : null,
     userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
       ? {
           key: 'attractionEvents',
@@ -254,6 +287,14 @@ const MainLayout = () => {
           ],
         }
       : null,
+    userRole === 'MANAGER' || userRole === 'SUPERADMIN' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'crowdInsights',
+          icon: <VideoCameraOutlined />,
+          label: 'Crowd Insights',
+          onClick: () => navigate('/crowdInsights'),
+        }
+      : null,
     {
       key: 'task',
       icon: <FiInbox />,
@@ -269,7 +310,7 @@ const MainLayout = () => {
           label: 'Maintenance Tasks',
           onClick: () => navigate('/maintenance-tasks'),
         },
-    ],
+      ],
     },
     {
       key: 'faq',
@@ -277,6 +318,15 @@ const MainLayout = () => {
       label: 'FAQ',
       onClick: () => navigate('/faq'),
     },
+
+    userRole === 'SUPERADMIN' || userRole === 'MANAGER' || userRole === 'PARK_RANGER'
+      ? {
+          key: 'feedback',
+          icon: <VscFeedback />,
+          label: 'Feedback',
+          onClick: () => navigate('/feedback'),
+        }
+      : null,
     {
       key: 'announcement',
       icon: <FiMessageSquare />,

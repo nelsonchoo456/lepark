@@ -71,48 +71,20 @@ export interface OverdueRateMaintenanceTaskData {
   overdueRate: number;
 }
 
-//   staff: StaffResponse;
-//   overdueRate: number;
-// }
+export interface DelayedTaskTypeData {
+  rank: number;
+  taskType: MaintenanceTaskTypeEnum;
+  averageCompletionTime: number;
+  overdueTaskCount: number;
+  completedTaskCount: number;
+}
 
-// export interface AverageCompletionTimeData {
-//   staff: StaffResponse;
-//   averageCompletionTime: number;
-// }
+export interface ParkTaskTypeAverageCompletionTimesForPastMonthsData {
+  taskType: MaintenanceTaskTypeEnum;
+  averageCompletionTimes: number[];
+}
 
-// export interface TaskLoadPercentageData {
-//   staff: StaffResponse;
-//   taskLoadPercentage: number;
-// }
-
-// export interface StaffPerformanceRankingData {
-//   bestPerformer: StaffResponse | null;
-//   secondBestPerformer: StaffResponse | null;
-//   thirdBestPerformer: StaffResponse | null;
-//   message?: string;
-// }
-
-// export interface ParkTaskCompletedData {
-//   staff: StaffResponse;
-//   taskCompleted: number;
-// }
-
-// export interface ParkStaffAverageCompletionTimeForPastMonthsData {
-//   staff: StaffResponse;
-//   averageCompletionTimes: number[];
-// }
-
-// export interface ParkStaffCompletionRatesForPastMonthsData {
-//   staff: StaffResponse;
-//   completionRates: number[];
-// }
-
-// export interface ParkStaffOverdueRatesForPastMonthsData {
-//   staff: StaffResponse;
-//   overdueRates: number[];
-// }
-
-// export interface ParkStaffTasksCompletedForPastMonthsData {
-//   staff: StaffResponse;
-//   tasksCompleted: number[];
-// }
+export interface ParkTaskTypeOverdueRatesForPastMonthsData {
+  taskType: MaintenanceTaskTypeEnum;
+  overdueRates: number[];
+}

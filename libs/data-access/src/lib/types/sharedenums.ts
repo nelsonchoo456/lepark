@@ -206,3 +206,21 @@ export enum FAQCategoryEnum {
   PARK_HISTORY = 'PARK_HISTORY',
   OTHER = 'OTHER',
 }
+
+export enum FeedbackCategoryEnum {
+  FACILITIES = 'FACILITIES',
+  SERVICES = 'SERVICES',
+  STAFF = 'STAFF',
+  SAFETY = 'SAFETY',
+  CLEANLINESS = 'CLEANLINESS',
+  ACCESSIBILITY = 'ACCESSIBILITY',
+  EVENTS = 'EVENTS',
+  WILDLIFE = 'WILDLIFE',
+  OTHER = 'OTHER',
+}
+
+export enum FeedbackStatusEnum {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}

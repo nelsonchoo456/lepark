@@ -64,7 +64,7 @@ import ZoneEditMap from './pages/ZoneEditMap/ZoneEditMap';
 import EventList from './pages/Event/EventList';
 import FacilityEdit from './pages/Facility/FacilityEdit';
 import EventDetails from './pages/EventDetails/EventDetails';
-import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
+// import MaintenanceTask from './pages/MaintenanceTask/MaintenanceTask';
 import EventCreate from './pages/Event/EventCreate';
 import EventEdit from './pages/EventEdit/EventEdit';
 import FacilityEditMap from './pages/FacilityEditMap/FacilityEditMap';
@@ -107,6 +107,15 @@ import ZoneCameraStreamsPage from './pages/IoT/ZoneCameraStreamsPage';
 import MaintenanceTaskList from './pages/MaintenanceTask/MaintenanceTaskList';
 import CreateMaintenanceTask from './pages/MaintenanceTask/CreateMaintenanceTask';
 import ZonePredictiveIrrigation from './pages/IoT/ZonePredictiveIrrigation';
+import SensorMaintenanceList from './pages/Sensor/SensorMaintenanceList';
+import HubMaintenanceList from './pages/Hub/HubMaintenanceList';
+import AssetListMaintenanceSummary from './pages/Asset/AssetListMaintenanceSummary';
+import ParkCrowdLevels from './pages/CrowdInsight/ParkCrowdLevels';
+import ParkCrowdLevelsCalendar from './pages/CrowdInsight/ParkCrowdLevelsCalendar';
+import CompareParkCrowdLevels from './pages/CrowdInsight/CompareParkCrowdLevels';
+import VerifyEventTicket from './pages/VerifyTicket/VerifyEventTicket';
+import FeedbackList from './pages/Feedback/FeedbackList';
+import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 
 export function App() {
   return (
@@ -424,6 +433,7 @@ export function App() {
                     <Route path=":hubId/edit" element={<HubEdit />} />
                     <Route path=":hubId/edit-location" element={<HubUpdateLocation />} />
                     <Route path=":hubId/place-in-zone" element={<HubPlaceInZone />} />
+                    <Route path="maintenance" element={<HubMaintenanceList />} />
                     {/* <Route path="edit"/> */}
                   </Route>
                 </Route>
@@ -431,15 +441,31 @@ export function App() {
                 {/* Facility Routes */}
                 <Route path="/facilities">
                   <Route index element={<FacilityList />} />
+
                   <Route
                     element={
                       <RoleProtectedRoute
-                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT, StaffType.PARK_RANGER]}
+                        allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
                         redirectTo="/"
                       />
                     }
                   >
                     <Route path="create" element={<FacilityCreate />} />
+                  </Route>
+                  <Route
+                    element={
+                      <RoleProtectedRoute
+                        allowedRoles={[
+                          StaffType.SUPERADMIN,
+                          StaffType.MANAGER,
+                          StaffType.LANDSCAPE_ARCHITECT,
+                          StaffType.PARK_RANGER,
+                          StaffType.VENDOR_MANAGER,
+                        ]}
+                        redirectTo="/"
+                      />
+                    }
+                  >
                     <Route path=":facilityId/edit" element={<FacilityEdit />} />
                     <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
                   </Route>
@@ -452,6 +478,7 @@ export function App() {
                   <Route path="create" element={<AssetCreate />} />
                   <Route path=":assetId" element={<AssetDetails />} />
                   <Route path=":assetId/edit" element={<AssetEdit />} />
+                  <Route path="maintenance" element={<AssetListMaintenanceSummary />} />
                 </Route>
 
                 {/* Sensor Routes */}
@@ -477,6 +504,7 @@ export function App() {
                     <Route path=":sensorId/edit-location" element={<SensorUpdateLocation />} />
                     <Route path=":sensorId/add-to-hub" element={<SensorAddToHub />} />
                     <Route path="map-view" element={<IotMap />} />
+                    <Route path="maintenance" element={<SensorMaintenanceList />} />
                   </Route>
                 </Route>
 
@@ -574,6 +602,16 @@ export function App() {
                   }
                 />
 
+                <Route
+                  path="/verify-event-ticket/:ticketId"
+                  element={
+                    <>
+                      <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                      <VerifyEventTicket />
+                    </>
+                  }
+                />
+
                 {/* Announcement Routes */}
                 <Route path="/announcement">
                   <Route index element={<AnnouncementList />} />
@@ -588,6 +626,42 @@ export function App() {
                   >
                     <Route path="create" element={<AnnouncementCreate />} />
                   </Route>
+                </Route>
+
+                {/* Crowd Insights Routes */}
+                <Route path="/crowdInsights">
+                  <Route
+                    index
+                    element={
+                      <>
+                        <RoleProtectedRoute
+                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]}
+                          redirectTo="/"
+                        />
+                        <ParkCrowdLevels />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="compareParks"
+                    element={
+                      <>
+                        <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
+                        <CompareParkCrowdLevels />
+                      </>
+                    }
+                  />
+                </Route>
+
+                {/* Feedback Routes */}
+                <Route
+                  path="/feedback"
+                  element={
+                    <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.PARK_RANGER]} redirectTo="/" />
+                  }
+                >
+                  <Route index element={<FeedbackList />} />
+                  <Route path=":feedbackId" element={<FeedbackViewDetails />} />
                 </Route>
 
                 {/* Catch-all for 404 */}

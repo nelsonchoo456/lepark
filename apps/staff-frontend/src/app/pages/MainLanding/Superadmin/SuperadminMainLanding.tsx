@@ -1,10 +1,11 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Anchor, Badge, Card, Col, Empty, List, Row, Statistic, Table, Typography } from 'antd';
+import { Anchor, Badge, Button, Card, Col, Empty, List, Row, Spin, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useMemo, useState } from 'react';
 import PageHeader2 from '../../../components/main/PageHeader2';
 import styled from 'styled-components';
+import { TeamOutlined } from '@ant-design/icons';
 import { useFetchAnnouncements } from '../../../hooks/Announcements/useFetchAnnouncements';
 import {
   AnnouncementResponse,
@@ -28,9 +29,15 @@ import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import PlantTasksTable from '../components/PlantTasksTable';
 import moment from 'moment';
-import { TbTrees } from 'react-icons/tb';
+import { TbTrees, TbUsers } from 'react-icons/tb';
 import dayjs from 'dayjs';
 import AnnouncementsCard from '../components/AnnouncementsCard';
+import { useNavigate } from 'react-router-dom';
+import { checkForUpcomingCrowdAlerts, CrowdAlert } from '../../../hooks/CrowdInsights/useCrowdAlerts';
+import { useCrowdCounts } from '../../../hooks/CrowdInsights/useCrowdCounts';
+import { LiveVisitorCard } from '../components/LiveVisitorCard';
+import { CrowdAlertsCard } from '../components/CrowdAlertsCard';
+import { WeeklyVisitorCard } from '../components/WeeklyVisitorCard';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
@@ -59,6 +66,10 @@ const SuperadminMainLanding = () => {
   // Data
   const [parks, setParks] = useState<(ParkResponse & { zones: ZoneResponse[] })[]>([]);
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
+  const navigate = useNavigate();
+  const [crowdAlerts, setCrowdAlerts] = useState<CrowdAlert[]>([]);
+
+  const { total, parks: parkCrowds, loading } = useCrowdCounts();
 
   useEffect(() => {
     if (user) {
@@ -66,6 +77,19 @@ const SuperadminMainLanding = () => {
       fetchAnnouncements();
     }
   }, [user]);
+
+  // Fetch alerts
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const alerts = await checkForUpcomingCrowdAlerts();
+      setCrowdAlerts(alerts);
+    };
+
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 5 * 60 * 1000); // Check every 5 minutes
+
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchParks = async () => {
     try {
@@ -160,7 +184,10 @@ const SuperadminMainLanding = () => {
   const renderSectionHeader = (title: string, onClick?: () => void) => {
     return (
       <div className="sticky top-0 pt-4 z-20 bg-gray-100">
-        <LogoText className={`text-lg font-semibold pb-2 pt-0 ${onClick && "cursor-pointer hover:opacity-80"}`} onClick={onClick && onClick}>
+        <LogoText
+          className={`text-lg font-semibold pb-2 pt-0 ${onClick && 'cursor-pointer hover:opacity-80'}`}
+          onClick={onClick && onClick}
+        >
           <div className={`-z-10  px-2 rounded`}>{title}</div>
         </LogoText>
         <div className="w-full h-[1px] bg-gray-400/40 mb-4" />
@@ -188,15 +215,18 @@ const SuperadminMainLanding = () => {
 
                 <div className="h-full flex w-full gap-2">
                   <div className="rounded-md bg-green-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-green-200">
-                    <strong className='text-lg'>{openParks.length}</strong><br/>
+                    <strong className="text-lg">{openParks.length}</strong>
+                    <br />
                     Open Now
                   </div>
                   <div className="rounded-md bg-red-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-red-200">
-                    <strong className='text-lg'>{closedParks.length}</strong><br/>
+                    <strong className="text-lg">{closedParks.length}</strong>
+                    <br />
                     Closed Now
                   </div>
                   <div className="rounded-md bg-mustard-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-mustard-200">
-                    <strong className='text-lg'>{constructionParks.length}</strong><br/>
+                    <strong className="text-lg">{constructionParks.length}</strong>
+                    <br />
                     Under Construction
                   </div>
                 </div>
@@ -212,19 +242,13 @@ const SuperadminMainLanding = () => {
         <div id="part-4" className={sectionStyles}>
           {renderSectionHeader('Visitors')}
           {/* Visitors */}
-          <div className={flexColsStyles}>
-            <Card className="w-full h-86 flex-[2]">
-              <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
-            </Card>
-            <div className="flex flex-col flex-[1] gap-4">
-              <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Live Visitor Count</LogoText>
-                <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
-              </Card>
-              <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Total Weekly Count</LogoText>
-                <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
-              </Card>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col flex-[2] gap-4">
+              <LiveVisitorCard loading={loading} parkData={null} parkCrowds={parkCrowds} isSuperAdmin={true} />
+              <WeeklyVisitorCard loading={loading} parkData={null} parkCrowds={parkCrowds} isSuperAdmin={true} />
+            </div>
+            <div className="flex-[1]">
+              <CrowdAlertsCard alerts={crowdAlerts} isSuperAdmin={true} />
             </div>
           </div>
         </div>

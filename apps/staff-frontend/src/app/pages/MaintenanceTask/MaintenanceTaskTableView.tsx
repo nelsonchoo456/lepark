@@ -1,5 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Table, TableProps, Tag, Flex, Tooltip, Button, Select, Collapse, Modal, Form, Input, DatePicker, message, Tabs, Card } from 'antd';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Table,
+  TableProps,
+  Tag,
+  Flex,
+  Tooltip,
+  Button,
+  Select,
+  Collapse,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  message,
+  Tabs,
+  Card,
+  Row,
+  Col,
+} from 'antd';
 import moment from 'moment';
 import { FiEye, FiAlertCircle, FiClock } from 'react-icons/fi';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -26,6 +44,7 @@ import ViewMaintenanceTaskModal from './ViewMaintenanceTaskModal';
 import { TabsNoBottomMargin } from '../Asset/AssetListSummary';
 import { COLORS } from '../../config/colors';
 import dayjs from 'dayjs';
+import { getStatusOrder } from '@lepark/data-utility';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -49,6 +68,8 @@ interface MaintenanceTaskTableViewProps {
   showDeleteModal: (maintenanceTask: MaintenanceTaskResponse) => void;
   onTaskUpdated: () => void; // Add this prop to refresh the task list after update
   handleStatusChange: (newStatus: MaintenanceTaskStatusEnum) => void;
+  handleAssignTask: (maintenanceTaskId: string, staffId: string) => void;
+  handleUnassignTask: (maintenanceTaskId: string, staffId: string) => void;
 }
 
 const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
@@ -62,6 +83,8 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
   showDeleteModal,
   onTaskUpdated,
   handleStatusChange,
+  handleAssignTask,
+  handleUnassignTask,
 }) => {
   const [parks, setParks] = useState<{ text: string; value: number }[]>([]);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
@@ -71,9 +94,11 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
   const [form] = Form.useForm();
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<MaintenanceTaskResponse | null>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
   const [showLogPrompt, setShowLogPrompt] = useState(false);
   const [editedTask, setEditedTask] = useState<MaintenanceTaskResponse | null>(null);
+  const [dueDateRange, setDueDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [completedDateRange, setCompletedDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
   useEffect(() => {
     fetchParks();
@@ -115,10 +140,10 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
 
         // Check if the status has changed to trigger the log prompt
         if (values.taskStatus && values.taskStatus !== editingTask.taskStatus) {
-          setEditedTask({ 
-            ...editingTask, 
+          setEditedTask({
+            ...editingTask,
             ...values,
-            dueDate: values.dueDate || editingTask.dueDate // Provide a fallback value
+            dueDate: values.dueDate || editingTask.dueDate, // Provide a fallback value
           });
           setShowLogPrompt(true);
         }
@@ -134,25 +159,47 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
     setViewModalVisible(true);
   };
 
-  const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
-    setDateRange(dates);
+  const handleDueDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setDueDateRange(dates);
+  };
+
+  const handleCompletedDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    setCompletedDateRange(dates);
   };
 
   const filterTasksByDateRange = (tasks: MaintenanceTaskResponse[]) => {
-    if (!dateRange || !dateRange[0] || !dateRange[1]) {
-      return tasks;
-    }
-    const [startDate, endDate] = dateRange;
     return tasks.filter((task) => {
-      const dueDate = dayjs(task.dueDate);
-      return (
-        (dueDate.isSame(startDate, 'day') || dueDate.isAfter(startDate, 'day')) &&
-        (dueDate.isSame(endDate, 'day') || dueDate.isBefore(endDate, 'day'))
-      );
+      let includeTask = true;
+
+      if (dueDateRange && dueDateRange[0] && dueDateRange[1]) {
+        const dueDate = dayjs(task.dueDate);
+        includeTask =
+          includeTask &&
+          (dueDate.isSame(dueDateRange[0], 'day') || dueDate.isAfter(dueDateRange[0], 'day')) &&
+          (dueDate.isSame(dueDateRange[1], 'day') || dueDate.isBefore(dueDateRange[1], 'day'));
+      }
+
+      if (completedDateRange && completedDateRange[0] && completedDateRange[1]) {
+        const completedDate = dayjs(task.completedDate);
+        includeTask =
+          includeTask &&
+          (completedDate.isSame(completedDateRange[0], 'day') || completedDate.isAfter(completedDateRange[0], 'day')) &&
+          (completedDate.isSame(completedDateRange[1], 'day') || completedDate.isBefore(completedDateRange[1], 'day'));
+      }
+
+      return includeTask;
     });
   };
 
-  const filteredMaintenanceTasks = filterTasksByDateRange(maintenanceTasks);
+  const sortedTasks = useMemo(() => {
+    return [...maintenanceTasks].sort((a, b) => {
+      const statusOrderDiff = getStatusOrder(a.taskStatus) - getStatusOrder(b.taskStatus);
+      if (statusOrderDiff !== 0) return statusOrderDiff;
+      return dayjs(a.dueDate).diff(dayjs(b.dueDate));
+    });
+  }, [maintenanceTasks]);
+
+  const filteredMaintenanceTasks = filterTasksByDateRange(sortedTasks);
 
   const limitedToSubmittingTasksOnly =
     user?.role === StaffType.ARBORIST ||
@@ -167,7 +214,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       } else {
         handleReturnTask(task.id, user?.id || '');
       }
-      
+
       // Set the edited task and show the log prompt
       setEditedTask(task);
       setShowLogPrompt(true);
@@ -320,6 +367,14 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       width: '10%',
     },
     {
+      title: 'Completed Date',
+      dataIndex: 'completedDate',
+      key: 'completedDate',
+      render: (text) => (text ? moment(text).format('D MMM YY') : ''),
+      width: '10%',
+      sorter: (a, b) => moment(a.completedDate).valueOf() - moment(b.completedDate).valueOf(),
+    },
+    {
       title: 'Status',
       dataIndex: 'taskStatus',
       key: 'taskStatus',
@@ -366,31 +421,70 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       title: 'Assigned Staff',
       key: 'assignedStaff',
       render: (_, record) => {
-        if (record.assignedStaff) {
-          return (
-            <Flex align="center" justify="space-between">
-              <span>{`${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`}</span>
-              {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && record.assignedStaff.id === user?.id && (
-                <Button type="link" onClick={() => handleTaskAction(record, 'return')} size="small">
-                  Return Task
-                </Button>
-              )}
-            </Flex>
-          );
-        } else {
-          return record.taskStatus === MaintenanceTaskStatusEnum.OPEN && userRole === StaffType.VENDOR_MANAGER ? (
-            <Button type="link" onClick={() => handleTaskAction(record, 'take')} size="small">
-              Take Task
-            </Button>
-          ) : (
-            <></>
-          );
-        }
+        const assignedStaffName = record.assignedStaff
+          ? `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`
+          : '';
+
+        return (
+          <Flex align="center" justify="space-between">
+            <span>{assignedStaffName}</span>
+            {userRole === StaffType.VENDOR_MANAGER && (
+              <>
+                {record.taskStatus === MaintenanceTaskStatusEnum.OPEN && !record.assignedStaff && (
+                  <Button type="link" onClick={() => handleTaskAction(record, 'take')} size="small">
+                    Take Task
+                  </Button>
+                )}
+                {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS &&
+                  record.assignedStaff?.id === user?.id && (
+                    <Button type="link" onClick={() => handleTaskAction(record, 'return')} size="small">
+                      Return Task
+                    </Button>
+                  )}
+              </>
+            )}
+            {userRole === StaffType.SUPERADMIN && (
+              <>
+                {record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
+                  <Select
+                    style={{ width: 200 }}
+                    placeholder="Assign staff"
+                    onChange={(value) => handleAssignTask(record.id, value)}
+                  >
+                    {staffList
+                      .filter(
+                        (staff) =>
+                          staff.parkId === record.submittingStaff.parkId &&
+                          staff.role === StaffType.VENDOR_MANAGER
+                      )
+                      .map((staff: StaffResponse) => (
+                        <Select.Option key={staff.id} value={staff.id}>
+                          {`${staff.firstName} ${staff.lastName}`}
+                        </Select.Option>
+                      ))}
+                  </Select>
+                )}
+                {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && record.assignedStaff && (
+                  <Tooltip title="Unassign staff">
+                    <Button
+                      type="text"
+                      icon={<CloseOutlined />}
+                      onClick={() => handleUnassignTask(record.id, record.assignedStaff?.id || '')}
+                      size="small"
+                    />
+                  </Tooltip>
+                )}
+              </>
+            )}
+          </Flex>
+        );
       },
-      filters: staffList.map((staff) => ({
-        text: `${staff.firstName} ${staff.lastName}`,
-        value: staff.id,
-      })),
+      filters: staffList
+        .filter((staff) => staff.role === StaffType.VENDOR_MANAGER)
+        .map((staff) => ({
+          text: `${staff.firstName} ${staff.lastName}`,
+          value: staff.id,
+        })),
       onFilter: (value, record) => record.assignedStaff?.id === value,
       width: '15%',
     },
@@ -408,12 +502,11 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
           <Tooltip title="View Maintenance Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {!limitedToSubmittingTasksOnly &&
-            (record.taskStatus === MaintenanceTaskStatusEnum.OPEN) && (
-              <Tooltip title="Edit Maintenance Task">
-                <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
-              </Tooltip>
-            )}
+          {!limitedToSubmittingTasksOnly && record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
+            <Tooltip title="Edit Maintenance Task">
+              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+            </Tooltip>
+          )}
           {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.VENDOR_MANAGER) && (
             <Tooltip title="Delete Maintenance Task">
               <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />
@@ -491,7 +584,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       } else if (editedTask.parkAssetId) {
         url = `/parkasset/${editedTask.parkAssetId}/edit`;
       } else if (editedTask.sensorId) {
-        url = `/sensors/${editedTask.sensorId}/edit`;
+        url = `/sensor/${editedTask.sensorId}/edit`;
       } else if (editedTask.hubId) {
         url = `/hubs/${editedTask.hubId}/edit`;
       }
@@ -507,9 +600,20 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
 
   return (
     <>
-      <div style={{ marginBottom: '16px' }}>
-        <RangePicker onChange={handleDateRangeChange} style={{ width: '100%' }} placeholder={['Start Date', 'End Date']} />
-      </div>
+      <Row justify="end" style={{ marginBottom: '16px' }}>
+        <Col>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ marginRight: '8px' }}>Due Date Range:</span>
+              <RangePicker onChange={handleDueDateRangeChange} style={{ width: '300px' }} placeholder={['Start Date', 'End Date']} />
+            </div>
+            <div>
+              <span style={{ marginRight: '8px' }}>Completed Date Range:</span>
+              <RangePicker onChange={handleCompletedDateRangeChange} style={{ width: '300px' }} placeholder={['Start Date', 'End Date']} />
+            </div>
+          </div>
+        </Col>
+      </Row>
       {tableViewType === 'grouped-status' && renderGroupedTasks('status', tableProps)}
       {tableViewType === 'grouped-urgency' && renderGroupedTasks('urgency', tableProps)}
       {tableViewType === 'all' && (
@@ -548,7 +652,11 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
         okText="Yes, edit status"
         cancelText="No, just update the task"
       >
-        <p>Do you want to edit the status of the {editedTask?.parkAssetId ? 'Park Asset' : editedTask?.sensorId ? 'Sensor' : editedTask?.hubId ? 'Hub' : 'Facility'} "{editedTask?.parkAsset?.name || editedTask?.sensor?.name || editedTask?.hub?.name || editedTask?.facility?.name}"?</p>
+        <p>
+          Do you want to edit the status of the{' '}
+          {editedTask?.parkAssetId ? 'Park Asset' : editedTask?.sensorId ? 'Sensor' : editedTask?.hubId ? 'Hub' : 'Facility'} "
+          {editedTask?.parkAsset?.name || editedTask?.sensor?.name || editedTask?.hub?.name || editedTask?.facility?.name}"?
+        </p>
       </Modal>
     </>
   );

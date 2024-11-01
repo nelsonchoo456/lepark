@@ -1652,78 +1652,334 @@ const attractionsData = [
   },
 ];
 
-const maintenanceTasksData = [
+let maintenanceTasksData = [
   {
-    title: 'Repair Broken Bench',
-    description: 'Fix the broken wooden slats on the bench near the main entrance.',
-    taskType: 'REPAIR',
+    title: 'Inspect Playground Facility Equipment',
+    description: 'Check all playground equipment for safety and wear.',
+    taskType: 'INSPECTION',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2024-10-15'),
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Due in 2 days
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-29'),
+    updatedAt: new Date('2024-10-31'),
+    dueDate: new Date('2024-10-31'),
     completedDate: null,
-    images: ['https://example.com/broken-bench.jpg'],
-    remarks: 'Requires replacement wood and tools.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 1000,
   },
   {
-    title: 'Calibrate Temperature Sensor',
-    description: 'Recalibrate the temperature sensor in the Orchid Garden for accurate readings.',
-    taskType: 'CALIBRATION',
+    title: 'Replace Light Bulbs in Visitor Center Facility',
+    description: 'Replace burnt-out light bulbs in the visitor center.',
+    taskType: 'REPAIR',
     taskUrgency: 'NORMAL',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-14'),
-    updatedAt: new Date('2024-10-16'),
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Due in 3 days
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-09'),
+    updatedAt: new Date('2024-10-10'),
+    dueDate: new Date('2024-10-10'),
     completedDate: null,
-    images: ['https://example.com/temperature-sensor.jpg'],
-    remarks: 'Use calibration kit #3.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 2000,
   },
   {
-    title: 'Clean Public Restrooms',
-    description: 'Perform deep cleaning of all public restrooms in the Visitor Center.',
-    taskType: 'CLEANING',
+    title: 'Repair Irrigation System Park Asset',
+    description: 'Fix leaks in the irrigation system.',
+    taskType: 'REPAIR',
     taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-13'),
-    updatedAt: new Date('2024-10-13'),
-    dueDate: new Date('2024-10-13'),
-    completedDate: null,
-    images: ['https://example.com/clean-restroom.jpg'],
-    remarks: 'Use eco-friendly cleaning products.',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-10'),
+    updatedAt: new Date('2024-10-12'),
+    dueDate: new Date('2024-10-10'),
+    completedDate: new Date('2024-10-12'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 3000,
   },
   {
-    title: 'Update Hub Firmware',
-    description: 'Install the latest firmware update on the central data hub.',
-    taskType: 'SOFTWARE_UPDATE',
-    taskUrgency: 'NORMAL',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-16'),
-    updatedAt: new Date('2024-10-16'),
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Due in 5 days
+    title: 'Deep Clean Greenhouses Facility',
+    description: 'Perform deep cleaning of all greenhouses.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-27'),
+    updatedAt: new Date('2024-10-28'),
+    dueDate: new Date('2024-10-30'),
     completedDate: null,
-    images: ['https://example.com/data-hub.jpg'],
-    remarks: 'Ensure all data is backed up before updating.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 4000,
   },
   {
-    title: 'Replace Damaged Lawnmower Blade',
-    description: 'Replace the damaged blade on lawnmower #3 with a new one.',
-    taskType: 'REPAIR',
-    taskUrgency: 'HIGH',
-    taskStatus: 'OPEN',
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2024-10-17'),
-    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Due in 1 day
+    title: 'Calibrate Pressure Gauges Asset Facility',
+    description: 'Recalibrate the pressure gauges in the equipment shed.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-12'),
+    updatedAt: new Date('2024-10-13'),
+    dueDate: new Date('2024-10-17'),
     completedDate: null,
-    images: ['https://example.com/lawnmower-blade.jpg'],
-    remarks: 'New blade is in storage room B.',
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
     position: 5000,
   },
+  {
+    title: 'Install New Security Cameras Facility',
+    description: 'Install new security cameras in the park.',
+    taskType: 'HARDWARE_REPLACEMENT',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-25'),
+    updatedAt: new Date('2024-10-26'),
+    dueDate: new Date('2024-10-26'),
+    completedDate: new Date('2024-10-26'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 6000,
+  },
+  {
+    title: 'Check Soil Moisture Sensor',
+    description: 'Ensure all soil moisture sensor is functioning.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'IMMEDIATE',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-28'),
+    updatedAt: new Date('2024-10-28'),
+    dueDate: new Date('2024-10-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 7000,
+  },
+  {
+    title: 'Service Water Fountain Facility',
+    description: 'Perform maintenance on the water fountain.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-10-29'),
+    updatedAt: new Date('2024-10-31'),
+    dueDate: new Date('2024-10-29'),
+    completedDate: new Date('2024-10-31'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 8000,
+  },
+  {
+    title: 'Test Fire Alarms Facility',
+    description: 'Test all fire alarms for proper functionality.',
+    taskType: 'FIRE_SAFETY',
+    taskUrgency: 'HIGH',
+    taskStatus: 'IN_PROGRESS',
+    createdAt: new Date('2024-10-10'),
+    updatedAt: new Date('2024-10-12'),
+    dueDate: new Date('2024-10-14'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 9000,
+  },
+  {
+    title: 'Update Software on Maintenance Tablets Park Asset',
+    description: 'Install software updates on maintenance tablets.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'CANCELLED',
+    createdAt: new Date('2024-10-30'),
+    updatedAt: new Date('2024-10-30'),
+    dueDate: new Date('2024-10-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 10000,
+  },
+  {
+    title: 'Inspect Park Asset Benches',
+    description: 'Check the benches in the main park area for any wear or damage.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-09'),
+    updatedAt: new Date('2024-09-18'),
+    dueDate: new Date('2024-09-18'),
+    completedDate: new Date('2024-09-18'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 11000,
+  },
+  {
+    title: 'Repair Broken Facility Gate',
+    description: 'Fix the malfunctioning gate at the south entrance.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-02'),
+    dueDate: new Date('2024-09-01'),
+    completedDate: new Date('2024-09-02'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 12000,
+  },
+  {
+    title: 'Deep Clean Restroom Facility',
+    description: 'Perform deep cleaning of the public restrooms.',
+    taskType: 'CLEANING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-16'),
+    dueDate: new Date('2024-09-18'),
+    completedDate: new Date('2024-09-16'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 13000,
+  },
+  {
+    title: 'Calibrate Temperature Sensor Hub',
+    description: 'Recalibrate the temperature sensor in the monitoring hub.',
+    taskType: 'CALIBRATION',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-10'),
+    updatedAt: new Date('2024-09-22'),
+    dueDate: new Date('2024-09-26'),
+    completedDate: new Date('2024-09-22'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 14000,
+  },
+  {
+    title: 'Update Hub Firmware',
+    description: 'Install the latest firmware on the central data hub.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-27'),
+    updatedAt: new Date('2024-09-28'),
+    dueDate: new Date('2024-09-28'),
+    completedDate: new Date('2024-09-28'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 15000,
+  },
+  {
+    title: 'Replace Damaged Facility Roof Tiles',
+    description: 'Replace broken tiles on the visitor center roof.',
+    taskType: 'REPAIR',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-03'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-04'),
+    completedDate: new Date('2024-09-30'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 16000,
+  },
+  {
+    title: 'Inspect Sprinkler System Sensor',
+    description: 'Ensure all sprinkler sensors are functioning correctly.',
+    taskType: 'INSPECTION',
+    taskUrgency: 'IMMEDIATE',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-20'),
+    updatedAt: new Date('2024-09-28'),
+    dueDate: new Date('2024-09-28'),
+    completedDate: new Date('2024-09-28'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 17000,
+  },
+  {
+    title: 'Service Park Asset Water Fountain',
+    description: 'Perform maintenance on the main water fountain.',
+    taskType: 'REPAIR',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-13'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-14'),
+    completedDate: new Date('2024-09-30'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 18000,
+  },
+  {
+    title: 'Test Emergency Exit Facility Lights',
+    description: 'Test emergency lights for proper functionality.',
+    taskType: 'FIRE_SAFETY',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-09-01'),
+    updatedAt: new Date('2024-09-03'),
+    dueDate: new Date('2024-09-05'),
+    completedDate: new Date('2024-09-03'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 19000,
+  },
+  {
+    title: 'Update Software on Facility Tablets',
+    description: 'Install software updates on maintenance tablets.',
+    taskType: 'SOFTWARE_UPDATE',
+    taskUrgency: 'NORMAL',
+    taskStatus: 'CANCELLED',
+    createdAt: new Date('2024-09-30'),
+    updatedAt: new Date('2024-09-30'),
+    dueDate: new Date('2024-09-30'),
+    completedDate: null,
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 20000,
+  },
+  {
+    title: 'Test Park Asset Benches',
+    description: 'Check the benches in the main park area for any wear or damage.',
+    taskType: 'TESTING',
+    taskUrgency: 'HIGH',
+    taskStatus: 'COMPLETED',
+    createdAt: new Date('2024-08-01'),
+    updatedAt: new Date('2024-10-25'),
+    dueDate: new Date('2024-09-01'),
+    completedDate: new Date('2024-10-25'),
+    images: ['https://example.com/image.jpg'],
+    remarks: 'No additional remarks.',
+    position: 21000,
+  },
 ];
+
+// Group tasks by status
+const groupedMaintenanceTasks = {
+  OPEN: [],
+  IN_PROGRESS: [],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+maintenanceTasksData.forEach((task) => {
+  groupedMaintenanceTasks[task.taskStatus].push(task);
+});
+
+// Assign positions within each group
+Object.keys(groupedMaintenanceTasks).forEach((status) => {
+  groupedMaintenanceTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedMaintenanceTasks[status].forEach((task, index) => {
+    task.position = (index + 1) * 1000;
+  });
+});
+
+// Flatten the grouped tasks back into a single array
+maintenanceTasksData = Object.values(groupedMaintenanceTasks).flat();
+
+// Sort the maintenanceTasksData array by status and position
+maintenanceTasksData.sort((a, b) => {
+  const statusOrder = { OPEN: 0, IN_PROGRESS: 1, COMPLETED: 2, CANCELLED: 3 };
+  if (a.taskStatus !== b.taskStatus) {
+    return statusOrder[a.taskStatus] - statusOrder[b.taskStatus];
+  }
+  return a.position - b.position;
+});
 
 let plantTasksData = [
   {
@@ -2210,27 +2466,27 @@ let plantTasksData = [
 ];
 
 // Group tasks by status
-const groupedTasks = {
+const groupedPlantTasks = {
   OPEN: [],
   IN_PROGRESS: [],
   COMPLETED: [],
-  CANCELLED: []
+  CANCELLED: [],
 };
 
-plantTasksData.forEach(task => {
-  groupedTasks[task.taskStatus].push(task);
+plantTasksData.forEach((task) => {
+  groupedPlantTasks[task.taskStatus].push(task);
 });
 
 // Assign positions within each group
-Object.keys(groupedTasks).forEach(status => {
-  groupedTasks[status].sort((a, b) => a.createdAt - b.createdAt);
-  groupedTasks[status].forEach((task, index) => {
+Object.keys(groupedPlantTasks).forEach((status) => {
+  groupedPlantTasks[status].sort((a, b) => a.createdAt - b.createdAt);
+  groupedPlantTasks[status].forEach((task, index) => {
     task.position = (index + 1) * 1000;
   });
 });
 
 // Flatten the grouped tasks back into a single array
-plantTasksData = Object.values(groupedTasks).flat();
+plantTasksData = Object.values(groupedPlantTasks).flat();
 
 // Sort the plantTasksData array by status and position
 plantTasksData.sort((a, b) => {
@@ -2644,10 +2900,10 @@ const eventsData = [
       'The Wildlife Protection Talk is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!',
     type: 'TALK',
     suitability: 'NATURE_ENTHUSIASTS',
-    startDate: '2024-10-07T00:00:00.000Z',
-    endDate: '2024-10-11T09:00:00.000Z',
-    startTime: '2024-10-07T00:00:00.000Z',
-    endTime: '2024-10-11T09:00:00.000Z',
+    startDate: '2024-12-15T02:00:00.000Z',
+    endDate: '2024-12-20T09:00:00.000Z',
+    startTime: '2024-12-15T02:00:00.000Z',
+    endTime: '2024-12-20T09:00:00.000Z',
     maxCapacity: 300,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
@@ -2678,10 +2934,10 @@ const eventsData = [
       "Immerse yourself in the soothing sounds of live jazz as talented musicians bring the park to life with soulful melodies. Whether you're a jazz enthusiast or simply looking for a relaxing evening, this event offers a perfect blend of music and nature.",
     type: 'FESTIVAL',
     suitability: 'FAMILIES_AND_FRIENDS',
-    startDate: '2024-10-18T02:00:00.000Z',
-    endDate: '2024-10-21T12:00:00.000Z',
-    startTime: '2024-10-18T02:00:00.000Z',
-    endTime: '2024-10-21T12:00:00.000Z',
+    startDate: '2024-10-26T00:00:00.000Z',
+    endDate: '2024-10-28T12:00:00.000Z',
+    startTime: '2024-10-26T00:00:00.000Z',
+    endTime: '2024-10-28T12:00:00.000Z',
     maxCapacity: 300,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
@@ -2695,10 +2951,10 @@ const eventsData = [
       'The Eco-Friendly Craft Workshop is a fantastic opportunity to learn about sustainability and how we can all contribute to protecting our environment. Join us to gain practical tips and engage in hands-on activities to make a positive impact!',
     type: 'WORKSHOP',
     suitability: 'FAMILIES_AND_FRIENDS',
-    startDate: '2024-10-10T01:00:00.000Z',
-    endDate: '2024-10-12T09:00:00.000Z',
-    startTime: '2024-10-10T01:00:00.000Z',
-    endTime: '2024-10-12T09:00:00.000Z',
+    startDate: '2024-12-10T01:00:00.000Z',
+    endDate: '2024-12-12T09:00:00.000Z',
+    startTime: '2024-12-10T01:00:00.000Z',
+    endTime: '2024-12-12T09:00:00.000Z',
     maxCapacity: 30,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
@@ -2712,10 +2968,10 @@ const eventsData = [
       "Treasure Hunt is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
     type: 'COMPETITION',
     suitability: 'CHILDREN',
-    startDate: '2024-10-01T01:00:00.000Z',
-    endDate: '2024-10-01T11:00:00.000Z',
-    startTime: '2024-10-01T01:00:00.000Z',
-    endTime: '2024-10-01T11:00:00.000Z',
+    startDate: '2024-12-01T01:00:00.000Z',
+    endDate: '2024-12-02T11:00:00.000Z',
+    startTime: '2024-12-01T01:00:00.000Z',
+    endTime: '2024-12-02T11:00:00.000Z',
     maxCapacity: 25,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
@@ -2729,10 +2985,10 @@ const eventsData = [
       "Obstacle Course Challenge is a fun-filled event designed to entertain and engage children in a playful environment at our park's playground. Join us for a great time!",
     type: 'COMPETITION',
     suitability: 'CHILDREN',
-    startDate: '2024-10-01T02:00:00.000Z',
-    endDate: '2024-10-04T09:00:00.000Z',
-    startTime: '2024-10-01T02:00:00.000Z',
-    endTime: '2024-10-04T09:00:00.000Z',
+    startDate: '2024-11-01T02:00:00.000Z',
+    endDate: '2024-11-04T09:00:00.000Z',
+    startTime: '2024-11-01T02:00:00.000Z',
+    endTime: '2024-11-04T09:00:00.000Z',
     maxCapacity: 30,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
@@ -2779,6 +3035,25 @@ const newHubs = [
     remarks: 'Newly installed and configured',
     facilityId: '',
     zoneId: 2,
+  },
+  {
+    serialNumber: 'IA21431241512557',
+    identifierNumber: 'HB-88888',
+    name: 'Raspberry Pi 4',
+    description: 'Hub for connecting various sensors in Palm Valley',
+    hubStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    supplier: 'Supplier 4',
+    supplierContactNumber: '87654321',
+    ipAddress: '192.168.2.2',
+    macAddress: '00:00:00:00:00:00',
+    dataTransmissionInterval: 5,
+    lat: 1.3640890828822168,
+    long: 103.83952260017395,
+    images: ['https://www.raspberrypi.com/app/uploads/2020/06/raspberrypi_4b-1536x1022.jpg'],
+    remarks: 'Newly installed and configured',
+    facilityId: '',
+    zoneId: 1,
   },
 ];
 
@@ -2938,6 +3213,23 @@ const newSensors = [
     lat: 1.3081065923487931,
     long: 103.81797909736635,
     images: ['https://dataloggerinc.com/wp-content/uploads/2018/12/2121-71.jpg'],
+    remarks: 'Installed in an open area',
+    facilityId: '',
+  },
+  {
+    name: 'Camera X10',
+    identifierNumber: 'SE-318CA',
+    serialNumber: 'STE123095',
+    sensorType: 'CAMERA',
+    description: 'Camera for monitoring people in the park',
+    sensorStatus: 'ACTIVE',
+    acquisitionDate: new Date(),
+    sensorUnit: 'PAX',
+    supplier: 'BrightTech Innovations',
+    supplierContactNumber: '89004577',
+    lat: 1.364382092969194,
+    long: 103.83962988853456,
+    images: ['https://i.ytimg.com/vi/YzEZvTwO7tA/maxresdefault.jpg'],
     remarks: 'Installed in an open area',
     facilityId: '',
   },
@@ -3853,6 +4145,324 @@ const attractionTransactionStandardData = [
   },
 ];
 
+const eventTicketListingsData = [
+  {
+    nationality: 'LOCAL',
+    category: 'ADULT',
+    price: 5,
+    description: 'Singapore resident - Adult',
+    isActive: true,
+    eventId: '',
+  },
+  {
+    nationality: 'LOCAL',
+    category: 'CHILD',
+    price: 0,
+    description: 'Singapore resident - Child (3 to 12 years old)',
+    isActive: true,
+    eventId: '',
+  },
+  {
+    nationality: 'LOCAL',
+    category: 'SENIOR',
+    price: 0,
+    description: 'Singapore resident - Senior (60 years old and above)',
+    isActive: true,
+    eventId: '',
+  },
+  {
+    nationality: 'LOCAL',
+    category: 'STUDENT',
+    price: 2,
+    description: 'Singapore resident - Student (Secondary & Tertiary students)',
+    isActive: true,
+    eventId: '',
+  },
+  {
+    nationality: 'STANDARD',
+    category: 'ADULT',
+    price: 10,
+    description: 'Standard - Adult (13 years old and above)',
+    isActive: true,
+    eventId: '',
+  },
+  {
+    nationality: 'STANDARD',
+    category: 'CHILD',
+    price: 5,
+    description: 'Standard - Child (3 to 12 years old)',
+    isActive: true,
+    eventId: '',
+  },
+];
+
+const eventTransactionLocalData = [
+  {
+    eventDate: '2024-12-15T10:00:00Z',
+    purchaseDate: '2024-10-30T10:00:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    eventDate: '2024-12-15T14:30:00Z',
+    purchaseDate: '2024-10-31T09:45:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    eventDate: '2024-12-16T13:45:00Z',
+    purchaseDate: '2024-10-31T08:30:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    eventDate: '2024-12-18T10:15:00Z',
+    purchaseDate: '2024-11-01T11:30:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    eventDate: '2024-12-20T15:00:00Z',
+    purchaseDate: '2024-11-03T09:00:00Z',
+    totalAmount: 10,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+];
+
+const eventTransactionStandardData = [
+  {
+    eventDate: '2024-12-16T10:00:00Z',
+    purchaseDate: '2024-10-25T10:00:00Z',
+    totalAmount: 30,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    eventDate: '2024-12-18T14:30:00Z',
+    purchaseDate: '2024-10-31T09:45:00Z',
+    totalAmount: 30,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+  {
+    eventDate: '2024-12-19T10:15:00Z',
+    purchaseDate: '2024-11-02T11:30:00Z',
+    totalAmount: 30,
+    visitorId: '',
+    eventId: '',
+    tickets: [
+      { listingId: '', quantity: 2 },
+      { listingId: '', quantity: 2 },
+    ],
+  },
+];
+
+const feedbacksData = [
+  // Park ID 1 Feedbacks
+  {
+    title: 'Beautiful Flower Garden',
+    description: 'The flower garden near the entrance is absolutely stunning!',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T09:00:00Z',
+    dateResolved: null,
+    needResponse: true
+  },
+  {
+    title: 'Rare Bird Sighting',
+    description: 'I spotted what I believe to be a rare bird species near the lake. Can someone confirm?',
+    feedbackCategory: 'WILDLIFE',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T10:30:00Z',
+    dateResolved: '2024-10-24T14:00:00Z',
+    needResponse: true,
+    remarks: 'Confirmed as rare species. Added to wildlife database. Follow up with visitor appreciation email.'
+  },
+  {
+    title: 'Playground Needs Maintenance',
+    description: 'The swing set in the children\'s playground is squeaking loudly. It might need some oil.',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 1,
+    images: ['https://media.istockphoto.com/id/1363804636/photo/broken-swing.jpg?s=612x612&w=0&k=20&c=nhLMWlE3JjJqF-BrTR7pdTOKCCJyal0GvjFVMr7Mxw8=','https://c8.alamy.com/comp/KCKG6Y/broken-swing-in-school-yard-KCKG6Y.jpg'],
+    staffId: '',
+    dateCreated: '2024-10-22T11:45:00Z',
+    dateResolved: '2024-10-24T16:30:00Z',
+    needResponse: false,
+    remarks: 'Maintenance team oiled swing set. Schedule weekly playground check.'
+  },
+  {
+    title: 'Great Staff Assistance',
+    description: 'The park ranger was extremely helpful in providing information about the local flora.',
+    feedbackCategory: 'STAFF',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T13:15:00Z',
+    dateResolved: null,
+    needResponse: false
+  },
+  {
+    title: 'Litter Problem',
+    description: 'There\'s a lot of litter near the picnic area. More trash bins might help.',
+    feedbackCategory: 'CLEANLINESS',
+    feedbackStatus: 'REJECTED',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T15:00:00Z',
+    dateResolved: '2024-10-24T09:00:00Z',
+    needResponse: true,
+    remarks: 'Recent survey shows sufficient bins. Increased patrol scheduled. Monitor situation for 2 weeks.'
+  },
+  {
+    title: 'Suggestion for Night Tours',
+    description: 'It would be great to have guided night tours to observe nocturnal wildlife.',
+    feedbackCategory: 'SERVICES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 1,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T16:45:00Z',
+    dateResolved: null,
+    needResponse: false
+  },
+
+  // Park ID 2 Feedbacks
+  {
+    title: 'Accessibility Improvements Needed',
+    description: 'The path to the main garden isn\'t very wheelchair-friendly. Could this be improved?',
+    feedbackCategory: 'ACCESSIBILITY',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 2,
+    images: ['https://www.kafkagranite.com/wp-content/uploads/2023/04/KfkaWheelchairGranite.jpg','https://www.shutterstock.com/image-photo/dirt-path-through-forest-nature-260nw-106334114.jpg'],
+    staffId: '',
+    dateCreated: '2024-10-22T09:30:00Z',
+    dateResolved: null,
+    needResponse: true
+  },
+  {
+    title: 'Interesting Insect Species',
+    description: 'I noticed an unusual insect near the pond. Is it a native species?',
+    feedbackCategory: 'WILDLIFE',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T11:00:00Z',
+    dateResolved: '2024-10-24T13:30:00Z',
+    needResponse: true,
+    remarks: 'Native species confirmed. New information plaque added near pond. Consider organizing insect awareness program.'
+  },
+  {
+    title: 'Water Fountain Not Working',
+    description: 'The water fountain near the jogging track isn\'t functioning properly.',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T12:15:00Z',
+    dateResolved: null,
+    needResponse: false
+  },
+  {
+    title: 'Excellent Educational Program',
+    description: 'The botanical workshop for kids was fantastic! Please organize more such events.',
+    feedbackCategory: 'EVENTS',
+    feedbackStatus: 'ACCEPTED',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T14:00:00Z',
+    dateResolved: '2024-10-24T15:45:00Z',
+    needResponse: false,
+    remarks: 'Positive feedback noted. Schedule more workshops for next quarter. Update event calendar on website.'
+  },
+  {
+    title: 'Safety Concern',
+    description: 'There\'s a low-hanging branch on the main walking path that could be dangerous.',
+    feedbackCategory: 'SAFETY',
+    feedbackStatus: 'REJECTED',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T15:30:00Z',
+    dateResolved: '2024-10-24T10:00:00Z',
+    needResponse: true,
+    remarks: 'Inspection completed. Branch is within safe height range. Will continue to monitor tree growth.'
+  },
+  {
+    title: 'Request for More Benches',
+    description: 'It would be great to have more benches along the nature trail for resting.',
+    feedbackCategory: 'FACILITIES',
+    feedbackStatus: 'PENDING',
+    visitorId: '',
+    parkId: 2,
+    images: [],
+    staffId: '',
+    dateCreated: '2024-10-22T17:00:00Z',
+    dateResolved: null,
+    needResponse: false
+  }
+];
+
 module.exports = {
   parksData,
   zonesData,
@@ -3880,4 +4490,8 @@ module.exports = {
   announcementsData,
   attractionTransactionLocalData,
   attractionTransactionStandardData,
+  eventTicketListingsData,
+  eventTransactionLocalData,
+  eventTransactionStandardData,
+  feedbacksData,
 };

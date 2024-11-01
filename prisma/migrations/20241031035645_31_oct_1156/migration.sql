@@ -86,6 +86,21 @@ CREATE TYPE "PlantTaskTypeEnum" AS ENUM ('INSPECTION', 'WATERING', 'PRUNING_TRIM
 CREATE TYPE "PlantTaskUrgencyEnum" AS ENUM ('IMMEDIATE', 'HIGH', 'NORMAL', 'LOW');
 
 -- CreateEnum
+CREATE TYPE "MaintenanceTaskStatusEnum" AS ENUM ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "MaintenanceTaskTypeEnum" AS ENUM ('INSPECTION', 'CLEANING', 'REPAIR', 'PLUMBING', 'ELECTRICAL', 'HEAT_AND_AIR_CONDITIONING', 'CALIBRATION', 'SOFTWARE_UPDATE', 'HARDWARE_REPLACEMENT', 'TESTING', 'ASSET_RELOCATION', 'FIRE_SAFETY', 'SECURITY_CHECK', 'WASTE_MANAGEMENT', 'OTHERS');
+
+-- CreateEnum
+CREATE TYPE "MaintenanceTaskUrgencyEnum" AS ENUM ('IMMEDIATE', 'HIGH', 'NORMAL', 'LOW');
+
+-- CreateEnum
+CREATE TYPE "FeedbackCategoryEnum" AS ENUM ('FACILITIES', 'SERVICES', 'STAFF', 'SAFETY', 'CLEANLINESS', 'ACCESSIBILITY', 'EVENTS', 'WILDLIFE', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "FeedbackStatusEnum" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
+
+-- CreateEnum
 CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT');
 
 -- CreateEnum
@@ -99,6 +114,9 @@ CREATE TYPE "FAQCategoryEnum" AS ENUM ('GENERAL', 'PARK_RULES', 'FACILITIES', 'E
 
 -- CreateEnum
 CREATE TYPE "AnnouncementStatusEnum" AS ENUM ('UPCOMING', 'ACTIVE', 'INACTIVE', 'EXPIRED');
+
+-- CreateEnum
+CREATE TYPE "BookingStatusEnum" AS ENUM ('PENDING', 'CANCELLED', 'REJECTED', 'APPROVED_PENDING_PAYMENT', 'UNPAID_CLOSED', 'CONFIRMED', 'CONFIRMED_CLOSED');
 
 -- CreateTable
 CREATE TABLE "Staff" (
@@ -332,8 +350,8 @@ CREATE TABLE "Hub" (
     "description" TEXT,
     "hubStatus" "HubStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
+    "nextMaintenanceDates" TIMESTAMP(3)[],
     "dataTransmissionInterval" INTEGER,
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
@@ -362,8 +380,8 @@ CREATE TABLE "Sensor" (
     "description" TEXT,
     "sensorStatus" "SensorStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
+    "nextMaintenanceDates" TIMESTAMP(3)[],
     "sensorUnit" "SensorUnitEnum" NOT NULL,
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
@@ -397,8 +415,8 @@ CREATE TABLE "ParkAsset" (
     "description" TEXT,
     "parkAssetStatus" "ParkAssetStatusEnum" NOT NULL,
     "acquisitionDate" TIMESTAMP(3) NOT NULL,
-    "lastMaintenanceDate" TIMESTAMP(3),
     "nextMaintenanceDate" TIMESTAMP(3),
+    "nextMaintenanceDates" TIMESTAMP(3)[],
     "supplier" TEXT NOT NULL,
     "supplierContactNumber" TEXT NOT NULL,
     "parkAssetCondition" "ParkAssetConditionEnum" NOT NULL,
@@ -470,6 +488,31 @@ CREATE TABLE "PlantTask" (
 );
 
 -- CreateTable
+CREATE TABLE "MaintenanceTask" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "taskStatus" "MaintenanceTaskStatusEnum" NOT NULL,
+    "taskType" "MaintenanceTaskTypeEnum" NOT NULL,
+    "taskUrgency" "MaintenanceTaskUrgencyEnum" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "dueDate" TIMESTAMP(3) NOT NULL,
+    "completedDate" TIMESTAMP(3),
+    "images" TEXT[],
+    "remarks" TEXT,
+    "assignedStaffId" UUID,
+    "submittingStaffId" UUID NOT NULL,
+    "facilityId" UUID,
+    "parkAssetId" UUID,
+    "sensorId" UUID,
+    "hubId" UUID,
+    "position" INTEGER NOT NULL,
+
+    CONSTRAINT "MaintenanceTask_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "DecarbonizationArea" (
     "id" UUID NOT NULL,
     "geom" TEXT NOT NULL,
@@ -488,6 +531,25 @@ CREATE TABLE "SequestrationHistory" (
     "decarbonizationAreaId" UUID NOT NULL,
 
     CONSTRAINT "SequestrationHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Feedback" (
+    "id" UUID NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "dateResolved" TIMESTAMP(3),
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "feedbackCategory" "FeedbackCategoryEnum" NOT NULL,
+    "images" TEXT[],
+    "feedbackStatus" "FeedbackStatusEnum" NOT NULL,
+    "remarks" TEXT,
+    "parkId" INTEGER NOT NULL,
+    "needResponse" BOOLEAN NOT NULL,
+    "staffId" UUID,
+    "visitorId" UUID NOT NULL,
+
+    CONSTRAINT "Feedback_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -536,6 +598,23 @@ CREATE TABLE "Announcement" (
     "parkId" INTEGER,
 
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Booking" (
+    "id" UUID NOT NULL,
+    "bookingPurpose" TEXT NOT NULL,
+    "pax" INTEGER NOT NULL,
+    "bookingStatus" "BookingStatusEnum" NOT NULL,
+    "dateStart" TIMESTAMP(3) NOT NULL,
+    "dateEnd" TIMESTAMP(3) NOT NULL,
+    "dateBooked" TIMESTAMP(3) NOT NULL,
+    "paymentDeadline" TIMESTAMP(3),
+    "visitorRemarks" TEXT NOT NULL,
+    "facilityId" UUID NOT NULL,
+    "visitorId" UUID NOT NULL,
+
+    CONSTRAINT "Booking_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -671,7 +750,37 @@ ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_assignedStaffId_fkey" FOREIGN 
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_submittingStaffId_fkey" FOREIGN KEY ("submittingStaffId") REFERENCES "Staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_assignedStaffId_fkey" FOREIGN KEY ("assignedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_submittingStaffId_fkey" FOREIGN KEY ("submittingStaffId") REFERENCES "Staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_parkAssetId_fkey" FOREIGN KEY ("parkAssetId") REFERENCES "ParkAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "SequestrationHistory" ADD CONSTRAINT "SequestrationHistory_decarbonizationAreaId_fkey" FOREIGN KEY ("decarbonizationAreaId") REFERENCES "DecarbonizationArea"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Booking" ADD CONSTRAINT "Booking_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Booking" ADD CONSTRAINT "Booking_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;

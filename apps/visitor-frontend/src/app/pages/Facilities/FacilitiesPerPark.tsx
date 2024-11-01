@@ -16,8 +16,8 @@ const formatEnumLabel = (label: string) => {
     BBQ_PIT: 'BBQ Pit',
     AED: 'AED',
   };
-  if (specialCases[label]) {
-    return specialCases[label];
+  if (specialCases[label as keyof typeof specialCases]) {
+    return specialCases[label as keyof typeof specialCases];
   }
   return label
     .toLowerCase()
@@ -83,11 +83,23 @@ const FacilitiesPerPark: React.FC = () => {
         value: 'type',
         key: 'type',
         selectable: false,
-        children: Object.values(FacilityTypeEnum).map((type) => ({
-          title: formatEnumLabel(type),
-          value: `type-${type}`,
-          key: `type-${type}`,
-        })),
+        children: Object.values(FacilityTypeEnum)
+          .filter((type) => type !== 'STOREROOM') // Remove "Storeroom" from the filter options
+          .map((type) => ({
+            title: formatEnumLabel(type),
+            value: `type-${type}`,
+            key: `type-${type}`,
+          })),
+      },
+      {
+        title: 'Bookable',
+        value: 'isBookable',
+        key: 'isBookable',
+        selectable: false,
+        children: [
+          { title: 'Bookable', value: 'isBookable-true', key: 'isBookable-true' },
+          { title: 'Not Bookable', value: 'isBookable-false', key: 'isBookable-false' },
+        ],
       },
     ];
   }, []);
@@ -100,6 +112,7 @@ const FacilitiesPerPark: React.FC = () => {
         const [category, value] = filter.split('-');
         if (category === 'status') return facility.facilityStatus === value;
         if (category === 'type') return facility.facilityType === value;
+        if (category === 'isBookable') return facility.isBookable === (value === 'true');
         return true;
       });
       return matchesSearchQuery && matchesFilters;
@@ -157,7 +170,7 @@ const FacilitiesPerPark: React.FC = () => {
           onChange={handleFilterChange}
           treeCheckable={true}
           showCheckedStrategy={SHOW_PARENT}
-          placeholder={<div className="md:text-white/75 text-green-700">{`Filter by Status, Type`}</div>}
+          placeholder={<div className="md:text-white/75 text-green-700">{`Filter by Status, Type, Bookable`}</div>}
           className="w-full cursor-pointer md:flex-1 md:min-w-[260px] mb-2"
           variant="borderless"
           suffixIcon={<IoIosArrowDown className="md:text-gray-400 text-green-700 text-lg cursor-pointer" />}

@@ -28,12 +28,26 @@ const {
   announcementsData,
   attractionTransactionLocalData,
   attractionTransactionStandardData,
+  eventTicketListingsData,
+  eventTransactionLocalData,
+  eventTransactionStandardData,
+  feedbacksData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 const { v4: uuidv4 } = require('uuid'); // Add this import at the top of your file
 const { seedHistoricalRainfallData } = require('./irrigationScheduleSeed');
+const moment = require('moment-timezone');
+
+const findStaffByRoleAndPark = (staffList, role, parkId) => {
+  return staffList.find(staff => staff.role === role && staff.parkId === parkId);
+};
+
+const findVisitorByFirstName = (visitorList, firstName) => {
+  return visitorList.find(visitor => visitor.firstName.toLowerCase() === firstName.toLowerCase());
+};
+
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
@@ -95,7 +109,7 @@ async function createPark(data) {
       ${data.description},
       ${data.address},
       ${data.contactNumber},
-      ${openingHoursArray}::timestamp[], 
+      ${openingHoursArray}::timestamp[],
       ${closingHoursArray}::timestamp[],
       ${imagesParam},
       ST_GeomFromText(${data.geom}, 4326),
@@ -174,7 +188,7 @@ async function createZone(data) {
     VALUES (
       ${data.name},
       ${data.description},
-      ${openingHoursArray}::timestamp[], 
+      ${openingHoursArray}::timestamp[],
       ${closingHoursArray}::timestamp[],
       ${geomParam},
       ${pathsParam},
@@ -320,6 +334,7 @@ async function seed() {
   console.log(`Total facilities seeded: ${facilityList.length}\n`);
 
   const storeroomId = facilityList[7].id;
+  const storeroomBAMKPId = facilityList[9].id;
 
   const hubList = [];
   for (const hub of hubsData) {
@@ -380,7 +395,21 @@ async function seed() {
     });
     eventList.push(createdEvent);
   }
-  console.log(`Total events seeded: ${eventList.length}\n`);
+
+  const eventTicketListingsList = [];
+
+  for (const event of eventList) {
+    const currentListings = [];
+    for (const listing of eventTicketListingsData) {
+      listing.eventId = event.id;
+      const eventListing = await prisma.eventTicketListing.create({
+        data: listing,
+      });
+      currentListings.push(eventListing);
+    }
+    eventTicketListingsList.push(currentListings);
+  }
+  console.log(`Total events (with listings) seeded: ${eventList.length}\n`);
 
   const attractionList = [];
   for (const attraction of attractionsData) {
@@ -390,7 +419,7 @@ async function seed() {
     attractionList.push(createdAttraction);
   }
 
-  const attractionListingsList = [];
+  const attractionTicketListingsList = [];
 
   for (const attraction of attractionList) {
     const currentListings = [];
@@ -401,9 +430,271 @@ async function seed() {
       });
       currentListings.push(attractionListing);
     }
-    attractionListingsList.push(currentListings);
+    attractionTicketListingsList.push(currentListings);
   }
   console.log(`Total attractions (with listings) seeded: ${attractionList.length}\n`);
+
+  // Fixed arrays of dates with varying intervals for maintenance tasks
+  const fixedDates1 = [
+    '2019-01-13', // Rainy season
+    '2019-01-30', // Rainy season
+    '2019-03-02',
+    '2019-04-11',
+    '2019-06-05', // Rainy season
+    '2019-07-02', // Rainy season
+    '2019-08-02',
+    '2019-10-11',
+    '2019-12-01', // Rainy season
+    //'2019-12-23', // Rainy season
+    '2020-01-12', // Rainy season
+    '2020-01-25', // Rainy season
+    '2020-02-01',
+    '2020-04-23',
+    '2020-06-01', // Rainy season
+    '2020-07-05', // Rainy season
+    '2020-08-10',
+    '2020-10-15',
+    '2020-12-02', // Rainy season
+    '2020-12-25', // Rainy season
+    //'2021-01-10', // Rainy season
+    '2021-01-23', // Rainy season
+    '2021-02-15',
+    '2021-04-28',
+    '2021-06-05', // Rainy season
+    '2021-07-01', // Rainy season
+    '2021-08-01',
+    '2021-10-02',
+    '2021-12-02', // Rainy season
+    //'2021-12-25', // Rainy season
+    '2022-01-15', // Rainy season
+    '2022-01-31', // Rainy season
+    '2022-03-05',
+    '2022-04-18',
+    '2022-06-02', // Rainy season
+    '2022-07-01', // Rainy season
+    '2022-08-04',
+    '2022-10-10',
+    '2022-12-05', // Rainy season
+    //'2022-12-25', // Rainy season
+    '2023-01-13', // Rainy season
+    '2023-01-31', // Rainy season
+    '2023-03-05',
+    '2023-04-18',
+    '2023-06-02', // Rainy season
+    '2023-07-01', // Rainy season
+    '2023-08-04',
+    '2023-10-10',
+    '2023-12-05', // Rainy season
+    //'2023-12-25', // Rainy season
+    '2024-01-13', // Rainy season
+    '2024-01-31', // Rainy season
+    '2024-03-05',
+    '2024-04-18',
+    '2024-06-02', // Rainy season
+    '2024-07-01', // Rainy season
+    '2024-08-04',
+    '2024-10-10',
+  ];
+
+  const fixedDates2 = [
+    '2019-01-20', // Rainy season
+    '2019-03-08',
+    '2019-04-20',
+    '2019-06-15', // Rainy season
+    '2019-08-01',
+    '2019-10-06',
+    '2019-12-11', // Rainy season
+    '2019-12-25', // Rainy season
+    //'2020-01-12', // Rainy season
+    '2020-01-20', // Rainy season
+    '2020-03-18',
+    '2020-04-21',
+    '2020-06-10', // Rainy season
+    '2020-08-02',
+    '2020-10-02',
+    '2020-12-12', // Rainy season
+    '2020-12-25', // Rainy season
+    '2021-01-10', // Rainy season
+    '2021-01-21', // Rainy season
+    '2021-02-17',
+    '2021-04-01',
+    '2021-06-23', // Rainy season
+    '2021-09-15',
+    '2021-10-01',
+    '2021-11-28', // Rainy season
+    '2021-12-10', // Rainy season
+    //'2022-01-01', // Rainy season
+    '2022-01-20', // Rainy season
+    '2022-02-14',
+    '2022-04-05',
+    '2022-06-10', // Rainy season
+    '2022-09-05',
+    '2022-10-11',
+    '2022-12-10', // Rainy season
+    '2022-12-23', // Rainy season
+    //'2023-01-12', // Rainy season
+    '2023-01-20', // Rainy season
+    '2023-03-08',
+    '2023-04-20',
+    '2023-06-15', // Rainy season
+    '2023-08-01',
+    '2023-10-06',
+    '2023-12-11', // Rainy season
+    '2023-12-25', // Rainy season
+    //'2024-01-12', // Rainy season
+    '2024-01-20', // Rainy season
+    '2024-03-08',
+    '2024-04-20',
+    '2024-06-15', // Rainy season
+    '2024-08-01',
+    '2024-10-06',
+  ];
+
+  const fixedDates3 = [
+    '2019-01-20', // Rainy season
+    '2019-03-18',
+    '2019-04-21',
+    '2019-06-10', // Rainy season
+    '2019-08-02',
+    '2019-10-02',
+    '2019-12-12', // Rainy season
+    '2019-12-25', // Rainy season
+    '2020-01-10', // Rainy season
+    '2020-01-21', // Rainy season
+    '2020-02-17',
+    '2020-04-01',
+    '2020-06-23', // Rainy season
+    '2020-09-15',
+    '2020-10-01',
+    '2020-11-28', // Rainy season
+    '2020-12-10', // Rainy season
+    //'2021-01-01', // Rainy season
+    '2021-01-20', // Rainy season
+    '2021-02-14',
+    '2021-04-05',
+    '2021-06-10', // Rainy season
+    '2021-09-05',
+    '2021-10-11',
+    '2021-12-10', // Rainy season
+    '2021-12-23', // Rainy season
+    //'2022-01-12', // Rainy season
+    '2022-01-20', // Rainy season
+    '2022-03-08',
+    '2022-04-20',
+    '2022-06-15', // Rainy season
+    '2022-08-01',
+    '2022-10-06',
+    '2022-12-11', // Rainy season
+    '2022-12-25', // Rainy season
+    //'2023-01-12', // Rainy season
+    '2023-01-20', // Rainy season
+    '2023-03-08',
+    '2023-04-20',
+    '2023-06-15', // Rainy season
+    '2023-08-01',
+    '2023-10-06',
+    '2023-12-11', // Rainy season
+    '2023-12-25', // Rainy season
+    //'2024-01-12', // Rainy season
+    '2024-01-20', // Rainy season
+    '2024-03-08',
+    '2024-04-20',
+    '2024-06-15', // Rainy season
+    '2024-08-01',
+    '2024-10-06',
+  ];
+
+  // Function to generate mock maintenance Task data with fixed dates
+  function generateMockMaintenanceTask(assetId, fixedDates) {
+    console.log(`Generating mock maintenance entries for asset ${assetId}`);
+
+    const tasks = fixedDates.map((date, index) => ({
+      title: `Maintenance Task #${index + 1} for ${assetId}`,
+      description: `Completed maintenance task #${index + 1} for ${assetId}.`,
+      taskStatus: 'COMPLETED',
+      taskType: 'INSPECTION',
+      taskUrgency: 'NORMAL',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(date),
+      completedDate: new Date(date),
+      images: ['https://example.com/maintenance-task-image.jpg'],
+      remarks: `Remarks for maintenance task #${index + 1}.`,
+      position: index + 1,
+    }));
+
+    console.log('Mock tasks generated with fixed dates');
+    return tasks;
+  }
+
+  // Generate completed maintenance tasks for the sensor with title SE-22222
+  const sensor = sensorsData.find((s) => s.identifierNumber === 'SE-22222');
+  if (sensor) {
+    const maintenanceTasks = generateMockMaintenanceTask(sensor.identifierNumber, fixedDates1);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        position: task.position,
+        sensor: { connect: { serialNumber: sensor.serialNumber } },
+      });
+    });
+  }
+
+  // Generate completed maintenance tasks for the hub with title HB-11111
+  const hub = hubsData.find((h) => h.identifierNumber === 'HB-11111');
+  if (hub) {
+    const maintenanceTasks = generateMockMaintenanceTask(hub.identifierNumber, fixedDates1);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        position: task.position,
+        hub: { connect: { serialNumber: hub.serialNumber } },
+      });
+    });
+  }
+
+  // Generate completed maintenance tasks for the park asset with title HP-HR2515DK
+  const parkAsset = parkAssetsData.find((p) => p.identifierNumber === 'HP-HR2515DK');
+  if (parkAsset) {
+    const maintenanceTasks = generateMockMaintenanceTask(parkAsset.identifierNumber, fixedDates1);
+    maintenanceTasks.forEach((task) => {
+      maintenanceTasksData.push({
+        title: task.title,
+        description: task.description,
+        taskStatus: task.taskStatus,
+        taskType: task.taskType,
+        taskUrgency: task.taskUrgency,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        dueDate: task.dueDate,
+        completedDate: task.completedDate,
+        images: task.images,
+        remarks: task.remarks,
+        position: task.position,
+        parkAsset: { connect: { serialNumber: parkAsset.serialNumber } },
+      });
+    });
+  }
 
   const maintenanceTasksList = [];
   for (const maintenanceTask of maintenanceTasksData) {
@@ -419,22 +710,43 @@ async function seed() {
     // Ensure we have valid staff data
     if (parkId2Staff.length > 0 && eligibleAssignedStaff.length > 0) {
       const randomSubmittingStaffIndex = Math.floor(Math.random() * eligibleSubmittingStaff.length);
-      // const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+      const randomAssignedStaffIndex = Math.floor(Math.random() * eligibleAssignedStaff.length);
+
+      // First, fetch all facilities with parkId 2
+      const facilitiesInPark2 = await prisma.facility.findMany({
+        where: { parkId: 2 },
+        select: { id: true },
+      });
+
+      const facilityIdsInPark2 = facilitiesInPark2.map((f) => f.id);
+
+      // Now filter the lists using these facility IDs
+      const eligibleSensorList = sensorList.filter((sensor) => facilityIdsInPark2.includes(sensor.facilityId));
+      //console.log('eligibleSensorList', eligibleSensorList);
+
+      const eligibleHubList = hubList.filter((hub) => facilityIdsInPark2.includes(hub.facilityId));
+      //console.log('eligibleHubList', eligibleHubList);
+
+      const eligibleParkAssetList = parkAssetList.filter((parkAsset) => facilityIdsInPark2.includes(parkAsset.facilityId));
+      //console.log('eligibleParkAssetList', eligibleParkAssetList);
+
+      const eligibleFacilityList = facilityList.filter((facility) => facility.parkId === 2);
+      //console.log('eligibleFacilityList', eligibleFacilityList);
 
       // Determine which entity to associate with the task
       let entityConnection = {};
-      if (maintenanceTask.title.includes('Bench') || maintenanceTask.title.includes('Restroom')) {
-        const randomFacilityIndex = Math.floor(Math.random() * facilityList.length);
-        entityConnection = { facility: { connect: { id: facilityList[randomFacilityIndex].id } } };
-      } else if (maintenanceTask.title.includes('Sensor')) {
-        const randomSensorIndex = Math.floor(Math.random() * sensorList.length);
-        entityConnection = { sensor: { connect: { id: sensorList[randomSensorIndex].id } } };
+      if (maintenanceTask.title.includes('Sensor')) {
+        const randomSensorIndex = Math.floor(Math.random() * eligibleSensorList.length);
+        entityConnection = { sensor: { connect: { id: eligibleSensorList[randomSensorIndex].id } } };
       } else if (maintenanceTask.title.includes('Hub')) {
-        const randomHubIndex = Math.floor(Math.random() * hubList.length);
-        entityConnection = { hub: { connect: { id: hubList[randomHubIndex].id } } };
-      } else if (maintenanceTask.title.includes('Lawnmower')) {
-        const randomParkAssetIndex = Math.floor(Math.random() * parkAssetList.length);
-        entityConnection = { parkAsset: { connect: { id: parkAssetList[randomParkAssetIndex].id } } };
+        const randomHubIndex = Math.floor(Math.random() * eligibleHubList.length);
+        entityConnection = { hub: { connect: { id: eligibleHubList[randomHubIndex].id } } };
+      } else if (maintenanceTask.title.includes('Park Asset')) {
+        const randomParkAssetIndex = Math.floor(Math.random() * eligibleParkAssetList.length);
+        entityConnection = { parkAsset: { connect: { id: eligibleParkAssetList[randomParkAssetIndex].id } } };
+      } else {
+        const randomFacilityIndex = Math.floor(Math.random() * eligibleFacilityList.length);
+        entityConnection = { facility: { connect: { id: eligibleFacilityList[randomFacilityIndex].id } } };
       }
 
       const createdMaintenanceTask = await prisma.maintenanceTask.create({
@@ -444,9 +756,9 @@ async function seed() {
           submittingStaff: {
             connect: { id: eligibleSubmittingStaff[randomSubmittingStaffIndex].id },
           },
-          // assignedStaff: {
-          //   connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
-          // },
+          assignedStaff: {
+            connect: { id: eligibleAssignedStaff[randomAssignedStaffIndex].id },
+          },
           ...entityConnection,
         },
       });
@@ -504,16 +816,28 @@ async function seed() {
 
   // Create the new hub
   let createdNewHubs = [];
+  let countHubs = 0;
   for (const newHub of newHubs) {
-    const createdNewHub = await prisma.hub.create({
-      data: {
-        ...newHub,
-        facilityId: storeroomId, // or any other appropriate facilityId
-      },
-    });
-    createdNewHubs.push(createdNewHub);
-    console.log(`New hub created: ${createdNewHub.name}\n`);
+    if (countHubs < 2) {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    } else {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    }
+    countHubs++;
   }
+  console.log(`Total new hubs created: ${createdNewHubs.length}\n`);
 
   // Create new sensors and associate them with the new hub
   let count = 0;
@@ -527,7 +851,7 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
-    } else {
+    } else if (count < 9) {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
@@ -536,10 +860,19 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
+    } else {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[2].id,
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
     }
     count++;
   }
-  console.log(`New sensors created and associated with the new hub: ${newSensors.length}\n`);
+  console.log(`Total new sensors created and associated with the new hub: ${sensorList.length}\n`);
 
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
@@ -549,14 +882,23 @@ async function seed() {
 
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
-    const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
 
-    const rainfallDataForHub = await getClosestRainDataPerDate(hub.lat, hub.long);
-    // console.log(rainfallDataForHub);
-    const readings = generateMockReadings(sensor.sensorType, rainfallDataForHub).map((reading) => ({
-      ...reading,
-      sensorId: sensor.id,
-    }));
+    let readings;
+    if (sensor.sensorType === 'CAMERA') {
+      if (sensor.identifierNumber === 'SE-9999X') {
+        readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
+      } else {
+        readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
+      }
+    } else {
+      const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
+      const rainfallDataForHub = await getClosestRainDataPerDate(hub.lat, hub.long);
+
+      readings = generateMockReadings(sensor.sensorType, rainfallDataForHub).map((reading) => ({
+        ...reading,
+        sensorId: sensor.id,
+      }));
+    }
 
     await prisma.sensorReading.createMany({
       data: readings,
@@ -644,7 +986,7 @@ async function seed() {
   const transactionList = [];
   const aaronId = visitorList[1].id;
   const flowerDomeId = attractionList[2].id;
-  const flowerDomeListings = attractionListingsList[2];
+  const flowerDomeListings = attractionTicketListingsList[2];
   for (const transaction of attractionTransactionLocalData) {
     transaction.visitorId = aaronId;
     transaction.attractionId = flowerDomeId;
@@ -744,12 +1086,164 @@ async function seed() {
   }
 
   console.log(`Total attraction transactions seeded: ${transactionList.length}\n`);
+
+  const eventTransactionList = [];
+  const wildlifeTalkEventId = eventList[0].id;
+  const wildlifeTalkEventListings = eventTicketListingsList[0];
+
+  for (const transaction of eventTransactionLocalData) {
+    transaction.visitorId = aaronId;
+    transaction.eventId = wildlifeTalkEventId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = wildlifeTalkEventListings[i].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.eventTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.eventTicketTransaction.create({
+        data: {
+          ...transactionData,
+          eventTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                eventTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          eventTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    eventTransactionList.push(result);
+  }
+
+  for (const transaction of eventTransactionStandardData) {
+    transaction.visitorId = aaronId;
+    transaction.eventId = wildlifeTalkEventId;
+
+    for (let i = 0; i < transaction.tickets.length; i++) {
+      transaction.tickets[i].listingId = wildlifeTalkEventListings[i + 4].id;
+    }
+
+    const { tickets, ...transactionData } = transaction;
+
+    const result = await prisma.$transaction(async (prismaClient) => {
+      // Fetch all required listings in one query
+      const listingIds = tickets.map((ticket) => ticket.listingId);
+      const listings = await prismaClient.eventTicketListing.findMany({
+        where: { id: { in: listingIds } },
+      });
+
+      // Create a map for quick price lookup
+      const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
+
+      // Create the transaction
+      const createdTransaction = await prismaClient.eventTicketTransaction.create({
+        data: {
+          ...transactionData,
+          eventTickets: {
+            create: tickets.flatMap((ticket) => {
+              const price = listingPriceMap.get(ticket.listingId);
+              if (price === undefined) {
+                throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
+              }
+              return Array(ticket.quantity).fill({
+                price: price,
+                status: 'VALID',
+                eventTicketListingId: ticket.listingId,
+              });
+            }),
+          },
+        },
+        include: {
+          eventTickets: true,
+        },
+      });
+
+      return createdTransaction;
+    });
+
+    eventTransactionList.push(result);
+  }
+
+  console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
+
+  console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
+
+  const staffMap = staffList.reduce((acc, staff) => {
+  const emailPrefix = staff.email.split('@')[0];
+  acc[emailPrefix] = staff.id;
+  return acc;
+
+  // await trainModelsForActiveHubs();
+}, {});
+
+const populatedFeedbacks = feedbacksData.map((feedback, index) => {
+  let visitorId, staffId;
+
+  // Assign visitor IDs
+  if (feedback.parkId === 1) {
+    visitorId = index < 3 ? visitorList[0].id : visitorList[1].id; // Ely for first 3, Aaron for rest
+  } else if (feedback.parkId === 2) {
+    visitorId = index < 9 ? visitorList[0].id : visitorList[1].id; // Ely for first 9, Aaron for rest
+  }
+
+  // Assign staffId only if the feedback is ACCEPTED or REJECTED
+  if (feedback.feedbackStatus === 'ACCEPTED' || feedback.feedbackStatus === 'REJECTED') {
+    if (feedback.parkId === 1) {
+      staffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
+    } else if (feedback.parkId === 2) {
+      if (feedback.title === 'Excellent Educational Program' || feedback.title === 'Safety Concern') {
+        staffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
+      } else if (index < 9) {
+        staffId = staffMap['superadmin'];
+      } else {
+        staffId = staffMap['parkranger2'];
+      }
+    }
+  }
+
+  return { ...feedback, visitorId, staffId };
+});
+
+
+ const feedbackList = [];
+for (const feedback of populatedFeedbacks) {
+  const createdFeedback = await prisma.feedback.create({
+    data: feedback,
+  });
+  feedbackList.push(createdFeedback);
+}
+console.log(`Total feedbacks seeded: ${feedbackList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   const seqHistories = [];
-  const startDate = new Date('2023-12-01');
-  const endDate = new Date('2024-10-23');
+  const startDate = new Date('2024-10-20');
+  const endDate = new Date('2024-11-13');
   const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1; // +1 to include the end date
 
   const startValues = [21.25, 557, 426.5, 484.25, 38.5]; // Starting values for PVN, East Area, West Area, PVC, PVS
@@ -780,8 +1274,8 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   }
 
   console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
-}
 
+}
 
 
 // Utility function for Activity Logs and Status Logs
@@ -947,12 +1441,173 @@ async function trainModelsForActiveHubs() {
   await trainModelsForAllHubs(hubs);
 }
 
-// seed()
-//   .catch((e) => {
-//     console.error(e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
-trainModelsForActiveHubs()
+function generateMockCrowdDataForSBG(sensorId, days) {
+  const readings = [];
+  const now = moment().tz('Asia/Singapore');
+  const startDate = moment(now).subtract(days, 'days').startOf('day');
+
+  // Generate random events
+  const events = [];
+  for (let i = 0; i < Math.floor(days / 10); i++) {
+    const eventDay = Math.floor(Math.random() * days);
+    events.push(moment(startDate).add(eventDay, 'days').toDate());
+  }
+
+  for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
+    const hour = time.hour();
+    const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    let baseCrowdLevel = 40 + Math.random() * 30; // Base level
+
+    // Day of week effect
+    switch (day) {
+      case 0: // Sunday
+      case 6: // Saturday
+        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        break;
+      case 1: // Monday
+        baseCrowdLevel *= 0.6 + Math.random() * 0.2; // Less crowded Mondays
+        break;
+      case 5: // Friday
+        baseCrowdLevel *= 1.2 + Math.random() * 0.3; // More crowded Fridays
+        break;
+      default: // Tuesday to Thursday
+        baseCrowdLevel *= 1 + Math.random() * 0.2; // Slight variation for weekdays
+    }
+
+    // Time of day effect
+    if (hour >= 6 && hour < 9) {
+      baseCrowdLevel *= 1.8 + Math.random() * 0.4;
+    } else if (hour >= 12 && hour < 14) {
+      baseCrowdLevel *= 1.6 + Math.random() * 0.3;
+    } else if (hour >= 17 && hour < 21) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    } else if (hour >= 22 || hour < 6) {
+      baseCrowdLevel *= 0.4 + Math.random() * 0.2;
+    }
+
+    // Weather effect
+    const weatherEffect = Math.random();
+    if (weatherEffect > 0.8) {
+      baseCrowdLevel *= 0.5;
+    } else if (weatherEffect > 0.6) {
+      baseCrowdLevel *= 0.8;
+    } else if (weatherEffect < 0.2) {
+      baseCrowdLevel *= 1.3;
+    }
+
+    // Special event effect
+    if (events.some((eventDate) => time.isSame(eventDate, 'day'))) {
+      const eventHourEffect = Math.abs(hour - 19) / 10;
+      baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
+    }
+
+    // Public holiday effect
+    if (Math.random() < 0.05) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    }
+
+    // Add random fluctuations
+    baseCrowdLevel += (Math.random() - 0.5) * 20;
+
+    // Ensure crowd level is within bounds, with a higher minimum
+    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+
+    readings.push({
+      date: time.toDate(),
+      value: crowdLevel,
+      sensorId: sensorId,
+    });
+  }
+
+  return readings;
+}
+
+function generateMockCrowdDataForBAMKP(sensorId, days) {
+  const readings = [];
+  const now = moment().tz('Asia/Singapore');
+  const startDate = moment(now).subtract(days, 'days').startOf('day');
+
+  // Generate random events
+  const events = [];
+  for (let i = 0; i < Math.floor(days / 10); i++) {
+    const eventDay = Math.floor(Math.random() * days);
+    events.push(moment(startDate).add(eventDay, 'days').toDate());
+  }
+
+  for (let time = moment(startDate); time.isSameOrBefore(now); time.add(15, 'minutes')) {
+    const hour = time.hour();
+    const day = time.day(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    let baseCrowdLevel = 20 + Math.random() * 30; // base level
+
+    // Day of week effect
+    switch (day) {
+      case 0: // Sunday
+      case 6: // Saturday
+        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        break;
+      case 1: // Monday
+        baseCrowdLevel *= 0.5 + Math.random() * 0.2; // Less crowded Mondays
+        break;
+      case 5: // Friday
+        baseCrowdLevel *= 1.2 + Math.random() * 0.3; // More crowded Fridays
+        break;
+      default: // Tuesday to Thursday
+        baseCrowdLevel *= 1 + Math.random() * 0.2; // Slight variation for weekdays
+    }
+
+    // Time of day effect
+    if (hour >= 6 && hour < 9) {
+      baseCrowdLevel *= 1.8 + Math.random() * 0.4;
+    } else if (hour >= 12 && hour < 14) {
+      baseCrowdLevel *= 1.6 + Math.random() * 0.3;
+    } else if (hour >= 17 && hour < 21) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    } else if (hour >= 22 || hour < 6) {
+      baseCrowdLevel *= 0.4 + Math.random() * 0.2;
+    }
+
+    // Weather effect
+    const weatherEffect = Math.random();
+    if (weatherEffect > 0.8) {
+      baseCrowdLevel *= 0.5;
+    } else if (weatherEffect > 0.6) {
+      baseCrowdLevel *= 0.8;
+    } else if (weatherEffect < 0.2) {
+      baseCrowdLevel *= 1.3;
+    }
+
+    // Special event effect
+    if (events.some((eventDate) => time.isSame(eventDate, 'day'))) {
+      const eventHourEffect = Math.abs(hour - 19) / 10;
+      baseCrowdLevel *= 2.2 + Math.random() - eventHourEffect;
+    }
+
+    // Public holiday effect
+    if (Math.random() < 0.05) {
+      baseCrowdLevel *= 2.2 + Math.random() * 0.5;
+    }
+
+    // Add random fluctuations
+    baseCrowdLevel += (Math.random() - 0.5) * 20;
+
+    // Ensure crowd level is within bounds, with a higher minimum
+    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+
+    readings.push({
+      date: time.toDate(),
+      value: crowdLevel,
+      sensorId: sensorId,
+    });
+  }
+
+  return readings;
+}
+
+seed()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -11,7 +11,7 @@ import EventCard from './components/EventCard';
 import { useNavigate, Link } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
 import { BsCalendar4Event } from 'react-icons/bs';
-import { MdArrowForward, MdArrowOutward, MdArrowRight } from 'react-icons/md';
+import { MdArrowForward, MdArrowOutward, MdArrowRight, MdEvent } from 'react-icons/md';
 import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect } from 'react';
@@ -89,22 +89,22 @@ useEffect(() => {
           Attractions
         </NavButton>
         <NavButton
-          key="venues"
+          key="facilities"
           icon={<FaTent />}
           onClick={() => {
             navigate(`/facility/park/${selectedPark?.id}`);
           }}
         >
-          Venues
+          Facilities
         </NavButton>
         <NavButton
-          key="promotions"
-          icon={<BiSolidDiscount />}
+          key="events"
+          icon={<MdEvent />}
           onClick={() => {
-            navigate(`/promotions`);
+            navigate(`/event/park/${selectedPark?.id}`);
           }}
         >
-          Promotions
+          Events
         </NavButton>
       </div>
 
@@ -234,6 +234,26 @@ useEffect(() => {
    <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
 <br/>
 <br/>
+
+ <div className="flex justify-between items-center">
+     <LogoText className="font-bold text-lg">Feedback</LogoText>
+     <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+       <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+       <Link to="/feedback/create">
+         <Button
+           icon={<MdArrowForward className="text-2xl" />}
+           shape="circle"
+           type="primary"
+           size="large"
+           className="md:bg-transparent md:text-green-500 md:shadow-none"
+         />
+       </Link>
+     </div>
+   </div>
+   <p className="text-gray-500">Have something to say? We'd love to hear from you!</p>
+   <br/>
+   <br/>
+
         <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">

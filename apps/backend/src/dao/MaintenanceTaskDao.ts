@@ -40,6 +40,23 @@ class MaintenanceTaskDao {
     });
   }
 
+  async getTaskCountsByType(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; count: number }[]> {
+    const result = await prisma.maintenanceTask.groupBy({
+      by: ['taskType'],
+      where: { submittingStaff: { parkId: parkId }, createdAt: { gte: startDate, lte: endDate } },
+      _count: { id: true },
+    });
+
+    return result.map((item) => ({
+      taskType: item.taskType,
+      count: item._count.id,
+    }));
+  }
+
   async updateMaintenanceTask(id: string, data: Prisma.MaintenanceTaskUpdateInput): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({ where: { id }, data });
   }
@@ -60,15 +77,28 @@ class MaintenanceTaskDao {
   }
 
   async unassignMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt } });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
+    });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
+    });
   }
 
   async acceptMaintenanceTask(id: string, staffId: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: staffId, updatedAt: updatedAt } });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: staffId, updatedAt: updatedAt },
+    });
   }
 
   async unacceptMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt } });
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
+    });
   }
 
   async getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<MaintenanceTask[]> {
@@ -140,7 +170,12 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getAverageTaskTypeCompletionTime(taskType: MaintenanceTaskTypeEnum, parkId: number, startDate: Date, endDate: Date): Promise<number> {
+  async getAverageTaskTypeCompletionTime(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
     const tasks = await prisma.maintenanceTask.findMany({
       where: {
         submittingStaff: { parkId: parkId },
@@ -165,7 +200,29 @@ class MaintenanceTaskDao {
     return totalCompletionTime / tasks.length;
   }
 
-  async getOverdueRateByTaskTypeForPeriod(taskType: MaintenanceTaskTypeEnum, parkId: number, startDate: Date, endDate: Date): Promise<number> {
+  async getCompletedMaintenanceTasksByEntityId(entityId: string, entityType: 'ParkAsset' | 'Sensor' | 'Hub'): Promise<MaintenanceTask[]> {
+    const whereClause: any = { taskStatus: MaintenanceTaskStatusEnum.COMPLETED };
+
+    if (entityType === 'ParkAsset') {
+      whereClause.parkAssetId = entityId;
+    } else if (entityType === 'Sensor') {
+      whereClause.sensorId = entityId;
+    } else if (entityType === 'Hub') {
+      whereClause.hubId = entityId;
+    }
+
+    return prisma.maintenanceTask.findMany({
+      where: whereClause,
+      orderBy: { completedDate: 'asc' },
+    });
+  }
+
+  async getOverdueRateByTaskTypeForPeriod(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
     const overdueTasks = await prisma.maintenanceTask.count({
       where: {
         submittingStaff: { parkId: parkId },
@@ -191,7 +248,43 @@ class MaintenanceTaskDao {
       },
     });
 
-    return overdueTasks / totalTasks;
+    return (overdueTasks / totalTasks) * 100;
+  }
+
+  async getOverdueTaskCountByTaskTypeForPeriod(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
+    return prisma.maintenanceTask.count({
+      where: {
+        submittingStaff: { parkId: parkId },
+        taskType: taskType,
+        taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
+        completedDate: {
+          gt: prisma.maintenanceTask.fields.dueDate, // Task was completed after the due date (overdue)
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+  }
+
+  async getCompletedTaskCountByTaskTypeForPeriod(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
+    return prisma.maintenanceTask.count({
+      where: {
+        submittingStaff: { parkId: parkId },
+        taskType: taskType,
+        taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
+        completedDate: { gte: startDate, lte: endDate },
+      },
+    });
   }
 }
 

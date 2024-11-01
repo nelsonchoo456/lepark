@@ -250,6 +250,10 @@ class SensorReadingDao {
       };
     });
   }
+  
+  public async getSensorReadingsByZoneIdAndSensorType(zoneId: number, sensorType: SensorTypeEnum): Promise<SensorReading[]> {
+    return prisma.sensorReading.findMany({ where: { sensor: { hub: { zoneId }, sensorType: sensorType } } });
+  }
 }
 
 export default new SensorReadingDao();

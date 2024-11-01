@@ -30,11 +30,6 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(hub.acquisitionDate).format('MMMM D, YYYY') },
-    hub.lastMaintenanceDate && {
-      key: 'lastMaintenanceDate',
-      label: 'Last Maintenance Date',
-      children: hub.lastMaintenanceDate ? moment(hub.lastMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
     hub.nextMaintenanceDate && {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
