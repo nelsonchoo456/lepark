@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, Card, Tag, Tooltip } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { TeamOutlined } from '@ant-design/icons';
@@ -13,15 +13,22 @@ interface ParkCrowdLevelsCalendarProps {
   crowdData: CrowdData[];
   parkId: number;
   thresholds: { low: number; moderate: number };
-  allParks: any[]; // Add this prop
+  allParks: any[]; 
 }
 
 const ParkCrowdLevelsCalendar: React.FC<ParkCrowdLevelsCalendarProps> = ({ crowdData, parkId, thresholds, allParks }) => {
+  const [resolvedThresholds, setResolvedThresholds] = useState<{ low: number; moderate: number } | null>(null);
   console.log(`thresholds of ${parkId}`, thresholds);
 
+  useEffect(() => {
+    setResolvedThresholds(thresholds);
+  }, [thresholds]);
+
+  if (!resolvedThresholds) return <div>Loading...</div>;
+
   const getCrowdLevelTag = (level: number) => {
-    if (level <= thresholds.low) return <Tag color="green">Low</Tag>;
-    if (level <= thresholds.moderate) return <Tag color="orange">Moderate</Tag>;
+    if (level <= resolvedThresholds.low) return <Tag color="green">Low</Tag>;
+    if (level <= resolvedThresholds.moderate) return <Tag color="orange">Moderate</Tag>;
     return <Tag color="red">High</Tag>;
   };
 
