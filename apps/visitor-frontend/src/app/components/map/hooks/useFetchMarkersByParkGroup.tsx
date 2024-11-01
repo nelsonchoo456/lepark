@@ -26,9 +26,9 @@ export const useFetchMarkersByParkGroup = ({ park }: UseMapDataProps) => {
   const [facilityEvents, setFacilityEvents] = useState<FacilityWithEvents[]>();
 
   const [showOccurrences, setShowOccurrences] = useState<boolean>(false);
-  const [showAttractions, setShowAttractions] = useState(false);
-  const [showFacilities, setShowFacilities] = useState(false);
-  const [showEvents, setShowEvents] = useState(false);
+  const [showAttractions, setShowAttractions] = useState(true);
+  const [showFacilities, setShowFacilities] = useState(true);
+  const [showEvents, setShowEvents] = useState(true);
 
   const [hovered, setHovered] = useState<HoverItem | null>(null)
 
