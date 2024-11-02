@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
-import { getPastOneHourCrowdDataBySensorsForPark, HeatMapCrowdResponse, ParkResponse } from '@lepark/data-access';
+import { getPastOneHourCrowdDataBySensorsForPark, HeatMapCrowdResponse, ParkResponse, ZoneResponse } from '@lepark/data-access';
 
 // Example crowd data [latitude, longitude, intensity]
 const crowdData: [number, number, number][] = [
@@ -15,9 +15,10 @@ const crowdData: [number, number, number][] = [
 
 interface HeatmapLayer {
   park: ParkResponse;
+  zone?: ZoneResponse;
 }
 // Custom hook to add a heatmap layer
-const HeatmapLayer = ({ park }: HeatmapLayer) => {
+const HeatmapLayer = ({ park, zone }: HeatmapLayer) => {
   const map = useMap();
   const intensityOpacityFactor = 1; // To increase the opacity
   const [crowdData, setCrowdData] = useState<HeatMapCrowdResponse[]>()
@@ -26,14 +27,18 @@ const HeatmapLayer = ({ park }: HeatmapLayer) => {
     if (park) {
       fetchCrowdData(park.id)
     }
-  }, [park])
+  }, [zone, park])
 
   const fetchCrowdData = async (parkId: number) => {
     try {
       const res = await getPastOneHourCrowdDataBySensorsForPark(parkId);
       if (res.status === 200) {
-        console.log(res.data)
-        setCrowdData(res.data);
+        if (zone) {
+          setCrowdData(res.data.filter((c: HeatMapCrowdResponse) => c.zoneId === zone.id));
+        } else {
+          setCrowdData(res.data);
+        }
+        
       }
     } catch (e) {
       if (typeof e === "string" && e === "No camera readings available in the last hour") {

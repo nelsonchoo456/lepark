@@ -933,7 +933,7 @@ class SensorReadingService {
     try {
       const zones = await ZoneDao.getZonesByParkId(parkId);
       let sensorAverages = [];
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const oneHourAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
   
       for (const zone of zones) {
         // Get all camera sensors in the zone
