@@ -12,6 +12,7 @@ import { OccurrenceWithDetails } from './OccurrenceService';
 import OccurrenceDao from '../dao/OccurrenceDao';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { getAugumentedDataset } from '../utils/holtwinters';
+import { HeatMapCrowdResponse } from '@lepark/data-access';
 
 const dateFormatter = (data: any) => {
   const { timestamp, ...rest } = data;
@@ -928,14 +929,7 @@ class SensorReadingService {
   }
 
   // Get the average crowd level reading from each camera sensor in the park for the past hour
-  public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<Array<{
-    sensorId: string;
-    zoneId: number;
-    lat: number;
-    long: number;
-    averageValue: number;
-    readingCount: number;
-  }>> {
+  public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<HeatMapCrowdResponse[]> {
     try {
       const zones = await ZoneDao.getZonesByParkId(parkId);
       let sensorAverages = [];

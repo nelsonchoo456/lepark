@@ -13,3 +13,12 @@ export interface SensorReadingResponse {
   sensorId: string;
   sensor?: SensorResponse;
 }
+
+export interface HeatMapCrowdResponse {
+  sensorId: string;
+  zoneId: number;
+  lat: number;
+  long: number;
+  averageValue: number;
+  readingCount: number;
+}
