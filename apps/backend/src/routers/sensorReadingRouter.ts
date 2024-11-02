@@ -358,4 +358,13 @@ router.get('/getPredictedCrowdLevelsForPark/:parkId/:pastPredictedDays', async (
   }
 });
 
+router.get('/getPastOneHourCrowdDataBySensorsForPark/:parkId', async (req, res) => {
+  try {
+    const data = await SensorReadingService.getPastOneHourCrowdDataBySensorsForPark(parseInt(req.params.parkId));
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 export default router;

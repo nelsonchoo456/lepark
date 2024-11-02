@@ -818,7 +818,7 @@ async function seed() {
   let createdNewHubs = [];
   let countHubs = 0;
   for (const newHub of newHubs) {
-    if (countHubs < 2) {
+    if (countHubs < 2 || countHubs === 3) {
       const createdNewHub = await prisma.hub.create({
         data: {
           ...newHub,
@@ -860,12 +860,21 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
-    } else {
+    } else if (count < 10){
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
           hubId: createdNewHubs[2].id,
           facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
+    } else {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[3].id,
+          facilityId: storeroomId, // or any other appropriate facilityId
         },
       });
       sensorList.push(createdSensor);
@@ -887,8 +896,10 @@ async function seed() {
     if (sensor.sensorType === 'CAMERA') {
       if (sensor.identifierNumber === 'SE-9999X') {
         readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
-      } else {
+      } else if (sensor.identifierNumber === 'SE-318CA') {
         readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
+      } else if (sensor.identifierNumber === 'SE-318CB') {
+        readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
       }
     } else {
       const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
