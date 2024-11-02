@@ -16,8 +16,8 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const visitorData = VisitorSchema.parse(req.body);
-    const visitor = await VisitorService.register(visitorData);
-    res.status(200).json(visitor);
+    const { visitor, verificationToken } = await VisitorService.register(visitorData);
+    res.status(200).json({ ...visitor, verificationToken });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -93,8 +93,8 @@ router.post('/logout', authenticateJWTVisitor, (_, res) => {
 router.post('/forgot-password', async (req, res) => {
   try {
     const data = VisitorPasswordResetRequestSchema.parse(req.body);
-    await VisitorService.requestPasswordReset(data);
-    res.status(200).json({ message: 'Password reset email sent successfully' });
+    const result = await VisitorService.requestPasswordReset(data);
+    res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

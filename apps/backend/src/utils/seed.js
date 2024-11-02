@@ -877,37 +877,37 @@ async function seed() {
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
-  await seedHistoricalRainfallData(100);// 100 days
+  //await seedHistoricalRainfallData(100);// 100 days
   console.log(`Seeded historical rainfall data for 100 days.\n`);
 
   // Generate and create sensor readings for all sensors
-  for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
+  // for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
 
-    let readings;
-    if (sensor.sensorType === 'CAMERA') {
-      if (sensor.identifierNumber === 'SE-9999X') {
-        readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
-      } else {
-        readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
-      }
-    } else {
-      const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
-      const rainfallDataForHub = await getClosestRainDataPerDate(hub.lat, hub.long);
+  //   let readings;
+  //   if (sensor.sensorType === 'CAMERA') {
+  //     if (sensor.identifierNumber === 'SE-9999X') {
+  //       readings = generateMockCrowdDataForSBG(sensor.id, 90); // Generate data for 90 days
+  //     } else {
+  //       readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
+  //     }
+  //   } else {
+  //     const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
+  //     const rainfallDataForHub = await getClosestRainDataPerDate(hub.lat, hub.long);
 
-      readings = generateMockReadings(sensor.sensorType, rainfallDataForHub).map((reading) => ({
-        ...reading,
-        sensorId: sensor.id,
-      }));
-    }
+  //     readings = generateMockReadings(sensor.sensorType, rainfallDataForHub).map((reading) => ({
+  //       ...reading,
+  //       sensorId: sensor.id,
+  //     }));
+  //   }
 
-    await prisma.sensorReading.createMany({
-      data: readings,
-    });
-  }
+  //   await prisma.sensorReading.createMany({
+  //     data: readings,
+  //   });
+  // }
   console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
 
   console.log(`Training predictive rainfall models...`);
-  await trainModelsForActiveHubs()
+  //await trainModelsForActiveHubs()
 
   //console.log('Seeding decarbonization areas...');
   const decarbonizationAreaList = [];

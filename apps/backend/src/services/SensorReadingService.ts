@@ -14,11 +14,11 @@ import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { getAugumentedDataset } from '../utils/holtwinters';
 
 const dateFormatter = (data: any) => {
-  const { timestamp, ...rest } = data;
+  const { date, ...rest } = data;
   const formattedData = { ...rest };
 
-  if (timestamp) {
-    formattedData.timestamp = new Date(timestamp);
+  if (date) {
+    formattedData.date = new Date(date);
   }
   return formattedData;
 };
@@ -33,16 +33,22 @@ const enumFormatter = (enumValue: string): string => {
 class SensorReadingService {
   public async createSensorReading(data: SensorReadingSchemaType): Promise<SensorReading> {
     try {
+      console.log('Creating sensor reading');
+      console.log(data);
       const sensor = await SensorDao.getSensorById(data.sensorId);
       if (!sensor) {
         throw new Error('Sensor not found');
       }
-      const formattedData = dateFormatter(data);
+      const formattedData = {
+        ...dateFormatter(data),
+      };
+      
       SensorReadingSchema.parse(formattedData);
       return SensorReadingDao.createSensorReading(formattedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
+        console.log('Validation error:', validationError);
         throw new Error(`${validationError.message}`);
       }
       throw error;

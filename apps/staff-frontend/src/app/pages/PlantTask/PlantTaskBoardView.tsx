@@ -497,6 +497,7 @@ const PlantTaskBoardView = ({
 
   const handleStatusChangeLogPromptOk = async () => {
     setShowStatusChangeLogPrompt(false);
+    message.success('Task status updated successfully');
     if (statusChangeTaskId) {
       window.open(`/occurrences/${statusChangeTaskId}`, '_blank');
     }
@@ -504,6 +505,7 @@ const PlantTaskBoardView = ({
 
   const handleStatusChangeLogPromptCancel = async () => {
     setShowStatusChangeLogPrompt(false);
+    message.success('Task status updated successfully');
     setStatusChangeTaskId(null);
   };
 

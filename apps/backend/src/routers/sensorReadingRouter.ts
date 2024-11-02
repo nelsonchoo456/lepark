@@ -44,8 +44,11 @@ router.get('/getSensorReadingsBySensorId/:sensorId', async (req, res) => {
 
 router.get('/getSensorReadingsBySensorIds', async (req, res) => {
   try {
-    const sensorIds = req.query.sensorIds as string[];
-    const readings = await SensorReadingService.getSensorReadingsBySensorIds(sensorIds);
+    const sensorIds = Array.isArray(req.query.sensorIds) 
+      ? req.query.sensorIds 
+      : [req.query.sensorIds];
+
+    const readings = await SensorReadingService.getSensorReadingsBySensorIds(sensorIds as string[]);
     res.status(200).json(readings);
   } catch (error) {
     res.status(400).json({ error: error.message });
