@@ -209,202 +209,202 @@ describe('Maintenance Task Router Endpoints', () => {
         expect(error.response.status).toBe(400);
       }
     });
+  });
 
-    it('should get maintenance tasks by park ID', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getMaintenanceTasksByParkId/1', {
+  it('should get maintenance tasks by park ID', async () => {
+    const response = await axios.get('http://localhost:3333/api/maintenancetasks/getMaintenanceTasksByParkId/1', {
+      headers: { Cookie: authCookie },
+    });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+  });
+
+  it('should fail to get maintenance tasks by park ID', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getMaintenanceTasksByParkId/invalid-id', {
         headers: { Cookie: authCookie },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get maintenance tasks by park ID', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getMaintenanceTasksByParkId/invalid-id', {
-          headers: { Cookie: authCookie },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get all assigned maintenance tasks by staff ID', async () => {
+    const response = await axios.get(`http://localhost:3333/api/maintenancetasks/getAllAssignedMaintenanceTasks/${staffId}`, {
+      headers: { Cookie: authCookie },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+  });
 
-    it('should get all assigned maintenance tasks by staff ID', async () => {
-      const response = await axios.get(`http://localhost:3333/api/maintenancetasks/getAllAssignedMaintenanceTasks/${staffId}`, {
+  it('should fail to get all assigned maintenance tasks by staff ID', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getAllAssignedMaintenanceTasks/invalid-id', {
         headers: { Cookie: authCookie },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get all assigned maintenance tasks by staff ID', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getAllAssignedMaintenanceTasks/invalid-id', {
-          headers: { Cookie: authCookie },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get maintenance tasks by submitting staff ID', async () => {
+    const response = await axios.get(`http://localhost:3333/api/maintenancetasks/getMaintenanceTasksBySubmittingStaff/${staffId}`, {
+      headers: { Cookie: authCookie },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+  });
 
-    it('should get maintenance tasks by submitting staff ID', async () => {
-      const response = await axios.get(`http://localhost:3333/api/maintenancetasks/getMaintenanceTasksBySubmittingStaff/${staffId}`, {
+  it('should fail to get maintenance tasks by submitting staff ID', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getMaintenanceTasksBySubmittingStaff/invalid-id', {
         headers: { Cookie: authCookie },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get maintenance tasks by submitting staff ID', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getMaintenanceTasksBySubmittingStaff/invalid-id', {
-          headers: { Cookie: authCookie },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get park maintenance task average completion time for period', async () => {
+    const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskAverageCompletionTimeForPeriod', {
+      headers: { Cookie: authCookie },
+      params: {
+        parkId: 1,
+        startDate: '2023-01-01',
+        endDate: '2023-12-31',
+      },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+    response.data.forEach((item) => {
+      expect(item).toHaveProperty('averageCompletionTime');
+    });
+  });
 
-    it('should get park maintenance task average completion time for period', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskAverageCompletionTimeForPeriod', {
+  it('should fail to get park maintenance task average completion time for period', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskAverageCompletionTimeForPeriod', {
         headers: { Cookie: authCookie },
         params: {
-          parkId: 1,
+          parkId: 'invalid-id',
           startDate: '2023-01-01',
           endDate: '2023-12-31',
         },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-      response.data.forEach((item) => {
-        expect(item).toHaveProperty('averageCompletionTime');
-      });
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get park maintenance task average completion time for period', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskAverageCompletionTimeForPeriod', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            startDate: '2023-01-01',
-            endDate: '2023-12-31',
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get park maintenance task overdue rate for period', async () => {
+    const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskOverdueRateForPeriod', {
+      headers: { Cookie: authCookie },
+      params: {
+        parkId: 1,
+        startDate: '2023-01-01',
+        endDate: '2023-12-31',
+      },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+    response.data.forEach((item) => {
+      expect(item).toHaveProperty('overdueRate');
+    });
+  });
 
-    it('should get park maintenance task overdue rate for period', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskOverdueRateForPeriod', {
+  it('should fail to get park maintenance task overdue rate for period', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskOverdueRateForPeriod', {
         headers: { Cookie: authCookie },
         params: {
-          parkId: 1,
+          parkId: 'invalid-id',
           startDate: '2023-01-01',
           endDate: '2023-12-31',
         },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-      response.data.forEach((item) => {
-        expect(item).toHaveProperty('overdueRate');
-      });
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get park maintenance task overdue rate for period', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskOverdueRateForPeriod', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            startDate: '2023-01-01',
-            endDate: '2023-12-31',
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get park maintenance task delayed task types for period', async () => {
+    const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskDelayedTaskTypesForPeriod', {
+      headers: { Cookie: authCookie },
+      params: {
+        parkId: 1,
+        startDate: '2023-01-01',
+        endDate: '2023-12-31',
+      },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+  });
 
-    it('should get park maintenance task delayed task types for period', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskDelayedTaskTypesForPeriod', {
+  it('should fail to get park maintenance task delayed task types for period', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskDelayedTaskTypesForPeriod', {
         headers: { Cookie: authCookie },
         params: {
-          parkId: 1,
+          parkId: 'invalid-id',
           startDate: '2023-01-01',
           endDate: '2023-12-31',
         },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get park maintenance task delayed task types for period', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkMaintenanceTaskDelayedTaskTypesForPeriod', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            startDate: '2023-01-01',
-            endDate: '2023-12-31',
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get park task type average completion times for past months', async () => {
+    const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageCompletionTimesForPastMonths', {
+      headers: { Cookie: authCookie },
+      params: {
+        parkId: 1,
+        months: 6,
+      },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+  });
 
-    it('should get park task type average completion times for past months', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageCompletionTimesForPastMonths', {
+  it('should fail to get park task type average completion times for past months', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageCompletionTimesForPastMonths', {
         headers: { Cookie: authCookie },
         params: {
-          parkId: 1,
+          parkId: 'invalid-id',
           months: 6,
         },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
+  });
 
-    it('should fail to get park task type average completion times for past months', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageCompletionTimesForPastMonths', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            months: 6,
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
+  it('should get park task type average overdue rates for past months', async () => {
+    const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageOverdueRatesForPastMonths', {
+      headers: { Cookie: authCookie },
+      params: {
+        parkId: 1,
+        months: 6,
+      },
     });
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+  });
 
-    it('should get park task type average overdue rates for past months', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageOverdueRatesForPastMonths', {
+  it('should fail to get park task type average overdue rates for past months', async () => {
+    try {
+      await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageOverdueRatesForPastMonths', {
         headers: { Cookie: authCookie },
         params: {
-          parkId: 1,
+          parkId: 'invalid-id',
           months: 6,
         },
       });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
-
-    it('should fail to get park task type average overdue rates for past months', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageOverdueRatesForPastMonths', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            months: 6,
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
-    });
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+    }
   });
 
   describe('PUT endpoints', () => {
@@ -567,7 +567,38 @@ describe('Maintenance Task Router Endpoints', () => {
     });
   });
 
-  describe('POST endpoints for task actions', () => {});
+  describe('POST endpoints for task actions', () => {
+    it('should complete maintenance task', async () => {
+      // Assign the task first
+      const assignData = { staffId: staffId };
+      await axios.put(`http://localhost:3333/api/maintenancetasks/assignMaintenanceTask/${newMaintenanceTaskId}`, assignData, {
+        headers: { Cookie: authCookie },
+      });
+
+      // Complete the task
+      const completeData = { staffId: staffId };
+      const response = await axios.post(
+        `http://localhost:3333/api/maintenancetasks/completeMaintenanceTask/${newMaintenanceTaskId}`,
+        completeData,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(response.data.taskStatus).toBe(MaintenanceTaskStatusEnum.COMPLETED);
+    });
+
+    it('should fail to complete maintenance task', async () => {
+      const completeData = { staffId: 'invalid-id' };
+      try {
+        await axios.post(`http://localhost:3333/api/maintenancetasks/completeMaintenanceTask/${maintenanceTaskId}`, completeData, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
 
   describe('DELETE endpoints for task actions', () => {
     it('should delete a maintenance task', async () => {
