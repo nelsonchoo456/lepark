@@ -292,7 +292,7 @@ const MainLayout = () => {
           key: 'crowdInsights',
           icon: <VideoCameraOutlined />,
           label: 'Crowd Insights',
-          onClick: () => navigate('/crowdInsights'),
+          onClick: () => navigate(userRole === StaffType.SUPERADMIN ? '/crowdInsights/allParks' : '/crowdInsights'),
         }
       : null,
     {
