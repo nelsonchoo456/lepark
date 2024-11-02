@@ -169,11 +169,27 @@ describe('Sensor Reading Router Endpoints', () => {
 
     it('should get readings by multiple sensor IDs', async () => {
       const sensorIds = [sensorId];
-      const response = await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsBySensorIds?sensorIds=${sensorIds}`, {
+      const response = await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsBySensorIds`, {
+        params: {
+          sensorIds: sensorIds
+        },
         headers: { Cookie: authCookie },
       });
       expect(response.status).toBe(200);
       expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get readings by non-existent sensor IDs', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsBySensorIds`, {
+          params: {
+            sensorIds: ['non-existent-id']
+          },
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
 
     it('should get readings for hours ago', async () => {
@@ -184,12 +200,32 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(Array.isArray(response.data)).toBe(true);
     });
 
+    it('should fail to get readings for hours ago with non-existent sensor ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsHoursAgo/non-existent-id/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get average readings for hours ago', async () => {
       const response = await axios.get(`http://localhost:3333/api/sensorreadings/getAverageSensorReadingsForHoursAgo/${sensorId}/24`, {
         headers: { Cookie: authCookie },
       });
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('average');
+    });
+
+    it('should fail to get average readings for hours ago with non-existent sensor ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAverageSensorReadingsForHoursAgo/non-existent-id/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
 
     it('should get readings by date range', async () => {
@@ -205,6 +241,18 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(Array.isArray(response.data)).toBe(true);
     });
 
+    it('should fail to get readings by date range with non-existent sensor ID', async () => {
+      try {
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const endDate = new Date();
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsByDateRange/non-existent-id?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get latest reading by sensor ID', async () => {
       const response = await axios.get(`http://localhost:3333/api/sensorreadings/getLatestSensorReadingBySensorId/${sensorId}`, {
         headers: { Cookie: authCookie },
@@ -213,12 +261,55 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(response.data).toHaveProperty('value');
     });
 
+    it('should fail to get latest reading by non-existent sensor ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getLatestSensorReadingBySensorId/non-existent-id`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get sensor reading trend with slope', async () => {
       const response = await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingTrendWithSlope/${sensorId}/24`, {
         headers: { Cookie: authCookie },
       });
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('trend');
+    });
+
+    it('should fail to get sensor reading trend with slope with non-existent sensor ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingTrendWithSlope/non-existent-id/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get hourly average readings by date range', async () => {
+      const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const endDate = new Date();
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getHourlyAverageSensorReadingsByDateRange/${sensorId}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get hourly average readings by date range with non-existent sensor ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getHourlyAverageSensorReadingsByDateRange/non-existent-id`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
   });
 
@@ -234,6 +325,16 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(Array.isArray(response.data)).toBe(true);
     });
 
+    it('should fail to get all readings by non-existent hub ID and sensor type', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAllSensorReadingsByHubIdAndSensorType/non-existent-id/${SensorTypeEnum.TEMPERATURE}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get readings by hub ID and sensor type for hours ago', async () => {
       const response = await axios.get(
         `http://localhost:3333/api/sensorreadings/getSensorReadingsByHubIdAndSensorTypeForHoursAgo/${hubId}/${SensorTypeEnum.TEMPERATURE}/24`,
@@ -245,6 +346,16 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(Array.isArray(response.data)).toBe(true);
     });
 
+    it('should fail to get readings by hub ID and sensor type for hours ago with non-existent hub ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsByHubIdAndSensorTypeForHoursAgo/non-existent-id/${SensorTypeEnum.TEMPERATURE}/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    }); 
+
     it('should get average readings for hub ID and sensor type for hours ago', async () => {
       const response = await axios.get(
         `http://localhost:3333/api/sensorreadings/getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo/${hubId}/${SensorTypeEnum.TEMPERATURE}/24`,
@@ -254,6 +365,87 @@ describe('Sensor Reading Router Endpoints', () => {
       );
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('average');
+    });
+
+    it('should fail to get average readings for hub ID and sensor type for hours ago with non-existent hub ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAverageSensorReadingsForHubIdAndSensorTypeForHoursAgo/non-existent-id/${SensorTypeEnum.TEMPERATURE}/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get readings by hub ID and sensor type by date range', async () => {
+      const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const endDate = new Date();
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getSensorReadingsByHubIdAndSensorTypeByDateRange/${hubId}/${SensorTypeEnum.TEMPERATURE}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get readings by hub ID and sensor type by date range with non-existent hub ID', async () => {
+      try {
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const endDate = new Date();
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsByHubIdAndSensorTypeByDateRange/non-existent-id/${SensorTypeEnum.TEMPERATURE}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get hourly average readings by hub ID and sensor type by date range', async () => {
+      const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const endDate = new Date();
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange/${hubId}`,
+        {
+          params: {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
+          },
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Object);
+      expect(Object.values(response.data).every(Array.isArray)).toBe(true);
+    });
+
+    it('should fail to get hourly average readings by hub ID and sensor type by date range with non-existent hub ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange/non-existent-id`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get latest reading by hub ID and sensor type', async () => {
+      const response = await axios.get(`http://localhost:3333/api/sensorreadings/getLatestSensorReadingByHubIdAndSensorType/${hubId}/${SensorTypeEnum.TEMPERATURE}`, {
+        headers: { Cookie: authCookie },
+      });
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('value');
+    });
+
+    it('should fail to get latest reading by hub ID and sensor type with non-existent hub ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getLatestSensorReadingByHubIdAndSensorType/non-existent-id/${SensorTypeEnum.TEMPERATURE}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
   });
 
@@ -269,6 +461,16 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(Array.isArray(response.data)).toBe(true);
     });
 
+    it('should fail to get all readings by non-existent zone ID and sensor type', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAllSensorReadingsByZoneIdAndSensorType/non-existent-id/${SensorTypeEnum.TEMPERATURE}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get readings by zone ID and sensor type for hours ago', async () => {
       const response = await axios.get(
         `http://localhost:3333/api/sensorreadings/getSensorReadingsByZoneIdAndSensorTypeForHoursAgo/${zoneId}/${SensorTypeEnum.TEMPERATURE}/24`,
@@ -278,6 +480,126 @@ describe('Sensor Reading Router Endpoints', () => {
       );
       expect(response.status).toBe(200);
       expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get readings by zone ID and sensor type for hours ago with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsByZoneIdAndSensorTypeForHoursAgo/non-existent-id/${SensorTypeEnum.TEMPERATURE}/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get average readings for zone ID and sensor type for hours ago', async () => {
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo/${zoneId}/${SensorTypeEnum.TEMPERATURE}/24`,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('average');  
+    });
+
+    it('should fail to get average readings for zone ID and sensor type for hours ago with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAverageSensorReadingsForZoneIdAndSensorTypeForHoursAgo/non-existent-id/${SensorTypeEnum.TEMPERATURE}/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get average readings for zone ID across all sensor types for hours ago', async () => {
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo/${zoneId}/24`,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('object');
+      expect(response.data).not.toBeNull();
+      expect(Object.keys(response.data)).toEqual(expect.arrayContaining(Object.values(SensorTypeEnum)));
+    });
+
+    it('should fail to get average readings for zone ID across all sensor types for hours ago with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo/non-existent-id/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get average difference between periods by sensor type', async () => {
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getAverageDifferenceBetweenPeriodsBySensorType/${zoneId}/24`,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('object');
+      expect(response.data).not.toBeNull();
+      expect(Object.keys(response.data)).toEqual(expect.arrayContaining(Object.values(SensorTypeEnum)));
+    });
+
+    it('should fail to get average difference between periods by sensor type with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAverageDifferenceBetweenPeriodsBySensorType/non-existent-id/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get readings by zone ID and sensor type by date range', async () => {
+      const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const endDate = new Date();
+      const response = await axios.get(
+        `http://localhost:3333/api/sensorreadings/getSensorReadingsByZoneIdAndSensorTypeByDateRange/${zoneId}/${SensorTypeEnum.TEMPERATURE}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
+        {
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.data)).toBe(true);  
+    });
+
+    it('should fail to get readings by zone ID and sensor type by date range with non-existent zone ID', async () => {
+      try {
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const endDate = new Date();
+        await axios.get(`http://localhost:3333/api/sensorreadings/getSensorReadingsByZoneIdAndSensorTypeByDateRange/non-existent-id/${SensorTypeEnum.TEMPERATURE}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get latest reading by zone ID and sensor type', async () => {
+      const response = await axios.get(`http://localhost:3333/api/sensorreadings/getLatestSensorReadingByZoneIdAndSensorType/${zoneId}/${SensorTypeEnum.TEMPERATURE}`, {
+        headers: { Cookie: authCookie },
+      });
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('value');
+    });
+
+    it('should fail to get latest reading by zone ID and sensor type with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getLatestSensorReadingByZoneIdAndSensorType/non-existent-id/${SensorTypeEnum.TEMPERATURE}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
 
     it('should get zone trend for sensor type', async () => {
@@ -291,6 +613,16 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(response.data).toHaveProperty('trendDescription');
     });
 
+    it('should fail to get zone trend for sensor type with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getZoneTrendForSensorType/non-existent-id/${SensorTypeEnum.TEMPERATURE}/24`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get active zone plant sensor count', async () => {
       const response = await axios.get(`http://localhost:3333/api/sensorreadings/getActiveZonePlantSensorCount/${zoneId}/1`, {
         headers: { Cookie: authCookie },
@@ -299,12 +631,32 @@ describe('Sensor Reading Router Endpoints', () => {
       expect(response.data).toHaveProperty('count');
     });
 
+    it('should fail to get active zone plant sensor count with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getActiveZonePlantSensorCount/non-existent-id/1`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
     it('should get unhealthy occurrences', async () => {
       const response = await axios.get(`http://localhost:3333/api/sensorreadings/getUnhealthyOccurrences/${zoneId}`, {
         headers: { Cookie: authCookie },
       });
       expect(response.status).toBe(200);
       expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get unhealthy occurrences with non-existent zone ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getUnhealthyOccurrences/non-existent-id`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
   });
 
@@ -315,6 +667,16 @@ describe('Sensor Reading Router Endpoints', () => {
       });
       expect(response.status).toBe(200);
       expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to predict crowd levels with non-existent park ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/predictCrowdLevels/non-existent-id/7`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
 
     it('should get aggregated crowd data for park', async () => {
@@ -328,6 +690,54 @@ describe('Sensor Reading Router Endpoints', () => {
       );
       expect(response.status).toBe(200);
       expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get aggregated crowd data for park with non-existent park ID', async () => {
+      try {
+        const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const endDate = new Date();
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAggregatedCrowdDataForPark/non-existent-id/${startDate.toISOString()}/${endDate.toISOString()}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get all readings by park ID and sensor type', async () => {
+      const response = await axios.get(`http://localhost:3333/api/sensorreadings/getAllSensorReadingsByParkIdAndSensorType/${parkId}/${SensorTypeEnum.TEMPERATURE}`, {
+        headers: { Cookie: authCookie },
+      });
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get all readings by park ID and sensor type with non-existent park ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getAllSensorReadingsByParkIdAndSensorType/non-existent-id/${SensorTypeEnum.TEMPERATURE}`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should get predicted crowd levels for park', async () => {
+      const response = await axios.get(`http://localhost:3333/api/sensorreadings/getPredictedCrowdLevelsForPark/${parkId}/7`, {
+        headers: { Cookie: authCookie },
+      });
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.data)).toBe(true);
+    });
+
+    it('should fail to get predicted crowd levels for park with non-existent park ID', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/sensorreadings/getPredictedCrowdLevelsForPark/non-existent-id/7`, {
+          headers: { Cookie: authCookie },
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
     });
   });
 
