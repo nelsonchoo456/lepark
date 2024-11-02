@@ -116,6 +116,7 @@ export const useFetchCrowdDataForCrowdAlerts = ({ parkId, parks }: UseFetchCrowd
         const pastPredictedResponse = await getPredictedCrowdLevelsForPark(parkId, pastDaysToPredict);
         pastPredictedData = pastPredictedResponse.data;
       }
+      console.log(pastPredictedData);
 
       // Normalize and combine data
       const normalizeDate = (date: string) => moment.tz(date, 'Asia/Singapore').format('YYYY-MM-DD');
@@ -130,6 +131,7 @@ export const useFetchCrowdDataForCrowdAlerts = ({ parkId, parks }: UseFetchCrowd
           date: normalizeDate(item.date),
         })),
         pastPredicted: pastPredictedData.map((item: { date: string; predictedCrowdLevel: number }) => ({
+          ...item,
           date: normalizeDate(item.date),
           predictedCrowdLevel: item.predictedCrowdLevel,
         })),
