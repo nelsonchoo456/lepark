@@ -31,7 +31,7 @@ describe('Sensor Router Endpoints', () => {
 
       // Create a test facility
       const facilityData = {
-        name: 'Test Facility for Sensors',
+        name: 'Test Facility for Sensors 2',
         description: 'A test facility for sensor e2e tests',
         isBookable: true,
         isPublic: true,
@@ -49,7 +49,7 @@ describe('Sensor Router Endpoints', () => {
         size: 100,
         capacity: 50,
         fee: 10,
-        parkId: 1, // Make sure this park ID exists in your test database
+        parkId: 1,
       };
 
       const facilityResponse = await axios.post('http://localhost:3333/api/facilities/createFacility', facilityData, {
@@ -91,7 +91,7 @@ describe('Sensor Router Endpoints', () => {
       description: 'Test sensor for e2e testing',
       acquisitionDate: new Date(),
       supplier: 'Test Supplier Co.',
-      supplierContactNumber: '12345678',
+      supplierContactNumber: '99999999',
       facilityId: '', // Will be set in beforeAll
     };
 
