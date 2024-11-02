@@ -148,27 +148,6 @@ router.post('/completeMaintenanceTask/:id', authenticateJWTStaff, async (req, re
   }
 });
 
-router.post('/acceptMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.acceptMaintenanceTask(maintenanceTaskId, staffId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/unacceptMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.unacceptMaintenanceTask(maintenanceTaskId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.put('/updateMaintenanceTaskStatus/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const maintenanceTaskId = req.params.id;

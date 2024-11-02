@@ -238,32 +238,6 @@ export async function completeMaintenanceTask(id: string, staffId: string): Prom
   }
 }
 
-export async function acceptMaintenanceTask(id: string, staffId: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
-  try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.post(`${URL}/acceptMaintenanceTask/${id}`, { staffId });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-export async function unacceptMaintenanceTask(id: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
-  try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.post(`${URL}/unacceptMaintenanceTask/${id}`);
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
 export async function getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<AxiosResponse<MaintenanceTaskResponse[]>> {
   try {
     const response: AxiosResponse<MaintenanceTaskResponse[]> = await client.get(`${URL}/getMaintenanceTasksByStatus/${status}`);
@@ -359,9 +333,12 @@ export async function getParkTaskTypeOverdueRatesForPastMonths(
   months: number,
 ): Promise<AxiosResponse<ParkTaskTypeOverdueRatesForPastMonthsData[]>> {
   try {
-    const response: AxiosResponse<ParkTaskTypeOverdueRatesForPastMonthsData[]> = await client.get(`${URL}/getParkTaskTypeOverdueRatesForPastMonths`, {
-      params: { parkId, months },
-    });
+    const response: AxiosResponse<ParkTaskTypeOverdueRatesForPastMonthsData[]> = await client.get(
+      `${URL}/getParkTaskTypeOverdueRatesForPastMonths`,
+      {
+        params: { parkId, months },
+      },
+    );
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
