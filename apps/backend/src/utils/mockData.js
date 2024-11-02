@@ -1449,6 +1449,7 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727501914845-butterfly%20sanctuary%202.jpg',
     ],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.361387363945382,
@@ -1482,6 +1483,7 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727502147258-green%20heritage%20museum%202.jpg',
     ],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.359806129037598,
@@ -1515,6 +1517,7 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727461825726-flower-dome-02.jpg',
     ],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.318784621302434,
@@ -1548,6 +1551,7 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462129284-Centre%20for%20ethnobotany%202.jpg',
     ],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.319492692641653,
@@ -1578,6 +1582,7 @@ const attractionsData = [
     ],
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462391534-National_Biodiversity_Centre_Building.jpg'],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.316473506270394,
@@ -1611,6 +1616,7 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462642918-botanical%20art%20gallery%202.jpg',
     ],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.314601354444774,
@@ -1644,6 +1650,7 @@ const attractionsData = [
       'https://lepark.s3.ap-southeast-1.amazonaws.com/attraction/1727462925669-Forest%20Discovery%20Centre%202.jpg',
     ],
     status: 'OPEN',
+    maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     lat: 1.313818486250098,

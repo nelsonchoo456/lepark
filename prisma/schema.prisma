@@ -198,6 +198,7 @@ model Attraction {
   closingHours             DateTime[]
   images                   String[]
   status                   AttractionStatusEnum
+  maxCapacity              Int
   ticketingPolicy          String
   lat                      Float?
   lng                      Float?
