@@ -276,8 +276,15 @@ const CompareParkCrowdLevels: React.FC = () => {
       isMain: true,
     },
     {
+      title: 'Details',
+      pathKey: '/crowdInsights',
+      isMain: false,
+      isCurrent: false,
+    },
+    {
       title: 'Compare Parks',
       pathKey: '/crowdInsights/compareParks',
+      isMain: false,
       isCurrent: true,
     },
   ];

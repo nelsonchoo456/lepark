@@ -66,7 +66,7 @@ const ParkCrowdLevels: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<[Dayjs, Dayjs]>(defaultDateRange);
   const { state } = useLocation();
   const [parkId, setParkId] = useState<number>(state?.selectedParkId || 0);
-  const [viewMode, setViewMode] = useState<string>('calendar');
+  const [viewMode, setViewMode] = useState<string>(state?.defaultView || 'calendar');
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [restrictedParks, setRestrictedParks] = useState<ParkResponse[]>([]);
   const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(['actual', 'predicted']);
@@ -333,7 +333,20 @@ const ParkCrowdLevels: React.FC = () => {
     navigate('/crowdInsights/compareParks');
   };
 
-  const breadcrumbItems = [
+  const breadcrumbItems = user?.role === StaffType.SUPERADMIN ? [
+    {
+      title: 'Crowd Insights',
+      pathKey: '/crowdInsights/allParks',
+      isMain: true,
+      isCurrent: false,
+    },
+    {
+      title: 'Details',
+      pathKey: '/crowdInsights',
+      isMain: false,
+      isCurrent: true,
+    },
+  ] : [
     {
       title: 'Crowd Insights',
       pathKey: '/crowdInsights',
