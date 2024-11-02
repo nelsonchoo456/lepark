@@ -21,7 +21,9 @@ describe('Visitor Router Endpoints', () => {
       const response = await axios.post('http://localhost:3333/api/visitors/register', testVisitor);
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('id');
+      expect(response.data).toHaveProperty('verificationToken');
       visitorId = response.data.id;
+      verificationToken = response.data.verificationToken;
     });
 
     it('should fail to register with invalid data', async () => {
@@ -43,7 +45,7 @@ describe('Visitor Router Endpoints', () => {
     });
   });
 
-  describe('POST /login', () => {
+  describe('POST /login and logout', () => {
     it('should successfully login', async () => {
       const response = await axios.post(
         'http://localhost:3333/api/visitors/login',
@@ -59,7 +61,6 @@ describe('Visitor Router Endpoints', () => {
       expect(response.data).toHaveProperty('id');
       const cookie = response.headers['set-cookie'];
       authCookie = cookie.find((c) => c.startsWith('jwtToken_Visitor='));
-      console.log('authCookie', authCookie);
     });
 
     it('should fail to login with incorrect credentials', async () => {
@@ -71,6 +72,192 @@ describe('Visitor Router Endpoints', () => {
       } catch (error) {
         expect(error.response.status).toBe(400);
         expect(error.response.data.error).toBe('Invalid credentials');
+      }
+    });
+
+    it('should successfully logout', async () => {
+      const response = await axios.post(
+        'http://localhost:3333/api/visitors/logout',
+        {},
+        {
+          withCredentials: true,
+          headers: { Cookie: authCookie },
+        },
+      );
+      expect(response.status).toBe(200);
+      expect(response.data.message).toBe('Logout successful');
+    });
+
+    it('should fail to logout without authentication', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/logout');
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
+  });
+
+  describe('POST /verify-user', () => {
+    it('should verify user with valid token', async () => {
+      // Now we can use the captured verificationToken from registration
+      const response = await axios.post('http://localhost:3333/api/visitors/verify-user', {
+        token: verificationToken,
+      });
+      expect(response.status).toBe(200);
+      expect(response.data.message).toBe('User verified successfully');
+    });
+
+    it('should fail with invalid token', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/verify-user', {
+          token: 'invalid-token',
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
+
+  describe('POST /send-verification-email-with-email', () => {
+    it('should send verification email with email', async () => {
+      // First, ensure we have a valid auth cookie by logging in
+      const loginResponse = await axios.post(
+        'http://localhost:3333/api/visitors/login',
+        {
+          email: testVisitor.email,
+          password: testVisitor.password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      const cookie = loginResponse.headers['set-cookie'];
+      const authCookie = cookie.find((c) => c.startsWith('jwtToken_Visitor='));
+
+      const response = await axios.post(
+        'http://localhost:3333/api/visitors/send-verification-email-with-email',
+        {
+          email: testVisitor.email,
+          id: visitorId,
+        },
+        {
+          headers: { Cookie: authCookie }, // Add the auth cookie to the request
+        }
+      );
+      expect(response.status).toBe(200);
+      expect(response.data.message).toBe('Verification email sent successfully');
+    });
+
+    it('should fail to send verification email with invalid email', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/send-verification-email-with-email', {
+          email: 'invalid-email',
+          id: visitorId,
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
+  });
+
+  describe('POST /resend-verification-email', () => {
+    beforeAll(async () => {
+      const response = await axios.post('http://localhost:3333/api/visitors/login', {
+        email: testVisitor.email,
+          password: testVisitor.password,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      const cookie = response.headers['set-cookie'];
+      authCookie = cookie.find((c) => c.startsWith('jwtToken_Visitor='));
+    });
+    it('should resend verification email', async () => {
+      const response = await axios.post('http://localhost:3333/api/visitors/resend-verification-email', {
+        token: verificationToken,
+      }, {
+        headers: { Cookie: authCookie },
+      });
+      expect(response.status).toBe(200);
+      expect(response.data.message).toBe('Verification email sent successfully');
+    });
+
+    it('should fail to resend verification email with invalid token', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/resend-verification-email', {
+          token: 'invalid-token',
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
+
+  describe('POST /forgot-password', () => {
+    it('should request password reset', async () => {
+      const response = await axios.post('http://localhost:3333/api/visitors/forgot-password', {
+        email: testVisitor.email,
+      });
+      expect(response.status).toBe(200);
+      expect(response.data.message).toBe('Password reset email sent successfully');
+      console.log('Reset Token:', response.data.resetToken);
+      resetToken = response.data.resetToken;
+    });
+
+    it('should handle non-existent email gracefully', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/forgot-password', {
+          email: 'nonexistent@test.com',
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
+
+  describe('POST /reset-password', () => {
+    it('should reset password', async () => {
+      // First request a password reset to get a valid token
+      const forgotResponse = await axios.post('http://localhost:3333/api/visitors/forgot-password', {
+        email: testVisitor.email,
+      });
+      const resetToken = forgotResponse.data.resetToken;
+
+      const response = await axios.post('http://localhost:3333/api/visitors/reset-password', {
+        token: resetToken,
+        newPassword: 'newpassword',
+      });
+      expect(response.status).toBe(200);
+      expect(response.data.message).toBe('Password reset successful');
+    });
+
+    it('should fail to reset password with invalid token', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/reset-password', {
+          token: 'invalid-token',
+          password: 'newpassword',
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
+
+  describe('POST /check-auth', () => {
+    it('should check authentication', async () => {
+      const response = await axios.get('http://localhost:3333/api/visitors/check-auth', {
+        headers: { Cookie: authCookie },
+      });
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('id', visitorId);
+    });
+
+    it('should fail to check authentication without cookie', async () => {
+      try {
+        await axios.get('http://localhost:3333/api/visitors/check-auth');
+      } catch (error) {
+        expect(error.response.status).toBe(401);
       }
     });
   });
@@ -160,47 +347,6 @@ describe('Visitor Router Endpoints', () => {
     });
   });
 
-  describe('POST /forgot-password', () => {
-    it('should request password reset', async () => {
-      const response = await axios.post('http://localhost:3333/api/visitors/forgot-password', {
-        email: testVisitor.email,
-      });
-      expect(response.status).toBe(200);
-      expect(response.data.message).toBe('Password reset email sent successfully');
-    });
-
-    it('should handle non-existent email gracefully', async () => {
-      try {
-        await axios.post('http://localhost:3333/api/visitors/forgot-password', {
-          email: 'nonexistent@test.com',
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
-    });
-  });
-
-  describe('POST /verify-user', () => {
-    it('should verify user with valid token', async () => {
-      // Now we can use the captured verificationToken
-      const response = await axios.post('http://localhost:3333/api/visitors/verify-user', {
-        token: verificationToken,
-      });
-      expect(response.status).toBe(200);
-      expect(response.data.message).toBe('Account verified successfully');
-    });
-
-    it('should fail with invalid token', async () => {
-      try {
-        await axios.post('http://localhost:3333/api/visitors/verify-user', {
-          token: 'invalid-token',
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
-    });
-  });
-
   describe('Favorite Species Operations', () => {
     let speciesId: string;
     let staffAuthCookie: string;
@@ -270,7 +416,18 @@ describe('Visitor Router Endpoints', () => {
         },
       );
       expect(response.status).toBe(200);
-      expect(response.data.favoriteSpecies.some(species => species.id === speciesId)).toBe(true);
+      expect(response.data.favoriteSpecies.some((species) => species.id === speciesId)).toBe(true);
+    });
+
+    it('should fail to add species to favorites without authentication', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/visitors/addFavoriteSpecies', {
+          visitorId,
+          speciesId,
+        });
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
     });
 
     it('should get favorite species', async () => {
@@ -281,6 +438,14 @@ describe('Visitor Router Endpoints', () => {
       expect(Array.isArray(response.data)).toBe(true);
     });
 
+    it('should fail to get favorite species without authentication', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/visitors/viewFavoriteSpecies/${visitorId}`);
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
+
     it('should check if species is in favorites', async () => {
       const response = await axios.get(`http://localhost:3333/api/visitors/isSpeciesInFavorites/${visitorId}/${speciesId}`, {
         headers: { Cookie: authCookie },
@@ -289,12 +454,28 @@ describe('Visitor Router Endpoints', () => {
       expect(response.data).toHaveProperty('isFavorite');
     });
 
+    it('should fail to check if species is in favorites without authentication', async () => {
+      try {
+        await axios.get(`http://localhost:3333/api/visitors/isSpeciesInFavorites/${visitorId}/${speciesId}`);
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
+
     it('should delete species from favorites', async () => {
       const response = await axios.delete(`http://localhost:3333/api/visitors/deleteSpeciesFromFavorites/${visitorId}/${speciesId}`, {
         headers: { Cookie: authCookie },
       });
       expect(response.status).toBe(200);
       expect(response.data.favoriteSpecies).not.toContain(speciesId);
+    });
+
+    it('should fail to delete species from favorites without authentication', async () => {
+      try {
+        await axios.delete(`http://localhost:3333/api/visitors/deleteSpeciesFromFavorites/${visitorId}/${speciesId}`);
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
     });
 
     afterAll(async () => {
@@ -329,7 +510,7 @@ describe('Visitor Router Endpoints', () => {
       const response = await axios.delete('http://localhost:3333/api/visitors/delete', {
         data: {
           id: visitorId,
-          password: testVisitor.password,
+          password: 'newpassword',
         },
         headers: { Cookie: authCookie },
       });
@@ -337,6 +518,4 @@ describe('Visitor Router Endpoints', () => {
       expect(response.data.message).toBe('Visitor deleted successfully');
     });
   });
-
-
 });
