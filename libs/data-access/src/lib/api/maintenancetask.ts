@@ -225,19 +225,6 @@ export async function unassignMaintenanceTask(id: string, unassignerStaffId: str
   }
 }
 
-export async function completeMaintenanceTask(id: string, staffId: string): Promise<AxiosResponse<MaintenanceTaskResponse>> {
-  try {
-    const response: AxiosResponse<MaintenanceTaskResponse> = await client.post(`${URL}/completeMaintenanceTask/${id}`, { staffId });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
 export async function getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<AxiosResponse<MaintenanceTaskResponse[]>> {
   try {
     const response: AxiosResponse<MaintenanceTaskResponse[]> = await client.get(`${URL}/getMaintenanceTasksByStatus/${status}`);

@@ -117,38 +117,6 @@ router.put('/unassignPlantTask/:id', authenticateJWTStaff, async (req, res) => {
   }
 });
 
-router.post('/completePlantTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const plantTaskId = req.params.id;
-    const updatedPlantTask = await PlantTaskService.completePlantTask(plantTaskId, staffId);
-    res.status(200).json(updatedPlantTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/acceptPlantTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const plantTaskId = req.params.id;
-    const updatedPlantTask = await PlantTaskService.acceptPlantTask(staffId, plantTaskId);
-    res.status(200).json(updatedPlantTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/unacceptPlantTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const plantTaskId = req.params.id;
-    const updatedPlantTask = await PlantTaskService.unacceptPlantTask(plantTaskId);
-    res.status(200).json(updatedPlantTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.put('/updatePlantTaskStatus/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const plantTaskId = req.params.id;

@@ -206,45 +206,6 @@ export async function unassignPlantTask(id: string, unassignerStaffId: string): 
   }
 }
 
-export async function completePlantTask(id: string, staffId: string): Promise<AxiosResponse<PlantTaskResponse>> {
-  try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/completePlantTask/${id}`, { staffId });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-export async function acceptPlantTask(id: string, staffId: string): Promise<AxiosResponse<PlantTaskResponse>> {
-  try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/acceptPlantTask/${id}`, { staffId });
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
-export async function unacceptPlantTask(id: string): Promise<AxiosResponse<PlantTaskResponse>> {
-  try {
-    const response: AxiosResponse<PlantTaskResponse> = await client.post(`${URL}/unacceptPlantTask/${id}`);
-    return response;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data.error || error.message;
-    } else {
-      throw error;
-    }
-  }
-}
-
 export async function getPlantTasksByStatus(status: PlantTaskStatusEnum): Promise<AxiosResponse<PlantTaskResponse[]>> {
   try {
     const response: AxiosResponse<PlantTaskResponse[]> = await client.get(`${URL}/getPlantTasksByStatus/${status}`);
