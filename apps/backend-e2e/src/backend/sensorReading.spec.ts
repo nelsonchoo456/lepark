@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { FacilityStatusEnum, FacilityTypeEnum, HubStatusEnum, SensorTypeEnum } from '@prisma/client';
 
+jest.setTimeout(15000);
 describe('Sensor Reading Router Endpoints', () => {
   let authCookie: string;
   let facilityId: string;

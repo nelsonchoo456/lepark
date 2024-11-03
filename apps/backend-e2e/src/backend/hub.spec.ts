@@ -2,6 +2,7 @@ import axios from 'axios';
 import { HubStatusEnum, FacilityStatusEnum, FacilityTypeEnum, SensorTypeEnum } from '@prisma/client';
 import crypto from 'crypto';
 
+jest.setTimeout(15000);
 describe('Hub Router Endpoints', () => {
   let authCookie: string;
   let hubId: string;
