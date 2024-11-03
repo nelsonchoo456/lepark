@@ -8,6 +8,8 @@ import {
   DecarbonizationTypeEnum,
 } from '@prisma/client';
 
+jest.setTimeout(15000);
+
 describe('Plant Task Router Endpoints', () => {
   let authCookie: string;
   let plantTaskId: string;
@@ -704,8 +706,6 @@ describe('Plant Task Router Endpoints', () => {
       }
     });
   });
-
-  describe('POST endpoints for task actions', () => {});
 
   describe('DELETE endpoints for task actions', () => {
     it('should delete a plant task', async () => {

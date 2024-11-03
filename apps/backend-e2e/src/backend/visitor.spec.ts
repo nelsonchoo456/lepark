@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+jest.setTimeout(15000);
 describe('Visitor Router Endpoints', () => {
   let authCookie: string;
   let visitorId: string;

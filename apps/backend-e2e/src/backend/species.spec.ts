@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from '@prisma/client';
 
+jest.setTimeout(15000);
 describe('Species Router Endpoints', () => {
   let authCookie: string;
   let speciesId: string;

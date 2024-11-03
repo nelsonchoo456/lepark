@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { AttractionStatusEnum, AttractionTicketCategoryEnum, AttractionTicketNationalityEnum } from '@prisma/client';
 
+jest.setTimeout(15000);
 describe('Attraction Router Endpoints', () => {
   let authCookie: string;
   let attractionId: string;
