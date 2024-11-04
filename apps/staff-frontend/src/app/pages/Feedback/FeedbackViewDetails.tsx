@@ -117,36 +117,40 @@ const handleCreateMaintenanceTask = () => {
     }));
   };
 
-  const handleSave = async () => {
-  try {
-    if (!user) {
-      throw new Error('User not found.');
+    const handleSave = async () => {
+    try {
+      if (!user) {
+        throw new Error('User not found.');
+      }
+
+      const updatedFeedbackDetails: FeedbackUpdateData = {
+        feedbackCategory: editedFeedback.feedbackCategory,
+        remarks: editedFeedback.remarks,
+      };
+
+      // Only allow status change if current status is PENDING
+      if (feedback?.feedbackStatus === FeedbackStatusEnum.PENDING) {
+        updatedFeedbackDetails.feedbackStatus = editedFeedback.feedbackStatus;
+
+        // If status is changing from PENDING to something else
+        if (editedFeedback.feedbackStatus !== FeedbackStatusEnum.PENDING) {
+          updatedFeedbackDetails.staffId = user.id;
+          updatedFeedbackDetails.dateResolved = new Date().toISOString();
+        }
+      } else {
+        // Keep the existing status if not PENDING
+        updatedFeedbackDetails.feedbackStatus = feedback?.feedbackStatus;
+      }
+
+      await updateFeedback(feedbackId, updatedFeedbackDetails);
+      message.success('Feedback updated successfully!');
+      setInEditMode(false);
+      refreshFeedback();
+    } catch (error: any) {
+      console.error(error);
+      message.error(error.message || 'Failed to update feedback.');
     }
-
-    const updatedFeedbackDetails: FeedbackUpdateData = {
-      feedbackCategory: editedFeedback.feedbackCategory,
-      feedbackStatus: editedFeedback.feedbackStatus,
-      remarks: editedFeedback.remarks,
-    };
-
-    // Check if the status has changed to ACCEPTED or REJECTED
-    if ((feedback?.feedbackStatus !== FeedbackStatusEnum.ACCEPTED &&
-        editedFeedback.feedbackStatus === FeedbackStatusEnum.ACCEPTED) ||
-        (feedback?.feedbackStatus !== FeedbackStatusEnum.REJECTED &&
-        editedFeedback.feedbackStatus === FeedbackStatusEnum.REJECTED)) {
-      updatedFeedbackDetails.staffId = user.id;
-      updatedFeedbackDetails.dateResolved = new Date().toISOString();
-    }
-
-    await updateFeedback(feedbackId, updatedFeedbackDetails);
-    message.success('Feedback updated successfully!');
-    setInEditMode(false);
-    refreshFeedback();
-  } catch (error: any) {
-    console.error(error);
-    message.error(error.message || 'Failed to update feedback.');
-  }
-};
+  };
 
   const descriptionsItems: DescriptionsProps['items'] = [
     {
@@ -189,21 +193,27 @@ const handleCreateMaintenanceTask = () => {
         </Select>
       ) : <Tag>{formatEnumLabel(feedback?.feedbackCategory ?? '')}</Tag>,
     },
-    {
+      {
       key: 'status',
       label: 'Status',
       children: inEditMode ? (
-        <Select
-          value={editedFeedback.feedbackStatus}
-          onChange={(value) => handleInputChange('feedbackStatus', value)}
-          style={{ width: '100%' }}
-        >
-          {Object.values(FeedbackStatusEnum).map((status) => (
-            <Select.Option key={status} value={status}>
-              {formatEnumLabel(status)}
-            </Select.Option>
-          ))}
-        </Select>
+        feedback?.feedbackStatus === FeedbackStatusEnum.PENDING ? (
+          <Select
+            value={editedFeedback.feedbackStatus}
+            onChange={(value) => handleInputChange('feedbackStatus', value)}
+            style={{ width: '100%' }}
+          >
+            {Object.values(FeedbackStatusEnum).map((status) => (
+              <Select.Option key={status} value={status}>
+                {formatEnumLabel(status)}
+              </Select.Option>
+            ))}
+          </Select>
+        ) : (
+          <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>
+            {formatEnumLabel(feedback?.feedbackStatus ?? '')}
+          </Tag>
+        )
       ) : (
         <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>
           {formatEnumLabel(feedback?.feedbackStatus ?? '')}
