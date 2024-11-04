@@ -72,6 +72,21 @@ class BookingDao {
       },
     });
   }
-}
 
+  async updateBooking(id: string, data: Prisma.BookingUpdateInput): Promise<Booking> {
+        try {
+      const updatedBooking = await prisma.booking.update({
+        where: { id },
+        data,
+        include: {
+          facility: true,
+          visitor: true,
+        },
+      });
+      return updatedBooking;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
 export default new BookingDao();

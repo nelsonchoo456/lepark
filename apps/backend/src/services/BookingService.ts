@@ -116,6 +116,16 @@ class BookingService {
 
     return filteredBookings;
   }
+
+   public async updateBooking(id: string, data: Partial<Booking>): Promise<Booking> {
+    const booking = await BookingDao.getBookingById(id);
+    if (!booking) {
+      throw new Error('Booking not found');
+    }
+
+    const formattedData = dateFormatter(data);
+    return BookingDao.updateBooking(id, formattedData);
+  }
 }
 
 const dateFormatter = (data: any) => {

@@ -107,3 +107,16 @@ export async function getBookingsByParkId(parkId: number): Promise<AxiosResponse
     }
   }
 }
+
+export async function updateBooking(id: string, data: Partial<BookingResponse>): Promise<AxiosResponse<BookingResponse>> {
+  try {
+    const response: AxiosResponse<BookingResponse> = await client.put(`${URL}/updateBooking/${id}`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}

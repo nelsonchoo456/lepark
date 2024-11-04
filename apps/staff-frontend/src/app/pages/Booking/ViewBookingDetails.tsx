@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, message, Space, Tabs, Typography, Modal } from 'antd';
-import { BookingStatusEnum, StaffResponse, StaffType, updateBookingStatus } from '@lepark/data-access';
+import { BookingStatusEnum, StaffResponse, StaffType, updateBooking, updateBookingStatus } from '@lepark/data-access';
 import { useRestrictBooking } from '../../hooks/Booking/useRestrictBooking';
 import InformationTab from './components/InformationTab';
 import PageHeader2 from '../../components/main/PageHeader2';
+import moment from 'moment';
 
 const { Text } = Typography;
 
@@ -61,7 +62,15 @@ const ViewBookingDetails = () => {
             : BookingStatusEnum.CONFIRMED
           : BookingStatusEnum.REJECTED;
 
-      await updateBookingStatus(booking.id, { status: newStatus });
+      const updateData: any = { bookingStatus: newStatus };
+
+      if (action === 'accept' && booking.facility?.fee && booking.facility.fee > 0) {
+        const paymentDeadline = moment().add(3, 'days').toISOString();
+        updateData.paymentDeadline = paymentDeadline;
+      }
+
+      console.log('updateData', updateData);
+      await updateBooking(booking.id, updateData);
       messageApi.success(`Booking ${action === 'accept' ? 'approved' : 'rejected'} successfully.`);
       navigate(0); // Refresh the page
     } catch (error) {
