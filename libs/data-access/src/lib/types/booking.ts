@@ -33,10 +33,11 @@ export interface CreateBookingData {
   dateStart: Date;
   dateEnd: Date;
   dateBooked: Date;
-  paymentDeadline: Date;
+  paymentDeadline?: Date;
   visitorRemarks?: string;
   facilityId: string;
   visitorId: string;
+  bookingStatus: BookingStatusEnum;
 }
 
 export interface UpdateBookingStatusData {
