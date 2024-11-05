@@ -584,8 +584,6 @@ model Facility {
   reservationPolicy   String
   rulesAndRegulations String
   images              String[]
-  lastMaintenanceDate DateTime
-  // nextMaintenanceDate   DateTime
   openingHours        DateTime[]
   closingHours        DateTime[]
   facilityStatus      FacilityStatusEnum

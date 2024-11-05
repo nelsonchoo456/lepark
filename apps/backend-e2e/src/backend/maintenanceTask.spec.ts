@@ -50,7 +50,6 @@ describe('Maintenance Task Router Endpoints', () => {
         reservationPolicy: 'Test reservation policy',
         rulesAndRegulations: 'Test rules and regulations',
         images: [],
-        lastMaintenanceDate: new Date(),
         openingHours: [new Date()],
         closingHours: [new Date()],
         facilityStatus: FacilityStatusEnum.OPEN,

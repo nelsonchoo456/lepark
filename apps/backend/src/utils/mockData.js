@@ -1343,8 +1343,6 @@ const hubsData = [
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
     acquisitionDate: new Date(),
-    //lastMaintenanceDate: new Date(),
-    //nextMaintenanceDate: new Date(),
     supplier: 'Supplier 1',
     supplierContactNumber: '89234523',
     images: [
@@ -1360,8 +1358,6 @@ const hubsData = [
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
     acquisitionDate: new Date(),
-    //lastMaintenanceDate: new Date(),
-    //nextMaintenanceDate: new Date(),
     supplier: 'Supplier 1',
     supplierContactNumber: '89234523',
     images: [
@@ -1377,8 +1373,6 @@ const hubsData = [
     description: 'Hub for connecting temperature sensors later on',
     hubStatus: 'INACTIVE',
     acquisitionDate: new Date(),
-    //lastMaintenanceDate: new Date(),
-    //nextMaintenanceDate: new Date(),
     supplier: 'Supplier 1',
     supplierContactNumber: '89234523',
     images: [
@@ -1394,8 +1388,6 @@ const hubsData = [
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'DECOMMISSIONED',
     acquisitionDate: new Date(),
-    //lastMaintenanceDate: new Date(),
-    //nextMaintenanceDate: new Date(),
     supplier: 'Supplier 2',
     supplierContactNumber: '99999999',
     images: [
@@ -1411,8 +1403,6 @@ const hubsData = [
     description: 'Hub for connecting humidity sensors',
     hubStatus: 'UNDER_MAINTENANCE',
     acquisitionDate: new Date(),
-    //lastMaintenanceDate: new Date(),
-    // nextMaintenanceDate: new Date(),
     supplier: 'Supplier 3',
     supplierContactNumber: '98765432',
     images: ['https://sg.element14.com/productimages/large/en_GB/3996082-40.jpg'],
@@ -2517,7 +2507,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Children under 12 must be supervised by an adult at all times. 2. No food or drinks allowed on the play equipment. 3. Maintain cleanliness and dispose of litter in provided bins. 4. Please share equipment with others. 5. Pets are not allowed in the playground area.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/flower-playground.jpg'],
-    lastMaintenanceDate: '2024-01-20T01:09:38.773Z',
     openingHours: [
       '2024-09-07T23:00:00.000Z',
       '2024-09-07T23:00:00.000Z',
@@ -2556,7 +2545,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Keep noise levels to a minimum to respect other park visitors. 2. Do not tamper with or remove any facility fixtures. 3. Clean up the area after use. 4. No commercial activities are allowed without prior approval.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/gazebo.jpg'],
-    lastMaintenanceDate: '2024-02-15T01:09:38.773Z',
     openingHours: [
       '2024-09-07T21:00:00.000Z',
       '2024-09-07T21:00:00.000Z',
@@ -2595,7 +2583,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Do not leave valuables in your vehicle. 2. Park only in designated parking spots. 3. No loitering in the carpark. 4. Vehicles should be removed by the closing time of the park.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/carpark.jpg'],
-    lastMaintenanceDate: '2024-01-10T01:09:38.773Z',
     openingHours: [
       '2024-09-07T18:00:00.000Z',
       '2024-09-07T18:00:00.000Z',
@@ -2634,7 +2621,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Audio equipment should not exceed the permissible volume levels. 2. Clean up all trash after your event. 3. No smoking or alcohol consumption. 4. Ensure all cables and equipment are safely secured to prevent accidents.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/amphitheater.jpg'],
-    lastMaintenanceDate: '2024-03-01T01:09:38.773Z',
     openingHours: [
       '2024-09-08T00:00:00.000Z',
       '2024-09-08T00:00:00.000Z',
@@ -2674,7 +2660,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Fires are allowed only in designated fire pits. 2. Keep noise levels to a minimum after 10 PM to respect other campers. 3. Dispose of all trash in the provided bins. 4. No feeding of wildlife. 5. Ensure all food is stored securely to prevent attracting animals.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/camping-area.jpg'],
-    lastMaintenanceDate: '2024-07-01T01:09:38.773Z',
     openingHours: [
       '2024-09-07T21:00:00.000Z',
       '2024-09-07T21:00:00.000Z',
@@ -2713,7 +2698,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Only authorized personnel are allowed inside the station. 2. Visitors should wait outside and request assistance if needed. 3. Please report any accidents or injuries immediately. 4. Use of medical supplies is strictly for emergencies only. 5. Maintain cleanliness within and around the facility.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/first-aid.jpg'],
-    lastMaintenanceDate: '2024-06-05T01:09:38.773Z',
     openingHours: [
       '2024-09-08T01:00:00.000Z',
       '2024-09-08T01:00:00.000Z',
@@ -2752,7 +2736,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Children under 12 must be supervised by an adult at all times. 2. No food or drinks allowed on the play equipment. 3. Maintain cleanliness and dispose of litter in provided bins. 4. Please share equipment with others. 5. Pets are not allowed in the playground area.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/1727629465513-dragon%20playground%20facility.png'],
-    lastMaintenanceDate: '2024-01-20T01:09:38.773Z',
     openingHours: [
       '2024-09-07T23:00:00.000Z',
       '2024-09-07T23:00:00.000Z',
@@ -2792,7 +2775,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Only park staff with proper authorization are allowed access. 2. Ensure all equipment is returned to its original place after use. 3. Keep the storeroom locked at all times when not in use. 4. Regular inventory checks must be conducted to maintain equipment availability. 5. Report any damaged or missing items immediately to the park manager.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/storeroom.jpg'],
-    lastMaintenanceDate: '2024-03-21T01:09:38.773Z',
     openingHours: [
       '2024-09-08T02:00:00.000Z',
       '2024-09-08T02:00:00.000Z',
@@ -2832,7 +2814,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Only authorized park staff may access this storage. 2. All equipment must be returned to its designated location. 3. Keep the storage area locked when not in use. 4. Conduct regular inventory checks to ensure all items are accounted for. 5. Report any issues with equipment to the park supervisor immediately.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/mini-storeroom.jpg'],
-    lastMaintenanceDate: '2024-04-15T01:09:38.773Z',
     openingHours: [
       '2024-09-08T02:00:00.000Z',
       '2024-09-08T02:00:00.000Z',
@@ -2871,7 +2852,6 @@ const facilitiesData = [
     rulesAndRegulations:
       '1. Only authorized park staff may access this storage. 2. All equipment must be returned to its designated location. 3. Keep the storage area locked when not in use. 4. Conduct regular inventory checks to ensure all items are accounted for. 5. Report any issues with equipment to the park supervisor immediately.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/mini-storeroom.jpg'],
-    lastMaintenanceDate: '2024-04-15T01:09:38.773Z',
     openingHours: [
       '2024-09-08T02:00:00.000Z',
       '2024-09-08T02:00:00.000Z',

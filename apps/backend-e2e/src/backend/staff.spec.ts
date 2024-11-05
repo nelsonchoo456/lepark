@@ -106,6 +106,14 @@ describe('Staff Router Endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.data.message).toBe('Logout successful');
     });
+
+    it('should fail to logout without authentication', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/staffs/logout');
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
   });
 
   describe('GET endpoints', () => {
@@ -228,6 +236,7 @@ describe('Staff Router Endpoints', () => {
           },
         );
       } catch (error) {
+        expect(error.response.data.error).toBe('Invalid role.');
         expect(error.response.status).toBe(400);
       }
     });
@@ -286,6 +295,14 @@ describe('Staff Router Endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.data).toHaveProperty('token');
       resetToken = response.data.token;
+    });
+
+    it('should fail to get reset token for first login without authentication', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/staffs/token-for-reset-password-for-first-login', { staffId });
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
     });
 
     it('should reset password', async () => {
@@ -360,5 +377,10 @@ describe('Staff Router Endpoints', () => {
         expect(error.response.data.message).toBe('No token provided');
       }
     });
+  });
+
+  afterAll(async () => {
+    // Logout to clear the cookie
+    await axios.post('http://localhost:3333/api/staffs/logout', {}, { headers: { Cookie: authCookie } });
   });
 });
