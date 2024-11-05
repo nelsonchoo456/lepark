@@ -129,7 +129,7 @@ describe('Facility Router Endpoints', () => {
           params: { name: '', parkId: 'invalid' },
         });
       } catch (error) {
-        expect(error.response.status).toBe(500);
+        expect(error.response.status).toBe(400);
       }
     });
   });
