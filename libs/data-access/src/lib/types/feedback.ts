@@ -1,5 +1,5 @@
 // feedback.ts
-import { FeedbackCategoryEnum, FeedbackStatusEnum } from './sharedenums';
+import { FeedbackCategoryEnum, FeedbackStatusEnum } from './sharedEnums';
 import { StaffResponse } from './staff';
 import { VisitorResponse } from './visitor';
 

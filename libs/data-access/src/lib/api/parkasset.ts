@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { ParkAssetData, ParkAssetResponse, ParkAssetUpdateData } from '../types/parkasset';
+import { ParkAssetData, ParkAssetResponse, ParkAssetUpdateData } from '../types/parkAsset';
 import client from './client';
 import { MaintenanceTaskResponse } from '@lepark/data-access';
 
@@ -182,4 +182,3 @@ export async function checkParkAssetDuplicateSerialNumber(serialNumber: string, 
     }
   }
 }
-

@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import client from './client';
-import { StatusLogData, StatusLogResponse, StatusLogUpdateData } from '../types/statuslog';
+import { StatusLogData, StatusLogResponse, StatusLogUpdateData } from '../types/statusLog';
 
 const URL = '/statuslogs';
 

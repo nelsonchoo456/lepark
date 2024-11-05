@@ -8,7 +8,7 @@ import {
   DelayedTaskTypeData,
   ParkTaskTypeAverageCompletionTimesForPastMonthsData,
   ParkTaskTypeOverdueRatesForPastMonthsData,
-} from '../types/maintenancetask';
+} from '../types/maintenanceTask';
 import client from './client';
 import { MaintenanceTaskStatusEnum } from '@prisma/client';
 

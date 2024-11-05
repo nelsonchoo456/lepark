@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { DecarbonizationAreaData, DecarbonizationAreaResponse } from '../types/decarbonizationarea';
+import { DecarbonizationAreaData, DecarbonizationAreaResponse } from '../types/decarbonizationArea';
 import client from './client';
 import { OccurrenceResponse } from '../types/occurrence';
 

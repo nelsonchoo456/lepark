@@ -1,4 +1,4 @@
-import { FacilityTypeEnum, FacilityStatusEnum } from './sharedenums';
+import { FacilityTypeEnum, FacilityStatusEnum } from './sharedEnums';
 import { EventResponse } from './event';
 
 export interface FacilityData {
