@@ -211,4 +211,14 @@ describe('Facility Router Endpoints', () => {
       }
     });
   });
+
+  describe('Authentication tests', () => {
+    it('should fail to access protected endpoints without authentication', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/facilities/getAllFacilities');
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
+  });
 });

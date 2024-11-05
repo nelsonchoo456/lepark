@@ -311,4 +311,14 @@ describe('Attraction Router Endpoints', () => {
       }
     });
   });
+
+  describe('Authentication tests', () => {
+    it('should fail to access protected endpoints without authentication', async () => {
+      try {
+        await axios.post('http://localhost:3333/api/attractions/getAllAttractions');
+      } catch (error) {
+        expect(error.response.status).toBe(403);
+      }
+    });
+  });
 });
