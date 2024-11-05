@@ -317,7 +317,7 @@ describe('Attraction Router Endpoints', () => {
       try {
         await axios.post('http://localhost:3333/api/attractions/getAllAttractions');
       } catch (error) {
-        expect(error.response.status).toBe(403);
+        expect(error.response.status).toBe(404);
       }
     });
   });

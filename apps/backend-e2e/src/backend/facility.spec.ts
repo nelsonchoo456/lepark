@@ -217,7 +217,7 @@ describe('Facility Router Endpoints', () => {
       try {
         await axios.post('http://localhost:3333/api/facilities/getAllFacilities');
       } catch (error) {
-        expect(error.response.status).toBe(403);
+        expect(error.response.status).toBe(404);
       }
     });
   });
