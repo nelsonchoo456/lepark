@@ -16,6 +16,8 @@ export interface AttractionResponse {
   lat: number;
   lng: number;
   parkId: number;
+
+  cameraSensorId?: string;
 }
 
 export interface CreateAttractionData {
@@ -42,6 +44,8 @@ export interface UpdateAttractionData {
   lat?: number;
   lng?: number;
   parkId?: number;
+
+  cameraSensorId?: string;
 }
 
 export enum AttractionTicketCategoryEnum {

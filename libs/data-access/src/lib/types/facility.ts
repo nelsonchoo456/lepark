@@ -22,6 +22,8 @@ export interface FacilityData {
   capacity: number;
   fee: number;
   parkId: number;
+
+  cameraSensorId?: string;
 }
 
 // export enum FacilityType {
@@ -67,6 +69,8 @@ export interface FacilityResponse {
   parkId: number;
   hubs?: string[]; // Array of hub IDs associated with this facility
   events?: string[]; // Array of event IDs associated with this facility
+
+  cameraSensorId?: string;
 }
 
 export interface FacilityWithEvents {
@@ -93,4 +97,6 @@ export interface FacilityWithEvents {
   parkId: number;
   hubs?: string[]; // Array of hub IDs associated with this facility
   events: EventResponse[]; // Array of event IDs associated with this facility
+
+  cameraSensorId?: string;
 }

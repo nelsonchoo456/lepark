@@ -11,7 +11,9 @@ export const AttractionSchema = z.object({
   ticketingPolicy: z.string(),
   lat: z.number().min(-90).max(90).optional(),
   lng: z.number().min(-180).max(180).optional(),
-  parkId: z.number()
+  parkId: z.number(),
+
+  cameraSensorId: z.string().optional(),
 });
 
 export const AttractionTicketListingSchema = z.object({
