@@ -22,8 +22,15 @@ import { AiOutlinePercentage } from 'react-icons/ai';
 import { BiSolidDiscount } from 'react-icons/bi';
 import { useFetchAnnouncements } from '../../hooks/Announcements/useFetchAnnouncements';
 import { AnnouncementResponse } from '@lepark/data-access';
+import styled from 'styled-components';
 
 const { Title, Paragraph } = Typography;
+
+const ListNoPadding = styled(List)`
+.ant-list-item {
+padding: 0;
+}
+`
 
 const MainLanding = () => {
     const navigate = useNavigate();
@@ -81,28 +88,31 @@ useEffect(() => {
         </NavButton>
         <NavButton
           key="attractions"
-          icon={<PiStarFill />}
+          icon={<PiStarFill className='text-mustard-400'/>}
           onClick={() => {
             navigate(`/attractions/park/${selectedPark?.id}`);
           }}
+          iconClassname="bg-mustard-50 hover:bg-mustard-200"
         >
           Attractions
         </NavButton>
         <NavButton
           key="facilities"
-          icon={<FaTent />}
+          icon={<FaTent className='text-sky-400'/>}
           onClick={() => {
             navigate(`/facility/park/${selectedPark?.id}`);
           }}
+          iconClassname="bg-sky-50 hover:bg-sky-200"
         >
           Facilities
         </NavButton>
         <NavButton
           key="events"
-          icon={<MdEvent />}
+          icon={<MdEvent className="text-highlightGreen-500"/>}
           onClick={() => {
             navigate(`/event/park/${selectedPark?.id}`);
           }}
+          iconClassname="bg-highlightGreen-100 hover:bg-highlightGreen-200"
         >
           Events
         </NavButton>
@@ -130,7 +140,7 @@ useEffect(() => {
           ) : error ? (
             <div>Error loading announcements: {error}</div>
           ) : (
-            <List
+            <ListNoPadding
               dataSource={announcements.slice(0, 2)} // Show only the latest 3 announcements
               renderItem={(announcement: AnnouncementResponse) => (
                 <List.Item>
@@ -138,7 +148,7 @@ useEffect(() => {
                     title={
                       <div className="flex items-center">
                         <span
-                          className={`truncate ${expandedAnnouncementId === announcement.id ? 'whitespace-normal' : 'whitespace-nowrap'}`}
+                          className={`font-medium truncate ${expandedAnnouncementId === announcement.id ? 'whitespace-normal' : 'whitespace-nowrap'}`}
                         >
                           {announcement.title}
                         </span>
@@ -147,16 +157,18 @@ useEffect(() => {
                     onClick={() => toggleExpand(announcement.id)}
                     hoverable
                     className="w-full"
-                    bodyStyle={{ padding: expandedAnnouncementId === announcement.id ? '16px' : '0' }}
+                    bodyStyle={{ padding: expandedAnnouncementId === announcement.id ? '0.7rem' : '0' }}
+                    size="small"
                   >
                     {expandedAnnouncementId === announcement.id && (
-                      <div className="mt-4">
+                      <div className="">
                         <Paragraph>{announcement.content}</Paragraph>
                       </div>
                     )}
                   </Card>
                 </List.Item>
               )}
+              split={false}
             />
           )}
         </div>

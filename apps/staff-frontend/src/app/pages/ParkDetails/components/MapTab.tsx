@@ -144,7 +144,7 @@ const MapTab = ({ park }: MapTabProps) => {
             const eventsRes = await getEventsByFacilityId(facility.id);
 
             if (eventsRes.status === 200) {
-              facilityWithEvents.events = eventsRes.data; // Append events to the facility
+              facilityWithEvents.events = eventsRes.data.sort((a, b) => b.startDate - a.startDate); // Append events to the facility
             }
             return facilityWithEvents;
           } catch (error) {
@@ -421,11 +421,11 @@ const MapTab = ({ park }: MapTabProps) => {
                 ),
             )}
 
-          {park && (
+          {/* {park && (
             <Pane name="heatmapPane" style={{ zIndex: 900 }}>
               <HeatmapLayer park={park} />
             </Pane>
-          )}
+          )} */}
         </MapContainer>
 
         {hovered && (
