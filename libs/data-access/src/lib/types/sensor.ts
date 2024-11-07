@@ -1,8 +1,8 @@
 import { FacilityResponse } from './facility';
 import { HubResponse } from './hub';
 import { ParkResponse } from './park';
-import { SensorReadingResponse } from './sensorreading';
-import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums';
+import { SensorReadingResponse } from './sensorReading';
+import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedEnums';
 
 export interface SensorData {
   name: string;

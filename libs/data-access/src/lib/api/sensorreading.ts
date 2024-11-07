@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { SensorReadingData, SensorReadingResponse } from '../types/sensorreading';
+import { SensorReadingData, SensorReadingResponse } from '../types/sensorReading';
 import client from './client';
 import { SensorTypeEnum } from '@prisma/client';
 
@@ -145,11 +145,18 @@ export async function getSensorReadingTrendWithSlope(sensorId: string, hours: nu
   }
 }
 
-export async function getHourlyAverageSensorReadingsByDateRange(sensorId: string, startDate: Date, endDate: Date): Promise<AxiosResponse<{ date: Date; average: number }[]>> {
+export async function getHourlyAverageSensorReadingsByDateRange(
+  sensorId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<AxiosResponse<{ date: Date; average: number }[]>> {
   try {
-    const response: AxiosResponse<{ date: Date; average: number }[]> = await client.get(`${URL}/getHourlyAverageSensorReadingsByDateRange/${sensorId}`, {
-      params: { startDate, endDate },
-    });
+    const response: AxiosResponse<{ date: Date; average: number }[]> = await client.get(
+      `${URL}/getHourlyAverageSensorReadingsByDateRange/${sensorId}`,
+      {
+        params: { startDate, endDate },
+      },
+    );
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -416,8 +423,7 @@ export async function getZoneTrendForSensorType(
   }
 }
 
-export async function 
-getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<AxiosResponse<any>> {
+export async function getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<AxiosResponse<any>> {
   try {
     const response: AxiosResponse<any> = await client.get(`${URL}/getActiveZonePlantSensorCount/${zoneId}/${hoursAgo}`);
     return response;
@@ -476,7 +482,9 @@ export async function getAllSensorReadingsByParkIdAndSensorType(
   sensorType: SensorTypeEnum,
 ): Promise<AxiosResponse<SensorReadingResponse[]>> {
   try {
-    const response: AxiosResponse<SensorReadingResponse[]> = await client.get(`${URL}/getAllSensorReadingsByParkIdAndSensorType/${parkId}/${sensorType}`);
+    const response: AxiosResponse<SensorReadingResponse[]> = await client.get(
+      `${URL}/getAllSensorReadingsByParkIdAndSensorType/${parkId}/${sensorType}`,
+    );
     return response;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -513,4 +521,3 @@ export async function getPastOneHourCrowdDataBySensorsForPark(parkId: number): P
     }
   }
 }
-

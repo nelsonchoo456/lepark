@@ -43,6 +43,11 @@ const InformationTab = ({ attraction, park }: InformationTabProps) => {
       children: <Typography.Paragraph>{attraction?.description}</Typography.Paragraph>,
     },
     {
+      key: 'maxCapacity',
+      label: 'Daily Max Capacity (pax)',
+      children: attraction?.maxCapacity,
+    },
+    {
       key: 'ticketingPolicy',
       label: 'Ticketing Policy',
       children: <Typography.Paragraph>{attraction?.ticketingPolicy}</Typography.Paragraph>,

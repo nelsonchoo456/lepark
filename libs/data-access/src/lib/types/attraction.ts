@@ -12,6 +12,7 @@ export interface AttractionResponse {
   closingHours: any;
   images?: string[];
   status: AttractionStatusEnum;
+  maxCapacity: number;
   ticketingPolicy: string;
   lat: number;
   lng: number;
@@ -28,6 +29,7 @@ export interface CreateAttractionData {
   images?: string[];
   status: AttractionStatusEnum;
   ticketingPolicy: string;
+  maxCapacity: number;
   lat: number;
   lng: number;
   parkId: number;
@@ -41,6 +43,7 @@ export interface UpdateAttractionData {
   images?: string[];
   status?: AttractionStatusEnum;
   ticketingPolicy?: string;
+  maxCapacity?: number;
   lat?: number;
   lng?: number;
   parkId?: number;

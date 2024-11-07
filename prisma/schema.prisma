@@ -198,6 +198,7 @@ model Attraction {
   closingHours             DateTime[]
   images                   String[]
   status                   AttractionStatusEnum
+  maxCapacity              Int
   ticketingPolicy          String
   lat                      Float?
   lng                      Float?
@@ -428,9 +429,11 @@ model Hub {
   facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   lastDataUpdateDate       DateTime?
 
-  maintenanceHistory      MaintenanceHistory[]
+  // maintenanceHistory      MaintenanceHistory[]
   sensors                 Sensor[]
-  maintenanceTasks        MaintenanceTask[]
+  // maintenanceTasks        MaintenanceTask[]
+  // sensors            Sensor[]
+  maintenanceTasks   MaintenanceTask[]
   predictedWaterSchedules PredictedWaterSchedule[]
 
   rfModel   RfModel?
@@ -499,7 +502,7 @@ model Sensor {
   hub                   Hub?                 @relation(fields: [hubId], references: [id])
   facilityId            String?              @db.Uuid
   facility              Facility?            @relation("StorageFacility", fields: [facilityId], references: [id], onDelete: Cascade)
-  maintenanceHistory    MaintenanceHistory[]
+  // maintenanceHistory    MaintenanceHistory[]
   sensorReadings        SensorReading[]
   maintenanceTasks      MaintenanceTask[]
 
@@ -576,21 +579,7 @@ model ParkAsset {
   remarks               String?
   facilityId            String                 @db.Uuid
   facility              Facility               @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  maintenanceHistory    MaintenanceHistory[]
   maintenanceTasks      MaintenanceTask[]
-}
-
-model MaintenanceHistory {
-  id              String   @id @default(uuid()) @db.Uuid
-  hubId           String?  @map("hubId") @db.Uuid
-  sensorId        String?  @map("sensorId") @db.Uuid
-  assetId         String?  @map("assetId") @db.Uuid
-  maintenanceDate DateTime
-  description     String
-
-  hub       Hub?       @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  sensor    Sensor?    @relation(fields: [sensorId], references: [id], onDelete: Cascade)
-  parkAsset ParkAsset? @relation(fields: [assetId], references: [id], onDelete: Cascade)
 }
 
 model Facility {
@@ -604,8 +593,6 @@ model Facility {
   reservationPolicy   String
   rulesAndRegulations String
   images              String[]
-  lastMaintenanceDate DateTime
-  // nextMaintenanceDate   DateTime
   openingHours        DateTime[]
   closingHours        DateTime[]
   facilityStatus      FacilityStatusEnum

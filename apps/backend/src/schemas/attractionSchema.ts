@@ -8,6 +8,7 @@ export const AttractionSchema = z.object({
   closingHours: z.array(z.date()),
   images: z.array(z.string()).optional(),
   status: z.nativeEnum(AttractionStatusEnum),
+  maxCapacity: z.number(),
   ticketingPolicy: z.string(),
   lat: z.number().min(-90).max(90).optional(),
   lng: z.number().min(-180).max(180).optional(),

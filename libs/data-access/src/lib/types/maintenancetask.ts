@@ -1,7 +1,7 @@
-import { MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum, MaintenanceTaskUrgencyEnum } from './sharedenums';
+import { MaintenanceTaskStatusEnum, MaintenanceTaskTypeEnum, MaintenanceTaskUrgencyEnum } from './sharedEnums';
 import { StaffResponse } from './staff';
 import { FacilityResponse } from './facility';
-import { ParkAssetResponse } from './parkasset';
+import { ParkAssetResponse } from './parkAsset';
 import { SensorResponse } from './sensor';
 import { HubResponse } from './hub';
 import { ParkResponse } from './park';

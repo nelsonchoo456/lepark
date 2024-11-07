@@ -217,7 +217,10 @@ class AttractionService {
         throw new Error('Ticket listing not found');
       }
 
-      AttractionTicketListingSchema.parse(data);
+      // Merge existing data with updates before validation
+      const mergedData = { ...existingTicketListing, ...data };
+      AttractionTicketListingSchema.parse(mergedData);
+      
       return AttractionDao.updateAttractionTicketListingDetails(id, data);
     } catch (error) {
       if (error instanceof z.ZodError) {

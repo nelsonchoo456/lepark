@@ -1,5 +1,5 @@
 import { OccurrenceResponse } from './occurrence';
-import { PlantTaskStatusEnum, PlantTaskTypeEnum, PlantTaskUrgencyEnum } from './sharedenums';
+import { PlantTaskStatusEnum, PlantTaskTypeEnum, PlantTaskUrgencyEnum } from './sharedEnums';
 import { StaffResponse } from './staff';
 import { ZoneResponse } from './zone';
 import { ParkResponse } from './park';

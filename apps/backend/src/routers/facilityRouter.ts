@@ -33,11 +33,7 @@ router.get('/getAllFacilities', async (req, res) => {
 router.get('/getFacilityById/:id', async (req, res) => {
   try {
     const facility = await FacilityService.getFacilityById(req.params.id);
-    if (facility) {
-      res.status(200).json(facility);
-    } else {
-      res.status(404).json({ error: 'Facility not found' });
-    }
+    res.status(200).json(facility);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -88,7 +84,7 @@ router.get('/check-existing', async (req, res) => {
     return res.status(200).json({ exists });
   } catch (error) {
     console.error('Error checking existing facility:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(400).json({ message: 'Internal server error' });
   }
 });
 

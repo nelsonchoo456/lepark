@@ -1,4 +1,4 @@
-import { FacilityTypeEnum, FacilityStatusEnum } from './sharedenums';
+import { FacilityTypeEnum, FacilityStatusEnum } from './sharedEnums';
 import { EventResponse } from './event';
 
 export interface FacilityData {
@@ -11,8 +11,6 @@ export interface FacilityData {
   reservationPolicy: string;
   rulesAndRegulations: string;
   images?: string[];
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   openingHours: string[];
   closingHours: string[];
   facilityStatus: FacilityStatusEnum;
@@ -56,8 +54,6 @@ export interface FacilityResponse {
   reservationPolicy: string;
   rulesAndRegulations: string;
   images?: string[];
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   openingHours: string[];
   closingHours: string[];
   facilityStatus: FacilityStatusEnum;
@@ -84,8 +80,6 @@ export interface FacilityWithEvents {
   reservationPolicy: string;
   rulesAndRegulations: string;
   images?: string[];
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   openingHours: string[];
   closingHours: string[];
   facilityStatus: FacilityStatusEnum;

@@ -7,7 +7,7 @@
 // }
 
 import { ParkResponse } from './park';
-import { DecarbonizationTypeEnum, OccurrenceStatusEnum } from './sharedenums';
+import { DecarbonizationTypeEnum, OccurrenceStatusEnum } from './sharedEnums';
 import { SpeciesResponse } from './species';
 import { ZoneResponse } from './zone';
 

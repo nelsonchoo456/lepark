@@ -21,7 +21,7 @@ import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
 
 class VisitorService {
-  public async register(data: VisitorSchemaType): Promise<Visitor> {
+  public async register(data: VisitorSchemaType): Promise<{ visitor: Visitor; verificationToken: string }> {
     try {
       // Validate input data using Zod
       VisitorSchema.parse(data);
@@ -46,7 +46,8 @@ class VisitorService {
       const verificationLink = `http://localhost:4201/verify-user?token=${token}`;
       EmailUtil.sendVerificationEmail(data.email, verificationLink);
 
-      return VisitorDao.createVisitor(visitorData);
+      const visitor = await VisitorDao.createVisitor(visitorData);
+      return { visitor, verificationToken: token };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -170,6 +171,12 @@ class VisitorService {
       // Send email with the reset link containing the token
       const resetLink = `http://localhost:4201/visitor-reset-password?token=${resetToken}`;
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
+
+      // Return the token only in non-production environments
+      if (process.env.NODE_ENV !== 'production') {
+        return { message: 'Password reset email sent successfully', resetToken };
+      }
+      return { message: 'Password reset email sent successfully' };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -408,27 +415,23 @@ class VisitorService {
   }
 
   async delete(data) {
-    try {
-      const visitor = await VisitorDao.getVisitorById(data.id);
+    const visitor = await VisitorDao.getVisitorById(data.id);
 
-      if (!visitor) {
-        // Use a generic error message to not reveal if the email exists
-        throw new Error('Invalid credentials');
-      }
-
-      // Use bcrypt to compare the input password with the stored hash
-      const isPasswordValid = await bcrypt.compare(data.password, visitor.password);
-
-      if (!isPasswordValid) {
-        throw new Error('Password is incorrect');
-      }
-
-      await VisitorDao.deleteVisitor(data.id);
-
-      return { message: 'Visitor deleted successfully' };
-    } catch (error) {
-      throw error;
+    if (!visitor) {
+      // Use a generic error message to not reveal if the email exists
+      throw new Error('Invalid credentials');
     }
+
+    // Use bcrypt to compare the input password with the stored hash
+    const isPasswordValid = await bcrypt.compare(data.password, visitor.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Password is incorrect');
+    }
+
+    await VisitorDao.deleteVisitor(data.id);
+
+    return { message: 'Visitor deleted successfully' };
   }
 }
 

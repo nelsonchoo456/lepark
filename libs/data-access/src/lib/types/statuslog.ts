@@ -1,4 +1,4 @@
-import { OccurrenceStatusEnum } from './sharedenums';
+import { OccurrenceStatusEnum } from './sharedEnums';
 
 export interface StatusLogData {
   name: string;

@@ -143,7 +143,6 @@ function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreate
     !data.reservationPolicy ||
     !data.rulesAndRegulations ||
     !data.images ||
-    !data.lastMaintenanceDate ||
     !data.openingHours ||
     !data.closingHours ||
     !data.facilityStatus ||
@@ -162,9 +161,6 @@ function ensureAllFieldsPresent(data: FacilitySchemaType): Prisma.FacilityCreate
 const dateFormatter = (data: any) => {
   const { openingHours, closingHours, ...rest } = data;
   const formattedData = { ...rest };
-
-  // Format dateObserved and dateOfBirth into JavaScript Date objects
-  formattedData.lastMaintenanceDate = new Date();
 
   if (openingHours) {
     formattedData.openingHours = openingHours.map((time: string) => new Date(time));

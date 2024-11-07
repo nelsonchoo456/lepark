@@ -10,7 +10,7 @@ import {
   StaffType,
   AttractionStatusEnum,
 } from '@lepark/data-access';
-import { Button, Card, Divider, Flex, Form, Input, Popconfirm, Select, TimePicker, Typography, message, notification } from 'antd';
+import { Button, Card, Divider, Flex, Form, Input, InputNumber, Popconfirm, Select, TimePicker, Typography, message, notification } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import useUploadImages from '../../hooks/Images/useUploadImages';
 import dayjs from 'dayjs';
@@ -183,6 +183,9 @@ const AttractionEdit = () => {
           </Form.Item>
           <Form.Item name="status" label="Attraction Status" rules={[{ required: true }]}>
             <Select placeholder="Select a Status" options={attractionStatusOptions} />
+          </Form.Item>
+          <Form.Item name="maxCapacity" label="Daily Max Capacity (pax)" rules={[{ required: true, message: 'Please input the daily max capacity!' }]}>
+            <InputNumber min={1} precision={0} step={1} />
           </Form.Item>
           <Form.Item name="ticketingPolicy" label="Ticketing Policy" rules={[{ required: true }]}>
             <TextArea placeholder="Ticketing Policy" autoSize={{ minRows: 3, maxRows: 5 }} />
