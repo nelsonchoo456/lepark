@@ -29,7 +29,6 @@ const FacilityInformationTab = ({ facility }: { facility: FacilityResponse }) =>
     'lat',
     'long',
     'facilityStatus',
-    'lastMaintenanceDate',
     'description',
     'isPublic',
     'name',

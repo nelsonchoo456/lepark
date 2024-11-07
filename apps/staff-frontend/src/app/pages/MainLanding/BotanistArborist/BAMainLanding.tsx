@@ -54,7 +54,8 @@ const BAMainLanding = () => {
   const fetchAnnouncementsByParkId = async (parkId: number) => {
     try {
       const response = await getAnnouncementsByParkId(parkId);
-      setAnnouncements(response.data);
+      const filteredAnnouncements = response.data.filter((announcement) => announcement.status === 'ACTIVE');
+      setAnnouncements(filteredAnnouncements);
       // setError(null);
     } catch (err) {
       // setError('Failed to fetch announcements');

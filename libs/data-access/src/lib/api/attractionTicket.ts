@@ -205,7 +205,7 @@ export async function getStripePublishableKey(): Promise<string> {
 export async function getAttractionTicketsByAttractionId(attractionId: string): Promise<AxiosResponse<AttractionTicketResponse[]>> {
   try {
     const response: AxiosResponse<AttractionTicketResponse[]> = await client.get(
-      `${URL}/getAttractionTicketsByAttractionId/${attractionId}`
+      `${URL}/getAttractionTicketsByAttractionId/${attractionId}`,
     );
     return response;
   } catch (error) {
@@ -216,7 +216,7 @@ export async function getAttractionTicketsByAttractionId(attractionId: string): 
     }
   }
 }
-  
+
 export async function fetchPayment(paymentIntentId: string): Promise<AxiosResponse<FetchPaymentResponse>> {
   try {
     const response: AxiosResponse<FetchPaymentResponse> = await client.get(`${URL}/fetchPayment/${paymentIntentId}`);

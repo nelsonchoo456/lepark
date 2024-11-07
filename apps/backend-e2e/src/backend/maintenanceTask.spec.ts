@@ -9,6 +9,8 @@ import {
   HubStatusEnum,
 } from '@prisma/client';
 
+jest.setTimeout(15000);
+
 describe('Maintenance Task Router Endpoints', () => {
   let authCookie: string;
   let maintenanceTaskId: string;
@@ -48,7 +50,6 @@ describe('Maintenance Task Router Endpoints', () => {
         reservationPolicy: 'Test reservation policy',
         rulesAndRegulations: 'Test rules and regulations',
         images: [],
-        lastMaintenanceDate: new Date(),
         openingHours: [new Date()],
         closingHours: [new Date()],
         facilityStatus: FacilityStatusEnum.OPEN,
@@ -566,8 +567,6 @@ describe('Maintenance Task Router Endpoints', () => {
       }
     });
   });
-
-  describe('POST endpoints for task actions', () => {});
 
   describe('DELETE endpoints for task actions', () => {
     it('should delete a maintenance task', async () => {

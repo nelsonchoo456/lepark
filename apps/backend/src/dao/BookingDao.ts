@@ -3,7 +3,9 @@ import { PrismaClient, Booking, Prisma, BookingStatusEnum } from '@prisma/client
 const prisma = new PrismaClient();
 
 class BookingDao {
-  async createBooking(data: Prisma.BookingCreateInput): Promise<Booking> {
+  public async createBooking(
+    data: Prisma.BookingCreateInput
+  ): Promise<Booking> {
     return prisma.booking.create({
       data,
       include: {
@@ -13,7 +15,9 @@ class BookingDao {
     });
   }
 
-  async getBookingById(id: string): Promise<Booking | null> {
+  public async getBookingById(
+    id: string
+  ): Promise<Booking | null> {
     return prisma.booking.findUnique({
       where: { id },
       include: {
@@ -23,7 +27,7 @@ class BookingDao {
     });
   }
 
-  async getAllBookings(): Promise<Booking[]> {
+  public async getAllBookings(): Promise<Booking[]> {
     return prisma.booking.findMany({
       include: {
         facility: true,
@@ -32,7 +36,10 @@ class BookingDao {
     });
   }
 
-  async updateBookingStatus(id: string, status: BookingStatusEnum): Promise<Booking> {
+  public async updateBookingStatus(
+    id: string, 
+    status: BookingStatusEnum
+  ): Promise<Booking> {
     return prisma.booking.update({
       where: { id },
       data: { bookingStatus: status },
@@ -43,7 +50,9 @@ class BookingDao {
     });
   }
 
-  async deleteBooking(id: string): Promise<Booking> {
+  public async deleteBooking(
+    id: string
+  ): Promise<Booking> {
     return prisma.booking.delete({
       where: { id },
       include: {
@@ -53,7 +62,9 @@ class BookingDao {
     });
   }
 
-  async getBookingsByVisitorId(visitorId: string): Promise<Booking[]> {
+  public async getBookingsByVisitorId(
+    visitorId: string
+  ): Promise<Booking[]> {
     return prisma.booking.findMany({
       where: { visitorId },
       include: {
@@ -63,7 +74,9 @@ class BookingDao {
     });
   }
 
-  async getBookingsByFacilityId(facilityId: string): Promise<Booking[]> {
+  public async getBookingsByFacilityId(
+    facilityId: string
+  ): Promise<Booking[]> {
     return prisma.booking.findMany({
       where: { facilityId },
       include: {

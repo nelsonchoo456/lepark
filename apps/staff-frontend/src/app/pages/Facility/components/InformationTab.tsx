@@ -48,7 +48,6 @@ const InformationTab: React.FC<InformationTabProps> = ({ facility }) => {
         />
       ),
     },
-    { key: 'lastMaintenanceDate', label: 'Last Maintenance Date	', children: moment(facility.lastMaintenanceDate).format('MMMM D, YYYY') },
     { key: 'size', label: 'Size', children: facility?.size ? `${facility.size} m²` : '-' },
     { key: 'capacity', label: 'Capacity', children: facility?.capacity ? `${facility.capacity} pax` : '-' },
     { key: 'fee', label: 'Fee', children: facility?.fee ? `$ ${facility.fee}` : '-' },

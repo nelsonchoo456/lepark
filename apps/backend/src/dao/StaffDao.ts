@@ -3,39 +3,39 @@ import { PrismaClient, Prisma, Staff } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class StaffDao {
-  async createStaff(data: Prisma.StaffCreateInput): Promise<Staff> {
+  public async createStaff(data: Prisma.StaffCreateInput): Promise<Staff> {
     return prisma.staff.create({ data });
   }
 
-  async getStaffByEmail(email: string): Promise<Staff | null> {
+  public async getStaffByEmail(email: string): Promise<Staff | null> {
     return prisma.staff.findUnique({ where: { email } });
   }
 
-  async getAllStaffs(): Promise<Staff[]> {
+  public async getAllStaffs(): Promise<Staff[]> {
     return prisma.staff.findMany();
   }
 
-  async getAllStaffsByParkId(parkId: number): Promise<Staff[]> {
+  public async getAllStaffsByParkId(parkId: number): Promise<Staff[]> {
     return prisma.staff.findMany({ where: { parkId } });
   }
 
-  async getStaffById(id: string): Promise<Staff | null> {
+  public async getStaffById(id: string): Promise<Staff | null> {
     return prisma.staff.findUnique({ where: { id } });
   }
 
-  async updateStaffDetails(
+  public async updateStaffDetails(
     id: string,
     data: Prisma.StaffUpdateInput,
   ): Promise<Staff> {
     return prisma.staff.update({ where: { id }, data });
   }
 
-  async isManagerOrSuperadmin(id: string): Promise<boolean> {
+  public async isManagerOrSuperadmin(id: string): Promise<boolean> {
     const staff = await prisma.staff.findUnique({ where: { id } });
     return staff.role === 'MANAGER' || staff.role === 'SUPERADMIN';
   }
 
-  async updateResetTokenUsed(id: string, used: boolean): Promise<Staff> {
+  public async updateResetTokenUsed(id: string, used: boolean): Promise<Staff> {
     return prisma.staff.update({
       where: { id },
       data: { resetTokenUsed: used },

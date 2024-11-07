@@ -29,10 +29,12 @@ export const useFetchCrowdDataForCrowdAlerts = ({ parkId, parks }: UseFetchCrowd
 
   const fetchData = async () => {
     if (parks.length === 0) return;
+
     setIsLoading(true);
     setError(null);
 
     try {
+      // Fetch sensor readings
       let allData;
       if (parkId === 0) {
         const allParksData = await Promise.all(
@@ -48,9 +50,27 @@ export const useFetchCrowdDataForCrowdAlerts = ({ parkId, parks }: UseFetchCrowd
         return;
       }
 
+      // Data processing
+      // Pre-calculate timezone offset once
+      const sgOffset = moment.tz.zone('Asia/Singapore')?.utcOffset(Date.now()) ?? 0;
+
+      // Create a more efficient comparison function
+      const compareDates = (a: any, b: any) => {
+        // Convert to timestamps directly without moment
+        const dateA = new Date(a.date).getTime() + sgOffset * 60 * 1000;
+        const dateB = new Date(b.date).getTime() + sgOffset * 60 * 1000;
+        return dateA - dateB;
+      };
+
+      // Filter and sort in one pass using a typed array
       const sortedData = allData.data
-        .filter((item: any) => item && item.date)
-        .sort((a: any, b: any) => moment.tz(a.date, 'Asia/Singapore').valueOf() - moment.tz(b.date, 'Asia/Singapore').valueOf());
+        .reduce((acc: any[], item: any) => {
+          if (item?.date) {
+            acc.push(item);
+          }
+          return acc;
+        }, [])
+        .sort(compareDates);
 
       if (sortedData.length === 0) {
         setCrowdData([]);
@@ -61,98 +81,65 @@ export const useFetchCrowdDataForCrowdAlerts = ({ parkId, parks }: UseFetchCrowd
       const endDate = moment.tz(sortedData[sortedData.length - 1].date, 'Asia/Singapore').endOf('day');
       const today = moment().tz('Asia/Singapore').endOf('day');
       const predictionEndDate = today.clone().add(1, 'month').endOf('day');
-
-      // Historical data
       const historicalEndDate = today.isBefore(endDate) ? today : endDate;
-      let historicalData;
-      if (parkId === 0) {
-        const parkHistoricalData = await Promise.all(
-          parks.map((park) => getAggregatedCrowdDataForPark(park.id, startDate.toDate(), historicalEndDate.toDate())),
-        );
-        historicalData = parkHistoricalData.flatMap((parkData, idx) =>
-          parkData.data.map((item: { date: any; crowdLevel: number }) => ({
-            date: item.date,
-            crowdLevel: item.crowdLevel,
-            parkId: parks[idx].id,
-          })),
-        );
-      } else {
-        const historicalResponse = await getAggregatedCrowdDataForPark(parkId, startDate.toDate(), historicalEndDate.toDate());
-        historicalData = historicalResponse.data;
-      }
 
-      // Future predictions
-      const predictionStartDate = today.clone().add(1, 'day').startOf('day');
-      const daysToPredict = predictionEndDate.diff(predictionStartDate, 'days') + 1;
-      let predictedData;
-      if (parkId === 0) {
-        const allParksPredictions = await Promise.all(parks.map((park) => predictCrowdLevels(park.id, daysToPredict)));
-        predictedData = allParksPredictions.flatMap((prediction, idx) =>
-          prediction.data.map((item: { date: any; predictedCrowdLevel: number }) => ({
-            date: item.date,
-            predictedCrowdLevel: item.predictedCrowdLevel,
-            parkId: parks[idx].id,
-          })),
-        );
-      } else {
-        const predictedResponse = await predictCrowdLevels(parkId, daysToPredict);
-        predictedData = predictedResponse.data;
-      }
+      // Fetch park data
+      const fetchParkData = async (park: ParkResponse) => {
+        const [historicalResponse, predictedResponse, pastPredictedResponse] = await Promise.all([
+          getAggregatedCrowdDataForPark(park.id, startDate.toDate(), historicalEndDate.toDate()),
+          predictCrowdLevels(park.id, 30),
+          getPredictedCrowdLevelsForPark(
+            park.id,
+            Math.max(uniqBy(sortedData, (item) => moment.tz(item.date, 'Asia/Singapore').format('YYYY-MM-DD')).length - 81, 0),
+          ),
+        ]);
 
-      // Past predictions
-      const distinctDays = uniqBy(sortedData, (item) => moment.tz(item.date, 'Asia/Singapore').format('YYYY-MM-DD')).length;
-      const pastDaysToPredict = Math.max(distinctDays - 71, 0);
-      let pastPredictedData;
-      if (parkId === 0) {
-        const allParksPastPredictions = await Promise.all(parks.map((park) => getPredictedCrowdLevelsForPark(park.id, pastDaysToPredict)));
-        pastPredictedData = allParksPastPredictions.flatMap((prediction, idx) =>
-          prediction.data.map((item: { date: any; predictedCrowdLevel: number }) => ({
-            date: item.date,
-            predictedCrowdLevel: item.predictedCrowdLevel,
-            parkId: parks[idx].id,
-          })),
-        );
-      } else {
-        const pastPredictedResponse = await getPredictedCrowdLevelsForPark(parkId, pastDaysToPredict);
-        pastPredictedData = pastPredictedResponse.data;
-      }
-
-      // Normalize and combine data
-      const normalizeDate = (date: string) => moment.tz(date, 'Asia/Singapore').format('YYYY-MM-DD');
-
-      const normalizedData = {
-        historical: historicalData.map((item: { date: string }) => ({
-          ...item,
-          date: normalizeDate(item.date),
-        })),
-        predicted: predictedData.map((item: { date: string }) => ({
-          ...item,
-          date: normalizeDate(item.date),
-        })),
-        pastPredicted: pastPredictedData.map((item: { date: string; predictedCrowdLevel: number }) => ({
-          date: normalizeDate(item.date),
-          predictedCrowdLevel: item.predictedCrowdLevel,
-        })),
+        return {
+          parkId: park.id,
+          historical: historicalResponse.data,
+          predicted: predictedResponse.data,
+          pastPredicted: pastPredictedResponse.data,
+        };
       };
 
-      console.log(normalizedData);
+      const parksToProcess = parkId === 0 ? parks : parks.filter((park) => park.id === parkId);
+      const parksData = await Promise.all(parksToProcess.map(fetchParkData));
 
-      const allDates = new Set([
-        ...normalizedData.historical.map((item: { date: string }) => item.date),
-        ...normalizedData.predicted.map((item: { date: string }) => item.date),
-        ...normalizedData.pastPredicted.map((item: { date: string }) => item.date),
-      ]);
+      // Data normalization and combination
+      const normalizeDate = (date: string) => moment.tz(date, 'Asia/Singapore').format('YYYY-MM-DD');
 
-      if (parkId === 0) {
-        const combinedData = Array.from(allDates).flatMap((date: string) => {
-          const historicalForDate = normalizedData.historical.filter((item: { date: string }) => item.date === date);
-          const predictedForDate = normalizedData.predicted.filter((item: { date: string }) => item.date === date);
-          const pastPredictedForDate = normalizedData.pastPredicted.filter((item: { date: string }) => item.date === date);
+      const normalizedData = parksData.map((parkData) => ({
+        parkId: parkData.parkId,
+        historical: parkData.historical.map((item: any) => ({
+          ...item,
+          date: normalizeDate(item.date),
+        })),
+        predicted: parkData.predicted.map((item: any) => ({
+          ...item,
+          date: normalizeDate(item.date),
+        })),
+        pastPredicted: parkData.pastPredicted.map((item: any) => ({
+          ...item,
+          date: normalizeDate(item.date),
+        })),
+      }));
 
-          return parks.map((park) => {
-            const historical = historicalForDate.find((item: any) => item.parkId === park.id);
-            const predicted = predictedForDate.find((item: any) => item.parkId === park.id);
-            const pastPredicted = pastPredictedForDate.find((item: any) => item.parkId === park.id);
+      const allDates = new Set(
+        normalizedData.flatMap((parkData) => [
+          ...parkData.historical.map((item: any) => item.date),
+          ...parkData.predicted.map((item: any) => item.date),
+          ...parkData.pastPredicted.map((item: any) => item.date),
+        ]),
+      );
+
+      // Final data combination
+      const finalData = Array.from(allDates)
+        .flatMap((date) =>
+          parksToProcess.map((park) => {
+            const parkData = normalizedData.find((data) => data.parkId === park.id);
+            const historical = parkData?.historical.find((item: any) => item.date === date);
+            const predicted = parkData?.predicted.find((item: any) => item.date === date);
+            const pastPredicted = parkData?.pastPredicted.find((item: any) => item.date === date);
 
             return {
               date,
@@ -160,28 +147,11 @@ export const useFetchCrowdDataForCrowdAlerts = ({ parkId, parks }: UseFetchCrowd
               crowdLevel: historical?.crowdLevel ?? null,
               predictedCrowdLevel: pastPredicted?.predictedCrowdLevel ?? predicted?.predictedCrowdLevel ?? null,
             };
-          });
-        });
-        combinedData.sort((a, b) => moment.tz(a.date, 'Asia/Singapore').valueOf() - moment.tz(b.date, 'Asia/Singapore').valueOf());
-        console.log(combinedData);
-        setCrowdData(combinedData);
-      } else {
-        const combinedData = Array.from(allDates).map((date: string) => {
-          const historical = normalizedData.historical.find((item: { date: string }) => item.date === date);
-          const predicted = normalizedData.predicted.find((item: { date: string }) => item.date === date);
-          const pastPredicted = normalizedData.pastPredicted.find((item: { date: string }) => item.date === date);
+          }),
+        )
+        .sort((a, b) => moment.tz(a.date, 'Asia/Singapore').valueOf() - moment.tz(b.date, 'Asia/Singapore').valueOf());
 
-          return {
-            date,
-            parkId: parkId,
-            crowdLevel: historical?.crowdLevel ?? null,
-            predictedCrowdLevel: pastPredicted?.predictedCrowdLevel ?? predicted?.predictedCrowdLevel ?? null,
-          };
-        });
-
-        const finalData = combinedData.sort((a, b) => moment(a.date).diff(moment(b.date)));
-        setCrowdData(finalData);
-      }
+      setCrowdData(finalData);
     } catch (error) {
       console.error('Error fetching crowd data:', error);
       setError('Failed to fetch crowd data');

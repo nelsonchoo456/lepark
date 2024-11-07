@@ -71,7 +71,7 @@ class StaffService {
     const parkList = await ParkDao.getAllParks();
     return staffList.map((staff) => ({
       ...staff,
-      park: parkList.find((park) => park.id === staff.parkId),
+      park: parkList.find((park) => Number(park.id) === staff.parkId),
     }));
   }
 
@@ -81,7 +81,7 @@ class StaffService {
       const parkList = await ParkDao.getAllParks();
       return staffList.map((staff) => ({
         ...staff,
-        park: parkList.find((park) => park.id === staff.parkId),
+        park: parkList.find((park) => Number(park.id) === staff.parkId),
       }));
     } catch (error) {
       throw new Error(`Unable to fetch staff list: ${error.message}`);
@@ -172,7 +172,7 @@ class StaffService {
     }
   }
 
-  async login(data: LoginSchemaType) {
+  public async login(data: LoginSchemaType): Promise<{ requiresPasswordReset: boolean; token?: string; user: Omit<Staff, 'password'> }> {
     try {
       LoginSchema.parse(data);
 
@@ -201,9 +201,9 @@ class StaffService {
         expiresIn: '4h',
       });
 
-      const { password, ...user } = staff;
+      const { password, ...userWithoutPassword } = staff;
 
-      return { requiresPasswordReset: false, token, user };
+      return { requiresPasswordReset: false, token, user: userWithoutPassword };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -213,7 +213,7 @@ class StaffService {
     }
   }
 
-  async requestPasswordReset(data: PasswordResetRequestSchemaType) {
+  public async requestPasswordReset(data: PasswordResetRequestSchemaType): Promise<void> {
     try {
       PasswordResetRequestSchema.parse(data);
 
@@ -241,7 +241,7 @@ class StaffService {
     }
   }
 
-  async changePassword(data: PasswordChangeSchemaType) {
+  public async changePassword(data: PasswordChangeSchemaType): Promise<{ message: string }> {
     try {
       PasswordChangeSchema.parse(data);
       const { newPassword, currentPassword, staffId } = data;
@@ -276,7 +276,7 @@ class StaffService {
     }
   }
 
-  async resetPassword(data: PasswordResetSchemaType) {
+  public async resetPassword(data: PasswordResetSchemaType): Promise<{ message: string }> {
     try {
       PasswordResetSchema.parse(data);
 

@@ -63,7 +63,7 @@ class SequestrationHistoryService {
   }
 
   public async getSequestrationHistoryByAreaId(areaId: string): Promise<SequestrationHistory[]> {
-    return await SequestrationHistoryDao.getSequestrationHistoryByAreaId(areaId);
+    return SequestrationHistoryDao.getSequestrationHistoryByAreaId(areaId);
   }
 
   public async getSequestrationHistoryByAreaIdAndTimeFrame(
@@ -78,10 +78,10 @@ class SequestrationHistoryService {
       throw new Error('Invalid date format');
     }
 
-    return await SequestrationHistoryDao.getSequestrationHistoryByAreaIdAndTimeFrame(areaId, parsedStartDate, parsedEndDate);
+    return SequestrationHistoryDao.getSequestrationHistoryByAreaIdAndTimeFrame(areaId, parsedStartDate, parsedEndDate);
   }
 
-  public async generateSequestrationHistory() {
+  public async generateSequestrationHistory(): Promise<void> {
     const decarbonizationAreas = await DecarbonizationAreaService.getAllDecarbonizationAreas();
 
     for (const area of decarbonizationAreas) {
@@ -89,7 +89,7 @@ class SequestrationHistoryService {
     }
   }
 
-  public async generateSequestrationHistoryForArea(decarbonizationAreaId: string) {
+  public async generateSequestrationHistoryForArea(decarbonizationAreaId: string): Promise<void> {
     const occurrences = await DecarbonizationAreaService.getOccurrencesWithinDecarbonizationArea(decarbonizationAreaId);
     let totalSequestration = 0;
 
@@ -109,17 +109,18 @@ class SequestrationHistoryService {
     await SequestrationHistoryDao.deleteSequestrationHistoryForDate(decarbonizationAreaId, new Date());
     await this.createSequestrationHistory(sequestrationHistoryData);
   }
-public async getTotalSequestrationForParkAndDate(parkId: number, date: string): Promise<number> {
-  const parsedDate = new Date(date);
-  if (isNaN(parsedDate.getTime())) {
-    throw new Error('Invalid date format');
-  }
 
-  console.log('Fetching total sequestration for park:', parkId, 'and date:', parsedDate);
-  const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndDate(parkId, parsedDate);
-  console.log('Total sequestration result:', result);
-  return result;
-}
+  public async getTotalSequestrationForParkAndDate(parkId: number, date: string): Promise<number> {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      throw new Error('Invalid date format');
+    }
+
+    console.log('Fetching total sequestration for park:', parkId, 'and date:', parsedDate);
+    const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndDate(parkId, parsedDate);
+    console.log('Total sequestration result:', result);
+    return result;
+  }
 
   // Utility function to format date fields
   private dateFormatter(data: any) {
@@ -135,18 +136,15 @@ public async getTotalSequestrationForParkAndDate(parkId: number, date: string): 
   }
 
   public async getTotalSequestrationForParkAndYear(parkId: number, year: string): Promise<number> {
-  const parsedYear = parseInt(year, 10);
-  if (isNaN(parsedYear) || parsedYear < 1900 || parsedYear > 2100) {
-    throw new Error('Invalid year format');
+    const parsedYear = parseInt(year, 10);
+    if (isNaN(parsedYear) || parsedYear < 1900 || parsedYear > 2100) {
+      throw new Error('Invalid year format');
+    }
+
+    const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndYear(parkId, parsedYear);
+
+    return result;
   }
-
-
-  const result = await SequestrationHistoryDao.getTotalSequestrationForParkAndYear(parkId, parsedYear);
-
-  return result;
-}
-
-
 }
 
 export default new SequestrationHistoryService();

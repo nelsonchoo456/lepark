@@ -32,6 +32,10 @@ export const useFetchCrowdData = ({ parkId, parks }: UseFetchCrowdDataProps) => 
     setError(null);
 
     try {
+      // Pre-calculate timezone offset once
+      const sgOffset = moment.tz.zone('Asia/Singapore')?.utcOffset(Date.now()) ?? 0;
+
+      // Fetch sensor readings
       let allData;
       if (parkId === 0) {
         const allParksData = await Promise.all(
@@ -47,9 +51,20 @@ export const useFetchCrowdData = ({ parkId, parks }: UseFetchCrowdDataProps) => 
         return;
       }
 
+      // Optimized date comparison
+      const compareDates = (a: any, b: any) => {
+        const dateA = new Date(a.date).getTime() + sgOffset * 60 * 1000;
+        const dateB = new Date(b.date).getTime() + sgOffset * 60 * 1000;
+        return dateA - dateB;
+      };
+
+      // Filter and sort in one pass
       const sortedData = allData.data
-        .filter((item: any) => item && item.date)
-        .sort((a: any, b: any) => moment.tz(a.date, 'Asia/Singapore').valueOf() - moment.tz(b.date, 'Asia/Singapore').valueOf());
+        .reduce((acc: any[], item: any) => {
+          if (item?.date) acc.push(item);
+          return acc;
+        }, [])
+        .sort(compareDates);
 
       if (sortedData.length === 0) {
         setCrowdData([]);
@@ -60,74 +75,67 @@ export const useFetchCrowdData = ({ parkId, parks }: UseFetchCrowdDataProps) => 
       const endDate = moment.tz(sortedData[sortedData.length - 1].date, 'Asia/Singapore').endOf('day');
       const today = moment().tz('Asia/Singapore').endOf('day');
       const predictionEndDate = today.clone().add(1, 'month').endOf('day');
-
-      // Historical data
       const historicalEndDate = today.isBefore(endDate) ? today : endDate;
-      let historicalData;
-      if (parkId === 0) {
-        const parkHistoricalData = await Promise.all(
-          parks.map((park) => getAggregatedCrowdDataForPark(park.id, startDate.toDate(), historicalEndDate.toDate())),
-        );
-        historicalData = parkHistoricalData[0].data.map((item: { date: any }, index: string | number) => ({
-          date: item.date,
-          crowdLevel: sumBy(parkHistoricalData, (parkData) => parkData.data[index].crowdLevel),
-        }));
-      } else {
-        const historicalResponse = await getAggregatedCrowdDataForPark(parkId, startDate.toDate(), historicalEndDate.toDate());
-        historicalData = historicalResponse.data;
-      }
-
-      // Future predictions
-      const predictionStartDate = today.clone().add(1, 'day').startOf('day');
-      const daysToPredict = predictionEndDate.diff(predictionStartDate, 'days') + 1;
-      let predictedData;
-      if (parkId === 0) {
-        const allParksPredictions = await Promise.all(parks.map((park) => predictCrowdLevels(park.id, daysToPredict)));
-        predictedData = allParksPredictions[0].data.map((item: { date: any }, index: string | number) => ({
-          date: item.date,
-          predictedCrowdLevel: sumBy(allParksPredictions, (prediction) => prediction.data[index].predictedCrowdLevel),
-        }));
-      } else {
-        const predictedResponse = await predictCrowdLevels(parkId, daysToPredict);
-        predictedData = predictedResponse.data;
-      }
-
-      // Past predictions
       const distinctDays = uniqBy(sortedData, (item) => moment.tz(item.date, 'Asia/Singapore').format('YYYY-MM-DD')).length;
       const pastDaysToPredict = Math.max(distinctDays - 71, 0);
-      let pastPredictedData;
-      if (parkId === 0) {
-        const allParksPastPredictions = await Promise.all(
-          parks.map((park) => getPredictedCrowdLevelsForPark(park.id, pastDaysToPredict)),
-        );
-        pastPredictedData = allParksPastPredictions[0].data.map((item: { date: any }, index: string | number) => ({
-          date: item.date,
-          predictedCrowdLevel: sumBy(allParksPastPredictions, (prediction) => prediction.data[index].predictedCrowdLevel),
-        }));
-      } else {
-        const pastPredictedResponse = await getPredictedCrowdLevelsForPark(parkId, pastDaysToPredict);
-        pastPredictedData = pastPredictedResponse.data;
-      }
 
-      // Normalize and combine data
-      const normalizeDate = (date: string) => moment.tz(date, 'Asia/Singapore').format('YYYY-MM-DD');
+      // Fetch park data with parallel promises
+      const fetchParkData = async (park: ParkResponse) => {
+        const [historicalResponse, predictedResponse, pastPredictedResponse] = await Promise.all([
+          getAggregatedCrowdDataForPark(park.id, startDate.toDate(), historicalEndDate.toDate()),
+          predictCrowdLevels(park.id, 30),
+          getPredictedCrowdLevelsForPark(park.id, pastDaysToPredict),
+        ]);
 
-      const normalizedData = {
-        historical: historicalData.map((item: { date: string }) => ({
-          ...item,
-          date: normalizeDate(item.date),
-        })),
-        predicted: predictedData.map((item: { date: string }) => ({
-          ...item,
-          date: normalizeDate(item.date),
-        })),
-        pastPredicted: pastPredictedData.map((item: { date: string; predictedCrowdLevel: number }) => ({
-          date: normalizeDate(item.date),
-          predictedCrowdLevel: item.predictedCrowdLevel,
-        })),
+        return {
+          parkId: park.id,
+          historical: historicalResponse.data,
+          predicted: predictedResponse.data,
+          pastPredicted: pastPredictedResponse.data,
+        };
       };
 
-      console.log(normalizedData);
+      const parksToProcess = parkId === 0 ? parks : parks.filter((park) => park.id === parkId);
+      const parksData = await Promise.all(parksToProcess.map(fetchParkData));
+
+      // Data normalization
+      const normalizeDate = (date: string) => moment.tz(date, 'Asia/Singapore').format('YYYY-MM-DD');
+
+      // Combine data differently based on parkId
+      let normalizedData;
+      if (parkId === 0) {
+        // Sum up data from all parks
+        normalizedData = {
+          historical: parksData[0].historical.map((item: any, index: number) => ({
+            date: normalizeDate(item.date),
+            crowdLevel: sumBy(parksData, (parkData) => parkData.historical[index].crowdLevel),
+          })),
+          predicted: parksData[0].predicted.map((item: any, index: number) => ({
+            date: normalizeDate(item.date),
+            predictedCrowdLevel: sumBy(parksData, (parkData) => parkData.predicted[index].predictedCrowdLevel),
+          })),
+          pastPredicted: parksData[0].pastPredicted.map((item: any, index: number) => ({
+            date: normalizeDate(item.date),
+            predictedCrowdLevel: sumBy(parksData, (parkData) => parkData.pastPredicted[index].predictedCrowdLevel),
+          })),
+        };
+      } else {
+        // Single park data
+        normalizedData = {
+          historical: parksData[0].historical.map((item: any) => ({
+            date: normalizeDate(item.date),
+            crowdLevel: item.crowdLevel,
+          })),
+          predicted: parksData[0].predicted.map((item: any) => ({
+            date: normalizeDate(item.date),
+            predictedCrowdLevel: item.predictedCrowdLevel,
+          })),
+          pastPredicted: parksData[0].pastPredicted.map((item: any) => ({
+            date: normalizeDate(item.date),
+            predictedCrowdLevel: item.predictedCrowdLevel,
+          })),
+        };
+      }
 
       const allDates = new Set([
         ...normalizedData.historical.map((item: { date: string }) => item.date),

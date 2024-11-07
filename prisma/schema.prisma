@@ -40,7 +40,7 @@ model Staff {
   submittedPlantTasks       PlantTask[]       @relation("submittingStaff")
   assignedMaintenanceTasks  MaintenanceTask[] @relation("assignedStaff")
   submittedMaintenanceTasks MaintenanceTask[] @relation("submittingStaff")
-  Feedback                  Feedback[]
+  resolvedFeedback         Feedback[] // feedback is plural
 }
 
 enum ConservationStatusEnum {
@@ -96,7 +96,7 @@ model Species {
   isToxic               Boolean
   isFragrant            Boolean
   occurrences           Occurrence[]
-  favoritedBy           Visitor[]              @relation("VisitorfavoriteSpecies")
+  favoritedBy           Visitor[]              @relation("visitorFavoriteSpecies")
 }
 
 enum DecarbonizationTypeEnum {
@@ -198,6 +198,7 @@ model Attraction {
   closingHours             DateTime[]
   images                   String[]
   status                   AttractionStatusEnum
+  maxCapacity              Int
   ticketingPolicy          String
   lat                      Float?
   lng                      Float?
@@ -360,19 +361,6 @@ model EventTicketTransaction {
   eventTickets EventTicket[]
 }
 
-// model DecarbonizationArea {
-//   id                  String   @id @default(uuid()) @db.Uuid
-//   carbonSeqValue      Float
-//   startDate           DateTime
-//   endDate             DateTime
-//   carbonSeqFactor     Float
-//   dailyCarbonSeqValye Float
-//   totalBiomass        Float
-//   occurrenceId         String
-
-//   occurrences Occurrence[]
-// }
-
 model Visitor {
   id                           String                        @id @default(uuid()) @db.Uuid
   firstName                    String
@@ -380,16 +368,16 @@ model Visitor {
   email                        String                        @unique
   password                     String
   contactNumber                String
-  favoriteSpecies              Species[]                     @relation("VisitorfavoriteSpecies")
+  favoriteSpecies              Species[]                     @relation("visitorFavoriteSpecies")
   isVerified                   Boolean
   resetToken                   String?
   resetTokenUsed               Boolean                       @default(false)
   attractionTicketTransactions AttractionTicketTransaction[]
   eventTicketTransactions      EventTicketTransaction[]
-  promotionsRedeemed           Promotion[]                   @relation("VisitorPromotionsRedeemed")
+  promotionsRedeemed           Promotion[]                   @relation("visitorPromotionsRedeemed")
 
   bookings Booking[]
-  Feedback Feedback[]
+  feedback Feedback[] // feedback is plural
 }
 
 enum HubStatusEnum {
@@ -409,7 +397,7 @@ model Hub {
   acquisitionDate          DateTime
   nextMaintenanceDate      DateTime?
   nextMaintenanceDates     DateTime[]
-  dataTransmissionInterval Int? // might want to initialize this in pi during verifyInitialization
+  dataTransmissionInterval Int?
   supplier                 String
   supplierContactNumber    String
   ipAddress                String?
@@ -425,29 +413,13 @@ model Hub {
   facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   lastDataUpdateDate       DateTime?
 
-  maintenanceHistory MaintenanceHistory[]
   sensors            Sensor[]
   maintenanceTasks   MaintenanceTask[]
-  predictedWaterSchedules PredictedWaterSchedule[]
 
   rfModel            RfModel?      
   rfModelId          String?       @db.Uuid
 
   @@index([zoneId])
-}
-
-model PredictedWaterSchedule {
-  id              String   @id @default(uuid()) @db.Uuid
-  hubId           String   @db.Uuid
-  scheduledDate   DateTime
-  waterAmount     Float?    // in liters or milliliters
-  confidence      Float    // a value between 0 and 1 indicating prediction confidence
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  hub             Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
-
-  @@index([hubId, scheduledDate])
 }
 
 enum SensorTypeEnum {
@@ -471,7 +443,6 @@ enum SensorUnitEnum {
   VOLUMETRIC_WATER_CONTENT
   LUX
   PAX
-  // Add other units as needed
 }
 
 model Sensor {
@@ -496,7 +467,6 @@ model Sensor {
   hub                   Hub?                 @relation(fields: [hubId], references: [id])
   facilityId            String?              @db.Uuid
   facility              Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  maintenanceHistory    MaintenanceHistory[]
   sensorReadings        SensorReading[]
   maintenanceTasks      MaintenanceTask[]
 }
@@ -562,7 +532,7 @@ model ParkAsset {
   description           String?
   parkAssetStatus       ParkAssetStatusEnum
   acquisitionDate       DateTime
-  nextMaintenanceDate   DateTime? // Keep this field
+  nextMaintenanceDate   DateTime?
   nextMaintenanceDates  DateTime[]
   supplier              String
   supplierContactNumber String
@@ -571,21 +541,7 @@ model ParkAsset {
   remarks               String?
   facilityId            String                 @db.Uuid
   facility              Facility               @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  maintenanceHistory    MaintenanceHistory[]
   maintenanceTasks      MaintenanceTask[]
-}
-
-model MaintenanceHistory {
-  id              String   @id @default(uuid()) @db.Uuid
-  hubId           String?  @map("hubId") @db.Uuid
-  sensorId        String?  @map("sensorId") @db.Uuid
-  assetId         String?  @map("assetId") @db.Uuid
-  maintenanceDate DateTime
-  description     String
-
-  hub       Hub?       @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  sensor    Sensor?    @relation(fields: [sensorId], references: [id], onDelete: Cascade)
-  parkAsset ParkAsset? @relation(fields: [assetId], references: [id], onDelete: Cascade)
 }
 
 model Facility {
@@ -599,8 +555,6 @@ model Facility {
   reservationPolicy   String
   rulesAndRegulations String
   images              String[]
-  lastMaintenanceDate DateTime
-  // nextMaintenanceDate   DateTime
   openingHours        DateTime[]
   closingHours        DateTime[]
   facilityStatus      FacilityStatusEnum
@@ -784,10 +738,10 @@ model Feedback {
   parkId           Int
   needResponse     Boolean
 
-  staffId   String? @db.Uuid
-  staff     Staff?  @relation(fields: [staffId], references: [id])
-  visitorId String  @db.Uuid
-  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  staffId            String?              @db.Uuid
+  resolvedStaff      Staff?                @relation(fields: [staffId], references: [id])
+  visitorId          String               @db.Uuid
+  visitor            Visitor              @relation(fields: [visitorId], references: [id], onDelete: Cascade)
 }
 
 enum FeedbackCategoryEnum {
@@ -834,7 +788,7 @@ model Promotion {
   terms         String[]
   maximumUsage  Int?
   minimumAmount Float?
-  visitors      Visitor[]       @relation("VisitorPromotionsRedeemed")
+  visitors      Visitor[]       @relation("visitorPromotionsRedeemed")
 }
 
 enum FAQStatusEnum {

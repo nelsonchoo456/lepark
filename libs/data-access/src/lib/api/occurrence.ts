@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { OccurrenceData, OccurrenceResponse, OccurrenceUpdateData } from '../types/occurrence';
 import client from './client';
-import { ActivityLogResponse } from '../types/activitylog';
+import { ActivityLogResponse } from '../types/activityLog';
 
 const URL = '/occurrences';
 const URL_SPECIES = '/species';

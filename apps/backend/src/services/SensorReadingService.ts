@@ -320,7 +320,7 @@ class SensorReadingService {
     return SensorReadingDao.getLatestSensorReadingByZoneIdAndSensorType(zoneId, sensorType);
   }
 
-  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
+  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<number> {
     return SensorReadingDao.getActiveZonePlantSensorCount(zoneId, hoursAgo);
   }
 
@@ -931,6 +931,60 @@ class SensorReadingService {
       date: new Date(lastHistoricalDate.getTime() + (index + 1) * 24 * 60 * 60 * 1000), // Add days
       predictedCrowdLevel: prediction,
     }));
+  }
+
+  // Get the average crowd level reading from each camera sensor in the park for the past hour
+  public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<Array<{
+    sensorId: string;
+    zoneId: number;
+    lat: number;
+    long: number;
+    averageValue: number;
+    readingCount: number;
+  }>> {
+    try {
+      const zones = await ZoneDao.getZonesByParkId(parkId);
+      const sensorAverages = [];
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  
+      for (const zone of zones) {
+        // Get all camera sensors in the zone
+        const sensors = await SensorDao.getSensorsByZoneIdAndType(zone.id, SensorTypeEnum.CAMERA);
+        
+        for (const sensor of sensors) {
+          // Get all readings from the past hour for this sensor
+          const readings = await SensorReadingDao.getSensorReadingsByDateRange(
+            sensor.id,
+            oneHourAgo,
+            new Date()
+          );
+          
+          // Only include sensors that have readings in the last hour
+          if (readings.length > 0) {
+            const sum = readings.reduce((acc, reading) => acc + reading.value, 0);
+            const average = Number((sum / readings.length).toFixed(2));
+            
+            sensorAverages.push({
+              sensorId: sensor.id,
+              zoneId: zone.id,
+              lat: sensor.lat,
+              long: sensor.long,
+              averageValue: average,
+              readingCount: readings.length
+            });
+          }
+        }
+      }
+
+      if (sensorAverages.length === 0) {
+        throw new Error('No camera readings available in the last hour');
+      }
+  
+      return sensorAverages;
+    } catch (error) {
+      console.error('Error getting past hour crowd data by sensors:', error);
+      throw error;
+    }
   }
 }
 

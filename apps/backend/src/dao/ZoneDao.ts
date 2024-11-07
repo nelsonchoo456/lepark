@@ -4,7 +4,7 @@ import ParkDao from "./ParkDao";
 const prisma = new PrismaClient();
 
 class ZoneDao {
-  async createZone(data: ZoneCreateData): Promise<any> {
+  public async createZone(data: ZoneCreateData): Promise<ZoneResponseData> {
     await this.initZonesDB();
     const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
     const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19).replace('T', ' ')}'`);
@@ -27,7 +27,7 @@ class ZoneDao {
     return zone[0];
   }
 
-  async initZonesDB(): Promise<void> {
+  public async initZonesDB(): Promise<void> {
     await ParkDao.initParksDB();
     
     await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`; // puyts in the POSTGIS extension to postgres
@@ -73,7 +73,7 @@ class ZoneDao {
     `;
   }
 
-  async getAllZones(): Promise<any[]> {
+  public async getAllZones(): Promise<ZoneResponseData[]> {
     await this.initZonesDB();
 
     const zones = await prisma.$queryRaw`
@@ -105,7 +105,7 @@ class ZoneDao {
     }
   }
 
-  async getZoneById(id: number): Promise<ZoneResponseData> {
+  public async getZoneById(id: number): Promise<ZoneResponseData> {
     await this.initZonesDB();
 
     const zone = await prisma.$queryRaw`
@@ -139,7 +139,7 @@ class ZoneDao {
     }
   }
 
-  async getZonesByParkId(parkId: number): Promise<ZoneResponseData[]> {
+  public async getZonesByParkId(parkId: number): Promise<ZoneResponseData[]> {
     await this.initZonesDB();
 
     const zones = await prisma.$queryRaw`
@@ -169,7 +169,7 @@ class ZoneDao {
     }
   }
 
-  async deleteZoneById(id: number): Promise<void> {
+  public async deleteZoneById(id: number): Promise<void> {
     await this.initZonesDB();
     
     const deletedZone = await prisma.$executeRaw`
@@ -182,7 +182,7 @@ class ZoneDao {
     }
   }
 
-  async updateZone(id: number, data: Partial<ZoneUpdateData>): Promise<ZoneResponseData> {
+  public async updateZone(id: number, data: Partial<ZoneUpdateData>): Promise<ZoneResponseData> {
     await this.initZonesDB();
 
     const updates: string[] = [];

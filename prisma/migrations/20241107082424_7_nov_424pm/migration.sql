@@ -226,6 +226,7 @@ CREATE TABLE "Attraction" (
     "closingHours" TIMESTAMP(3)[],
     "images" TEXT[],
     "status" "AttractionStatusEnum" NOT NULL,
+    "maxCapacity" INTEGER NOT NULL,
     "ticketingPolicy" TEXT NOT NULL,
     "lat" DOUBLE PRECISION,
     "lng" DOUBLE PRECISION,
@@ -372,19 +373,6 @@ CREATE TABLE "Hub" (
 );
 
 -- CreateTable
-CREATE TABLE "PredictedWaterSchedule" (
-    "id" UUID NOT NULL,
-    "hubId" UUID NOT NULL,
-    "scheduledDate" TIMESTAMP(3) NOT NULL,
-    "waterAmount" DOUBLE PRECISION,
-    "confidence" DOUBLE PRECISION NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "PredictedWaterSchedule_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Sensor" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
@@ -465,18 +453,6 @@ CREATE TABLE "ParkAsset" (
 );
 
 -- CreateTable
-CREATE TABLE "MaintenanceHistory" (
-    "id" UUID NOT NULL,
-    "hubId" UUID,
-    "sensorId" UUID,
-    "assetId" UUID,
-    "maintenanceDate" TIMESTAMP(3) NOT NULL,
-    "description" TEXT NOT NULL,
-
-    CONSTRAINT "MaintenanceHistory_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Facility" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
@@ -488,7 +464,6 @@ CREATE TABLE "Facility" (
     "reservationPolicy" TEXT NOT NULL,
     "rulesAndRegulations" TEXT NOT NULL,
     "images" TEXT[],
-    "lastMaintenanceDate" TIMESTAMP(3) NOT NULL,
     "openingHours" TIMESTAMP(3)[],
     "closingHours" TIMESTAMP(3)[],
     "facilityStatus" "FacilityStatusEnum" NOT NULL,
@@ -655,13 +630,13 @@ CREATE TABLE "Booking" (
 );
 
 -- CreateTable
-CREATE TABLE "_VisitorfavoriteSpecies" (
+CREATE TABLE "_visitorFavoriteSpecies" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "_VisitorPromotionsRedeemed" (
+CREATE TABLE "_visitorPromotionsRedeemed" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
 );
@@ -694,9 +669,6 @@ CREATE UNIQUE INDEX "Hub_serialNumber_key" ON "Hub"("serialNumber");
 CREATE INDEX "Hub_zoneId_idx" ON "Hub"("zoneId");
 
 -- CreateIndex
-CREATE INDEX "PredictedWaterSchedule_hubId_scheduledDate_idx" ON "PredictedWaterSchedule"("hubId", "scheduledDate");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Sensor_identifierNumber_key" ON "Sensor"("identifierNumber");
 
 -- CreateIndex
@@ -718,16 +690,16 @@ CREATE INDEX "Facility_parkId_idx" ON "Facility"("parkId");
 CREATE INDEX "FAQ_parkId_idx" ON "FAQ"("parkId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_VisitorfavoriteSpecies_AB_unique" ON "_VisitorfavoriteSpecies"("A", "B");
+CREATE UNIQUE INDEX "_visitorFavoriteSpecies_AB_unique" ON "_visitorFavoriteSpecies"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_VisitorfavoriteSpecies_B_index" ON "_VisitorfavoriteSpecies"("B");
+CREATE INDEX "_visitorFavoriteSpecies_B_index" ON "_visitorFavoriteSpecies"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_VisitorPromotionsRedeemed_AB_unique" ON "_VisitorPromotionsRedeemed"("A", "B");
+CREATE UNIQUE INDEX "_visitorPromotionsRedeemed_AB_unique" ON "_visitorPromotionsRedeemed"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_VisitorPromotionsRedeemed_B_index" ON "_VisitorPromotionsRedeemed"("B");
+CREATE INDEX "_visitorPromotionsRedeemed_B_index" ON "_visitorPromotionsRedeemed"("B");
 
 -- AddForeignKey
 ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_speciesId_fkey" FOREIGN KEY ("speciesId") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -763,9 +735,6 @@ ALTER TABLE "EventTicketTransaction" ADD CONSTRAINT "EventTicketTransaction_visi
 ALTER TABLE "Hub" ADD CONSTRAINT "Hub_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PredictedWaterSchedule" ADD CONSTRAINT "PredictedWaterSchedule_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Sensor" ADD CONSTRAINT "Sensor_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -779,15 +748,6 @@ ALTER TABLE "RfModel" ADD CONSTRAINT "RfModel_hubId_fkey" FOREIGN KEY ("hubId") 
 
 -- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_hubId_fkey" FOREIGN KEY ("hubId") REFERENCES "Hub"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_sensorId_fkey" FOREIGN KEY ("sensorId") REFERENCES "Sensor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "MaintenanceHistory" ADD CONSTRAINT "MaintenanceHistory_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "ParkAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -832,13 +792,13 @@ ALTER TABLE "Booking" ADD CONSTRAINT "Booking_facilityId_fkey" FOREIGN KEY ("fac
 ALTER TABLE "Booking" ADD CONSTRAINT "Booking_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_visitorFavoriteSpecies" ADD CONSTRAINT "_visitorFavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_VisitorfavoriteSpecies" ADD CONSTRAINT "_VisitorfavoriteSpecies_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_visitorFavoriteSpecies" ADD CONSTRAINT "_visitorFavoriteSpecies_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_VisitorPromotionsRedeemed" ADD CONSTRAINT "_VisitorPromotionsRedeemed_A_fkey" FOREIGN KEY ("A") REFERENCES "Promotion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_visitorPromotionsRedeemed" ADD CONSTRAINT "_visitorPromotionsRedeemed_A_fkey" FOREIGN KEY ("A") REFERENCES "Promotion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_VisitorPromotionsRedeemed" ADD CONSTRAINT "_VisitorPromotionsRedeemed_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_visitorPromotionsRedeemed" ADD CONSTRAINT "_visitorPromotionsRedeemed_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -3,11 +3,13 @@ import { PrismaClient, Prisma, MaintenanceTask, Staff, MaintenanceTaskStatusEnum
 const prisma = new PrismaClient();
 
 class MaintenanceTaskDao {
-  async createMaintenanceTask(data: Prisma.MaintenanceTaskCreateInput): Promise<MaintenanceTask> {
+  public async createMaintenanceTask(
+    data: Prisma.MaintenanceTaskCreateInput
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.create({ data });
   }
 
-  async getAllMaintenanceTasks(): Promise<MaintenanceTask[]> {
+  public async getAllMaintenanceTasks(): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       include: {
         assignedStaff: true,
@@ -20,7 +22,9 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getMaintenanceTaskById(id: string): Promise<MaintenanceTask | null> {
+  public async getMaintenanceTaskById(
+    id: string
+  ): Promise<MaintenanceTask | null> {
     return prisma.maintenanceTask.findUnique({
       where: { id },
       include: {
@@ -34,13 +38,13 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getAllMaintenanceTasksByStaffId(staffId: string): Promise<MaintenanceTask[]> {
+  public async getAllMaintenanceTasksByStaffId(staffId: string): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: { assignedStaffId: staffId },
     });
   }
 
-  async getTaskCountsByType(
+  public async getTaskCountsByType(
     parkId: number,
     startDate: Date,
     endDate: Date,
@@ -57,51 +61,86 @@ class MaintenanceTaskDao {
     }));
   }
 
-  async updateMaintenanceTask(id: string, data: Prisma.MaintenanceTaskUpdateInput): Promise<MaintenanceTask> {
+  public async updateMaintenanceTask(
+    id: string, 
+    data: Prisma.MaintenanceTaskUpdateInput
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({ where: { id }, data });
   }
 
-  async deleteMaintenanceTask(id: string): Promise<void> {
+  public async deleteMaintenanceTask(
+    id: string
+  ): Promise<void> {
     await prisma.maintenanceTask.delete({ where: { id } });
   }
 
-  async deleteMaintenanceTasksByStatus(taskStatus: MaintenanceTaskStatusEnum): Promise<void> {
+  public async deleteMaintenanceTasksByStatus(
+    taskStatus: MaintenanceTaskStatusEnum
+  ): Promise<void> {
     await prisma.maintenanceTask.deleteMany({ where: { taskStatus } });
   }
 
-  async assignMaintenanceTask(id: string, assignedStaff: Staff, updatedAt: Date): Promise<MaintenanceTask> {
+  public async assignMaintenanceTask(
+    id: string, 
+    assignedStaff: Staff, 
+    updatedAt: Date
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({
       where: { id },
-      data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: assignedStaff.id, updatedAt: updatedAt },
+      data: { 
+        taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, 
+        assignedStaffId: assignedStaff.id, 
+        updatedAt: updatedAt 
+      },
     });
   }
 
-  async unassignMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
+  public async unassignMaintenanceTask(
+    id: string, 
+    updatedAt: Date
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({
       where: { id },
-      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
-    });
-    return prisma.maintenanceTask.update({
-      where: { id },
-      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
-    });
-  }
-
-  async acceptMaintenanceTask(id: string, staffId: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({
-      where: { id },
-      data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: staffId, updatedAt: updatedAt },
+      data: { 
+        taskStatus: MaintenanceTaskStatusEnum.OPEN, 
+        assignedStaffId: null, 
+        updatedAt: updatedAt 
+      },
     });
   }
 
-  async unacceptMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
+  public async acceptMaintenanceTask(
+    id: string, 
+    staffId: string, 
+    updatedAt: Date
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({
       where: { id },
-      data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt },
+      data: { 
+        taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, 
+        assignedStaffId: staffId, 
+        updatedAt: updatedAt 
+      },
     });
   }
 
-  async getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<MaintenanceTask[]> {
+  public async unacceptMaintenanceTask(
+    id: string, 
+    updatedAt: Date
+  ): Promise<MaintenanceTask> {
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { 
+        taskStatus: MaintenanceTaskStatusEnum.OPEN, 
+        assignedStaffId: null, 
+        updatedAt: updatedAt 
+      },
+    });
+  }
+
+  public async getMaintenanceTasksByStatus(
+    status: MaintenanceTaskStatusEnum
+  ): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: { taskStatus: status },
       orderBy: { position: 'asc' },
@@ -116,7 +155,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
+  public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: { submittingStaffId: staffId },
       include: {
@@ -130,7 +169,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getMaxPositionForStatus(status: MaintenanceTaskStatusEnum): Promise<number> {
+  public async getMaxPositionForStatus(status: MaintenanceTaskStatusEnum): Promise<number> {
     const result = await prisma.maintenanceTask.aggregate({
       where: { taskStatus: status },
       _max: { position: true },
@@ -138,7 +177,7 @@ class MaintenanceTaskDao {
     return result._max.position || 0;
   }
 
-  async updatePositions(tasks: { id: string; position: number }[]): Promise<void> {
+  public async updatePositions(tasks: { id: string; position: number }[]): Promise<void> {
     await prisma.$transaction(
       tasks.map((task) =>
         prisma.maintenanceTask.update({
@@ -149,7 +188,7 @@ class MaintenanceTaskDao {
     );
   }
 
-  async getMaintenanceTasksByParkId(parkId: number): Promise<MaintenanceTask[]> {
+  public async getMaintenanceTasksByParkId(parkId: number): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: {
         OR: [
@@ -170,7 +209,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getAverageTaskTypeCompletionTime(
+  public async getAverageTaskTypeCompletionTime(
     taskType: MaintenanceTaskTypeEnum,
     parkId: number,
     startDate: Date,
@@ -200,7 +239,7 @@ class MaintenanceTaskDao {
     return totalCompletionTime / tasks.length;
   }
 
-  async getCompletedMaintenanceTasksByEntityId(entityId: string, entityType: 'ParkAsset' | 'Sensor' | 'Hub'): Promise<MaintenanceTask[]> {
+  public async getCompletedMaintenanceTasksByEntityId(entityId: string, entityType: 'ParkAsset' | 'Sensor' | 'Hub'): Promise<MaintenanceTask[]> {
     const whereClause: any = { taskStatus: MaintenanceTaskStatusEnum.COMPLETED };
 
     if (entityType === 'ParkAsset') {
@@ -217,7 +256,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getOverdueRateByTaskTypeForPeriod(
+  public async getOverdueRateByTaskTypeForPeriod(
     taskType: MaintenanceTaskTypeEnum,
     parkId: number,
     startDate: Date,
@@ -251,7 +290,7 @@ class MaintenanceTaskDao {
     return (overdueTasks / totalTasks) * 100;
   }
 
-  async getOverdueTaskCountByTaskTypeForPeriod(
+  public async getOverdueTaskCountByTaskTypeForPeriod(
     taskType: MaintenanceTaskTypeEnum,
     parkId: number,
     startDate: Date,
@@ -271,7 +310,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getCompletedTaskCountByTaskTypeForPeriod(
+  public async getCompletedTaskCountByTaskTypeForPeriod(
     taskType: MaintenanceTaskTypeEnum,
     parkId: number,
     startDate: Date,

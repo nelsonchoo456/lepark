@@ -18,8 +18,10 @@ import {
   Space,
   Spin,
   Tooltip,
+  MenuProps,
+  Dropdown,
 } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, LineChartOutlined } from '@ant-design/icons';
 import { Line } from 'react-chartjs-2';
 import dayjs, { Dayjs } from 'dayjs';
 import {
@@ -66,12 +68,13 @@ const ParkCrowdLevels: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<[Dayjs, Dayjs]>(defaultDateRange);
   const { state } = useLocation();
   const [parkId, setParkId] = useState<number>(state?.selectedParkId || 0);
-  const [viewMode, setViewMode] = useState<string>('calendar');
+  const [viewMode, setViewMode] = useState<string>(state?.defaultView || 'calendar');
   const [parks, setParks] = useState<ParkResponse[]>([]);
   const [restrictedParks, setRestrictedParks] = useState<ParkResponse[]>([]);
   const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(['actual', 'predicted']);
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
+  const [resolvedThresholds, setResolvedThresholds] = useState<{ low: number; moderate: number }>({ low: 0, moderate: 0 });
 
   // Use the custom hook for crowd data
   const { crowdData, isLoading, error } = useFetchCrowdData({
@@ -80,11 +83,17 @@ const ParkCrowdLevels: React.FC = () => {
   });
 
   const parkGeom = parkId === 0 ? undefined : parks.find((p) => p.id === parkId)?.geom;
-  const thresholds = useParkThresholds(
-    parkId,
-    parkGeom,
-    parks.map((p) => ({ ...p, geometry: p.geom })),
-  );
+  useEffect(() => {
+    const fetchThresholds = async () => {
+      const thresholdsData = await useParkThresholds(
+        parkId,
+        parkGeom,
+        parks.map((p) => ({ ...p, geometry: p.geom })),
+      );
+      setResolvedThresholds(thresholdsData);
+    };
+    fetchThresholds();
+  }, [parkId, parkGeom, parks]);
 
   const { loading: parkLoading } = useRestrictPark(parkId ? parkId.toString() : undefined, {
     disableNavigation: true,
@@ -244,15 +253,15 @@ const ParkCrowdLevels: React.FC = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: { dataset: { label: string; }; raw: any; dataIndex: any; chart: { data: { datasets: any[]; }; }; }) {
+          label: function (context: { dataset: { label: string }; raw: any; dataIndex: any; chart: { data: { datasets: any[] } } }) {
             const label = context.dataset.label || '';
             const currentValue = context.raw;
             const index = context.dataIndex;
-  
+
             // Find the value of the other dataset at the same index
             const otherDataset = context.chart.data.datasets.find((dataset) => dataset.label !== label);
             const otherValue = otherDataset ? otherDataset.data[index] : null;
-  
+
             // Calculate the difference, if both values exist
             let difference = '';
             if (currentValue !== null && otherValue !== null) {
@@ -260,7 +269,7 @@ const ParkCrowdLevels: React.FC = () => {
               const direction = currentValue > otherValue ? 'higher' : 'lower';
               difference = ` (${diffValue} ${direction})`; // Add "higher" or "lower" based on the direction
             }
-  
+
             return `${label}: ${currentValue}${difference}`;
           },
         },
@@ -272,8 +281,8 @@ const ParkCrowdLevels: React.FC = () => {
         annotations: {
           lowLine: {
             type: 'line',
-            yMin: thresholds.low,
-            yMax: thresholds.low,
+            yMin: resolvedThresholds.low,
+            yMax: resolvedThresholds.low,
             borderColor: '#a3d4c7',
             borderWidth: 1,
             label: {
@@ -284,8 +293,8 @@ const ParkCrowdLevels: React.FC = () => {
           },
           mediumLine: {
             type: 'line',
-            yMin: thresholds.moderate,
-            yMax: thresholds.moderate,
+            yMin: resolvedThresholds.moderate,
+            yMax: resolvedThresholds.moderate,
             borderColor: '#ffe082',
             borderWidth: 1,
             label: {
@@ -326,14 +335,47 @@ const ParkCrowdLevels: React.FC = () => {
     navigate('/crowdInsights/compareParks');
   };
 
-  const breadcrumbItems = [
+  const handleAnalyseCLick = () => {
+    navigate('/crowdInsights/analyse');
+  };
+
+  const analysisMenuItems: MenuProps['items'] = [
     {
-      title: 'Crowd Insights',
-      pathKey: '/crowdInsights',
-      isMain: true,
-      isCurrent: true,
+      key: 'compare',
+      label: 'Compare Parks',
+      onClick: handleCompareParksCLick,
+    },
+    {
+      key: 'analyse',
+      label: 'Analyse Historical Data',
+      onClick: handleAnalyseCLick,
     },
   ];
+
+  const breadcrumbItems =
+    user?.role === StaffType.SUPERADMIN
+      ? [
+          {
+            title: 'Crowd Insights',
+            pathKey: '/crowdInsights/allParks',
+            isMain: true,
+            isCurrent: false,
+          },
+          {
+            title: 'Details',
+            pathKey: '/crowdInsights',
+            isMain: false,
+            isCurrent: true,
+          },
+        ]
+      : [
+          {
+            title: 'Crowd Insights',
+            pathKey: '/crowdInsights',
+            isMain: true,
+            isCurrent: true,
+          },
+        ];
 
   const renderViewSelector = () => (
     <Radio.Group value={viewMode} onChange={(e) => setViewMode(e.target.value)} className="mb-4">
@@ -352,9 +394,10 @@ const ParkCrowdLevels: React.FC = () => {
             <div>
               <p>Crowd levels are calculated by:</p>
               <ol className="pl-4 mt-1">
-                <li>1. Averaging readings from cameras in each zone</li>
-                <li>2. Summing the averages of all zones in the park</li>
-                <li>3. Aggregating by hour to handle different camera frequencies</li>
+                <li>1. Grouping camera readings by zone, date, and hour</li>
+                <li>2. For each zone: averaging the readings within each hour</li>
+                <li>3. For each zone: averaging the hourly values to get daily zone average</li>
+                <li>4. For the park: summing all zone averages to get total park crowd level</li>
               </ol>
             </div>
           }
@@ -429,9 +472,11 @@ const ParkCrowdLevels: React.FC = () => {
                 />
               </Space>
               {user?.role === StaffType.SUPERADMIN && (
-                <Button type="primary" onClick={handleCompareParksCLick}>
-                  Compare Parks
-                </Button>
+                <Dropdown menu={{ items: analysisMenuItems }}>
+                  <Button type="primary">
+                    Analysis <LineChartOutlined />
+                  </Button>
+                </Dropdown>
               )}
             </div>
             <div className="h-[calc(100%-80px)]">
@@ -450,7 +495,7 @@ const ParkCrowdLevels: React.FC = () => {
           </>
         ) : (
           <>
-            <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={thresholds} allParks={parks} />
+            <ParkCrowdLevelsCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={resolvedThresholds} allParks={parks} />
             <ThresholdExplanation />
           </>
         )}

@@ -245,15 +245,17 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="taskStatus" label="Task Status" rules={[{ required: true, message: 'Please select the task status' }]}>
-            <Select>
+          {(userRole === StaffType.VENDOR_MANAGER) && (
+            <Form.Item name="taskStatus" label="Task Status" rules={[{ required: true, message: 'Please select the task status' }]}>
+                <Select>
               {Object.values(MaintenanceTaskStatusEnum).map((status) => (
                 <Select.Option key={status} value={status}>
                   {formatEnumLabelToRemoveUnderscores(status)}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            )}
           {userRole === StaffType.SUPERADMIN ||
             (userRole === StaffType.MANAGER && (
               <Form.Item name="dueDate" label="Due Date" rules={[{ required: true, message: 'Please select the due date' }]}>

@@ -1,4 +1,4 @@
-import { Prisma, Visitor } from '@prisma/client';
+import { Prisma, Species, Visitor } from '@prisma/client';
 import { z } from 'zod';
 import VisitorDao from '../dao/VisitorDao';
 import bcrypt from 'bcrypt';
@@ -110,7 +110,7 @@ class VisitorService {
     }
   }
 
-  public async login(data: LoginSchemaType) {
+  public async login(data: LoginSchemaType): Promise<{ token: string; user: Omit<Visitor, 'password'> }> {
     try {
       LoginSchema.parse(data);
 
@@ -132,9 +132,9 @@ class VisitorService {
         expiresIn: '4h',
       });
 
-      const { password, ...user } = visitor;
+      const { password, ...userWithoutPassword } = visitor;
 
-      return { token, user };
+      return { token, user: userWithoutPassword };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors.map((e) => `${e.message}`);
@@ -152,7 +152,7 @@ class VisitorService {
     );
   }
 
-  async requestPasswordReset(data: VisitorPasswordResetRequestSchemaType) {
+  async requestPasswordReset(data: VisitorPasswordResetRequestSchemaType): Promise<{ message: string; resetToken?: string }> {
     try {
       VisitorPasswordResetRequestSchema.parse(data);
 
@@ -186,7 +186,7 @@ class VisitorService {
     }
   }
 
-  async resetPassword(data: VisitorPasswordResetSchemaType) {
+  async resetPassword(data: VisitorPasswordResetSchemaType): Promise<{ message: string }> {
     try {
       VisitorPasswordResetSchema.parse(data);
 
@@ -242,7 +242,7 @@ class VisitorService {
     }
   }
 
-  async addFavoriteSpecies(visitorId: string, speciesId: string) {
+  public async addFavoriteSpecies(visitorId: string, speciesId: string): Promise<Visitor> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -257,7 +257,7 @@ class VisitorService {
     return VisitorDao.addFavoriteSpecies(visitorId, speciesId);
   }
 
-  async getFavoriteSpecies(visitorId: string) {
+  public async getFavoriteSpecies(visitorId: string): Promise<Species[]> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -268,7 +268,7 @@ class VisitorService {
     return favoriteSpecies?.favoriteSpecies || [];
   }
 
-  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {
+  public async deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<Visitor> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -278,7 +278,7 @@ class VisitorService {
     return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
   }
 
-  async isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
+  public async isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -289,7 +289,7 @@ class VisitorService {
     return favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId) || false;
   }
 
-  public async verifyUser(data: VerifyUserSchemaType) {
+  public async verifyUser(data: VerifyUserSchemaType): Promise<{ message: string }> {
     try {
       VerifyUserSchema.parse(data);
 
@@ -329,7 +329,7 @@ class VisitorService {
     }
   }
 
-  async resendVerificationEmail(token: string) {
+  public async resendVerificationEmail(token: string): Promise<{ message: string }> {
     try {
       let decodedToken;
       try {
@@ -390,7 +390,7 @@ class VisitorService {
     }
   }
 
-  async sendVerificationEmailWithEmail(email: string, id: string) {
+  public async sendVerificationEmailWithEmail(email: string, id: string): Promise<{ message: string }> {
     try {
       const visitor = await VisitorDao.getVisitorById(id);
       if (!visitor) {
@@ -414,7 +414,7 @@ class VisitorService {
     }
   }
 
-  async delete(data) {
+  public async delete(data: { id: string; password: string }): Promise<{ message: string }> {
     const visitor = await VisitorDao.getVisitorById(data.id);
 
     if (!visitor) {

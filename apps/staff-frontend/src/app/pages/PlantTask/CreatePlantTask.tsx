@@ -107,6 +107,7 @@ const CreatePlantTask = () => {
     } else if (user?.parkId) {
       fetchZones(user.parkId);
       setIsZoneDisabled(false);
+      setSelectedParkId(user.parkId);
     }
 
     if (feedbackImages && feedbackImages.length > 0) {

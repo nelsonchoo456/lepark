@@ -456,7 +456,9 @@ class PlantTaskService {
           throw new Error('Staff not found');
         }
         const completedTasks = await PlantTaskDao.getStaffCompletedTasksForPeriod(staffId, startDate, endDate);
+        console.log('completedTasks', completedTasks);
         const totalTasks = await PlantTaskDao.getStaffTotalTasksForPeriod(staffId, startDate, endDate);
+        console.log('totalTasks', totalTasks);
         const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
         return { staff, completionRate };
       }),

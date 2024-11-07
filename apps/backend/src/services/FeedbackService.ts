@@ -12,14 +12,17 @@ const s3 = new aws.S3({
 });
 
 class FeedbackService {
-  public async createFeedback(data: FeedbackSchemaType): Promise<Feedback> {
-    const formattedData = dateFormatter(data)
-    const validatedData = FeedbackSchema.parse(formattedData)as Prisma.FeedbackCreateInput;
-
+  public async createFeedback(
+    data: FeedbackSchemaType
+  ): Promise<Feedback> {
+    const formattedData = dateFormatter(data);
+    const validatedData = FeedbackSchema.parse(formattedData) as Prisma.FeedbackCreateInput;
     return FeedbackDao.createFeedback(validatedData);
   }
 
-  public async getAllFeedback(visitorId?: string): Promise<any[]> {
+  public async getAllFeedback(
+    visitorId?: string
+  ): Promise<(Feedback & { visitor: any; staff: any | null })[]> {
     let feedback: Feedback[];
     if (visitorId) {
       feedback = await FeedbackDao.getAllFeedbackByVisitorId(visitorId);
@@ -36,7 +39,9 @@ class FeedbackService {
     return feedbacksWithDetails;
   }
 
-  public async getFeedbackById(id: string): Promise<any> {
+  public async getFeedbackById(
+    id: string
+  ): Promise<Feedback & { visitor: any; staff: any | null }> {
     const feedback = await FeedbackDao.getFeedbackById(id);
     if (!feedback) {
       throw new Error('Feedback not found');
@@ -46,7 +51,10 @@ class FeedbackService {
     return { ...feedback, visitor, staff };
   }
 
-  public async updateFeedback(id: string, data: Partial<FeedbackSchemaType>): Promise<any> {
+  public async updateFeedback(
+    id: string, 
+    data: Partial<FeedbackSchemaType>
+  ): Promise<Feedback & { visitor: any; staff: any | null }> {
     const formattedData = dateFormatter(data) as Prisma.FeedbackUpdateInput;
     const validatedData = FeedbackSchema.partial().parse(formattedData);
     const updatedFeedback = await FeedbackDao.updateFeedback(id, validatedData);
@@ -55,11 +63,17 @@ class FeedbackService {
     return { ...updatedFeedback, visitor, staff };
   }
 
-  public async deleteFeedback(id: string): Promise<void> {
+  public async deleteFeedback(
+    id: string
+  ): Promise<void> {
     await FeedbackDao.deleteFeedback(id);
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `feedback/${fileName}`,
@@ -76,7 +90,9 @@ class FeedbackService {
     }
   }
 
-  public async getFeedbackByParkId(parkId: number): Promise<any[]> {
+  public async getFeedbackByParkId(
+    parkId: number
+  ): Promise<(Feedback & { visitor: any; staff: any | null })[]> {
     const feedbacks = await FeedbackDao.getFeedbackByParkId(parkId);
     const feedbacksWithDetails = await Promise.all(
       feedbacks.map(async (feedback) => {

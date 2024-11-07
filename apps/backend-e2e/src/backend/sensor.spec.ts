@@ -4,6 +4,8 @@ import * as path from 'path';
 import { SensorTypeEnum, SensorStatusEnum, SensorUnitEnum, FacilityTypeEnum, FacilityStatusEnum, HubStatusEnum } from '@prisma/client';
 import FormData from 'form-data';
 
+jest.setTimeout(15000);
+
 describe('Sensor Router Endpoints', () => {
   let authCookie: string;
   let sensorId: string;
@@ -40,7 +42,6 @@ describe('Sensor Router Endpoints', () => {
         reservationPolicy: 'Test reservation policy',
         rulesAndRegulations: 'Test rules and regulations',
         images: [],
-        lastMaintenanceDate: new Date(),
         openingHours: [new Date()],
         closingHours: [new Date()],
         facilityStatus: FacilityStatusEnum.OPEN,

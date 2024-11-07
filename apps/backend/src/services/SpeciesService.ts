@@ -1,4 +1,4 @@
-import { LightTypeEnum, Prisma, Species } from '@prisma/client';
+import { LightTypeEnum, Occurrence, Prisma, Species } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
@@ -133,7 +133,7 @@ class SpeciesService {
     await SpeciesDao.deleteSpecies(speciesId);
   }
 
-  public async getOccurrencesBySpeciesId(speciesId: string) {
+  public async getOccurrencesBySpeciesId(speciesId: string): Promise<Occurrence[]> {
     try {
       return await SpeciesDao.findOccurrencesBySpeciesId(speciesId);
     } catch (error) {
@@ -141,7 +141,7 @@ class SpeciesService {
     }
   }
 
-  public async getOccurrencesBySpeciesIdByParkId(speciesId: string, parkId: string) {
+  public async getOccurrencesBySpeciesIdByParkId(speciesId: string, parkId: string): Promise<Occurrence[]> {
     try {
       const occurrences = await this.getOccurrencesBySpeciesId(speciesId);
       const filteredOccurrences = [];
@@ -158,7 +158,7 @@ class SpeciesService {
     }
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `species/${fileName}`,

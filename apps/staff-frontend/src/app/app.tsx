@@ -116,6 +116,8 @@ import CompareParkCrowdLevels from './pages/CrowdInsight/CompareParkCrowdLevels'
 import VerifyEventTicket from './pages/VerifyTicket/VerifyEventTicket';
 import FeedbackList from './pages/Feedback/FeedbackList';
 import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
+import AllParksCrowdLevels from './pages/CrowdInsight/AllParksCrowdLevels';
+import AnalyseActualCrowdLevels from './pages/CrowdInsight/AnalyseActualCrowdLevels';
 
 export function App() {
   return (
@@ -648,6 +650,24 @@ export function App() {
                       <>
                         <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
                         <CompareParkCrowdLevels />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="analyse"
+                    element={
+                      <>
+                        <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
+                        <AnalyseActualCrowdLevels />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="allParks"
+                    element={
+                      <>
+                        <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
+                        <AllParksCrowdLevels />
                       </>
                     }
                   />
