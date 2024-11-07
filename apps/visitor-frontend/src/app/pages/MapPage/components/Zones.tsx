@@ -4,7 +4,7 @@ import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import { Button, Empty, Select, Tooltip, Typography } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2';
-import { FaLandmark, FaStar, FaTicket } from 'react-icons/fa6';
+import { FaLandmark, FaStar, FaTent, FaTicket } from 'react-icons/fa6';
 import { useFetchMarkersByZoneGroup } from '../../../components/map/hooks/useFetchMarkersByZoneGroup';
 import { HoverItem } from '../../../components/map/interfaces/interfaces';
 import PictureMarker from '../../../components/map/PictureMarker';
@@ -16,9 +16,10 @@ import FacilityEventsPictureMarker from '../../../components/map/FacilityEventsP
 import { useFetchMarkersByParkGroup } from '../../../components/map/hooks/useFetchMarkersByParkGroup';
 import { useMap } from 'react-leaflet';
 import MarkerLabel from '../../../components/map/MarkerLabel';
-import { BiSolidCalendarEvent } from 'react-icons/bi';
+import { BiSolidCalendarEvent, BiSolidLandmark } from 'react-icons/bi';
 import { IoMdClose } from 'react-icons/io';
 import UserLiveLocationMap from '../../../components/map/userLocation/UserLiveLocation';
+import { PiStar, PiStarFill } from 'react-icons/pi';
 
 interface OneZoneProps {
   zone: ZoneResponse;
@@ -297,7 +298,7 @@ const MarkersHandlers = ({
             onClick={() => setShowFacilities && setShowFacilities((prev) => !prev)}
             className={`flex flex-col items-center text-white w-16 py-2 rounded-md ${showFacilities ? 'bg-sky-400' : 'bg-sky-200'}`}
           >
-            <FaLandmark />
+            <FaTent />
             <div style={{ fontSize: '0.7rem' }}>Facilities</div>
           </div>
           <div
@@ -307,7 +308,7 @@ const MarkersHandlers = ({
               showAttractions === true ? 'bg-mustard-400' : 'bg-mustard-200'
             }`}
           >
-            <FaStar />
+            <BiSolidLandmark />
             <div style={{ fontSize: '0.7rem' }}>Attractions</div>
           </div>
           <div
@@ -317,7 +318,7 @@ const MarkersHandlers = ({
               showEvents ? 'bg-highlightGreen-400' : 'bg-highlightGreen-200'
             }`}
           >
-            <FaTicket />
+            <PiStarFill />
             <div style={{ fontSize: '0.7rem' }}>Events</div>
           </div>
         </div>
@@ -398,7 +399,7 @@ const MarkersGroup = ({
               lat={attraction.lat}
               lng={attraction.lng}
               backgroundColor={COLORS.mustard[300]}
-              icon={<TbTicket className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '3rem' }} />}
+              icon={<BiSolidLandmark className="text-mustard-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
               // tooltipLabel={attraction.title}
               hovered={hovered}
               setHovered={() => {
