@@ -236,12 +236,12 @@ const ViewSpeciesDetails = () => {
   };
 
   return (
-    <div className="lg:p-4 lg:h-screen lg:overflow-hidden">
-      <div className="w-full gap-4 lg:flex lg:h-full lg:overflow-hidden">
-        <div className="lg:w-2/5 h-96">
+    <div className="md:p-4 md:h-screen md:overflow-hidden">
+      <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
+        <div className="md:w-2/5 h-96">
           <div className="z-20 absolute w-full flex justify-between p-4">
-            <div className="lg:hidden backdrop-blur bg-white/75 px-6 py-2 z-20 rounded-full box-shadow-lg">
-              <LogoText className="text-3xl font-bold lg:text-2xl lg:font-semibold lg:py-2 lg:m-0 ">{species?.commonName}</LogoText>
+            <div className="md:hidden backdrop-blur bg-white/75 px-6 py-2 z-20 rounded-full box-shadow-md">
+              <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
               <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
             </div>
             {user &&
@@ -274,9 +274,9 @@ const ViewSpeciesDetails = () => {
           </div>
           <SpeciesCarousel images={species?.images || []} />
         </div>
-        <div className="flex-[3] flex-col flex p-4 lg:p-0 lg:h-full lg:overflow-x-auto">
-          <div className="hidden lg:block">
-            <LogoText className="text-3xl font-bold lg:text-2xl lg:font-semibold lg:py-2 lg:m-0 ">{species?.commonName}</LogoText>
+        <div className="flex-[3] flex-col flex p-4 md:p-0 md:h-full md:overflow-x-auto">
+          <div className="hidden md:block">
+            <LogoText className="text-3xl font-bold md:text-2xl md:font-semibold md:py-2 md:m-0 ">{species?.commonName}</LogoText>
             <LogoText className="ml-4 italic opacity-75">{species?.speciesName}</LogoText>
           </div>
           <Typography.Paragraph
@@ -289,7 +289,7 @@ const ViewSpeciesDetails = () => {
             {species?.speciesDescription}
           </Typography.Paragraph>
           <div className="flex flex-col-reverse">
-            <div className="flex h-24 w-full gap-3 my-2 lg:gap-2 lg:mt-auto">
+            <div className="flex h-24 w-full gap-3 my-2 md:gap-2 md:mt-auto">
               <div className="bg-green-50 h-full w-20 rounded-lg flex flex-col justify-center text-center items-center text-green-600 p-1">
                 {species?.conservationStatus && getConservationStatusIcon(species.conservationStatus)}
                 <p className="text-xs mt-2">{species?.conservationStatus && formatEnumString(species.conservationStatus)}</p>
@@ -310,7 +310,7 @@ const ViewSpeciesDetails = () => {
             defaultActiveKey="information"
             items={tabsItems}
             renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
-            className="lg:mt-0 lg:p-0"
+            className="md:mt-0 md:p-0"
           />
         </div>
       </div>

@@ -4,9 +4,9 @@ import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';
 import { PiPlant, PiPlantFill, PiStarFill, PiTicketFill } from 'react-icons/pi';
-import { BsCalendarEvent, BsClock, BsHouseDoor } from 'react-icons/bs';
+import { BsHouseDoor } from 'react-icons/bs';
 import { FaLocationDot, FaTent } from 'react-icons/fa6';
-import { Badge, Button, Card, Empty, List, Space, Spin, Tag, Typography } from 'antd';
+import { Badge, Button, Card, Empty, List, Space, Spin, Typography } from 'antd';
 import EventCard from './components/EventCard';
 import { useNavigate, Link } from 'react-router-dom';
 import withParkGuard from '../../park-context/withParkGuard';
@@ -16,7 +16,7 @@ import ParkHeader from './components/ParkHeader';
 import { GiTreehouse } from 'react-icons/gi';
 import { useEffect } from 'react';
 import { calculateHDBPoweredDays } from '../Decarb/DecarbFunctions';
-import { AttractionResponse, EventResponse, getAttractionsByParkId, getEventsByParkId, getTotalSequestrationForParkAndYear } from '@lepark/data-access';
+import { getTotalSequestrationForParkAndYear } from '@lepark/data-access';
 import { FiExternalLink } from 'react-icons/fi';
 import { AiOutlinePercentage } from 'react-icons/ai';
 import { BiSolidDiscount, BiSolidLandmark } from 'react-icons/bi';
@@ -24,9 +24,8 @@ import { useFetchAnnouncements } from '../../hooks/Announcements/useFetchAnnounc
 import { AnnouncementResponse } from '@lepark/data-access';
 import styled from 'styled-components';
 import { IoLeafSharp } from 'react-icons/io5';
-import moment from 'moment';
 
-const { Text, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
 
 const ListNoPadding = styled(List)`
   .ant-list-item {
@@ -35,89 +34,35 @@ const ListNoPadding = styled(List)`
 `;
 
 const MainLanding = () => {
-  const currentDay = new Date().getDay();
   const navigate = useNavigate();
   const { selectedPark } = usePark();
   const [totalSequestration, setTotalSequestration] = useState<number | null>(null);
   const [poweredDays, setPoweredDays] = useState<number | null>(null);
   const { announcements, loading, error } = useFetchAnnouncements(selectedPark?.id);
   const [expandedAnnouncementId, setExpandedAnnouncementId] = useState<string | null>(null);
-  const [events, setEvents] = useState<EventResponse[]>([]);
-  const [attractions, setAttractions] = useState<AttractionResponse[]>([]);
 
   useEffect(() => {
+    const fetchSequestration = async () => {
+      if (selectedPark?.id) {
+        try {
+          const currentYear = new Date().getFullYear().toString();
+          const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
+          const sequestration = response.data.totalSequestration;
+          setTotalSequestration(Math.round(sequestration));
+          const days = calculateHDBPoweredDays(sequestration);
+          setPoweredDays(days);
+        } catch (error) {
+          console.error('Error fetching sequestration data:', error);
+        }
+      }
+    };
+
     fetchSequestration();
-    fetchEvents();
-    fetchAttractions();
   }, [selectedPark]);
-
-  const fetchSequestration = async () => {
-    if (selectedPark?.id) {
-      try {
-        const currentYear = new Date().getFullYear().toString();
-        const response = await getTotalSequestrationForParkAndYear(selectedPark.id, currentYear);
-        const sequestration = response.data.totalSequestration;
-        setTotalSequestration(Math.round(sequestration));
-        const days = calculateHDBPoweredDays(sequestration);
-        setPoweredDays(days);
-      } catch (error) {
-        console.error('Error fetching sequestration data:', error);
-      }
-    }
-  };
-
-  const fetchEvents = async () => {
-    if (selectedPark?.id) {
-      try {
-        const eventsRes = await getEventsByParkId(selectedPark.id);
-        setEvents(eventsRes.data.filter((e) => moment().startOf('day').isSameOrBefore(moment(e.endDate).startOf('day'))).slice(0, 4).sort((a, b) => moment(a.startDate).diff(moment(b.startDate))))
-      } catch (e) {
-        //
-      }
-    }
-  }
-
-  const fetchAttractions = async () => {
-    if (selectedPark?.id) {
-      try {
-        const attractionsRes = await getAttractionsByParkId(selectedPark.id);
-        setAttractions(attractionsRes.data.slice(0, 4))
-      } catch (e) {
-        //
-      }
-    }
-  }
 
   const toggleExpand = (announcementId: string) => {
     setExpandedAnnouncementId(expandedAnnouncementId === announcementId ? null : announcementId);
   };
-
-  const getEventStatusTag = (startDate: Date, endDate: Date) => {
-    const now = moment();
-    const isOngoing = moment(startDate).isSameOrBefore(now) && moment(endDate).isSameOrAfter(now);
-  
-    if (isOngoing) {
-      return <Tag color="green" bordered={false}>Open</Tag>;
-    } else {
-      return <Tag color="blue" bordered={false}>Upcoming</Tag>;
-    }
-  };
-
-  const getAttractionStatusTag = (startTime: Date, endTime: Date) => {
-    const now = moment();
-    const currentTime = moment(now.format('HH:mm'), 'HH:mm'); // Only consider the time
-    const start = moment(startTime).format('HH:mm');
-    const end = moment(endTime).format('HH:mm');
-  
-    const isOpen = currentTime.isBetween(moment(start, 'HH:mm'), moment(end, 'HH:mm'), null, '[]'); // Inclusive of start and end times
-  
-    if (isOpen) {
-      return <Tag color="green" bordered={false}>Open</Tag>;
-    } else {
-      return <Tag color="red" bordered={false}>Closed</Tag>;
-    }
-  };
-  
 
   return (
     <div>
@@ -174,9 +119,9 @@ const MainLanding = () => {
         </NavButton>
       </div>
 
-      {/* <div> */}
+      <ContentWrapper>
         {/* Announcements Section */}
-        <div className='px-4 lg:py-4'>
+        <div>
           <div className="flex items-center justify-between">
             <LogoText className="text-xl">Announcements</LogoText>
             <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
@@ -230,9 +175,9 @@ const MainLanding = () => {
             />
           )}
         </div>
-        <br />
+        <br/>
 
-        <div className="flex justify-between items-center lg:bg-green-50 lg:py-4 px-4">
+        <div className="flex justify-between items-center">
           <LogoText className="text-xl">Sustainability</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
@@ -246,9 +191,9 @@ const MainLanding = () => {
               />
             </Link>
           </div>
-          <br />
         </div>
-        <div className="flex justify-between items-center md:h-48 lg:h-32 lg:bg-green-50 px-4 lg:pb-4">
+        <br />
+        <div className="flex justify-between items-center h-48">
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <IoLeafSharp className="text-4xl mb-2 text-green-500" />
             <div className="flex flex-row items-center">
@@ -258,16 +203,16 @@ const MainLanding = () => {
               </p>
             </div>
           </div>
-          <div className="w-px h-32 bg-green-500 mx-4"></div>
+          <div className="w-px h-full bg-green-500 mx-4"></div>
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <BsHouseDoor className="text-4xl mb-2 text-green-500" />
             <p className="text-green-500">Equivalent to powering a 4 room HDB for</p>
             <p className="font-bold text-lg text-green-500">{poweredDays} years</p>
           </div>
         </div>
-        <br/>
-        
-        <div className="flex items-center mx-4 lg:pt-4">
+
+
+        <div className="flex items-center">
           <strong className="text-xl text-highlightGreen-500">Our Events</strong>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
@@ -280,27 +225,19 @@ const MainLanding = () => {
             />
           </div>
         </div>
-        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem] px-4 lg:py-4">
-          {events && events.length > 0 ? (
-            events.map((event) => 
-              <EventCard title={event.title} url={event.images && event.images.length > 0 ? event.images[0] : null} >
-                <div className='flex gap-2 items-center'><BsCalendarEvent/>{moment(event.startDate).format('D MMM YY')} - {moment(event.endDate).format('D MMM YY')}</div>
-                <div className='flex gap-2 items-center'><BsClock/>{moment(event.startTime).format('h:MM A')} - {moment(event.endTime).format('h:MM A')}</div>
-                <div className='flex justify-end mt-2'>{getEventStatusTag(event.startDate, event.endDate)}</div>
-              </EventCard>)
-          ) : (
-            <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
-              <PiStarFill className="text-4xl" />
-              <br />
-              No Events here.
-              <br />
-              Check back soon for Events!
-            </div>
-          )}
+        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem]">
+          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+            <PiStarFill className="text-4xl" />
+            <br />
+            No Events here.
+            <br />
+            Check back soon for Events!
+          </div>
         </div>
         <br />
+        
 
-        <div className="flex items-center px-4">
+        <div className="flex items-center">
           <strong className="text-xl text-mustard-500">Our Attractions</strong>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
@@ -313,37 +250,21 @@ const MainLanding = () => {
             />
           </div>
         </div>
-
-        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem] px-4 lg:py-4">
-          {attractions && attractions.length > 0 ? (
-            attractions.map((attraction) => 
-              <EventCard title={attraction.title} url={attraction.images && attraction.images.length > 0 ? attraction.images[0] : null} >
-                <div className='flex gap-2 items-center'><BsClock/>{moment(attraction.openingHours[currentDay]).format('h:MM A')} - {moment(attraction.closingHours[currentDay]).format('h:MM A')}</div>
-                <div className='opacity-60 mt-2 hidden lg:block' style={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {attraction.description}
-                </div>
-                <div className='flex justify-end mt-2'>{getAttractionStatusTag(attraction.openingHours[currentDay], attraction.closingHours[currentDay])}</div>
-              </EventCard>)
-          ) : (
-            <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
-              <BsCalendar4Event className="text-4xl" />
-              <br />
-              No Attractions here.
-              <br />
-              Check back soon for Attractions!
-            </div>
-          )}
+        <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem]">
+          <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+            <BsCalendar4Event className="text-4xl" />
+            <br />
+            No Attractions here.
+            <br />
+            Check back soon for Attractions!
+          </div>
         </div>
         <br />
 
-        <div className="flex justify-between items-center px-4">
+
+
+        <br />
+        <div className="flex justify-between items-center">
           <LogoText className="font-bold text-lg">FAQs</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
@@ -358,11 +279,11 @@ const MainLanding = () => {
             </Link>
           </div>
         </div>
-        <p className="text-gray-500 px-4">Planning to visit? Find out all you need to know!</p>
+        <p className="text-gray-500">Planning to visit? Find out all you need to know!</p>
         <br />
         <br />
 
-        <div className="flex justify-between items-center px-4">
+        <div className="flex justify-between items-center">
           <LogoText className="font-bold text-lg">Feedback</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
@@ -377,11 +298,11 @@ const MainLanding = () => {
             </Link>
           </div>
         </div>
-        <p className="text-gray-500 px-4">Have something to say? We'd love to hear from you!</p>
+        <p className="text-gray-500">Have something to say? We'd love to hear from you!</p>
         <br />
         <br />
 
-        {/* <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
+        <LogoText className="font-bold text-lg">Plant of the Day</LogoText>
         <Badge.Ribbon text={<LogoText className="font-bold text-lg text-white">#PoTD</LogoText>}>
           <Card size="small" title="" extra={<a href="#">More</a>} className="my-2 w-full">
             <div className="opacity-40 flex flex-col justify-center items-center text-center w-full h-48">
@@ -392,8 +313,8 @@ const MainLanding = () => {
               Check back soon for Plant of the Day!
             </div>
           </Card>
-        </Badge.Ribbon> */}
-      {/* </div> */}
+        </Badge.Ribbon>
+      </ContentWrapper>
     </div>
   );
 };

@@ -32,7 +32,7 @@ const SpeciesCarousel: React.FC<SpeciesCarouselProps> = ({ images }) => {
                   minWidth: '400px',
                   objectFit: 'cover',
                 }}
-                className='h-96 lg:h-[45rem]'
+                className='h-96 md:h-[45rem]'
               />
             </div>
           ))}

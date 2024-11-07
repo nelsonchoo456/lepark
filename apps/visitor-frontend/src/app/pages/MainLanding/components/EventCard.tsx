@@ -3,49 +3,43 @@ import { Button, Card } from 'antd';
 
 interface EventCardProps {
   title: string;
-  url?: string | null;
+  url: string;
   extra?: React.ReactNode;
   width?: string;
   height?: string;
   children?: React.ReactNode;
-  gradient?: string;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem', height = '15rem', gradient ="bg-gradient-to-t from-green-500 via-green-600/70 to-transparent", children }) => {
+const EventCard: React.FC<EventCardProps> = ({
+  title,
+  url,
+  extra,
+  width = '10rem',
+  height = '13rem',
+  children,
+}) => {
   return (
-    <div style={{ padding: '0' }} className='lg:flex-[1]'>
+    <div style={{ padding: '0' }}>
       <Card
         size="small"
         style={{
           width: width,
-          overflow: 'hidden',
+          height: height,
+          backgroundImage: `url('${url}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          color: 'white',
+          overflow: 'hidden'
         }}
-        styles={{ body: { padding: 0 } }}
-        className={`lg:w-auto lg:flex-[1] lg:min-h-[13.5rem]`}
+        styles={{ body: { padding: 0 }}}
       >
-        <div
-          style={{
-            width: "full",
-            height: "9rem",
-            backgroundImage: `url('${url}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            color: 'white',
-            overflow: 'hidden',
-            position: 'relative',
-          }}
-        >
-          <div className={`absolute w-full h-full px-4 ${gradient} text-white flex justify-end items-end `}>
-            <div className="text-right">
-              <div className="mb-2 font-bold text-lg">{title}</div>
-              
-            </div>
-          </div>
+        <div className="absolute bottom-0 w-full h-full p-4 bg-gradient-to-t from-green-500/90 via-green-600/70 to-transparent text-white flex justify-end items-end ">
+        <div className="text-right">
+          <div className="mb-2 font-bold text-lg">{title}</div>
+          <div className="text-sm opacity-60">{children}</div>
         </div>
-        <div className="text-sm p-2">{children}</div>
-        {/* <div className="absolute bottom-0 w-full h-10 bg-green-500 text-white flex justify-end items-end "> */}
+      </div>
 
-        {/* </div> */}
       </Card>
     </div>
   );

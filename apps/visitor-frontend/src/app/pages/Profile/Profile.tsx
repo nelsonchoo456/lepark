@@ -10,8 +10,11 @@ import {
   DeleteOutlined,
   FrownOutlined,
 } from '@ant-design/icons';
-import { ContentWrapper, LogoText, CustButton, useAuth } from '@lepark/common-ui';
+import { ContentWrapper, Divider, Content, Header, ListItemType, Logo, LogoText, CustButton, useAuth } from '@lepark/common-ui';
 import { useState, useEffect } from 'react';
+import { SCREEN_LG } from '../../config/breakpoints';
+import { Color } from 'antd/es/color-picker';
+import EventCard from '../MainLanding/components/EventCard';
 import EditPasswordModal from './EditPasswordModal';
 import EditEmailModal from './EditEmailModal';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
