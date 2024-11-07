@@ -63,6 +63,10 @@ import EventTicketDetails from './pages/Profile/EventTicketDetails';
 import CreateFacilityBooking from './pages/Facilities/CreateFacilityBooking';
 import ViewBookings from './pages/Profile/ViewBookings';
 import ViewBookingDetails from './pages/Profile/ViewBookingDetails';
+import BookingPaymentPage from './pages/Facilities/PaymentPageBooking';
+import BookingCompletionPage from './pages/Facilities/BookingCompletionPage';
+import BookingSuccessPage from './pages/Facilities/BookingSuccessPage';
+import BookingFailedPage from './pages/Facilities/BookingFailedPage';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -296,6 +300,38 @@ export function App() {
                   element={
                     <ProtectedRoute redirectTo="/login">
                       <ViewBookingDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-payment"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingPaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-payment-completion/:bookingId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingCompletionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-success"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingSuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-failed"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingFailedPage />
                     </ProtectedRoute>
                   }
                 />

@@ -9,6 +9,7 @@ import AttractionTicketDao from '../dao/AttractionTicketDao';
 import AttractionDao from '../dao/AttractionDao';
 import EventDao from '../dao/EventDao';
 import EventTicketDao from '../dao/EventTicketDao';
+import FacilityDao from '../dao/FacilityDao';
 
 class EmailUtility {
   async sendPasswordResetEmail(recipientEmail: string, resetLink: string) {
@@ -478,6 +479,171 @@ class EmailUtility {
     };
 
     // Send email
+    await transporter.sendMail(mailOptions);
+  }
+
+  async generateBookingPDF(booking: any): Promise<string> {
+    const doc = new PDFDocument({ size: 'A4' });
+    const pdfDirectory = path.join(__dirname, '..', '..', '..', '..', 'temp', 'pdfs', 'bookings');
+    const pdfPath = path.join(pdfDirectory, `Booking-${booking.id}.pdf`);
+
+    const visitor = await VisitorDao.getVisitorById(booking.visitorId);
+    const facility = await FacilityDao.getFacilityById(booking.facilityId);
+
+    // Ensure the directory exists
+    await fs.promises.mkdir(pdfDirectory, { recursive: true });
+
+    doc.pipe(fs.createWriteStream(pdfPath));
+
+    const leftMargin = 50;
+    const pageWidth = 500;
+    const halfWidth = pageWidth / 2;
+
+    // Header
+    doc.font('Helvetica-Bold').fontSize(18).text('Lepark Facility Booking', leftMargin, 30, { width: pageWidth, align: 'center' });
+
+    // Visitor and booking information
+    doc
+      .fontSize(10)
+      .text(`Booked by: ${visitor.firstName} ${visitor.lastName}`, leftMargin, 70, { width: halfWidth })
+      .text(`Booking Date: ${new Date(booking.dateBooked).toDateString()}`, leftMargin + halfWidth, 70, {
+        width: halfWidth,
+        align: 'right',
+      })
+      .text(`Booking ID: ${booking.id}`, leftMargin, 85, { width: halfWidth })
+      .text(`Facility: ${facility.name}`, leftMargin + halfWidth, 85, {
+        width: halfWidth,
+        align: 'right',
+      });
+
+    // Booking details
+    doc
+      .moveDown(2)
+      .fontSize(12)
+      .text('Booking Details', leftMargin, null, { width: pageWidth })
+      .moveDown(0.5)
+      .fontSize(10)
+      .text(`Start Date: ${new Date(booking.dateStart).toLocaleString()}`, leftMargin, null)
+      .text(`End Date: ${new Date(booking.dateEnd).toLocaleString()}`, leftMargin, null)
+      .text(`Number of Pax: ${booking.pax}`, leftMargin, null)
+      .text(`Booking Purpose: ${booking.bookingPurpose}`, leftMargin, null)
+      .text(`Facility Fee: $${facility.fee.toFixed(2)}`, leftMargin, null);
+
+    // Green box for confirmation
+    const greenBoxHeight = 80;
+    doc.rect(leftMargin, 250, pageWidth, greenBoxHeight).fillColor('darkgreen').fill();
+
+    // Confirmation details
+    doc
+      .fillColor('white')
+      .fontSize(16)
+      .text('THIS IS YOUR BOOKING CONFIRMATION', leftMargin, 265, { width: pageWidth, align: 'center' })
+      .moveDown(0.5)
+      .fontSize(10)
+      .text('PLEASE PRESENT THIS DOCUMENT UPON ARRIVAL', leftMargin, null, { width: pageWidth, align: 'center' });
+
+    // Terms and conditions
+    doc
+      .fillColor('black')
+      .fontSize(11)
+      .text('TERMS AND CONDITIONS:', leftMargin, 380)
+      .fontSize(9)
+      .text(
+        '1. Please arrive at least 15 minutes before your booking time\n' +
+          '2. Present this booking confirmation and a valid ID upon arrival\n' +
+          '3. The facility must be vacated by the end of the booking time\n' +
+          '4. Cancellations must be made at least 24 hours before the booking time\n' +
+          '5. The facility must be kept clean and in good condition\n' +
+          '6. Lepark reserves the right to cancel bookings in case of emergency or maintenance\n' +
+          '7. No transfer or resale of bookings is allowed',
+        leftMargin,
+        400,
+        { width: pageWidth },
+      );
+
+    doc.end();
+    return pdfPath;
+  }
+
+  async sendBookingEmail(recipientEmail: string, booking: any) {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com',
+        pass: 'ezcr eqfz dxtn vbtr',
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    const pdfPath = await this.generateBookingPDF(booking);
+
+    const mailOptions = {
+      to: recipientEmail,
+      subject: 'Your Lepark Facility Booking Confirmation',
+      html: `
+      <h1>Thank you for your booking!</h1>
+      <p>Your booking confirmation is attached to this email. Please present it upon arrival.</p>
+      <p>Booking details:</p>
+      <ul>
+        <li>Booking ID: ${booking.id}</li>
+        <li>Start Date: ${new Date(booking.dateStart).toLocaleString()}</li>
+        <li>End Date: ${new Date(booking.dateEnd).toLocaleString()}</li>
+        <li>Number of Pax: ${booking.pax}</li>
+      </ul>
+    `,
+      attachments: [
+        {
+          filename: `Lepark-Booking-${booking.id}.pdf`,
+          path: pdfPath,
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+  }
+
+  async sendRequestedBookingEmail(recipientEmail: string, booking: any) {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com',
+        pass: 'ezcr eqfz dxtn vbtr',
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    const pdfPath = await this.generateBookingPDF(booking);
+
+    const mailOptions = {
+      to: recipientEmail,
+      subject: 'Your Requested Lepark Facility Booking',
+      html: `
+      <h1>Your requested booking confirmation is ready!</h1>
+      <p>Your booking confirmation is attached to this email. Please present it upon arrival.</p>
+      <p>Booking details:</p>
+      <ul>
+        <li>Booking ID: ${booking.id}</li>
+        <li>Start Date: ${new Date(booking.dateStart).toLocaleString()}</li>
+        <li>End Date: ${new Date(booking.dateEnd).toLocaleString()}</li>
+        <li>Number of Pax: ${booking.pax}</li>
+      </ul>
+    `,
+      attachments: [
+        {
+          filename: `Lepark-Booking-${booking.id}.pdf`,
+          path: pdfPath,
+        },
+      ],
+    };
+
     await transporter.sendMail(mailOptions);
   }
 }

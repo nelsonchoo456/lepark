@@ -43,3 +43,8 @@ export interface CreateBookingData {
 export interface UpdateBookingStatusData {
   status: BookingStatusEnum;
 }
+
+export interface SendBookingEmailData {
+  bookingId: string;
+  recipientEmail: string;
+}

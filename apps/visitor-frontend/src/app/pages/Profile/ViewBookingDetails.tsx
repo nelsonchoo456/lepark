@@ -92,6 +92,21 @@ const ViewBookingDetails: React.FC = () => {
     }
   };
 
+  const handlePayment = () => {
+    if (booking) {
+      navigate('/booking-payment', {
+        state: {
+          bookingId: booking.id,
+          facilityName: booking.facility?.name,
+          facilityId: booking.facilityId,
+          dateStart: booking.dateStart,
+          dateEnd: booking.dateEnd,
+          totalPayable: booking.facility?.fee || 0,
+        },
+      });
+    }
+  };
+
   if (!booking) {
     return <div>Booking not found</div>;
   }
@@ -123,6 +138,11 @@ const ViewBookingDetails: React.FC = () => {
               <Text strong>Booking Status</Text>
               <Tag color={getStatusColor(booking.bookingStatus)}>{booking.bookingStatus}</Tag>
             </div>
+            {booking.bookingStatus === 'APPROVED_PENDING_PAYMENT' && (
+              <Button type="primary" onClick={handlePayment} className="mt-2 w-full">
+                Pay Now
+              </Button>
+            )}
             <div className="w-full h-px bg-gray-300 my-2"></div>
             <Text strong className="block mb-2">
               {dayjs(booking.dateStart).format('MMMM D, YYYY')} - {dayjs(booking.dateEnd).format('MMMM D, YYYY')}
