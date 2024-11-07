@@ -4046,6 +4046,16 @@ const announcementsData = [
     status: 'ACTIVE',
     parkId: 2,
   },
+  {
+    title: 'Holly Jolly Christmas',
+    content:
+      'Join us for a holly jolly Christmas! Look out for our christmas trees and decorations at our parks.',
+    updatedAt: '2024-11-05T16:00:00.000Z',
+    startDate: '2024-11-05T16:00:00.000Z',
+    endDate: '2024-12-31T15:59:59.000Z',
+    status: 'ACTIVE',
+    parkId: null,
+  },
 ];
 
 const visitorsData = [

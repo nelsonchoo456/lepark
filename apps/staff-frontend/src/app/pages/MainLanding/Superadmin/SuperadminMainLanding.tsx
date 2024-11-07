@@ -105,7 +105,8 @@ const SuperadminMainLanding = () => {
   const fetchAnnouncements = async () => {
     try {
       const response = await getNParksAnnouncements();
-      setAnnouncements(response.data);
+      const filteredAnnouncements = response.data.filter((announcement) => announcement.status === 'ACTIVE');
+      setAnnouncements(filteredAnnouncements);
     } catch (err) {
       // setError('Failed to fetch announcements');
     }
