@@ -194,7 +194,11 @@ class SensorService {
     return SensorDao.getSensorsNeedingMaintenance();
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `sensor/${fileName}`,
@@ -220,7 +224,10 @@ class SensorService {
   }
 
   // Update sensor's hubId, lat, long, remarks (if any)
-  public async addSensorToHub(id: string, data: Partial<SensorSchemaType>): Promise<Sensor> {
+  public async addSensorToHub(
+    id: string, 
+    data: Partial<SensorSchemaType>
+  ): Promise<Sensor> {
     try {
       const sensor = await SensorDao.getSensorById(id);
       if (!sensor) {
@@ -338,7 +345,9 @@ class SensorService {
     }
   }
 
-  public async getCameraStreamBySensorId(sensorId: string): Promise<{sensor: Sensor, cameraStreamURL: string}> {
+  public async getCameraStreamBySensorId(
+    sensorId: string
+  ): Promise<{sensor: Sensor, cameraStreamURL: string}> {
     const sensor = await SensorDao.getSensorById(sensorId);
     if (!sensor) {
       throw new Error('Sensor not found');
@@ -360,7 +369,9 @@ class SensorService {
     return {sensor: sensor, cameraStreamURL: cameraStreamURL };
   }
 
-  public async getCameraStreamsByZoneId(zoneId: number): Promise<{sensor: Sensor, cameraStreamURL: string}[]> {
+  public async getCameraStreamsByZoneId(
+    zoneId: number
+  ): Promise<{sensor: Sensor, cameraStreamURL: string}[]> {
     const sensors = await SensorDao.getSensorsByZoneId(zoneId);
 
 

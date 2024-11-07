@@ -3,41 +3,52 @@ import { PrismaClient, Prisma, FAQ } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class FAQDao {
-  async createFAQ(data: Prisma.FAQCreateInput): Promise<FAQ> {
-    return await prisma.fAQ.create({
+  public async createFAQ(
+    data: Prisma.FAQCreateInput
+  ): Promise<FAQ> {
+    return prisma.fAQ.create({
       data,
     });
   }
 
-  async getFAQById(id: string): Promise<FAQ | null> {
-    return await prisma.fAQ.findUnique({
+  public async getFAQById(
+    id: string
+  ): Promise<FAQ | null> {
+    return prisma.fAQ.findUnique({
       where: { id },
     });
   }
 
-  async updateFAQ(id: string, data: Prisma.FAQUpdateInput): Promise<FAQ> {
-    return await prisma.fAQ.update({
+  public async updateFAQ(
+    id: string, 
+    data: Prisma.FAQUpdateInput
+  ): Promise<FAQ> {
+    return prisma.fAQ.update({
       where: { id },
       data,
     });
   }
 
-  async deleteFAQ(id: string): Promise<void> {
+  public async deleteFAQ(
+    id: string
+  ): Promise<void> {
     await prisma.fAQ.delete({
       where: { id },
     });
   }
 
-  async getAllFAQs(): Promise<FAQ[]> {
-    return await prisma.fAQ.findMany({
+  public async getAllFAQs(): Promise<FAQ[]> {
+    return prisma.fAQ.findMany({
       orderBy: {
         priority: 'asc',
       },
     });
   }
 
-  async getFAQsByParkId(parkId: number): Promise<FAQ[]> {
-    return await prisma.fAQ.findMany({
+  public async getFAQsByParkId(
+    parkId: number
+  ): Promise<FAQ[]> {
+    return prisma.fAQ.findMany({
       where: { parkId },
       orderBy: {
         priority: 'asc',

@@ -2,10 +2,12 @@ import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import FAQDao from '../dao/FAQDao';
 import { FAQSchema, FAQSchemaType } from '../schemas/faqSchema';
-import { Prisma } from '@prisma/client';
+import { FAQ, Prisma } from '@prisma/client';
 
 class FAQService {
-  async createFAQ(data: FAQSchemaType) {
+  public async createFAQ(
+    data: FAQSchemaType
+  ): Promise<FAQ> {
     try {
       FAQSchema.parse(data);
       const formattedData = data as Prisma.FAQCreateInput;
@@ -19,17 +21,22 @@ class FAQService {
     }
   }
 
-  async getFAQById(id: string) {
-    return await FAQDao.getFAQById(id);
+  public async getFAQById(
+    id: string
+  ): Promise<FAQ | null> {
+    return FAQDao.getFAQById(id);
   }
 
-  async updateFAQ(id: string, data: Partial<FAQSchemaType>) {
+  public async updateFAQ(
+    id: string, 
+    data: Partial<FAQSchemaType>
+  ): Promise<FAQ> {
     try {
       FAQSchema.parse(data);
       const transformedData: Prisma.FAQUpdateInput = {
         ...data,
       };
-      return await FAQDao.updateFAQ(id, transformedData);
+      return FAQDao.updateFAQ(id, transformedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -39,20 +46,28 @@ class FAQService {
     }
   }
 
-  async deleteFAQ(id: string) {
+  public async deleteFAQ(
+    id: string
+  ): Promise<void> {
     await FAQDao.deleteFAQ(id);
   }
 
-  async getAllFAQs() {
-    return await FAQDao.getAllFAQs();
+  public async getAllFAQs(): Promise<FAQ[]> {
+    return FAQDao.getAllFAQs();
   }
 
-  async getFAQsByParkId(parkId: number) {
-    return await FAQDao.getFAQsByParkId(parkId);
+  public async getFAQsByParkId(
+    parkId: number
+  ): Promise<FAQ[]> {
+    return FAQDao.getFAQsByParkId(parkId);
   }
 
-  async updateFAQPriorities(faqs: { id: string; priority: number }[]) {
-    const updatePromises = faqs.map((faq) => FAQDao.updateFAQ(faq.id, { priority: faq.priority }));
+  public async updateFAQPriorities(
+    faqs: { id: string; priority: number }[]
+  ): Promise<void> {
+    const updatePromises = faqs.map((faq) => 
+      FAQDao.updateFAQ(faq.id, { priority: faq.priority })
+    );
     await Promise.all(updatePromises);
   }
 }

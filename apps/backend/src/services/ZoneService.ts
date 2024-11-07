@@ -1,7 +1,7 @@
 import { PrismaClient, Sensor } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-import { ZoneCreateData, ZoneUpdateData } from '../schemas/zoneSchema';
+import { ZoneCreateData, ZoneResponseData, ZoneUpdateData } from '../schemas/zoneSchema';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
 import aws from 'aws-sdk';
@@ -18,7 +18,7 @@ const s3 = new aws.S3({
 const prisma = new PrismaClient();
 
 class ZoneService {
-  public async createZone(data: ZoneCreateData): Promise<any> {
+  public async createZone(data: ZoneCreateData): Promise<ZoneResponseData> {
     try {
       if (data.parkId) {
         const park = await ParkDao.getParkById(data.parkId);
@@ -57,18 +57,18 @@ class ZoneService {
     }
   }
 
-  public async getAllZones(): Promise<any[]> {
+  public async getAllZones(): Promise<ZoneResponseData[]> {
     const zones = await ZoneDao.getAllZones();
     return this.addParkandHubAndSensorInfo(zones);
   }
 
-  public async getZoneById(id: number): Promise<any> {
+  public async getZoneById(id: number): Promise<ZoneResponseData> {
     const zone = await ZoneDao.getZoneById(id);
     const enhancedZone = await this.addParkandHubAndSensorInfo([zone]);
     return enhancedZone[0];
   }
 
-  public async getZonesByParkId(parkId: number): Promise<any> {
+  public async getZonesByParkId(parkId: number): Promise<ZoneResponseData[]> {
     if (parkId) {
       const park = await ParkDao.getParkById(parkId);
       if (!park) {
@@ -79,7 +79,7 @@ class ZoneService {
     return this.addParkandHubAndSensorInfo(zones);
   }
 
-  public async deleteZoneById(id: number): Promise<any> {
+  public async deleteZoneById(id: number): Promise<void> {
     const res = await ZoneDao.deleteZoneById(id);
     await prisma.occurrence.deleteMany({
       where: {
@@ -89,7 +89,7 @@ class ZoneService {
     return res;
   }
 
-  public async updateZone(id: number, data: ZoneUpdateData): Promise<any> {
+  public async updateZone(id: number, data: ZoneUpdateData): Promise<ZoneResponseData> {
     try {
       if (data.parkId) {
         const park = await ParkDao.getParkById(data.parkId);
@@ -125,7 +125,11 @@ class ZoneService {
     }
   }
 
-  private async addParkandHubAndSensorInfo(zones: any[]): Promise<any[]> {
+  private async addParkandHubAndSensorInfo(zones: ZoneResponseData[]): Promise<(ZoneResponseData & {
+    park: any;
+    hubs: any[];
+    sensors: Sensor[];
+  })[]> {
     return Promise.all(
       zones.map(async (zone) => {
         const park = await ParkDao.getParkById(zone.parkId);

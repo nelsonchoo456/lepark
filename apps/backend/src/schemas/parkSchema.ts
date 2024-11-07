@@ -38,6 +38,7 @@ export interface ParkUpdateData {
 }
 
 export interface ParkResponseData {
+  id: string;
   name: string;
   description?: string;
   address?: string;

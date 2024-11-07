@@ -12,7 +12,9 @@ const s3 = new aws.S3({
 });
 
 class FacilityService {
-  public async createFacility(data: FacilitySchemaType): Promise<Facility> {
+  public async createFacility(
+    data: FacilitySchemaType
+  ): Promise<Facility> {
     try {
       const existingFacility = await FacilityDao.getFacilityByNameAndParkId(data.name, data.parkId);
       if (existingFacility) {
@@ -41,7 +43,9 @@ class FacilityService {
     return FacilityDao.getAllFacilities();
   }
 
-  public async getFacilityById(id: string): Promise<Facility> {
+  public async getFacilityById(
+    id: string
+  ): Promise<Facility> {
     const facility = await FacilityDao.getFacilityById(id);
     if (!facility) {
       throw new Error('Facility not found');
@@ -49,7 +53,10 @@ class FacilityService {
     return facility;
   }
 
-  public async updateFacilityDetails(id: string, data: Partial<FacilitySchemaType>): Promise<Facility> {
+  public async updateFacilityDetails(
+    id: string, 
+    data: Partial<FacilitySchemaType>
+  ): Promise<Facility> {
     try {
       const existingFacility = await FacilityDao.getFacilityById(id);
       if (!existingFacility) {
@@ -87,15 +94,23 @@ class FacilityService {
     }
   }
 
-  public async deleteFacility(id: string): Promise<void> {
+  public async deleteFacility(
+    id: string
+  ): Promise<void> {
     await FacilityDao.deleteFacility(id);
   }
 
-  public async getFacilitiesByParkId(parkId: number): Promise<Facility[]> {
+  public async getFacilitiesByParkId(
+    parkId: number
+  ): Promise<Facility[]> {
     return FacilityDao.getFacilitiesByParkId(parkId);
   }
 
-  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `facility/${fileName}`,
@@ -112,7 +127,10 @@ class FacilityService {
     }
   }
 
-  public async checkExistingFacility(name: string, parkId: number): Promise<boolean> {
+  public async checkExistingFacility(
+    name: string, 
+    parkId: number
+  ): Promise<boolean> {
     const existingFacility = await FacilityDao.getFacilityByNameAndParkId(name, parkId);
     return !!existingFacility; // Returns true if exists, false otherwise
   }

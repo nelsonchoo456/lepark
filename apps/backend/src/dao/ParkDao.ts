@@ -3,7 +3,7 @@ import { ParkCreateData, ParkResponseData, ParkUpdateData } from "../schemas/par
 const prisma = new PrismaClient();
 
 class ParkDao {
-  async createPark(data: ParkCreateData): Promise<any> {
+  public async createPark(data: ParkCreateData): Promise<ParkResponseData> {
     await this.initParksDB();
     const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
     const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
@@ -28,7 +28,7 @@ class ParkDao {
     return park[0];
   }
 
-  async initParksDB(): Promise<void> {
+  public async initParksDB(): Promise<void> {
     await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`; // puyts in the POSTGIS extension to postgres
     
     await prisma.$queryRaw`
@@ -59,7 +59,7 @@ class ParkDao {
     `;
   }
 
-  async getAllParks(): Promise<any[]> {
+  public async getAllParks(): Promise<ParkResponseData[]> {
     await this.initParksDB();
 
     const parks = await prisma.$queryRaw`
@@ -89,7 +89,7 @@ class ParkDao {
     }
   }
 
-  async getParkById(id: number): Promise<ParkResponseData> {
+  public async getParkById(id: number): Promise<ParkResponseData> {
     await this.initParksDB();
 
     const park = await prisma.$queryRaw`
@@ -121,13 +121,13 @@ class ParkDao {
     }
   }
 
-  async updatePark(id: number, data: Partial<ParkUpdateData>): Promise<ParkResponseData> {
+  public async updatePark(id: number, data: Partial<ParkUpdateData>): Promise<ParkResponseData> {
     await this.initParksDB();
 
     // If the name is being updated, check if it already exists
     if (data.name) {
       const existingPark = await this.getParkByName(data.name);
-      if (existingPark && existingPark.id !== id) {
+      if (existingPark && existingPark.id !== id.toString()) {
         throw new Error('A park with this name already exists');
       }
     }
@@ -219,7 +219,7 @@ class ParkDao {
     }
   }
 
-  async deleteParkById(id: number): Promise<void> {
+  public async deleteParkById(id: number): Promise<void> {
     await this.initParksDB();
     
     const deletedPark = await prisma.$executeRaw`
@@ -232,7 +232,7 @@ class ParkDao {
     }
   }
 
-  async getRandomParkImage(): Promise<string[]> {
+  public async getRandomParkImage(): Promise<string[]> {
     // Fetch all parks
     const parks: { images: string[] | null }[] = await prisma.$queryRaw`
       SELECT images FROM "Park";
@@ -251,7 +251,7 @@ class ParkDao {
     return [randomImage];
   }
 
-  async getParkByName(name: string): Promise<any | null> {
+  public async getParkByName(name: string): Promise<ParkResponseData | null> {
     await this.initParksDB();
 
     const park = await prisma.$queryRaw`

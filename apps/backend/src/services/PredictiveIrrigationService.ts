@@ -28,7 +28,7 @@ class PredictiveIrrigationService {
   }
 
   // -- [ PUBLIC ] --
-  public async getHubHistoricalSensorsRainfallData(hub: Hub, startDate: Date, endDate: Date) {
+  public async getHubHistoricalSensorsRainfallData(hub: Hub, startDate: Date, endDate: Date): Promise<any> {
     try {
       // Fetch historical sensor data
       const historicalSensorData = await SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(hub.id,
@@ -46,7 +46,7 @@ class PredictiveIrrigationService {
   }
 
     // -- [ PUBLIC ] --
-    public async getHubHistoricalRainfallData(hub: Hub, startDate: Date, endDate: Date) {
+    public async getHubHistoricalRainfallData(hub: Hub, startDate: Date, endDate: Date): Promise<any> {
       try {
         const historicalRainfallData = await this.getClosestRainDataPerDateBoolean(hub.lat, hub.long);
   
@@ -58,7 +58,7 @@ class PredictiveIrrigationService {
   
 
   // -- [ PUBLIC ] --
-  public async trainModelForHub(hub: Hub) {
+  public async trainModelForHub(hub: Hub): Promise<void> {
     try {
       // Fetch historical sensor data
       const historicalSensorData = await SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(hub.id,
@@ -76,7 +76,7 @@ class PredictiveIrrigationService {
   
       // Generate training data using the service method
       const historicalRainfallData = await this.getClosestRainDataPerDate(hub.lat, hub.long);
-      const trainingData = this.generateTrainingData(historicalSensorData, historicalRainfallData);
+      const trainingData = await this.generateTrainingData(historicalSensorData, historicalRainfallData);
   
       // Train the Random Forest model
       const model = await this.trainRandomForestModel(trainingData);

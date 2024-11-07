@@ -52,7 +52,10 @@ class HubDao {
     return hubsWithDetails;
   }
 
-  public async getHubsFiltered(hubStatus: any, parkId: number): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
+  public async getHubsFiltered(
+    hubStatus: HubStatusEnum | undefined, 
+    parkId: number
+  ): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
     const hubs = await prisma.hub.findMany({
       include: {
         facility: true,
@@ -96,7 +99,9 @@ class HubDao {
     return hubsWithDetails;
   }
 
-  public async getHubsByParkId(parkId: number): Promise<Hub[]> {
+  public async getHubsByParkId(
+    parkId: number
+  ): Promise<(Hub & { facilityName?: string; parkName?: string })[]> {
     // Fetch hubs by parkId
     const hubs = await prisma.hub.findMany({
       where: { facility: { parkId } },
@@ -184,7 +189,10 @@ class HubDao {
     return prisma.sensor.findMany({ where: { hubId, sensorStatus: SensorStatusEnum.ACTIVE } });
   }
 
-  public async isSerialNumberDuplicate(serialNumber: string, excludeHubId?: string): Promise<boolean> {
+  public async isSerialNumberDuplicate(
+    serialNumber: string, 
+    excludeHubId?: string
+  ): Promise<boolean> {
     const hub = await prisma.hub.findFirst({
       where: {
         serialNumber,
@@ -194,7 +202,9 @@ class HubDao {
     return !!hub;
   }
 
-  public async doesHubHaveSensors(hubId: string): Promise<boolean> {
+  public async doesHubHaveSensors(
+    hubId: string
+  ): Promise<boolean> {
     const hub = await prisma.hub.findUnique({
       where: { id: hubId },
       include: { sensors: true },

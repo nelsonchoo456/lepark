@@ -17,7 +17,7 @@ const s3 = new aws.S3({
 
 class PromotionService {
   // Create a new promotion
-  async createPromotion(data: PromotionSchemaType): Promise<Promotion> {
+  public async createPromotion(data: PromotionSchemaType): Promise<Promotion> {
     try {
       if (!data.isNParksWide) {
         if (!data.parkId) {
@@ -60,7 +60,7 @@ class PromotionService {
   }
 
   // Get all promotions with associated parks, events, and attractions
-  async getAllPromotions(archived: boolean, enabled: boolean): Promise<(Promotion & { park?: ParkResponseData })[]> {
+  public async getAllPromotions(archived: boolean, enabled: boolean): Promise<(Promotion & { park?: ParkResponseData })[]> {
     let promotions;
     if (archived !== undefined && enabled !== undefined) {
       promotions = await PromotionDao.getAllPromotionsFiltered(archived, enabled);
@@ -83,7 +83,7 @@ class PromotionService {
   }
 
   // Get promotion by ID
-  async getPromotionById(id: string): Promise<Promotion & { park?: ParkResponseData }> {
+  public async getPromotionById(id: string): Promise<Promotion & { park?: ParkResponseData }> {
     const promotion = await PromotionDao.getPromotionById(id);
     if (promotion.parkId) {
       const park = await ParkDao.getParkById(promotion.parkId);
@@ -93,7 +93,7 @@ class PromotionService {
     return promotion;
   }
 
-  async getPromotionsForNParksAndParkId(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getPromotionsForNParksAndParkId(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
     const promotions =  await PromotionDao.getPromotionsForNParksAndParkId(parkId, archived, enabled);
     const parks = await ParkDao.getAllParks();
     return promotions.map((promotion) => {
@@ -109,12 +109,12 @@ class PromotionService {
     });
   }
 
-  async getPromotionsForNParks(archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getPromotionsForNParks(archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return await PromotionDao.getPromotionsForNParks(archived, enabled);
   }
 
   // Get all promotions for a specific park
-  async getPromotionsByParkId(parkId: string, archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getPromotionsByParkId(parkId: string, archived: boolean, enabled: boolean): Promise<Promotion[]> {
     const id = parseInt(parkId);
 
     if (archived !== undefined && enabled !== undefined) {
@@ -125,7 +125,7 @@ class PromotionService {
   }
 
   // Update promotion details
-  async updatePromotionDetails(id: string, data: Partial<PromotionSchemaType>): Promise<Promotion> {
+  public async updatePromotionDetails(id: string, data: Partial<PromotionSchemaType>): Promise<Promotion> {
     if (data.promoCode) {
       data.promoCode = data.promoCode.trim();
       const existingPromotion = await prisma.promotion.findFirst({
@@ -148,16 +148,15 @@ class PromotionService {
     return PromotionDao.updatePromotion(id, formattedData);
   }
 
-  async disablePromotion(id: string): Promise<void> {
+  public async disablePromotion(id: string): Promise<void> {
     await prisma.promotion.delete({ where: { id } });
   }
 
-  async deletePromotion(id: string): Promise<void> {
+  public async deletePromotion(id: string): Promise<void> {
     await prisma.promotion.delete({ where: { id } });
   }
 
-
-  async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `promotion/${fileName}`,

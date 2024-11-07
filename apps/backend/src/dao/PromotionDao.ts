@@ -4,16 +4,16 @@ const prisma = new PrismaClient();
 
 class PromotionDao {
   // Create a new promotion
-  async createPromotion(data: Prisma.PromotionCreateInput): Promise<Promotion> {
+  public async createPromotion(data: Prisma.PromotionCreateInput): Promise<Promotion> {
     return prisma.promotion.create({ data });
   }
 
   // Retrieve all promotions
-  async getAllPromotions(): Promise<Promotion[]> {
+  public async getAllPromotions(): Promise<Promotion[]> {
     return prisma.promotion.findMany();
   }
 
-  async getAllPromotionsFiltered(archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getAllPromotionsFiltered(archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {
         validUntil: archived ? { lt: new Date() } : { gte: new Date() },
@@ -23,20 +23,20 @@ class PromotionDao {
   }
 
   // Retrieve promotion by its ID
-  async getPromotionById(id: string): Promise<Promotion | null> {
+  public async getPromotionById(id: string): Promise<Promotion | null> {
     return prisma.promotion.findUnique({ where: { id } });
   }
 
   // Update promotion details
-  async updatePromotion(id: string, data: Prisma.PromotionUpdateInput): Promise<Promotion> {
+  public async updatePromotion(id: string, data: Prisma.PromotionUpdateInput): Promise<Promotion> {
     return prisma.promotion.update({ where: { id }, data });
   }
 
-  async deletePromotion(id: string): Promise<void> {
+  public async deletePromotion(id: string): Promise<void> {
     await prisma.promotion.delete({ where: { id } });
   }
 
-  async getPromotionsForNParksAndParkId(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getPromotionsForNParksAndParkId(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {
         OR: [
@@ -49,7 +49,7 @@ class PromotionDao {
     });
   }
 
-  async getPromotionsForNParks(archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getPromotionsForNParks(archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {
         isNParksWide: true,
@@ -59,15 +59,13 @@ class PromotionDao {
     });
   }
 
-  async getPromotionsByParkId(parkId: number): Promise<Promotion[]> {
+  public async getPromotionsByParkId(parkId: number): Promise<Promotion[]> {
     return prisma.promotion.findMany({
-      where: {
-        parkId: parkId,
-      },
+      where: { parkId },
     });
   }
 
-  async getPromotionsByParkIdFiltered(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
+  public async getPromotionsByParkIdFiltered(parkId: number, archived: boolean, enabled: boolean): Promise<Promotion[]> {
     return prisma.promotion.findMany({
       where: {
         parkId: parkId,

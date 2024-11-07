@@ -144,7 +144,11 @@ class OccurrenceService {
     await OccurrenceDao.deleteOccurrence(occurrenceId);
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `occurrence/${fileName}`,
@@ -161,7 +165,10 @@ class OccurrenceService {
     }
   }
 
-  public async updateOccurrenceStatus(occurrenceId: string, newStatus: string): Promise<Occurrence> {
+  public async updateOccurrenceStatus(
+    occurrenceId: string, 
+    newStatus: OccurrenceStatusEnum
+  ): Promise<Occurrence> {
     try {
       const updateData: Prisma.OccurrenceUpdateInput = {
         occurrenceStatus: newStatus as OccurrenceStatusEnum,

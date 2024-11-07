@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import ParkDao from '../dao/ParkDao';
-import { ParkCreateData, ParkUpdateData } from '../schemas/parkSchema';
+import { ParkCreateData, ParkResponseData, ParkUpdateData } from '../schemas/parkSchema';
 import aws from 'aws-sdk';
 import ZoneDao from '../dao/ZoneDao';
 
@@ -15,7 +15,9 @@ const s3 = new aws.S3({
 });
 
 class ParkService {
-  public async createPark(data: ParkCreateData): Promise<any> {
+  public async createPark(
+    data: ParkCreateData
+  ): Promise<ParkResponseData> {
     try {
       const errors: string[] = []
       if (!data.name || data.name.length < 3) {
@@ -61,20 +63,25 @@ class ParkService {
     }
   }
 
-  public async getAllParks(): Promise<any[]> {
+  public async getAllParks(): Promise<ParkResponseData[]> {
     return ParkDao.getAllParks();
   }
 
-  public async getParkById(id: number): Promise<any> {
+  public async getParkById(
+    id: number
+  ): Promise<ParkResponseData> {
     return ParkDao.getParkById(id);
   }
 
-  public async updatePark(id: number, data: ParkUpdateData): Promise<any> {
+  public async updatePark(
+    id: number, 
+    data: ParkUpdateData
+  ): Promise<ParkResponseData> {
     try {
       // If the name is being updated, check if it already exists
       if (data.name) {
         const existingPark = await ParkDao.getParkByName(data.name);
-        if (existingPark && existingPark.id !== id) {
+        if (existingPark && existingPark.id !== id.toString()) {
           throw new Error('A park with this name already exists');
         }
       }
@@ -89,7 +96,9 @@ class ParkService {
     }
   }
 
-  public async deleteParkById(id: number): Promise<any> {
+  public async deleteParkById(
+    id: number
+  ): Promise<void> {
     const zones = await ZoneDao.getZonesByParkId(id);
     const zoneIds = zones.map(zone => zone.id);
 
@@ -120,7 +129,11 @@ class ParkService {
     return ParkDao.getRandomParkImage();
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `park/${fileName}`,
@@ -130,7 +143,6 @@ class ParkService {
     
     try {
       const data = await s3.upload(params).promise();
-      // console.log("uploadImageToS3", data)
       return data.Location;
     } catch (error) {
       console.error('Error uploading image to S3:', error);

@@ -320,7 +320,7 @@ class SensorReadingService {
     return SensorReadingDao.getLatestSensorReadingByZoneIdAndSensorType(zoneId, sensorType);
   }
 
-  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
+  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<number> {
     return SensorReadingDao.getActiveZonePlantSensorCount(zoneId, hoursAgo);
   }
 
@@ -944,7 +944,7 @@ class SensorReadingService {
   }>> {
     try {
       const zones = await ZoneDao.getZonesByParkId(parkId);
-      let sensorAverages = [];
+      const sensorAverages = [];
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
   
       for (const zone of zones) {
