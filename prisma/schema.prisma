@@ -787,12 +787,12 @@ enum FeedbackStatusEnum {
   REJECTED
 }
 
-enum DiscountType {
+enum DiscountTypeEnum {
   PERCENTAGE
   FIXED_AMOUNT
 }
 
-enum PromotionStatus {
+enum PromotionStatusEnum {
   ENABLED
   DISABLED
 }
@@ -801,14 +801,14 @@ model Promotion {
   id            String          @id @default(uuid()) @db.Uuid
   name          String
   description   String?
-  discountType  DiscountType
+  discountType  DiscountTypeEnum
   promoCode     String?
   isNParksWide  Boolean
   images        String[]
   discountValue Float
   validFrom     DateTime
   validUntil    DateTime
-  status        PromotionStatus
+  status        PromotionStatusEnum
   terms         String[]
   maximumUsage  Int?
   minimumAmount Float?
