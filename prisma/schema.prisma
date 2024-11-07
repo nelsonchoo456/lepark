@@ -203,6 +203,9 @@ model Attraction {
   lng                      Float?
   parkId                   Int
   attractionTicketListings AttractionTicketListing[]
+  cameraSensorId           String?                   @db.Uuid
+
+  cameraSensor Sensor? @relation(fields: [cameraSensorId], references: [id], onDelete: SetNull)
 
   @@index([parkId])
 }
@@ -425,27 +428,27 @@ model Hub {
   facility                 Facility?     @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   lastDataUpdateDate       DateTime?
 
-  maintenanceHistory MaintenanceHistory[]
-  sensors            Sensor[]
-  maintenanceTasks   MaintenanceTask[]
+  maintenanceHistory      MaintenanceHistory[]
+  sensors                 Sensor[]
+  maintenanceTasks        MaintenanceTask[]
   predictedWaterSchedules PredictedWaterSchedule[]
 
-  rfModel            RfModel?      
-  rfModelId          String?       @db.Uuid
+  rfModel   RfModel?
+  rfModelId String?  @db.Uuid
 
   @@index([zoneId])
 }
 
 model PredictedWaterSchedule {
-  id              String   @id @default(uuid()) @db.Uuid
-  hubId           String   @db.Uuid
-  scheduledDate   DateTime
-  waterAmount     Float?    // in liters or milliliters
-  confidence      Float    // a value between 0 and 1 indicating prediction confidence
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(uuid()) @db.Uuid
+  hubId         String   @db.Uuid
+  scheduledDate DateTime
+  waterAmount   Float? // in liters or milliliters
+  confidence    Float // a value between 0 and 1 indicating prediction confidence
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  hub             Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hub Hub @relation(fields: [hubId], references: [id], onDelete: Cascade)
 
   @@index([hubId, scheduledDate])
 }
@@ -495,10 +498,13 @@ model Sensor {
   hubId                 String?              @db.Uuid
   hub                   Hub?                 @relation(fields: [hubId], references: [id])
   facilityId            String?              @db.Uuid
-  facility              Facility?            @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facility              Facility?            @relation("StorageFacility", fields: [facilityId], references: [id], onDelete: Cascade)
   maintenanceHistory    MaintenanceHistory[]
   sensorReadings        SensorReading[]
   maintenanceTasks      MaintenanceTask[]
+
+  cameraAttractions Attraction[]
+  cameraFacilities  Facility[]   @relation("CameraFacilities")
 }
 
 model SensorReading {
@@ -511,22 +517,21 @@ model SensorReading {
 
 model HistoricalRainData {
   id          String   @id @default(uuid()) @db.Uuid
-  stationId   String  
-  stationName String  
-  lat         Float    
-  lng         Float   
-  value       Float 
-  timestamp   DateTime 
+  stationId   String
+  stationName String
+  lat         Float
+  lng         Float
+  value       Float
+  timestamp   DateTime
 }
 
 model RfModel {
   id        String   @id @default(uuid()) @db.Uuid
-  hubId     String @unique @db.Uuid
-  hub       Hub    @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId     String   @unique @db.Uuid
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
   modelData Json
   createdAt DateTime @default(now())
 }
-
 
 enum ParkAssetTypeEnum {
   PLANT_TOOL_AND_EQUIPMENT
@@ -613,9 +618,12 @@ model Facility {
   hubs                Hub[]
   events              Event[]
   parkAssets          ParkAsset[]
-  sensors             Sensor[]
+  sensors             Sensor[]           @relation("StorageFacility")
   maintenanceTasks    MaintenanceTask[]
   bookings            Booking[]
+  cameraSensorId      String?            @db.Uuid
+
+  cameraSensor Sensor? @relation("CameraFacilities", fields: [cameraSensorId], references: [id], onDelete: SetNull)
 
   @@index([parkId])
 }
