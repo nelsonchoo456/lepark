@@ -1218,7 +1218,7 @@ async function seed() {
   }, {});
 
   const populatedFeedbacks = feedbacksData.map((feedback, index) => {
-    let visitorId, staffId;
+    let visitorId, resolvedStaffId;
 
     // Assign visitor IDs
     if (feedback.parkId === 1) {
@@ -1230,19 +1230,19 @@ async function seed() {
     // Assign staffId only if the feedback is ACCEPTED or REJECTED
     if (feedback.feedbackStatus === 'ACCEPTED' || feedback.feedbackStatus === 'REJECTED') {
       if (feedback.parkId === 1) {
-        staffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
+        resolvedStaffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
       } else if (feedback.parkId === 2) {
         if (feedback.title === 'Excellent Educational Program' || feedback.title === 'Safety Concern') {
-          staffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
+          resolvedStaffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
         } else if (index < 9) {
-          staffId = staffMap['superadmin'];
+          resolvedStaffId = staffMap['superadmin'];
         } else {
-          staffId = staffMap['parkranger2'];
+          resolvedStaffId = staffMap['parkranger2'];
         }
       }
     }
 
-    return { ...feedback, visitorId, staffId };
+    return { ...feedback, visitorId, resolvedStaffId };
   });
 
   const feedbackList = [];

@@ -29,6 +29,7 @@ class FeedbackDao {
     id: string, 
     data: Prisma.FeedbackUpdateInput
   ): Promise<Feedback> {
+    console.log('data', data);
     return prisma.feedback.update({ where: { id }, data });
   }
 
