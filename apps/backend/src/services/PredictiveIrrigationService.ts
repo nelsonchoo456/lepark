@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, PredictedWaterSchedule, SensorTypeEnum, Hub, RfModel, HubStatusEnum } from '@prisma/client';
+import { Prisma, PrismaClient, SensorTypeEnum, Hub, RfModel, HubStatusEnum } from '@prisma/client';
 import axios from 'axios';
 import { RandomForestRegression as RandomForestRegressor } from 'ml-random-forest';
 import SensorReadingService from './SensorReadingService';

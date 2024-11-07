@@ -40,6 +40,11 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       label: 'Data Transmission Interval',
       children: hub.dataTransmissionInterval ? `Every ${hub.dataTransmissionInterval} polls` : '-',
     },
+    hub.lastDataUpdateDate && {
+      key: 'lastDataUpdateDate',
+      label: 'Last Data Update Date',
+      children: hub.lastDataUpdateDate ? moment(hub.lastDataUpdateDate).format('MMMM D, YYYY') : '-',
+    },
     hub.ipAddress && { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress },
     hub.macAddress && { key: 'macAddress', label: 'MAC Address', children: hub.macAddress },
     { key: 'supplier', label: 'Supplier', children: hub.supplier },
