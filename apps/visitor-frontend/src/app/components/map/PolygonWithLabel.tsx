@@ -38,12 +38,12 @@ const PolygonWithLabel = ({
   const map = useMap();
   const centroid = getCentroidOfGeom(geom);
 
-  // const handlePolygonClick = () => {
-  //   if (centroid && centroid.lat && centroid.lng) {
-  //     const currentZoom = map.getZoom();
-  //     map.setView([centroid.lat, centroid.lng], currentZoom + 3); // Zoom in by 3 levels
-  //   }
-  // };
+  const handleClick = () => {
+    if (centroid && centroid.lat && centroid.lng) {
+      const currentZoom = map.getZoom();
+      map.setView([centroid.lat, centroid.lng], currentZoom + 3); // Zoom in by 3 levels
+    }
+  };
 
   const getLabelIcon = () => {
     const iconHTML = renderToStaticMarkup(
@@ -96,9 +96,12 @@ const PolygonWithLabel = ({
           fillOpacity={fillOpacity ? fillOpacity : 0.8}
           {...polygonFields}
           eventHandlers={{
-            click: () =>
+            click: () => {
+              handleClick();
               handlePolygonClick &&
-              handlePolygonClick(), // Zoom in on click
+              handlePolygonClick() // Zoom in on click
+            }
+              
           }}
         />
       )}
@@ -109,9 +112,12 @@ const PolygonWithLabel = ({
           icon={getLabelIcon()}
           opacity={1}
           eventHandlers={{
-            click: () =>
+            click: () => {
+              handleClick();
               handleMarkerClick &&
               handleMarkerClick()
+            }
+              
           }}
         />
       )}

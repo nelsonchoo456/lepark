@@ -117,6 +117,7 @@ import VerifyEventTicket from './pages/VerifyTicket/VerifyEventTicket';
 import FeedbackList from './pages/Feedback/FeedbackList';
 import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 import AllParksCrowdLevels from './pages/CrowdInsight/AllParksCrowdLevels';
+import FacilityAssignCamera from './pages/Facility/FacilityAssignCamera';
 import AnalyseActualCrowdLevels from './pages/CrowdInsight/AnalyseActualCrowdLevels';
 
 export function App() {
@@ -470,6 +471,7 @@ export function App() {
                   >
                     <Route path=":facilityId/edit" element={<FacilityEdit />} />
                     <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
+                    <Route path=":facilityId/assign-camera" element={<FacilityAssignCamera />} />
                   </Route>
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>

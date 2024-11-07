@@ -148,9 +148,9 @@ function FacilityEventsPictureMarker({
                       <div className="font-semibold text-sky-400 mr-2">Upcoming Events</div>
                       <div className="flex-[1] h-[1px] bg-sky-400/30" />
                     </div>
-                    <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
+                    <div className="flex gap-2 pb-3 overflow-x-scroll flex-nowrap items-stretch">
                       {events.map((event) => (
-                        <div className="bg-gray-50/40 h-full w-36 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400">
+                        <div className="bg-gray-50/40 w-36 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400">
                           <AntdTooltip title="View Event Details">
                             <div onClick={() => navigate(`/event/${event.id}`)}>
                               <div

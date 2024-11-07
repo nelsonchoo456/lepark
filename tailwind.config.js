@@ -80,17 +80,41 @@ module.exports = {
           800: '#704200',
           900: '#4b2b00',  // deep, muted brownish yellow
         },
+        // highlightGreen: {
+        //   50:  '#edf7f2',  // very light, vibrant green
+        //   100: '#d3eadb',
+        //   200: '#a8d9bd',
+        //   300: '#7bc89f',
+        //   400: '#59b586',  // slightly darker, more saturated
+        //   500: '#39a26d',  // key highlight green shade
+        //   600: '#2f8758',
+        //   700: '#266b46',
+        //   800: '#1e5236',
+        //   900: '#153923',  // deep, vibrant green
+        // },
+        // highlightGreen: {
+        //   50:  '#e3fced',  // lighter, vibrant mint green
+        //   100: '#c0f7d9',  // fresh, minty green
+        //   200: '#8bf0b9',  // brighter, more saturated green
+        //   300: '#53e597',  // vibrant green with a hint of warmth
+        //   400: '#2edc81',  // slightly warmer, bolder green
+        //   500: '#1ac870',  // new highlight shade, vibrant
+        //   600: '#16a95e',  // rich green, slightly darker
+        //   700: '#13864b',
+        //   800: '#0e6237',
+        //   900: '#084026',  // dark, vivid green
+        // },
         highlightGreen: {
-          50:  '#edf7f2',  // very light, vibrant green
-          100: '#d3eadb',
-          200: '#a8d9bd',
-          300: '#7bc89f',
-          400: '#59b586',  // slightly darker, more saturated
-          500: '#39a26d',  // key highlight green shade
-          600: '#2f8758',
-          700: '#266b46',
-          800: '#1e5236',
-          900: '#153923',  // deep, vibrant green
+          50:  '#eaf8f0',  // very light, balanced green
+          100: '#cdeedd',  // soft, natural light green
+          200: '#9fe2bb',  // subtle, fresh green
+          300: '#70d69a',  // moderate vibrancy
+          400: '#4fc683',  // warm, approachable green
+          500: '#39b36d',  // slightly toned down highlight
+          600: '#2f9458',  // deeper and natural, but still vibrant
+          700: '#267649',  
+          800: '#1d5939',
+          900: '#143d27',  // dark but balanced green
         },
         pastelPink: {
           50:  '#fff5f7',  // very light, almost white pink
@@ -109,7 +133,7 @@ module.exports = {
       screens: {
         sm: '640px',
         // => @media (min-width: 640px) { ... }
-        md: '800px',
+        md: '768px',
         // => @media (min-width: 768px) { ... }
         lg: '1024px',
         // => @media (min-width: 1024px) { ... }

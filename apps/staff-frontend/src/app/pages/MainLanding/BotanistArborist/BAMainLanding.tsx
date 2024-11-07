@@ -29,6 +29,7 @@ import { IoLeafOutline } from 'react-icons/io5';
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { renderSectionHeader, sectionHeader } from '../Manager/ManagerMainLanding';
 import { useNavigate } from 'react-router-dom';
+import { SCREEN_LG } from '../../../config/breakpoints';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
@@ -37,6 +38,21 @@ export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-
 const BAMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
+  const [desktop, setDesktop] = useState<boolean>(
+    window.innerWidth >= SCREEN_LG
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDesktop(window.innerWidth >= SCREEN_LG);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
   
   // Data
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
@@ -185,7 +201,7 @@ const BAMainLanding = () => {
 
   return (
     <Row>
-      <Col span={21}>
+      <Col span={desktop ? 21 : 24}>
         {/* -- [ Section: Park Overview ] -- */}
         <div id="part-1" className={sectionStyles}>
           {renderSectionHeader('Park Overview')}
@@ -288,7 +304,7 @@ const BAMainLanding = () => {
           </div>
         </div>
       </Col>
-      <Col span={3}>
+      {desktop && <Col span={3} className=''>
         <Anchor
           offsetTop={90}
           items={[
@@ -314,7 +330,7 @@ const BAMainLanding = () => {
             },
           ]}
         />
-      </Col>
+      </Col>}
     </Row>
   );
 };

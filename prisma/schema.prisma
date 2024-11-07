@@ -210,6 +210,9 @@ model Attraction {
   attractionTicketTransactions AttractionTicketTransaction[]
 
   parkId Int // relation to park
+  cameraSensorId           String?                   @db.Uuid
+
+  cameraSensor Sensor? @relation(fields: [cameraSensorId], references: [id], onDelete: SetNull)
 
   @@index([parkId])
 }
@@ -480,13 +483,15 @@ model Sensor {
   lat                   Float?
   long                  Float?
   remarks               String?
+  hubId                 String?              @db.Uuid
+  hub                   Hub?                 @relation(fields: [hubId], references: [id])
+  facilityId            String?              @db.Uuid
+  facility              Facility?            @relation("StorageFacility", fields: [facilityId], references: [id], onDelete: Cascade)
+  sensorReadings        SensorReading[]
+  maintenanceTasks      MaintenanceTask[]
 
-  hubId            String?           @db.Uuid
-  hub              Hub?              @relation(fields: [hubId], references: [id])
-  facilityId       String?           @db.Uuid
-  facility         Facility?         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  sensorReadings   SensorReading[]
-  maintenanceTasks MaintenanceTask[]
+  cameraAttractions Attraction[]
+  cameraFacilities  Facility[]   @relation("CameraFacilities")
 }
 
 model SensorReading {
@@ -512,9 +517,8 @@ model RfModel {
   id        String   @id @default(uuid()) @db.Uuid
   modelData Json
   createdAt DateTime @default(now())
-
-  hubId     String   @unique @db.Uuid
-  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId     String @unique @db.Uuid
+  hub   Hub   @relation(fields: [hubId], references: [id], onDelete: Cascade)
 }
 
 enum ParkAssetTypeEnum {
@@ -587,9 +591,12 @@ model Facility {
   hubs                Hub[]
   events              Event[]
   parkAssets          ParkAsset[]
-  sensors             Sensor[]
+  sensors             Sensor[]           @relation("StorageFacility")
   maintenanceTasks    MaintenanceTask[]
   bookings            Booking[]
+  cameraSensorId      String?            @db.Uuid
+
+  cameraSensor Sensor? @relation("CameraFacilities", fields: [cameraSensorId], references: [id], onDelete: SetNull)
 
   parkId              Int // relation to park
   @@index([parkId])

@@ -146,10 +146,14 @@ const CreateDetailsStep = ({
         <Select placeholder="Select a Status for the Occurrence" options={occurrenceStatusOptions} />
       </Form.Item>
 
-      <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }, validateDates(form)]}>
+      <Form.Item name="dateObserved" label="Date Observed" rules={[{ required: true }, validateDates(form)]}
+        extra="Enter the date when this plant species was observed/placed in the park."
+      >
         <DatePicker className="w-full" maxDate={dayjs()} />
       </Form.Item>
-      <Form.Item name="dateOfBirth" label="Date of Birth" rules={[validateDateOfBirth]}>
+      <Form.Item name="dateOfBirth" label="Date of Birth" rules={[validateDateOfBirth]}
+        extra="Enter the plant's date of planting, if available"
+      >
         <DatePicker className="w-full" maxDate={dayjs()} />
       </Form.Item>
       <Form.Item name="numberOfPlants" label="Number of Plants" rules={[{ required: true }]}>

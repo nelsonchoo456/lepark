@@ -247,11 +247,11 @@ const ParkPromotionCreate = () => {
 
             <Divider orientation="left">Redemption Rules</Divider>
 
-            <Form.Item name="maximumUsage" label="Total Redemption Limit">
+            <Form.Item name="maximumUsage" label="Total Redemption Limit" extra="Set a maximum number of times this promotion can be redeemed. Leave blank for unlimited redemptions.">
               <InputNumber min={1} precision={0} placeholder="Leave empty if unlimited" className="w-full" />
             </Form.Item>
 
-            <Form.Item name="minimumAmount" label="Minimum Amount (SGD)">
+            <Form.Item name="minimumAmount" label="Minimum Amount (SGD)" extra="Specify the minimum purchase amount required to use this promotion. Leave blank if no minimum amount.">
               <InputNumber min={0.1} precision={2} placeholder="Leave empty if no minimum amount" className="w-full" />
             </Form.Item>
 
