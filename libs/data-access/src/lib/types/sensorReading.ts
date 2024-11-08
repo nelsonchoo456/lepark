@@ -22,3 +22,5 @@ export interface HeatMapCrowdResponse {
   averageValue: number;
   readingCount: number;
 }
+
+//
