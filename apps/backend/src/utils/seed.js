@@ -135,12 +135,12 @@ async function initZonesDB() {
   // Ensure the PostGIS extension is enabled
   await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`;
 
-  // Create the ZONE_STATUS_ENUM type if it doesn't exist
+  // Create the ZoneStatusEnum type if it doesn't exist
   await prisma.$queryRaw`
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZONE_STATUS_ENUM') THEN
-        CREATE TYPE "ZONE_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZoneStatusEnum') THEN
+        CREATE TYPE "ZoneStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
       END IF;
     END
     $$;
@@ -156,7 +156,7 @@ async function initZonesDB() {
       "closingHours" TIMESTAMP[],
       geom GEOMETRY,
       paths GEOMETRY,
-      "zoneStatus" "ZONE_STATUS_ENUM",
+      "zoneStatus" "ZoneStatusEnum",
       "parkId" INT REFERENCES "Park"(id) ON DELETE CASCADE
     );
   `;
@@ -191,7 +191,7 @@ async function createZone(data) {
       ${closingHoursArray}::timestamp[],
       ${geomParam},
       ${pathsParam},
-      ${data.zoneStatus}::"ZONE_STATUS_ENUM",
+      ${data.zoneStatus}::"ZoneStatusEnum",
       ${data.parkId}
     )
     RETURNING
