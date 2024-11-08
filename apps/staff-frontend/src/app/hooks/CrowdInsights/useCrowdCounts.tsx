@@ -34,8 +34,8 @@ export const useCrowdCounts = (parkId?: number, refreshInterval = 5 * 60 * 1000)
     try {
       const parksResponse = await getAllParks();
       const allParks = parksResponse.data;
-      const today = moment().startOf('day');
-      const weekAgo = moment().subtract(7, 'days').startOf('day');
+      const today = moment().tz('Asia/Singapore').startOf('day');
+      const weekAgo = moment().tz('Asia/Singapore').subtract(6, 'days').startOf('day');
 
       // Filter parks based on parkId if provided
       const parksToProcess = parkId ? allParks.filter((p) => p.id === parkId) : allParks;
@@ -45,8 +45,8 @@ export const useCrowdCounts = (parkId?: number, refreshInterval = 5 * 60 * 1000)
           const thresholds = useParkThresholds(park.id, park.geom, allParks);
 
           const [todayData, weeklyData] = await Promise.all([
-            getAggregatedCrowdDataForPark(park.id, today.toDate(), moment().endOf('day').toDate()),
-            getAggregatedCrowdDataForPark(park.id, weekAgo.toDate(), today.toDate()),
+            getAggregatedCrowdDataForPark(park.id, today.toDate(), moment().tz('Asia/Singapore').endOf('day').toDate()),
+            getAggregatedCrowdDataForPark(park.id, weekAgo.toDate(), moment().tz('Asia/Singapore').endOf('day').toDate()),
           ]);
 
           const liveCount = todayData.data[todayData.data.length - 1]?.crowdLevel || 0;
