@@ -284,9 +284,8 @@ const BAMainLanding = () => {
         </div>
 
         {/* -- [ Section: Visitors Resource ] -- */}
-        <div id="part-4" className={sectionStyles}>
+        {/* <div id="part-4" className={sectionStyles}>
           {renderSectionHeader('Visitors')}
-          {/* Visitors */}
           <div className={flexColsStyles}>
             <Card className="w-full h-86 flex-[2]">
               <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
@@ -302,7 +301,7 @@ const BAMainLanding = () => {
               </Card>
             </div>
           </div>
-        </div>
+        </div> */}
       </Col>
       {desktop && <Col span={3} className=''>
         <Anchor
@@ -323,11 +322,11 @@ const BAMainLanding = () => {
             //   href: '#part-3',
             //   title: 'Maintenance Tasks',
             // },
-            {
-              key: 'part-4',
-              href: '#part-4',
-              title: 'Visitors',
-            },
+            // {
+            //   key: 'part-4',
+            //   href: '#part-4',
+            //   title: 'Visitors',
+            // },
           ]}
         />
       </Col>}

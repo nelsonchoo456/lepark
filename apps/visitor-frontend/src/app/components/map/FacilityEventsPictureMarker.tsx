@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 // import { capitalizeFirstLetter } from '../textFormatters/textFormatters';
 import FacilityPictureMarker from './FacilityPictureMarker';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { PiStarFill } from 'react-icons/pi';
 
 interface FacilityEventsPictureMarkerProps {
   lat: number;
@@ -78,9 +79,9 @@ function FacilityEventsPictureMarker({
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
-              className="rounded-full shadow-md flex items-center justify-center text-white shrink-0 border-2 border-sky-500 bg-sky-400"
+              className="rounded-full shadow-md flex items-center justify-center text-white shrink-0 border-2 border-highlightGreen-400 bg-highlightGreen-400"
             >
-              {!(event?.images && event?.images.length > 0) && <BiSolidCalendarEvent className="text-lg" />}
+              {!(event?.images && event?.images.length > 0) && <PiStarFill className="text-lg" />}
             </div>
           </PictureMarkerInner>
         </InnerPictureMarkerGlow>,
@@ -104,7 +105,7 @@ function FacilityEventsPictureMarker({
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
-          className="rounded-full shadow-md flex items-center justify-center text-white shrink-0 border-2 border-sky-500 bg-sky-400"
+          className="rounded-full shadow-md flex items-center justify-center text-white shrink-0 border-2 border-highlightGreen-500 bg-highlightGreen-400"
         >
           {!(event?.images && event?.images.length > 0) && <BiSolidCalendarEvent className="text-lg" />}
         </div>
@@ -177,7 +178,7 @@ function FacilityEventsPictureMarker({
           circleWidth={38}
           lat={lat}
           lng={lng}
-          innerBackgroundColor={COLORS.sky[400]}
+          innerBackgroundColor={COLORS.highlightGreen[400]}
           // tooltipLabel={facility.name}
           facilityType={facility.facilityType}
           hovered={hovered}
@@ -210,13 +211,13 @@ function FacilityEventsPictureMarker({
                   {events && events.length > 0 && (
                     <div className="">
                       <div className="flex w-full items-center mb-2">
-                        <div className="font-semibold text-sky-400 mr-2">Upcoming Events</div>
-                        <div className="flex-[1] h-[1px] bg-sky-400/30" />
+                        <div className="font-semibold text-highlightGreen-400 mr-2">Upcoming Events</div>
+                        <div className="flex-[1] h-[1px] bg-highlightGreen-400/30" />
                       </div>
                       <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
                         {events.map((event) => (
                           <div
-                            className="bg-gray-50/40 h-full w-32 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400"
+                            className="bg-gray-50/40 h-full w-32 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-highlightGreen-400"
                             onClick={() => onEventCardClick(event)}
                           >
                             <AntdTooltip title="View Event Details">
@@ -227,9 +228,9 @@ function FacilityEventsPictureMarker({
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                   }}
-                                  className="rounded-b-lg h-16 w-full shadow-md text-white flex-0 flex items-center justify-center  bg-sky-200 opacity-50 overflow-hidden"
+                                  className="rounded-b-lg h-16 w-full shadow-md text-white flex-0 flex items-center justify-center bg-highlightGreen-200 opacity-50 overflow-hidden"
                                 >
-                                  {(!event.images || event.images.length === 0) && <BiSolidCalendar className="opacity-75 text-lg" />}
+                                  {(!event.images || event.images.length === 0) && <PiStarFill className="opacity-75 text-lg" />}
                                 </div>
                                 <div className="font-semibold px-2 mt-1">{event.title}</div>
                                 <div className="text-xs px-2">
@@ -241,7 +242,7 @@ function FacilityEventsPictureMarker({
                         ))}
                       </div>
                       <div className="flex w-full items-center mb-2">
-                        <div className="flex-[1] h-[1px] bg-sky-400/30" />
+                        <div className="flex-[1] h-[1px] bg-highlightGreen-400/30" />
                       </div>
                     </div>
                   )}

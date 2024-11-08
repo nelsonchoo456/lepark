@@ -13,8 +13,10 @@ import {
   getAllParks,
   getAllPlantTasks,
   getAnnouncementsByParkId,
-  getNParksAnnouncements,
+  getMaintenanceTasksByParkId,
   getPlantTasksByParkId,
+  MaintenanceTaskResponse,
+  MaintenanceTaskStatusEnum,
   ParkResponse,
   PlantTaskResponse,
   PlantTaskStatusEnum,
@@ -60,11 +62,13 @@ const ManagerMainLanding = () => {
   // Data
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
 
   useEffect(() => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
       fetchPlantTasks();
+      fetchMaintenanceTasks();
       fetchParks();
     }
   }, [user]);
@@ -111,6 +115,20 @@ const ManagerMainLanding = () => {
     }
   };
 
+  const fetchMaintenanceTasks = async () => {
+    try {
+      if (!user) return;
+      let response;
+      if (user?.role === StaffType.MANAGER && user.parkId) {
+        response = await getMaintenanceTasksByParkId(user.parkId);
+        setMaintenanceTasks(response.data);
+      }
+      // setPlantTasks(response.data);
+    } catch (error) {
+      console.error('Error fetching plant tasks:', error);
+    }
+  };
+
   const pendingTasksCount = useMemo(() => {
     return plantTasks
       ? plantTasks.filter((task) => task.taskStatus === PlantTaskStatusEnum.OPEN || task.taskStatus === PlantTaskStatusEnum.IN_PROGRESS)
@@ -128,6 +146,24 @@ const ManagerMainLanding = () => {
         ).length
       : 0;
   }, [plantTasks]);
+
+  const pendingMaintenanceCount = useMemo(() => {
+    return maintenanceTasks
+      ? maintenanceTasks.filter(
+          (m) => m.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS || m.taskStatus === MaintenanceTaskStatusEnum.OPEN,
+        ).length
+      : 0;
+  }, [maintenanceTasks]);
+
+  const overdueMaintenanceCount = useMemo(() => {
+    return maintenanceTasks
+      ? maintenanceTasks.filter(
+          (m) =>
+            (m.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS || m.taskStatus === MaintenanceTaskStatusEnum.OPEN) &&
+            moment().startOf('day').isAfter(moment(m.dueDate).startOf('day')),
+        ).length
+      : 0;
+  }, [maintenanceTasks]);
 
   const chartOptions: ApexOptions = {
     chart: {
