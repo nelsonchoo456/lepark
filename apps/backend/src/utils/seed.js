@@ -52,12 +52,12 @@ async function initParksDB() {
   // Ensure the POSTGIS extension is added
   await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`;
 
-  // Check if PARK_STATUS_ENUM exists, and create if not
+  // Check if ParkStatusEnum exists, and create if not
   await prisma.$queryRaw`
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PARK_STATUS_ENUM') THEN
-        CREATE TYPE "PARK_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ParkStatusEnum') THEN
+        CREATE TYPE "ParkStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
       END IF;
     END
     $$;
@@ -76,7 +76,7 @@ async function initParksDB() {
       images TEXT[],
       geom GEOMETRY,
       paths GEOMETRY,
-      "parkStatus" "PARK_STATUS_ENUM"
+      "parkStatus" "ParkStatusEnum"
     );
   `;
 }
@@ -113,7 +113,7 @@ async function createPark(data) {
       ${imagesParam},
       ST_GeomFromText(${data.geom}, 4326),
       ST_GeomFromText(${data.paths}, 4326),
-      ${data.parkStatus}::"PARK_STATUS_ENUM"
+      ${data.parkStatus}::"ParkStatusEnum"
     )
     RETURNING
       id,

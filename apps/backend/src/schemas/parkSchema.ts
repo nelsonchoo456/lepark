@@ -1,12 +1,12 @@
 import { z } from 'zod';
-// import { PARK_STATUS_ENUM } from '@prisma/client';
+// import { ParkStatusEnum } from '@prisma/client';
 
 // export const ParkSchema = z.object({
 //   id: z.string().uuid().optional(), // ID is optional because it's usually auto-generated
 //   name: z.string(),
 //   description: z.string().optional(),
-//   parkStatus: z.nativeEnum(PARK_STATUS_ENUM),
-  
+//   parkStatus: z.nativeEnum(ParkStatusEnum),
+
 // });
 
 // export type ParkSchemaType = z.infer<typeof ParkSchema>;
