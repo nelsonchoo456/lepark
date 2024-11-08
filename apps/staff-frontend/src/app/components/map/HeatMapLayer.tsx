@@ -49,7 +49,7 @@ const HeatmapLayer = ({ park, zone }: HeatmapLayer) => {
   }
 
   useEffect(() => {
-    if (crowdData) {
+    if (crowdData && crowdData.length > 0) {
       const maxIntensity = crowdData.reduce((max, current) => 
         current.averageValue > max ? current.averageValue : max, 
         crowdData[0].averageValue
