@@ -128,7 +128,7 @@ model Occurrence {
   description         String?
   occurrenceStatus    OccurrenceStatusEnum
   decarbonizationType DecarbonizationTypeEnum
-  images String[]
+  images              String[]
 
   activityLogs ActivityLog[]
   statusLogs   StatusLog[]
@@ -206,13 +206,11 @@ model Attraction {
   lat             Float?
   lng             Float?
 
-  attractionTicketListings AttractionTicketListing[]
+  attractionTicketListings     AttractionTicketListing[]
   attractionTicketTransactions AttractionTicketTransaction[]
-
-  parkId Int // relation to park
-  cameraSensorId           String?                   @db.Uuid
-
-  cameraSensor Sensor? @relation(fields: [cameraSensorId], references: [id], onDelete: SetNull)
+  cameraSensorId               String?                       @db.Uuid
+  cameraSensor                 Sensor?                       @relation(fields: [cameraSensorId], references: [id], onDelete: SetNull)
+  parkId                       Int // relation to park
 
   @@index([parkId])
 }
@@ -237,8 +235,8 @@ model AttractionTicketListing {
   price       Float
   isActive    Boolean
 
-  attractionId String     @db.Uuid
-  attraction   Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+  attractionId      String             @db.Uuid
+  attraction        Attraction         @relation(fields: [attractionId], references: [id], onDelete: Cascade)
   attractionTickets AttractionTicket[]
 }
 
@@ -314,7 +312,7 @@ model Event {
   images          String[]
   status          EventStatusEnum
 
-  eventTicketListings EventTicketListing[]
+  eventTicketListings     EventTicketListing[]
   eventTicketTransactions EventTicketTransaction[]
 
   facilityId String   @db.Uuid
@@ -343,8 +341,8 @@ model EventTicketListing {
   price       Float
   isActive    Boolean
 
-  eventId String @db.Uuid
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String        @db.Uuid
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventTickets EventTicket[]
 }
 
@@ -379,17 +377,17 @@ model EventTicketTransaction {
 }
 
 model Visitor {
-  id              String    @id @default(uuid()) @db.Uuid
-  firstName       String
-  lastName        String
-  email           String    @unique
-  password        String
-  contactNumber   String
-  isVerified      Boolean
-  resetToken      String?
-  resetTokenUsed  Boolean   @default(false)
+  id             String  @id @default(uuid()) @db.Uuid
+  firstName      String
+  lastName       String
+  email          String  @unique
+  password       String
+  contactNumber  String
+  isVerified     Boolean
+  resetToken     String?
+  resetTokenUsed Boolean @default(false)
 
-  favoriteSpecies Species[]
+  favoriteSpecies              Species[]
   attractionTicketTransactions AttractionTicketTransaction[]
   eventTicketTransactions      EventTicketTransaction[]
   promotionsRedeemed           Promotion[]
@@ -466,10 +464,10 @@ enum SensorUnitEnum {
 }
 
 model Sensor {
-  id                    String           @id @default(uuid()) @db.Uuid
+  id                    String            @id @default(uuid()) @db.Uuid
   name                  String
-  identifierNumber      String           @unique
-  serialNumber          String           @unique
+  identifierNumber      String            @unique
+  serialNumber          String            @unique
   sensorType            SensorTypeEnum
   description           String?
   sensorStatus          SensorStatusEnum
@@ -483,24 +481,24 @@ model Sensor {
   lat                   Float?
   long                  Float?
   remarks               String?
-  hubId                 String?              @db.Uuid
-  hub                   Hub?                 @relation(fields: [hubId], references: [id])
-  facilityId            String?              @db.Uuid
-  facility              Facility?            @relation("StorageFacility", fields: [facilityId], references: [id], onDelete: Cascade)
+  hubId                 String?           @db.Uuid
+  hub                   Hub?              @relation(fields: [hubId], references: [id])
+  facilityId            String?           @db.Uuid
+  facility              Facility?         @relation("storageFacility", fields: [facilityId], references: [id], onDelete: Cascade)
   sensorReadings        SensorReading[]
   maintenanceTasks      MaintenanceTask[]
 
   cameraAttractions Attraction[]
-  cameraFacilities  Facility[]   @relation("CameraFacilities")
+  cameraFacilities  Facility[]   @relation("cameraFacilities")
 }
 
 model SensorReading {
-  id       String   @id @default(uuid()) @db.Uuid
-  date     DateTime
-  value    Float
+  id    String   @id @default(uuid()) @db.Uuid
+  date  DateTime
+  value Float
 
-  sensorId String   @db.Uuid
-  sensor   Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  sensorId String @db.Uuid
+  sensor   Sensor @relation(fields: [sensorId], references: [id], onDelete: Cascade)
 }
 
 model HistoricalRainData {
@@ -517,8 +515,8 @@ model RfModel {
   id        String   @id @default(uuid()) @db.Uuid
   modelData Json
   createdAt DateTime @default(now())
-  hubId     String @unique @db.Uuid
-  hub   Hub   @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId     String   @unique @db.Uuid
+  hub       Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
 }
 
 enum ParkAssetTypeEnum {
@@ -563,9 +561,9 @@ model ParkAsset {
   images                String[]
   remarks               String?
 
-  facilityId            String                 @db.Uuid
-  facility              Facility               @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  maintenanceTasks      MaintenanceTask[]
+  facilityId       String            @db.Uuid
+  facility         Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  maintenanceTasks MaintenanceTask[]
 }
 
 model Facility {
@@ -588,17 +586,17 @@ model Facility {
   capacity            Float
   fee                 Float
 
-  hubs                Hub[]
-  events              Event[]
-  parkAssets          ParkAsset[]
-  sensors             Sensor[]           @relation("StorageFacility")
-  maintenanceTasks    MaintenanceTask[]
-  bookings            Booking[]
-  cameraSensorId      String?            @db.Uuid
+  hubs             Hub[]
+  events           Event[]
+  parkAssets       ParkAsset[]
+  sensors          Sensor[]          @relation("storageFacility")
+  maintenanceTasks MaintenanceTask[]
+  bookings         Booking[]
+  cameraSensorId   String?           @db.Uuid
+  cameraSensor     Sensor?           @relation("cameraFacilities", fields: [cameraSensorId], references: [id], onDelete: SetNull)
 
-  cameraSensor Sensor? @relation("CameraFacilities", fields: [cameraSensorId], references: [id], onDelete: SetNull)
+  parkId Int // relation to park
 
-  parkId              Int // relation to park
   @@index([parkId])
 }
 
@@ -654,26 +652,26 @@ enum PlantTaskUrgencyEnum {
 }
 
 model PlantTask {
-  id                String               @id @default(uuid()) @db.Uuid
-  title             String
-  description       String
-  taskStatus        PlantTaskStatusEnum
-  taskType          PlantTaskTypeEnum
-  taskUrgency       PlantTaskUrgencyEnum
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  dueDate           DateTime
-  completedDate     DateTime?
-  images            String[]
-  remarks           String?
-  position          Int
+  id            String               @id @default(uuid()) @db.Uuid
+  title         String
+  description   String
+  taskStatus    PlantTaskStatusEnum
+  taskType      PlantTaskTypeEnum
+  taskUrgency   PlantTaskUrgencyEnum
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  dueDate       DateTime
+  completedDate DateTime?
+  images        String[]
+  remarks       String?
+  position      Int
 
-  occurrenceId      String               @db.Uuid
-  occurrence        Occurrence           @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
-  assignedStaffId   String?              @db.Uuid
-  assignedStaff     Staff?               @relation("assignedPlantTasks", fields: [assignedStaffId], references: [id])
-  submittingStaffId String               @db.Uuid
-  submittingStaff   Staff                @relation("submittedPlantTasks", fields: [submittingStaffId], references: [id], onDelete: Cascade)
+  occurrenceId      String     @db.Uuid
+  occurrence        Occurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  assignedStaffId   String?    @db.Uuid
+  assignedStaff     Staff?     @relation("assignedPlantTasks", fields: [assignedStaffId], references: [id])
+  submittingStaffId String     @db.Uuid
+  submittingStaff   Staff      @relation("submittedPlantTasks", fields: [submittingStaffId], references: [id], onDelete: Cascade)
 }
 
 enum MaintenanceTaskStatusEnum {
@@ -709,32 +707,32 @@ enum MaintenanceTaskUrgencyEnum {
 }
 
 model MaintenanceTask {
-  id                String                     @id @default(uuid()) @db.Uuid
-  title             String
-  description       String
-  taskStatus        MaintenanceTaskStatusEnum
-  taskType          MaintenanceTaskTypeEnum
-  taskUrgency       MaintenanceTaskUrgencyEnum
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
-  dueDate           DateTime
-  completedDate     DateTime?
-  images            String[]
-  remarks           String?
-  position          Int
+  id            String                     @id @default(uuid()) @db.Uuid
+  title         String
+  description   String
+  taskStatus    MaintenanceTaskStatusEnum
+  taskType      MaintenanceTaskTypeEnum
+  taskUrgency   MaintenanceTaskUrgencyEnum
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+  dueDate       DateTime
+  completedDate DateTime?
+  images        String[]
+  remarks       String?
+  position      Int
 
-  assignedStaffId   String?                    @db.Uuid
-  assignedStaff     Staff?                     @relation("assignedMaintenanceTasks", fields: [assignedStaffId], references: [id])
-  submittingStaffId String                     @db.Uuid
-  submittingStaff   Staff                      @relation("submittedMaintenanceTasks", fields: [submittingStaffId], references: [id], onDelete: Cascade)
-  facilityId        String?                    @db.Uuid
-  facility          Facility?                  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  parkAssetId       String?                    @db.Uuid
-  parkAsset         ParkAsset?                 @relation(fields: [parkAssetId], references: [id], onDelete: Cascade)
-  sensorId          String?                    @db.Uuid
-  sensor            Sensor?                    @relation(fields: [sensorId], references: [id], onDelete: Cascade)
-  hubId             String?                    @db.Uuid
-  hub               Hub?                       @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  assignedStaffId   String?    @db.Uuid
+  assignedStaff     Staff?     @relation("assignedMaintenanceTasks", fields: [assignedStaffId], references: [id])
+  submittingStaffId String     @db.Uuid
+  submittingStaff   Staff      @relation("submittedMaintenanceTasks", fields: [submittingStaffId], references: [id], onDelete: Cascade)
+  facilityId        String?    @db.Uuid
+  facility          Facility?  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  parkAssetId       String?    @db.Uuid
+  parkAsset         ParkAsset? @relation(fields: [parkAssetId], references: [id], onDelete: Cascade)
+  sensorId          String?    @db.Uuid
+  sensor            Sensor?    @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  hubId             String?    @db.Uuid
+  hub               Hub?       @relation(fields: [hubId], references: [id], onDelete: Cascade)
 }
 
 model DecarbonizationArea {
@@ -743,14 +741,14 @@ model DecarbonizationArea {
   description String?
   name        String
 
-  parkId      Int // relation to park
+  parkId               Int // relation to park
   sequestrationHistory SequestrationHistory[]
 }
 
 model SequestrationHistory {
-  id                    String              @id @default(uuid()) @db.Uuid
-  date                  DateTime
-  seqValue              Float
+  id       String   @id @default(uuid()) @db.Uuid
+  date     DateTime
+  seqValue Float
 
   decarbonizationAreaId String              @db.Uuid
   decarbonizationArea   DecarbonizationArea @relation(fields: [decarbonizationAreaId], references: [id], onDelete: Cascade)
@@ -768,12 +766,12 @@ model Feedback {
   remarks          String?
   needResponse     Boolean
 
-  resolvedStaffId       String? @db.Uuid
-  resolvedStaff Staff?  @relation(fields: [resolvedStaffId], references: [id])
-  visitorId     String  @db.Uuid
-  visitor       Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  resolvedStaffId String? @db.Uuid
+  resolvedStaff   Staff?  @relation(fields: [resolvedStaffId], references: [id])
+  visitorId       String  @db.Uuid
+  visitor         Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
 
-  parkId           Int // relation to park
+  parkId Int // relation to park
 }
 
 enum FeedbackCategoryEnum {
@@ -805,7 +803,7 @@ enum PromotionStatusEnum {
 }
 
 model Promotion {
-  id            String          @id @default(uuid()) @db.Uuid
+  id            String              @id @default(uuid()) @db.Uuid
   name          String
   description   String?
   discountType  DiscountTypeEnum
@@ -820,8 +818,8 @@ model Promotion {
   maximumUsage  Int?
   minimumAmount Float?
 
-  parkId        Int? // relation to park
-  visitors      Visitor[]
+  parkId   Int? // relation to park
+  visitors Visitor[]
 }
 
 enum FAQStatusEnum {
@@ -852,7 +850,8 @@ model FAQ {
   status   FAQStatusEnum
   priority Int?
 
-  parkId   Int? // relation to park
+  parkId Int? // relation to park
+
   @@index([parkId])
 }
 
@@ -872,7 +871,7 @@ model Announcement {
   endDate   DateTime
   status    AnnouncementStatusEnum
 
-  parkId    Int? // relation to park
+  parkId Int? // relation to park
 }
 
 model Booking {
@@ -887,10 +886,10 @@ model Booking {
   paymentDeadline DateTime?
   visitorRemarks  String
 
-  facilityId      String            @db.Uuid
-  facility        Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  visitorId       String            @db.Uuid
-  visitor         Visitor           @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  facilityId String   @db.Uuid
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  visitorId  String   @db.Uuid
+  visitor    Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
 }
 
 enum BookingStatusEnum {

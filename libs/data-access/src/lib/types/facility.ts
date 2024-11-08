@@ -24,25 +24,6 @@ export interface FacilityData {
   cameraSensorId?: string;
 }
 
-// export enum FacilityType {
-//   TOILET = "TOILET",
-//   PLAYGROUND  = "PLAYGROUND",
-//   INFORMATION = "INFORMATION",
-//   CARPARK = "CARPARK",
-//   ACCESSIBILITY = "ACCESSIBILITY",
-//   STAGE = "STAGE",
-//   WATER_FOUNTAIN = "WATER_FOUNTAIN",
-//   PICNIC_AREA = "PICNIC_AREA",
-//   BBQ_PIT = "BBQ_PIT",
-//   CAMPING_AREA = "CAMPING_AREA",
-//   AED = "AED",
-//   FIRST_AID = "FIRST_AID",
-//   AMPHITHEATER = "AMPHITHEATER",
-//   GAZEBO = "GAZEBO",
-//   STOREROOM = "STOREROOM",
-//   OTHERS = "OTHERS"
-// }
-
 export interface FacilityResponse {
   id: string;
   name: string;
