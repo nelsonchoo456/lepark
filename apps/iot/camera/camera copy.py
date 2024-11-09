@@ -203,11 +203,18 @@ def initialize_camera():
     global webcam
     # Use OpenCV to capture from the first connected webcam (0) or change the number if you have multiple webcams
     webcam = cv2.VideoCapture(0)
-    webcam.set(cv2.CAP_PROP_FPS, 30)  # Set to 30 FPS or higher if supported
     if not webcam.isOpened():
         print("Error: Could not open webcam.")
         exit(1)
+    
+    # Set webcam resolution to 320x240 for faster processing
+    webcam.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+    webcam.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    # Optionally, set a higher FPS if supported
+    webcam.set(cv2.CAP_PROP_FPS, 30)  # Try setting FPS to 30 or adjust as needed
+
     print("Webcam initialized successfully.")
+
 
 def run_detection(model: str, max_results: int, score_threshold: float) -> None:
     """Continuously run inference on images acquired from the camera.
@@ -293,8 +300,8 @@ def run_detection(model: str, max_results: int, score_threshold: float) -> None:
             frame = visualize(frame, detection_result)
 
         # Encode the frame as JPEG and write it to output for streaming
-        _, jpeg_frame = cv2.imencode('.jpg', frame)
-        output.write(jpeg_frame.tobytes())  # Stream frame to clients
+        _, jpeg_frame = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])  # Set quality to 70
+        output.write(jpeg_frame.tobytes())
 
         # Save every detection frame if desired
         if frame is not None:
