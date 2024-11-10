@@ -1,7 +1,7 @@
 import FeedbackDao from '../dao/FeedbackDao';
 import VisitorDao from '../dao/VisitorDao';
 import StaffDao from '../dao/StaffDao';
-import { Feedback, Prisma } from '@prisma/client';
+import { Feedback, Prisma, Staff, Visitor } from '@prisma/client';
 import { FeedbackSchema, FeedbackSchemaType } from '../schemas/feedbackSchema';
 import aws from 'aws-sdk';
 
@@ -12,17 +12,13 @@ const s3 = new aws.S3({
 });
 
 class FeedbackService {
-  public async createFeedback(
-    data: FeedbackSchemaType
-  ): Promise<Feedback> {
+  public async createFeedback(data: FeedbackSchemaType): Promise<Feedback> {
     const formattedData = dateFormatter(data);
     const validatedData = FeedbackSchema.parse(formattedData) as Prisma.FeedbackCreateInput;
     return FeedbackDao.createFeedback(validatedData);
   }
 
-  public async getAllFeedback(
-    visitorId?: string
-  ): Promise<(Feedback & { visitor: any; staff: any | null })[]> {
+  public async getAllFeedback(visitorId?: string): Promise<(Feedback & { visitor: Visitor; resolvedStaff: Staff | null })[]> {
     let feedback: Feedback[];
     if (visitorId) {
       feedback = await FeedbackDao.getAllFeedbackByVisitorId(visitorId);
@@ -32,48 +28,40 @@ class FeedbackService {
     const feedbacksWithDetails = await Promise.all(
       feedback.map(async (feedback) => {
         const visitor = await VisitorDao.getVisitorById(feedback.visitorId);
-        const staff = feedback.staffId ? await StaffDao.getStaffById(feedback.staffId) : null;
-        return { ...feedback, visitor, staff };
+        const resolvedStaff = feedback.resolvedStaffId ? await StaffDao.getStaffById(feedback.resolvedStaffId) : null;
+        return { ...feedback, visitor, resolvedStaff };
       }),
     );
     return feedbacksWithDetails;
   }
 
-  public async getFeedbackById(
-    id: string
-  ): Promise<Feedback & { visitor: any; staff: any | null }> {
+  public async getFeedbackById(id: string): Promise<Feedback & { visitor: Visitor; resolvedStaff: Staff | null }> {
     const feedback = await FeedbackDao.getFeedbackById(id);
     if (!feedback) {
       throw new Error('Feedback not found');
     }
     const visitor = await VisitorDao.getVisitorById(feedback.visitorId);
-    const staff = feedback.staffId ? await StaffDao.getStaffById(feedback.staffId) : null;
-    return { ...feedback, visitor, staff };
+    const resolvedStaff = feedback.resolvedStaffId ? await StaffDao.getStaffById(feedback.resolvedStaffId) : null;
+    return { ...feedback, visitor, resolvedStaff };
   }
 
   public async updateFeedback(
-    id: string, 
-    data: Partial<FeedbackSchemaType>
-  ): Promise<Feedback & { visitor: any; staff: any | null }> {
+    id: string,
+    data: Partial<FeedbackSchemaType>,
+  ): Promise<Feedback & { visitor: Visitor; resolvedStaff: Staff | null }> {
     const formattedData = dateFormatter(data) as Prisma.FeedbackUpdateInput;
     const validatedData = FeedbackSchema.partial().parse(formattedData);
     const updatedFeedback = await FeedbackDao.updateFeedback(id, validatedData);
     const visitor = await VisitorDao.getVisitorById(updatedFeedback.visitorId);
-    const staff = updatedFeedback.staffId ? await StaffDao.getStaffById(updatedFeedback.staffId) : null;
-    return { ...updatedFeedback, visitor, staff };
+    const resolvedStaff = updatedFeedback.resolvedStaffId ? await StaffDao.getStaffById(updatedFeedback.resolvedStaffId) : null;
+    return { ...updatedFeedback, visitor, resolvedStaff };
   }
 
-  public async deleteFeedback(
-    id: string
-  ): Promise<void> {
+  public async deleteFeedback(id: string): Promise<void> {
     await FeedbackDao.deleteFeedback(id);
   }
 
-  public async uploadImageToS3(
-    fileBuffer: Buffer,
-    fileName: string,
-    mimeType: string
-  ): Promise<string> {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `feedback/${fileName}`,
@@ -90,15 +78,13 @@ class FeedbackService {
     }
   }
 
-  public async getFeedbackByParkId(
-    parkId: number
-  ): Promise<(Feedback & { visitor: any; staff: any | null })[]> {
+  public async getFeedbackByParkId(parkId: number): Promise<(Feedback & { visitor: Visitor; resolvedStaff: Staff | null })[]> {
     const feedbacks = await FeedbackDao.getFeedbackByParkId(parkId);
     const feedbacksWithDetails = await Promise.all(
       feedbacks.map(async (feedback) => {
         const visitor = await VisitorDao.getVisitorById(feedback.visitorId);
-        const staff = feedback.staffId ? await StaffDao.getStaffById(feedback.staffId) : null;
-        return { ...feedback, visitor, staff };
+        const resolvedStaff = feedback.resolvedStaffId ? await StaffDao.getStaffById(feedback.resolvedStaffId) : null;
+        return { ...feedback, visitor, resolvedStaff };
       }),
     );
     return feedbacksWithDetails;

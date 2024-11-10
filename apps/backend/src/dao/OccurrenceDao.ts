@@ -132,6 +132,14 @@ class OccurrenceDao {
       },
     });
   }
+
+  public async deleteOccurrencesByZoneId(zoneId: number): Promise<void> {
+    await prisma.occurrence.deleteMany({
+      where: {
+        zoneId,
+      },
+    });
+  }
 }
 
 export default new OccurrenceDao();

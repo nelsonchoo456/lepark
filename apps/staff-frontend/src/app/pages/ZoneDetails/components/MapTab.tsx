@@ -15,6 +15,7 @@ import { useAuth } from '@lepark/common-ui';
 import HoverInformation from '../../../components/map/HoverInformation';
 import MarkersGroup from '../../../components/map/MarkersGroup';
 import { useFetchMarkersGroup } from '../../../components/map/hooks/useFetchMarkersGroup';
+import HeatmapLayer from '../../../components/map/HeatMapLayer';
 
 interface MapTabProps {
   zone: ZoneResponse;
@@ -102,8 +103,9 @@ const MapTab = ({ zone }: MapTabProps) => {
           {showPark && (
             <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={park?.name} color="transparent" />
           )}
-          <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.9 }} polygonLabel={zone?.name} />
+          <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={zone?.name} />
 
+          {park && zone && <HeatmapLayer park={park} zone={zone}/>}
           <MarkersGroup
             occurrences={occurrences}
             attractions={attractions}
@@ -117,6 +119,7 @@ const MapTab = ({ zone }: MapTabProps) => {
             showEvents={showEvents}
             setShowEvents={setShowEvents}
           />
+          
         </MapContainer>
 
         {hovered && (

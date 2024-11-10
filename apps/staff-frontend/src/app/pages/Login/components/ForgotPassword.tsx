@@ -8,14 +8,14 @@ interface ForgotPasswordProps {
 }
 const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
   const navigate = useNavigate();
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [forgotPasswordDone, setForgotPasswordDone] = useState(false);
   const [email, setEmail] = useState('');
 
   const handleSubmit = async (values: any) => {
     setEmail(values.email);
     try {
       await forgotStaffPassword(values);
-      setIsEmailSent(true);
+      setForgotPasswordDone(true);
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.message || error.toString();
@@ -23,7 +23,7 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
         message.error('Invalid email format.');
       } else {
         // message.error('If the email exists, a reset link has been sent.');
-        setIsEmailSent(true);
+        setForgotPasswordDone(true);
       }
     }
   };
@@ -39,7 +39,7 @@ const ForgotPassword = ({ goToLogin }: ForgotPasswordProps) => {
   return (
     <div className="w-full">
       <Divider>Reset Password</Divider>
-      {isEmailSent ? (
+      {forgotPasswordDone ? (
         <><div className="text-secondary text-center">An email has been sent to <b>{email}</b>. If an account is registered with this email address, you will receive a password reset link. </div>
         <br/>
         <div className="text-secondary text-center"> Please check your inbox to reset your password.</div></> 

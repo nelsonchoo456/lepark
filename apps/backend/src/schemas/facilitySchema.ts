@@ -20,6 +20,8 @@ export const FacilitySchema = z.object({
   capacity: z.number().int().nonnegative({ message: 'Capacity must be a non-negative number' }),
   fee: z.number().nonnegative({ message: 'Fee must be a non-negative number' }),
   parkId: z.number(),
+
+  cameraSensorId: z.string().uuid().nullable().optional(),
 });
 
 export type FacilitySchemaType = z.infer<typeof FacilitySchema>;

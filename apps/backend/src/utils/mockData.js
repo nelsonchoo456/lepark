@@ -1510,8 +1510,8 @@ const attractionsData = [
     maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.318784621302434,
-    lng: 103.8187140486642,
+    lat: 1.3182110464165766,
+    lng: 103.81877303123476,
     parkId: 2,
   },
   {
@@ -1544,8 +1544,8 @@ const attractionsData = [
     maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.319492692641653,
-    lng: 103.816557581536,
+    lat: 1.3211385874084793,
+    lng: 103.81627321243288,
     parkId: 2,
   },
   {
@@ -1575,8 +1575,8 @@ const attractionsData = [
     maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.316473506270394,
-    lng: 103.8178771734238,
+    lat: 1.3166342517020801,
+    lng: 103.8182258605957,
     parkId: 2,
   },
   {
@@ -1609,8 +1609,8 @@ const attractionsData = [
     maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.314601354444774,
-    lng: 103.80999147892,
+    lat: 1.3096208075727624,
+    lng: 103.81668090820314,
     parkId: 2,
   },
   {
@@ -1643,8 +1643,8 @@ const attractionsData = [
     maxCapacity: 100,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the attraction is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
-    lat: 1.313818486250098,
-    lng: 103.8106995820999,
+    lat: 1.307774512896767,
+    lng: 103.8168096542358,
     parkId: 2,
   },
 ];
@@ -4338,7 +4338,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 1,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T09:00:00Z',
     dateResolved: null,
     needResponse: true
@@ -4351,7 +4351,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 1,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T10:30:00Z',
     dateResolved: '2024-10-24T14:00:00Z',
     needResponse: true,
@@ -4365,7 +4365,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 1,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369386688-Screenshot%202024-10-31%20at%206.08.06%20PM.png','https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369387159-Screenshot%202024-10-31%20at%206.08.13%20PM.png'],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T11:45:00Z',
     dateResolved: '2024-10-24T16:30:00Z',
     needResponse: false,
@@ -4379,7 +4379,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 1,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T13:15:00Z',
     dateResolved: null,
     needResponse: false
@@ -4392,7 +4392,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 1,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T15:00:00Z',
     dateResolved: '2024-10-24T09:00:00Z',
     needResponse: true,
@@ -4406,7 +4406,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 1,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T16:45:00Z',
     dateResolved: null,
     needResponse: false
@@ -4421,7 +4421,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 2,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369386407-Mesa%20Open%20Space%20Dirt%20Path.jpg'],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T09:30:00Z',
     dateResolved: null,
     needResponse: true
@@ -4434,7 +4434,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 2,
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730351314663-Screenshot%202024-10-31%20at%2012.58.44%20PM.png'],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T11:00:00Z',
     dateResolved: '2024-10-24T13:30:00Z',
     needResponse: true,
@@ -4448,7 +4448,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 2,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T12:15:00Z',
     dateResolved: null,
     needResponse: false
@@ -4461,7 +4461,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 2,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T14:00:00Z',
     dateResolved: '2024-10-24T15:45:00Z',
     needResponse: false,
@@ -4475,7 +4475,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 2,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T15:30:00Z',
     dateResolved: '2024-10-24T10:00:00Z',
     needResponse: true,
@@ -4489,7 +4489,7 @@ const feedbacksData = [
     visitorId: '',
     parkId: 2,
     images: [],
-    staffId: '',
+    resolvedStaffId: '',
     dateCreated: '2024-10-22T17:00:00Z',
     dateResolved: null,
     needResponse: false

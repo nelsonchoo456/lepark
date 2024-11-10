@@ -96,7 +96,7 @@ const ZoneDetails = () => {
     {
       key: 'IoT',
       label: 'IoT',
-      children: hubs ? (
+      children: hubs && hubs.length > 0 ? (
         <IotTabs hubs={hubs}/>
       ) : (
         <Empty description="No Linked Hubs"></Empty>

@@ -52,12 +52,12 @@ async function initParksDB() {
   // Ensure the POSTGIS extension is added
   await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`;
 
-  // Check if PARK_STATUS_ENUM exists, and create if not
+  // Check if ParkStatusEnum exists, and create if not
   await prisma.$queryRaw`
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PARK_STATUS_ENUM') THEN
-        CREATE TYPE "PARK_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ParkStatusEnum') THEN
+        CREATE TYPE "ParkStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
       END IF;
     END
     $$;
@@ -76,7 +76,7 @@ async function initParksDB() {
       images TEXT[],
       geom GEOMETRY,
       paths GEOMETRY,
-      "parkStatus" "PARK_STATUS_ENUM"
+      "parkStatus" "ParkStatusEnum"
     );
   `;
 }
@@ -113,7 +113,7 @@ async function createPark(data) {
       ${imagesParam},
       ST_GeomFromText(${data.geom}, 4326),
       ST_GeomFromText(${data.paths}, 4326),
-      ${data.parkStatus}::"PARK_STATUS_ENUM"
+      ${data.parkStatus}::"ParkStatusEnum"
     )
     RETURNING
       id,
@@ -135,12 +135,12 @@ async function initZonesDB() {
   // Ensure the PostGIS extension is enabled
   await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`;
 
-  // Create the ZONE_STATUS_ENUM type if it doesn't exist
+  // Create the ZoneStatusEnum type if it doesn't exist
   await prisma.$queryRaw`
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZONE_STATUS_ENUM') THEN
-        CREATE TYPE "ZONE_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZoneStatusEnum') THEN
+        CREATE TYPE "ZoneStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
       END IF;
     END
     $$;
@@ -156,7 +156,7 @@ async function initZonesDB() {
       "closingHours" TIMESTAMP[],
       geom GEOMETRY,
       paths GEOMETRY,
-      "zoneStatus" "ZONE_STATUS_ENUM",
+      "zoneStatus" "ZoneStatusEnum",
       "parkId" INT REFERENCES "Park"(id) ON DELETE CASCADE
     );
   `;
@@ -191,7 +191,7 @@ async function createZone(data) {
       ${closingHoursArray}::timestamp[],
       ${geomParam},
       ${pathsParam},
-      ${data.zoneStatus}::"ZONE_STATUS_ENUM",
+      ${data.zoneStatus}::"ZoneStatusEnum",
       ${data.parkId}
     )
     RETURNING
@@ -1218,7 +1218,7 @@ async function seed() {
   }, {});
 
   const populatedFeedbacks = feedbacksData.map((feedback, index) => {
-    let visitorId, staffId;
+    let visitorId, resolvedStaffId;
 
     // Assign visitor IDs
     if (feedback.parkId === 1) {
@@ -1230,19 +1230,19 @@ async function seed() {
     // Assign staffId only if the feedback is ACCEPTED or REJECTED
     if (feedback.feedbackStatus === 'ACCEPTED' || feedback.feedbackStatus === 'REJECTED') {
       if (feedback.parkId === 1) {
-        staffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
+        resolvedStaffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
       } else if (feedback.parkId === 2) {
         if (feedback.title === 'Excellent Educational Program' || feedback.title === 'Safety Concern') {
-          staffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
+          resolvedStaffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
         } else if (index < 9) {
-          staffId = staffMap['superadmin'];
+          resolvedStaffId = staffMap['superadmin'];
         } else {
-          staffId = staffMap['parkranger2'];
+          resolvedStaffId = staffMap['parkranger2'];
         }
       }
     }
 
-    return { ...feedback, visitorId, staffId };
+    return { ...feedback, visitorId, resolvedStaffId };
   });
 
   const feedbackList = [];

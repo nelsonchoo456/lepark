@@ -294,53 +294,6 @@ class MaintenanceTaskService {
     return MaintenanceTaskDao.unassignMaintenanceTask(id, new Date());
   }
 
-  public async acceptMaintenanceTask(id: string, staffId: string): Promise<MaintenanceTask> {
-    const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
-    if (!maintenanceTask) {
-      throw new Error('Maintenance task not found');
-    }
-
-    if (maintenanceTask.taskStatus !== MaintenanceTaskStatusEnum.OPEN) {
-      throw new Error('Only open tasks can be accepted');
-    }
-
-    return MaintenanceTaskDao.acceptMaintenanceTask(id, staffId, new Date());
-  }
-
-  public async unacceptMaintenanceTask(id: string): Promise<MaintenanceTask> {
-    const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
-    if (!maintenanceTask) {
-      throw new Error('Maintenance task not found');
-    }
-
-    if (maintenanceTask.taskStatus !== MaintenanceTaskStatusEnum.IN_PROGRESS) {
-      throw new Error('Only in progress tasks can be unaccepted');
-    }
-
-    return MaintenanceTaskDao.unacceptMaintenanceTask(id, new Date());
-  }
-
-  public async completeMaintenanceTask(id: string, staffId: string): Promise<MaintenanceTask> {
-    const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
-    if (!maintenanceTask) {
-      throw new Error('Maintenance task not found');
-    }
-
-    if (maintenanceTask.taskStatus !== MaintenanceTaskStatusEnum.IN_PROGRESS) {
-      throw new Error('Only in progress tasks can be completed');
-    }
-
-    if (maintenanceTask.assignedStaffId !== staffId) {
-      throw new Error('Only the assigned staff can complete the task');
-    }
-
-    return MaintenanceTaskDao.updateMaintenanceTask(id, {
-      taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
-      completedDate: new Date(),
-      updatedAt: new Date(),
-    });
-  }
-
   public async updateMaintenanceTaskStatus(id: string, newStatus: MaintenanceTaskStatusEnum, staffId?: string): Promise<MaintenanceTask> {
     const maintenanceTask = await MaintenanceTaskDao.getMaintenanceTaskById(id);
     if (!maintenanceTask) {
@@ -622,66 +575,6 @@ class MaintenanceTaskService {
       overdueTaskCount: task.overdueTaskCount,
       completedTaskCount: task.completedTaskCount,
     }));
-  }
-
-  /* NOT USED BECAUSE LINE CHART HAS 15 VARIABLES TOO CLUTTERED */
-  public async getParkTaskTypeAverageCompletionTimeForPastMonths(
-    parkId: number,
-    months: number,
-  ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageCompletionTimes: number[] }[]> {
-    const currentDate = new Date();
-
-    const taskTypeAverageCompletionTimes = await Promise.all(
-      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
-        const monthlyAverages = [];
-        for (let i = 0; i < months; i++) {
-          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
-          monthEndDate.setHours(23, 59, 59, 999);
-
-          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-          monthStartDate.setHours(0, 0, 0, 0);
-
-          const averageCompletionTime = await MaintenanceTaskDao.getAverageTaskTypeCompletionTime(
-            taskType,
-            parkId,
-            monthStartDate,
-            monthEndDate,
-          );
-          monthlyAverages.unshift(averageCompletionTime);
-        }
-
-        return { taskType, averageCompletionTimes: monthlyAverages };
-      }),
-    );
-
-    return taskTypeAverageCompletionTimes;
-  }
-
-  public async getParkTaskTypeAverageOverdueRatesForPastMonths(
-    parkId: number,
-    months: number,
-  ): Promise<{ taskType: MaintenanceTaskTypeEnum; averageOverdueRates: number[] }[]> {
-    const currentDate = new Date();
-
-    const taskTypeAverageOverdueRates = await Promise.all(
-      Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
-        const monthlyOverdueRates = [];
-        for (let i = 0; i < months; i++) {
-          const monthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 0);
-          monthEndDate.setHours(23, 59, 59, 999);
-
-          const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-          monthStartDate.setHours(0, 0, 0, 0);
-
-          const overdueRate = await MaintenanceTaskDao.getOverdueRateByTaskTypeForPeriod(taskType, parkId, monthStartDate, monthEndDate);
-          monthlyOverdueRates.unshift(overdueRate);
-        }
-
-        return { taskType, averageOverdueRates: monthlyOverdueRates };
-      }),
-    );
-
-    return taskTypeAverageOverdueRates;
   }
 
   public async predictAndUpdateNextMaintenanceDates(maintenanceTask: MaintenanceTask): Promise<void> {

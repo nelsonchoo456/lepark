@@ -10,7 +10,7 @@ import {
   FeedbackUpdateData,
   updateFeedback,
   FeedbackCategoryEnum,
-  FeedbackStatusEnum
+  FeedbackStatusEnum,
 } from '@lepark/data-access';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -20,7 +20,7 @@ import { MailOutlined } from '@ant-design/icons';
 
 const getFeedbackStatusColor = (status: string) => {
   switch (status) {
-    case "PENDING":
+    case 'PENDING':
       return 'yellow';
     case 'ACCEPTED':
       return 'green';
@@ -29,8 +29,7 @@ const getFeedbackStatusColor = (status: string) => {
     default:
       return 'default';
   }
-}
-
+};
 
 const initialFeedback: FeedbackResponse = {
   id: '',
@@ -42,7 +41,7 @@ const initialFeedback: FeedbackResponse = {
   dateCreated: '',
   dateResolved: null,
   remarks: null,
-  staffId: null,
+  resolvedStaffId: null,
   visitorId: '',
   visitor: {
     id: '',
@@ -50,9 +49,9 @@ const initialFeedback: FeedbackResponse = {
     lastName: '',
     email: '',
     contactNumber: '',
-    isVerified: false
+    isVerified: false,
   },
-  staff: undefined,
+  resolvedStaff: undefined,
   parkId: 0,
   needResponse: false,
 };
@@ -70,32 +69,32 @@ const FeedbackViewDetails = () => {
   const [editedFeedback, setEditedFeedback] = useState<FeedbackResponse>(initialFeedback);
   const navigate = useNavigate();
   const formatEnumLabel = (enumValue: string): string => {
-  const withoutUnderscores = enumValue.replace(/_/g, ' ').toLowerCase();
-  return withoutUnderscores.charAt(0).toUpperCase() + withoutUnderscores.slice(1);
-};
-    const handleCreatePlantTask = () => {
-  if (feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE) {
-    navigate('/plant-tasks/create', {
+    const withoutUnderscores = enumValue.replace(/_/g, ' ').toLowerCase();
+    return withoutUnderscores.charAt(0).toUpperCase() + withoutUnderscores.slice(1);
+  };
+  const handleCreatePlantTask = () => {
+    if (feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE) {
+      navigate('/plant-tasks/create', {
+        state: {
+          title: feedback?.title,
+          description: feedback?.description,
+          images: feedback?.images,
+          parkId: feedback?.parkId,
+        },
+      });
+    }
+  };
+
+  const handleCreateMaintenanceTask = () => {
+    navigate('/maintenance-tasks/create', {
       state: {
         title: feedback?.title,
         description: feedback?.description,
         images: feedback?.images,
-        parkId: feedback?.parkId
-      }
+        parkId: feedback?.parkId,
+      },
     });
-  }
-};
-
-const handleCreateMaintenanceTask = () => {
-  navigate('/maintenance-tasks/create', {
-    state: {
-      title: feedback?.title,
-      description: feedback?.description,
-      images: feedback?.images,
-      parkId: feedback?.parkId
-    }
-  });
-};
+  };
 
   useEffect(() => {
     if (!loading && feedback) {
@@ -117,7 +116,7 @@ const handleCreateMaintenanceTask = () => {
     }));
   };
 
-    const handleSave = async () => {
+  const handleSave = async () => {
     try {
       if (!user) {
         throw new Error('User not found.');
@@ -125,21 +124,17 @@ const handleCreateMaintenanceTask = () => {
 
       const updatedFeedbackDetails: FeedbackUpdateData = {
         feedbackCategory: editedFeedback.feedbackCategory,
+        feedbackStatus: editedFeedback.feedbackStatus,
         remarks: editedFeedback.remarks,
       };
 
-      // Only allow status change if current status is PENDING
-      if (feedback?.feedbackStatus === FeedbackStatusEnum.PENDING) {
-        updatedFeedbackDetails.feedbackStatus = editedFeedback.feedbackStatus;
-
-        // If status is changing from PENDING to something else
-        if (editedFeedback.feedbackStatus !== FeedbackStatusEnum.PENDING) {
-          updatedFeedbackDetails.staffId = user.id;
-          updatedFeedbackDetails.dateResolved = new Date().toISOString();
-        }
-      } else {
-        // Keep the existing status if not PENDING
-        updatedFeedbackDetails.feedbackStatus = feedback?.feedbackStatus;
+      // Check if the status has changed to ACCEPTED or REJECTED
+      if (
+        (feedback?.feedbackStatus !== FeedbackStatusEnum.ACCEPTED && editedFeedback.feedbackStatus === FeedbackStatusEnum.ACCEPTED) ||
+        (feedback?.feedbackStatus !== FeedbackStatusEnum.REJECTED && editedFeedback.feedbackStatus === FeedbackStatusEnum.REJECTED)
+      ) {
+        updatedFeedbackDetails.resolvedStaffId = user.id;
+        updatedFeedbackDetails.dateResolved = new Date().toISOString();
       }
 
       await updateFeedback(feedbackId, updatedFeedbackDetails);
@@ -165,17 +160,16 @@ const handleCreateMaintenanceTask = () => {
       children: feedback?.description,
       span: 3,
     },
-     {
-    key: 'remarks',
-    label: 'Remarks',
-    children: inEditMode ? (
-      <Input.TextArea
-        value={editedFeedback.remarks || ''}
-        onChange={(e) => handleInputChange('remarks', e.target.value)}
-      />
-    ) : feedback?.remarks || 'No remarks',
-    span: 3, // Add this line to make remarks span full width
-  },
+    {
+      key: 'remarks',
+      label: 'Remarks',
+      children: inEditMode ? (
+        <Input.TextArea value={editedFeedback.remarks || ''} onChange={(e) => handleInputChange('remarks', e.target.value)} />
+      ) : (
+        feedback?.remarks || 'No remarks'
+      ),
+      span: 3, // Add this line to make remarks span full width
+    },
     {
       key: 'category',
       label: 'Category',
@@ -191,7 +185,9 @@ const handleCreateMaintenanceTask = () => {
             </Select.Option>
           ))}
         </Select>
-      ) : <Tag>{formatEnumLabel(feedback?.feedbackCategory ?? '')}</Tag>,
+      ) : (
+        <Tag>{formatEnumLabel(feedback?.feedbackCategory ?? '')}</Tag>
+      ),
     },
       {
       key: 'status',
@@ -215,9 +211,7 @@ const handleCreateMaintenanceTask = () => {
           </Tag>
         )
       ) : (
-        <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>
-          {formatEnumLabel(feedback?.feedbackStatus ?? '')}
-        </Tag>
+        <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>{formatEnumLabel(feedback?.feedbackStatus ?? '')}</Tag>
       ),
     },
     {
@@ -238,7 +232,7 @@ const handleCreateMaintenanceTask = () => {
     {
       key: 'resolvedBy',
       label: 'Resolved By',
-      children: feedback?.staff ? `${feedback.staff.firstName} ${feedback.staff.lastName}` : 'Not resolved',
+      children: feedback?.resolvedStaff ? `${feedback.resolvedStaff.firstName} ${feedback.resolvedStaff.lastName}` : 'Not resolved',
     },
     {
       key: 'visitorName',
@@ -253,21 +247,16 @@ const handleCreateMaintenanceTask = () => {
           <span>{feedback?.needResponse ? 'Required' : 'Not Required'}</span>
           {feedback?.needResponse && feedback?.visitor?.email && (
             <Tooltip title="Send email">
-              <Button
-                type="link"
-                icon={<MailOutlined />}
-                onClick={() => window.location.href = `mailto:${feedback.visitor.email}`}
-              />
+              <Button type="link" icon={<MailOutlined />} onClick={() => (window.location.href = `mailto:${feedback.visitor.email}`)} />
             </Tooltip>
           )}
         </div>
       ),
     },
-
   ];
 
   // Find the index of the 'remarks' item
-  const remarksIndex = descriptionsItems.findIndex(item => item.key === 'remarks');
+  const remarksIndex = descriptionsItems.findIndex((item) => item.key === 'remarks');
 
   // If 'remarks' is found, insert the images item right after it
   if (remarksIndex !== -1 && feedback?.images && feedback.images.length > 0) {
@@ -277,14 +266,7 @@ const handleCreateMaintenanceTask = () => {
       children: (
         <div className="flex flex-wrap gap-2">
           {feedback.images.map((image, index) => (
-            <Image
-              key={index}
-              src={image}
-              alt={`Feedback image ${index + 1}`}
-              width={100}
-              height={100}
-              style={{ objectFit: 'cover' }}
-            />
+            <Image key={index} src={image} alt={`Feedback image ${index + 1}`} width={100} height={100} style={{ objectFit: 'cover' }} />
           ))}
         </div>
       ),
@@ -294,14 +276,14 @@ const handleCreateMaintenanceTask = () => {
 
   const breadcrumbItems = [
     {
-      title: "Feedback Management",
+      title: 'Feedback Management',
       pathKey: '/feedback',
       isMain: true,
     },
     {
-      title: feedback ? feedback.title : "Feedback Details",
+      title: feedback ? feedback.title : 'Feedback Details',
       pathKey: `/feedback/${feedbackId}`,
-      isCurrent: true
+      isCurrent: true,
     },
   ];
 
@@ -323,7 +305,7 @@ const handleCreateMaintenanceTask = () => {
 
   return (
     <ContentWrapperDark>
-      <PageHeader2 breadcrumbItems={breadcrumbItems}/>
+      <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Descriptions
           items={descriptionsItems}
@@ -339,11 +321,7 @@ const handleCreateMaintenanceTask = () => {
                     {!inEditMode && feedback?.feedbackStatus === FeedbackStatusEnum.ACCEPTED && (
                       <>
                         {feedback?.feedbackCategory === FeedbackCategoryEnum.WILDLIFE && (
-                          <Button
-                            type="primary"
-                            onClick={handleCreatePlantTask}
-                            className="mr-2"
-                          >
+                          <Button type="primary" onClick={handleCreatePlantTask} className="mr-2">
                             Create Plant Task
                           </Button>
                         )}
@@ -375,7 +353,7 @@ const handleCreateMaintenanceTask = () => {
         />
       </Card>
     </ContentWrapperDark>
-  )
+  );
 };
 
 export default FeedbackViewDetails;

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { FacilitySchema, FacilitySchemaType } from '../schemas/facilitySchema';
 import FacilityDao from '../dao/FacilityDao';
+import SensorDao from '../dao/SensorDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -62,7 +63,16 @@ class FacilityService {
       if (!existingFacility) {
         throw new Error('Facility not found');
       }
-
+      if (data.cameraSensorId) {
+        try {
+          const existingSensor = await SensorDao.getSensorById(data.cameraSensorId);
+          if (!existingSensor) {
+            throw new Error('Camera Sensor not found');
+          }
+        } catch (e) {
+          throw new Error('Camera Sensor not found');
+        }
+      }
       const formattedData = dateFormatter(data);
 
       // Merge existing data with update data

@@ -139,21 +139,6 @@ class PlantTaskDao {
     return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null, taskStatus: PlantTaskStatusEnum.OPEN } });
   }
 
-  public async completePlantTask(id: string, updatedAt: Date): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { completedDate: new Date(), updatedAt: updatedAt } });
-  }
-
-  public async acceptPlantTask(staffId: string, id: string, updatedAt: Date): Promise<PlantTask> {
-    return prisma.plantTask.update({
-      where: { id },
-      data: { assignedStaffId: staffId, updatedAt: updatedAt },
-    });
-  }
-
-  public async unacceptPlantTask(id: string, updatedAt: Date): Promise<PlantTask> {
-    return prisma.plantTask.update({ where: { id }, data: { assignedStaffId: null, updatedAt: updatedAt } });
-  }
-
   public async getMaxPositionForStatus(status: PlantTaskStatusEnum): Promise<number> {
     const result = await prisma.plantTask.aggregate({
       where: { taskStatus: status },

@@ -12,6 +12,7 @@ import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaC
 import { RiEdit2Line } from 'react-icons/ri';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import CameraSensorTab from './components/CameraSensorTab';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
@@ -69,6 +70,11 @@ const ViewFacilityDetails = () => {
       key: 'location',
       label: 'Location',
       children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
+    },
+    {
+      key: 'crowd',
+      label: 'Crowd',
+      children: facility ? <CameraSensorTab facility={facility} park={park} /> : <p>Loading crowd data...</p>,
     },
   ];
 

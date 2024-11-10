@@ -12,6 +12,7 @@ interface PolygonWithLabelProps {
   entityId: string | number;
   geom: GeomType;
   color?: string;
+  dashArray?: string;
   fillColor?: string;
   fillOpacity?: number;
   polygonLabel?: any;
@@ -26,6 +27,7 @@ const PolygonWithLabel = ({
   entityId,
   geom,
   color,
+  dashArray,
   fillColor,
   fillOpacity,
   polygonLabel,
@@ -92,9 +94,10 @@ const PolygonWithLabel = ({
       {geom?.coordinates && geom.coordinates.length > 0 && (
         <Polygon
           positions={geom.coordinates[0].map((item: number[]) => [item[1], item[0]])}
-          pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}` }}
+          pathOptions={{ color: `${color ? color : COLORS.green[500]}`, fillColor: `${fillColor ? fillColor : COLORS.green[500]}`, dashArray: `${dashArray ? dashArray : ""}`, }}
           fillOpacity={fillOpacity ? fillOpacity : 0.8}
           {...polygonFields}
+          
           eventHandlers={{
             click: () =>
               handlePolygonClick &&

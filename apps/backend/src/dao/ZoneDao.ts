@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-import { ZoneCreateData, ZoneResponseData, ZoneUpdateData } from "../schemas/zoneSchema";
-import ParkDao from "./ParkDao";
+import { PrismaClient } from '@prisma/client';
+import { ZoneCreateData, ZoneResponseData, ZoneUpdateData } from '../schemas/zoneSchema';
+import ParkDao from './ParkDao';
 const prisma = new PrismaClient();
 
 class ZoneDao {
@@ -18,7 +18,7 @@ class ZoneDao {
         ${closingHoursArray}::timestamp[],
         ST_GeomFromText(${data.geom}), 
         ST_LineFromText(${data.paths}, 4326),
-        ${data.zoneStatus}::"ZONE_STATUS_ENUM",
+        ${data.zoneStatus}::"ZoneStatusEnum",
         ${data.parkId},
         ${data.images || []}::text[]
       ) 
@@ -29,14 +29,14 @@ class ZoneDao {
 
   public async initZonesDB(): Promise<void> {
     await ParkDao.initParksDB();
-    
+
     await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`; // puyts in the POSTGIS extension to postgres
-    
+
     await prisma.$queryRaw`
       DO $$
       BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZONE_STATUS_ENUM') THEN
-          CREATE TYPE "ZONE_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZoneStatusEnum') THEN
+          CREATE TYPE "ZoneStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
         END IF;
       END
       $$;
@@ -52,7 +52,7 @@ class ZoneDao {
         "closingHours" TIMESTAMP[],
         geom GEOMETRY,
         paths GEOMETRY,
-        "zoneStatus" "ZONE_STATUS_ENUM",
+        "zoneStatus" "ZoneStatusEnum",
         "parkId" INT REFERENCES "Park"(id) ON DELETE CASCADE,
         images TEXT[]
       );
@@ -93,15 +93,15 @@ class ZoneDao {
       FROM "Zone"
       LEFT JOIN "Park" ON "Zone"."parkId" = "Park".id;
     `;
-    
+
     if (Array.isArray(zones)) {
-      return zones.map(zone => ({
+      return zones.map((zone) => ({
         ...zone,
-        geom: JSON.parse(zone.geom),  // Convert GeoJSON string to object
-        paths: JSON.parse(zone.paths)  // Convert GeoJSON string to object
+        geom: JSON.parse(zone.geom), // Convert GeoJSON string to object
+        paths: JSON.parse(zone.paths), // Convert GeoJSON string to object
       }));
     } else {
-      throw new Error("Unable to fetch from database (SQL Error)");
+      throw new Error('Unable to fetch from database (SQL Error)');
     }
   }
 
@@ -131,8 +131,8 @@ class ZoneDao {
       const result = zone[0];
       return {
         ...result,
-        geom: JSON.parse(result.geom),  // Convert GeoJSON string to object
-        paths: JSON.parse(result.paths)  // Convert GeoJSON string to object
+        geom: JSON.parse(result.geom), // Convert GeoJSON string to object
+        paths: JSON.parse(result.paths), // Convert GeoJSON string to object
       };
     } else {
       throw new Error(`Zone with ID ${id} not found`);
@@ -158,11 +158,11 @@ class ZoneDao {
     `;
 
     if (Array.isArray(zones)) {
-      return zones.map(zone => ({
+      return zones.map((zone) => ({
         ...zone,
-        geom: JSON.parse(zone.geom),  
+        geom: JSON.parse(zone.geom),
         paths: JSON.parse(zone.paths),
-        parkId: parkId  
+        parkId: parkId,
       }));
     } else {
       throw new Error(`Zone with Park ID ${parkId} not found`);
@@ -171,12 +171,12 @@ class ZoneDao {
 
   public async deleteZoneById(id: number): Promise<void> {
     await this.initZonesDB();
-    
+
     const deletedZone = await prisma.$executeRaw`
       DELETE FROM "Zone"
       WHERE id = ${id};
     `;
-    
+
     if (deletedZone === 0) {
       throw new Error(`Zone with ID ${id} not found`);
     }
@@ -201,13 +201,13 @@ class ZoneDao {
 
     if (data.openingHours) {
       updates.push(`"openingHours" = $${updates.length + 1}::timestamp[]`);
-      const openingHoursArray = data.openingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
+      const openingHoursArray = data.openingHours.map((d) => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
       values.push(openingHoursArray);
     }
 
     if (data.closingHours) {
       updates.push(`"closingHours" = $${updates.length + 1}::timestamp[]`);
-      const closingHoursArray = data.closingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
+      const closingHoursArray = data.closingHours.map((d) => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
       values.push(closingHoursArray);
     }
 
@@ -222,7 +222,7 @@ class ZoneDao {
     }
 
     if (data.zoneStatus) {
-      updates.push(`"zoneStatus" = $${updates.length + 1}::"ZONE_STATUS_ENUM"`);
+      updates.push(`"zoneStatus" = $${updates.length + 1}::"ZoneStatusEnum"`);
       values.push(data.zoneStatus);
     }
 
@@ -260,7 +260,7 @@ class ZoneDao {
       return {
         ...result,
         geom: JSON.parse(result.geom),
-        paths: JSON.parse(result.paths)
+        paths: JSON.parse(result.paths),
       };
     } else {
       throw new Error(`Unable to update zone with ID ${id}`);

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import L, { DivIcon } from 'leaflet';
 import { Tooltip as AntdTooltip, Button, Tag } from 'antd';
-import { Marker, Tooltip } from 'react-leaflet';
+import { Marker, Tooltip, useMap } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EventResponse, EventStatusEnum, FacilityResponse, FacilityStatusEnum } from '@lepark/data-access';
 import { MdArrowOutward } from 'react-icons/md';
@@ -56,6 +56,11 @@ function FacilityEventsPictureMarker({
 }: FacilityEventsPictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
   const navigate = useNavigate();
+  const map = useMap(); 
+
+  const zoom = (lat: number, lng: number) => {
+    map.setView([lat, lng], 18)
+  }
 
   const eventMarkerGap = 16;
 
@@ -114,6 +119,55 @@ function FacilityEventsPictureMarker({
     });
   };
 
+  const onEventCardClick = (event: EventResponse) => {
+    setShowEvents && setShowEvents(true);
+    zoom(lat, lng)
+    setHovered &&
+      setHovered({
+        ...event,
+        title: <div className="flex justify-between items-center">{event.title}</div>,
+        image: event.images ? event.images[0] : null,
+        entityType: 'EVENT',
+        children: (
+          <div className="h-full w-full flex flex-col justify-between">
+            <div>
+              <Typography.Paragraph
+                ellipsis={{
+                  rows: 2,
+                }}
+              >
+                {event.description}
+              </Typography.Paragraph>
+              <div className="-mt-2 ">
+                <span className="text-secondary">Date: </span>
+                {dayjs(event?.startDate).format('D MMM YYYY') + ' - ' + dayjs(event?.endDate).format('D MMM YYYY')}
+              </div>
+              <div>
+                <span className="text-secondary">Time:</span>
+                <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>-{' '}
+                <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
+              </div>
+              <AntdTooltip title="View Facility details" placement="topLeft">
+                <p
+                  className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
+                  onClick={() => navigate(`/facilities/${facility.id}`)}
+                >
+                  @ {facility.name}
+                </p>
+              </AntdTooltip>
+            </div>
+            <div className="flex justify-end">
+              <AntdTooltip title="View Event details">
+                <Button shape="circle" onClick={() => navigate(`/event/${event.id}`)}>
+                  <MdArrowOutward />
+                </Button>
+              </AntdTooltip>
+            </div>
+          </div>
+        ),
+      });
+  };
+
   return (
     <>
       {showFacilities && (
@@ -124,10 +178,11 @@ function FacilityEventsPictureMarker({
           lat={lat}
           lng={lng}
           innerBackgroundColor={COLORS.sky[400]}
-          tooltipLabel={facility.name}
+          // tooltipLabel={facility.name}
           facilityType={facility.facilityType}
           hovered={hovered}
-          setHovered={() =>
+          setHovered={() => {
+            zoom(lat, lng)
             setHovered &&
             setHovered({
               ...facility,
@@ -138,100 +193,58 @@ function FacilityEventsPictureMarker({
                 <div className="h-full w-full flex flex-col justify-between">
                   <div className="flex justify-between flex-wrap mb-2">
                     <p className="">{formatEnumLabelToRemoveUnderscores(facility.facilityType)}</p>
-                    <Tag color={facility.facilityStatus === FacilityStatusEnum.OPEN ? 'green' : facility.facilityStatus === FacilityStatusEnum.CLOSED ? 'red' : 'yellow'} bordered={false}>
+                    <Tag
+                      color={
+                        facility.facilityStatus === FacilityStatusEnum.OPEN
+                          ? 'green'
+                          : facility.facilityStatus === FacilityStatusEnum.CLOSED
+                          ? 'red'
+                          : 'yellow'
+                      }
+                      bordered={false}
+                    >
                       {formatEnumLabelToRemoveUnderscores(facility.facilityStatus)}
                     </Tag>
                   </div>
 
-                  <div className="">
-                    <div className="flex w-full items-center mb-2">
-                      <div className="font-semibold text-sky-400 mr-2">Upcoming Events</div>
-                      <div className="flex-[1] h-[1px] bg-sky-400/30" />
-                    </div>
-                    <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
-                      {events.map((event) => (
-                        <div className="bg-gray-50/40 h-full w-36 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400">
-                          <AntdTooltip title="View Event Details">
-                            <div onClick={() => navigate(`/event/${event.id}`)}>
-                              <div
-                                style={{
-                                  backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                }}
-                                className="rounded-b-lg h-18 w-full shadow-md text-white flex-0 flex items-center justify-center  bg-sky-200 opacity-50 overflow-hidden"
-                              >
-                                {(!event.images || event.images.length === 0) && <BiSolidCalendar className="opacity-75 text-lg" />}
+                  {events && events.length > 0 && (
+                    <div className="">
+                      <div className="flex w-full items-center mb-2">
+                        <div className="font-semibold text-sky-400 mr-2">Upcoming Events</div>
+                        <div className="flex-[1] h-[1px] bg-sky-400/30" />
+                      </div>
+                      <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
+                        {events.map((event) => (
+                          <div
+                            className="bg-gray-50/40 h-full w-32 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-sky-400"
+                            onClick={() => onEventCardClick(event)}
+                          >
+                            <AntdTooltip title="View Event Details">
+                              <div>
+                                <div
+                                  style={{
+                                    backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                  }}
+                                  className="rounded-b-lg h-16 w-full shadow-md text-white flex-0 flex items-center justify-center  bg-sky-200 opacity-50 overflow-hidden"
+                                >
+                                  {(!event.images || event.images.length === 0) && <BiSolidCalendar className="opacity-75 text-lg" />}
+                                </div>
+                                <div className="font-semibold px-2 mt-1">{event.title}</div>
+                                <div className="text-xs px-2">
+                                  {dayjs(event?.startDate).format('D MMM') + ' - ' + dayjs(event?.endDate).format('D MMM')}
+                                </div>
                               </div>
-                              <div className="font-semibold px-2 mt-1">{event.title}</div>
-                              <div className="text-xs px-2">
-                                {dayjs(event?.startDate).format('D MMM') + ' - ' + dayjs(event?.endDate).format('D MMM')}
-                              </div>
-                            </div>
-                          </AntdTooltip>
-                          <div className="flex justify-end mb-2 px-2">
-                            <AntdTooltip title="View on Map">
-                              <Button
-                                shape="circle"
-                                icon={<TbLocation />}
-                                onClick={() => {
-                                  setShowEvents && setShowEvents(true);
-                                  setHovered({
-                                    ...event,
-                                    title: <div className="flex justify-between items-center">{event.title}</div>,
-                                    image: event.images ? event.images[0] : null,
-                                    entityType: 'EVENT',
-                                    children: (
-                                      <div className="h-full w-full flex flex-col justify-between">
-                                        <div>
-                                          <Typography.Paragraph
-                                            ellipsis={{
-                                              rows: 3,
-                                            }}
-                                          >
-                                            {event.description}
-                                          </Typography.Paragraph>
-                                          <div className="-mt-2 ">
-                                            <span className="text-secondary">Date: </span>
-                                            {dayjs(event?.startDate).format('D MMM YYYY') +
-                                              ' - ' +
-                                              dayjs(event?.endDate).format('D MMM YYYY')}
-                                          </div>
-                                          <div>
-                                            <span className="text-secondary">Time:</span>
-                                            <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>-{' '}
-                                            <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
-                                          </div>
-                                          <AntdTooltip title="View Facility details" placement="topLeft">
-                                            <p
-                                              className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
-                                              onClick={() => navigate(`/facilities/${facility.id}`)}
-                                            >
-                                              @ {facility.name}
-                                            </p>
-                                          </AntdTooltip>
-                                        </div>
-                                        <div className="flex justify-end">
-                                          <AntdTooltip title="View Event details">
-                                            <Button shape="circle" onClick={() => navigate(`/event/${event.id}`)}>
-                                              <MdArrowOutward />
-                                            </Button>
-                                          </AntdTooltip>
-                                        </div>
-                                      </div>
-                                    ),
-                                  });
-                                }}
-                              />
                             </AntdTooltip>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <div className="flex w-full items-center mb-2">
+                        <div className="flex-[1] h-[1px] bg-sky-400/30" />
+                      </div>
                     </div>
-                    <div className="flex w-full items-center mb-2">
-                      <div className="flex-[1] h-[1px] bg-sky-400/30" />
-                    </div>
-                  </div>
+                  )}
                   <div className="flex justify-end">
                     <AntdTooltip title="View Facility details">
                       <Button shape="circle" onClick={() => navigate(`/facilities/${facility.id}`)}>
@@ -242,7 +255,7 @@ function FacilityEventsPictureMarker({
                 </div>
               ),
             })
-          }
+          }}
         />
       )}
       {showEvents &&
@@ -252,56 +265,7 @@ function FacilityEventsPictureMarker({
             position={[lat, lng]}
             icon={getCustomIcon(event, index)}
             eventHandlers={{
-              click: () =>
-                setHovered &&
-                setHovered({
-                  ...event,
-                  title: (
-                    <div className="flex justify-between items-center">
-                      {event.title}
-                      {/* <EventStatusTag status={event?.status as EventStatusEnum} /> */}
-                    </div>
-                  ),
-                  image: event.images ? event.images[0] : null,
-                  entityType: 'EVENT',
-                  children: (
-                    <div className="h-full w-full flex flex-col justify-between">
-                      <div>
-                        <Typography.Paragraph
-                          ellipsis={{
-                            rows: 3,
-                          }}
-                        >
-                          {event.description}
-                        </Typography.Paragraph>
-                        <div className="-mt-2 ">
-                          <span className="text-secondary">Date: </span>
-                          {dayjs(event?.startDate).format('D MMM YYYY') + ' - ' + dayjs(event?.endDate).format('D MMM YYYY')}
-                        </div>
-                        <div>
-                          <span className="text-secondary">Time:</span>
-                          <Tag bordered={false}>{dayjs(event?.startDate).format('h:mm A')}</Tag>-{' '}
-                          <Tag bordered={false}>{dayjs(event?.endDate).format('h:mm A')}</Tag> daily
-                        </div>
-                        <AntdTooltip title="View Facility details" placement="topLeft">
-                          <p
-                            className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
-                            onClick={() => navigate(`/facilities/${facility.id}`)}
-                          >
-                            @ {facility.name}
-                          </p>
-                        </AntdTooltip>
-                      </div>
-                      <div className="flex justify-end">
-                        <AntdTooltip title="View Event details">
-                          <Button shape="circle" onClick={() => navigate(`/event/${event.id}`)}>
-                            <MdArrowOutward />
-                          </Button>
-                        </AntdTooltip>
-                      </div>
-                    </div>
-                  ),
-                }),
+              click: () => onEventCardClick(event)
             }}
             riseOnHover
           >

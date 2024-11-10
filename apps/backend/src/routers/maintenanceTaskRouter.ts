@@ -199,26 +199,4 @@ router.get('/getParkMaintenanceTaskDelayedTaskTypesForPeriod', authenticateJWTSt
   }
 });
 
-router.get('/getParkTaskTypeAverageCompletionTimesForPastMonths', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const months = req.query.months ? parseInt(req.query.months as string, 10) : 1;
-    const averageCompletionTimes = await MaintenanceTaskService.getParkTaskTypeAverageCompletionTimeForPastMonths(parkId, months);
-    res.status(200).json(averageCompletionTimes);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getParkTaskTypeAverageOverdueRatesForPastMonths', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const months = req.query.months ? parseInt(req.query.months as string, 10) : 1;
-    const overdueRates = await MaintenanceTaskService.getParkTaskTypeAverageOverdueRatesForPastMonths(parkId, months);
-    res.status(200).json(overdueRates);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 export default router;

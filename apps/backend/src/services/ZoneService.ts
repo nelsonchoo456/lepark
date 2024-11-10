@@ -5,6 +5,7 @@ import { fromZodError } from 'zod-validation-error';
 import HubDao from '../dao/HubDao';
 import ParkDao from '../dao/ParkDao';
 import ZoneDao from '../dao/ZoneDao';
+import OccurrenceDao from '../dao/OccurrenceDao';
 import { ZoneCreateData, ZoneResponseData, ZoneUpdateData } from '../schemas/zoneSchema';
 
 const s3 = new aws.S3({
@@ -78,13 +79,8 @@ class ZoneService {
   }
 
   public async deleteZoneById(id: number): Promise<void> {
-    const res = await ZoneDao.deleteZoneById(id);
-    await prisma.occurrence.deleteMany({
-      where: {
-        zoneId: id,
-      },
-    });
-    return res;
+    await OccurrenceDao.deleteOccurrencesByZoneId(id);
+    return ZoneDao.deleteZoneById(id);
   }
 
   public async updateZone(id: number, data: ZoneUpdateData): Promise<ZoneResponseData> {
