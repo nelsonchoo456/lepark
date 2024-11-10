@@ -1475,7 +1475,7 @@ function generateMockCrowdDataForSBG(sensorId, days) {
     switch (day) {
       case 0: // Sunday
       case 6: // Saturday
-        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        baseCrowdLevel *= 3 + Math.random() * 0.5; // Even more crowded weekends
         break;
       case 1: // Monday
         baseCrowdLevel *= 0.6 + Math.random() * 0.2; // Less crowded Mondays
@@ -1523,7 +1523,9 @@ function generateMockCrowdDataForSBG(sensorId, days) {
     baseCrowdLevel += (Math.random() - 0.5) * 20;
 
     // Ensure crowd level is within bounds, with a higher minimum
-    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+    const maxCrowdLevel = (day === 0 || day === 6) ? 500 : 300; // Higher limit for weekends
+    const minCrowdLevel = 20;
+    const crowdLevel = Math.max(minCrowdLevel, Math.min(maxCrowdLevel, Math.floor(baseCrowdLevel)));
 
     readings.push({
       date: time.toDate(),
@@ -1556,7 +1558,7 @@ function generateMockCrowdDataForBAMKP(sensorId, days) {
     switch (day) {
       case 0: // Sunday
       case 6: // Saturday
-        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        baseCrowdLevel *= 3 + Math.random() * 0.5; // Even more crowded weekends
         break;
       case 1: // Monday
         baseCrowdLevel *= 0.5 + Math.random() * 0.2; // Less crowded Mondays
@@ -1604,7 +1606,9 @@ function generateMockCrowdDataForBAMKP(sensorId, days) {
     baseCrowdLevel += (Math.random() - 0.5) * 20;
 
     // Ensure crowd level is within bounds, with a higher minimum
-    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+    const maxCrowdLevel = (day === 0 || day === 6) ? 300 : 200; // Higher limit for weekends
+    const minCrowdLevel = 20;
+    const crowdLevel = Math.max(minCrowdLevel, Math.min(maxCrowdLevel, Math.floor(baseCrowdLevel)));
 
     readings.push({
       date: time.toDate(),
