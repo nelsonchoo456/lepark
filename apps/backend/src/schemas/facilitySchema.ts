@@ -21,7 +21,7 @@ export const FacilitySchema = z.object({
   fee: z.number().nonnegative({ message: 'Fee must be a non-negative number' }),
   parkId: z.number(),
 
-  cameraSensorId: z.string().optional(),
+  cameraSensorId: z.string().uuid().nullable().optional(),
 });
 
 export type FacilitySchemaType = z.infer<typeof FacilitySchema>;

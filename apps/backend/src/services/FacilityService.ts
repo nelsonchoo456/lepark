@@ -63,10 +63,8 @@ class FacilityService {
       if (!existingFacility) {
         throw new Error('Facility not found');
       }
-
       if (data.cameraSensorId) {
         try {
-          console.log(data.cameraSensorId)
           const existingSensor = await SensorDao.getSensorById(data.cameraSensorId);
           if (!existingSensor) {
             throw new Error('Camera Sensor not found');
@@ -75,7 +73,6 @@ class FacilityService {
           throw new Error('Camera Sensor not found');
         }
       }
-
       const formattedData = dateFormatter(data);
 
       // Merge existing data with update data

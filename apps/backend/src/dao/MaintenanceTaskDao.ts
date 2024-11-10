@@ -109,35 +109,6 @@ class MaintenanceTaskDao {
     });
   }
 
-  public async acceptMaintenanceTask(
-    id: string, 
-    staffId: string, 
-    updatedAt: Date
-  ): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({
-      where: { id },
-      data: { 
-        taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, 
-        assignedStaffId: staffId, 
-        updatedAt: updatedAt 
-      },
-    });
-  }
-
-  public async unacceptMaintenanceTask(
-    id: string, 
-    updatedAt: Date
-  ): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({
-      where: { id },
-      data: { 
-        taskStatus: MaintenanceTaskStatusEnum.OPEN, 
-        assignedStaffId: null, 
-        updatedAt: updatedAt 
-      },
-    });
-  }
-
   public async getMaintenanceTasksByStatus(
     status: MaintenanceTaskStatusEnum
   ): Promise<MaintenanceTask[]> {
@@ -300,12 +271,28 @@ class MaintenanceTaskDao {
       where: {
         submittingStaff: { parkId: parkId },
         taskType: taskType,
-        taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
-        completedDate: {
-          gt: prisma.maintenanceTask.fields.dueDate, // Task was completed after the due date (overdue)
-          gte: startDate,
-          lte: endDate,
-        },
+        OR: [
+          {
+            // Completed tasks that were completed after their due date
+            taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
+            completedDate: {
+              gt: prisma.maintenanceTask.fields.dueDate,
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          {
+            // Open or in-progress tasks that are past their due date
+            taskStatus: {
+              in: [MaintenanceTaskStatusEnum.OPEN, MaintenanceTaskStatusEnum.IN_PROGRESS]
+            },
+            dueDate: {
+              lt: new Date(), // Due date is in the past
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
       },
     });
   }

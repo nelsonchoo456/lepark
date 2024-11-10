@@ -236,50 +236,6 @@ class PlantTaskService {
     return PlantTaskDao.unassignPlantTask(id, new Date()); // Add current date as second argument
   }
 
-  public async completePlantTask(id: string, staffId: string): Promise<PlantTask> {
-    const plantTask = await PlantTaskDao.getPlantTaskById(id);
-    if (!plantTask) {
-      throw new Error('Plant task not found');
-    }
-
-    if (plantTask.taskStatus !== PlantTaskStatusEnum.IN_PROGRESS) {
-      throw new Error('Only in progress tasks can be completed');
-    }
-
-    if (plantTask.assignedStaffId !== staffId) {
-      throw new Error('Only the assigned staff can complete the task');
-    }
-
-    await this.updatePlantTask(id, { completedDate: new Date(), updatedAt: new Date() });
-
-    return PlantTaskDao.completePlantTask(id, new Date()); // Add current date as second argument
-  }
-
-  public async acceptPlantTask(staffId: string, id: string): Promise<PlantTask> {
-    const plantTask = await PlantTaskDao.getPlantTaskById(id);
-    if (!plantTask) {
-      throw new Error('Plant task not found');
-    }
-
-    if (plantTask.taskStatus !== PlantTaskStatusEnum.OPEN) {
-      throw new Error('Only open tasks can be accepted');
-    }
-    return PlantTaskDao.acceptPlantTask(staffId, id, new Date()); // Add current date as third argument
-  }
-
-  public async unacceptPlantTask(id: string): Promise<PlantTask> {
-    const plantTask = await PlantTaskDao.getPlantTaskById(id);
-    if (!plantTask) {
-      throw new Error('Plant task not found');
-    }
-
-    if (plantTask.taskStatus !== PlantTaskStatusEnum.IN_PROGRESS) {
-      throw new Error('Only in progress tasks can be unaccepted');
-    }
-
-    return PlantTaskDao.unacceptPlantTask(id, new Date()); // Add current date as second argument
-  }
-
   public async uploadImages(files: Express.Multer.File[]): Promise<string[]> {
     const uploadedUrls = [];
 
