@@ -4,6 +4,7 @@ import { AdjustLatLngInterface } from './FacilityCreate';
 import {
   FacilityResponse,
   getAllSensorReadingsByParkIdAndSensorType,
+  getFacilitiesByParkId,
   getParkById,
   getSensorsByParkId,
   getZonesByParkId,
@@ -22,7 +23,7 @@ import { SensorTypeEnum } from '@prisma/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
 import { ContentWrapperDark } from '@lepark/common-ui';
-import { Card, message, Select, Tooltip, Form, Flex, Button } from 'antd';
+import { Card, message, Select, Tooltip, Form, Flex, Button, Tag } from 'antd';
 import PageHeader2 from '../../components/main/PageHeader2';
 import PictureMarker from '../../components/map/PictureMarker';
 import { MdOutlinePhotoCamera } from 'react-icons/md';
@@ -31,7 +32,7 @@ import * as turf from '@turf/turf';
 const FacilityAssignCamera = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
   const { facility, park, loading } = useRestrictFacilities(facilityId);
-  const [cameraSensors, setCameraSensors] = useState<(SensorResponse & {distance?: number})[]>([]);
+  const [cameraSensors, setCameraSensors] = useState<(SensorResponse & {distance?: number, cameraFacilityName?: string })[]>([]);
   const [selectedSensor, setSelectedSensor] = useState<SensorResponse>();
   const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
   const navigate = useNavigate();
@@ -48,20 +49,31 @@ const FacilityAssignCamera = () => {
   const fetchCameraSensors = async (parkId: number) => {
     if (!facility) return;
     try {
+      const facilitiesRes = await getFacilitiesByParkId(parkId);
       const cameraSensorsRes = await getSensorsByParkId(parkId);
       if (cameraSensorsRes.status === 200) {
+        const facilitiesWithCameraSensors = facilitiesRes.data.filter((f) => f.cameraSensorId);
         const sensorsWithDistance = cameraSensorsRes.data
         ?.filter((s) => s.sensorType === SensorTypeEnum.CAMERA && s.sensorStatus === SensorStatusEnum.ACTIVE)
         .map((s) => {
+          const linkedFacility = facilitiesWithCameraSensors.find((f) => f.cameraSensorId === s.id);
+
+          // Calculate distance if lat/long are available for both sensor and facility
+          let distance;
           if (s.lat && s.long && facility.lat && facility.long) {
-            const distance = turf.distance(
+            distance = turf.distance(
               turf.point([facility.long, facility.lat]),
               turf.point([s.long, s.lat]),
               { units: 'meters' }
             );
-            return { ...s, distance: Math.round(distance) };
           }
-          return s;
+          
+          // Return sensor with distance and cameraFacilityName if linkedFacility is found
+          return {
+            ...s,
+            distance: distance ? Math.round(distance) : undefined,
+            cameraFacilityName: linkedFacility ? linkedFacility.name : undefined
+          };
         });
       setCameraSensors(sensorsWithDistance);
       }
@@ -137,18 +149,20 @@ const FacilityAssignCamera = () => {
               <Select placeholder="Select a Camera Sensor" onChange={handleSelectSensorOnForm} disabled={!cameraSensors || cameraSensors.length === 0} className="w-full">
                 <Select.Option key={'labels'} value={null} disabled className="bg-green-50 text-black" >
                   <div className="flex py-2">
-                    <div className="flex-[1] font-semibold">Name</div>
-                    <div className="flex-[1] font-semibold">Identifier Number</div>
-                    <div className="flex-[1] font-semibold">Distance</div>
+                    <div className="flex-[1] font-semibold text-gray-900">Name</div>
+                    <div className="flex-[1] font-semibold text-gray-900">Identifier Number</div>
+                    <div className="flex-[1] font-semibold text-gray-900">Distance</div>
+                    <div className="flex-[1] font-semibold text-gray-900">Availability</div>
                   </div>
                 </Select.Option>
                 {cameraSensors?.map((s) => (
-                  <Select.Option key={s.id} value={s.id}>
+                  <Select.Option key={s.id} value={s.id} disabled={s.cameraFacilityName}>
                     <Tooltip title={''}>
                       <div className="flex">
                         <div className="flex-[1] font-semibold">{s.name}</div>
                         <div className="flex-[1]">{s.identifierNumber}</div>
                         <div className="flex-[1]">{s.distance} m away</div>
+                        <div className="flex-[1]">{s.cameraFacilityName ? <span className='text-error opacity-50'>Used in {s.cameraFacilityName}</span> : <Tag color='green' bordered={false}>Available</Tag>}</div>
                       </div>
                     </Tooltip>
                   </Select.Option>
@@ -203,7 +217,9 @@ const FacilityAssignCamera = () => {
                     icon={<TbBuildingEstate className="text-sky-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
                   />
                 )}
-                {cameraSensors.map(
+                {cameraSensors
+                .filter((s) => !s.cameraFacilityName)
+                .map(
                   (s) =>
                     s.lat &&
                     s.long && (
