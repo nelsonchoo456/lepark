@@ -68,7 +68,14 @@ const MainLanding = () => {
       return <BAMainLanding/>
     } else if (user?.role === StaffType.MANAGER) {
       return <ManagerMainLanding/>
-    }
+    } else if (user?.role === StaffType.PARK_RANGER) {
+      return <ManagerMainLanding/> // CREATE PRMainLanding (Ely)
+    } else if (user?.role === StaffType.LANDSCAPE_ARCHITECT) {
+      return <ManagerMainLanding/> // CREATE LAMainLanding (Mics and Aaron)
+    } else if (user?.role === StaffType.VENDOR_MANAGER) {
+      return <ManagerMainLanding/> // CREATE VMMainLanding (Alan and WN)
+    }   
+
     return <SuperadminMainLanding/>
   }
 
