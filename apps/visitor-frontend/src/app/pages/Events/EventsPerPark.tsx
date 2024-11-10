@@ -2,12 +2,14 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePark } from '../../park-context/ParkContext';
 import { getEventsByParkId, EventResponse, EventTypeEnum, EventSuitabilityEnum, EventStatusEnum } from '@lepark/data-access';
-import { Card, Tag, Input, TreeSelect, Spin } from 'antd';
+import { Card, Tag, Input, TreeSelect, Spin, Typography, Flex } from 'antd';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import dayjs from 'dayjs';
 import withParkGuard from '../../park-context/withParkGuard';
+import { MdArrowForwardIos } from 'react-icons/md';
+import { PiStarFill } from 'react-icons/pi';
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -134,7 +136,7 @@ const EventsPerPark: React.FC = () => {
     <div className="h-screen bg-slate-100 flex flex-col">
       <ParkHeader cardClassName="h-24 md:h-[160px]">
         <div className="md:text-center md:mx-auto">
-          <p className="font-light">Events in</p>
+          <Flex justify="center" gap={10} align="center"><PiStarFill className='text-highlightGreen-400 text-lg'/><p className="font-medium"> Events in</p></Flex>
           <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>
       </ParkHeader>
@@ -196,14 +198,28 @@ const EventsPerPark: React.FC = () => {
                     <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover" />
                   )}
                 </div>
-                <div className="h-full flex-1">
-                  <div className="text-lg font-semibold text-green-700">{event.title}</div>
-                  <div className="-mt-[2px] text-green-700/80">{renderEventStatus(event.status)}</div>
+                <div className="h-full flex-1 lg:pr-8">
+                  <div className="text-lg font-semibold text-green-700 leading-tight">{event.title}</div>
+                  <Typography.Paragraph
+                    ellipsis={{
+                      rows: 2,
+                    }}
+                    className="text-sm text-gray-500"
+                  >
+                    {event.description}
+                  </Typography.Paragraph>
+                </div>
+                <div className="h-full flex-1 hidden lg:block">
+                  {/* <div className="-mt-[2px] text-green-700/80">{renderEventStatus(event.status)}</div> */}
                   <div className="text-sm text-gray-500">Type: {formatEnumLabel(event.type)}</div>
                   <div className="text-sm text-gray-500">Suitability: {formatEnumLabel(event.suitability)}</div>
                 </div>
-                <div className="h-full flex-1 hidden lg:block">
-                  <div className="text-sm text-gray-500">{event.description}</div>
+                <div className="h-full lg:flex-1">
+                  <div className="-mt-[2px] text-green-700/80 translate-x-4 lg:translate-x-0">{renderEventStatus(event.status)}</div>
+                  <div className='text-sm hidden lg:block'>{dayjs(event.startDate).format('D MMM YY')} - {dayjs(event.startDate).format('D MMM YY')}</div>
+                </div>
+                <div className="flex flex-col justify-center hidden lg:flex">
+                  <MdArrowForwardIos className='text-highlightGreen-400'/>
                 </div>
               </div>
             </div>
