@@ -172,7 +172,6 @@ const MapTab = ({ park }: MapTabProps) => {
           }
         }),
       );
-      console.log(decarbWithOccurrences);
       setDecarbAreas(decarbWithOccurrences);
     }
   };
@@ -226,6 +225,20 @@ const MapTab = ({ park }: MapTabProps) => {
           </Checkbox>
         </Space>
       </Card>
+      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) &&
+        <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
+          <Space size={16} className="flex-wrap">
+            <div className="font-semibold">Crowd Level Display:</div>
+            <Checkbox
+              onChange={(e) => setShowZones(e.target.checked)}
+              checked={showZones}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
+              Heatmap Layer
+            </Checkbox>
+          </Space>
+        </Card>
+      }
       <div
         style={{
           height: `${webMode ? '80vh' : '80vh'}`,
@@ -421,11 +434,11 @@ const MapTab = ({ park }: MapTabProps) => {
                 ),
             )}
 
-          {/* {park && (
+          {((user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && park) && (
             <Pane name="heatmapPane" style={{ zIndex: 900 }}>
               <HeatmapLayer park={park} />
             </Pane>
-          )} */}
+          )} 
         </MapContainer>
 
         {hovered && (
