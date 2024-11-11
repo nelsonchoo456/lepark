@@ -3,7 +3,7 @@ import { Anchor, Card, Col, Row } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useMemo, useState } from 'react';
-import { MdCheck } from 'react-icons/md';
+import { MdCheck, MdSensors } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import { FaTools } from 'react-icons/fa';
 import moment from 'moment';
@@ -24,6 +24,9 @@ import MaintenanceTasksTable from '../../MainLanding/components/MaintenanceTasks
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { renderSectionHeader, sectionHeader } from '../Manager/ManagerMainLanding';
 import { flexColsStyles, sectionHeaderIconStyles, sectionStyles } from '../BotanistArborist/BAMainLanding';
+import { TbTrees } from 'react-icons/tb';
+import { getSensorsByParkId, getHubsByParkId, SensorResponse, HubResponse, SensorStatusEnum, HubStatusEnum } from '@lepark/data-access';
+
 
 const MaintenanceMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
@@ -33,6 +36,9 @@ const MaintenanceMainLanding = () => {
   // State
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
+  const [sensors, setSensors] = useState<SensorResponse[]>([]);
+  const [hubs, setHubs] = useState<HubResponse[]>([]);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -98,6 +104,25 @@ const MaintenanceMainLanding = () => {
       : [];
   }, [myTasks]);
 
+  useEffect(() => {
+  if (user?.parkId) {
+    fetchSensorsAndHubs(user.parkId);
+  }
+}, [user]);
+
+const fetchSensorsAndHubs = async (parkId: number) => {
+  try {
+    const [sensorsResponse, hubsResponse] = await Promise.all([
+      getSensorsByParkId(parkId),
+      getHubsByParkId(parkId)
+    ]);
+    setSensors(sensorsResponse.data);
+    setHubs(hubsResponse.data);
+  } catch (error) {
+    console.error('Error fetching sensors and hubs:', error);
+  }
+};
+
   const chartOptions: ApexOptions = {
     chart: {
       type: 'line',
@@ -142,6 +167,28 @@ const MaintenanceMainLanding = () => {
     },
   ];
 
+  const activeCounts = useMemo(() => ({
+  sensors: sensors.filter(sensor => sensor.sensorStatus === SensorStatusEnum.ACTIVE).length,
+  hubs: hubs.filter(hub => hub.hubStatus === HubStatusEnum.ACTIVE).length
+}), [sensors, hubs]);
+
+const outOfOrderCounts = useMemo(() => ({
+  sensors: sensors.filter(sensor =>
+    sensor.sensorStatus === SensorStatusEnum.UNDER_MAINTENANCE ||
+    sensor.sensorStatus === SensorStatusEnum.DECOMMISSIONED
+  ).length,
+  hubs: hubs.filter(hub =>
+    hub.hubStatus === HubStatusEnum.UNDER_MAINTENANCE ||
+    hub.hubStatus === HubStatusEnum.DECOMMISSIONED
+  ).length
+}), [sensors, hubs]);
+
+const inactiveCounts = useMemo(() => ({
+  sensors: sensors.filter(sensor => sensor.sensorStatus === SensorStatusEnum.INACTIVE).length,
+  hubs: hubs.filter(hub => hub.hubStatus === HubStatusEnum.INACTIVE).length
+}), [sensors, hubs]);
+
+
   return (
     <Row>
       <Col span={desktop ? 21 : 24}>
@@ -180,6 +227,53 @@ const MaintenanceMainLanding = () => {
                     </div>
                   )}
                 </div>
+              </Card>
+              <Card className="flex flex-col h-full" styles={{ body: { padding: '1rem' } }}>
+                {/* Header Section */}
+                <div className="flex items-center mb-2">
+                  <div className={`${sectionHeaderIconStyles} bg-green-400 text-white`}>
+                    <MdSensors />
+                  </div>
+                  <LogoText className="text-lg">Sensor and Hub Status</LogoText>
+                </div>
+               <div className="h-full flex w-full gap-2">
+  <div className="rounded-md bg-green-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-green-200 h-40">
+    <div className="flex items-center justify-center gap-1">
+      <strong className="text-lg">{activeCounts.sensors}</strong>
+      <span className="text-sm text-gray-600">{activeCounts.sensors === 1 ? 'sensor' : 'sensors'}</span>
+    </div>
+    <div className="flex items-center justify-center gap-1 mt-1">
+      <strong className="text-lg">{activeCounts.hubs}</strong>
+      <span className="text-sm text-gray-600">{activeCounts.hubs === 1 ? 'hub' : 'hubs'}</span>
+    </div>
+    <div className="mt-2 text-green-600 font-medium">Active</div>
+  </div>
+
+  <div className="rounded-md bg-red-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-red-200 h-40">
+    <div className="flex items-center justify-center gap-1">
+      <strong className="text-lg">{outOfOrderCounts.sensors}</strong>
+      <span className="text-sm text-gray-600">{outOfOrderCounts.sensors === 1 ? 'sensor' : 'sensors'}</span>
+    </div>
+    <div className="flex items-center justify-center gap-1 mt-1">
+      <strong className="text-lg">{outOfOrderCounts.hubs}</strong>
+      <span className="text-sm text-gray-600">{outOfOrderCounts.hubs === 1 ? 'hub' : 'hubs'}</span>
+    </div>
+    <div className="mt-2 text-red-600 font-medium">Out of Order</div>
+  </div>
+
+  <div className="rounded-md bg-mustard-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-mustard-200 h-40">
+    <div className="flex items-center justify-center gap-1">
+      <strong className="text-lg">{inactiveCounts.sensors}</strong>
+      <span className="text-sm text-gray-600">{inactiveCounts.sensors === 1 ? 'sensor' : 'sensors'}</span>
+    </div>
+    <div className="flex items-center justify-center gap-1 mt-1">
+      <strong className="text-lg">{inactiveCounts.hubs}</strong>
+      <span className="text-sm text-gray-600">{inactiveCounts.hubs === 1 ? 'hub' : 'hubs'}</span>
+    </div>
+    <div className="mt-2 text-mustard-600 font-medium">Inactive</div>
+    <p className="text-[9px] text-gray-500">(Decommissioned, Under Maintenance)</p>
+  </div>
+</div>
               </Card>
             </div>
 
@@ -222,12 +316,12 @@ const MaintenanceMainLanding = () => {
             {
               key: 'part-1',
               href: '#part-1',
-              title: 'Maintenance Overview',
+              title: 'Overview',
             },
             {
               key: 'part-2',
               href: '#part-2',
-              title: 'Maintenance Tasks',
+              title: 'Tasks',
             },
             {
               key: 'part-3',
