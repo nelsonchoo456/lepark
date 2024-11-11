@@ -8,14 +8,6 @@ import { message } from 'antd';
 import * as turf from '@turf/turf';
 import './styles/HeatMapLayer.css';
 
-// Example crowd data [latitude, longitude, intensity]
-const crowdData: [number, number, number][] = [
-  [1.30921165304915, 103.8154900074005, 5],
-  [1.307183192453113, 103.8165736198425, 10],
-  [1.307646103106814, 103.816123008728, 20],
-  // Add more data points as needed
-];
-
 interface HeatmapLayer {
   park: ParkResponse;
   zone?: ZoneResponse;
@@ -103,20 +95,15 @@ const HeatmapLayer = ({ park, zone }: HeatmapLayer) => {
 
       // Add legend control
       const legend = new Control({ position: 'bottomright' });
-
       legend.onAdd = () => {
-        const div = L.DomUtil.create('div', 'heatmap-legend');  // Use CSS class for styling
-        const grades = [0.1, 0.3, 0.5, 0.7, 0.9];
-        const colors = ['#006400', '#9fba18', '#e3c727', '#ff8c00', '#ff0000'];
-
-        div.innerHTML = '<h4>Heatmap Intensity</h4>';
-        for (let i = 0; i < grades.length; i++) {
-          div.innerHTML +=
-            `<div class="legend-item">
-              <i style="background:${colors[i]}"></i>
-              <span>${Math.round(grades[i] * maxIntensity)} - ${Math.round(grades[i + 1] ? grades[i + 1] * maxIntensity : maxIntensity)}</span>
-            </div>`;
-        }
+        const div = L.DomUtil.create('div', 'heatmap-legend'); 
+        div.innerHTML = `
+          <h4>Heatmap Intensity</h4>
+          <div class="legend-spectrum"></div>
+          <div class="legend-labels">
+            <span>0</span>
+            <span>${Math.round(maxIntensity)}</span>
+          </div>`;
         return div;
       };
       legend.addTo(map);

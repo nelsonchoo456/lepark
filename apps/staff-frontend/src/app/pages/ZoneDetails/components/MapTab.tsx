@@ -5,7 +5,7 @@ import {
   StaffType,
   ZoneResponse,
 } from '@lepark/data-access';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, Pane, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Card, Checkbox, Space, Tooltip } from 'antd';
 import { TbEdit } from 'react-icons/tb';
@@ -27,6 +27,7 @@ const MapTab = ({ zone }: MapTabProps) => {
   const [park, setPark] = useState<ParkResponse>();
 
   const [showPark, setShowPark] = useState<boolean>(true);
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
   
   useEffect(() => {
     if (zone.id) {
@@ -83,6 +84,20 @@ const MapTab = ({ zone }: MapTabProps) => {
         </Checkbox>
       </Space>
       </Card>
+      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) &&
+        <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
+          <Space size={16} className="flex-wrap">
+            <div className="font-semibold">Crowd Level Display:</div>
+            <Checkbox
+              onChange={(e) => setShowHeatmap(e.target.checked)}
+              checked={showHeatmap}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
+              Heatmap Layer
+            </Checkbox>
+          </Space>
+        </Card>
+      }
       <div
         style={{
           height: '60vh',
@@ -100,12 +115,18 @@ const MapTab = ({ zone }: MapTabProps) => {
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+          <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={zone?.name} />
           {showPark && (
             <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={park?.name} color="transparent" />
           )}
-          <PolygonFitBounds geom={zone?.geom} polygonFields={{ fillOpacity: 0.5 }} polygonLabel={zone?.name} />
-
-          {park && zone && <HeatmapLayer park={park} zone={zone}/>}
+          
+          
+            {(showHeatmap && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && park && zone) && (
+              <Pane name="heatmapPane" style={{ zIndex: 800 }}>
+                <HeatmapLayer park={park} zone={zone}/>
+              </Pane>
+            )} 
+          
           <MarkersGroup
             occurrences={occurrences}
             attractions={attractions}

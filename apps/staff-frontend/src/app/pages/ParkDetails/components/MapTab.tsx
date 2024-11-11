@@ -57,6 +57,7 @@ const MapTab = ({ park }: MapTabProps) => {
   const [showEvents, setShowEvents] = useState<boolean>(false);
   const [showFacilities, setShowFacilities] = useState<boolean>(false);
   const [showDecarb, setShowDecarb] = useState<boolean>(false);
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
 
   const [hovered, setHovered] = useState<HoverItem | null>(null); // Shared hover state
 
@@ -230,8 +231,8 @@ const MapTab = ({ park }: MapTabProps) => {
           <Space size={16} className="flex-wrap">
             <div className="font-semibold">Crowd Level Display:</div>
             <Checkbox
-              onChange={(e) => setShowZones(e.target.checked)}
-              checked={showZones}
+              onChange={(e) => setShowHeatmap(e.target.checked)}
+              checked={showHeatmap}
               className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
             >
               Heatmap Layer
@@ -434,7 +435,7 @@ const MapTab = ({ park }: MapTabProps) => {
                 ),
             )}
 
-          {((user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && park) && (
+          {(showHeatmap && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && park) && (
             <Pane name="heatmapPane" style={{ zIndex: 900 }}>
               <HeatmapLayer park={park} />
             </Pane>
