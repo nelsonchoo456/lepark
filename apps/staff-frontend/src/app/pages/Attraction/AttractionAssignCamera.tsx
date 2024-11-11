@@ -1,6 +1,4 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
-import DraggableMarker from '../../components/map/DraggableMarker';
-import { AdjustLatLngInterface } from './FacilityCreate';
 import {
   FacilityResponse,
   getAllSensorReadingsByParkIdAndSensorType,
@@ -12,6 +10,7 @@ import {
   ParkResponse,
   SensorResponse,
   SensorStatusEnum,
+  updateAttractionDetails,
   updateFacilityCameraSensor,
   ZoneResponse,
 } from '@lepark/data-access';
@@ -29,10 +28,11 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import PictureMarker from '../../components/map/PictureMarker';
 import { MdOutlinePhotoCamera } from 'react-icons/md';
 import * as turf from '@turf/turf';
+import { useRestrictAttractions } from '../../hooks/Attractions/useRestrictAttractions';
 
-const FacilityAssignCamera = () => {
-  const { facilityId } = useParams<{ facilityId: string }>();
-  const { facility, park, loading } = useRestrictFacilities(facilityId);
+const AttractionAssignCamera = () => {
+  const { attractionId } = useParams<{ attractionId: string }>();
+  const { attraction, park, loading } = useRestrictAttractions(attractionId);
   const [cameraSensors, setCameraSensors] = useState<(SensorResponse & {distance?: number, cameraFacilityAttractionName?: string })[]>([]);
   const [selectedSensor, setSelectedSensor] = useState<SensorResponse>();
   const [selectedParkZones, setSelectedParkZones] = useState<ZoneResponse[]>();
@@ -42,17 +42,17 @@ const FacilityAssignCamera = () => {
   const formSensorId = Form.useWatch('cameraSensorId', form);
 
   useEffect(() => {
-    if (facility) {
-      fetchCameraSensors(facility.parkId);
+    if (attraction) {
+      fetchCameraSensors(attraction.parkId);
     }
-  }, [facility]);
+  }, [attraction]);
 
   const fetchCameraSensors = async (parkId: number) => {
-    if (!facility) return;
+    if (!attraction) return;
     try {
       const facilitiesRes = await getFacilitiesByParkId(parkId);
       const attractionsRes = await getAttractionsByParkId(parkId);
-      
+
       const cameraSensorsRes = await getSensorsByParkId(parkId);
       if (cameraSensorsRes.status === 200) {
         const facilitiesWithCameraSensors = facilitiesRes.data.filter((f) => f.cameraSensorId);
@@ -64,11 +64,11 @@ const FacilityAssignCamera = () => {
           const linkedFacility = facilitiesWithCameraSensors.find((f) => f.cameraSensorId === s.id);
           const linkedAttraction = attractionsWithCameraSensors.find((a) => a.cameraSensorId === s.id);
 
-          // Calculate distance if lat/long are available for both sensor and facility
+          // Calculate distance if lat/long are available for both sensor and attraction
           let distance;
-          if (s.lat && s.long && facility.lat && facility.long) {
+          if (s.lat && s.long && attraction.lat && attraction.lng) {
             distance = turf.distance(
-              turf.point([facility.long, facility.lat]),
+              turf.point([attraction.lng, attraction.lat]),
               turf.point([s.long, s.lat]),
               { units: 'meters' }
             );
@@ -89,12 +89,12 @@ const FacilityAssignCamera = () => {
   };
 
   const handleSubmit = async () => {
-    if (!facility || !formSensorId) return;
+    if (!attraction || !formSensorId) return;
     try {
-      const response = await updateFacilityCameraSensor(facility.id, formSensorId);
+      const response = await updateAttractionDetails(attraction.id, { cameraSensorId: formSensorId });
       if (response.status === 200) {
-        messageApi.success('Saved changes to Facility Camera Sensor. Redirecting to Facility details page...');
-        setTimeout(() => navigate(`/facilities/${facility.id}`), 1000);
+        messageApi.success('Saved changes to Attraction Camera Sensor. Redirecting to Attraction details page...');
+        setTimeout(() => navigate(`/attraction/${attraction.id}`), 1000);
       }
     } catch (error: any) {
       console.error(error);
@@ -104,7 +104,7 @@ const FacilityAssignCamera = () => {
       } else {
         messageApi.open({
           type: 'error',
-          content: 'An unexpected error occurred while updating the facility.',
+          content: 'An unexpected error occurred while updating the attraction.',
         });
       }
     }
@@ -112,17 +112,18 @@ const FacilityAssignCamera = () => {
 
   const breadcrumbItems = [
     {
-      title: 'Facility Management',
-      pathKey: '/facilities',
+      title: 'Attractions Management',
+      pathKey: '/attraction',
       isMain: true,
     },
     {
-      title: facility?.name ? facility?.name : 'Details',
-      pathKey: `/facilities/${facility?.id}`,
+      title: attraction?.title ? attraction?.title : 'Details',
+      pathKey: `/attraction/${attraction?.id}`,
+      isCurrent: true,
     },
     {
       title: 'Assign Camera',
-      pathKey: `/facilities/${facility?.id}/assign-camera`,
+      pathKey: `/attraction/${attraction?.id}/assign-camera`,
       isCurrent: true,
     },
   ];
@@ -209,14 +210,14 @@ const FacilityAssignCamera = () => {
                       labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
                     />
                   ))}
-                {facility && facility.lat && facility.long && (
+                {attraction && attraction.lat && attraction.lng && (
                   <PictureMarker
-                    id={facility.id}
-                    entityType="FACILITY"
+                    id={attraction.id}
+                    entityType="ATTRACTION"
                     circleWidth={37}
-                    lat={facility.lat}
-                    lng={facility.long}
-                    tooltipLabel={facility.name}
+                    lat={attraction.lat}
+                    lng={attraction.lng}
+                    tooltipLabel={attraction.title}
                     backgroundColor={COLORS.sky[300]}
                     icon={<TbBuildingEstate className="text-sky-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
                   />
@@ -262,4 +263,4 @@ const FacilityAssignCamera = () => {
   );
 };
 
-export default FacilityAssignCamera;
+export default AttractionAssignCamera;

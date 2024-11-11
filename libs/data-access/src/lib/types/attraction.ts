@@ -48,7 +48,7 @@ export interface UpdateAttractionData {
   lng?: number;
   parkId?: number;
 
-  cameraSensorId?: string;
+  cameraSensorId?: string | null;
 }
 
 export enum AttractionTicketCategoryEnum {

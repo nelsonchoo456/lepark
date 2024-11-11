@@ -23,9 +23,9 @@ interface SensorDataGroupedByType {
 class PredictiveIrrigationService {
   private baseUrl = 'https://api-open.data.gov.sg/v2/real-time/api';
   private models: { [hubId: number]: any } = {};
-  constructor() {
-    this.loadAllModels();
-  }
+  // constructor() {
+  //   this.loadAllModels();
+  // }
 
   // -- [ PUBLIC ] --
   public async getHubHistoricalSensorsRainfallData(hub: Hub, startDate: Date, endDate: Date): Promise<any> {

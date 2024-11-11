@@ -14,11 +14,12 @@ import TicketsTab from './components/TicketsTab';
 import { useLocation } from 'react-router-dom';
 import DashboardTab from './components/DashboardTab';
 import TicketSalesTab from './components/TicketSalesTab';
+import CameraSensorTab from './components/CameraSensorTab';
 
 const AttractionDetails = () => {
   const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
-  const { attraction, park, loading } = useRestrictAttractions(id);
+  const { attraction, park, loading, triggerFetch : triggerFetchAttraction } = useRestrictAttractions(id);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [, setRefreshToggle] = useState(false);
@@ -85,8 +86,13 @@ const AttractionDetails = () => {
       label: 'Dashboard',
       children: attraction ? <DashboardTab attractionId={attraction.id} /> : <></>,
     },
+    {
+      key: 'Crowd',
+      label: 'Crowd',
+      children: attraction ? <CameraSensorTab attraction={attraction} park={park} triggerFetchAttraction={triggerFetchAttraction}/> : <></>,
+    },
   ];
-
+ 
   const breadcrumbItems = [
     {
       title: 'Attractions Management',

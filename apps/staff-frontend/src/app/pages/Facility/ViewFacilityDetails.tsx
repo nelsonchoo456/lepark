@@ -18,7 +18,7 @@ const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const { facility, park, loading } = useRestrictFacilities(facilityId);
+  const { facility, park, loading, triggerFetch } = useRestrictFacilities(facilityId);
 
   const breadcrumbItems = [
     {
@@ -74,7 +74,7 @@ const ViewFacilityDetails = () => {
     {
       key: 'crowd',
       label: 'Crowd',
-      children: facility ? <CameraSensorTab facility={facility} park={park} /> : <p>Loading crowd data...</p>,
+      children: facility ? <CameraSensorTab facility={facility} park={park} triggerFetchFacility={triggerFetch}/> : <p>Loading crowd data...</p>,
     },
   ];
 

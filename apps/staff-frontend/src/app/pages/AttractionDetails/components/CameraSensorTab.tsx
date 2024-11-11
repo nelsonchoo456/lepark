@@ -1,52 +1,46 @@
 import {
-  FacilityResponse,
+  AttractionResponse,
   getSensorById,
   getSensorReadingsByDateRange,
-  getZonesByParkId,
   ParkResponse,
   SensorReadingResponse,
   SensorResponse,
   StaffResponse,
   StaffType,
-  updateFacilityCameraSensor,
-  ZoneResponse,
+  updateAttractionDetails,
 } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Button, Card, Checkbox, Divider, Empty, Menu, Space, Tooltip, Dropdown, Flex, Modal, message, Spin } from 'antd';
-import { TbBuildingEstate, TbEdit, TbTicket, TbTree } from 'react-icons/tb';
+import { Button, Card, Divider, Empty, Menu, Space, Tooltip, Dropdown, Flex, Modal, message, Spin } from 'antd';
+import { TbBuildingEstate, TbEdit } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import PictureMarker from '../../../components/map/PictureMarker';
 import { COLORS } from '../../../config/colors';
-import { PiPlantFill } from 'react-icons/pi';
-import { FaHome, FaTicketAlt } from 'react-icons/fa';
 import { useAuth } from '@lepark/common-ui';
 import { useEffect, useState } from 'react';
-import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
 import dayjs from 'dayjs';
 import { Line } from 'react-chartjs-2';
 import { IoMenu } from 'react-icons/io5';
 import { MdOutlinePhotoCamera } from 'react-icons/md';
 
 interface CameraSensorTabProps {
-  facility: FacilityResponse;
+  attraction: AttractionResponse;
   park?: ParkResponse | null;
-  triggerFetchFacility: () => void;
+  triggerFetchAttraction: () => void;
 }
-const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorTabProps) => {
+const CameraSensorTab = ({ attraction, park, triggerFetchAttraction }: CameraSensorTabProps) => {
   const navigate = useNavigate();
   const { user } = useAuth<StaffResponse>();
-  const [zones, setZones] = useState<ZoneResponse[]>();
   const [cameraSensorLoading, setCameraSensorLoading] = useState<boolean>();
   const [cameraSensor, setCameraSensor] = useState<SensorResponse>();
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(1, 'days'), dayjs()]);
   const [readings, setReadings] = useState<SensorReadingResponse[]>([]);
 
   useEffect(() => {
-    if (facility && facility.cameraSensorId) {
-      fetchCameraSensor(facility.cameraSensorId);
+    if (attraction && attraction.cameraSensorId) {
+      fetchCameraSensor(attraction.cameraSensorId);
     }
-  }, [facility]);
+  }, [attraction]);
 
   useEffect(() => {
     if (cameraSensor) {
@@ -93,7 +87,7 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
     try {
       const confirmed = await new Promise<boolean>((resolve) => {
         Modal.confirm({
-          title: 'Confirm dettachment of this camera sensor from this Facility?',
+          title: 'Confirm dettachment of this camera sensor from this Attraction?',
           content: 'Are you sure you want to proceed?',
           onOk: () => resolve(true),
           onCancel: () => resolve(false),
@@ -104,12 +98,11 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
 
       if (!confirmed) return;
 
-      const response = await updateFacilityCameraSensor(facility.id, null);
+      const response = await updateAttractionDetails(attraction.id, { cameraSensorId: null });
       if (response.status === 200) {
-        triggerFetchFacility();
-        message.success('Camera sensor detached from this facility');
+        triggerFetchAttraction();
+        message.success('Camera sensor detached from this attraction');
       }
-      
     } catch (error) {
       console.error('Error detaching camera sensor', error);
       message.error('Failed to detach camera sensor. Please try again.');
@@ -173,7 +166,7 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
           <Dropdown
             overlay={
               <Menu>
-                <Menu.Item key="change" onClick={() => navigate(`/facilities/${facility.id}/assign-camera`)}>
+                <Menu.Item key="change" onClick={() => navigate(`/attraction/${attraction.id}/assign-camera`)}>
                   Change assigned camera
                 </Menu.Item>
                 <Menu.Item key="remove" danger onClick={() => handleDelete()}>
@@ -192,8 +185,8 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
         <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
           <Space size={16} className="flex-wrap">
             <div className="font-semibold">Actions:</div>
-            <Button type="primary" onClick={() => navigate(`/facilities/${facility.id}/assign-camera`)}>
-              Assign a camera to this facility
+            <Button type="primary" onClick={() => navigate(`/attraction/${attraction.id}/assign-camera`)}>
+              Assign a camera to this attraction
             </Button>
           </Space>
         </Card>
@@ -211,6 +204,18 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
           )}
 
           <Divider orientation="left">Camera Sensor Details</Divider>
+          {/* <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
+        <Space size={16} className="flex-wrap">
+          <div className="font-semibold">Display:</div>
+          <Checkbox
+            onChange={(e) => setShowZones(e.target.checked)}
+            checked={showZones}
+            className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+          >
+            Zones
+          </Checkbox>
+        </Space>
+      </Card> */}
           <div
             style={{
               height: '30vh',
@@ -230,14 +235,14 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
               />
               <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.9 }} />
 
-              {facility && facility.lat && facility.long && (
+              {attraction && attraction.lat && attraction.lng && (
                 <PictureMarker
-                  id={facility.id}
-                  entityType="FACILITY"
+                  id={attraction.id}
+                  entityType="ATTRACTION"
                   circleWidth={37}
-                  lat={facility.lat}
-                  lng={facility.long}
-                  tooltipLabel={facility.name}
+                  lat={attraction.lat}
+                  lng={attraction.lng}
+                  tooltipLabel={attraction.title}
                   backgroundColor={COLORS.sky[300]}
                   icon={<TbBuildingEstate className="text-sky-600 drop-shadow-lg" style={{ fontSize: '2rem' }} />}
                 />
@@ -271,7 +276,7 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
         </>
       ) : (
         <Card>
-          <Empty description="No camera is assigned to this facility" />
+          <Empty description="No camera is assigned to this attraction" />
         </Card>
       )}
     </>

@@ -94,7 +94,7 @@ class AttractionService {
       if (!existingAttraction) {
         throw new Error('Attraction not found');
       }
-
+      
       const formattedData = dateFormatter(data);
       const mergedData = { ...existingAttraction, ...formattedData };
       AttractionSchema.parse(mergedData);
@@ -138,7 +138,6 @@ class AttractionService {
       //         throw new Error('New attraction coordinates are outside the park boundaries');
       //       }
       //     }
-
       return AttractionDao.updateAttractionDetails(id, formattedData);
     } catch (error) {
       if (error instanceof z.ZodError) {

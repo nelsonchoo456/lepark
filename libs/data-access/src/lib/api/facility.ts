@@ -58,11 +58,10 @@ export async function getFacilityById(id: string): Promise<AxiosResponse<Facilit
 
 export async function updateFacilityCameraSensor(
   id: string,
-  cameraSensorId: string
+  cameraSensorId?: string | null
 // ): Promise<AxiosResponse<FacilityResponse>> {
 ): Promise<any> {
   try {
-    console.log({cameraSensorId})
     const response: AxiosResponse<FacilityResponse> = await client.put(`${URL}/updateFacilityDetails/${id}`, { cameraSensorId });
     return response;
   } catch (error) {

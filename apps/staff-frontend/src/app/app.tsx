@@ -119,6 +119,7 @@ import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 import AllParksCrowdLevels from './pages/CrowdInsight/AllParksCrowdLevels';
 import FacilityAssignCamera from './pages/Facility/FacilityAssignCamera';
 import AnalyseActualCrowdLevels from './pages/CrowdInsight/AnalyseActualCrowdLevels';
+import AttractionAssignCamera from './pages/Attraction/AttractionAssignCamera';
 
 export function App() {
   return (
@@ -390,6 +391,7 @@ export function App() {
                       <Route path="create" element={<AttractionCreate />} />
                       <Route path=":id/edit" element={<AttractionEdit />} />
                       <Route path=":id/edit-map" element={<AttractionEditMap />} />
+                      <Route path=":attractionId/assign-camera" element={<AttractionAssignCamera />} />
                     </Route>
                     <Route path=":id" element={<AttractionDetails />} />
                     <Route path=":id/ticketlisting/:ticketListingId" element={<TicketListingDetails />} />
