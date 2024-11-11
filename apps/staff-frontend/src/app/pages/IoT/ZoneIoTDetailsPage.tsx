@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge } from 'antd';
+import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge, Flex } from 'antd';
 import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera, FiCloudRain } from 'react-icons/fi';
 import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import {
@@ -216,32 +216,33 @@ const ZoneIoTDetailsPage: React.FC = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} md={16}>
+          <Col xs={24} md={10}>
             <Space align="center" size={16}>
               <Title level={3} style={{ marginBottom: 0 }}>{zone.name}</Title>
               <Tag color={getStatusColor(zone.zoneStatus)} style={{ fontSize: '12px', padding: '2px 8px', marginLeft: '3px' }}>
                 {formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}
               </Tag>
-              <Tooltip title="View Camera Streams">
-                <Link to={`/iot/zones/${zoneId}/camera-streams`}>
-                  <Button type="link" icon={<FiCamera />} />
-                </Link>
-              </Tooltip>
-              <Tooltip title="View Rainfall Forecast">
-                <Link to={`/iot/zones/${zoneId}/predictive-irrigation`}>
-                  <Button type="link" icon={<FiCloudRain />} />
-                </Link>
-              </Tooltip>
+                
             </Space>
           </Col>
-          <Col xs={24} md={8} style={{ textAlign: 'right' }}>
-            <Tooltip title="Data averaged over the last 4 hours">
-              <Text type="secondary">
-                <ClockCircleOutlined /> 4-Hour Average
-              </Text>
-            </Tooltip>
+          <Col xs={24} md={14} style={{ textAlign: 'right' }}>
+            <Space>
+              <Link to={`/iot/zones/${zoneId}/camera-streams`}>
+                <Button type="primary" icon={<FiCamera className='text-xl'/>} >View Camera Streams</Button>
+              </Link>
+              <Link to={`/iot/zones/${zoneId}/predictive-irrigation`}>
+                <Button type="primary" icon={<FiCloudRain className='text-xl'/>} >View Rainfall Forecast</Button>
+              </Link>
+            </Space>
           </Col>
         </Row>
+        <Flex justify='flex-end'>
+          <Tooltip title="Data averaged over the last 4 hours">
+            <Text type="secondary">
+              <ClockCircleOutlined /> 4-Hour Average
+            </Text>
+          </Tooltip>
+        </Flex>
         
         <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
           {Object.entries(averageReadings)
