@@ -23,9 +23,9 @@ interface SensorDataGroupedByType {
 class PredictiveIrrigationService {
   private baseUrl = 'https://api-open.data.gov.sg/v2/real-time/api';
   private models: { [hubId: number]: any } = {};
-  // constructor() {
-  //   this.loadAllModels();
-  // }
+  constructor() {
+    this.loadAllModels();
+  }
 
   // -- [ PUBLIC ] --
   public async getHubHistoricalSensorsRainfallData(hub: Hub, startDate: Date, endDate: Date): Promise<any> {
@@ -76,10 +76,10 @@ class PredictiveIrrigationService {
   
       // Generate training data using the service method
       const historicalRainfallData = await this.getClosestRainDataPerDate(hub.lat, hub.long);
-      const trainingData = await this.generateTrainingData(historicalSensorData, historicalRainfallData);
+      const trainingData = await this.generateTrainingData(historicalSensorData);
   
       // Train the Random Forest model
-      const model = await this.trainRandomForestModel(trainingData);
+      const model = await this.trainRandomForestModel(trainingData, historicalRainfallData);
   
       // Save the trained model for the hub
       models[hub.id] = model;
@@ -109,10 +109,17 @@ class PredictiveIrrigationService {
         sensorData.light || 0,
       ]
 
-      const model = this.models[hub.id];
+      let model = this.models[hub.id];
 
       if (!model) {
-        throw new Error(`No model found for hub ${hub.id} today.`);
+        const modelRecord = await prisma.rfModel.findUnique({ where: { hubId: hub.id }})
+        if (!modelRecord) {
+          throw new Error(`No model found for hub ${hub.id} today.`);
+        }
+        const { hubId, modelData } = modelRecord;
+        const parsedModelData = typeof modelData === 'string' ? JSON.parse(modelData) : modelData;
+        this.models[hubId] = RandomForestRegressor.load(parsedModelData);
+        model = RandomForestRegressor.load(parsedModelData);
       }
 
       const prediction = model.predict([input])[0];
@@ -229,7 +236,30 @@ class PredictiveIrrigationService {
   // TRAINING
   // Data preparation:
   // Generate Training Data
-  private async generateTrainingData(sensorData, historicalRainfallData) {
+  // private async generateTrainingData(sensorData, historicalRainfallData) {
+  //   console.log(historicalRainfallData)
+  //   const today = new Date();
+  //   const trainingData = [];
+  
+  //   for (let i = 0; i < numDays; i++) {
+  //     const date = new Date(today);
+  //     date.setDate(today.getDate() - i);
+  
+  //     const rainfallRecord = historicalRainfallData.find((data) => isSameDay(data.timestamp, date))
+  //     const readings = {
+  //       soilMoisture: getAverageSensorReading(sensorData['SOIL_MOISTURE'], date),
+  //       temperature: getAverageSensorReading(sensorData['TEMPERATURE'], date),
+  //       humidity: getAverageSensorReading(sensorData['HUMIDITY'], date),
+  //       light: getAverageSensorReading(sensorData['LIGHT'], date),
+  //       rainfall: rainfallRecord ? rainfallRecord.value : 0,
+  //       water: 0
+  //     };
+  //     readings.water = getIrrigationDecision(readings, date);
+  //     trainingData.push(readings);
+  //   }
+  //   return trainingData;
+  // };
+  private generateTrainingData = async (sensorData) => {
     const today = new Date();
     const trainingData = [];
   
@@ -237,18 +267,16 @@ class PredictiveIrrigationService {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
   
-      const rainfallRecord = historicalRainfallData.find((data) => isSameDay(data.timestamp, date))
       const readings = {
         soilMoisture: getAverageSensorReading(sensorData['SOIL_MOISTURE'], date),
         temperature: getAverageSensorReading(sensorData['TEMPERATURE'], date),
         humidity: getAverageSensorReading(sensorData['HUMIDITY'], date),
         light: getAverageSensorReading(sensorData['LIGHT'], date),
-        rainfall: rainfallRecord ? rainfallRecord.value : 0,
-        water: 0
       };
-      readings.water = getIrrigationDecision(readings, date);
+  
       trainingData.push(readings);
     }
+  
     return trainingData;
   };
 
@@ -341,15 +369,16 @@ class PredictiveIrrigationService {
   // -- [ PRIVATE ] --
   // TRAINING
   // Random Forest Training:
-  private async trainRandomForestModel(trainingData) {
+  private async trainRandomForestModel(trainingData, rainfallData) {
     const X = trainingData.map((data) => [
       data.soilMoisture,
       data.temperature,
       data.humidity,
       data.light,
-      data.rainfall
+      // data.rainfall
     ]);
-    const y = trainingData.map((data) => data.water);
+    // const y = trainingData.map((data) => data.water);
+    const y: any = Object.values(rainfallData);
     const model = new RandomForestRegressor({
       nEstimators: 100,
       treeOptions: { maxDepth: 10 },
@@ -406,92 +435,92 @@ function getAverageSensorReading(readings: { date: string; average: number }[], 
   return reading ? reading.average : 0;
 }
 
-const isSameDay = (timestamp, date) => {
-  return (
-    timestamp.getDate() === date.getDate() &&
-    timestamp.getMonth() === date.getMonth() &&
-    timestamp.getFullYear() === date.getFullYear()
-  );
-};
+// const isSameDay = (timestamp, date) => {
+//   return (
+//     timestamp.getDate() === date.getDate() &&
+//     timestamp.getMonth() === date.getMonth() &&
+//     timestamp.getFullYear() === date.getFullYear()
+//   );
+// };
 
-// TRAINING
-const getIrrigationDecision = (readings, date) => {
-  // Dynamic decision logic for whether to turn on the irrigation
-  let water = 0;
+// // TRAINING
+// const getIrrigationDecision = (readings, date) => {
+//   // Dynamic decision logic for whether to turn on the irrigation
+//   let water = 0;
 
-  // 1. Determine season
-  const month = date.getMonth() + 1; // getMonth() is zero-based
-  let season;
-  if (month >= 12 || month <= 3) {
-    season =  'wet'; // Northeast Monsoon (wet season)
-  } else if (month >= 6 && month <= 9) {
-    season = 'dry'; // Southwest Monsoon (drier season)
-  } else {
-    season = 'mixed'; // Inter-monsoon period
-  }
+//   // 1. Determine season
+//   const month = date.getMonth() + 1; // getMonth() is zero-based
+//   let season;
+//   if (month >= 12 || month <= 3) {
+//     season =  'wet'; // Northeast Monsoon (wet season)
+//   } else if (month >= 6 && month <= 9) {
+//     season = 'dry'; // Southwest Monsoon (drier season)
+//   } else {
+//     season = 'mixed'; // Inter-monsoon period
+//   }
 
-  // 2. Decision thresholds and weights, based on season
-  const soilMoistureThresholdLow = season === 'dry' ? 59.2 : 59.5;
-  const soilMoistureThresholdModerate = season === 'dry' ? 59.5 : 59.7;
-  const temperatureThresholdHigh = 31; // High temperature, increases irrigation need
-  const humidityThresholdLow = 80; // Low humidity, increases irrigation need
+//   // 2. Decision thresholds and weights, based on season
+//   const soilMoistureThresholdLow = season === 'dry' ? 59.2 : 59.5;
+//   const soilMoistureThresholdModerate = season === 'dry' ? 59.5 : 59.7;
+//   const temperatureThresholdHigh = 31; // High temperature, increases irrigation need
+//   const humidityThresholdLow = 80; // Low humidity, increases irrigation need
 
-  // Weighted conditions for irrigation decision
-  if (readings.rainfall === 1) {
-    water = 0; // Sufficient rainfall, no irrigation needed
-  } else if (readings.soilMoisture < soilMoistureThresholdLow) {
-    water = 1; // Critical low moisture, irrigation needed
-  } else if (readings.soilMoisture < soilMoistureThresholdModerate) {
-    if (
-      (readings.temperature > temperatureThresholdHigh) ||
-      (readings.humidity < humidityThresholdLow)
-    ) {
-      water = 1; // High temperature or low humidity triggers irrigation
-    }
-  }
+//   // Weighted conditions for irrigation decision
+//   if (readings.rainfall === 1) {
+//     water = 0; // Sufficient rainfall, no irrigation needed
+//   } else if (readings.soilMoisture < soilMoistureThresholdLow) {
+//     water = 1; // Critical low moisture, irrigation needed
+//   } else if (readings.soilMoisture < soilMoistureThresholdModerate) {
+//     if (
+//       (readings.temperature > temperatureThresholdHigh) ||
+//       (readings.humidity < humidityThresholdLow)
+//     ) {
+//       water = 1; // High temperature or low humidity triggers irrigation
+//     }
+//   }
 
-  return water
-}
+//   return water
+// }
 
-const calculateWaterData = async (sensorData, rainfallData) => {
-  // Helper function to get the daily reading based on target time or fallback to first entry
-  const getDailyReading = (data, date) => {
-    const targetTime = `${date}T21:00:00.000Z`; // Target time at 20:00:00
-    return data.find((item) => item.date === targetTime) || data[0];
-  };
-  const getRainfallForDate = (data, date) => {
-    return data.find((item) => item.timestamp.toString().startsWith(date))?.value || 0;
-  };
+// const calculateWaterData = async (sensorData, rainfallData) => {
+//   // Helper function to get the daily reading based on target time or fallback to first entry
+//   const getDailyReading = (data, date) => {
+//     const targetTime = `${date}T21:00:00.000Z`; // Target time at 20:00:00
+//     return data.find((item) => item.date === targetTime) || data[0];
+//   };
+//   const getRainfallForDate = (data, date) => {
+//     return data.find((item) => item.timestamp.toString().startsWith(date))?.value || 0;
+//   };
 
-  // Get unique dates from sensor data to iterate over
-  const dates = [...new Set(sensorData.TEMPERATURE.map((entry) => entry.date.split('T')[0]))];
+//   // Get unique dates from sensor data to iterate over
+//   const dates = [...new Set(sensorData.TEMPERATURE.map((entry) => entry.date.split('T')[0]))];
 
-  // Calculate water data for each day
-  return dates.map((date: string) => {
-    // Extract daily readings for each sensor type
-    const tempReading = getDailyReading(sensorData.TEMPERATURE, date);
-    const soilMoistureReading = getDailyReading(sensorData.SOIL_MOISTURE, date);
-    const humidityReading = getDailyReading(sensorData.HUMIDITY, date);
-    const lightReading = getDailyReading(sensorData.LIGHT, date);
-    const rainfall = getRainfallForDate(rainfallData, date);
+//   // Calculate water data for each day
+//   return dates.map((date: string) => {
+//     // Extract daily readings for each sensor type
+//     const tempReading = getDailyReading(sensorData.TEMPERATURE, date);
+//     const soilMoistureReading = getDailyReading(sensorData.SOIL_MOISTURE, date);
+//     const humidityReading = getDailyReading(sensorData.HUMIDITY, date);
+//     const lightReading = getDailyReading(sensorData.LIGHT, date);
+//     const rainfall = getRainfallForDate(rainfallData, date);
 
-    // Construct the readings object for the day
-    const readings = {
-      temperature: tempReading?.average || 0,
-      soilMoisture: soilMoistureReading?.average || 0,
-      humidity: humidityReading?.average || 0,
-      light: lightReading?.average || 0,
-      rainfall: rainfall || 0
-    };
+//     // Construct the readings object for the day
+//     const readings = {
+//       temperature: tempReading?.average || 0,
+//       soilMoisture: soilMoistureReading?.average || 0,
+//       humidity: humidityReading?.average || 0,
+//       light: lightReading?.average || 0,
+//       rainfall: rainfall || 0
+//     };
 
-    console.log("readings", readings)
+//     console.log("readings", readings)
 
-    // Calculate the irrigation decision
-    const water = getIrrigationDecision(readings, new Date(date));
+//     // Calculate the irrigation decision
+//     const water = getIrrigationDecision(readings, new Date(date));
 
-    // Return object with date and water value
-    return { date, value: water };
-  });
-};
+//     // Return object with date and water value
+//     return { date, value: water };
+//   });
+// };
 
 

@@ -144,8 +144,11 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
   const handleTrainModelForThisHub = async () => {
     try {
       setTrainLoading(true);
-
       const response = await trainModelForHub(hub.id);
+      if (response.status === 200) {
+        message.success("Successfully trained Hub. Fetching predictions now...");
+        await fetchModel(hub);
+      }
       setTrainLoading(false);
     } catch (error) {
       setTrainLoading(false);
