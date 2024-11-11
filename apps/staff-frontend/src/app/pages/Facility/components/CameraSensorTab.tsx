@@ -13,7 +13,7 @@ import {
 } from '@lepark/data-access';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
-import { Button, Card, Checkbox, Divider, Empty, Menu, Space, Tooltip, Dropdown, Flex, Modal, message, Spin } from 'antd';
+import { Button, Card, Checkbox, Divider, Empty, Menu, Space, Tooltip, Dropdown, Flex, Modal, message, Spin, DatePicker, Tabs, Tag, Descriptions } from 'antd';
 import { TbBuildingEstate, TbEdit, TbTicket, TbTree } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import PictureMarker from '../../../components/map/PictureMarker';
@@ -27,6 +27,10 @@ import dayjs from 'dayjs';
 import { Line } from 'react-chartjs-2';
 import { IoMenu } from 'react-icons/io5';
 import { MdOutlinePhotoCamera } from 'react-icons/md';
+import { RangePickerProps } from 'antd/es/date-picker';
+import CameraStreamTab from '../../Sensor/components/CameraStreamTab';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+const { RangePicker } = DatePicker;
 
 interface CameraSensorTabProps {
   facility: FacilityResponse;
@@ -52,16 +56,16 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
     if (cameraSensor) {
       fetchCameraSensorReadings(cameraSensor.id);
     }
-  }, [cameraSensor]);
+  }, [cameraSensor, dateRange]);
 
   const fetchCameraSensor = async (cameraSensorId: string) => {
     try {
-      setCameraSensorLoading(true)
+      setCameraSensorLoading(true);
       const sensorRes = await getSensorById(cameraSensorId);
       setCameraSensor(sensorRes.data);
-      setCameraSensorLoading(false)
+      setCameraSensorLoading(false);
     } catch (e) {
-      setCameraSensorLoading(false)
+      setCameraSensorLoading(false);
       console.error('Error fetching camera sensor:', e);
     }
   };
@@ -109,12 +113,18 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
         triggerFetchFacility();
         message.success('Camera sensor detached from this facility');
       }
-      
     } catch (error) {
       console.error('Error detaching camera sensor', error);
       message.error('Failed to detach camera sensor. Please try again.');
     }
   };
+
+  const handleDateRangeChange: RangePickerProps['onChange'] = (dates) => {
+    if (dates) {
+      setDateRange([dates[0] as dayjs.Dayjs, dates[1] as dayjs.Dayjs]);
+    }
+  };
+
 
   const chartOptions = {
     responsive: true,
@@ -160,48 +170,67 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
     },
   };
 
-  if (cameraSensorLoading) {
-    return (
-      <Flex justify='center' className='mt-10'><Spin/></Flex>
-    )
-  }
+  const descriptionsItems = [
+    {
+      key: 'name',
+      label: 'Name',
+      children: cameraSensor?.name,
+    },
+    {
+      key: 'identifierNumber',
+      label: 'Identifier Number',
+      children: cameraSensor?.identifierNumber,
+    },
+    {
+      key: 'sensorStatus',
+      label: 'Sensor Status',
+      children: (() => {
+        switch (cameraSensor?.sensorStatus) {
+          case 'ACTIVE':
+            return (
+              <div className="flex w-full items-start justify-between">
+                <Tag color="green" bordered={false}>
+                  {formatEnumLabelToRemoveUnderscores(cameraSensor.sensorStatus)}
+                </Tag>
+              </div>
+            );
+          case 'INACTIVE':
+            return (
+              <Tag color="blue" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(cameraSensor.sensorStatus)}
+              </Tag>
+            );
+          case 'UNDER_MAINTENANCE':
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(cameraSensor.sensorStatus)}
+              </Tag>
+            );
+          case 'DECOMMISSIONED':
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(cameraSensor.sensorStatus)}
+              </Tag>
+            );
+          default:
+            return <Tag>{formatEnumLabelToRemoveUnderscores(cameraSensor?.sensorStatus ?? '')}</Tag>;
+        }
+      })(),
+    },
+    { key: 'sensorType', label: 'Sensor Type', children: formatEnumLabelToRemoveUnderscores(cameraSensor?.sensorType ?? '') },
+    { key: 'location', label: 'Location', children: <></>}
+  ];
 
-  return (
-    <>
-      {cameraSensor ? (
-        <Flex justify="flex-end">
-          <Dropdown
-            overlay={
-              <Menu>
-                <Menu.Item key="change" onClick={() => navigate(`/facilities/${facility.id}/assign-camera`)}>
-                  Change assigned camera
-                </Menu.Item>
-                <Menu.Item key="remove" danger onClick={() => handleDelete()}>
-                  Remove assigned camera
-                </Menu.Item>
-              </Menu>
-            }
-            trigger={['click']}
-          >
-            <Button icon={<IoMenu className='text-lg'/>} type='link'>
-              Actions
-            </Button>
-          </Dropdown>
-        </Flex>
-      ) : (
-        <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
-          <Space size={16} className="flex-wrap">
-            <div className="font-semibold">Actions:</div>
-            <Button type="primary" onClick={() => navigate(`/facilities/${facility.id}/assign-camera`)}>
-              Assign a camera to this facility
-            </Button>
-          </Space>
-        </Card>
-      )}
-
-      {cameraSensor ? (
+  const tabsItems = [
+    {
+      key: 'data',
+      label: 'Data',
+      children: (
         <>
           <Divider orientation="left">Crowd Data</Divider>
+          <Flex justify="end">
+            <RangePicker value={dateRange} onChange={handleDateRangeChange} maxDate={dayjs()} />
+          </Flex>
           {readings && readings.length > 0 ? (
             <Line height={120} data={chartData} options={chartOptions} />
           ) : (
@@ -211,6 +240,7 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
           )}
 
           <Divider orientation="left">Camera Sensor Details</Divider>
+          <Descriptions items={descriptionsItems} column={1} size="small" className="mb-4" />
           <div
             style={{
               height: '30vh',
@@ -256,19 +286,63 @@ const CameraSensorTab = ({ facility, park, triggerFetchFacility }: CameraSensorT
                 />
               )}
             </MapContainer>
-
-            <div className="absolute top-4 right-3 z-[1000]">
-              {user?.role !== StaffType.ARBORIST &&
-                user?.role !== StaffType.BOTANIST && ( // Check if the user is not an Arborist or Botanist
-                  <Tooltip title="Edit Location">
-                    <Button icon={<TbEdit />} type="primary" onClick={() => navigate(`edit-location`)}>
-                      Edit Location
-                    </Button>
-                  </Tooltip>
-                )}
-            </div>
           </div>
         </>
+      ),
+    },
+    {
+      key: 'stream',
+      label: 'Camera Stream',
+      children: cameraSensor && <CameraStreamTab sensorId={cameraSensor?.id} />,
+    },
+  ];
+
+  if (cameraSensorLoading) {
+    return (
+      <Flex justify="center" className="mt-10">
+        <Spin />
+      </Flex>
+    );
+  }
+
+  return (
+    <>
+      {cameraSensor ? (
+        <Flex justify="flex-end">
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item key="change" onClick={() => navigate(`/facilities/${facility.id}/assign-camera`)}>
+                  Change assigned camera
+                </Menu.Item>
+                <Menu.Item key="remove" danger onClick={() => handleDelete()}>
+                  Remove assigned camera
+                </Menu.Item>
+              </Menu>
+            }
+            trigger={['click']}
+          >
+            <Button icon={<IoMenu className='text-lg'/>} type='link'>
+              Actions
+            </Button>
+          </Dropdown>
+        </Flex>
+      ) : (
+        <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
+          <Space size={16} className="flex-wrap">
+            <div className="font-semibold">Actions:</div>
+            <Button type="primary" onClick={() => navigate(`/facilities/${facility.id}/assign-camera`)}>
+              Assign a camera to this facility
+            </Button>
+          </Space>
+        </Card>
+      )}
+      {cameraSensorLoading ? (
+        <Flex justify="center" className="mt-10">
+          <Spin />
+        </Flex>
+      ) : cameraSensor ? (
+        <Tabs items={tabsItems} type="card"/>
       ) : (
         <Card>
           <Empty description="No camera is assigned to this facility" />

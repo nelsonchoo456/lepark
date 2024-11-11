@@ -151,7 +151,7 @@ const AttractionAssignCamera = () => {
           <div className='font-bold mb-2'>Select a Camera Sensor from the list or by selecting a Marker on the Map</div>
           <Form className="w-full" form={form} layout="vertical">
             <Form.Item name="cameraSensorId" label="Camera Sensor:" rules={[{ required: true }]}>
-              <Select placeholder="Select a Camera Sensor" onChange={handleSelectSensorOnForm} disabled={!cameraSensors || cameraSensors.length === 0} className="w-full">
+              <Select placeholder="Select a Camera Sensor" onChange={handleSelectSensorOnForm} className="w-full">
                 <Select.Option key={'labels'} value={null} disabled className="bg-green-50 text-black" >
                   <div className="flex py-2">
                     <div className="flex-[1] font-semibold text-gray-900">Name</div>
