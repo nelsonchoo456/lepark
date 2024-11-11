@@ -39,10 +39,14 @@ const FAQList: React.FC = () => {
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
-      <TabsNoBottomMargin
-        items={faqTabItems}
-        type="card"
-      />
+      {user?.role === StaffType.SUPERADMIN ? (
+        <TabsNoBottomMargin
+          items={faqTabItems}
+          type="card"
+        />
+      ) : (
+        <FAQTab faqs={faqs.filter(faq => faq.parkId === user?.parkId)} triggerFetch={triggerFetch} parks={parks} />
+      )}
     </ContentWrapperDark>
   );
 };
