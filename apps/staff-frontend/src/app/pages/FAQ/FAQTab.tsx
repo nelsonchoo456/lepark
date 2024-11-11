@@ -237,16 +237,21 @@ const getParkName = (parkId: number | null) => {
    return (
     <>
 
-      <Flex justify="space-between" align="center" style={{ marginBottom: '16px', marginTop: '16px' }}>
+        <Flex justify="space-between" align="center" style={{ marginBottom: '16px', marginTop: '16px' }}>
         <Input
           suffix={<FiSearch />}
           placeholder="Search FAQs..."
           onChange={handleSearch}
-          style={{ flexGrow: 1, marginRight: '16px' }}
+          style={{
+            flexGrow: 1,
+            marginRight: (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) ? '16px' : '0'
+          }}
         />
-        <Button type="primary" onClick={() => navigate('/faq/create')}>
-          Create FAQ
-        </Button>
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && (
+          <Button type="primary" onClick={() => navigate('/faq/create')}>
+            Create FAQ
+          </Button>
+        )}
       </Flex>
       <Select
         mode="multiple"
