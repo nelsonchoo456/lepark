@@ -259,6 +259,7 @@ const inactiveCounts = useMemo(() => ({
       <span className="text-sm text-gray-600">{outOfOrderCounts.hubs === 1 ? 'hub' : 'hubs'}</span>
     </div>
     <div className="mt-2 text-red-600 font-medium">Out of Order</div>
+    <p className="text-[9px] text-gray-500">(Decommissioned, Under Maintenance)</p>
   </div>
 
   <div className="rounded-md bg-mustard-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-mustard-200 h-40">
@@ -271,7 +272,7 @@ const inactiveCounts = useMemo(() => ({
       <span className="text-sm text-gray-600">{inactiveCounts.hubs === 1 ? 'hub' : 'hubs'}</span>
     </div>
     <div className="mt-2 text-mustard-600 font-medium">Inactive</div>
-    <p className="text-[9px] text-gray-500">(Decommissioned, Under Maintenance)</p>
+
   </div>
 </div>
               </Card>
