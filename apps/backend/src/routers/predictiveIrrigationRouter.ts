@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import PredictiveIrrigationService from '../services/PredictiveIrrigationService';
 import HubDao from '../dao/HubDao';
 import HubService from '../services/HubService';
+import ZoneService from '../services/ZoneService';
 
 const router = express.Router();
 
@@ -99,6 +100,30 @@ router.get('/predictionForHub/:hubId', async (req: Request, res: Response) => {
     }
 
     res.json({ hubId, ...predictedIrrigation });
+  } catch (error) {
+    console.error('Error fetching predicted irrigation:', error);
+    res.status(500).json({ error: 'Failed to fetch predicted irrigation' });
+  }
+});
+
+// Get predicted irrigation for today by hubId
+router.get('/predictionsForZone/:zoneId', async (req: Request, res: Response) => {
+  const { zoneId } = req.params;
+
+  try {
+    const zone = await ZoneService.getZoneById(parseInt(zoneId));
+
+    if (!zone) {
+      return res.status(404).json({ error: 'Zone not found' });
+    }
+
+    const predictedIrrigations = await PredictiveIrrigationService.getPredictedIrrigationsForZone(parseInt(zoneId));
+
+    if (predictedIrrigations === null) {
+      return res.status(404).json({ message: 'No prediction available for today' });
+    }
+
+    res.json(predictedIrrigations);
   } catch (error) {
     console.error('Error fetching predicted irrigation:', error);
     res.status(500).json({ error: 'Failed to fetch predicted irrigation' });

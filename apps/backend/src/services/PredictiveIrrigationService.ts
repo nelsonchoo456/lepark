@@ -3,7 +3,7 @@ import axios from 'axios';
 import { RandomForestRegression as RandomForestRegressor } from 'ml-random-forest';
 import SensorReadingService from './SensorReadingService';
 import HubService from './HubService';
-import { PredictiveIrrigation } from '@lepark/data-access';
+import { PredictiveIrrigation, ZoneResponse } from '@lepark/data-access';
 import HistoricalRainDataService from './HistoricalRainDataService';
 
 const prisma = new PrismaClient();
@@ -45,17 +45,16 @@ class PredictiveIrrigationService {
     }
   }
 
-    // -- [ PUBLIC ] --
-    public async getHubHistoricalRainfallData(hub: Hub, startDate: Date, endDate: Date): Promise<any> {
-      try {
-        const historicalRainfallData = await this.getClosestRainDataPerDateBoolean(hub.lat, hub.long);
-  
-        return historicalRainfallData;
-      } catch (error) {
-        console.error(`Error training model for hub ${hub.id}:`, error);
-      }
+  // -- [ PUBLIC ] --
+  public async getHubHistoricalRainfallData(hub: Hub, startDate: Date, endDate: Date): Promise<any> {
+    try {
+      const historicalRainfallData = await this.getClosestRainDataPerDateBoolean(hub.lat, hub.long);
+
+      return historicalRainfallData;
+    } catch (error) {
+      console.error(`Error training model for hub ${hub.id}:`, error);
     }
-  
+  }
 
   // -- [ PUBLIC ] --
   public async trainModelForHub(hub: Hub): Promise<void> {
@@ -126,6 +125,31 @@ class PredictiveIrrigationService {
       return ({ hubId: hub.id, rainfall: prediction, forecast: rainfallData.forecast, sensorData: sensorData });
     } catch (error) {
       console.error(`Error predicting irrigation for hub ${hub.id}:`, error);
+      throw error;
+    }
+  }
+
+  public async getPredictedIrrigationsForZone(zoneId: number): Promise<(PredictiveIrrigation & { hubId: string; hubName: string })[]> {
+    try {
+      const hubs = await HubService.getHubsByZoneId(zoneId);
+      const predictiveIrrigations = await Promise.all(
+        hubs.map(async (hub) => {
+          try {
+            const result = await this.getPredictedIrrigationForToday(hub);
+            return {
+              ...result,
+              hubId: hub.id,
+              hubName: hub.name,
+            };
+          } catch (e) {
+            return null;
+          }
+        })
+      );
+
+      return predictiveIrrigations.filter((r) => r !== null);
+    } catch (error) {
+      console.error(`Error fetching predictive data for zone ${zoneId}:`, error);
       throw error;
     }
   }

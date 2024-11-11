@@ -56,6 +56,22 @@ export async function getPredictionForHub(
   }
 }
 
+export async function getPredictionsForZone(
+  zoneId: number,
+): Promise<AxiosResponse<any>> {
+  try {
+    console.log(zoneId)
+    const response: AxiosResponse<any> = await client.get(`${URL}/predictionsForZone/${zoneId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data.error;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function trainModelForHub(
   hubId: string,
 ): Promise<AxiosResponse<any>> {
