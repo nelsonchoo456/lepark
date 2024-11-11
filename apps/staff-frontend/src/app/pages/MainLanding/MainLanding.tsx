@@ -8,7 +8,7 @@ import ManagerMainLanding from './Manager/ManagerMainLanding';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import BAMainLanding from './BotanistArborist/BAMainLanding';
 import SuperadminMainLanding from './Superadmin/SuperadminMainLanding';
-
+import VendorManagerMainLanding from './VendorManager/VendorManagerMainLanding';
 const MainLanding = () => {
   const { user } = useAuth<StaffResponse>();
   const chartOptions: ApexOptions = {
@@ -68,6 +68,8 @@ const MainLanding = () => {
       return <BAMainLanding/>
     } else if (user?.role === StaffType.MANAGER) {
       return <ManagerMainLanding/>
+    } else if (user?.role === StaffType.VENDOR_MANAGER) {
+      return <VendorManagerMainLanding/>
     }
     return <SuperadminMainLanding/>
   }
@@ -77,7 +79,7 @@ const MainLanding = () => {
       {/* <PageHeader2 breadcrumbItems={breadcrumbItems}/> */}
       {renderDashboard()}
     </DashboardContentWrapper>
-      
+
   );
 };
 
