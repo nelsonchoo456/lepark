@@ -189,21 +189,27 @@ const FeedbackViewDetails = () => {
         <Tag>{formatEnumLabel(feedback?.feedbackCategory ?? '')}</Tag>
       ),
     },
-    {
+      {
       key: 'status',
       label: 'Status',
       children: inEditMode ? (
-        <Select
-          value={editedFeedback.feedbackStatus}
-          onChange={(value) => handleInputChange('feedbackStatus', value)}
-          style={{ width: '100%' }}
-        >
-          {Object.values(FeedbackStatusEnum).map((status) => (
-            <Select.Option key={status} value={status}>
-              {formatEnumLabel(status)}
-            </Select.Option>
-          ))}
-        </Select>
+        feedback?.feedbackStatus === FeedbackStatusEnum.PENDING ? (
+          <Select
+            value={editedFeedback.feedbackStatus}
+            onChange={(value) => handleInputChange('feedbackStatus', value)}
+            style={{ width: '100%' }}
+          >
+            {Object.values(FeedbackStatusEnum).map((status) => (
+              <Select.Option key={status} value={status}>
+                {formatEnumLabel(status)}
+              </Select.Option>
+            ))}
+          </Select>
+        ) : (
+          <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>
+            {formatEnumLabel(feedback?.feedbackStatus ?? '')}
+          </Tag>
+        )
       ) : (
         <Tag color={getFeedbackStatusColor(feedback?.feedbackStatus ?? '')}>{formatEnumLabel(feedback?.feedbackStatus ?? '')}</Tag>
       ),

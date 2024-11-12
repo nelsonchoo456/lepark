@@ -8,6 +8,7 @@ import ManagerMainLanding from './Manager/ManagerMainLanding';
 import { StaffResponse, StaffType } from '@lepark/data-access';
 import BAMainLanding from './BotanistArborist/BAMainLanding';
 import SuperadminMainLanding from './Superadmin/SuperadminMainLanding';
+import VendorManagerMainLanding from './VendorManager/VendorManagerMainLanding';
 import ParkrangerMainLanding from './Parkranger/ParkrangerMainLanding';
 
 const MainLanding = () => {
@@ -67,17 +68,15 @@ const MainLanding = () => {
   const renderDashboard = () => {
     if (user?.role === StaffType.ARBORIST || user?.role === StaffType.BOTANIST) {
       return <BAMainLanding/>
-    } else if (user?.role === StaffType.PARK_RANGER) {
-      return <ParkrangerMainLanding/>
     } else if (user?.role === StaffType.MANAGER) {
       return <ManagerMainLanding/>
+    } else if (user?.role === StaffType.VENDOR_MANAGER) {
+      return <VendorManagerMainLanding/>
     } else if (user?.role === StaffType.PARK_RANGER) {
       return <ParkrangerMainLanding/> // CREATE PRMainLanding (Ely)
     } else if (user?.role === StaffType.LANDSCAPE_ARCHITECT) {
       return <ManagerMainLanding/> // CREATE LAMainLanding (Mics and Aaron)
-    } else if (user?.role === StaffType.VENDOR_MANAGER) {
-      return <ManagerMainLanding/> // CREATE VMMainLanding (Alan and WN)
-    }   
+    }
 
     return <SuperadminMainLanding/>
   }
@@ -87,7 +86,7 @@ const MainLanding = () => {
       {/* <PageHeader2 breadcrumbItems={breadcrumbItems}/> */}
       {renderDashboard()}
     </DashboardContentWrapper>
-      
+
   );
 };
 

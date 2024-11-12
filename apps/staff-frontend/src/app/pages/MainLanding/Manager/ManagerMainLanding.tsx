@@ -22,7 +22,10 @@ import {
   PlantTaskStatusEnum,
   StaffResponse,
   StaffType,
+  getAllAssignedMaintenanceTasks,
+  getAllMaintenanceTasks,
 } from '@lepark/data-access';
+import MaintenanceTasksTable from '../components/MaintenanceTasksTable';
 import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import PlantTasksTable from '../components/PlantTasksTable';
@@ -35,6 +38,7 @@ import dayjs from 'dayjs';
 import { LiveVisitorCard } from '../components/LiveVisitorCard';
 import { WeeklyVisitorCard } from '../components/WeeklyVisitorCard';
 import { CrowdAlertsCard } from '../components/CrowdAlertsCard';
+import { FaTools } from 'react-icons/fa';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
@@ -64,12 +68,14 @@ const ManagerMainLanding = () => {
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
 
+
   useEffect(() => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
       fetchPlantTasks();
       fetchMaintenanceTasks();
       fetchParks();
+      fetchMaintenanceTasks();
     }
   }, [user]);
 
@@ -116,18 +122,18 @@ const ManagerMainLanding = () => {
   };
 
   const fetchMaintenanceTasks = async () => {
-    try {
-      if (!user) return;
-      let response;
-      if (user?.role === StaffType.MANAGER && user.parkId) {
-        response = await getMaintenanceTasksByParkId(user.parkId);
-        setMaintenanceTasks(response.data);
-      }
-      // setPlantTasks(response.data);
-    } catch (error) {
-      console.error('Error fetching plant tasks:', error);
+  try {
+    let response;
+    if (user?.role === StaffType.SUPERADMIN) {
+      response = await getAllMaintenanceTasks();
+    } else if (user?.parkId) {
+      response = await getMaintenanceTasksByParkId(user.parkId);
     }
-  };
+    setMaintenanceTasks(response?.data || []);
+  } catch (error) {
+    console.error('Error fetching maintenance tasks:', error);
+  }
+};
 
   const pendingTasksCount = useMemo(() => {
     return plantTasks
@@ -147,23 +153,24 @@ const ManagerMainLanding = () => {
       : 0;
   }, [plantTasks]);
 
-  const pendingMaintenanceCount = useMemo(() => {
-    return maintenanceTasks
-      ? maintenanceTasks.filter(
-          (m) => m.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS || m.taskStatus === MaintenanceTaskStatusEnum.OPEN,
-        ).length
-      : 0;
-  }, [maintenanceTasks]);
+  const pendingMaintenanceTasksCount = useMemo(() => {
+  return maintenanceTasks
+    ? maintenanceTasks.filter(
+        (task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN || task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS
+      ).length
+    : 0;
+}, [maintenanceTasks]);
 
-  const overdueMaintenanceCount = useMemo(() => {
-    return maintenanceTasks
-      ? maintenanceTasks.filter(
-          (m) =>
-            (m.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS || m.taskStatus === MaintenanceTaskStatusEnum.OPEN) &&
-            moment().startOf('day').isAfter(moment(m.dueDate).startOf('day')),
-        ).length
-      : 0;
-  }, [maintenanceTasks]);
+const overdueMaintenanceTasksCount = useMemo(() => {
+  return maintenanceTasks
+    ? maintenanceTasks.filter(
+        (task) =>
+          task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+          task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED &&
+          moment().startOf('day').isAfter(moment(task.dueDate).startOf('day'))
+      ).length
+    : 0;
+}, [maintenanceTasks]);
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -243,15 +250,31 @@ const ManagerMainLanding = () => {
                   )}
                 </div>
               </Card>
-              <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className={sectionHeader}>
-                  <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
-                    <FiInbox />
-                  </div>
-                  <LogoText className="text-lg mb-2">Maintenance Tasks</LogoText>
-                </div>
-                <div className="flex justify-center items-center h-full opacity-50">No data</div>
-              </Card>
+             <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
+  <div className={sectionHeader} onClick={() => navigate('/maintenance-tasks')}>
+    <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
+      <FaTools />
+    </div>
+    <LogoText className="text-lg mb-2">Maintenance Tasks</LogoText>
+  </div>
+  <div className="h-full flex flex-col gap-2 pl-4 ml-3 border-l-[2px]">
+    {pendingMaintenanceTasksCount > 0 ? (
+      <div className="text-mustard-400 font-semibold mr-2">{pendingMaintenanceTasksCount} Pending Tasks</div>
+    ) : (
+      <div className="text-mustard-400 gap-3 flex items-center">
+        <MdCheck className="text-lg" /> No Pending Tasks
+      </div>
+    )}
+
+    {overdueMaintenanceTasksCount > 0 ? (
+      <div className="text-red-400 font-semibold mr-2">{overdueMaintenanceTasksCount} Overdue Tasks</div>
+    ) : (
+      <div className="text-red-400 gap-3 flex items-center">
+        <MdCheck className="text-lg" /> No Overdue Tasks
+      </div>
+    )}
+  </div>
+</Card>
             </div>
 
             <AnnouncementsCard announcements={announcements} />
@@ -265,9 +288,9 @@ const ManagerMainLanding = () => {
         </div>
 
         <div id="part-3" className={sectionStyles}>
-          {renderSectionHeader('Maintenance Tasks')}
-          <Empty description="Maintenance Tasks coming soon..." className="md:py-8" />
-        </div>
+  {renderSectionHeader('Maintenance Tasks', () => navigate('/maintenance-tasks'))}
+  {user && <MaintenanceTasksTable userRole={user?.role as StaffType} maintenanceTasks={maintenanceTasks} className="w-full" />}
+</div>
 
         {/* -- [ Section: Visitors Resource ] -- */}
         <div id="part-4" className={sectionStyles}>
