@@ -44,6 +44,8 @@ import FeedbackCard from './components/FeedbackCard';
 import AttractionBookingCard from './components/AttractionTransactionCard';
 import AttractionTransactionCard from './components/AttractionTransactionCard';
 import EventTransactionCard from './components/EventTransactionCard';
+import BookingCard from './components/BookingCard';
+import { getBookingsByVisitorId, BookingResponse } from '@lepark/data-access';
 
 const initialVisitor = {
   id: '',
@@ -71,6 +73,7 @@ const ProfilePage = () => {
   const [favoriteSpecies, setFavoriteSpecies] = useState<SpeciesResponse[]>([]);
   const [attractionTransactions, setAttractionTransactions] = useState<AttractionTicketTransactionResponse[]>([]);
   const [eventTransactions, setEventTransactions] = useState<EventTicketTransactionResponse[]>([]);
+  const [bookings, setBookings] = useState<BookingResponse[]>([]);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -139,6 +142,25 @@ const ProfilePage = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!user) {
+        console.warn('User is not logged in!');
+        return;
+      }
+      try {
+        const response = await getBookingsByVisitorId(user.id);
+        setBookings(response.data);
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+      }
+    };
+
+    if (user) {
+      fetchBookings();
+    }
+  }, [user]);
+
   const handleLoginRedirect = () => {
     navigate('/login');
   };
@@ -154,7 +176,7 @@ const ProfilePage = () => {
     return firstName && lastName && email && contactNumber;
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchFeedbacks = async () => {
       if (!user) {
         console.warn('User is not logged in!');
@@ -295,6 +317,10 @@ const ProfilePage = () => {
     } catch (error) {
       console.error('Error resending verification email', error);
     }
+  };
+
+  const navigateToBookingDetails = (bookingId: string) => {
+    navigate(`/booking/${bookingId}`);
   };
 
   const menu = (
@@ -547,6 +573,48 @@ const ProfilePage = () => {
       </ContentWrapper>
 
       <ContentWrapper>
+        <div className="flex items-center">
+          <LogoText className="text-xl">My Upcoming Facility Bookings</LogoText>
+          <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
+            <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
+            <Button
+              icon={<MdArrowForward className="text-2xl" />}
+              shape="circle"
+              type="primary"
+              size="large"
+              className="md:bg-transparent md:text-green-500 md:shadow-none"
+              onClick={() => navigate('/booking')}
+            />
+          </div>
+        </div>
+        <div className="w-full overflow-x-auto py-2 min-h-[13rem]">
+          <div className="flex whitespace-nowrap">
+            {bookings && bookings.length > 0 ? (
+              bookings
+                .filter((booking) => {
+                  const bookingDate = new Date(booking.dateStart);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return bookingDate >= today;
+                })
+                .sort((a, b) => new Date(a.dateStart).getTime() - new Date(b.dateStart).getTime())
+                .map((booking) => (
+                  <div key={booking.id} className="inline-block cursor-pointer" onClick={() => navigateToBookingDetails(booking.id)}>
+                    <BookingCard booking={booking} />
+                  </div>
+                ))
+            ) : (
+              <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+                <BsCalendar4Event className="text-4xl" />
+                <br />
+                No Facility Bookings.
+              </div>
+            )}
+          </div>
+        </div>
+      </ContentWrapper>
+
+      <ContentWrapper>
         <div className="relative py-2 bg-white rounded-2xl shadow md:p-0">
           <LogoText className="font-bold text-lg pl-3 pt-1">My Favorite Species</LogoText>
           <div className="w-full overflow-scroll flex gap-2 py-2">
@@ -568,7 +636,7 @@ const ProfilePage = () => {
           </div>
         </div>
       </ContentWrapper>
-        <ContentWrapper>
+      <ContentWrapper>
         <div className="flex items-center">
           <LogoText className="text-xl">My Feedback</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
@@ -595,7 +663,9 @@ const ProfilePage = () => {
                   category={feedback.feedbackCategory}
                   parkId={feedback.parkId}
                   status={feedback.feedbackStatus}
-                  onClick={() => {/* Handle click, e.g., navigate to feedback detail */}}
+                  onClick={() => {
+                    /* Handle click, e.g., navigate to feedback detail */
+                  }}
                 />
               ))
           ) : (

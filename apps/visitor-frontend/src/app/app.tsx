@@ -60,6 +60,13 @@ import EventFailedPage from './pages/Events/EventFailedPage';
 import EventTransactionDetails from './pages/Profile/ViewEventTransactionDetails';
 import ViewEventTransactions from './pages/Profile/ViewEventTransactions';
 import EventTicketDetails from './pages/Profile/EventTicketDetails';
+import CreateFacilityBooking from './pages/Facilities/CreateFacilityBooking';
+import ViewBookings from './pages/Profile/ViewBookings';
+import ViewBookingDetails from './pages/Profile/ViewBookingDetails';
+import BookingPaymentPage from './pages/Facilities/PaymentPageBooking';
+import BookingCompletionPage from './pages/Facilities/BookingCompletionPage';
+import BookingSuccessPage from './pages/Facilities/BookingSuccessPage';
+import BookingFailedPage from './pages/Facilities/BookingFailedPage';
 export function App() {
   return (
     <VisitorAuthWrapper>
@@ -210,6 +217,7 @@ export function App() {
                 <Route path="/facility">
                   <Route path="park/:parkId" element={<FacilitiesPerPark />} />
                   <Route path=":facilityId" element={<VisitorViewFacilityDetails />} />
+                  <Route path=":facilityId/book" element={<CreateFacilityBooking />} />
                 </Route>
                 <Route path="/event">
                   <Route path="park/:parkId" element={<EventsPerPark />} />
@@ -279,15 +287,63 @@ export function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/booking"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <ViewBookings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking/:bookingId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <ViewBookingDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-payment"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingPaymentPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-payment-completion/:bookingId"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingCompletionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-success"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingSuccessPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/booking-failed"
+                  element={
+                    <ProtectedRoute redirectTo="/login">
+                      <BookingFailedPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/faq">
                   <Route index element={<FAQList />} />
                   <Route path=":faqId" element={<FAQView />} />
                 </Route>
                 <Route path="/feedback">
-                  <Route index element={<FeedbackList/>}/>
-                  <Route path="create" element={<FeedbackCreate/>}/>
-                  <Route path=":feedbackId" element={<FeedbackView/>}/>
-                  <Route path="edit/:feedbackId" element={<FeedbackEdit/>}/>
+                  <Route index element={<FeedbackList />} />
+                  <Route path="create" element={<FeedbackCreate />} />
+                  <Route path=":feedbackId" element={<FeedbackView />} />
+                  <Route path="edit/:feedbackId" element={<FeedbackEdit />} />
                 </Route>
               </Route>
             </Routes>

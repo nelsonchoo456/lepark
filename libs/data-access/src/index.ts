@@ -75,3 +75,6 @@ export * from './lib/types/maintenanceTask';
 
 export * from './lib/types/predictiveIrrigation';
 export * from './lib/api/predictiveIrrigation';
+
+export * from './lib/types/booking';
+export * from './lib/api/booking';

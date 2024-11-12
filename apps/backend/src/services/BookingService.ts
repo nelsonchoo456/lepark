@@ -6,6 +6,7 @@ import FacilityDao from '../dao/FacilityDao';
 import VisitorDao from '../dao/VisitorDao';
 import { BookingSchema, BookingSchemaType } from '../schemas/bookingSchema';
 import EmailUtil from '../utils/EmailUtil';
+import ParkDao from '../dao/ParkDao';
 
 class BookingService {
   public async createBooking(data: BookingSchemaType): Promise<Booking> {
@@ -95,6 +96,61 @@ class BookingService {
       throw new Error('Facility not found');
     }
     return BookingDao.getBookingsByFacilityId(facilityId);
+  }
+
+  public async getBookingsByParkId(parkId: number): Promise<Booking[]> {
+    const park = await ParkDao.getParkById(parkId);
+    if (!park) {
+      throw new Error('Park not found');
+    }
+
+    const bookings = await BookingDao.getAllBookings();
+    const filteredBookings: Booking[] = [];
+
+    for (const booking of bookings) {
+      const facility = await FacilityDao.getFacilityById(booking.facilityId);
+      if (facility && facility.parkId === parkId) {
+        filteredBookings.push(booking);
+      }
+    }
+
+    return filteredBookings;
+  }
+
+  public async updateBooking(id: string, data: Partial<Booking>): Promise<Booking> {
+    const booking = await BookingDao.getBookingById(id);
+    if (!booking) {
+      throw new Error('Booking not found');
+    }
+
+    const formattedData = dateFormatter(data);
+    return BookingDao.updateBooking(id, formattedData);
+  }
+
+  public async sendBookingEmail(bookingId: string, recipientEmail: string): Promise<void> {
+    try {
+      const booking = await BookingDao.getBookingById(bookingId);
+      if (!booking) {
+        throw new Error('Booking not found');
+      }
+
+      await EmailUtil.sendBookingEmail(recipientEmail, booking);
+    } catch (error) {
+      throw new Error(`Failed to send booking email: ${error.message}`);
+    }
+  }
+
+  public async sendRequestedBookingEmail(bookingId: string, recipientEmail: string): Promise<void> {
+    try {
+      const booking = await BookingDao.getBookingById(bookingId);
+      if (!booking) {
+        throw new Error('Booking not found');
+      }
+
+      await EmailUtil.sendRequestedBookingEmail(recipientEmail, booking);
+    } catch (error) {
+      throw new Error(`Failed to send requested booking email: ${error.message}`);
+    }
   }
 }
 

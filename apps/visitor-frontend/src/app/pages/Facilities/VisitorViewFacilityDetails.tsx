@@ -1,5 +1,5 @@
-import { Tabs, Typography, Tag } from 'antd';
-import { useParams } from 'react-router-dom';
+import { Tabs, Typography, Tag, Button } from 'antd';
+import { useParams, useNavigate } from 'react-router-dom';
 import SpeciesCarousel from '../Taxonomy/components/SpeciesCarousel';
 import FacilityInformationTab from './components/FacilityInformationTab';
 import { LogoText } from '@lepark/common-ui';
@@ -22,6 +22,7 @@ const formatHours = (openingHours: string[], closingHours: string[]) => {
 const VisitorViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
   const { facility, park, loading } = useRestrictFacilities(facilityId);
+  const navigate = useNavigate();
 
   const tabsItems = [
     {
@@ -31,6 +32,10 @@ const VisitorViewFacilityDetails = () => {
     },
     // Add other tabs if necessary
   ];
+
+  const navigateToBooking = (facilityId: string) => {
+    navigate(`/facility/${facilityId}/book`);
+  };
 
   return (
     <div className="md:p-4 md:h-screen md:overflow-hidden">
@@ -74,6 +79,13 @@ const VisitorViewFacilityDetails = () => {
                   ))}
               </tbody>
             </table>
+          </div>
+          <div className="mt-4">
+            {facility?.isBookable && (
+              <Button type="primary" className="w-full" onClick={() => facilityId && navigateToBooking(facilityId)}>
+                Book Now
+              </Button>
+            )}
           </div>
         </div>
       </div>

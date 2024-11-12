@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { BookingResponse, CreateBookingData, UpdateBookingStatusData } from '../types/booking';
+import { BookingResponse, CreateBookingData, SendBookingEmailData, UpdateBookingStatusData } from '../types/booking';
 import client from './client';
 
 const URL = '/bookings';
@@ -85,6 +85,58 @@ export async function getBookingsByVisitorId(visitorId: string): Promise<AxiosRe
 export async function getBookingsByFacilityId(facilityId: string): Promise<AxiosResponse<BookingResponse[]>> {
   try {
     const response: AxiosResponse<BookingResponse[]> = await client.get(`${URL}/getBookingsByFacilityId/${facilityId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function getBookingsByParkId(parkId: number): Promise<AxiosResponse<BookingResponse[]>> {
+  try {
+    const response: AxiosResponse<BookingResponse[]> = await client.get(`${URL}/getBookingsByParkId/${parkId}`);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function updateBooking(id: string, data: Partial<BookingResponse>): Promise<AxiosResponse<BookingResponse>> {
+  try {
+    const response: AxiosResponse<BookingResponse> = await client.put(`${URL}/updateBooking/${id}`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function sendBookingEmail(data: SendBookingEmailData): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.post(`${URL}/sendBookingEmail`, data);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function sendRequestedBookingEmail(data: SendBookingEmailData): Promise<AxiosResponse<void>> {
+  try {
+    const response: AxiosResponse<void> = await client.post(`${URL}/sendRequestedBookingEmail`, data);
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {

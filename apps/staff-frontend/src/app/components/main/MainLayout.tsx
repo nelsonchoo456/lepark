@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
 import { Content, Header, ListItemType, LogoText, Sidebar, useAuth } from '@lepark/common-ui';
-import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap, FiCamera } from 'react-icons/fi';
+import { FiHelpCircle, FiHome, FiInbox, FiMessageSquare, FiSettings, FiUser, FiUsers, FiMap, FiCamera, FiCalendar } from 'react-icons/fi';
 import { VideoCameraOutlined } from '@ant-design/icons';
 import { IoLeafOutline } from 'react-icons/io5';
 import { FaNetworkWired, FaToolbox } from 'react-icons/fa';
@@ -154,7 +154,25 @@ const MainLayout = () => {
       label: 'Zones',
       onClick: () => navigate('/zone'),
     },
-    { key: 'facilities', icon: <TbBuildingEstate />, label: 'Facilities', onClick: () => navigate('/facilities') },
+    {
+      key: 'facilities-venues',
+      icon: <TbBuildingEstate />,
+      label: 'Facilities & Bookings',
+      children: [
+        {
+          key: 'facilities',
+          icon: <TbBuildingEstate />,
+          label: 'Facilities',
+          onClick: () => navigate('/facilities'),
+        },
+        {
+          key: 'bookings',
+          icon: <FiCalendar />,
+          onClick: () => navigate('/facilities/bookings'),
+          label: 'Bookings',
+        },
+      ],
+    },
     {
       key: 'plants',
       icon: <IoLeafOutline />,
@@ -240,19 +258,19 @@ const MainLayout = () => {
           icon: <MdBuild />,
           children: [
             {
-              key: 'sensor',
+              key: 'sensorMaintenance',
               icon: <MdSensors />,
               label: 'Sensors',
               onClick: () => navigate('/sensor/maintenance'),
             },
             {
-              key: 'hubs',
+              key: 'hubsMaintenance',
               icon: <FaNetworkWired />,
               label: 'Hubs',
               onClick: () => navigate('/hubs/maintenance'),
             },
             {
-              key: 'zones',
+              key: 'assetMaintenance',
               icon: <PiToolboxBold />,
               label: 'Park Assets',
               onClick: () => navigate('/parkAsset/maintenance'),
