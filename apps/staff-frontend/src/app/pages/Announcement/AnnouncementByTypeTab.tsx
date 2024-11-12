@@ -39,7 +39,7 @@ const AnnouncementByTypeTab: React.FC<AnnouncementByTypeTabProps> = ({ announcem
       const park = parks.find((p) => p.id === announcement.parkId);
       const parkName = park ? park.name : 'NParks';
       return (
-        Object.values(announcement).some((value) => 
+        Object.values(announcement).some((value) =>
           value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
         ) ||
         parkName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -122,7 +122,7 @@ const AnnouncementByTypeTab: React.FC<AnnouncementByTypeTabProps> = ({ announcem
         title: 'Park',
         dataIndex: 'parkId',
         key: 'parkId',
-        render: (parkId: number | null) => 
+        render: (parkId: number | null) =>
             parkId === null ? (
               <div className="flex gap-2">
                 <Logo size={1.2} />
@@ -258,16 +258,18 @@ const AnnouncementByTypeTab: React.FC<AnnouncementByTypeTabProps> = ({ announcem
   return (
     <Card styles={{ body: { padding: 0 } }} className="p-4 border-t-0 rounded-tl-none">
       <Flex justify="end" gap={10}>
-        <Input 
-          suffix={<FiSearch />} 
-          placeholder="Search for an Announcement..." 
-          onChange={handleSearchBar} 
-          className="mb-4" 
-          variant="filled" 
+        <Input
+          suffix={<FiSearch />}
+          placeholder="Search for an Announcement..."
+          onChange={handleSearchBar}
+          className="mb-4"
+          variant="filled"
         />
-        <Button type="primary" onClick={() => navigate('/announcement/create')}>
-          Create Announcement
-        </Button>
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && (
+          <Button type="primary" onClick={() => navigate('/announcement/create')}>
+            Create Announcement
+          </Button>
+        )}
       </Flex>
       <Table
         columns={tableShowParks ? columnsWithParks : columns}

@@ -8,6 +8,8 @@ import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import dayjs from 'dayjs';
 import withParkGuard from '../../park-context/withParkGuard';
+import { MdArrowForwardIos } from 'react-icons/md';
+import { Typography } from 'antd';
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -179,52 +181,97 @@ const FacilitiesPerPark: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center flex-1">
-          <Spin size="large" />
-        </div>
-      ) : !filteredFacilities || filteredFacilities.length === 0 ? (
-        <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
-          <FiSearch className="text-4xl mb-2 mt-10" />
-          No Facilities found.
-        </div>
-      ) : (
-        <div
-          className="justify-center overflow-y-auto mx-4
-          md:mt-6 md:bg-white md:flex-1 md:mb-4 md:rounded-xl md:p-4"
-        >
-          {filteredFacilities.map((facility) => (
-            <div
-              key={facility.id}
-              onClick={() => navigateToFacility(facility.id)}
-              className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
-                bg-white rounded-xl mb-2
-                md:border-[1px]
-                hover:bg-green-600/10"
-            >
-              <div className="flex flex-row w-full">
-                <div
-                  className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
-                "
-                >
-                  {facility.images && facility.images.length > 0 && (
-                    <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
-                  )}
+      <div className="flex justify-center items-center flex-1">
+        <Spin size="large" />
+      </div>
+    ) : !filteredFacilities || filteredFacilities.length === 0 ? (
+      <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+        <FiSearch className="text-4xl mb-2 mt-10" />
+        No Facilities found.
+      </div>
+    ) : (
+      <div
+        className="justify-center overflow-y-auto mx-4
+        md:mt-6 md:bg-white md:flex-1 md:mb-4 md:rounded-xl md:p-4"
+      >
+        {filteredFacilities.map((facility) => (
+          <div
+            key={facility.id}
+            onClick={() => navigateToFacility(facility.id)}
+            className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
+              bg-white rounded-xl mb-2
+              md:border-[1px]
+              hover:bg-green-600/10"
+          >
+            <div className="flex flex-row w-full">
+              {/* Mobile View (Simple) */}
+              <div className="md:hidden flex flex-col w-full">
+                <div className="flex items-center gap-3">
+                  {/* Circular Image */}
+                  <div className="w-[60px] h-[60px] flex-shrink-0 overflow-hidden rounded-full bg-slate-400/40">
+                    {facility.images && facility.images.length > 0 && (
+                      <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  {/* Name, Type, Status */}
+                  <div className="flex flex-col">
+                    <div className="text-lg font-semibold text-green-700 leading-tight">{facility.name}</div>
+                    <div className="text-sm text-gray-500">Type: {formatEnumLabel(facility.facilityType)}</div>
+                    <div className="mt-1">{renderFacilityStatus(facility.facilityStatus)}</div>
+                  </div>
                 </div>
-                <div className="h-full flex-1">
-                  <div className="text-lg font-semibold text-green-700">{facility.name}</div>
-                  <div className="-mt-[2px] text-green-700/80">{renderFacilityStatus(facility.facilityStatus)}</div>
+              </div>
+
+              {/* Desktop View (Full) - Hidden on mobile */}
+              <div className="hidden md:flex flex-row w-full">
+                {/* Column 1: Image, Name, Description */}
+                <div className="flex flex-row flex-1">
+                  <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
+                    {facility.images && facility.images.length > 0 && (
+                      <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <div className="flex-1 lg:pr-8">
+                    <div className="text-lg font-semibold text-green-700 leading-tight">{facility.name}</div>
+                    <Typography.Paragraph
+                      ellipsis={{
+                        rows: 2,
+                      }}
+                      className="text-sm text-gray-500"
+                    >
+                      {facility.description}
+                    </Typography.Paragraph>
+                  </div>
+                </div>
+
+                {/* Column 2: Status and Type */}
+                <div className="w-[200px]">
+                  <div className="text-green-700/80">{renderFacilityStatus(facility.facilityStatus)}</div>
                   <div className="text-sm text-gray-500">Type: {formatEnumLabel(facility.facilityType)}</div>
                 </div>
-                <div className="h-full flex-1 hidden lg:block">
-                  <div className="text-sm text-gray-500">{facility.description}</div>
+
+                {/* Column 3: Capacity and Fee */}
+                <div className="hidden lg:block w-[200px]">
+                  <div className="text-sm text-gray-500">
+                    Capacity: {facility.capacity ? `${facility.capacity} pax` : 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Fee: {facility.fee ? `$${facility.fee.toFixed(2)}` : 'Free'}
+                  </div>
+                </div>
+
+                {/* Arrow icon */}
+                <div className="flex flex-col justify-center hidden lg:flex">
+                  <MdArrowForwardIos className='text-highlightGreen-400'/>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
 };
 
 export default withParkGuard(FacilitiesPerPark);
