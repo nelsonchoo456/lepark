@@ -23,4 +23,5 @@ export interface HoverItem {
   image?: string | null;
   entityType: string;
   children?: string | JSX.Element | JSX.Element[];
+  showImage?: boolean;
 }

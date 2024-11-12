@@ -7,6 +7,7 @@ export interface HoverItem {
   id: string;
   title: string | JSX.Element | JSX.Element[];
   image?: string | null;
+  showImage?: boolean;
   entityType: string;
   children?: string | JSX.Element | JSX.Element[];
 }
@@ -17,8 +18,13 @@ interface HoverInformationProps {
 }
 
 const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
-  const { title, image, entityType, children } = item;
+  const { title, image, entityType, children, showImage = true } = item;
+// let { showImage } = item;
 
+  // console.log(showImage)
+  // if (showImage === undefined || showImage === null) {
+  //   showImage = true;
+  // }
   return (
     <div
       style={{
@@ -58,7 +64,7 @@ const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
         <Button shape="circle" icon={<IoMdClose />} onClick={() => setHovered(null)}></Button>
       </div>
 
-      <div
+      {showImage ? <div
         style={{
           width: '100%',
           backgroundImage: `url('${image ? image : ''}')`,
@@ -68,7 +74,8 @@ const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
         className="rounded-lg h-24 shadow-md flex items-center justify-center text-white shrink-0 bg-gray-400 mb-2 overflow-hidden"
       >
         {!image && <Empty description="No Image" />}
-      </div>
+      </div>: <div className='h-3 w-full'></div>  
+    }
       <div className="font-semibold text-base mb-1">{title}</div>
       <div className='pb-1'>
         {children}

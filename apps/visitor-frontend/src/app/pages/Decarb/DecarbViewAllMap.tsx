@@ -1,5 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
@@ -11,7 +11,7 @@ import {
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import withParkGuard from '../../park-context/withParkGuard';
-import { MdInfoOutline, MdMap } from 'react-icons/md';
+import { MdArrowOutward, MdInfoOutline, MdMap } from 'react-icons/md';
 import React from 'react';
 import {
   Chart as ChartJS,
@@ -28,7 +28,9 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import { COLORS } from '../../config/colors';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
-import { GeomType } from '../../components/map/interfaces/interfaces';
+import { GeomType, HoverItem } from '../../components/map/interfaces/interfaces';
+import { FaList } from 'react-icons/fa6';
+import HoverInformation from './components/HoverInformation';
 
 // Register the required Chart.js components
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend);
@@ -41,6 +43,7 @@ const DecarbViewAllMap = () => {
   const [fetchedAreas, setFetchedAreas] = useState<DecarbonizationAreaResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [areaDetails, setAreaDetails] = useState<{ [key: string]: { totalSequestration: number; occurrenceCount: number } }>({});
+  const [hovered, setHovered] = useState<HoverItem | null>(null)
 
   useEffect(() => {
     const fetchDecarbAreas = async () => {
@@ -121,7 +124,7 @@ const DecarbViewAllMap = () => {
       if (!match) {
         console.error(`Invalid WKT format: ${wktString}`);
         return {
-          coordinates: []
+          coordinates: [],
         };
       }
       const coordinates = match[1].split(',').map((coord) => {
@@ -129,12 +132,12 @@ const DecarbViewAllMap = () => {
         return [lng, lat];
       });
       return {
-        coordinates: [coordinates]
+        coordinates: [coordinates],
       };
     }
 
     return {
-      coordinates: []
+      coordinates: [],
     };
   };
 
@@ -155,8 +158,16 @@ const DecarbViewAllMap = () => {
             </Tooltip>
           </div>
         </div>
-        <Tooltip title="Map View">
-          <Button icon={<MdMap />} className="text-lg" type="primary"></Button>
+        <Tooltip title="List View">
+          <Button
+            icon={<FaList />}
+            onClick={(e) => {
+              navigate('/decarb');
+              e.stopPropagation();
+            }}
+            className="text-md"
+            type="primary"
+          ></Button>
         </Tooltip>
       </ParkHeader>
       <MapContainer key="decarb-map-tab" center={[1.287953, 103.851784]} zoom={11} className="leaflet-mapview-container h-full w-full">
@@ -166,23 +177,88 @@ const DecarbViewAllMap = () => {
         />
         <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.6, opacity: 0 }} />
         {fetchedAreas &&
-            fetchedAreas.map((a) => (
-              <PolygonWithLabel
-                key={a.id}
-                entityId={a.id}
-                geom={parseGeom(a.geom)}
-                polygonLabel={
-                  <div className="flex items-center gap-2">
-                    {a.name}
+          fetchedAreas.map((a) => (
+            <PolygonWithLabel
+              key={a.id}
+              entityId={a.id}
+              geom={parseGeom(a.geom)}
+              polygonLabel={<div className="flex items-center gap-2">{a.name}</div>}
+              color="transparent"
+              fillColor={COLORS.green[500]}
+              labelFields={{
+                color: 'white',
+                outline: COLORS.green[700],
+                textShadow: `-1px -1px 0 ${COLORS.green[600]}, 1px -1px 0 ${COLORS.green[600]}, -1px 1px 0 ${COLORS.green[600]}, 1px 1px 0 ${COLORS.green[600]}`,
+                textWrap: 'nowrap',
+              }}
+              handleMarkerClick={() => setHovered({
+                id: a.id,
+                title: a.name,
+                showImage: false,
+                entityType: "DECARB",
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div>
+                      <Typography.Paragraph ellipsis={{ rows: 3 }}>{a.description}</Typography.Paragraph>
+                    </div>
+                    <div className="text-sm text-green-600">
+                      <div className="md:inline-block">
+                        Total Sequestration: <strong>{areaDetails[a.id]?.totalSequestration.toFixed(2)} kg</strong>
+                      </div>
+                      <div className="md:inline-block">Occurrences: <strong>{areaDetails[a.id]?.occurrenceCount}</strong></div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Tooltip title="View Area details">
+                        <Button shape="circle" onClick={() => navigate(`/decarb/${a.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </Tooltip>
+                    </div>
                   </div>
-                }
-                color={COLORS.green[600]}
-                fillColor={'transparent'}
-                labelFields={{ color: "white", outline: COLORS.green[700], textShadow: `-1px -1px 0 ${COLORS.green[600]}, 1px -1px 0 ${COLORS.green[600]}, -1px 1px 0 ${COLORS.green[600]}, 1px 1px 0 ${COLORS.green[600]}`, textWrap: "nowrap" }}
-                handleMarkerClick={() => navigate(`/decarb/${a.id}`)}
-                handlePolygonClick={() => navigate(`/decarb/${a.id}`)}
-              />
-            ))}
+                )
+              })}
+              handlePolygonClick={() => setHovered({
+                id: a.id,
+                title: a.name,
+                showImage: false,
+                entityType: "DECARB",
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div>
+                      <Typography.Paragraph ellipsis={{ rows: 2 }}>{a.description}</Typography.Paragraph>
+                    </div>
+                    <div className="text-sm text-green-600">
+                      <div className="">
+                        Total Sequestration: <strong>{areaDetails[a.id]?.totalSequestration.toFixed(2)} kg</strong>
+                      </div>
+                      <div className="">Occurrences: <strong>{areaDetails[a.id]?.occurrenceCount}</strong></div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Tooltip title="View Area details">
+                        <Button shape="circle" onClick={() => navigate(`/decarb/${a.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </Tooltip>
+                    </div>
+                  </div>
+                )
+              })}
+            />
+          ))}
+
+        {hovered && (
+          <HoverInformation
+            item={{
+              id: hovered.id,
+              title: hovered.title,
+              image: hovered.image,
+              showImage: hovered.showImage,
+              entityType: hovered.entityType,
+              children: hovered.children,
+            }}
+            setHovered={setHovered}
+          />
+        )}
       </MapContainer>
     </div>
   );
