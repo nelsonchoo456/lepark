@@ -12,13 +12,14 @@ import { OccurrenceWithDetails } from './OccurrenceService';
 import OccurrenceDao from '../dao/OccurrenceDao';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { getAugumentedDataset } from '../utils/holtwinters';
+import { HeatMapCrowdResponse } from '@lepark/data-access';
 
 const dateFormatter = (data: any) => {
-  const { timestamp, ...rest } = data;
+  const { date, ...rest } = data;
   const formattedData = { ...rest };
 
-  if (timestamp) {
-    formattedData.timestamp = new Date(timestamp);
+  if (date) {
+    formattedData.date = new Date(date);
   }
   return formattedData;
 };
@@ -33,16 +34,22 @@ const enumFormatter = (enumValue: string): string => {
 class SensorReadingService {
   public async createSensorReading(data: SensorReadingSchemaType): Promise<SensorReading> {
     try {
+      console.log('Creating sensor reading');
+      console.log(data);
       const sensor = await SensorDao.getSensorById(data.sensorId);
       if (!sensor) {
         throw new Error('Sensor not found');
       }
-      const formattedData = dateFormatter(data);
+      const formattedData = {
+        ...dateFormatter(data),
+      };
+      
       SensorReadingSchema.parse(formattedData);
       return SensorReadingDao.createSensorReading(formattedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
+        console.log('Validation error:', validationError);
         throw new Error(`${validationError.message}`);
       }
       throw error;
@@ -314,7 +321,7 @@ class SensorReadingService {
     return SensorReadingDao.getLatestSensorReadingByZoneIdAndSensorType(zoneId, sensorType);
   }
 
-  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<any> {
+  public async getActiveZonePlantSensorCount(zoneId: number, hoursAgo = 1): Promise<number> {
     return SensorReadingDao.getActiveZonePlantSensorCount(zoneId, hoursAgo);
   }
 
@@ -925,6 +932,53 @@ class SensorReadingService {
       date: new Date(lastHistoricalDate.getTime() + (index + 1) * 24 * 60 * 60 * 1000), // Add days
       predictedCrowdLevel: prediction,
     }));
+  }
+
+  // Get the average crowd level reading from each camera sensor in the park for the past hour
+  public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<HeatMapCrowdResponse[]> {
+    try {
+      const zones = await ZoneDao.getZonesByParkId(parkId);
+      let sensorAverages = [];
+      const oneHourAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  
+      for (const zone of zones) {
+        // Get all camera sensors in the zone
+        const sensors = await SensorDao.getSensorsByZoneIdAndType(zone.id, SensorTypeEnum.CAMERA);
+        
+        for (const sensor of sensors) {
+          // Get all readings from the past hour for this sensor
+          const readings = await SensorReadingDao.getSensorReadingsByDateRange(
+            sensor.id,
+            oneHourAgo,
+            new Date()
+          );
+          
+          // Only include sensors that have readings in the last hour
+          if (readings.length > 0) {
+            const sum = readings.reduce((acc, reading) => acc + reading.value, 0);
+            const average = Number((sum / readings.length).toFixed(2));
+            
+            sensorAverages.push({
+              sensorId: sensor.id,
+              zoneId: zone.id,
+              lat: sensor.lat,
+              long: sensor.long,
+              averageValue: average,
+              readingCount: readings.length
+            });
+          }
+        }
+      }
+
+      if (sensorAverages.length === 0) {
+        throw new Error('No camera readings available in the last hour');
+      }
+  
+      return sensorAverages;
+    } catch (error) {
+      console.error('Error getting past hour crowd data by sensors:', error);
+      throw error;
+    }
   }
 }
 

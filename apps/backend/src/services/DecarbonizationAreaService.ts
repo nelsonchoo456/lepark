@@ -7,10 +7,12 @@ import {
   DecarbonizationAreaUpdateData,
   DecarbonizationAreaUpdateSchema,
 } from '../schemas/decarbonizationAreaSchema';
-import { Prisma } from '@prisma/client';
+import { DecarbonizationArea, Occurrence, Prisma } from '@prisma/client';
 
 class DecarbonizationAreaService {
-  async createDecarbonizationArea(data: DecarbonizationAreaCreateData) {
+  public async createDecarbonizationArea(
+    data: DecarbonizationAreaCreateData
+  ): Promise<DecarbonizationArea> {
     try {
       DecarbonizationAreaCreateSchema.parse(data);
       // Transform the data to match Prisma.DecarbonizationAreaCreateInput
@@ -30,11 +32,16 @@ class DecarbonizationAreaService {
     }
   }
 
-  async getDecarbonizationAreaById(id: string) {
-    return await DecarbonizationAreaDao.getDecarbonizationAreaById(id);
+  public async getDecarbonizationAreaById(
+    id: string
+  ): Promise<DecarbonizationArea | null> {
+    return DecarbonizationAreaDao.getDecarbonizationAreaById(id);
   }
 
-  async updateDecarbonizationArea(id: string, data: DecarbonizationAreaUpdateData) {
+  public async updateDecarbonizationArea(
+    id: string, 
+    data: DecarbonizationAreaUpdateData
+  ): Promise<DecarbonizationArea> {
     try {
       DecarbonizationAreaUpdateSchema.parse(data);
       // Transform the data to match Prisma.DecarbonizationAreaUpdateInput
@@ -54,20 +61,26 @@ class DecarbonizationAreaService {
     }
   }
 
-  async deleteDecarbonizationArea(id: string) {
+  public async deleteDecarbonizationArea(
+    id: string
+  ): Promise<void> {
     await DecarbonizationAreaDao.deleteDecarbonizationArea(id);
   }
 
-  async getAllDecarbonizationAreas() {
-    return await DecarbonizationAreaDao.getAllDecarbonizationAreas();
+  public async getAllDecarbonizationAreas(): Promise<DecarbonizationArea[]> {
+    return DecarbonizationAreaDao.getAllDecarbonizationAreas();
   }
 
-  async getDecarbonizationAreasByParkId(parkId: number) {
-    return await DecarbonizationAreaDao.getDecarbonizationAreasByParkId(parkId);
+  public async getDecarbonizationAreasByParkId(
+    parkId: number
+  ): Promise<DecarbonizationArea[]> {
+    return DecarbonizationAreaDao.getDecarbonizationAreasByParkId(parkId);
   }
 
-  async getOccurrencesWithinDecarbonizationArea(areaId: string) {
-    return await DecarbonizationAreaDao.getOccurrencesWithinDecarbonizationArea(areaId);
+  public async getOccurrencesWithinDecarbonizationArea(
+    areaId: string
+  ): Promise<Occurrence[]> {
+    return DecarbonizationAreaDao.getOccurrencesWithinDecarbonizationArea(areaId);
   }
 }
 

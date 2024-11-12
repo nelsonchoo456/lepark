@@ -29,6 +29,7 @@ import { IoLeafOutline } from 'react-icons/io5';
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { renderSectionHeader, sectionHeader } from '../Manager/ManagerMainLanding';
 import { useNavigate } from 'react-router-dom';
+import { SCREEN_LG } from '../../../config/breakpoints';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
@@ -37,6 +38,21 @@ export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-
 const BAMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
+  const [desktop, setDesktop] = useState<boolean>(
+    window.innerWidth >= SCREEN_LG
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDesktop(window.innerWidth >= SCREEN_LG);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
   
   // Data
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
@@ -54,7 +70,8 @@ const BAMainLanding = () => {
   const fetchAnnouncementsByParkId = async (parkId: number) => {
     try {
       const response = await getAnnouncementsByParkId(parkId);
-      setAnnouncements(response.data);
+      const filteredAnnouncements = response.data.filter((announcement) => announcement.status === 'ACTIVE');
+      setAnnouncements(filteredAnnouncements);
       // setError(null);
     } catch (err) {
       // setError('Failed to fetch announcements');
@@ -184,7 +201,7 @@ const BAMainLanding = () => {
 
   return (
     <Row>
-      <Col span={21}>
+      <Col span={desktop ? 21 : 24}>
         {/* -- [ Section: Park Overview ] -- */}
         <div id="part-1" className={sectionStyles}>
           {renderSectionHeader('Park Overview')}
@@ -267,9 +284,8 @@ const BAMainLanding = () => {
         </div>
 
         {/* -- [ Section: Visitors Resource ] -- */}
-        <div id="part-4" className={sectionStyles}>
+        {/* <div id="part-4" className={sectionStyles}>
           {renderSectionHeader('Visitors')}
-          {/* Visitors */}
           <div className={flexColsStyles}>
             <Card className="w-full h-86 flex-[2]">
               <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
@@ -285,9 +301,9 @@ const BAMainLanding = () => {
               </Card>
             </div>
           </div>
-        </div>
+        </div> */}
       </Col>
-      <Col span={3}>
+      {desktop && <Col span={3} className=''>
         <Anchor
           offsetTop={90}
           items={[
@@ -306,14 +322,14 @@ const BAMainLanding = () => {
             //   href: '#part-3',
             //   title: 'Maintenance Tasks',
             // },
-            {
-              key: 'part-4',
-              href: '#part-4',
-              title: 'Visitors',
-            },
+            // {
+            //   key: 'part-4',
+            //   href: '#part-4',
+            //   title: 'Visitors',
+            // },
           ]}
         />
-      </Col>
+      </Col>}
     </Row>
   );
 };

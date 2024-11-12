@@ -4,21 +4,29 @@ import HistoricalRainDataDao from '../dao/HistoricalRainDataDao';
 import axios from 'axios';
 
 class HistoricalRainDataService {
-  public async createHistoricalRainData(data: Prisma.HistoricalRainDataCreateInput): Promise<HistoricalRainData> {
-    return await HistoricalRainDataDao.createHistoricalRainData(data);
+  public async createHistoricalRainData(
+    data: Prisma.HistoricalRainDataCreateInput
+  ): Promise<HistoricalRainData> {
+    return HistoricalRainDataDao.createHistoricalRainData(data);
   }
 
-  public async getHistoricalRainDataByDateAndLatLng(date: Date, lat: number, lng: number): Promise<HistoricalRainData> {
-    return await HistoricalRainDataDao.getHistoricalRainDataByDateAndLatLng(date, lat, lng);
+  public async getHistoricalRainDataByDateAndLatLng(
+    date: Date, 
+    lat: number, 
+    lng: number
+  ): Promise<HistoricalRainData | null> {
+    return HistoricalRainDataDao.getHistoricalRainDataByDateAndLatLng(date, lat, lng);
   }
 
-  // Purposely skipped the Zod schema verification bc need to call these methods many, many times
-  public async createManyHistoricalRainData(data: Prisma.HistoricalRainDataCreateManyInput[]): Promise<Prisma.BatchPayload> {
-    return await HistoricalRainDataDao.createManyHistoricalRainData(data);
+  public async createManyHistoricalRainData(
+    data: Prisma.HistoricalRainDataCreateManyInput[]
+  ): Promise<Prisma.BatchPayload> {
+    return HistoricalRainDataDao.createManyHistoricalRainData(data);
   }
 
-  // -- [Seed Data Utils] --
-  public async seedHistoricalRainfallData(days: number): Promise<any[]> {
+  public async seedHistoricalRainfallData(
+    days: number
+  ): Promise<any[]> {
     try {
       const results: Prisma.HistoricalRainDataCreateManyInput[] = [];
       const requests = [];

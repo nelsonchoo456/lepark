@@ -1,4 +1,4 @@
-import { FAQStatusEnum, FAQCategoryEnum } from './sharedenums';
+import { FAQStatusEnum, FAQCategoryEnum } from './sharedEnums';
 
 export interface FAQCreateData {
   category: FAQCategoryEnum;

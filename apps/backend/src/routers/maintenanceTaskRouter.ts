@@ -137,38 +137,6 @@ router.put('/unassignMaintenanceTask/:id', authenticateJWTStaff, async (req, res
   }
 });
 
-router.post('/completeMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.completeMaintenanceTask(maintenanceTaskId, staffId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/acceptMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.acceptMaintenanceTask(maintenanceTaskId, staffId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/unacceptMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.unacceptMaintenanceTask(maintenanceTaskId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.put('/updateMaintenanceTaskStatus/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const maintenanceTaskId = req.params.id;
@@ -226,28 +194,6 @@ router.get('/getParkMaintenanceTaskDelayedTaskTypesForPeriod', authenticateJWTSt
     const endDate = new Date(req.query.endDate as string);
     const delayedTaskTypes = await MaintenanceTaskService.getDelayedTaskTypesIdentification(parkId, startDate, endDate);
     res.status(200).json(delayedTaskTypes);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getParkTaskTypeAverageCompletionTimesForPastMonths', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const months = req.query.months ? parseInt(req.query.months as string, 10) : 1;
-    const averageCompletionTimes = await MaintenanceTaskService.getParkTaskTypeAverageCompletionTimeForPastMonths(parkId, months);
-    res.status(200).json(averageCompletionTimes);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getParkTaskTypeAverageOverdueRatesForPastMonths', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const months = req.query.months ? parseInt(req.query.months as string, 10) : 1;
-    const overdueRates = await MaintenanceTaskService.getParkTaskTypeAverageOverdueRatesForPastMonths(parkId, months);
-    res.status(200).json(overdueRates);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

@@ -118,6 +118,9 @@ import FeedbackList from './pages/Feedback/FeedbackList';
 import FeedbackViewDetails from './pages/Feedback/FeedbackViewDetails';
 import BookingList from './pages/Booking/BookingList';
 import ViewBookingDetails from './pages/Booking/ViewBookingDetails';
+import AllParksCrowdLevels from './pages/CrowdInsight/AllParksCrowdLevels';
+import FacilityAssignCamera from './pages/Facility/FacilityAssignCamera';
+import AnalyseActualCrowdLevels from './pages/CrowdInsight/AnalyseActualCrowdLevels';
 
 export function App() {
   return (
@@ -474,6 +477,7 @@ export function App() {
                       <Route path=":bookingId" element={<ViewBookingDetails />} />
                       <Route index element={<BookingList />} />
                     </Route>
+                    <Route path=":facilityId/assign-camera" element={<FacilityAssignCamera />} />
                   </Route>
                   <Route path=":facilityId" element={<ViewFacilityDetails />} />
                 </Route>
@@ -654,6 +658,24 @@ export function App() {
                       <>
                         <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
                         <CompareParkCrowdLevels />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="analyse"
+                    element={
+                      <>
+                        <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
+                        <AnalyseActualCrowdLevels />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="allParks"
+                    element={
+                      <>
+                        <RoleProtectedRoute allowedRoles={[StaffType.SUPERADMIN]} redirectTo="/crowdInsights" />
+                        <AllParksCrowdLevels />
                       </>
                     }
                   />

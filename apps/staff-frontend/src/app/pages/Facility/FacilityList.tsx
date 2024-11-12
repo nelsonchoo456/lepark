@@ -120,14 +120,6 @@ const FacilityList: React.FC = () => {
       width: '20%',
     },
     {
-      title: 'Last Maintenance Date',
-      dataIndex: 'lastMaintenanceDate',
-      key: 'lastMaintenanceDate',
-      render: (text) => moment(text).format('D MMM YY'),
-      sorter: (a, b) => moment(a.lastMaintenanceDate).unix() - moment(b.lastMaintenanceDate).unix(),
-      width: '20%',
-    },
-    {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (

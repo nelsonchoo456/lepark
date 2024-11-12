@@ -2,15 +2,16 @@ import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { FacilityStatusEnum, StaffResponse, StaffType } from '@lepark/data-access';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { Button, Card, Descriptions, Tabs, Tag } from 'antd';
-import { FaCalendarCheck, FaCalendarTimes, FaCloudRain, FaUmbrella, FaUsers, FaUserSlash } from 'react-icons/fa';
-import { RiEdit2Line } from 'react-icons/ri';
 import { useNavigate, useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
-import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
 import BookingTable from './components/BookingTable';
-import FacilityCarousel from './components/FacilityCarousel';
 import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
+import FacilityCarousel from './components/FacilityCarousel';
+import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
+import { RiEdit2Line } from 'react-icons/ri';
+import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
+import CameraSensorTab from './components/CameraSensorTab';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
@@ -80,6 +81,11 @@ const ViewFacilityDetails = () => {
       key: 'location',
       label: 'Location',
       children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
+    },
+    {
+      key: 'crowd',
+      label: 'Crowd',
+      children: facility ? <CameraSensorTab facility={facility} park={park} /> : <p>Loading crowd data...</p>,
     },
   ];
 

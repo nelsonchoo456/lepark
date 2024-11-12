@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { Button } from 'antd';
+import { Button, Grid } from 'antd';
 import { Divider, LoginLayout, LoginPanel, Logo, LogoText } from '@lepark/common-ui';
 import LoginAnnouncements from './components/LoginAnnouncements';
 import LoginStep from './components/LoginForm';
 import ForgotPassword from './components/ForgotPassword';
 import { Link } from 'react-router-dom';
 
+const { useBreakpoint } = Grid;
+
 const Login = () => {
   const [inloginStep, setInLoginStep] = useState<boolean>(true);
+  const screens = useBreakpoint();
 
   const handleGoToForgotPassword = () => {
     setInLoginStep(false);
@@ -32,7 +35,7 @@ const Login = () => {
           {inloginStep ? <LoginStep goToForgotPassword={handleGoToForgotPassword} /> : <ForgotPassword goToLogin={handleGoToLogin} />}
         </div>
       </LoginPanel>
-      <LoginAnnouncements />
+      {screens.lg && <LoginAnnouncements />}
     </LoginLayout>
   );
 };

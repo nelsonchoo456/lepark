@@ -160,7 +160,11 @@ class AttractionService {
     }
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `attraction/${fileName}`,
@@ -217,7 +221,10 @@ class AttractionService {
         throw new Error('Ticket listing not found');
       }
 
-      AttractionTicketListingSchema.parse(data);
+      // Merge existing data with updates before validation
+      const mergedData = { ...existingTicketListing, ...data };
+      AttractionTicketListingSchema.parse(mergedData);
+      
       return AttractionDao.updateAttractionTicketListingDetails(id, data);
     } catch (error) {
       if (error instanceof z.ZodError) {

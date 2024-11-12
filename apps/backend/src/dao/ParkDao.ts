@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
-import { ParkCreateData, ParkResponseData, ParkUpdateData } from "../schemas/parkSchema";
+import { PrismaClient } from '@prisma/client';
+import { ParkCreateData, ParkResponseData, ParkUpdateData } from '../schemas/parkSchema';
 const prisma = new PrismaClient();
 
 class ParkDao {
-  async createPark(data: ParkCreateData): Promise<any> {
+  public async createPark(data: ParkCreateData): Promise<ParkResponseData> {
     await this.initParksDB();
     const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
     const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
@@ -21,21 +21,21 @@ class ParkDao {
         ST_GeomFromText(${data.geom}), 
         ST_LineFromText(${data.paths}, 4326),
         
-        ${data.parkStatus}::"PARK_STATUS_ENUM"
+        ${data.parkStatus}::"ParkStatusEnum"
       ) 
       RETURNING id, name, description, "address", "contactNumber", "openingHours", "closingHours", "images", ST_AsGeoJSON(geom) as "geom", "parkStatus";
     `;
     return park[0];
   }
 
-  async initParksDB(): Promise<void> {
+  public async initParksDB(): Promise<void> {
     await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`; // puyts in the POSTGIS extension to postgres
-    
+
     await prisma.$queryRaw`
       DO $$
       BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PARK_STATUS_ENUM') THEN
-          CREATE TYPE "PARK_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ParkStatusEnum') THEN
+          CREATE TYPE "ParkStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
         END IF;
       END
       $$;
@@ -54,12 +54,12 @@ class ParkDao {
         images TEXT[],
         geom GEOMETRY,
         paths GEOMETRY,
-        "parkStatus" "PARK_STATUS_ENUM"
+        "parkStatus" "ParkStatusEnum"
       );
     `;
   }
 
-  async getAllParks(): Promise<any[]> {
+  public async getAllParks(): Promise<ParkResponseData[]> {
     await this.initParksDB();
 
     const parks = await prisma.$queryRaw`
@@ -77,19 +77,19 @@ class ParkDao {
         "parkStatus"
       FROM "Park";
     `;
-    
+
     if (Array.isArray(parks)) {
-      return parks.map(park => ({
+      return parks.map((park) => ({
         ...park,
-        geom: JSON.parse(park.geom),  // Convert GeoJSON string to object
-        paths: JSON.parse(park.paths)  // Convert GeoJSON string to object
+        geom: JSON.parse(park.geom), // Convert GeoJSON string to object
+        paths: JSON.parse(park.paths), // Convert GeoJSON string to object
       }));
     } else {
-      throw new Error("Unable to fetch from database (SQL Error)");
+      throw new Error('Unable to fetch from database (SQL Error)');
     }
   }
 
-  async getParkById(id: number): Promise<ParkResponseData> {
+  public async getParkById(id: number): Promise<ParkResponseData> {
     await this.initParksDB();
 
     const park = await prisma.$queryRaw`
@@ -113,21 +113,21 @@ class ParkDao {
       const result = park[0];
       return {
         ...result,
-        geom: JSON.parse(result.geom),  // Convert GeoJSON string to object
-        paths: JSON.parse(result.paths)  // Convert GeoJSON string to object
+        geom: JSON.parse(result.geom), // Convert GeoJSON string to object
+        paths: JSON.parse(result.paths), // Convert GeoJSON string to object
       };
     } else {
       throw new Error(`Park with ID ${id} not found`);
     }
   }
 
-  async updatePark(id: number, data: Partial<ParkUpdateData>): Promise<ParkResponseData> {
+  public async updatePark(id: number, data: Partial<ParkUpdateData>): Promise<ParkResponseData> {
     await this.initParksDB();
 
     // If the name is being updated, check if it already exists
     if (data.name) {
       const existingPark = await this.getParkByName(data.name);
-      if (existingPark && existingPark.id !== id) {
+      if (existingPark && existingPark.id !== id.toString()) {
         throw new Error('A park with this name already exists');
       }
     }
@@ -158,13 +158,13 @@ class ParkDao {
 
     if (data.openingHours) {
       updates.push(`"openingHours" = $${updates.length + 1}::timestamp[]`);
-      const openingHoursArray = data.openingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
+      const openingHoursArray = data.openingHours.map((d) => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
       values.push(openingHoursArray);
     }
 
     if (data.closingHours) {
       updates.push(`"closingHours" = $${updates.length + 1}::timestamp[]`);
-      const closingHoursArray = data.closingHours.map(d => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
+      const closingHoursArray = data.closingHours.map((d) => new Date(d).toISOString().slice(0, 19).replace('T', ' '));
       values.push(closingHoursArray);
     }
 
@@ -184,7 +184,7 @@ class ParkDao {
     }
 
     if (data.parkStatus) {
-      updates.push(`"parkStatus" = $${updates.length + 1}::"PARK_STATUS_ENUM"`);
+      updates.push(`"parkStatus" = $${updates.length + 1}::"ParkStatusEnum"`);
       values.push(data.parkStatus);
     }
 
@@ -211,28 +211,28 @@ class ParkDao {
       const result = updatedPark[0];
       return {
         ...result,
-        geom: JSON.parse(result.geom),  // Convert GeoJSON string to object
-        paths: JSON.parse(result.paths)  // Convert GeoJSON string to object
+        geom: JSON.parse(result.geom), // Convert GeoJSON string to object
+        paths: JSON.parse(result.paths), // Convert GeoJSON string to object
       };
     } else {
       throw new Error(`Unable to update park with ID ${id}`);
     }
   }
 
-  async deleteParkById(id: number): Promise<void> {
+  public async deleteParkById(id: number): Promise<void> {
     await this.initParksDB();
-    
+
     const deletedPark = await prisma.$executeRaw`
       DELETE FROM "Park"
       WHERE id = ${id};
     `;
-    
+
     if (deletedPark === 0) {
       throw new Error(`Park with ID ${id} not found`);
     }
   }
 
-  async getRandomParkImage(): Promise<string[]> {
+  public async getRandomParkImage(): Promise<string[]> {
     // Fetch all parks
     const parks: { images: string[] | null }[] = await prisma.$queryRaw`
       SELECT images FROM "Park";
@@ -251,7 +251,7 @@ class ParkDao {
     return [randomImage];
   }
 
-  async getParkByName(name: string): Promise<any | null> {
+  public async getParkByName(name: string): Promise<ParkResponseData | null> {
     await this.initParksDB();
 
     const park = await prisma.$queryRaw`
@@ -276,7 +276,7 @@ class ParkDao {
       return {
         ...result,
         geom: JSON.parse(result.geom),
-        paths: JSON.parse(result.paths)
+        paths: JSON.parse(result.paths),
       };
     } else {
       return null;

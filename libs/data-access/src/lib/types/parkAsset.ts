@@ -1,7 +1,7 @@
 import { MaintenanceTaskResponse } from '@lepark/data-access';
 import { FacilityResponse } from './facility';
 import { ParkResponse } from './park';
-import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedenums';
+import { ParkAssetTypeEnum, ParkAssetStatusEnum, ParkAssetConditionEnum } from './sharedEnums';
 
 export interface ParkAssetData {
   name: string;

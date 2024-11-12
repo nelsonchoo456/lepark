@@ -44,8 +44,11 @@ router.get('/getSensorReadingsBySensorId/:sensorId', async (req, res) => {
 
 router.get('/getSensorReadingsBySensorIds', async (req, res) => {
   try {
-    const sensorIds = req.query.sensorIds as string[];
-    const readings = await SensorReadingService.getSensorReadingsBySensorIds(sensorIds);
+    const sensorIds = Array.isArray(req.query.sensorIds) 
+      ? req.query.sensorIds 
+      : [req.query.sensorIds];
+
+    const readings = await SensorReadingService.getSensorReadingsBySensorIds(sensorIds as string[]);
     res.status(200).json(readings);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -352,6 +355,15 @@ router.get('/getAllSensorReadingsByParkIdAndSensorType/:parkId/:sensorType', asy
 router.get('/getPredictedCrowdLevelsForPark/:parkId/:pastPredictedDays', async (req, res) => {
   try {
     const data = await SensorReadingService.getPredictedCrowdLevelsForPark(parseInt(req.params.parkId), parseInt(req.params.pastPredictedDays));
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getPastOneHourCrowdDataBySensorsForPark/:parkId', async (req, res) => {
+  try {
+    const data = await SensorReadingService.getPastOneHourCrowdDataBySensorsForPark(parseInt(req.params.parkId));
     res.status(200).json(data);
   } catch (error) {
     res.status(400).json({ error: error.message });

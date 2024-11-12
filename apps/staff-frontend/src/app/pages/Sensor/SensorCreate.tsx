@@ -59,22 +59,6 @@ const SensorCreate = () => {
       ? facilities.filter((facility) => facility.parkId === selectedParkId && facility.facilityStatus === FacilityStatusEnum.OPEN && facility.facilityType === FacilityTypeEnum.STOREROOM)
       : facilities.filter((facility) => facility.parkId === user?.parkId && facility.facilityStatus === FacilityStatusEnum.OPEN && facility.facilityType === FacilityTypeEnum.STOREROOM);
 
-  const getSensorUnitFromType = (sensorType: SensorTypeEnum): SensorUnitEnum => {
-    switch (sensorType) {
-      case SensorTypeEnum.TEMPERATURE:
-        return SensorUnitEnum.DEGREES_CELSIUS;
-      case SensorTypeEnum.HUMIDITY:
-      case SensorTypeEnum.SOIL_MOISTURE:
-        return SensorUnitEnum.PERCENT;
-      case SensorTypeEnum.LIGHT:
-        return SensorUnitEnum.LUX;
-      case SensorTypeEnum.CAMERA:
-        return SensorUnitEnum.PAX;
-      default:
-        return SensorUnitEnum.PERCENT;
-    }
-  };
-
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -86,7 +70,6 @@ const SensorCreate = () => {
         ...filteredValues,
         acquisitionDate: filteredValues.acquisitionDate ? dayjs(filteredValues.acquisitionDate).toISOString() : null,
         images: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : [],
-        sensorUnit: getSensorUnitFromType(filteredValues.sensorType), // Automatically set the sensor unit
       };
 
       const isDuplicate = await checkSensorDuplicateSerialNumber(values.serialNumber);

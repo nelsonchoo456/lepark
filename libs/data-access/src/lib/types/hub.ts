@@ -1,7 +1,7 @@
 import { FacilityResponse } from './facility';
 import { ParkResponse } from './park';
 import { ZoneResponse } from './zone';
-import { HubStatusEnum } from './sharedenums';
+import { HubStatusEnum } from './sharedEnums';
 import { SensorResponse } from './sensor';
 
 export interface HubData {

@@ -124,7 +124,9 @@ const ViewMaintenanceTaskModal: React.FC<ViewMaintenanceTaskModalProps> = ({ vis
       width={700}
     >
       <Descriptions column={1} bordered>
-        {userRole === StaffType.SUPERADMIN && <Descriptions.Item label="Park">{task.submittingStaff?.park?.name}</Descriptions.Item>}
+        {userRole === StaffType.SUPERADMIN && task.facilityOfFaultyEntity && (
+          <Descriptions.Item label="Park">{task.facilityOfFaultyEntity.park.name}</Descriptions.Item>
+        )}
         {(task.parkAsset || task.sensor || task.hub) && (
           <Descriptions.Item label="Location">
             <span>{facilityName || 'Loading...'}</span>

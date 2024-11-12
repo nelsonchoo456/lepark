@@ -502,7 +502,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
           <Tooltip title="View Maintenance Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {!limitedToSubmittingTasksOnly && record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
+          {!limitedToSubmittingTasksOnly && userRole !== StaffType.MANAGER && record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
             <Tooltip title="Edit Maintenance Task">
               <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
             </Tooltip>

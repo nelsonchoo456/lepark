@@ -41,24 +41,23 @@ const { seedHistoricalRainfallData } = require('./irrigationScheduleSeed');
 const moment = require('moment-timezone');
 
 const findStaffByRoleAndPark = (staffList, role, parkId) => {
-  return staffList.find(staff => staff.role === role && staff.parkId === parkId);
+  return staffList.find((staff) => staff.role === role && staff.parkId === parkId);
 };
 
 const findVisitorByFirstName = (visitorList, firstName) => {
-  return visitorList.find(visitor => visitor.firstName.toLowerCase() === firstName.toLowerCase());
+  return visitorList.find((visitor) => visitor.firstName.toLowerCase() === firstName.toLowerCase());
 };
-
 
 async function initParksDB() {
   // Ensure the POSTGIS extension is added
   await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`;
 
-  // Check if PARK_STATUS_ENUM exists, and create if not
+  // Check if ParkStatusEnum exists, and create if not
   await prisma.$queryRaw`
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PARK_STATUS_ENUM') THEN
-        CREATE TYPE "PARK_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ParkStatusEnum') THEN
+        CREATE TYPE "ParkStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
       END IF;
     END
     $$;
@@ -77,7 +76,7 @@ async function initParksDB() {
       images TEXT[],
       geom GEOMETRY,
       paths GEOMETRY,
-      "parkStatus" "PARK_STATUS_ENUM"
+      "parkStatus" "ParkStatusEnum"
     );
   `;
 }
@@ -114,7 +113,7 @@ async function createPark(data) {
       ${imagesParam},
       ST_GeomFromText(${data.geom}, 4326),
       ST_GeomFromText(${data.paths}, 4326),
-      ${data.parkStatus}::"PARK_STATUS_ENUM"
+      ${data.parkStatus}::"ParkStatusEnum"
     )
     RETURNING
       id,
@@ -136,12 +135,12 @@ async function initZonesDB() {
   // Ensure the PostGIS extension is enabled
   await prisma.$queryRaw`CREATE EXTENSION IF NOT EXISTS postgis;`;
 
-  // Create the ZONE_STATUS_ENUM type if it doesn't exist
+  // Create the ZoneStatusEnum type if it doesn't exist
   await prisma.$queryRaw`
     DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZONE_STATUS_ENUM') THEN
-        CREATE TYPE "ZONE_STATUS_ENUM" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ZoneStatusEnum') THEN
+        CREATE TYPE "ZoneStatusEnum" AS ENUM ('OPEN', 'CLOSED', 'UNDER_CONSTRUCTION', 'LIMITED_ACCESS');
       END IF;
     END
     $$;
@@ -157,7 +156,7 @@ async function initZonesDB() {
       "closingHours" TIMESTAMP[],
       geom GEOMETRY,
       paths GEOMETRY,
-      "zoneStatus" "ZONE_STATUS_ENUM",
+      "zoneStatus" "ZoneStatusEnum",
       "parkId" INT REFERENCES "Park"(id) ON DELETE CASCADE
     );
   `;
@@ -192,7 +191,7 @@ async function createZone(data) {
       ${closingHoursArray}::timestamp[],
       ${geomParam},
       ${pathsParam},
-      ${data.zoneStatus}::"ZONE_STATUS_ENUM",
+      ${data.zoneStatus}::"ZoneStatusEnum",
       ${data.parkId}
     )
     RETURNING
@@ -608,20 +607,29 @@ async function seed() {
   function generateMockMaintenanceTask(assetId, fixedDates) {
     console.log(`Generating mock maintenance entries for asset ${assetId}`);
 
-    const tasks = fixedDates.map((date, index) => ({
-      title: `Maintenance Task #${index + 1} for ${assetId}`,
-      description: `Completed maintenance task #${index + 1} for ${assetId}.`,
-      taskStatus: 'COMPLETED',
-      taskType: 'INSPECTION',
-      taskUrgency: 'NORMAL',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      dueDate: new Date(date),
-      completedDate: new Date(date),
-      images: ['https://example.com/maintenance-task-image.jpg'],
-      remarks: `Remarks for maintenance task #${index + 1}.`,
-      position: index + 1,
-    }));
+    const tasks = fixedDates.map((date, index) => {
+      const completedDate = new Date(date);
+      const dueDate = new Date(completedDate);
+      dueDate.setDate(completedDate.getDate() + 2); // Set dueDate to 2 days after completedDate
+
+      const createdAt = new Date(completedDate);
+      createdAt.setDate(completedDate.getDate() - 7); // Set createdAt to 1 week before completedDate
+
+      return {
+        title: `Maintenance Task #${index + 1} for ${assetId}`,
+        description: `Completed maintenance task #${index + 1} for ${assetId}.`,
+        taskStatus: 'COMPLETED',
+        taskType: 'INSPECTION',
+        taskUrgency: 'NORMAL',
+        createdAt: createdAt,
+        updatedAt: new Date(),
+        dueDate: dueDate,
+        completedDate: completedDate,
+        images: ['https://example.com/maintenance-task-image.jpg'],
+        remarks: `Remarks for maintenance task #${index + 1}.`,
+        position: index + 1,
+      };
+    });
 
     console.log('Mock tasks generated with fixed dates');
     return tasks;
@@ -818,7 +826,7 @@ async function seed() {
   let createdNewHubs = [];
   let countHubs = 0;
   for (const newHub of newHubs) {
-    if (countHubs < 2) {
+    if (countHubs < 2 || countHubs === 3) {
       const createdNewHub = await prisma.hub.create({
         data: {
           ...newHub,
@@ -860,12 +868,21 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
-    } else {
+    } else if (count < 10) {
       const createdSensor = await prisma.sensor.create({
         data: {
           ...sensor,
           hubId: createdNewHubs[2].id,
           facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
+    } else {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[3].id,
+          facilityId: storeroomId, // or any other appropriate facilityId
         },
       });
       sensorList.push(createdSensor);
@@ -877,12 +894,11 @@ async function seed() {
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
-  await seedHistoricalRainfallData(100);// 100 days
+  //await seedHistoricalRainfallData(100);// 100 days
   console.log(`Seeded historical rainfall data for 100 days.\n`);
 
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
-
     let readings;
     if (sensor.sensorType === 'CAMERA') {
       if (sensor.identifierNumber === 'SE-9999X') {
@@ -891,7 +907,7 @@ async function seed() {
         readings = generateMockCrowdDataForBAMKP(sensor.id, 90); // Generate data for 90 days
       }
     } else {
-      const hub = createdNewHubs.find((h) => h.id === sensor.hubId)
+      const hub = createdNewHubs.find((h) => h.id === sensor.hubId);
       const rainfallDataForHub = await getClosestRainDataPerDate(hub.lat, hub.long);
 
       readings = generateMockReadings(sensor.sensorType, rainfallDataForHub).map((reading) => ({
@@ -907,7 +923,7 @@ async function seed() {
   console.log(`Sensor readings created for all new sensors that are linked to the new hub\n`);
 
   console.log(`Training predictive rainfall models...`);
-  await trainModelsForActiveHubs()
+  //await trainModelsForActiveHubs()
 
   //console.log('Seeding decarbonization areas...');
   const decarbonizationAreaList = [];
@@ -1194,50 +1210,49 @@ async function seed() {
   console.log(`Total event transactions seeded: ${eventTransactionList.length}\n`);
 
   const staffMap = staffList.reduce((acc, staff) => {
-  const emailPrefix = staff.email.split('@')[0];
-  acc[emailPrefix] = staff.id;
-  return acc;
+    const emailPrefix = staff.email.split('@')[0];
+    acc[emailPrefix] = staff.id;
+    return acc;
 
-  // await trainModelsForActiveHubs();
-}, {});
+    // await trainModelsForActiveHubs();
+  }, {});
 
-const populatedFeedbacks = feedbacksData.map((feedback, index) => {
-  let visitorId, staffId;
+  const populatedFeedbacks = feedbacksData.map((feedback, index) => {
+    let visitorId, resolvedStaffId;
 
-  // Assign visitor IDs
-  if (feedback.parkId === 1) {
-    visitorId = index < 3 ? visitorList[0].id : visitorList[1].id; // Ely for first 3, Aaron for rest
-  } else if (feedback.parkId === 2) {
-    visitorId = index < 9 ? visitorList[0].id : visitorList[1].id; // Ely for first 9, Aaron for rest
-  }
-
-  // Assign staffId only if the feedback is ACCEPTED or REJECTED
-  if (feedback.feedbackStatus === 'ACCEPTED' || feedback.feedbackStatus === 'REJECTED') {
+    // Assign visitor IDs
     if (feedback.parkId === 1) {
-      staffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
+      visitorId = index < 3 ? visitorList[0].id : visitorList[1].id; // Ely for first 3, Aaron for rest
     } else if (feedback.parkId === 2) {
-      if (feedback.title === 'Excellent Educational Program' || feedback.title === 'Safety Concern') {
-        staffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
-      } else if (index < 9) {
-        staffId = staffMap['superadmin'];
-      } else {
-        staffId = staffMap['parkranger2'];
+      visitorId = index < 9 ? visitorList[0].id : visitorList[1].id; // Ely for first 9, Aaron for rest
+    }
+
+    // Assign staffId only if the feedback is ACCEPTED or REJECTED
+    if (feedback.feedbackStatus === 'ACCEPTED' || feedback.feedbackStatus === 'REJECTED') {
+      if (feedback.parkId === 1) {
+        resolvedStaffId = staffMap['superadmin']; // All resolved feedbacks for Park 1 are handled by SUPERADMIN
+      } else if (feedback.parkId === 2) {
+        if (feedback.title === 'Excellent Educational Program' || feedback.title === 'Safety Concern') {
+          resolvedStaffId = staffMap['manager2']; // Kenny (manager2@lepark.com)
+        } else if (index < 9) {
+          resolvedStaffId = staffMap['superadmin'];
+        } else {
+          resolvedStaffId = staffMap['parkranger2'];
+        }
       }
     }
-  }
 
-  return { ...feedback, visitorId, staffId };
-});
-
-
- const feedbackList = [];
-for (const feedback of populatedFeedbacks) {
-  const createdFeedback = await prisma.feedback.create({
-    data: feedback,
+    return { ...feedback, visitorId, resolvedStaffId };
   });
-  feedbackList.push(createdFeedback);
-}
-console.log(`Total feedbacks seeded: ${feedbackList.length}\n`);
+
+  const feedbackList = [];
+  for (const feedback of populatedFeedbacks) {
+    const createdFeedback = await prisma.feedback.create({
+      data: feedback,
+    });
+    feedbackList.push(createdFeedback);
+  }
+  console.log(`Total feedbacks seeded: ${feedbackList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
@@ -1274,9 +1289,7 @@ async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
   }
 
   console.log(`Total sequestration histories seeded for area ${index + 1}: ${seqHistories.length}`);
-
 }
-
 
 // Utility function for Activity Logs and Status Logs
 const getRandomItems = (array, count) => {
@@ -1286,10 +1299,10 @@ const getRandomItems = (array, count) => {
 
 // Fetch historical rainfall data, closest to lat lng
 const getClosestRainDataPerDate = async (lat, lng) => {
-  const parseTimestamp = (timestamp) =>{
+  const parseTimestamp = (timestamp) => {
     return new Date(timestamp);
-  }
-  
+  };
+
   const calculateAUC = (data) => {
     let auc = 0;
     data.sort((a, b) => parseTimestamp(a.timestamp) - parseTimestamp(b.timestamp));
@@ -1297,14 +1310,14 @@ const getClosestRainDataPerDate = async (lat, lng) => {
     for (let i = 1; i < data.length; i++) {
       const prev = data[i - 1];
       const curr = data[i];
-  
+
       const timeDiff = (parseTimestamp(curr.timestamp) - parseTimestamp(prev.timestamp)) / 1000; // Calculate the time difference in seconds
       const area = 0.5 * (prev.value + curr.value) * timeDiff; // Calculate the area of the trapezoid
       auc += area; // Add to total AUC
     }
 
     return auc;
-  }
+  };
 
   const result = await prisma.$queryRaw(
     Prisma.sql`
@@ -1318,7 +1331,7 @@ const getClosestRainDataPerDate = async (lat, lng) => {
         ) AS distance
       FROM "HistoricalRainData"
       ORDER BY DATE("timestamp"), distance
-    `
+    `,
   );
 
   const resultsGroupedByDay = result.reduce((acc, record) => {
@@ -1337,12 +1350,11 @@ const getClosestRainDataPerDate = async (lat, lng) => {
 
 // Generate mock sensor readings
 const generateMockReadings = (sensorType, rainfallData) => {
-
   const readings = [];
   const now = new Date();
   // const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
 
-  const hundredDaysAgo = new Date(now.getTime() - 2400 * 60 * 60 * 1000);  // 100 days in milliseconds
+  const hundredDaysAgo = new Date(now.getTime() - 2400 * 60 * 60 * 1000); // 100 days in milliseconds
 
   // Generate readings every 15 minutes from now till 8 hours ago
   for (let time = now; time >= hundredDaysAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
@@ -1364,38 +1376,39 @@ const createReading = (sensorType, date, rainfallAmount) => {
     case 'SOIL_MOISTURE':
       // Simulate watering at 6 AM and 6 PM
       if (hour === 6 || hour === 18) {
-        value = 70 + Math.random() * 10 // 70-80%
+        value = 70 + Math.random() * 10; // 70-80%
       } else if (hour >= 12 && hour <= 16) {
         // Greater decrease from 12 PM to 4 PM
         const hoursFrom12 = hour - 12;
-        value = 65 - hoursFrom12 * 4 + Math.random() * 5 // Steeper decline
+        value = 65 - hoursFrom12 * 4 + Math.random() * 5; // Steeper decline
       } else {
         // Gradual decrease in moisture for other hours
-        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5
+        value = 70 - (Math.abs(hour - 6) % 12) * 2 + Math.random() * 5;
       }
       // Adjust soil moisture based on rainfall
       // Adjust temperature based on rainfall, capped at 4.2
       if (rainfallAmount) {
-        value += 
-          rainfallAmount < 200 ? 2
-          : rainfallAmount < 600 ? rainfallAmount / 100 
-          : rainfallAmount < 1200 ? rainfallAmount / 80 
-          : Math.min(rainfallAmount / 100, 20);
+        value +=
+          rainfallAmount < 200
+            ? 2
+            : rainfallAmount < 600
+            ? rainfallAmount / 100
+            : rainfallAmount < 1200
+            ? rainfallAmount / 80
+            : Math.min(rainfallAmount / 100, 20);
       }
       break;
     case 'TEMPERATURE':
       // Simulate daily temperature cycle
-      value = 27 + Math.sin(((hour - 6) * Math.PI) / 12) * 3.5 + Math.random() * 2
+      value = 27 + Math.sin(((hour - 6) * Math.PI) / 12) * 3.5 + Math.random() * 2;
       // Adjust temperature based on rainfall, capped at 4.2
       if (rainfallAmount) {
-        value -= 
-          rainfallAmount < 600 ? rainfallAmount / 180 
-          : Math.min(rainfallAmount / 180, 4.2);
+        value -= rainfallAmount < 600 ? rainfallAmount / 180 : Math.min(rainfallAmount / 180, 4.2);
       }
       break;
     case 'HUMIDITY':
       // Inverse relationship with temperature
-      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5
+      value = 70 - Math.sin(((hour - 6) * Math.PI) / 12) * 10 + Math.random() * 5;
       // Adjust humidity based on rainfall
       if (rainfallAmount) {
         const rainyHours = Math.min(Math.ceil(rainfallAmount / 1000), 6); // Max 6 consecutive rainy hours
@@ -1413,7 +1426,7 @@ const createReading = (sensorType, date, rainfallAmount) => {
     case 'LIGHT':
       if (hour >= 6 && hour < 18) {
         // Daylight hours
-        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50
+        value = Math.sin(((hour - 6) * Math.PI) / 12) * 200 + Math.random() * 50;
         value -= Math.min(rainfallAmount / 700, 2);
       } else {
         // Night time
@@ -1437,7 +1450,7 @@ const createReading = (sensorType, date, rainfallAmount) => {
 };
 
 async function trainModelsForActiveHubs() {
-  const hubs = await prisma.hub.findMany({ where: { hubStatus: "ACTIVE" }});
+  const hubs = await prisma.hub.findMany({ where: { hubStatus: 'ACTIVE' } });
   await trainModelsForAllHubs(hubs);
 }
 
@@ -1462,7 +1475,7 @@ function generateMockCrowdDataForSBG(sensorId, days) {
     switch (day) {
       case 0: // Sunday
       case 6: // Saturday
-        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        baseCrowdLevel *= 3 + Math.random() * 0.5; // Even more crowded weekends
         break;
       case 1: // Monday
         baseCrowdLevel *= 0.6 + Math.random() * 0.2; // Less crowded Mondays
@@ -1510,7 +1523,9 @@ function generateMockCrowdDataForSBG(sensorId, days) {
     baseCrowdLevel += (Math.random() - 0.5) * 20;
 
     // Ensure crowd level is within bounds, with a higher minimum
-    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+    const maxCrowdLevel = (day === 0 || day === 6) ? 500 : 300; // Higher limit for weekends
+    const minCrowdLevel = 20;
+    const crowdLevel = Math.max(minCrowdLevel, Math.min(maxCrowdLevel, Math.floor(baseCrowdLevel)));
 
     readings.push({
       date: time.toDate(),
@@ -1543,7 +1558,7 @@ function generateMockCrowdDataForBAMKP(sensorId, days) {
     switch (day) {
       case 0: // Sunday
       case 6: // Saturday
-        baseCrowdLevel *= 4 + Math.random() * 0.5; // Even more crowded weekends
+        baseCrowdLevel *= 3 + Math.random() * 0.5; // Even more crowded weekends
         break;
       case 1: // Monday
         baseCrowdLevel *= 0.5 + Math.random() * 0.2; // Less crowded Mondays
@@ -1591,7 +1606,9 @@ function generateMockCrowdDataForBAMKP(sensorId, days) {
     baseCrowdLevel += (Math.random() - 0.5) * 20;
 
     // Ensure crowd level is within bounds, with a higher minimum
-    const crowdLevel = Math.max(20, Math.min(300, Math.floor(baseCrowdLevel)));
+    const maxCrowdLevel = (day === 0 || day === 6) ? 300 : 200; // Higher limit for weekends
+    const minCrowdLevel = 20;
+    const crowdLevel = Math.max(minCrowdLevel, Math.min(maxCrowdLevel, Math.floor(baseCrowdLevel)));
 
     readings.push({
       date: time.toDate(),

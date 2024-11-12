@@ -11,7 +11,7 @@ export const FeedbackSchema = z.object({
   images: z.array(z.string()),
   feedbackStatus: z.nativeEnum(FeedbackStatusEnum),
   remarks: z.string().optional().nullable(),
-  staffId: z.string().uuid().optional().nullable(),
+  resolvedStaffId: z.string().uuid().optional().nullable(),
   visitorId: z.string().uuid(),
   parkId: z.number(),
   needResponse: z.boolean(),

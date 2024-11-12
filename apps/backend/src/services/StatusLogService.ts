@@ -77,7 +77,7 @@ class StatusLogService {
     await StatusLogDao.deleteStatusLog(id);
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `statuslog/${fileName}`,

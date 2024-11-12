@@ -57,10 +57,11 @@ const AttractionsPerPark: React.FC = () => {
 
   const formatHoursForToday = (openingHours: Date[], closingHours: Date[]) => {
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const todayIndex = dayjs().day() - 1; // dayjs().day() returns 0 for Sunday, 1 for Monday, etc.
-    const open = openingHours[todayIndex];
-    const close = closingHours[todayIndex];
-    return `${daysOfWeek[todayIndex]}: ${dayjs(open).format('HH:mm')} - ${dayjs(close).format('HH:mm')}`;
+    const todayIndex = new Date().getDay(); // 0 is Sunday, 6 is Saturday
+    const adjustedToday = todayIndex === 0 ? 6 : todayIndex - 1; // Adjust so that 0 is Monday and 6 is Sunday
+    const open = openingHours[adjustedToday];
+    const close = closingHours[adjustedToday];
+    return `${daysOfWeek[adjustedToday]}: ${dayjs(open).format('HH:mm')} - ${dayjs(close).format('HH:mm')}`;
   };
 
   return (

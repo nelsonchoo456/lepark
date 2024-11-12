@@ -1,4 +1,4 @@
-import { LightTypeEnum, Prisma, Species } from '@prisma/client';
+import { LightTypeEnum, Occurrence, Prisma, Species } from '@prisma/client';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { SpeciesSchema, SpeciesSchemaType } from '../schemas/speciesSchema';
@@ -80,59 +80,50 @@ class SpeciesService {
 
   public async updateSpeciesDetails(
     id: string,
-    // Use Partial<SpeciesSchemaType> to allow partial updates and ensure input validation
     data: Partial<SpeciesSchemaType>,
   ): Promise<Species> {
     try {
-      if (data.speciesName) {
-        data.speciesName = data.speciesName.trim();
+      // Get existing species first
+      const existingSpecies = await SpeciesDao.getSpeciesById(id);
+      if (!existingSpecies) {
+        throw new Error('Species not found');
       }
 
-      const existingSpecies = await SpeciesDao.getSpeciesById(id);
-
-      const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
-
-      if (checkForExistingSpecies && existingSpecies.id !== checkForExistingSpecies.id) {
-        throw new Error('Identical species name already exists.');
+      if (data.speciesName) {
+        data.speciesName = data.speciesName.trim();
+        // Check for duplicate name only if name is being updated
+        const checkForExistingSpecies = await SpeciesDao.getSpeciesByName(data.speciesName);
+        if (checkForExistingSpecies && existingSpecies.id !== checkForExistingSpecies.id) {
+          throw new Error('Identical species name already exists.');
+        }
       }
 
       // Merge existing data with update data
       const mergedData = { ...existingSpecies, ...data };
 
-      // Validate merged data using Zod
-      SpeciesSchema.parse(mergedData);
+      // Temperature validations only if relevant fields are being updated
+      if (data.minTemp !== undefined || data.maxTemp !== undefined || data.idealTemp !== undefined) {
+        const minTemp = data.minTemp ?? existingSpecies.minTemp;
+        const maxTemp = data.maxTemp ?? existingSpecies.maxTemp;
+        const idealTemp = data.idealTemp ?? existingSpecies.idealTemp;
 
-      // Convert validated SpeciesSchemaType data to Prisma-compatible update input
-      // This ensures only defined fields are included in the update operation
-      const updateData: Prisma.SpeciesUpdateInput = Object.entries(data).reduce((acc, [key, value]) => {
-        if (value !== undefined) {
-          acc[key] = value;
+        if (minTemp >= maxTemp) {
+          throw new Error('Minimum temperature must be less than maximum temperature');
         }
-        return acc;
-      }, {});
-
-      // Additional temperature checks
-      const minTemp = data.minTemp ?? existingSpecies.minTemp;
-      const maxTemp = data.maxTemp ?? existingSpecies.maxTemp;
-      const idealTemp = data.idealTemp ?? existingSpecies.idealTemp;
-
-      if (minTemp !== undefined && maxTemp !== undefined && minTemp >= maxTemp) {
-        throw new Error('Minimum temperature must be less than maximum temperature');
-      }
-      if (idealTemp !== undefined) {
-        if (minTemp !== undefined && idealTemp < minTemp) {
-          throw new Error('Ideal temperature must be greater than or equal to minimum temperature');
-        }
-        if (maxTemp !== undefined && idealTemp > maxTemp) {
-          throw new Error('Ideal temperature must be less than or equal to maximum temperature');
+        if (idealTemp < minTemp || idealTemp > maxTemp) {
+          throw new Error('Ideal temperature must be between minimum and maximum temperature');
         }
       }
 
-      return SpeciesDao.updateSpeciesDetails(id, updateData);
+      // For partial updates, we only need to validate the fields being updated
+      const partialSchema = SpeciesSchema.partial();
+      partialSchema.parse(data);
+
+      return SpeciesDao.updateSpeciesDetails(id, data);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map((e) => `${e.message}`);
-        throw new Error(`Validation errors: ${errorMessages.join('; ')}`);
+        const validationError = fromZodError(error);
+        throw new Error(`${validationError.message}`);
       }
       throw error;
     }
@@ -142,7 +133,7 @@ class SpeciesService {
     await SpeciesDao.deleteSpecies(speciesId);
   }
 
-  public async getOccurrencesBySpeciesId(speciesId: string) {
+  public async getOccurrencesBySpeciesId(speciesId: string): Promise<Occurrence[]> {
     try {
       return await SpeciesDao.findOccurrencesBySpeciesId(speciesId);
     } catch (error) {
@@ -150,7 +141,7 @@ class SpeciesService {
     }
   }
 
-  public async getOccurrencesBySpeciesIdByParkId(speciesId: string, parkId: string) {
+  public async getOccurrencesBySpeciesIdByParkId(speciesId: string, parkId: string): Promise<Occurrence[]> {
     try {
       const occurrences = await this.getOccurrencesBySpeciesId(speciesId);
       const filteredOccurrences = [];
@@ -167,7 +158,7 @@ class SpeciesService {
     }
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `species/${fileName}`,

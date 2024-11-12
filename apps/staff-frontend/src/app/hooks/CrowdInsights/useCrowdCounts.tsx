@@ -1,7 +1,7 @@
 import { getAllParks, getAggregatedCrowdDataForPark, getParkById } from '@lepark/data-access';
 import moment from 'moment';
 import { useState, useEffect } from 'react';
-import { calculateParkAreaAndThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
+import { useParkThresholds } from '../../pages/CrowdInsight/CalculateCrowdThresholds';
 
 export interface ParkVisitorCount {
   parkId: number;
@@ -34,19 +34,19 @@ export const useCrowdCounts = (parkId?: number, refreshInterval = 5 * 60 * 1000)
     try {
       const parksResponse = await getAllParks();
       const allParks = parksResponse.data;
-      const today = moment().startOf('day');
-      const weekAgo = moment().subtract(7, 'days').startOf('day');
+      const today = moment().tz('Asia/Singapore').startOf('day');
+      const weekAgo = moment().tz('Asia/Singapore').subtract(6, 'days').startOf('day');
 
       // Filter parks based on parkId if provided
       const parksToProcess = parkId ? allParks.filter((p) => p.id === parkId) : allParks;
 
       const parkCounts = await Promise.all(
         parksToProcess.map(async (park) => {
-          const { thresholds } = calculateParkAreaAndThresholds(park.geom);
+          const thresholds = useParkThresholds(park.id, park.geom, allParks);
 
           const [todayData, weeklyData] = await Promise.all([
-            getAggregatedCrowdDataForPark(park.id, today.toDate(), moment().endOf('day').toDate()),
-            getAggregatedCrowdDataForPark(park.id, weekAgo.toDate(), today.toDate()),
+            getAggregatedCrowdDataForPark(park.id, today.toDate(), moment().tz('Asia/Singapore').endOf('day').toDate()),
+            getAggregatedCrowdDataForPark(park.id, weekAgo.toDate(), moment().tz('Asia/Singapore').endOf('day').toDate()),
           ]);
 
           const liveCount = todayData.data[todayData.data.length - 1]?.crowdLevel || 0;
@@ -57,8 +57,8 @@ export const useCrowdCounts = (parkId?: number, refreshInterval = 5 * 60 * 1000)
             parkName: park.name,
             liveCount: Math.round(liveCount),
             weeklyCount: Math.round(weeklyCount),
-            threshold: thresholds.moderate,
-            isOverThreshold: liveCount > thresholds.moderate,
+            threshold: (await thresholds).moderate,
+            isOverThreshold: liveCount > (await thresholds).moderate,
           };
         }),
       );
