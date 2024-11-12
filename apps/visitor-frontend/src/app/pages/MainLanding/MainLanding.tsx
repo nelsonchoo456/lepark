@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ContentWrapper, Divider, LogoText, QrScanner2 } from '@lepark/common-ui';
+import { LogoText, } from '@lepark/common-ui';
 import { usePark } from '../../park-context/ParkContext';
 import MainLayout from '../../components/main/MainLayout';
 import { NavButton } from '../../components/buttons/NavButton';

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { SCREEN_LG } from '../../config/breakpoints';
-import { Content, Header, ListItemType, Logo, LogoText, MobileContent, MobileSidebar, Sidebar } from '@lepark/common-ui';
+import { Content, Header, ListItemType, Logo, LogoText, MobileContent, MobileSidebar, QrScanner2, Sidebar } from '@lepark/common-ui';
 import { BottomNavBar } from './BottomNavBar';
 import { FiHome, FiMoreHorizontal, FiUser } from 'react-icons/fi';
 import { GrMapLocation } from 'react-icons/gr';
@@ -12,8 +12,8 @@ import styled from 'styled-components';
 import { IoClose, IoLeafSharp, IoMenu } from 'react-icons/io5';
 import { FaQuestion, FaTent } from 'react-icons/fa6';
 import { MdEvent, MdFeedback } from 'react-icons/md';
-import { BiSolidLandmark } from 'react-icons/bi';
-import { BsTicket } from 'react-icons/bs';
+import { BiCamera, BiSolidLandmark } from 'react-icons/bi';
+import { BsCamera, BsTicket } from 'react-icons/bs';
 import { TbTicket } from 'react-icons/tb';
 import { COLORS } from '../../config/colors';
 
@@ -43,6 +43,7 @@ const MainLayout = () => {
   const location = useLocation();
   const { selectedPark } = usePark();
   const [isOthersMenuOpen, setIsOthersMenuOpen] = useState(false); // State for "Others" menu
+  const [showScanner, setShowScanner] = useState<boolean>(false);
   const bottomMenuRef = useRef(null);
 
   useEffect(() => {
@@ -114,11 +115,12 @@ const MainLayout = () => {
     { title: <span style={{ fontSize: '1rem' }}>Attractions</span>, icon: <BiSolidLandmark style={{ color: '#FFC107', fontSize: '1.2rem' }} />, route: `/attractions/park/${selectedPark?.id}` },
     { title: <span style={{ fontSize: '1rem' }}>Facilities</span>, icon: <FaTent style={{ color: '#38BDF8', fontSize: '1.2rem' }} />, route: `/facility/park/${selectedPark?.id}` },
     { title: <span style={{ fontSize: '1rem' }}>Events</span>, icon: <PiStarFill style={{ color: '#6EE7B7', fontSize: '1.2rem' }} />, route: `/event/park/${selectedPark?.id}` },
-    { title: <span style={{ fontSize: '1rem' }}>Sustainability Efforts</span>, icon: <IoLeafSharp style={{ color: COLORS.green[400], fontSize: '1.2rem' }} />, route: '/support' },
-    { title: <span style={{ fontSize: '1rem' }}>FAQ</span>, icon: <FaQuestion style={{ fontSize: '1.2rem' }} />, route: '/support' },
-    { title: <span style={{ fontSize: '1rem' }}>Feedback</span>, icon: <MdFeedback style={{ fontSize: '1.2rem' }} />, route: '/support' },
+    { title: <span style={{ fontSize: '1rem' }}>Sustainability Efforts</span>, icon: <IoLeafSharp style={{ color: COLORS.green[400], fontSize: '1.2rem' }} />, route: '/decarb' },
+    { title: <span style={{ fontSize: '1rem' }}>FAQ</span>, icon: <FaQuestion style={{ fontSize: '1.2rem' }} />, route: '/faq' },
+    { title: <span style={{ fontSize: '1rem' }}>Feedback</span>, icon: <MdFeedback style={{ fontSize: '1.2rem' }} />, route: '/feedback/create' },
     { title: <span style={{ fontSize: '1rem' }}>Account</span>, icon: <FiUser style={{ fontSize: '1.2rem' }} />, route: '/profile' },
-    { title: <span style={{ fontSize: '1rem' }}>My Tickets</span>, icon: <TbTicket style={{ fontSize: '1.2rem' }} />, route: '/support' },
+    // { title: <span style={{ fontSize: '1rem' }}>My Tickets</span>, icon: <TbTicket style={{ fontSize: '1.2rem' }} />, route: '/support' },
+    { title: <span style={{ fontSize: '1rem' }}>Occurrence QR Scanner</span>, icon: <BiCamera style={{ fontSize: '1.2rem', color: COLORS.green[300], transform: "translate(0 -2px)" }} />, onClick: () => setShowScanner(true) },
   ];
 
   return (
@@ -129,6 +131,7 @@ const MainLayout = () => {
           {selectedPark ? <LogoText>{selectedPark.name}</LogoText> : <LogoText>Lepark</LogoText>}
         </div>
       </Header>
+      
       <MobileSidebar>
         <div className="flex justify-center pb-4">
           <Logo size={2.5} />
@@ -149,8 +152,10 @@ const MainLayout = () => {
         </div>
       </MobileSidebar>
       <MobileContent $showSidebar={showSidebar}>
+        <QrScanner2 showScanner={showScanner} setShowScanner={setShowScanner}/>
         <Outlet />
       </MobileContent>
+      
       <BottomNavBar items={navItems} showSidebar={showSidebar} />
       <BottomMenu ref={bottomMenuRef} className={isOthersMenuOpen ? 'open' : ''}>
         <Flex justify='space-between' className='p-4'>
@@ -161,10 +166,16 @@ const MainLayout = () => {
         <Button onClick={handleCloseMenu} icon={<IoClose className='text-xl'/>} shape="circle" type='link'></Button></Flex>
         <List
           dataSource={listData}
-          // className='pt-8'
           renderItem={item => (
             <List.Item 
-              onClick={() => navigate(item.route)}
+              onClick={() => {
+              if (item.route) {
+                navigate(item.route);
+              } else if (item.onClick) {
+                item.onClick();
+              }
+              handleCloseMenu(); // Close the BottomMenu after item action
+            }}
               style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', padding: "1rem", cursor: "pointer" }} // Set text to match text-2xl
             >
               <List.Item.Meta
@@ -174,57 +185,6 @@ const MainLayout = () => {
             </List.Item>
           )}
         />
-        {/* <Menu>
-          <Menu.Item
-            icon={<BiSolidLandmark style={{ color: COLORS.mustard[400], fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/settings')}
-            style={{ fontSize: '1rem' }} // Setting font size for Attractions
-          >
-            Attractions
-          </Menu.Item>
-          <Menu.Item
-            icon={<FaTent style={{ color: '#38BDF8', fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/support')}
-            style={{ fontSize: '1rem' }} // Setting font size for Facilities
-          >
-            Facilities
-          </Menu.Item>
-          <Menu.Item
-            icon={<PiStarFill style={{ color: '#6EE7B7', fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/support')}
-            style={{ fontSize: '1rem' }} // Setting font size for Events
-          >
-            Events
-          </Menu.Item>
-          <Menu.Item
-            icon={<FaQuestion style={{ fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/support')}
-            style={{ fontSize: '1rem' }} // Setting font size for FAQ
-          >
-            FAQ
-          </Menu.Item>
-          <Menu.Item
-            icon={<MdFeedback style={{ fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/support')}
-            style={{ fontSize: '1rem' }} // Setting font size for Feedback
-          >
-            Feedback
-          </Menu.Item>
-          <Menu.Item
-            icon={<FiUser style={{ fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/profile')}
-            style={{ fontSize: '1rem' }} // Setting font size for Account
-          >
-            Account
-          </Menu.Item>
-          <Menu.Item
-            icon={<TbTicket style={{ fontSize: '1.2rem' }} />}
-            onClick={() => navigate('/support')}
-            style={{ fontSize: '1rem' }} // Setting font size for My Tickets
-          >
-            My Tickets
-          </Menu.Item>
-        </Menu> */}
       </BottomMenu>
     </div>
   );
