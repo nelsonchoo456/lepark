@@ -9,11 +9,11 @@ interface EventCardProps {
   height?: string;
   children?: React.ReactNode;
   gradient?: string;
+  cardOnClick?: () => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem', height = '15rem', gradient ="bg-gradient-to-t from-green-500 via-green-600/70 to-transparent", children }) => {
+const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem', height = '15rem', gradient ="bg-gradient-to-t from-green-500 via-green-600/70 to-transparent", cardOnClick, children }) => {
   return (
-    // <div style={{ padding: '0' }} className='lg:flex-[1]'>
       <Card
         size="small"
         style={{
@@ -22,6 +22,8 @@ const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem
         }}
         styles={{ body: { padding: 0 } }}
         className={`lg:w-auto lg:flex-[1] flex-none lg:min-h-[13.5rem]`}
+        onClick={() => cardOnClick && cardOnClick()}
+        hoverable
       >
         <div
           style={{

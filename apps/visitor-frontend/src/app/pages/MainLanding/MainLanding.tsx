@@ -390,6 +390,7 @@ const MainLanding = () => {
                 type="primary"
                 size="large"
                 className="md:bg-transparent md:text-green-500 md:shadow-none"
+                onClick={() => navigate('/promotions')}
               />
             </div>
           </div>
@@ -409,13 +410,14 @@ const MainLanding = () => {
             type="primary"
             size="large"
             className="md:bg-transparent md:text-green-500 md:shadow-none"
+            onClick={() => navigate(`/event/park/${selectedPark?.id}`)}
           />
         </div>
       </div>
       <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem] px-4 lg:py-4">
         {events && events.length > 0 ? (
           events.map((event) => (
-            <EventCard title={event.title} url={event.images && event.images.length > 0 ? event.images[0] : null}>
+            <EventCard cardOnClick={() => navigate(`/event/${event.id}`)} title={event.title} url={event.images && event.images.length > 0 ? event.images[0] : null}>
               <div className="flex gap-2 items-center">
                 <BsCalendarEvent />
                 {moment(event.startDate).format('D MMM YY')} - {moment(event.endDate).format('D MMM YY')}
@@ -449,6 +451,7 @@ const MainLanding = () => {
             type="primary"
             size="large"
             className="md:bg-transparent md:text-green-500 md:shadow-none"
+            onClick={() => navigate(`/attractions/park/${selectedPark?.id}`)}
           />
         </div>
       </div>
@@ -456,7 +459,7 @@ const MainLanding = () => {
       <div className="w-full overflow-scroll flex gap-2 py-2 min-h-[13rem] px-4 lg:py-4">
         {attractions && attractions.length > 0 ? (
           attractions.map((attraction) => (
-            <EventCard title={attraction.title} url={attraction.images && attraction.images.length > 0 ? attraction.images[0] : null}>
+            <EventCard cardOnClick={() => navigate(`/attractions/${attraction.id}`)} title={attraction.title} url={attraction.images && attraction.images.length > 0 ? attraction.images[0] : null}>
               <div className="flex gap-2 items-center">
                 <BsClock />
                 {moment(attraction.openingHours[currentDay]).format('h:MM A')} -{' '}
