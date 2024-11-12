@@ -135,7 +135,7 @@ const EventsPerPark: React.FC = () => {
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
       <ParkHeader cardClassName="h-24 md:h-[160px]">
-        <div className="md:text-center md:mx-auto">
+        <div className="md:text-center mx-auto">
           <Flex justify="center" gap={10} align="center"><PiStarFill className='text-highlightGreen-400 text-lg'/><p className="font-medium"> Events in</p></Flex>
           <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>

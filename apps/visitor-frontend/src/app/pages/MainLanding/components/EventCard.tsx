@@ -13,7 +13,7 @@ interface EventCardProps {
 
 const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem', height = '15rem', gradient ="bg-gradient-to-t from-green-500 via-green-600/70 to-transparent", children }) => {
   return (
-    <div style={{ padding: '0' }} className='lg:flex-[1]'>
+    // <div style={{ padding: '0' }} className='lg:flex-[1]'>
       <Card
         size="small"
         style={{
@@ -21,7 +21,7 @@ const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem
           overflow: 'hidden',
         }}
         styles={{ body: { padding: 0 } }}
-        className={`lg:w-auto lg:flex-[1] lg:min-h-[13.5rem]`}
+        className={`lg:w-auto lg:flex-[1] flex-none lg:min-h-[13.5rem]`}
       >
         <div
           style={{
@@ -43,11 +43,8 @@ const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem
           </div>
         </div>
         <div className="text-sm p-2">{children}</div>
-        {/* <div className="absolute bottom-0 w-full h-10 bg-green-500 text-white flex justify-end items-end "> */}
-
-        {/* </div> */}
       </Card>
-    </div>
+    // </div>
   );
 };
 
