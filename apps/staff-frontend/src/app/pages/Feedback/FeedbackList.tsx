@@ -124,7 +124,14 @@ const FeedbackList = () => {
       title: 'Date Created',
       dataIndex: 'dateCreated',
       key: 'dateCreated',
-      render: (date) => new Date(date).toLocaleDateString(),
+      render: (date) => {
+        const formattedDate = new Date(date);
+        return formattedDate.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      },
       sorter: (a, b) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime(),
       width: '15%',
     },

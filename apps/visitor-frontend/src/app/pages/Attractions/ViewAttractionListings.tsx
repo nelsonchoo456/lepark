@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Card, Row, Col, Button, Checkbox, Spin } from 'antd';
+import { Typography, Card, Row, Col, Button, Checkbox, Spin, Steps } from 'antd';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { LogoText } from '@lepark/common-ui';
 import dayjs, { Dayjs } from 'dayjs';
@@ -250,7 +250,19 @@ const ViewAttractionTicketListings = () => {
     <div className="md:p-4 md:h-screen md:overflow-hidden">
       <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
         <div className="flex-1 flex-col flex md:h-full md:overflow-x-auto">
-          <div className="sticky top-0 bg-white z-10 p-4">
+            
+          <div className="sticky top-0 bg-white z-10 px-4 py-2">
+            <div className="flex gap-2 pb-2 items-center w-full">
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center text-white font-bold bg-green-500`}>1</div>
+              <div className='h-[1px] flex-[1] bg-gray-300'/>
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center text-white font-bold ${step === 'select-date' || step === 'order-review' ? 'bg-green-500' : 'bg-gray-300'}`}>
+                2
+              </div>
+              <div className='h-[1px] flex-[1] bg-gray-300'/>
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center text-white font-bold ${step === 'order-review' ? 'bg-green-500' : 'bg-gray-300'}`}>
+                3
+              </div>
+            </div>
             <LogoText className="text-2xl font-semibold">
               {step === 'select-tickets' ? 'Select Listing' : step === 'select-date' ? 'Select Date' : 'Order Review'}
             </LogoText>

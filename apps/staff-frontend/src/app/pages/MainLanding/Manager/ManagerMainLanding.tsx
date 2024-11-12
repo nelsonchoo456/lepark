@@ -13,8 +13,10 @@ import {
   getAllParks,
   getAllPlantTasks,
   getAnnouncementsByParkId,
-  getNParksAnnouncements,
+  getMaintenanceTasksByParkId,
   getPlantTasksByParkId,
+  MaintenanceTaskResponse,
+  MaintenanceTaskStatusEnum,
   ParkResponse,
   PlantTaskResponse,
   PlantTaskStatusEnum,
@@ -22,9 +24,6 @@ import {
   StaffType,
   getAllAssignedMaintenanceTasks,
   getAllMaintenanceTasks,
-  getMaintenanceTasksByParkId,
-  MaintenanceTaskResponse,
-  MaintenanceTaskStatusEnum,
 } from '@lepark/data-access';
 import MaintenanceTasksTable from '../components/MaintenanceTasksTable';
 import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
@@ -74,6 +73,7 @@ const ManagerMainLanding = () => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
       fetchPlantTasks();
+      fetchMaintenanceTasks();
       fetchParks();
       fetchMaintenanceTasks();
     }
