@@ -1,6 +1,8 @@
 import { Button, Empty } from 'antd';
-import { BiSolidCalendarEvent } from 'react-icons/bi';
+import { BiSolidCalendarEvent, BiSolidLandmark } from 'react-icons/bi';
 import { IoMdClose } from 'react-icons/io';
+import { IoLeafSharp } from 'react-icons/io5';
+import { PiPlantFill, PiStarFill } from 'react-icons/pi';
 import { TbTicket } from 'react-icons/tb';
 
 export interface HoverItem {
@@ -37,7 +39,7 @@ const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
       <div className="absolute z-20 -mt-8 flex justify-between w-full pr-8">
         {entityType === 'EVENT' ? (
           <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
-            <BiSolidCalendarEvent className="text-lg text-white" />
+            <PiStarFill className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Event</div>
           </div>
         ) : entityType === 'FACILITY' ? (
@@ -46,19 +48,28 @@ const HoverInformation = ({ item, setHovered }: HoverInformationProps) => {
           </div>
         ) : entityType === 'ATTRACTION' ? (
           <div className="h-10 rounded-full bg-mustard-400 flex items-center px-4">
-            <TbTicket className="text-lg text-white" />
+            <BiSolidLandmark className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Attraction</div>
           </div>
         ) : entityType === 'OCCURRENCE' ? (
           <div className="h-10 rounded-full bg-green-400 flex items-center px-4">
-            <TbTicket className="text-lg text-white" />
+            <PiPlantFill className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Occurrence</div>
           </div>
+        ) : entityType === 'DECARB' ? (
+          <div className="h-10 rounded-full bg-green-400 flex items-center px-4">
+            <IoLeafSharp className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Decarbonization Area</div>
+          </div>
+        ) : entityType === 'ZONE' ? (
+          <div className="h-10 rounded-full bg-green-400 flex items-center px-4">
+            <div className="text-base text-white font-semibold ml-2">Zone</div>
+          </div>
         ) :
-        <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
-          <BiSolidCalendarEvent className="text-lg text-white" />
-          <div className="text-base text-white font-semibold ml-2">Marker</div>
-        </div>
+          <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
+            <BiSolidCalendarEvent className="text-lg text-white" />
+            <div className="text-base text-white font-semibold ml-2">Markeer</div>
+          </div>
         }
 
         <Button shape="circle" icon={<IoMdClose />} onClick={() => setHovered(null)}></Button>
