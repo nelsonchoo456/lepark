@@ -43,9 +43,7 @@ const ZonePredictiveIrrigation: React.FC = () => {
   const fetchPredictives = async (zoneId: number) => {
     try {
       setLoading(true);
-      console.log(zoneId);
       const response = await getPredictionsForZone(zoneId);
-      console.log(response.data);
       setPredictives(response.data);
       setLoading(false);
     } catch (error) {
@@ -192,7 +190,7 @@ const ZonePredictiveIrrigation: React.FC = () => {
                 ))}
               </>
             ) : (
-              <Empty description="No hubs trained for this zone" />
+              <Empty description="No Predictions for this Zone today" />
             )}
           </TabPane>
           {hubs.map((hub, index) => (
