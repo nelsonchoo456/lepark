@@ -6,6 +6,7 @@ import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
 import AttractionTicketDao from '../dao/AttractionTicketDao';
+import SensorDao from '../dao/SensorDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -93,6 +94,16 @@ class AttractionService {
       const existingAttraction = await AttractionDao.getAttractionById(id);
       if (!existingAttraction) {
         throw new Error('Attraction not found');
+      }
+      if (data.cameraSensorId) {
+        try {
+          const existingSensor = await SensorDao.getSensorById(data.cameraSensorId);
+          if (!existingSensor) {
+            throw new Error('Camera Sensor not found');
+          }
+        } catch (e) {
+          throw new Error('Camera Sensor not found');
+        }
       }
       
       const formattedData = dateFormatter(data);
