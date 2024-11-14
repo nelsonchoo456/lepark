@@ -1,9 +1,19 @@
 import { Button, DatePicker, Form, Input, InputNumber, Typography } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import { LogoText, useAuth } from '@lepark/common-ui';
 import { useEffect, useState } from 'react';
-import { createBooking, CreateBookingData, VisitorResponse, BookingStatusEnum, getFacilityById } from '@lepark/data-access';
+import {
+  createBooking,
+  CreateBookingData,
+  VisitorResponse,
+  BookingStatusEnum,
+  getFacilityById,
+  getBookingsByFacilityId,
+} from '@lepark/data-access';
+
+dayjs.extend(isBetween);
 
 const { TextArea } = Input;
 
@@ -14,22 +24,36 @@ const CreateFacilityBooking = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth<VisitorResponse>();
   const [form] = Form.useForm();
+  const [bookings, setBookings] = useState<any[]>([]);
 
   useEffect(() => {
-    const loadFacility = async () => {
+    const loadFacilityData = async () => {
       if (facilityId) {
         try {
-          const facilityData = await getFacilityById(facilityId);
+          const [facilityData, bookingsData] = await Promise.all([getFacilityById(facilityId), getBookingsByFacilityId(facilityId)]);
+
           setFacility(facilityData.data);
+          const activeBookings = bookingsData.data.filter(
+            (booking) => !['CANCELLED', 'REJECTED', 'UNPAID_CLOSED'].includes(booking.bookingStatus),
+          );
+          setBookings(activeBookings);
         } catch (error) {
-          console.error('Error loading facility:', error);
+          console.error('Error loading facility data:', error);
         }
       }
     };
-    loadFacility();
+    loadFacilityData();
   }, [facilityId]);
 
-  const handleStartDateChange = (date: moment.Moment | null) => {
+  const isDateBooked = (date: dayjs.Dayjs) => {
+    return bookings.some((booking) => {
+      const startDate = dayjs(booking.dateStart);
+      const endDate = dayjs(booking.dateEnd);
+      return date.isBetween(startDate, endDate, 'day', '[]');
+    });
+  };
+
+  const handleStartDateChange = (date: dayjs.Dayjs | null) => {
     if (!date) return;
 
     const endDate = form.getFieldValue('dateEnd');
@@ -41,7 +65,7 @@ const CreateFacilityBooking = () => {
     }
   };
 
-  const handleEndDateChange = (date: moment.Moment | null) => {
+  const handleEndDateChange = (date: dayjs.Dayjs | null) => {
     if (!date) return;
 
     const startDate = form.getFieldValue('dateStart');
@@ -105,7 +129,14 @@ const CreateFacilityBooking = () => {
               },
             ]}
           >
-            <InputNumber min={1} max={facility?.capacity} className="w-full" placeholder="Number of People" style={{ width: '100%' }} />
+            <InputNumber
+              min={1}
+              max={facility?.capacity}
+              className="w-full"
+              controls
+              placeholder="Number of People"
+              style={{ width: '100%' }}
+            />
           </Form.Item>
 
           <div className="flex gap-4">
@@ -130,7 +161,9 @@ const CreateFacilityBooking = () => {
               <DatePicker
                 className="w-full"
                 format="YYYY-MM-DD"
-                disabledDate={(current) => current && current < moment().startOf('day')}
+                disabledDate={(current) => {
+                  return current < dayjs().startOf('day') || isDateBooked(current);
+                }}
                 onChange={handleStartDateChange}
               />
             </Form.Item>
@@ -158,7 +191,7 @@ const CreateFacilityBooking = () => {
                 format="YYYY-MM-DD"
                 disabledDate={(current) => {
                   const startDate = form.getFieldValue('dateStart');
-                  return (current && current < moment().startOf('day')) || (startDate && current && current < startDate);
+                  return current < dayjs().startOf('day') || (startDate && current < startDate) || isDateBooked(current);
                 }}
                 onChange={handleEndDateChange}
               />

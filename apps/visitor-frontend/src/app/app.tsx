@@ -217,7 +217,14 @@ export function App() {
                 <Route path="/facility">
                   <Route path="park/:parkId" element={<FacilitiesPerPark />} />
                   <Route path=":facilityId" element={<VisitorViewFacilityDetails />} />
-                  <Route path=":facilityId/book" element={<CreateFacilityBooking />} />
+                  <Route
+                    path=":facilityId/book"
+                    element={
+                      <ProtectedRoute redirectTo="/login">
+                        <CreateFacilityBooking />
+                      </ProtectedRoute>
+                    }
+                  />
                 </Route>
                 <Route path="/event">
                   <Route path="park/:parkId" element={<EventsPerPark />} />
