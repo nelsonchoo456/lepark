@@ -94,7 +94,7 @@ const ViewBookingDetails = () => {
                 <LogoText className="text-2xl py-2 m-0 ml-4">{booking.bookingPurpose}</LogoText>
               </Space>
               <Space>
-                {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) &&
+                {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) &&
                   booking.bookingStatus === BookingStatusEnum.PENDING && (
                     <>
                       <Button type="primary" onClick={handleAccept}>

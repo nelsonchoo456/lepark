@@ -289,25 +289,7 @@ const inactiveCounts = useMemo(() => ({
           {user && <MaintenanceTasksTable userRole={user?.role as StaffType} maintenanceTasks={myTasks} className="w-full" />}
         </div>
 
-        {/* -- [ Section: Task Analytics ] -- */}
-        <div id="part-3" className={sectionStyles}>
-          {renderSectionHeader('Task Analytics')}
-          <div className={flexColsStyles}>
-            <Card className="w-full h-86 flex-[2]">
-              <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
-            </Card>
-            <div className="flex flex-col flex-[1] gap-4">
-              <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Weekly Completion Rate</LogoText>
-                <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
-              </Card>
-              <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Average Response Time</LogoText>
-                <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
-              </Card>
-            </div>
-          </div>
-        </div>
+
       </Col>
 
       {desktop && <Col span={3}>
@@ -324,11 +306,7 @@ const inactiveCounts = useMemo(() => ({
               href: '#part-2',
               title: 'Tasks',
             },
-            {
-              key: 'part-3',
-              href: '#part-3',
-              title: 'Task Analytics',
-            },
+
           ]}
         />
       </Col>}

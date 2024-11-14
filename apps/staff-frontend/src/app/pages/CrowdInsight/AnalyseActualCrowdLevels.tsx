@@ -70,10 +70,16 @@ const AnalyseActualCrowdLevels: React.FC = () => {
   const dateRanges = React.useMemo(() => new Map<string, string>(), []);
 
   // Filter data based on selected date range
-  const filteredCrowdData = crowdData.filter((d) => {
-    const date = dayjs(d.date);
-    return date.isAfter(selectedDate[0]) && date.isBefore(selectedDate[1]);
-  });
+  const filteredCrowdData = React.useMemo(() => {
+    if (!selectedDate) return crowdData; // Return all data if no date range selected
+
+    return crowdData.filter((d) => {
+      const date = dayjs(d.date);
+      const startDate = dayjs(selectedDate[0]).startOf('day');
+      const endDate = dayjs(selectedDate[1]).endOf('day');
+      return (date.isAfter(startDate) || date.isSame(startDate)) && (date.isBefore(endDate) || date.isSame(endDate));
+    });
+  }, [crowdData, selectedDate]);
 
   // Aggregate data based on selected time granularity
   // Update the aggregation logic
@@ -228,8 +234,12 @@ const AnalyseActualCrowdLevels: React.FC = () => {
           <Col span={8}>
             <RangePicker
               value={selectedDate}
-              onChange={(dates) => setSelectedDate(dates as [Dayjs, Dayjs])}
+              onChange={(dates) => {
+                // If dates is null (cleared), set back to default range
+                setSelectedDate(dates as [Dayjs, Dayjs] || defaultDateRange);
+              }}
               className="w-full"
+              defaultValue={defaultDateRange}
               disabledDate={(current) => {
                 return !crowdData.some((d) => dayjs(d.date).format('YYYY-MM-DD') === current.format('YYYY-MM-DD'));
               }}
@@ -256,13 +266,13 @@ const AnalyseActualCrowdLevels: React.FC = () => {
         ) : (
           <>
             <Row gutter={[16, 16]}>
-              <Col span={24}>
+              {/* <Col span={24}>
                 <Card title="Average Crowd Levels (per zone)">
                   <div className="h-[300px]">
                     <Line data={averageChartData} options={createChartOptions('Average Crowd Level')} />
                   </div>
                 </Card>
-              </Col>
+              </Col> */}
               <Col span={24}>
                 <Card title="Total Visitors (per park)">
                   <div className="h-[300px]">

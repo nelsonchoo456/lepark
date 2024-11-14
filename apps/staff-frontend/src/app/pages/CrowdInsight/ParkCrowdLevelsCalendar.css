@@ -1,0 +1,54 @@
+.responsive-calendar {
+    width: 100%;
+    overflow-x: auto; /* Only allow horizontal scroll for the entire calendar */
+  }
+  
+  .responsive-calendar .ant-picker-calendar-date-content {
+    height: auto !important;
+    min-height: 80px !important;
+    overflow: visible !important; /* Prevent scrollbars in cells */
+  }
+  
+  .responsive-calendar .ant-picker-content {
+    width: 100%;
+    table-layout: fixed;
+    min-width: 800px;
+  }
+  
+  .responsive-calendar .ant-picker-content th,
+  .responsive-calendar .ant-picker-content td {
+    min-width: 114px;
+    width: 14.285%;
+    overflow: visible !important; /* Prevent scrollbars in cells */
+  }
+  
+  .responsive-calendar .ant-picker-cell-inner {
+    overflow: visible !important; /* Prevent scrollbars */
+  }
+  
+  .responsive-calendar .ant-picker-calendar-date {
+    overflow: visible !important; /* Prevent scrollbars */
+  }
+  
+  /* Adjust for different screen sizes */
+  @media (min-width: 1200px) {
+    .responsive-calendar .ant-picker-content {
+      min-width: 1000px;
+    }
+    
+    .responsive-calendar .ant-picker-content th,
+    .responsive-calendar .ant-picker-content td {
+      min-width: 142px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .responsive-calendar .ant-picker-content {
+      min-width: 700px;
+    }
+    
+    .responsive-calendar .ant-picker-content th,
+    .responsive-calendar .ant-picker-content td {
+      min-width: 100px;
+    }
+  }
