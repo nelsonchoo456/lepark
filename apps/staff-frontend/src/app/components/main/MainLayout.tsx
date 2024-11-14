@@ -17,7 +17,7 @@ import { getParkById, ParkResponse, StaffResponse, StaffType } from '@lepark/dat
 import { MdBuild, MdSensors } from 'react-icons/md';
 import { GiTreehouse } from 'react-icons/gi'; // Import the new icon
 import { AiOutlinePercentage } from 'react-icons/ai';
-import { VscFeedback } from "react-icons/vsc";
+import { VscFeedback } from 'react-icons/vsc';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -154,25 +154,36 @@ const MainLayout = () => {
       label: 'Zones',
       onClick: () => navigate('/zone'),
     },
-    {
-      key: 'facilities-venues',
-      icon: <TbBuildingEstate />,
-      label: 'Facilities & Bookings',
-      children: [
-        {
-          key: 'facilities',
-          icon: <TbBuildingEstate />,
-          label: 'Facilities',
-          onClick: () => navigate('/facilities'),
-        },
-        {
-          key: 'bookings',
-          icon: <FiCalendar />,
-          onClick: () => navigate('/facilities/bookings'),
-          label: 'Bookings',
-        },
-      ],
-    },
+    ...(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT
+      ? [
+          {
+            key: 'facilities-venues',
+            icon: <TbBuildingEstate />,
+            label: 'Facilities & Bookings',
+            children: [
+              {
+                key: 'facilities',
+                icon: <TbBuildingEstate />,
+                label: 'Facilities',
+                onClick: () => navigate('/facilities'),
+              },
+              {
+                key: 'bookings',
+                icon: <FiCalendar />,
+                onClick: () => navigate('/facilities/bookings'),
+                label: 'Bookings',
+              },
+            ],
+          },
+        ]
+      : [
+          {
+            key: 'facilities',
+            icon: <TbBuildingEstate />,
+            label: 'Facilities',
+            onClick: () => navigate('/facilities'),
+          },
+        ]),
     {
       key: 'plants',
       icon: <IoLeafOutline />,
