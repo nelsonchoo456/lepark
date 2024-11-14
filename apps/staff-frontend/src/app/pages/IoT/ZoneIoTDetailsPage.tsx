@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge, Flex } from 'antd';
 import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera, FiCloudRain } from 'react-icons/fi';
-import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined, BulbOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
   ZoneResponse,
@@ -147,51 +147,82 @@ const ZoneIoTDetailsPage: React.FC = () => {
       return <MinusOutlined style={{ color: 'gray' }} />;
     };
 
+    const getTrendBadge = (direction: string, magnitude: string) => {
+      const getColor = () => {
+        if (direction === 'Increasing') {
+          return magnitude === 'Large' ? '#faad14' : '#52c41a';
+        }
+        if (direction === 'Decreasing') {
+          return magnitude === 'Large' ? '#ff4d4f' : '#1890ff';
+        }
+        return '#d9d9d9';
+      };
+
+      return (
+        <Badge
+          color={getColor()}
+          text={
+            <Text strong style={{ fontSize: '14px' }}>
+              {`${magnitude} ${direction}`}
+            </Text>
+          }
+        />
+      );
+    };
+
     return (
-      <Row gutter={[16, 16]} style={{ marginTop: '10px' }}>
-        <Col span={12}>
-          <Tooltip title="Direction and magnitude of change">
-            <Statistic
-              title="Trend"
-              value={trend.directionOfChange}
-              suffix={trend.magnitudeOfChange}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={12}>
-          <Tooltip title="Total change over the period">
-            <Statistic
-              title="Absolute Change"
-              value={trend.absoluteChange}
-              prefix={getArrow(trend.absoluteChange)}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={12}>
-          <Tooltip title="Change per hour">
-            <Statistic
-              title="Rate"
-              value={trend.rateOfChange}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={12}>
-          <Tooltip title="Number of readings analyzed">
-            <Statistic
-              title="Data Points"
-              value={trend.readingsCount}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={24}>
-          <Text strong>Insight:</Text>
-          <Text> {trend.actionableInsight}</Text>
-        </Col>
-      </Row>
+      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        {/* Trend Badge */}
+        <div style={{ marginBottom: '8px' }}>
+          {getTrendBadge(trend.directionOfChange, trend.magnitudeOfChange)}
+        </div>
+
+        {/* Key Metrics */}
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Card size="small" bordered={false} style={{ background: '#f5f5f5' }}>
+              <Statistic
+                title={<Text type="secondary">Total Change</Text>}
+                value={trend.absoluteChange}
+                prefix={getArrow(trend.absoluteChange)}
+                valueStyle={{ fontSize: '14px' }}
+              />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card size="small" bordered={false} style={{ background: '#f5f5f5' }}>
+              <Statistic
+                title={<Text type="secondary">Change Rate</Text>}
+                value={trend.rateOfChange}
+                valueStyle={{ fontSize: '14px' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Card 
+          size="small" 
+          style={{ 
+            background: '#f0f5ff', 
+            border: '1px solid #adc6ff',
+            marginTop: '8px',
+            minHeight: '130px'
+          }}
+        >
+          <Space>
+            <BulbOutlined style={{ color: '#28B4E2' }} />
+            <Text style={{ fontSize: '13px' }}>{trend.actionableInsight}</Text>
+          </Space>
+        </Card>
+
+        {/* Data Quality Indicator */}
+        <Flex justify="flex-end" align="center" gap="small">
+          <ClockCircleOutlined style={{ fontSize: '12px', color: '#8c8c8c' }} />
+          <Text type="secondary" style={{ fontSize: '12px' }}>
+            Based on {trend.readingsCount} readings
+          </Text>
+        </Flex>
+      </Space>
     );
   };
 
