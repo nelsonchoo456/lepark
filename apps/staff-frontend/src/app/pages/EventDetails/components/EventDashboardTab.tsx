@@ -330,7 +330,7 @@ const EventDashboardTab: React.FC<DashboardTabProps> = ({ eventId }) => {
               </div>
               {eventDateRange && (
                 <GraphContainer
-                  title="Expected Visits Over Time"
+                  title="Visits Over Time"
                   data={eventTimeSeriesChartData}
                   type="line"
                   options={{
