@@ -600,10 +600,11 @@ const ParkCrowdLevels: React.FC = () => {
             <div>
               <p>Crowd thresholds (Low, Moderate, High) are determined by:</p>
               <ol className="pl-4 mt-1">
-                <li>1. Analyzing historical crowd patterns</li>
-                <li>2. Considering park size and capacity</li>
-                <li>3. Low threshold: 33% of max observed crowds</li>
-                <li>4. Medium threshold: 66% of max observed crowds</li>
+                <li>1. Park size (area in square kilometers)</li>
+                <li>2. Number of zones in the park</li>
+                <li>3. Low threshold: Base value (50) + area scaling (30 × km²), adjusted by zones if multiple</li>
+                <li>4. Moderate threshold: Base value (100) + area scaling (65 × km²), adjusted by zones if multiple</li>
+                <li>5. High threshold: Any value above moderate threshold</li>
               </ol>
             </div>
           }
