@@ -300,7 +300,7 @@ const SensorsTab = ({ hub }: SensorsTabProps) => {
             <span className="text-secondary">Hub: </span>
             <strong>{hub.name}</strong>
             <br />
-            <span className="text-secondary">Indentifier No: </span>
+            <span className="text-secondary">Identifier No: </span>
             <strong>{hub.identifierNumber}</strong>
           </div>
           <div className="flex items-center">
