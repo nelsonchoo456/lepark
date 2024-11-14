@@ -49,7 +49,7 @@ const MapPage = () => {
         />
         {selectedPark && <PolygonFitBounds geom={selectedPark.geom}/>}
         {selectedPark && <Zones park={selectedPark}/>}
-        {/* <UserLiveLocationMap/> */}
+        <UserLiveLocationMap/>
 
 
       </MapContainer>

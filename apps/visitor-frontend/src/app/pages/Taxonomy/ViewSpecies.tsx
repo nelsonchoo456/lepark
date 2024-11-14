@@ -28,6 +28,8 @@ import OccurrenceTable from './components/OccurrenceTable';
 import SpeciesCarousel from './components/SpeciesCarousel';
 import TaxonomyTab from './components/TaxonomyTab';
 import { usePark } from '../../park-context/ParkContext';
+import { BiMap } from 'react-icons/bi';
+import { MdMap } from 'react-icons/md';
 
 const ViewSpeciesDetails = () => {
   const { speciesId } = useParams<{ speciesId: string }>();
