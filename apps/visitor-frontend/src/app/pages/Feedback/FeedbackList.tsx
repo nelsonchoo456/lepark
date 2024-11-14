@@ -51,14 +51,27 @@ const FeedbackList = () => {
   };
 
   const filteredFeedbacks = useMemo(() => {
-    return feedbacks.filter(feedback =>
-      (feedback.title.toLowerCase().includes(searchQuery) ||
-      feedback.description.toLowerCase().includes(searchQuery) ||
-      feedback.feedbackCategory.toLowerCase().includes(searchQuery)) &&
-      (statusFilter.length === 0 || statusFilter.includes(feedback.feedbackStatus)) &&
-      (categoryFilter.length === 0 || categoryFilter.includes(feedback.feedbackCategory)) &&
-      (parkFilter.length === 0 || parkFilter.includes(feedback.parkId))
-    );
+    return feedbacks
+      .filter(feedback =>
+        (feedback.title.toLowerCase().includes(searchQuery) ||
+        feedback.description.toLowerCase().includes(searchQuery) ||
+        feedback.feedbackCategory.toLowerCase().includes(searchQuery)) &&
+        (statusFilter.length === 0 || statusFilter.includes(feedback.feedbackStatus)) &&
+        (categoryFilter.length === 0 || categoryFilter.includes(feedback.feedbackCategory)) &&
+        (parkFilter.length === 0 || parkFilter.includes(feedback.parkId))
+      )
+      .sort((a, b) => {
+        if (statusFilter.length > 0) {
+          const statusA = statusFilter.indexOf(a.feedbackStatus);
+          const statusB = statusFilter.indexOf(b.feedbackStatus);
+          if (statusA !== statusB) {
+            return statusA - statusB;
+          }
+        }
+        if (a.feedbackStatus === 'PENDING' && b.feedbackStatus !== 'PENDING') return -1;
+        if (b.feedbackStatus === 'PENDING' && a.feedbackStatus !== 'PENDING') return 1;
+        return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+      });
   }, [feedbacks, searchQuery, statusFilter, categoryFilter, parkFilter]);
 
   if (!user) {
