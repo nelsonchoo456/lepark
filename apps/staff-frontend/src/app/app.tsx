@@ -597,7 +597,21 @@ export function App() {
                 </Route>
 
                 {/* IoT Routes */}
-                <Route path="/iot">
+                <Route
+                  path="/iot"
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[
+                        StaffType.SUPERADMIN,
+                        StaffType.MANAGER,
+                        StaffType.ARBORIST,
+                        StaffType.BOTANIST,
+                        StaffType.VENDOR_MANAGER,
+                      ]}
+                      redirectTo="/"
+                    />
+                  }
+                >
                   <Route path="zones" element={<ZoneIoTDashboard />} />
                   <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
                   <Route path="zones/:zoneId/camera-streams" element={<ZoneCameraStreamsPage />} />

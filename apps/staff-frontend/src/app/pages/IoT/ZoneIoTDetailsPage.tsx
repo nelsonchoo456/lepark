@@ -19,6 +19,8 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title as ChartTitle, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import SensorDetails from './SensorDetails';
+import { useRestrictZone } from '../../hooks/IoT/useRestrictZone';
+import { useZoneIoTDetails } from '../../hooks/IoT/useZoneIoTDetails';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, ChartTooltip, Legend);
@@ -43,54 +45,17 @@ export const getSensorIcon = (sensorType: SensorTypeEnum) => {
 
 const ZoneIoTDetailsPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
-  const [zone, setZone] = useState<ZoneResponse | null>(null);
-  const [sensors, setSensors] = useState<SensorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [averageReadings, setAverageReadings] = useState<{ [key: string]: number }>({});
-  const [trends, setTrends] = useState<{ [key: string]: any }>({});
-  const [unhealthyOccurrences, setUnhealthyOccurrences] = useState<any[]>([]);
+  const { zone, loading: zoneLoading } = useRestrictZone(zoneId);
+  const {
+    sensors,
+    averageReadings,
+    trends,
+    unhealthyOccurrences,
+    loading: detailsLoading,
+    filteredSensorTypes
+  } = useZoneIoTDetails(zoneId || '');
 
-  const filteredSensorTypes = [
-    SensorTypeEnum.SOIL_MOISTURE,
-    SensorTypeEnum.TEMPERATURE,
-    SensorTypeEnum.LIGHT,
-    SensorTypeEnum.HUMIDITY
-  ];
-
-  useEffect(() => {
-    const fetchZoneDetails = async () => {
-      try {
-        setLoading(true);
-        const zoneResponse = await getZoneById(Number(zoneId));
-        setZone(zoneResponse.data);
-
-        const sensorsResponse = await getSensorsByZoneId(Number(zoneId));
-        setSensors(sensorsResponse.data.filter((sensor) => sensor.sensorType !== SensorTypeEnum.CAMERA));
-
-        const avgReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(Number(zoneId), 4);
-        setAverageReadings(avgReadings.data);
-
-        const trendPromises = filteredSensorTypes.map(async (sensorType) => {
-          const trend = await getZoneTrendForSensorType(Number(zoneId), sensorType, 4);
-          return { [sensorType]: trend.data };
-        });
-        const trendResults = await Promise.all(trendPromises);
-        setTrends(Object.assign({}, ...trendResults));
-
-        // Fetch unhealthy occurrences
-        const unhealthyResponse = await getUnhealthyOccurrences(Number(zoneId));
-        setUnhealthyOccurrences(unhealthyResponse.data);
-        console.log('Unhealthy occurrences:', unhealthyResponse.data);
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching zone details:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchZoneDetails();
-  }, [zoneId]);
+  const loading = zoneLoading || detailsLoading;
 
   const getStatusColor = (status: string) => {
     switch (status) {
