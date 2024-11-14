@@ -30,8 +30,6 @@ import StaffWorkloadTable from './MaintenanceTaskDashboard/components/StaffWorkl
 import CompletionTimeChart from './MaintenanceTaskDashboard/components/CompletionTimeChart';
 import OverdueRateChart from './MaintenanceTaskDashboard/components/OverdueRateChart';
 import DelayedTaskTypesSummary from './MaintenanceTaskDashboard/components/DelayedTaskTypesSummary';
-import TaskTypeAverageCompletionTimesLineChart from './MaintenanceTaskDashboard/components/TaskTypeAverageCompletionTimesLineChart';
-import TaskTypeOverdueRatesLineChart from './MaintenanceTaskDashboard/components/TaskTypeOverdueRatesLineChart';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -217,26 +215,24 @@ const MaintenanceTaskList: React.FC = () => {
                   />
                 ),
               },
-              !isSuperAdmin
-                ? {
-                    key: '3',
-                    label: 'Vendor Performance Analytics',
-                    children: (
-                      <>
-                        <DelayedTaskTypesSummary />
-                        <Row gutter={[16, 16]}>
-                          <Col span={12}>
-                            <CompletionTimeChart />
-                          </Col>
-                          <Col span={12}>
-                            <OverdueRateChart />
-                          </Col>
-                        </Row>
-                      </>
-                    ),
-                  }
-                : null,
-            ].filter(Boolean)}
+              ...((!isSuperAdmin) ? [{
+                key: '3',
+                label: 'Vendor Performance Analytics',
+                children: (
+                  <>
+                    <DelayedTaskTypesSummary />
+                    <Row gutter={[16, 16]}>
+                      <Col span={12}>
+                        <CompletionTimeChart />
+                      </Col>
+                      <Col span={12}>
+                        <OverdueRateChart />
+                      </Col>
+                    </Row>
+                  </>
+                ),
+              }] : []),
+            ]}
           />
         </Card>
       </>
