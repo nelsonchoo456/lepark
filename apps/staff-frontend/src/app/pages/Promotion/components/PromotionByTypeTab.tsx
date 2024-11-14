@@ -228,9 +228,11 @@ const PromotionByTypeTab = ({ promotions, triggerFetch, tableShowParks = false, 
         <Input suffix={<FiSearch />} placeholder="Search for a Promotion..." onChange={handleSearchBar} className="mb-4" variant="filled" />
         {nonArchived ? (
           <>
-            <Button type="primary" onClick={() => navigate('/promotion/create')}>
-              Create Promotion
-            </Button>
+            {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
+              <Button type="primary" onClick={() => navigate('/promotion/create')}>
+                Create Promotion
+              </Button>
+            )}
             <Button type="default" onClick={() => navigate('/promotion/archived')}>
               View Archives
             </Button>
