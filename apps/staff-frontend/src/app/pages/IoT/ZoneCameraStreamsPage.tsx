@@ -4,6 +4,8 @@ import { ContentWrapperDark } from '@lepark/common-ui';
 import { Card, Tabs, Spin, Empty, Typography, Row, Col, Alert } from 'antd';
 import { getCameraStreamsByZoneId, SensorResponse } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
+import { useRestrictZone } from '../../hooks/IoT/useRestrictZone';
+import { useZoneCameraStreams } from '../../hooks/IoT/useZoneCameraStreams';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -15,27 +17,17 @@ interface CameraStream {
 
 const ZoneCameraStreamsPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
-  const [loading, setLoading] = useState(true);
-  const [cameraStreams, setCameraStreams] = useState<CameraStream[]>([]);
-  const [streamErrors, setStreamErrors] = useState<{ [key: number]: boolean }>({});
-  const [streamLoading, setStreamLoading] = useState<{ [key: number]: boolean }>({});
+  const { zone, loading: zoneLoading } = useRestrictZone(zoneId);
+  const {
+    loading: streamsLoading,
+    cameraStreams,
+    streamErrors,
+    streamLoading,
+    handleStreamError,
+    handleStreamLoad
+  } = useZoneCameraStreams(zoneId || '');
 
-  useEffect(() => {
-    const fetchCameraStreams = async () => {
-      try {
-        const response = await getCameraStreamsByZoneId(Number(zoneId));
-        setCameraStreams(response.data);
-        setLoading(false);
-        // Initialize all streams as loading
-        setStreamLoading(response.data.reduce((acc, _, index) => ({ ...acc, [index]: true }), {}));
-      } catch (error) {
-        console.error('Error fetching camera streams:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchCameraStreams();
-  }, [zoneId]);
+  const loading = zoneLoading || streamsLoading;
 
   const breadcrumbItems = [
     {
@@ -70,15 +62,6 @@ const ZoneCameraStreamsPage: React.FC = () => {
       </ContentWrapperDark>
     );
   }
-
-  const handleStreamError = (index: number) => {
-    setStreamErrors(prev => ({ ...prev, [index]: true }));
-    setStreamLoading(prev => ({ ...prev, [index]: false }));
-  };
-
-  const handleStreamLoad = (index: number) => {
-    setStreamLoading(prev => ({ ...prev, [index]: false }));
-  };
 
   const renderCameraStream = (stream: CameraStream, index: number, height = '750px') => (
     <div className="stream-wrapper" style={{ aspectRatio: '16 / 9', width: '100%', height, marginBottom: '16px', position: 'relative' }}>
