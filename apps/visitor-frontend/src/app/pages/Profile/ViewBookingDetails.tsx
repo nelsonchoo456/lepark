@@ -8,6 +8,8 @@ import {
   ParkResponse,
   //   sendBookingEmail,
   viewVisitorDetails,
+  updateBookingStatus,
+  BookingStatusEnum,
 } from '@lepark/data-access';
 import { LogoText } from '@lepark/common-ui';
 import dayjs from 'dayjs';
@@ -107,6 +109,22 @@ const ViewBookingDetails: React.FC = () => {
     }
   };
 
+  const handleCancelBooking = async () => {
+    if (!booking) return;
+
+    try {
+      const response = await updateBookingStatus(bookingId || '', { status: BookingStatusEnum.CANCELLED });
+
+      // Update local state to reflect the change
+      setBooking(response.data);
+
+      message.success('Booking has been cancelled successfully');
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      message.error('Failed to cancel booking');
+    }
+  };
+
   if (!booking) {
     return <div>Booking not found</div>;
   }
@@ -180,6 +198,11 @@ const ViewBookingDetails: React.FC = () => {
             <Text className="block mb-2">Need help?</Text>
             <Text className="block">Contact customer support at admin@lepark.com</Text>
           </div>
+          {booking.bookingStatus === 'PENDING' && (
+            <Button danger onClick={handleCancelBooking} className="w-full" size="large">
+              Cancel Booking
+            </Button>
+          )}
         </Space>
       </Card>
     </>
