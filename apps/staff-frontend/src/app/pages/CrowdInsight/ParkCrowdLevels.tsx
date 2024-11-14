@@ -69,7 +69,7 @@ interface CrowdData {
 }
 
 const ParkCrowdLevels: React.FC = () => {
-  const defaultDateRange: [Dayjs, Dayjs] = [dayjs().subtract(20, 'days'), dayjs().add(10, 'days')];
+  const defaultDateRange: [Dayjs, Dayjs] = [dayjs().subtract(19, 'days'), dayjs().add(10, 'days')];
   const [selectedDate, setSelectedDate] = useState<[Dayjs, Dayjs]>(defaultDateRange);
   const { state } = useLocation();
   const [parkId, setParkId] = useState<number>(state?.selectedParkId || 0);
@@ -180,9 +180,9 @@ const ParkCrowdLevels: React.FC = () => {
   // Keep the filtered data for the graph view
   const filteredCrowdData = crowdData.filter((d) => {
     const date = dayjs(d.date);
-    return (
-      (date.isAfter(selectedDate[0]) || date.isSame(selectedDate[0])) && (date.isBefore(selectedDate[1]) || date.isSame(selectedDate[1]))
-    );
+    const startDate = dayjs(selectedDate[0]).startOf('day');
+    const endDate = dayjs(selectedDate[1]).endOf('day');
+    return (date.isAfter(startDate) || date.isSame(startDate)) && (date.isBefore(endDate) || date.isSame(endDate));
   });
 
   const handleDataSeriesChange = (checkedValues: string[]) => {
@@ -308,21 +308,25 @@ const ParkCrowdLevels: React.FC = () => {
               position: 'left',
             },
           },
-          todayLine: {
-            type: 'line',
-            xMin: moment().format('ddd DD/MM'),
-            xMax: moment().format('ddd DD/MM'),
-            borderColor: 'rgba(200, 200, 200, 0.7)', // Lighter grey color
-            borderWidth: 2,
-            borderDash: [5, 5], // This creates the dotted effect
-            label: {
-              content: 'Today',
-              enabled: true,
-              position: 'top',
-              backgroundColor: 'rgba(200, 200, 200, 0.7)', // Lighter grey background for label
-              color: 'rgba(60, 60, 60, 1)', // Darker text for contrast
-            },
-          },
+          ...(dayjs().isAfter(selectedDate[0]) && dayjs().isBefore(selectedDate[1])
+            ? {
+                todayLine: {
+                  type: 'line',
+                  xMin: moment().format('ddd DD/MM'),
+                  xMax: moment().format('ddd DD/MM'),
+                  borderColor: 'rgba(200, 200, 200, 0.7)', // Lighter grey color
+                  borderWidth: 2,
+                  borderDash: [5, 5], // This creates the dotted effect
+                  label: {
+                    content: 'Today',
+                    enabled: true,
+                    position: 'top',
+                    backgroundColor: 'rgba(200, 200, 200, 0.7)', // Lighter grey background for label
+                    color: 'rgba(60, 60, 60, 1)', // Darker text for contrast
+                  },
+                },
+              }
+            : {}),
         },
       },
     },
@@ -616,25 +620,32 @@ const ParkCrowdLevels: React.FC = () => {
       <Card>
         <Row gutter={16} className="mb-4">
           <Col span={12}>{renderViewSelector()}</Col>
-          {user?.role === StaffType.SUPERADMIN && (
-            <Col span={12}>
-              <div className="flex items-center">
-                <span className="mr-2">Park:</span>
-                <Select value={parkId} onChange={setParkId} className="w-full">
-                  <Option value={0}>All NParks</Option>
-                  {restrictedParks.map((park) => (
-                    <Option key={park.id} value={park.id}>
-                      {park.name}
-                    </Option>
-                  ))}
-                </Select>
-                {/* Add the Generate Report button */}
-                <Button type="primary" onClick={generateReport} icon={<FileTextOutlined />} className="ml-2">
-                  Generate Report
-                </Button>
-              </div>
-            </Col>
-          )}
+          <Col span={12}>
+            <div className="flex items-center">
+              {user?.role === StaffType.SUPERADMIN ? (
+                <>
+                  <span className="mr-2">Park:</span>
+                  <Select value={parkId} onChange={setParkId} className="w-full">
+                    <Option value={0}>All NParks</Option>
+                    {restrictedParks.map((park) => (
+                      <Option key={park.id} value={park.id}>
+                        {park.name}
+                      </Option>
+                    ))}
+                  </Select>
+                  <Button type="primary" onClick={generateReport} icon={<FileTextOutlined />} className="ml-2">
+                    Generate Report
+                  </Button>
+                </>
+              ) : (
+                <div className="flex justify-end w-full">
+                  <Button type="primary" onClick={generateReport} icon={<FileTextOutlined />}>
+                    Generate Report
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Col>
         </Row>
         {isLoading ? (
           <div className="flex flex-col justify-center items-center h-64">
