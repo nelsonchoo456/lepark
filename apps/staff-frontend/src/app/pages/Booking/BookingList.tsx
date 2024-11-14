@@ -137,7 +137,7 @@ const BookingList: React.FC = () => {
   const breadcrumbItems = [
     {
       title: 'Booking Management',
-      pathKey: '/bookings',
+      pathKey: '/facilities/bookings',
       isMain: true,
       isCurrent: true,
     },
