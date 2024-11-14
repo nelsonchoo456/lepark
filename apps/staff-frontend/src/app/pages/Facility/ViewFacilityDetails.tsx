@@ -85,11 +85,18 @@ const ViewFacilityDetails = () => {
     {
       key: 'crowd',
       label: 'Crowd',
-      children: facility ? <CameraSensorTab facility={facility} park={park} triggerFetchFacility={triggerFetch}/> : <p>Loading crowd data...</p>,
+      children: facility ? (
+        <CameraSensorTab facility={facility} park={park} triggerFetchFacility={triggerFetch} />
+      ) : (
+        <p>Loading crowd data...</p>
+      ),
     },
   ];
 
-  if (facility?.isBookable) {
+  if (
+    facility?.isBookable &&
+    (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT)
+  ) {
     tabsItems.push({
       key: 'bookings',
       label: 'Bookings',
