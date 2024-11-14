@@ -21,7 +21,7 @@ import {
   MenuProps,
   Dropdown,
 } from 'antd';
-import { InfoCircleOutlined, LineChartOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, LineChartOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Line } from 'react-chartjs-2';
 import dayjs, { Dayjs } from 'dayjs';
 import {
@@ -50,6 +50,11 @@ import { ColumnType } from 'antd/es/table';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRestrictPark } from '../../hooks/Parks/useRestrictPark';
 import { useFetchCrowdData } from '../../hooks/CrowdInsights/useFetchCrowdData';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { Chart } from 'chart.js';
+import html2canvas from 'html2canvas';
+import { Alignment } from 'pdfmake/interfaces';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Legend, annotationPlugin, Filler);
 
@@ -377,6 +382,185 @@ const ParkCrowdLevels: React.FC = () => {
           },
         ];
 
+  const HiddenChart: React.FC<{
+    data: any;
+    options: any;
+    id: string;
+  }> = ({ data, options, id }) => {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '-9999px', // Move it far off-screen
+          left: '-9999px', // Move it far off-screen
+          width: '800px',
+          height: '400px',
+          pointerEvents: 'none', // Prevent any interaction
+          opacity: 0, // Make it invisible
+        }}
+      >
+        <Line id={id} data={data} options={options} />
+      </div>
+    );
+  };
+
+  const HiddenCalendar: React.FC<{
+    crowdData: any;
+    parkId: number;
+    thresholds: { low: number; moderate: number };
+    allParks: ParkResponse[];
+  }> = ({ crowdData, parkId, thresholds, allParks }) => {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '-9999px',
+          left: '-9999px',
+          width: '1200px',
+          height: 'auto',
+          pointerEvents: 'none',
+          opacity: 0,
+          backgroundColor: '#ffffff',
+          padding: '20px 60px', // Add horizontal padding to the container
+        }}
+      >
+        <ParkCrowdLevelsCalendar crowdData={crowdData} parkId={parkId} thresholds={thresholds} allParks={allParks} />
+      </div>
+    );
+  };
+
+  const generateReport = async () => {
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+    // Get park name
+    const parkName = parkId === 0 ? 'All Parks' : parks.find((park) => park.id === parkId)?.name || 'Unknown Park';
+
+    // Prepare the timeframe text
+    const timeframeText = `${selectedDate[0].format('D MMM YY')} to ${selectedDate[1].format('D MMM YY')}`;
+
+    // Get chart image
+    let chartImage: string;
+    const chartInstances = Chart.instances;
+    const hiddenChart = Object.values(chartInstances).find((chart) => chart.canvas.id === 'hidden-chart-for-pdf');
+    chartImage = hiddenChart?.toBase64Image() || '';
+
+    // Capture calendar image - always use hidden calendar
+    let calendarImage = '';
+    const calendarElement = document.querySelector('div[style*="-9999px"] .ant-picker-calendar'); // always use hidden calendar
+
+    if (calendarElement) {
+      try {
+        const canvas = await html2canvas(calendarElement as HTMLElement, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: 1200,
+          windowWidth: 1200,
+          onclone: (clonedDoc) => {
+            const clonedElement = clonedDoc.querySelector('.ant-picker-calendar');
+            if (clonedElement) {
+              // Set explicit styles to ensure consistency
+              (clonedElement as HTMLElement).style.width = '100%';
+              (clonedElement as HTMLElement).style.height = 'auto';
+              (clonedElement as HTMLElement).style.margin = '0'; // Reset margin
+              (clonedElement as HTMLElement).style.padding = '0'; // Reset padding
+
+              // Ensure the parent container is properly centered with consistent margins
+              const parentElement = clonedElement.parentElement;
+              if (parentElement) {
+                parentElement.style.display = 'flex';
+                parentElement.style.justifyContent = 'center';
+                parentElement.style.width = '100%';
+                parentElement.style.margin = '0'; // Reset margin
+                parentElement.style.padding = '0'; // Reset padding
+              }
+            }
+          },
+        });
+        calendarImage = canvas.toDataURL('image/png');
+      } catch (error) {
+        console.error('Error capturing calendar:', error);
+      }
+    }
+
+    // Convert table data to format suitable for PDF
+    const tableBody = [
+      ['Date', 'Day', 'Actual Crowd Level', 'Predicted Crowd Level'],
+      ...filteredCrowdData.map((row) => [
+        dayjs(row.date).format('YYYY-MM-DD'),
+        dayjs(row.date).format('dddd'),
+        row.crowdLevel !== null ? Math.round(row.crowdLevel).toString() : '-',
+        row.predictedCrowdLevel !== null ? Math.round(row.predictedCrowdLevel).toString() : '-',
+      ]),
+    ];
+
+    // Prepare the document definition
+    const docDefinition = {
+      content: [
+        { text: 'Crowd Levels Report', style: 'header' },
+        { text: `Park: ${parkName}`, style: 'subheader' },
+        { text: 'Thresholds', style: 'sectionHeader' },
+        {
+          ul: [
+            `Low: ≤ ${resolvedThresholds.low}`,
+            `Moderate: ${resolvedThresholds.low + 1} - ${resolvedThresholds.moderate}`,
+            `High: > ${resolvedThresholds.moderate}`,
+          ],
+        },
+        { text: 'Calendar View', style: 'sectionHeader' },
+        // When adding to PDF
+        calendarImage
+          ? {
+              image: calendarImage,
+              width: 590,
+              alignment: 'center' as Alignment,
+              margin: [40, 10, 0, 10] as [number, number, number, number], // Consistent margins
+            }
+          : [],
+        {
+          text: timeframeText,
+          style: 'subheader',
+          pageBreak: 'before' as const,
+        },
+        { text: 'Visualizations', style: 'sectionHeader' },
+        {
+          image: chartImage,
+          width: 500,
+          alignment: 'center' as const,
+          margin: [0, 10, 0, 10] as [number, number, number, number],
+        },
+        { text: 'Detailed Data', style: 'sectionHeader' },
+        {
+          table: {
+            headerRows: 1,
+            widths: ['auto', 'auto', 'auto', 'auto'],
+            body: tableBody,
+          },
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+          margin: [0, 0, 0, 10] as [number, number, number, number],
+        },
+        subheader: {
+          fontSize: 14,
+          bold: true,
+          margin: [0, 10, 0, 5] as [number, number, number, number],
+        },
+        sectionHeader: {
+          fontSize: 14,
+          bold: true,
+          margin: [0, 15, 0, 5] as [number, number, number, number],
+        },
+      },
+    };
+
+    // Generate the PDF
+    pdfMake.createPdf(docDefinition).download(`Crowd Levels Report - ${parkName} - ${dayjs().format('D MMM YY')}.pdf`);
+  };
+
   const renderViewSelector = () => (
     <Radio.Group value={viewMode} onChange={(e) => setViewMode(e.target.value)} className="mb-4">
       <Radio.Button value="calendar">Calendar View</Radio.Button>
@@ -444,6 +628,10 @@ const ParkCrowdLevels: React.FC = () => {
                     </Option>
                   ))}
                 </Select>
+                {/* Add the Generate Report button */}
+                <Button type="primary" onClick={generateReport} icon={<FileTextOutlined />} className="ml-2">
+                  Generate Report
+                </Button>
               </div>
             </Col>
           )}
@@ -500,6 +688,8 @@ const ParkCrowdLevels: React.FC = () => {
           </>
         )}
       </Card>
+      <HiddenChart id="hidden-chart-for-pdf" data={chartData} options={chartOptions} />
+      <HiddenCalendar crowdData={calendarCrowdData} parkId={parkId} thresholds={resolvedThresholds} allParks={parks} />
     </ContentWrapperDark>
   );
 };

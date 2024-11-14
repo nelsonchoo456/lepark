@@ -73,7 +73,7 @@ const ParkCrowdLevelsCalendar: React.FC<ParkCrowdLevelsCalendarProps> = ({ crowd
     <Card>
       <Calendar
         cellRender={dateCellRender}
-        className="bg-white rounded-lg p-4"
+        className="responsive-calendar"
         headerRender={({ value, onChange }) => {
           const current = value.clone();
           const prevMonth = () => onChange(current.subtract(1, 'month'));

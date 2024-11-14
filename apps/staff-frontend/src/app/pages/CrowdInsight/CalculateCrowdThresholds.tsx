@@ -39,7 +39,7 @@ const calculateParkAreaAndThresholds = async (parkGeom: string | any, parkId: nu
   let moderateThreshold;
   if (numberOfZones > 1) {
     lowThreshold = Math.round((50 + 30 * areaInSquareKm) * (0.5 * numberOfZones));
-    moderateThreshold = Math.round((100 + 60 * areaInSquareKm) * (0.37 * numberOfZones));
+    moderateThreshold = Math.round((100 + 65 * areaInSquareKm) * (0.4 * numberOfZones));
   } else {
     lowThreshold = Math.round(50 + 30 * areaInSquareKm);
     moderateThreshold = Math.round(100 + 60 * areaInSquareKm);
