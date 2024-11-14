@@ -487,7 +487,6 @@ const TicketListingDetails: React.FC = () => {
             <TabPane tab="Ticket Sales Over Time" key="1">
               <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
-                  {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 && (
                     <div className="flex justify-start">
                       <Text className="mr-2 pt-1">Purchase Date: </Text>
                       {purchaseDateRange && (
@@ -495,11 +494,18 @@ const TicketListingDetails: React.FC = () => {
                           value={purchaseDateRange}
                           onChange={handlePurchaseDateRangeChange}
                           style={{ marginBottom: '20px' }}
+                          disabledDate={(current) => {
+                            // Convert to start of day to avoid timezone issues
+                            const currentDate = current.startOf('day');
+                            const eventEnd = dayjs(event?.endDate).startOf('day');
+
+                            // Disable dates after event end date
+                            return currentDate.isAfter(eventEnd);
+                          }}
                         />
                       )}
                       <Button className='ml-2' onClick={resetPurchaseDateRange}>Reset</Button>
                     </div>
-                  )}
                   {ticketSalesData && ticketSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
                       title="Tickets Sold Over Time (Purchase Date)"
@@ -544,7 +550,6 @@ const TicketListingDetails: React.FC = () => {
                   )}
                 </Col>
                 <Col xs={24} lg={12}>
-                  {eventDateSalesData && eventDateSalesData.datasets[0].data.length > 0 && (
                     <div className="flex justify-start">
                       <Text className="mr-2 pt-1">Event Date: </Text>
                       {eventDateRange && (
@@ -565,10 +570,9 @@ const TicketListingDetails: React.FC = () => {
                       )}
                       <Button className='ml-2' onClick={resetVisitDateRange}>Reset</Button>
                     </div>
-                  )}
                   {eventDateSalesData && eventDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
-                      title="Expected Visits Over Time"
+                      title="Visits Over Time"
                       data={eventDateSalesData}
                       type="line"
                       options={{

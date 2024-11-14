@@ -1,4 +1,4 @@
-# Lepark
+# Lepark: A Comprehensive Park Management and Visitor Engagement System for NParks
 
 <!-- `<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45">``</a>`
 
@@ -12,7 +12,17 @@
 
 ## System Overview
 
-Lepark introduces two interconnected web-based platforms: the Park Staff System and the Park Visitor System.
+Lepark is a robust enterprise management system developed to enhance the operational efficiency of park staff and improve the visitor experience. It comprises two web-based platforms tailored to meet the needs of park staff and park visitors, all supported by a shared backend to unify operations and engagement.
+
+### Lepark Park Staff System
+
+The Lepark Park Staff System is a central platform designed to streamline park operations and resource management. Equipped with real-time environmental monitoring through IoT sensors, it allows staff to efficiently manage plant care, maintain facilities and park assets, and optimize resource use. The system also facilitates improved departmental communication, reducing information silos and ensuring that staff have the data they need to support NParks’ sustainability goals. By integrating these functionalities into a single system, Lepark empowers park staff to make data-driven decisions, enhancing overall park management and operational cohesion.
+
+### Lepark Park Visitor System
+
+The Lepark Park Visitor System is an interactive web-based portal focused on enhancing the visitor experience before, during, and after their park visits. Through this platform, visitors can access real-time park updates, explore interactive maps, view event schedules, and engage with educational content on biodiversity. Additionally, the portal offers convenient features such as online ticket purchasing, feedback submission, and access to park announcements, promoting an interactive, educational, and eco-friendly visit. By offering these visitor-centered tools, Lepark enriches visitor engagement and aligns with NParks’ mission of fostering sustainability, biodiversity awareness, and community involvement.
+
+Together, these systems provide a comprehensive solution for NParks, supporting efficient park operations and fostering a positive, educational visitor experience that reflects NParks’ commitment to sustainability and conservation.
 
 ## How to locally deploy our system
 

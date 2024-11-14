@@ -80,6 +80,7 @@ const zonesData = [
       '2024-10-01T11:00:00.000Z',
       '2024-10-01T11:00:00.000Z',
     ],
+    images: ["https://grangettos.com/cdn/shop/articles/shutterstock_1715940037_4871d9df-b91a-495a-9bb1-577142e57d1b_1500x.jpg?v=1627419909"],
     geom: 'POLYGON((103.83960843086244 1.364782715649657, 103.83994102478029 1.3646218287569876, 103.84026288986207 1.3645467482033933, 103.84114265441896 1.3643107807339876, 103.840970993042 1.3637744909446994, 103.84098172187807 1.3633561848261084, 103.840970993042 1.3632167494370877, 103.8395655155182 1.363313281630344, 103.83894324302675 1.3635492491975707, 103.83839607238771 1.3638602973190153, 103.83881449699402 1.3650186830727666, 103.83960843086244 1.364782715649657))',
     paths: 'LINESTRING(103.854 1.292, 103.855 1.293, 103.856 1.292)',
     zoneStatus: 'OPEN',
@@ -88,6 +89,7 @@ const zonesData = [
   {
     // zoneId 2
     name: 'Swan Lake',
+    images: ['https://www.nparks.gov.sg/-/media/sbg/images/attractions/swan-lake-2016-12.jpg?h=589&w=884'],
     description:
       'A serene lake surrounded by lush greenery, home to a pair of beautiful swans. Popular among visitors for peaceful walks and photography.',
     openingHours: [
@@ -116,6 +118,7 @@ const zonesData = [
   {
     // zoneId 3
     name: 'Healing Garden',
+    images: ["https://media.timeout.com/images/105850932/image.jpg"],
     description:
       'A tranquil area dedicated to medicinal plants from Southeast Asia, designed to promote wellness and relaxation. The Healing Garden showcases over 400 species of plants.',
     openingHours: [
@@ -144,6 +147,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Treetop Forest',
+    images: ["https://onecms-res.cloudinary.com/image/upload/s--IXogtaSE--/f_auto,q_auto/c_fill,g_auto,h_338,w_600/v1/mediacorp/cna/image/2022/11/18/botanic_gardens_bridge.png?itok=qtnHanKo"],
     description: 'Treetop forest boasts some of the tallest tropical trees in Southeast Asia.',
     zoneStatus: 'OPEN',
     openingHours: [
@@ -169,6 +173,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Ginger Garden',
+    images: ["https://thegeestravel.com/wp-content/uploads/2022/05/Botanical-Gardens-In-Singapore.jpg"],
     description: 'A garden dedicated to the fascinating world of gingers, featuring over 250 species of gingers and other related plants.',
     zoneStatus: 'OPEN',
     openingHours: [
@@ -194,6 +199,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Evolution Garden',
+    images: ["https://www.nparks.gov.sg/sbg/whats-happening/-/media/sbg/images/events/ravine-nog-gr002351-low-res.jpg"],
     description:
       'An educational garden that takes visitors on a journey through the evolution of plants, from prehistoric ferns to modern flowering plants.',
     zoneStatus: 'UNDER_CONSTRUCTION',

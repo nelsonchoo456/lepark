@@ -155,7 +155,7 @@ const ZonePredictiveIrrigation: React.FC = () => {
                 ))}
               </>
             ) : (
-              <Empty description="No hubs trained for this zone" />
+              <Empty description="No Predictions for this Zone today" />
             )}
           </TabPane>
           {hubs.map((hub, index) => (

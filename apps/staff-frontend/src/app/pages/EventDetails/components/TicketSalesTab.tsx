@@ -230,6 +230,14 @@ const TicketSalesTab: React.FC<TicketSalesTabProps> = ({ event }) => {
               <RangePicker
                 onChange={handlePurchaseDateChange}
                 value={[dayjs(purchaseStartDate), dayjs(purchaseEndDate)]}
+                disabledDate={(current) => {
+                  // Convert to start of day to avoid timezone issues
+                  const currentDate = current.startOf('day');
+                  const eventEnd = dayjs(event?.endDate).startOf('day');
+
+                  // Disable dates after event end date
+                  return currentDate.isAfter(eventEnd);
+                }}
               />
               <Button onClick={resetPurchaseDate} className="ml-2">Reset</Button>
             </div>

@@ -154,6 +154,7 @@ async function initZonesDB() {
       description TEXT,
       "openingHours" TIMESTAMP[],
       "closingHours" TIMESTAMP[],
+      images TEXT[],
       geom GEOMETRY,
       paths GEOMETRY,
       "zoneStatus" "ZoneStatusEnum",
@@ -168,6 +169,8 @@ async function createZone(data) {
   const openingHoursArray = data.openingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
   const closingHoursArray = data.closingHours.map((d) => `'${new Date(d).toISOString().slice(0, 19)}'`);
 
+  const imagesParam = Prisma.sql`ARRAY[${Prisma.join(data.images.map((image) => Prisma.sql`${image}`))}]::text[]`;
+
   // Prepare the geometry parameters
   const geomParam = Prisma.sql`ST_GeomFromText(${data.geom}, 4326)`;
   const pathsParam = Prisma.sql`ST_GeomFromText(${data.paths}, 4326)`;
@@ -179,6 +182,7 @@ async function createZone(data) {
       description,
       "openingHours",
       "closingHours",
+      images,
       geom,
       paths,
       "zoneStatus",
@@ -189,6 +193,7 @@ async function createZone(data) {
       ${data.description},
       ${openingHoursArray}::timestamp[],
       ${closingHoursArray}::timestamp[],
+      ${imagesParam},
       ${geomParam},
       ${pathsParam},
       ${data.zoneStatus}::"ZoneStatusEnum",

@@ -94,8 +94,8 @@ const ZoneDetails = () => {
       children: zone ? <MapTab zone={zone} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
     {
-      key: 'IoT',
-      label: 'IoT',
+      key: 'iot',
+      label: 'Active IoT',
       children: hubs && hubs.length > 0 ? (
         <IotTabs hubs={hubs}/>
       ) : (
