@@ -82,6 +82,19 @@ const ViewFacilityDetails = () => {
       label: 'Location',
       children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
     },
+  ];
+
+  const crowdTabsItems = [
+    {
+      key: 'information',
+      label: 'Information',
+      children: facility ? <InformationTab facility={facility} /> : <p>Loading facility data...</p>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
+    },
     {
       key: 'crowd',
       label: 'Crowd',
@@ -146,7 +159,7 @@ const ViewFacilityDetails = () => {
         <Tabs
           centered
           defaultActiveKey="information"
-          items={tabsItems}
+          items={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT || user?.role === StaffType.PARK_RANGER || user?.role === StaffType.VENDOR_MANAGER) ? crowdTabsItems : tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />
