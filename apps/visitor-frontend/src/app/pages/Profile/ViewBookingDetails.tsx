@@ -17,6 +17,23 @@ import { LinkOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
 
+const formatBookingStatus = (status: BookingStatusEnum): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'Pending';
+    case 'CANCELLED':
+      return 'Cancelled';
+    case 'REJECTED':
+      return 'Rejected';
+    case 'APPROVED_PENDING_PAYMENT':
+      return 'Approved (Pending Payment)';
+    case 'CONFIRMED':
+      return 'Confirmed';
+    default:
+      return status;
+  }
+};
+
 const ViewBookingDetails: React.FC = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
   const [booking, setBooking] = useState<BookingResponse | null>(null);
@@ -64,6 +81,8 @@ const ViewBookingDetails: React.FC = () => {
       case 'CONFIRMED':
         return 'green';
       case 'PENDING':
+        return 'gold';
+      case 'APPROVED_PENDING_PAYMENT':
         return 'gold';
       case 'CANCELLED':
         return 'red';
@@ -154,7 +173,7 @@ const ViewBookingDetails: React.FC = () => {
           <div className="bg-gray-200 p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <Text strong>Booking Status</Text>
-              <Tag color={getStatusColor(booking.bookingStatus)}>{booking.bookingStatus}</Tag>
+              <Tag color={getStatusColor(booking.bookingStatus)}>{formatBookingStatus(booking.bookingStatus)}</Tag>
             </div>
             <div className="w-full h-px bg-gray-300 my-2"></div>
             <Text strong className="block mb-2">
