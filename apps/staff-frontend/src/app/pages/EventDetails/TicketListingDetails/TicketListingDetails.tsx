@@ -572,7 +572,7 @@ const TicketListingDetails: React.FC = () => {
                     </div>
                   {eventDateSalesData && eventDateSalesData.datasets[0].data.length > 0 ? (
                     <GraphContainer
-                      title="Expected Visits Over Time"
+                      title="Visits Over Time"
                       data={eventDateSalesData}
                       type="line"
                       options={{
