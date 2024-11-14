@@ -1,13 +1,20 @@
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { BookingResponse, StaffResponse, StaffType } from '@lepark/data-access';
-import { Button, Card, Flex, Input, Table, TableProps, Tooltip, message } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { BookingResponse, BookingStatusEnum, StaffResponse } from '@lepark/data-access';
+import { Button, Card, Flex, Input, Table, TableProps, Tag, Tooltip, message } from 'antd';
+import moment from 'moment';
+import { useMemo, useState } from 'react';
 import { FiEye, FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useFetchBookings } from '../../hooks/Booking/useFetchBookings';
-import moment from 'moment';
-import { RiEdit2Line } from 'react-icons/ri';
+
+const statusConfig: Record<BookingStatusEnum, { color: string; label: string }> = {
+  [BookingStatusEnum.PENDING]: { color: 'yellow', label: 'Pending' },
+  [BookingStatusEnum.CANCELLED]: { color: 'red', label: 'Cancelled' },
+  [BookingStatusEnum.REJECTED]: { color: 'red', label: 'Rejected' },
+  [BookingStatusEnum.APPROVED_PENDING_PAYMENT]: { color: 'yellow', label: 'Approved Pending Payment' },
+  [BookingStatusEnum.CONFIRMED]: { color: 'green', label: 'Confirmed' },
+};
 
 const BookingList: React.FC = () => {
   const { bookings, loading, triggerFetch } = useFetchBookings();
@@ -63,16 +70,15 @@ const BookingList: React.FC = () => {
       title: 'Booking Status',
       dataIndex: 'bookingStatus',
       key: 'bookingStatus',
-      render: (text) => <div>{formatEnumValue(text)}</div>,
-      filters: [
-        { text: 'Pending', value: 'PENDING' },
-        { text: 'Cancelled', value: 'CANCELLED' },
-        { text: 'Rejected', value: 'REJECTED' },
-        { text: 'Approved Pending Payment', value: 'APPROVED_PENDING_PAYMENT' },
-        { text: 'Unpaid Closed', value: 'UNPAID_CLOSED' },
-        { text: 'Confirmed', value: 'CONFIRMED' },
-        { text: 'Confirmed Closed', value: 'CONFIRMED_CLOSED' },
-      ],
+      render: (status: BookingStatusEnum) => {
+        const { color, label } = statusConfig[status];
+        return (
+          <Tag color={color} bordered={false}>
+            {label}
+          </Tag>
+        );
+      },
+      filters: Object.entries(statusConfig).map(([value, { label }]) => ({ text: label, value })),
       onFilter: (value, record) => record.bookingStatus === value,
       width: '15%',
     },
