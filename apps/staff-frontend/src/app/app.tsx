@@ -475,9 +475,18 @@ export function App() {
                   >
                     <Route path=":facilityId/edit" element={<FacilityEdit />} />
                     <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
-                    <Route path="bookings">
-                      <Route path=":bookingId" element={<ViewBookingDetails />} />
-                      <Route index element={<BookingList />} />
+                    <Route
+                      element={
+                        <RoleProtectedRoute
+                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                          redirectTo="/"
+                        />
+                      }
+                    >
+                      <Route path="bookings">
+                        <Route path=":bookingId" element={<ViewBookingDetails />} />
+                        <Route index element={<BookingList />} />
+                      </Route>
                     </Route>
                     <Route path=":facilityId/assign-camera" element={<FacilityAssignCamera />} />
                   </Route>
