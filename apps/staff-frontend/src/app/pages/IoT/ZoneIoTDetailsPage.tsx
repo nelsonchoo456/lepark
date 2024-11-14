@@ -306,7 +306,39 @@ const ZoneIoTDetailsPage: React.FC = () => {
                   dataSource={item.issues}
                   renderItem={(issue: string) => (
                     <List.Item>
-                      <Text>{issue}</Text>
+                      <Row style={{ width: '100%' }} gutter={[16, 16]}>
+                        <Col span={24}>
+                          {/* Extract sensor type from issue string */}
+                          {(() => {
+                            const sensorType = issue.split(':')[0];
+                            const [currentValue, recommendedRange] = issue.split('(Recommended:').map(s => s.trim());
+                            
+                            return (
+                              <Card size="small" bordered={false} style={{ background: '#fff1f0' }}>
+                                <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                                  <Text strong>{sensorType}</Text>
+                                  <Row gutter={16} align="middle">
+                                    <Col span={12}>
+                                      <Statistic
+                                        title={<Text type="secondary">Current</Text>}
+                                        value={currentValue.split(':')[1].trim()}
+                                        valueStyle={{ color: '#cf1322', fontSize: '16px' }}
+                                      />
+                                    </Col>
+                                    <Col span={12}>
+                                      <Statistic
+                                        title={<Text type="secondary">Recommended</Text>}
+                                        value={recommendedRange.replace(')', '')}
+                                        valueStyle={{ color: '#389e0d', fontSize: '16px' }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                </Space>
+                              </Card>
+                            );
+                          })()}
+                        </Col>
+                      </Row>
                     </List.Item>
                   )}
                 />
