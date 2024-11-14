@@ -1,20 +1,26 @@
 import { ContentWrapper, LogoText, useAuth } from '@lepark/common-ui';
-import { Anchor, Card, Col, Row } from 'antd';
+import { Anchor, Button, Card, Col, Flex, Row, Table, TableProps, Tooltip } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useMemo, useState } from 'react';
 import { MdCheck, MdSensors } from 'react-icons/md';
-import { FiInbox } from 'react-icons/fi';
+import { FiEye, FiInbox } from 'react-icons/fi';
 import { FaTools } from 'react-icons/fa';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { SCREEN_LG } from '../../../config/breakpoints';
 import {
   AnnouncementResponse,
+  BookingResponse,
+  BookingStatusEnum,
+  FacilityResponse,
+  FacilityStatusEnum,
   getAllAssignedMaintenanceTasks,
+  getAllFacilities,
   getAllMaintenanceTasks,
   getAllZones,
   getAnnouncementsByParkId,
+  getFacilitiesByParkId,
   getMaintenanceTasksByParkId,
   getZonesByParkId,
   MaintenanceTaskResponse,
@@ -28,11 +34,28 @@ import MaintenanceTasksTable from '../../MainLanding/components/MaintenanceTasks
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { renderSectionHeader, sectionHeader } from '../Manager/ManagerMainLanding';
 import { flexColsStyles, sectionHeaderIconStyles, sectionStyles } from '../BotanistArborist/BAMainLanding';
-import { TbTree, TbTrees } from 'react-icons/tb';
+import { TbBuilding, TbBuildingEstate, TbTree, TbTrees } from 'react-icons/tb';
 import { getSensorsByParkId, getHubsByParkId, SensorResponse, HubResponse, SensorStatusEnum, HubStatusEnum } from '@lepark/data-access';
 import dayjs from 'dayjs';
+import { useFetchBookings } from '../../../hooks/Booking/useFetchBookings';
 
 export const isParkOpen = (park: ZoneResponse) => {
+  const now = dayjs();
+  const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+  const openingTime = dayjs(park.openingHours[currentDay]).format('HH:mm');
+  let closingTime = dayjs(park.closingHours[currentDay]).format('HH:mm');
+  if (closingTime === '00:00') {
+    closingTime = '24:00';
+  }
+
+  const currentTime = now.format('HH:mm');
+
+  // return now.isAfter(openingTime) && now.isBefore(closingTime);
+  return currentTime >= openingTime && currentTime <= closingTime;
+};
+
+export const isFacilityOpen = (park: FacilityResponse) => {
   const now = dayjs();
   const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
 
@@ -52,11 +75,12 @@ const LandscapeArchitect = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
   const [desktop, setDesktop] = useState<boolean>(window.innerWidth >= SCREEN_LG);
+  const { bookings, loading, triggerFetch } = useFetchBookings();
 
   // State
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
-  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
   const [zones, setZones] = useState<ZoneResponse[]>([]);
+  const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -72,8 +96,8 @@ const LandscapeArchitect = () => {
   useEffect(() => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
-      fetchMaintenanceTasks();
       fetchZones();
+      fetchFacilities();
     }
   }, [user]);
 
@@ -87,20 +111,6 @@ const LandscapeArchitect = () => {
     }
   };
 
-  const fetchMaintenanceTasks = async () => {
-    try {
-      let response;
-      if (user?.role === StaffType.SUPERADMIN) {
-        response = await getAllMaintenanceTasks();
-      } else if (user?.parkId) {
-        response = await getMaintenanceTasksByParkId(user.parkId);
-      }
-      setMaintenanceTasks(response?.data.filter((t) => t.facility !== null && t.facility !== undefined) || []);
-    } catch (error) {
-      console.error('Error fetching maintenance tasks:', error);
-    }
-  };
-
   const fetchZones = async () => {
     try {
       let response;
@@ -110,6 +120,20 @@ const LandscapeArchitect = () => {
         response = await getZonesByParkId(user.parkId);
       }
       setZones(response?.data || []);
+    } catch (error) {
+      console.error('Error fetching maintenance tasks:', error);
+    }
+  };
+
+  const fetchFacilities = async () => {
+    try {
+      let response;
+      if (user?.role === StaffType.SUPERADMIN) {
+        response = await getAllFacilities();
+      } else if (user?.parkId) {
+        response = await getFacilitiesByParkId(user.parkId);
+      }
+      setFacilities(response?.data || []);
     } catch (error) {
       console.error('Error fetching maintenance tasks:', error);
     }
@@ -133,110 +157,120 @@ const LandscapeArchitect = () => {
     });
   }, [zones]);
 
+  const openFacilities = useMemo(() => {
+    return facilities.filter((f) => {
+      return f.facilityStatus === FacilityStatusEnum.OPEN && isFacilityOpen(f);
+    });
+  }, [facilities]);
 
-  const myTasks = useMemo(() => {
-    return maintenanceTasks;
-  }, [maintenanceTasks]);
+  const closedFacilities = useMemo(() => {
+    return facilities.filter((f) => {
+      return f.facilityStatus === FacilityStatusEnum.CLOSED || !isFacilityOpen(f);
+    });
+  }, [facilities]);
 
-  const myPendingTasks = useMemo(() => {
-    return myTasks
-      ? myTasks?.filter(
-          (task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN || task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS,
-        )
-      : [];
-  }, [myTasks]);
+  const constructionFacilities = useMemo(() => {
+    return facilities.filter((f) => {
+      return f.facilityStatus === FacilityStatusEnum.UNDER_MAINTENANCE;
+    });
+  }, [facilities]);
 
-  const myOverdueTasks = useMemo(() => {
-    return myTasks
-      ? myTasks.filter(
-          (task) =>
-            task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
-            task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED &&
-            moment().startOf('day').isAfter(moment(task.dueDate).startOf('day')),
-        )
-      : [];
-  }, [myTasks]);
+  const pendingBookings = useMemo(() => {
+    return bookings.filter((b) => {
+      return b.bookingStatus === BookingStatusEnum.PENDING;
+    });
+  }, [bookings]);
 
-  const chartOptions: ApexOptions = {
-    chart: {
-      type: 'line',
-      height: 350,
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    xaxis: {
-      categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      title: {
-        text: 'Day of the Week',
-      },
-    },
-    yaxis: {
-      title: {
-        text: 'Tasks Completed',
-      },
-    },
-    title: {
-      text: 'Tasks Completed Past Week',
-      align: 'center',
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shade: 'light',
-        type: 'vertical',
-        shadeIntensity: 0.5,
-      },
-    },
-    colors: ['#34a853'],
-  };
+  const pendingPayments = useMemo(() => {
+    return bookings.filter((b) => {
+      return b.bookingStatus === BookingStatusEnum.APPROVED_PENDING_PAYMENT;
+    });
+  }, [bookings]);
 
-  const chartSeries = [
+  const bookingColumns: TableProps<BookingResponse>['columns'] = [
     {
-      name: 'Completed Tasks',
-      data: [0, 0, 0, 0, 0, 0, 0],
+      title: 'Booking Purpose',
+      dataIndex: 'bookingPurpose',
+      key: 'bookingPurpose',
+      render: (text) => <div className="font-semibold">{text}</div>,
+      sorter: (a, b) => a.bookingPurpose.localeCompare(b.bookingPurpose),
+      width: '15%',
+    },
+    {
+      title: 'Pax',
+      dataIndex: 'pax',
+      key: 'pax',
+      render: (text) => <div>{text}</div>,
+      sorter: (a, b) => a.pax - b.pax,
+      width: '10%',
+    },
+    {
+      title: 'Date Start',
+      dataIndex: 'dateStart',
+      key: 'dateStart',
+      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => moment(a.dateStart).unix() - moment(b.dateStart).unix(),
+      width: '15%',
+    },
+    {
+      title: 'Date End',
+      dataIndex: 'dateEnd',
+      key: 'dateEnd',
+      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => moment(a.dateEnd).unix() - moment(b.dateEnd).unix(),
+      width: '15%',
+    },
+    {
+      title: 'Date Booked',
+      dataIndex: 'dateBooked',
+      key: 'dateBooked',
+      render: (text) => moment(text).format('D MMM YY'),
+      sorter: (a, b) => moment(a.dateBooked).unix() - moment(b.dateBooked).unix(),
+      width: '15%',
+    },
+    {
+      title: 'Payment Deadline',
+      dataIndex: 'paymentDeadline',
+      key: 'paymentDeadline',
+      render: (text) => (text ? moment(text).format('D MMM YY') : 'N/A'),
+      sorter: (a, b) => moment(a.paymentDeadline).unix() - moment(b.paymentDeadline).unix(),
+      width: '15%',
+    },
+    {
+      title: 'Facility',
+      dataIndex: 'facility',
+      key: 'facility',
+      render: (facility) => <div>{facility.name}</div>,
+      filters: Array.from(new Set(bookings.map((booking) => booking.facility?.name).filter((name) => name !== undefined))).map((name) => ({
+        text: name,
+        value: name,
+      })),
+      onFilter: (value, record) => record.facility?.name === value,
+      width: '15%',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Flex justify="center" gap={8}>
+          <Tooltip title="View Details">
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`/facilities/bookings/${record.id}`)} />
+          </Tooltip>
+        </Flex>
+      ),
+      width: '1%',
     },
   ];
-
 
   return (
     <Row>
       <Col span={desktop ? 21 : 24}>
         {/* -- [ Section: Maintenance Overview ] -- */}
         <div id="part-1" className={sectionStyles}>
-          {renderSectionHeader('Maintenance Overview')}
+          {renderSectionHeader('Overview')}
           <div className={flexColsStyles}>
             {/* Tasks Card */}
             <div className="w-full h-86 flex-[2] flex flex-col gap-4">
-              <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className={sectionHeader} onClick={() => navigate('maintenance-tasks')}>
-                  <div className={`${sectionHeaderIconStyles} bg-highlightGreen-400 text-white`}>
-                    <FaTools />
-                  </div>
-                  <LogoText className="text-lg mb-2">Facility Maintenance Tasks</LogoText>
-                </div>
-
-                <div className="h-full flex flex-col gap-2 pl-4 ml-3 border-l-[2px]">
-                  {myPendingTasks?.length > 0 ? (
-                    <div className="text-mustard-400 font-semibold mr-2">{myPendingTasks.length} Pending Tasks</div>
-                  ) : (
-                    <div className="text-mustard-400 gap-3 flex items-center">
-                      <MdCheck className="text-lg" /> No Pending Tasks
-                    </div>
-                  )}
-
-                  {myOverdueTasks.length > 0 ? (
-                    <div className="text-red-400 font-semibold mr-2">{myOverdueTasks.length} Overdue Tasks</div>
-                  ) : (
-                    <div className="text-red-400 gap-3 flex items-center">
-                      <MdCheck className="text-lg" /> No Overdue Tasks
-                    </div>
-                  )}
-                </div>
-              </Card>
               <div className="w-full flex-[2] flex flex-col gap-4">
                 <Card className="flex flex-col h-full" styles={{ body: { padding: '1rem' } }}>
                   {/* Header Section */}
@@ -247,7 +281,7 @@ const LandscapeArchitect = () => {
                     <LogoText className="text-lg">Zones</LogoText>
                   </div>
 
-                  <div className="h-full flex w-full gap-2">
+                  <div className="flex w-full gap-2">
                     <div className="rounded-md bg-green-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-green-200">
                       <strong className="text-lg">{openZones.length}</strong>
                       <br />
@@ -265,6 +299,33 @@ const LandscapeArchitect = () => {
                     </div>
                   </div>
                 </Card>
+                <Card className="flex flex-col h-full" styles={{ body: { padding: '1rem' } }}>
+                  {/* Header Section */}
+                  <div className="flex items-center mb-2">
+                    <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
+                      <TbBuildingEstate />
+                    </div>
+                    <LogoText className="text-lg">Facilities</LogoText>
+                  </div>
+
+                  <div className="flex w-full gap-2">
+                    <div className="rounded-md bg-green-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-green-200">
+                      <strong className="text-lg">{openFacilities.length}</strong>
+                      <br />
+                      Open Now
+                    </div>
+                    <div className="rounded-md bg-red-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-red-200">
+                      <strong className="text-lg">{closedFacilities.length}</strong>
+                      <br />
+                      Closed Now
+                    </div>
+                    <div className="rounded-md bg-mustard-50 flex-[1] text-center py-4 md:pt-8 border-l-4 border-mustard-200">
+                      <strong className="text-lg">{constructionFacilities.length}</strong>
+                      <br />
+                      Under Construction
+                    </div>
+                  </div>
+                </Card>
               </div>
             </div>
 
@@ -273,13 +334,59 @@ const LandscapeArchitect = () => {
           </div>
         </div>
 
-        {/* -- [ Section: Maintenance Tasks ] -- */}
         <div id="part-2" className={sectionStyles}>
-          {renderSectionHeader('Facility Maintenance Tasks', () => navigate('maintenance-tasks'))}
-          {user && <MaintenanceTasksTable userRole={user?.role as StaffType} maintenanceTasks={myTasks} className="w-full" />}
+          {renderSectionHeader('Venue Bookings', () => navigate('/facilities/bookings'))}
+          <div className={`${flexColsStyles} mb-4 overflow-x-scroll`}>
+            {pendingBookings && pendingBookings?.length > 0 ? (
+              <div className="w-full flex-[2] flex flex-col w-full">
+                <div className="flex items-center font-semibold text-mustard-500">
+                  <div className={`bg-mustard-400 text-white h-6 w-6 flex justify-center items-center rounded-full mr-2`}>
+                    {pendingBookings.length}
+                  </div>
+                  Pending Bookings
+                </div>
+                <Table dataSource={pendingBookings.slice(0, 3)} columns={bookingColumns} rowKey="id" size="small" pagination={false} />
+                {pendingBookings?.length > 3 && (
+                  <Button type="dashed" className="-mt-[1px] rounded-0 text-secondary" onClick={() => navigate('maintenance-tasks')}>
+                    Go to Bookings to view more
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center font-semibold text-mustard-500">
+                <div className={`${sectionHeaderIconStyles} bg-mustard-400 text-white h-6 w-6`}>
+                  <MdCheck />
+                </div>
+                No Pending Bookings
+              </div>
+            )}
+          </div>
+          <div className={`${flexColsStyles} mb-4 overflow-x-scroll`}>
+            {pendingPayments && pendingPayments?.length > 0 ? (
+              <div className="w-full flex-[2] flex flex-col w-full">
+                <div className="flex items-center font-semibold text-mustard-500">
+                  <div className={`bg-mustard-400 text-white h-6 w-6 flex justify-center items-center rounded-full mr-2`}>
+                    {pendingPayments.length}
+                  </div>
+                  Pending Payments
+                </div>
+                <Table dataSource={pendingPayments.slice(0, 3)} columns={bookingColumns} rowKey="id" size="small" pagination={false} />
+                {pendingPayments?.length > 3 && (
+                  <Button type="dashed" className="-mt-[1px] rounded-0 text-secondary" onClick={() => navigate('maintenance-tasks')}>
+                    Go to Bookings to view more
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center font-semibold text-mustard-500">
+                <div className={`${sectionHeaderIconStyles} bg-mustard-400 text-white h-6 w-6`}>
+                  <MdCheck />
+                </div>
+                No Pending Payments
+              </div>
+            )}
+          </div>
         </div>
-
-        
       </Col>
 
       {desktop && (
@@ -295,7 +402,7 @@ const LandscapeArchitect = () => {
               {
                 key: 'part-2',
                 href: '#part-2',
-                title: 'Tasks',
+                title: 'Venue Bookings',
               },
             ]}
           />
