@@ -2,7 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Table, Spin, Tag, Input, message, Typography, DatePicker, Flex, Button } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import dayjs from 'dayjs';
-import { EventResponse, EventTicketResponse, EventTicketStatusEnum, getEventById, getEventTicketListingById, getEventTicketsByListingId } from '@lepark/data-access';
+import {
+  EventResponse,
+  EventTicketResponse,
+  EventTicketStatusEnum,
+  getEventById,
+  getEventTicketListingById,
+  getEventTicketsByListingId,
+} from '@lepark/data-access';
 import { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
@@ -171,16 +178,14 @@ const TicketListingTicketSalesTable: React.FC<TicketListingTicketSalesTableProps
       dataIndex: ['eventTicketTransaction', 'purchaseDate'],
       key: 'purchaseDate',
       render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
-      sorter: (a, b) =>
-        dayjs(a.eventTicketTransaction?.purchaseDate).unix() - dayjs(b.eventTicketTransaction?.purchaseDate).unix(),
+      sorter: (a, b) => dayjs(a.eventTicketTransaction?.purchaseDate).unix() - dayjs(b.eventTicketTransaction?.purchaseDate).unix(),
     },
     {
       title: 'Event Date',
       dataIndex: ['eventTicketTransaction', 'eventDate'],
       key: 'eventDate',
       render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
-      sorter: (a, b) =>
-        dayjs(a.eventTicketTransaction?.eventDate).unix() - dayjs(b.eventTicketTransaction?.eventDate).unix(),
+      sorter: (a, b) => dayjs(a.eventTicketTransaction?.eventDate).unix() - dayjs(b.eventTicketTransaction?.eventDate).unix(),
     },
     {
       title: 'Status',
@@ -227,6 +232,14 @@ const TicketListingTicketSalesTable: React.FC<TicketListingTicketSalesTableProps
           <RangePicker
             onChange={handlePurchaseDateChange}
             value={[purchaseStartDate ? dayjs(purchaseStartDate) : null, purchaseEndDate ? dayjs(purchaseEndDate) : null]}
+            disabledDate={(current) => {
+              // Convert to start of day to avoid timezone issues
+              const currentDate = current.startOf('day');
+              const eventEnd = dayjs(event?.endDate).startOf('day');
+
+              // Disable dates after event end date
+              return currentDate.isAfter(eventEnd);
+            }}
           />
           <Button onClick={resetPurchaseDate} className="ml-2">
             Reset
@@ -244,7 +257,7 @@ const TicketListingTicketSalesTable: React.FC<TicketListingTicketSalesTableProps
               const currentDate = current.startOf('day');
               const eventStart = dayjs(event?.startDate).startOf('day');
               const eventEnd = dayjs(event?.endDate).startOf('day');
-              
+
               // Disable dates outside the event range
               return currentDate.isBefore(eventStart) || currentDate.isAfter(eventEnd);
             }}

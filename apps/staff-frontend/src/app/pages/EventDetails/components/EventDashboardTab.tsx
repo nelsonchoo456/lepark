@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, DatePicker, Spin, message, Checkbox, Typography, Button } from 'antd';
-import { getEventTicketsByEventId, EventTicketResponse, EventTicketCategoryEnum, EventTicketNationalityEnum, getEventById, EventResponse } from '@lepark/data-access';
+import {
+  getEventTicketsByEventId,
+  EventTicketResponse,
+  EventTicketCategoryEnum,
+  EventTicketNationalityEnum,
+  getEventById,
+  EventResponse,
+} from '@lepark/data-access';
 import GraphContainer from './GraphContainter';
 import dayjs from 'dayjs';
 
@@ -240,115 +247,127 @@ const EventDashboardTab: React.FC<DashboardTabProps> = ({ eventId }) => {
           </Row>
           <Row gutter={[24, 16]} style={{ justifyContent: 'center', width: '100%' }}>
             <Col xs={24} lg={12}>
+              <div className="flex justify-start">
+                <Text className="mr-2 pt-1">Purchase Date:</Text>
+                <RangePicker
+                  value={purchaseDateRange}
+                  onChange={handlePurchaseDateChange}
+                  style={{ marginBottom: '10px' }}
+                  disabledDate={(current) => {
+                    // Convert to start of day to avoid timezone issues
+                    const currentDate = current.startOf('day');
+                    const eventEndDate = dayjs(event?.endDate).startOf('day');
+
+                    // Disable dates after event end date
+                    return currentDate.isAfter(eventEndDate);
+                  }}
+                />
+                <Button className="ml-2" onClick={resetPurchaseDateRange}>
+                  Reset
+                </Button>
+              </div>
               {purchaseDateRange && (
-                <div className="flex justify-start">
-                  <Text className="mr-2 pt-1">Purchase Date:</Text>
-                  <RangePicker value={purchaseDateRange} onChange={handlePurchaseDateChange} style={{ marginBottom: '10px' }} />
-                  <Button className="ml-2" onClick={resetPurchaseDateRange}>
-                    Reset
-                  </Button>
-                </div>
+                <GraphContainer
+                  title="Tickets Sold Over Time (Purchase Date)"
+                  data={purchaseTimeSeriesChartData}
+                  type="line"
+                  options={{
+                    maintainAspectRatio: true,
+                    responsive: true,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        title: {
+                          display: true,
+                          text: 'Number of Tickets',
+                        },
+                        ticks: {
+                          stepSize: 1,
+                          precision: 0,
+                        },
+                      },
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Purchase Date',
+                        },
+                        ticks: {
+                          maxRotation: 45,
+                          minRotation: 45,
+                        },
+                      },
+                    },
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
               )}
-              <GraphContainer
-                title="Tickets Sold Over Time (Purchase Date)"
-                data={purchaseTimeSeriesChartData}
-                type="line"
-                options={{
-                  maintainAspectRatio: true,
-                  responsive: true,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      title: {
-                        display: true,
-                        text: 'Number of Tickets',
-                      },
-                      ticks: {
-                        stepSize: 1,
-                        precision: 0,
-                      },
-                    },
-                    x: {
-                      title: {
-                        display: true,
-                        text: 'Purchase Date',
-                      },
-                      ticks: {
-                        maxRotation: 45,
-                        minRotation: 45,
-                      },
-                    },
-                  },
-                  plugins: {
-                    legend: {
-                      display: true,
-                      position: 'top',
-                    },
-                  },
-                }}
-              />
             </Col>
             <Col xs={24} lg={12}>
-              {eventDateRange && (
-                <div className="flex justify-start">
-                  <Text className="mr-2 pt-1">Event Date:</Text>
-                  <RangePicker
-                    value={eventDateRange}
-                    onChange={handleEventDateChange}
-                    style={{ marginBottom: '10px' }}
-                    disabledDate={(current) => {
-                      // Convert to start of day to avoid timezone issues
-                      const currentDate = current.startOf('day');
-                      const eventStart = dayjs(event?.startDate).startOf('day');
-                      const eventEnd = dayjs(event?.endDate).startOf('day');
+              <div className="flex justify-start">
+                <Text className="mr-2 pt-1">Event Date:</Text>
+                <RangePicker
+                  value={eventDateRange}
+                  onChange={handleEventDateChange}
+                  style={{ marginBottom: '10px' }}
+                  disabledDate={(current) => {
+                    // Convert to start of day to avoid timezone issues
+                    const currentDate = current.startOf('day');
+                    const eventStart = dayjs(event?.startDate).startOf('day');
+                    const eventEnd = dayjs(event?.endDate).startOf('day');
 
-                      // Disable dates outside the event range
-                      return currentDate.isBefore(eventStart) || currentDate.isAfter(eventEnd);
-                    }}
-                  />
-                  <Button className="ml-2" onClick={resetEventDateRange}>
-                    Reset
-                  </Button>
-                </div>
+                    // Disable dates outside the event range
+                    return currentDate.isBefore(eventStart) || currentDate.isAfter(eventEnd);
+                  }}
+                />
+                <Button className="ml-2" onClick={resetEventDateRange}>
+                  Reset
+                </Button>
+              </div>
+              {eventDateRange && (
+                <GraphContainer
+                  title="Expected Visits Over Time"
+                  data={eventTimeSeriesChartData}
+                  type="line"
+                  options={{
+                    maintainAspectRatio: true,
+                    responsive: true,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        title: {
+                          display: true,
+                          text: 'Number of Visitors',
+                        },
+                        ticks: {
+                          stepSize: 1,
+                          precision: 0,
+                        },
+                      },
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Event Date',
+                        },
+                        ticks: {
+                          maxRotation: 45,
+                          minRotation: 45,
+                        },
+                      },
+                    },
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'top',
+                      },
+                    },
+                  }}
+                />
               )}
-              <GraphContainer
-                title="Expected Visits Over Time"
-                data={eventTimeSeriesChartData}
-                type="line"
-                options={{
-                  maintainAspectRatio: true,
-                  responsive: true,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      title: {
-                        display: true,
-                        text: 'Number of Visitors',
-                      },
-                      ticks: {
-                        stepSize: 1,
-                        precision: 0,
-                      },
-                    },
-                    x: {
-                      title: {
-                        display: true,
-                        text: 'Event Date',
-                      },
-                      ticks: {
-                        maxRotation: 45,
-                        minRotation: 45,
-                      },
-                    },
-                  },
-                  plugins: {
-                    legend: {
-                      display: true,
-                      position: 'top',
-                    },
-                  },
-                }}
-              />
             </Col>
           </Row>
           <Row gutter={[24, 0]} style={{ justifyContent: 'center', width: '100%', marginTop: '16px' }}>
