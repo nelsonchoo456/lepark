@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, Typography } from 'antd';
+import { Button, DatePicker, Form, Input, InputNumber, Typography, message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -97,8 +97,14 @@ const CreateFacilityBooking = () => {
 
       await createBooking(bookingData);
       navigate(`/profile`);
-    } catch (error) {
+      message.success('Booking created successfully');
+    } catch (error: any) {
       console.error('Error creating booking:', error);
+      if (error.message?.includes('existing bookings within the selected date range')) {
+        message.error('There are existing bookings within the selected date range. Please select different dates.');
+      } else {
+        message.error('Failed to create booking. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
