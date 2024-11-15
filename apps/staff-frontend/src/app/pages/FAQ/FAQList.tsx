@@ -22,7 +22,7 @@ const FAQList: React.FC = () => {
   const faqTabItems = [
     ...(user?.role === StaffType.SUPERADMIN ? [{
       key: "all",
-      label: <LogoText>All FAQs</LogoText>,
+      label: <LogoText>NParks Wide</LogoText>,
       children: <FAQTab faqs={faqs.filter(faq => faq.parkId === null)} triggerFetch={triggerFetch} showParkColumn parks={parks} />
     }] : []),
     ...parks.map((park) => ({
