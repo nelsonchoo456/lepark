@@ -22,7 +22,6 @@ async function seedHistoricalRainfallData(days) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const dateString = date.toISOString().substring(0, 10);
-      console.log("dateString", dateString)
       const request = axios.get(
         `https://api-open.data.gov.sg/v2/real-time/api/rainfall?date=${dateString}`
       );
