@@ -204,9 +204,7 @@ const ViewBookingDetails: React.FC = () => {
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
             <Text className="block mb-2">Cancellation policy</Text>
-            <Text className="block">
-              Cancellations must be made at least 24 hours before the booking date. Contact admin for assistance.
-            </Text>
+            <Text className="block">No refunds will be issued for cancellations.</Text>
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
             <Text className="block mb-2">Need help?</Text>
