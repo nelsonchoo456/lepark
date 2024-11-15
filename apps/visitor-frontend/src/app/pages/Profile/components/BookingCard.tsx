@@ -1,9 +1,27 @@
 import React from 'react';
 import { Card, Typography, Image } from 'antd';
-import { BookingResponse } from '@lepark/data-access';
+import { BookingResponse, BookingStatusEnum } from '@lepark/data-access';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
+
+// Add helper function to format booking status
+const formatBookingStatus = (status: BookingStatusEnum): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'Pending';
+    case 'CANCELLED':
+      return 'Cancelled';
+    case 'REJECTED':
+      return 'Rejected';
+    case 'APPROVED_PENDING_PAYMENT':
+      return 'Approved (Pending Payment)';
+    case 'CONFIRMED':
+      return 'Confirmed';
+    default:
+      return status;
+  }
+};
 
 interface BookingCardProps {
   booking: BookingResponse;
@@ -32,7 +50,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
             <br />
             <Text>Purpose: {booking.bookingPurpose}</Text>
             <br />
-            <Text>Status: {booking.bookingStatus}</Text>
+            <Text>Status: {formatBookingStatus(booking.bookingStatus)}</Text>
           </>
         }
       />
