@@ -574,7 +574,7 @@ const ProfilePage = () => {
 
       <ContentWrapper>
         <div className="flex items-center">
-          <LogoText className="text-xl">My Upcoming Facility Bookings</LogoText>
+          <LogoText className="text-xl">My Upcoming Venue Bookings</LogoText>
           <div className="flex flex-1 items-center md:flex-row-reverse md:ml-4">
             <div className="h-[1px] flex-1 bg-green-100/50 mx-2"></div>
             <Button
@@ -595,7 +595,7 @@ const ProfilePage = () => {
                   const bookingDate = new Date(booking.dateStart);
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
-                  return bookingDate >= today;
+                  return bookingDate >= today && !['CANCELLED', 'REJECTED'].includes(booking.bookingStatus);
                 })
                 .sort((a, b) => new Date(a.dateStart).getTime() - new Date(b.dateStart).getTime())
                 .map((booking) => (

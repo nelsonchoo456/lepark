@@ -831,19 +831,11 @@ async function seed() {
   let createdNewHubs = [];
   let countHubs = 0;
   for (const newHub of newHubs) {
-    if (countHubs < 2) {
+    if (countHubs < 2 || countHubs === 3) {
       const createdNewHub = await prisma.hub.create({
         data: {
           ...newHub,
           facilityId: storeroomId, // or any other appropriate facilityId
-        },
-      });
-      createdNewHubs.push(createdNewHub);
-    } else if (countHubs < 3) {
-      const createdNewHub = await prisma.hub.create({
-        data: {
-          ...newHub,
-          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
         },
       });
       createdNewHubs.push(createdNewHub);
@@ -851,7 +843,7 @@ async function seed() {
       const createdNewHub = await prisma.hub.create({
         data: {
           ...newHub,
-          facilityId: storeroomId, // or any other appropriate facilityId
+          facilityId: storeroomBAMKPId, // or any other appropriate facilityId
         },
       });
       createdNewHubs.push(createdNewHub);
@@ -890,24 +882,6 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
-    } else if (count < 11) {
-      const createdSensor = await prisma.sensor.create({
-        data: {
-          ...sensor,
-          hubId: createdNewHubs[3].id,
-          facilityId: storeroomId, // or any other appropriate facilityId
-        },
-      });
-      sensorList.push(createdSensor);
-    } else if (count < 12) {
-      const createdSensor = await prisma.sensor.create({
-        data: {
-          ...sensor,
-          hubId: createdNewHubs[4].id,
-          facilityId: storeroomId, // or any other appropriate facilityId
-        },
-      });
-      sensorList.push(createdSensor);
     } else {
       const createdSensor = await prisma.sensor.create({
         data: {
@@ -925,7 +899,7 @@ async function seed() {
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
-  await seedHistoricalRainfallData(110);// 110 days
+  // await seedHistoricalRainfallData(110);// 110 days
   console.log(`Seeded historical rainfall data for 110 days.\n`);
 
   // Generate and create sensor readings for all sensors
@@ -1554,7 +1528,7 @@ function generateMockCrowdDataForSBG(sensorId, days) {
     baseCrowdLevel += (Math.random() - 0.5) * 20;
 
     // Ensure crowd level is within bounds, with a higher minimum
-    const maxCrowdLevel = (day === 0 || day === 6) ? 500 : 300; // Higher limit for weekends
+    const maxCrowdLevel = day === 0 || day === 6 ? 500 : 300; // Higher limit for weekends
     const minCrowdLevel = 20;
     const crowdLevel = Math.max(minCrowdLevel, Math.min(maxCrowdLevel, Math.floor(baseCrowdLevel)));
 
@@ -1637,7 +1611,7 @@ function generateMockCrowdDataForBAMKP(sensorId, days) {
     baseCrowdLevel += (Math.random() - 0.5) * 20;
 
     // Ensure crowd level is within bounds, with a higher minimum
-    const maxCrowdLevel = (day === 0 || day === 6) ? 300 : 200; // Higher limit for weekends
+    const maxCrowdLevel = day === 0 || day === 6 ? 300 : 200; // Higher limit for weekends
     const minCrowdLevel = 20;
     const crowdLevel = Math.max(minCrowdLevel, Math.min(maxCrowdLevel, Math.floor(baseCrowdLevel)));
 

@@ -27,6 +27,8 @@ const CreateFacilityBooking = () => {
   const [form] = Form.useForm();
   const [bookings, setBookings] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
+  const today = dayjs().startOf('day');
+  const threeMonthsLater = today.add(3, 'months');
 
   useEffect(() => {
     const loadFacilityData = async () => {
@@ -196,6 +198,7 @@ const CreateFacilityBooking = () => {
                   const twoWeeksFromNow = dayjs().add(2, 'weeks').startOf('day');
                   return (
                     current < twoWeeksFromNow || // Disable dates less than 2 weeks from now
+                    current > threeMonthsLater || // Disable dates more than 3 months away
                     isDateBooked(current)
                   );
                 }}
@@ -231,23 +234,35 @@ const CreateFacilityBooking = () => {
                   const startDate = form.getFieldValue('dateStart');
                   const maxEndDate = startDate ? startDate.add(3, 'days') : null;
 
-                  // Find the next booked date after the start date
-                  let nextBookedDate = null;
+                  // Find the next booked date or event after the start date
+                  let nextUnavailableDate = null;
                   if (startDate) {
+                    // Check both bookings and events
                     const futureBookings = bookings
                       .filter((booking) => dayjs(booking.dateStart).isAfter(startDate))
                       .sort((a, b) => dayjs(a.dateStart).diff(dayjs(b.dateStart)));
 
-                    if (futureBookings.length > 0) {
-                      nextBookedDate = dayjs(futureBookings[0].dateStart);
+                    const futureEvents = events
+                      .filter((event) => dayjs(event.startDate).isAfter(startDate))
+                      .sort((a, b) => dayjs(a.startDate).diff(dayjs(b.startDate)));
+
+                    // Get the earliest date from either bookings or events
+                    const nextBookingDate = futureBookings.length > 0 ? dayjs(futureBookings[0].dateStart) : null;
+                    const nextEventDate = futureEvents.length > 0 ? dayjs(futureEvents[0].startDate) : null;
+
+                    if (nextBookingDate && nextEventDate) {
+                      nextUnavailableDate = nextBookingDate.isBefore(nextEventDate) ? nextBookingDate : nextEventDate;
+                    } else {
+                      nextUnavailableDate = nextBookingDate || nextEventDate;
                     }
                   }
 
                   return (
                     current < dayjs().startOf('day') ||
+                    current > threeMonthsLater || // Disable dates more than 3 months away
                     (startDate && current < startDate) ||
                     (maxEndDate && current > maxEndDate) ||
-                    (nextBookedDate && current.isSameOrAfter(nextBookedDate)) ||
+                    (nextUnavailableDate && current.isSameOrAfter(nextUnavailableDate)) ||
                     isDateBooked(current)
                   );
                 }}
