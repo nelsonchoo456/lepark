@@ -3,7 +3,7 @@ import { Card, Typography, Image } from 'antd';
 import { BookingResponse, BookingStatusEnum } from '@lepark/data-access';
 import dayjs from 'dayjs';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 // Add helper function to format booking status
 const formatBookingStatus = (status: BookingStatusEnum): string => {
@@ -48,9 +48,8 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
           <>
             <Text>{dayjs(booking.dateStart).format('MMM D, YYYY')}</Text>
             <br />
-            <Text>Purpose: {booking.bookingPurpose}</Text>
-            <br />
-            <Text>Status: {formatBookingStatus(booking.bookingStatus)}</Text>
+            <Paragraph ellipsis={{ rows: 1 }}>Purpose: {booking.bookingPurpose}</Paragraph>
+            <Paragraph ellipsis={{ rows: 1 }}>Status: {formatBookingStatus(booking.bookingStatus)}</Paragraph>
           </>
         }
       />

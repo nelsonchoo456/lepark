@@ -1,5 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import { deleteOccurrence, getZonesByParkId, OccurrenceResponse, StaffResponse, ZoneResponse } from '@lepark/data-access';
+import { deleteOccurrence, getAllParks, getZonesByParkId, OccurrenceResponse, ParkResponse, StaffResponse, ZoneResponse } from '@lepark/data-access';
 import { Button, Flex, message, Table, TableProps, Tag, Tooltip } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -31,6 +31,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
   const { occurrences, loading, triggerFetch } = useFetchOccurrences(selectedPark?.id);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const [parks, setParks] = useState<ParkResponse[]>();
   const [zones, setZones] = useState<ZoneResponse[]>();
   const [searchQuery, setSearchQuery] = useState('');
   const [view, setView] = useState<'map' | 'details'>('details');
@@ -50,6 +51,8 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
   useEffect(() => {
     if (selectedPark) {
       fetchZones(selectedPark.id);
+    } else {
+      fetchParks();
     }
   }, [selectedPark]);
 
@@ -61,6 +64,17 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
       }
     } catch (e) {
       setZones([]);
+    }
+  };
+
+  const fetchParks = async () => {
+    try {
+      const parksRes = await getAllParks();
+      if (parksRes.status === 200) {
+        setParks(parksRes.data);
+      }
+    } catch (e) {
+      setParks([]);
     }
   };
 
@@ -153,6 +167,11 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
     },
   ];
 
+  const handleParkPolygonClick = (map: L.Map, geom: [number, number][], entityId: string | number) => {
+    map.fitBounds(geom);
+    // map.setZoom(SHOW_ZONES_ZOOM);
+  };
+
   return (
     <>
       {contextHolder}
@@ -191,7 +210,18 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
               >
                 <Button onClick={() => setView('details')} icon={<MdClose />} shape="circle" type="primary" />
               </div>
-              <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />
+              {parks?.map((park) => (
+                <PolygonWithLabel
+                  key={park.id}
+                  entityId={park.id}
+                  geom={park.geom}
+                  polygonLabel={park.name}
+                  image={park.images && park.images.length > 0 ? park.images[0] : ''}
+                  color="transparent"
+                  fillOpacity={0.6}
+                />
+              ))}
+              {selectedPark && <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />}
               {zones?.map((zone) => (
                 <PolygonWithLabel
                   entityId={zone.id}
@@ -203,7 +233,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
                   // handlePolygonClick={() => setHovered()}
                 />
               ))}
-              {occurrences.map((occurrence) => (
+              {filteredOccurrences.map((occurrence) => (
                 <PictureMarker
                   id={occurrence.id}
                   entityType="OCCURRENCE"
