@@ -903,7 +903,7 @@ async function seed() {
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
-  // await seedHistoricalRainfallData(110);// 110 days
+  await seedHistoricalRainfallData(110);// 110 days
   console.log(`Seeded historical rainfall data for 110 days.\n`);
 
   // Generate and create sensor readings for all sensors
