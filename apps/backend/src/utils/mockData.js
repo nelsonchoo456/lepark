@@ -80,7 +80,9 @@ const zonesData = [
       '2024-10-01T11:00:00.000Z',
       '2024-10-01T11:00:00.000Z',
     ],
-    images: ["https://grangettos.com/cdn/shop/articles/shutterstock_1715940037_4871d9df-b91a-495a-9bb1-577142e57d1b_1500x.jpg?v=1627419909"],
+    images: [
+      'https://grangettos.com/cdn/shop/articles/shutterstock_1715940037_4871d9df-b91a-495a-9bb1-577142e57d1b_1500x.jpg?v=1627419909',
+    ],
     geom: 'POLYGON((103.83960843086244 1.364782715649657, 103.83994102478029 1.3646218287569876, 103.84026288986207 1.3645467482033933, 103.84114265441896 1.3643107807339876, 103.840970993042 1.3637744909446994, 103.84098172187807 1.3633561848261084, 103.840970993042 1.3632167494370877, 103.8395655155182 1.363313281630344, 103.83894324302675 1.3635492491975707, 103.83839607238771 1.3638602973190153, 103.83881449699402 1.3650186830727666, 103.83960843086244 1.364782715649657))',
     paths: 'LINESTRING(103.854 1.292, 103.855 1.293, 103.856 1.292)',
     zoneStatus: 'OPEN',
@@ -118,7 +120,7 @@ const zonesData = [
   {
     // zoneId 3
     name: 'Healing Garden',
-    images: ["https://media.timeout.com/images/105850932/image.jpg"],
+    images: ['https://media.timeout.com/images/105850932/image.jpg'],
     description:
       'A tranquil area dedicated to medicinal plants from Southeast Asia, designed to promote wellness and relaxation. The Healing Garden showcases over 400 species of plants.',
     openingHours: [
@@ -147,7 +149,9 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Treetop Forest',
-    images: ["https://onecms-res.cloudinary.com/image/upload/s--IXogtaSE--/f_auto,q_auto/c_fill,g_auto,h_338,w_600/v1/mediacorp/cna/image/2022/11/18/botanic_gardens_bridge.png?itok=qtnHanKo"],
+    images: [
+      'https://onecms-res.cloudinary.com/image/upload/s--IXogtaSE--/f_auto,q_auto/c_fill,g_auto,h_338,w_600/v1/mediacorp/cna/image/2022/11/18/botanic_gardens_bridge.png?itok=qtnHanKo',
+    ],
     description: 'Treetop forest boasts some of the tallest tropical trees in Southeast Asia.',
     zoneStatus: 'OPEN',
     openingHours: [
@@ -173,7 +177,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Ginger Garden',
-    images: ["https://thegeestravel.com/wp-content/uploads/2022/05/Botanical-Gardens-In-Singapore.jpg"],
+    images: ['https://thegeestravel.com/wp-content/uploads/2022/05/Botanical-Gardens-In-Singapore.jpg'],
     description: 'A garden dedicated to the fascinating world of gingers, featuring over 250 species of gingers and other related plants.',
     zoneStatus: 'OPEN',
     openingHours: [
@@ -199,7 +203,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Evolution Garden',
-    images: ["https://www.nparks.gov.sg/sbg/whats-happening/-/media/sbg/images/events/ravine-nog-gr002351-low-res.jpg"],
+    images: ['https://www.nparks.gov.sg/sbg/whats-happening/-/media/sbg/images/events/ravine-nog-gr002351-low-res.jpg'],
     description:
       'An educational garden that takes visitors on a journey through the evolution of plants, from prehistoric ferns to modern flowering plants.',
     zoneStatus: 'UNDER_CONSTRUCTION',
@@ -2623,7 +2627,7 @@ const facilitiesData = [
     isPublic: true,
     isSheltered: false,
     facilityType: 'AMPHITHEATER',
-    reservationPolicy: 'Bookings must be made at least two weeks in advance. Usage is limited to a maximum of 5 hours per event.',
+    reservationPolicy: 'Bookings must be made at least two weeks in advance.',
     rulesAndRegulations:
       '1. Audio equipment should not exceed the permissible volume levels. 2. Clean up all trash after your event. 3. No smoking or alcohol consumption. 4. Ensure all cables and equipment are safely secured to prevent accidents.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/facility/amphitheater.jpg'],
@@ -2986,6 +2990,23 @@ const eventsData = [
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
     images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/1727629448629-obstacle%20course%20challenge%201.jpg'],
+    status: 'UPCOMING',
+    facilityId: '',
+  },
+  {
+    title: 'Camping with your family',
+    description:
+      'Camping with your family is a fun-filled event designed to entertain and engage children in a playful environment at our camping area. Join us for a great time!',
+    type: 'COMPETITION',
+    suitability: 'CHILDREN',
+    startDate: '2024-12-17T02:00:00.000Z',
+    endDate: '2024-12-18T09:00:00.000Z',
+    startTime: '2024-12-17T02:00:00.000Z',
+    endTime: '2024-12-18T09:00:00.000Z',
+    maxCapacity: 30,
+    ticketingPolicy:
+      'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
+    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/event/camping-event.jpg'],
     status: 'UPCOMING',
     facilityId: '',
   },
@@ -4109,8 +4130,7 @@ const announcementsData = [
   },
   {
     title: 'Holly Jolly Christmas',
-    content:
-      'Join us for a holly jolly Christmas! Look out for our christmas trees and decorations at our parks.',
+    content: 'Join us for a holly jolly Christmas! Look out for our christmas trees and decorations at our parks.',
     updatedAt: '2024-11-05T16:00:00.000Z',
     startDate: '2024-11-05T16:00:00.000Z',
     endDate: '2024-12-31T15:59:59.000Z',
@@ -4402,7 +4422,7 @@ const feedbacksData = [
     resolvedStaffId: '',
     dateCreated: '2024-10-22T09:00:00Z',
     dateResolved: null,
-    needResponse: true
+    needResponse: true,
   },
   {
     title: 'Rare Bird Sighting',
@@ -4416,21 +4436,24 @@ const feedbacksData = [
     dateCreated: '2024-10-22T10:30:00Z',
     dateResolved: '2024-10-24T14:00:00Z',
     needResponse: true,
-    remarks: 'Confirmed as rare species. Added to wildlife database. Follow up with visitor appreciation email.'
+    remarks: 'Confirmed as rare species. Added to wildlife database. Follow up with visitor appreciation email.',
   },
   {
     title: 'Playground Needs Maintenance',
-    description: 'The swing set in the children\'s playground is squeaking loudly. It might need some oil.',
+    description: "The swing set in the children's playground is squeaking loudly. It might need some oil.",
     feedbackCategory: 'FACILITIES',
     feedbackStatus: 'ACCEPTED',
     visitorId: '',
     parkId: 1,
-    images: ['https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369386688-Screenshot%202024-10-31%20at%206.08.06%20PM.png','https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369387159-Screenshot%202024-10-31%20at%206.08.13%20PM.png'],
+    images: [
+      'https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369386688-Screenshot%202024-10-31%20at%206.08.06%20PM.png',
+      'https://lepark.s3.ap-southeast-1.amazonaws.com/plantTasks/1730369387159-Screenshot%202024-10-31%20at%206.08.13%20PM.png',
+    ],
     resolvedStaffId: '',
     dateCreated: '2024-10-22T11:45:00Z',
     dateResolved: '2024-10-24T16:30:00Z',
     needResponse: false,
-    remarks: 'Maintenance team oiled swing set. Schedule weekly playground check.'
+    remarks: 'Maintenance team oiled swing set. Schedule weekly playground check.',
   },
   {
     title: 'Great Staff Assistance',
@@ -4443,11 +4466,11 @@ const feedbacksData = [
     resolvedStaffId: '',
     dateCreated: '2024-10-22T13:15:00Z',
     dateResolved: null,
-    needResponse: false
+    needResponse: false,
   },
   {
     title: 'Litter Problem',
-    description: 'There\'s a lot of litter near the picnic area. More trash bins might help.',
+    description: "There's a lot of litter near the picnic area. More trash bins might help.",
     feedbackCategory: 'CLEANLINESS',
     feedbackStatus: 'REJECTED',
     visitorId: '',
@@ -4457,7 +4480,7 @@ const feedbacksData = [
     dateCreated: '2024-10-22T15:00:00Z',
     dateResolved: '2024-10-24T09:00:00Z',
     needResponse: true,
-    remarks: 'Recent survey shows sufficient bins. Increased patrol scheduled. Monitor situation for 2 weeks.'
+    remarks: 'Recent survey shows sufficient bins. Increased patrol scheduled. Monitor situation for 2 weeks.',
   },
   {
     title: 'Suggestion for Night Tours',
@@ -4470,13 +4493,13 @@ const feedbacksData = [
     resolvedStaffId: '',
     dateCreated: '2024-10-22T16:45:00Z',
     dateResolved: null,
-    needResponse: false
+    needResponse: false,
   },
 
   // Park ID 2 Feedbacks
   {
     title: 'Accessibility Improvements Needed',
-    description: 'The path to the main garden isn\'t very wheelchair-friendly. Could this be improved?',
+    description: "The path to the main garden isn't very wheelchair-friendly. Could this be improved?",
     feedbackCategory: 'ACCESSIBILITY',
     feedbackStatus: 'PENDING',
     visitorId: '',
@@ -4485,7 +4508,7 @@ const feedbacksData = [
     resolvedStaffId: '',
     dateCreated: '2024-10-22T09:30:00Z',
     dateResolved: null,
-    needResponse: true
+    needResponse: true,
   },
   {
     title: 'Interesting Insect Species',
@@ -4499,11 +4522,11 @@ const feedbacksData = [
     dateCreated: '2024-10-22T11:00:00Z',
     dateResolved: '2024-10-24T13:30:00Z',
     needResponse: true,
-    remarks: 'Native species confirmed. New information plaque added near pond. Consider organizing insect awareness program.'
+    remarks: 'Native species confirmed. New information plaque added near pond. Consider organizing insect awareness program.',
   },
   {
     title: 'Water Fountain Not Working',
-    description: 'The water fountain near the jogging track isn\'t functioning properly.',
+    description: "The water fountain near the jogging track isn't functioning properly.",
     feedbackCategory: 'FACILITIES',
     feedbackStatus: 'PENDING',
     visitorId: '',
@@ -4512,7 +4535,7 @@ const feedbacksData = [
     resolvedStaffId: '',
     dateCreated: '2024-10-22T12:15:00Z',
     dateResolved: null,
-    needResponse: false
+    needResponse: false,
   },
   {
     title: 'Excellent Educational Program',
@@ -4526,11 +4549,11 @@ const feedbacksData = [
     dateCreated: '2024-10-22T14:00:00Z',
     dateResolved: '2024-10-24T15:45:00Z',
     needResponse: false,
-    remarks: 'Positive feedback noted. Schedule more workshops for next quarter. Update event calendar on website.'
+    remarks: 'Positive feedback noted. Schedule more workshops for next quarter. Update event calendar on website.',
   },
   {
     title: 'Safety Concern',
-    description: 'There\'s a low-hanging branch on the main walking path that could be dangerous.',
+    description: "There's a low-hanging branch on the main walking path that could be dangerous.",
     feedbackCategory: 'SAFETY',
     feedbackStatus: 'REJECTED',
     visitorId: '',
@@ -4540,7 +4563,7 @@ const feedbacksData = [
     dateCreated: '2024-10-22T15:30:00Z',
     dateResolved: '2024-10-24T10:00:00Z',
     needResponse: true,
-    remarks: 'Inspection completed. Branch is within safe height range. Will continue to monitor tree growth.'
+    remarks: 'Inspection completed. Branch is within safe height range. Will continue to monitor tree growth.',
   },
   {
     title: 'Request for More Benches',
@@ -4553,8 +4576,22 @@ const feedbacksData = [
     resolvedStaffId: '',
     dateCreated: '2024-10-22T17:00:00Z',
     dateResolved: null,
-    needResponse: false
-  }
+    needResponse: false,
+  },
+];
+
+const bookingsData = [
+  {
+    bookingPurpose: 'Camping with family.',
+    pax: 5,
+    bookingStatus: 'CONFIRMED',
+    dateStart: '2024-12-11T10:00:00Z',
+    dateEnd: '2024-12-11T12:00:00Z',
+    dateBooked: '2024-10-22T17:00:00Z',
+    visitorRemarks: 'No remarks',
+    facilityId: '',
+    visitorId: '',
+  },
 ];
 
 module.exports = {
@@ -4588,4 +4625,5 @@ module.exports = {
   eventTransactionLocalData,
   eventTransactionStandardData,
   feedbacksData,
+  bookingsData,
 };
