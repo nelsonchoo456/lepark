@@ -27,10 +27,18 @@ async function seedHistoricalRainfallData(days) {
       );
       requests.push(request);
     }
-    const responses = await Promise.all(requests);
+    const responses = await Promise.all(
+      requests.map(request =>
+        request.catch(error => {
+          return null; // Return null to handle it later if needed
+        })
+      )
+    );
+    
+    const validResponses = await responses.filter(response => response !== null);
 
     // Process the responses
-    for (const response of responses) {
+    for (const response of validResponses) {
       if (response.data && response.data.data && response.data.data.readings) {
         const stations = response.data.data.stations;
         const readings = response.data.data.readings;
@@ -64,7 +72,6 @@ async function seedHistoricalRainfallData(days) {
     }
   } catch (error) {
     console.error('Error fetching weather forecast:', error);
-    throw new Error('Failed to fetch weather forecast');
   }
   
   return [];
