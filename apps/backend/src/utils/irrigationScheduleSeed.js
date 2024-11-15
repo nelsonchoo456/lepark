@@ -18,10 +18,11 @@ async function seedHistoricalRainfallData(days) {
     const today = new Date();
 
     // Prepare requests for the specified number of days
-    for (let i = 0; i < days; i++) {
+    for (let i = 1; i < days + 1; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const dateString = date.toISOString().substring(0, 10);
+      console.log("dateString", dateString)
       const request = axios.get(
         `https://api-open.data.gov.sg/v2/real-time/api/rainfall?date=${dateString}`
       );
@@ -34,9 +35,11 @@ async function seedHistoricalRainfallData(days) {
         })
       )
     );
-    
+    console.log("responses", responses.length)
+    // console.log("responses[0]", responses[0])    
+    // console.log("responses[50]", responses[50])    
     const validResponses = await responses.filter(response => response !== null);
-
+    console.log("validResponses", validResponses.length)
     // Process the responses
     for (const response of validResponses) {
       if (response.data && response.data.data && response.data.data.readings) {

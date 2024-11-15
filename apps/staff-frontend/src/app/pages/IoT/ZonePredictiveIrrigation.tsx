@@ -27,7 +27,8 @@ const ZonePredictiveIrrigation: React.FC = () => {
     hubs, 
     predictives, 
     loading: dataLoading, 
-    getSensorUnit 
+    getSensorUnit,
+    refreshData: triggerFetchZoneData
   } = useZonePredictiveIrrigation(zoneId || '');
 
   const loading = zoneLoading || dataLoading;
@@ -160,7 +161,7 @@ const ZonePredictiveIrrigation: React.FC = () => {
           </TabPane>
           {hubs.map((hub, index) => (
             <TabPane tab={hub.name} key={index.toString()}>
-              <HubPredictiveIrrigationTab hub={hub} />
+              <HubPredictiveIrrigationTab hub={hub} triggerFetchZoneData={triggerFetchZoneData}/>
             </TabPane>
           ))}
         </Tabs>
