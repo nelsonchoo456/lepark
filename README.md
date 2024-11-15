@@ -8,7 +8,22 @@
 
 <!-- ## Finish your remote caching setup
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/0fAwxHqk1g) -->
+[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/0fAwxHqk1g) -
+
+![1731693988663](image/README/1731693988663.png)
+
+## Advanced Features
+
+* Rainfall Forecast Module for Daily Irrigation Recommendation
+* Predictive Crowd Insights
+* IoT-Enabled Crowd Levels with Heatmap Visualisations
+* Decarbonization Tracking and Visualisations
+* Customisable Maps
+  * Park, Zone Boundaries Designing
+* IoT Monitoring
+* Venue Booking System
+* Attractions and Events Booking System
+* Parks Taxonomy Information
 
 ## System Overview
 
@@ -72,6 +87,36 @@ Together, these systems provide a comprehensive solution for NParks, supporting 
 10. **Note:**
 
     - If you want to test Reset Password, you have to use a real email account when signing up.
+
+## Gallery
+
+### Lepark Park Staff System
+
+![1731692430036](image/README/1731692430036.png)
+
+![1731692731707](image/README/1731692731707.png)
+
+![1731692741974](image/README/1731692741974.png)
+
+![1731693189981](image/README/1731693189981.png)
+
+![1731693202254](image/README/1731693202254.png)
+
+![1731693217117](image/README/1731693217117.png)
+
+![1731693223912](image/README/1731693223912.png)
+
+![1731693229539](image/README/1731693229539.png)
+
+### Lepark Park Visitor System
+
+![1731692534359](image/README/1731692534359.png)
+
+![1731693241402](image/README/1731693241402.png)
+
+![1731693247082](image/README/1731693247082.png)
+
+![1731693253472](image/README/1731693253472.png)
 
 <!-- To create a production bundle:
 
