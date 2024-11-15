@@ -835,7 +835,7 @@ async function seed() {
   let createdNewHubs = [];
   let countHubs = 0;
   for (const newHub of newHubs) {
-    if (countHubs < 2 || countHubs === 3) {
+    if (countHubs < 2) {
       const createdNewHub = await prisma.hub.create({
         data: {
           ...newHub,
@@ -843,11 +843,19 @@ async function seed() {
         },
       });
       createdNewHubs.push(createdNewHub);
-    } else {
+    } else if (countHubs < 3) {
       const createdNewHub = await prisma.hub.create({
         data: {
           ...newHub,
           facilityId: storeroomBAMKPId, // or any other appropriate facilityId
+        },
+      });
+      createdNewHubs.push(createdNewHub);
+    } else {
+      const createdNewHub = await prisma.hub.create({
+        data: {
+          ...newHub,
+          facilityId: storeroomId, // or any other appropriate facilityId
         },
       });
       createdNewHubs.push(createdNewHub);
@@ -886,6 +894,24 @@ async function seed() {
         },
       });
       sensorList.push(createdSensor);
+    } else if (count < 11) {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[3].id,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
+    } else if (count < 12) {
+      const createdSensor = await prisma.sensor.create({
+        data: {
+          ...sensor,
+          hubId: createdNewHubs[4].id,
+          facilityId: storeroomId, // or any other appropriate facilityId
+        },
+      });
+      sensorList.push(createdSensor);
     } else {
       const createdSensor = await prisma.sensor.create({
         data: {
@@ -903,7 +929,7 @@ async function seed() {
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
-  await seedHistoricalRainfallData(110);// 110 days
+  await seedHistoricalRainfallData(110); // 110 days
   console.log(`Seeded historical rainfall data for 110 days.\n`);
 
   // Generate and create sensor readings for all sensors
