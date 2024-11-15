@@ -1,10 +1,18 @@
-import { AttractionResponse, FacilityWithEvents, getZonesByParkId, ParkResponse, ZoneResponse } from '@lepark/data-access';
+import {
+  AttractionResponse,
+  FacilityResponse,
+  FacilityTypeEnum,
+  FacilityWithEvents,
+  getZonesByParkId,
+  ParkResponse,
+  ZoneResponse,
+} from '@lepark/data-access';
 import { useEffect, useMemo, useState } from 'react';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { Button, Empty, Select, Tooltip, Typography } from 'antd';
+import { Button, Dropdown, Empty, Select, Tooltip, Typography, Menu, Checkbox, Popover, Col, Space, CheckboxProps } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2';
-import { FaLandmark, FaStar, FaTent, FaTicket } from 'react-icons/fa6';
+import { FaFilter, FaLandmark, FaStar, FaTent, FaTicket } from 'react-icons/fa6';
 import { useFetchMarkersByZoneGroup } from '../../../components/map/hooks/useFetchMarkersByZoneGroup';
 import { HoverItem } from '../../../components/map/interfaces/interfaces';
 import PictureMarker from '../../../components/map/PictureMarker';
@@ -22,6 +30,7 @@ import UserLiveLocationMap from '../../../components/map/userLocation/UserLiveLo
 import { PiPlantFill, PiStar, PiStarFill } from 'react-icons/pi';
 import { image } from 'html2canvas/dist/types/css/types/image';
 import { IoLeafSharp } from 'react-icons/io5';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface OneZoneProps {
   zone: ZoneResponse;
@@ -47,6 +56,23 @@ interface MarkersHandlerProps {
   hovered?: HoverItem | null;
   setHovered?: any;
 }
+
+const filteredTypes = [
+  'TOILET',
+  'PLAYGROUND',
+  'INFORMATION',
+  'CARPARK',
+  'ACCESSIBILITY',
+  'STAGE',
+  'WATER_FOUNTAIN',
+  'PICNIC_AREA',
+  'BBQ_PIT',
+  'CAMPING_AREA',
+  'FIRST_AID',
+  'AMPHITHEATER',
+  'GAZEBO',
+];
+
 interface MarkersGroupProps {
   attractions?: AttractionResponse[];
   facilities?: FacilityWithEvents[];
@@ -63,12 +89,14 @@ interface MarkersGroupProps {
   setShowEvents?: (show: boolean) => void;
 
   zoomLevel?: number;
+  selectedFacilityTypes?: string[]
 }
 
 interface InformationProps {
   hoverItem: HoverItem;
   setHovered: (hover: any) => void;
 }
+
 
 // -- [ LAYER 1 ] --
 // Zones all
@@ -111,20 +139,19 @@ const Zones = ({ park }: ZonesProps) => {
       id: '' + zone.id,
       title: zone.name,
       image: zone.images ? zone.images[0] : null,
-      entityType: "ZONE",
+      entityType: 'ZONE',
       children: (
         <div className="h-full w-full flex flex-col justify-between">
           <Typography.Paragraph ellipsis={{ rows: 2 }}>{zone.description}</Typography.Paragraph>
         </div>
-      )
-    })
-  }
-  
+      ),
+    });
+  };
 
   return (
     <>
       {zones?.map((z) => (
-        <OneZone zone={z} setHovered={() => setHoveredZone(z)}/>
+        <OneZone zone={z} setHovered={() => setHoveredZone(z)} />
       ))}{' '}
       <MarkersHandlers
         park={park}
@@ -183,6 +210,7 @@ const MarkersHandlers = ({
   const [zoomLevel, setZoomLevel] = useState(map.getZoom());
   const [lat, setLat] = useState<number>();
   const [lng, setLng] = useState<number>();
+  const [selectedFacilityTypes, setSelectedFacilityTypes] = useState<string[]>([]);
 
   const searchOptions = useMemo(
     () => [
@@ -196,14 +224,13 @@ const MarkersHandlers = ({
         value: `facility_${item.id}`,
         searchVal: `${item.name.toLowerCase()}-${item.facilityType.toLowerCase()}-facility`,
       })),
-      ...(facilities || [])
-        .flatMap((fac) => 
-          fac.events.map((event) => ({
-            label: <div className="bg-highlightGreen-100 px-1 rounded">{event.title}</div>,
-            value: `event_${event.id}`,
-            searchVal: `${event.title.toLowerCase()}-${fac.name.toLowerCase()}-${fac.facilityType.toLowerCase()}-event`,
-          }))
-        ),
+      ...(facilities || []).flatMap((fac) =>
+        fac.events.map((event) => ({
+          label: <div className="bg-highlightGreen-100 px-1 rounded">{event.title}</div>,
+          value: `event_${event.id}`,
+          searchVal: `${event.title.toLowerCase()}-${fac.name.toLowerCase()}-${fac.facilityType.toLowerCase()}-event`,
+        })),
+      ),
     ],
     [attractions, facilities, facilityEvents],
   );
@@ -213,31 +240,30 @@ const MarkersHandlers = ({
   const handleSelect = (value: string) => {
     const [type, id] = value.split('_');
 
-    const selectedMarker: any = (
+    const selectedMarker: any =
       attractions?.find((attraction) => attraction.id === id) ||
       facilities?.find((facility) => facility.id === id) ||
-      facilityEvents?.flatMap((facility) => facility.events).find((event) => event.id === id)
-    );
+      facilityEvents?.flatMap((facility) => facility.events).find((event) => event.id === id);
 
     if (selectedMarker) {
       switch (type) {
         case 'attraction':
-          map.setView([selectedMarker.lat, selectedMarker.lng], 18)
+          map.setView([selectedMarker.lat, selectedMarker.lng], 18);
           // navigate(`/attraction/${id}`);
           break;
         case 'facility':
-          map.setView([selectedMarker.lat, selectedMarker.long], 18)
+          setSelectedFacilityTypes([])
+          map.setView([selectedMarker.lat, selectedMarker.long], 18);
           // navigate(`/facility/${id}`);
           break;
         case 'event':
-          map.setView([selectedMarker.lat, selectedMarker.lng], 18)
+          map.setView([selectedMarker.lat, selectedMarker.lng], 18);
           // navigate(`/event/${id}`);
           break;
         default:
           break;
       }
     }
-    
   };
 
   const handleSearch = (value: string) => {
@@ -278,6 +304,34 @@ const MarkersHandlers = ({
       map.off('zoom', handleZoom); // Cleanup listener
     };
   }, [map]);
+  
+  // Dropdown menu for facility types
+  const facilityTypeMenu = () => {
+    return (
+      <Checkbox.Group defaultValue={[]} value={selectedFacilityTypes}>
+        <Space direction="vertical">
+          {filteredTypes.map((type) => {
+            return (
+            <Checkbox key={type} value={type} onChange={() => toggleFacilityType(type)}>
+              {formatEnumLabelToRemoveUnderscores(type)}
+            </Checkbox>
+          )})}
+        </Space>
+        {/* </Col> */}
+      </Checkbox.Group>
+    );
+  };
+
+  // Toggle facility type selection
+  const toggleFacilityType = (type: string) => {
+    if (setShowFacilities) { setShowFacilities(true) }
+    setSelectedFacilityTypes(
+      (prev) =>
+        prev.includes(type)
+          ? prev.filter((t) => t !== type) // Remove if already selected
+          : [...prev, type], // Add if not selected
+    );
+  };
 
   return (
     <>
@@ -312,13 +366,25 @@ const MarkersHandlers = ({
         }}
       >
         <div className="flex flex-col items-end justify-end mt-2 gap-2">
-          <div
-            key={'facilities-vis'}
-            onClick={() => setShowFacilities && setShowFacilities((prev) => !prev)}
-            className={`flex flex-col items-center text-white w-16 py-2 rounded-md ${showFacilities ? 'bg-sky-400' : 'bg-sky-200'}`}
-          >
-            <FaTent />
-            <div style={{ fontSize: '0.7rem' }}>Facilities</div>
+          <div className="flex">
+            <div
+              key={'facilities-vis'}
+              onClick={() => setShowFacilities && setShowFacilities((prev) => !prev)}
+              className={`flex flex-col items-center text-white w-16 py-2 rounded-l-md ${showFacilities ? 'bg-sky-400' : 'bg-sky-200'}`}
+            >
+              <FaTent />
+              <div style={{ fontSize: '0.7rem' }}>Facilities</div>
+            </div>
+            <Popover content={facilityTypeMenu()} trigger="click">
+              <div
+                key={'facilities-vis'}
+                className={`flex flex-col items-center justify-center text-center text-white px-2 h-full py-2 rounded-r-md ${
+                  showFacilities ? 'bg-sky-300' : 'bg-sky-200'
+                }`}
+              >
+                <FaFilter/>
+              </div>{' '}
+            </Popover> 
           </div>
           <div
             key={'attractions-vis'}
@@ -368,6 +434,7 @@ const MarkersHandlers = ({
         showEvents={showEvents}
         setShowEvents={setShowEvents}
         zoomLevel={zoomLevel}
+        selectedFacilityTypes={selectedFacilityTypes}
       />
     </>
   );
@@ -386,12 +453,20 @@ const MarkersGroup = ({
   showEvents,
   setShowEvents,
   zoomLevel,
+  selectedFacilityTypes
 }: MarkersGroupProps) => {
   const navigate = useNavigate();
-  const map = useMap(); 
+  const map = useMap();
 
   const zoom = (lat: number, lng: number) => {
-    map.setView([lat, lng], 18)
+    map.setView([lat, lng], 18);
+  };
+
+  const showFacilityBasedOnType = (facility: FacilityWithEvents) => {
+    if (!selectedFacilityTypes || selectedFacilityTypes.length === 0) {
+      return true;
+    }
+    return selectedFacilityTypes?.includes(facility.facilityType)
   }
 
   return (
@@ -422,33 +497,33 @@ const MarkersGroup = ({
               // tooltipLabel={attraction.title}
               hovered={hovered}
               setHovered={() => {
-                zoom(attraction.lat, attraction.lng)
+                zoom(attraction.lat, attraction.lng);
                 setHovered &&
-                setHovered({
-                  ...attraction,
-                  title: (
-                    <div className="flex justify-between items-center">
-                      {attraction.title}
-                      {/* <ParkStatusTag>{attraction.status}</ParkStatusTag> */}
-                    </div>
-                  ),
-                  image: attraction.images ? attraction.images[0] : null,
-                  entityType: 'ATTRACTION',
-                  children: (
-                    <div className="h-full w-full flex flex-col justify-between">
-                      <div>
-                        <Typography.Paragraph ellipsis={{ rows: 2 }}>{attraction.description}</Typography.Paragraph>
+                  setHovered({
+                    ...attraction,
+                    title: (
+                      <div className="flex justify-between items-center">
+                        {attraction.title}
+                        {/* <ParkStatusTag>{attraction.status}</ParkStatusTag> */}
                       </div>
-                      <div className="flex justify-end">
-                        <Tooltip title="View Attraction details">
-                          <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
-                            <MdArrowOutward />
-                          </Button>
-                        </Tooltip>
+                    ),
+                    image: attraction.images ? attraction.images[0] : null,
+                    entityType: 'ATTRACTION',
+                    children: (
+                      <div className="h-full w-full flex flex-col justify-between">
+                        <div>
+                          <Typography.Paragraph ellipsis={{ rows: 2 }}>{attraction.description}</Typography.Paragraph>
+                        </div>
+                        <div className="flex justify-end">
+                          <Tooltip title="View Attraction details">
+                            <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
+                              <MdArrowOutward />
+                            </Button>
+                          </Tooltip>
+                        </div>
                       </div>
-                    </div>
-                  ),
-                })
+                    ),
+                  });
               }}
             />
           </>
@@ -479,7 +554,7 @@ const MarkersGroup = ({
                   lat={facility.lat}
                   lng={facility.long}
                   facilityType={facility.facilityType}
-                  showFacilities={showFacilities || false}
+                  showFacilities={(showFacilities && showFacilityBasedOnType(facility)) || false}
                   showEvents={showEvents || false}
                   hovered={hovered}
                   setHovered={setHovered}
@@ -504,7 +579,7 @@ const Information = ({ hoverItem, setHovered }: InformationProps) => {
       className="rounded-lg bg-white/90 px-4 py-3 border-lg box-shadow w-full bottom-0 shadow-lg md:m-2 md:left-0 md:w-[350px]"
     >
       <div className="absolute z-20 -mt-6 flex justify-between w-full pr-8">
-      {entityType === 'EVENT' ? (
+        {entityType === 'EVENT' ? (
           <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
             <PiStarFill className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Event</div>
@@ -532,12 +607,12 @@ const Information = ({ hoverItem, setHovered }: InformationProps) => {
           <div className="h-10 rounded-full bg-green-400 flex items-center px-4">
             <div className="text-base text-white font-semibold ml-2">Zone</div>
           </div>
-        ) :
+        ) : (
           <div className="h-10 rounded-full bg-sky-400 flex items-center px-4">
             <BiSolidCalendarEvent className="text-lg text-white" />
             <div className="text-base text-white font-semibold ml-2">Markeer</div>
           </div>
-        }
+        )}
 
         <Button shape="circle" icon={<IoMdClose />} onClick={() => setHovered(null)}></Button>
       </div>
