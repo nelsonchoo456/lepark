@@ -61,8 +61,8 @@ class PredictiveIrrigationService {
     try {
       // Fetch historical sensor data
       const historicalSensorData = await SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(hub.id,
-        new Date(new Date().setDate(new Date().getDate() - 100)),
-        new Date(),
+        new Date(new Date().setDate(new Date().getDate() - 101)),
+        new Date(new Date().setDate(new Date().getDate() - 1))
       );
 
       if (!historicalSensorData 
@@ -74,12 +74,11 @@ class PredictiveIrrigationService {
       }
   
       // Generate training data using the service method
-      const historicalRainfallData = await this.getClosestRainDataPerDate(hub.lat, hub.long);
+      const historicalRainfallData = await this.getClosestRainDataPerDate(hub.lat, hub.long, new Date(new Date().setDate(new Date().getDate() - 100)), new Date(new Date().setDate(new Date().getDate() - 1)));
       const trainingData = await this.generateTrainingData(historicalSensorData);
   
       // Train the Random Forest model
       const model = await this.trainRandomForestModel(trainingData, historicalRainfallData);
-  
       // Save the trained model for the hub
       models[hub.id] = model;
   
@@ -111,14 +110,20 @@ class PredictiveIrrigationService {
       let model = this.models[hub.id];
 
       if (!model) {
+        // console.log("1")
         const modelRecord = await prisma.rfModel.findUnique({ where: { hubId: hub.id }})
         if (!modelRecord) {
           throw new Error(`No model found for hub ${hub.id} today.`);
         }
+        
         const { hubId, modelData } = modelRecord;
+        // console.log("2, model found", modelData)
         const parsedModelData = typeof modelData === 'string' ? JSON.parse(modelData) : modelData;
+        // console.log("3, parsedModelData", modelData)
+        // console.log("3.1, this.models", this.models)
         this.models[hubId] = RandomForestRegressor.load(parsedModelData);
         model = RandomForestRegressor.load(parsedModelData);
+        // console.log("4, done")
       }
 
       const prediction = model.predict([input])[0];
@@ -287,7 +292,7 @@ class PredictiveIrrigationService {
     const today = new Date();
     const trainingData = [];
   
-    for (let i = 0; i < numDays; i++) {
+    for (let i = 1; i < numDays + 1; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
   
@@ -340,7 +345,7 @@ class PredictiveIrrigationService {
     return dailyRainPresence;
   };
 
-  private async getClosestRainDataPerDate(lat: number, lng: number) {
+  private async getClosestRainDataPerDate(lat: number, lng: number, startDate: Date, endDate: Date) {
     const parseTimestamp = (timestamp) => {
       return new Date(timestamp).getTime();
     }
@@ -372,10 +377,11 @@ class PredictiveIrrigationService {
             )
           ) AS distance
         FROM "HistoricalRainData"
+        WHERE DATE("timestamp") >= DATE(${startDate.toISOString().split('T')[0]})
+          AND DATE("timestamp") <= DATE(${endDate.toISOString().split('T')[0]})
         ORDER BY DATE("timestamp"), distance
       `
     );
-
     const resultsGroupedByDay = result.reduce((acc, record) => {
       const date = record.timestamp.toISOString().split('T')[0]; // Get the date part
       if (!acc[date]) acc[date] = [];
@@ -394,6 +400,7 @@ class PredictiveIrrigationService {
   // TRAINING
   // Random Forest Training:
   private async trainRandomForestModel(trainingData, rainfallData) {
+    
     const X = trainingData.map((data) => [
       data.soilMoisture,
       data.temperature,
@@ -403,6 +410,9 @@ class PredictiveIrrigationService {
     ]);
     // const y = trainingData.map((data) => data.water);
     const y: any = Object.values(rainfallData);
+    // console.log("trainingData", X.length)
+    // console.log("rainfallData", y.length)
+   
     const model = new RandomForestRegressor({
       nEstimators: 100,
       treeOptions: { maxDepth: 10 },
