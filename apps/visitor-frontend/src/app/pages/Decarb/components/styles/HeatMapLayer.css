@@ -1,0 +1,80 @@
+/* .heatmap-legend {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.heatmap-legend h4 {
+  margin: 0;
+  padding: 0;
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.legend-item i {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.legend-item span {
+  font-size: 12px;
+} */
+
+.heatmap-legend {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  text-align: center;
+  width: 250px;
+}
+
+.heatmap-legend h4 {
+  margin: 0;
+  padding: 0 0 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.legend-spectrum {
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to right, 
+    #e0f265 0%,    /* Pale Yellow */
+    #c9ee5f 10%,   /* Light Yellow-Green */
+    #b0e857 20%,   /* Soft Yellow-Green */
+    #98e34f 30%,   /* Yellow-Green */
+    #7fdd47 40%,   /* Lime Green */
+    #66d940 50%,   /* Light Lime Green */
+    #58c438 60%,   /* Light Green */
+    #4aae31 70%,   /* Medium Green */
+    #3d972b 80%,   /* Medium Dark Green */
+    #2f7b24 90%,   /* Forest Green */
+    #215f1e 100%   /* Dark Green */
+  );
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}

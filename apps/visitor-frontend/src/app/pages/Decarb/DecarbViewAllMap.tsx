@@ -7,6 +7,7 @@ import {
   DecarbonizationAreaResponse,
   VisitorResponse,
   getOccurrencesWithinDecarbonizationArea,
+  OccurrenceResponse,
 } from '@lepark/data-access';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
@@ -31,9 +32,22 @@ import PolygonWithLabel from '../../components/map/PolygonWithLabel';
 import { GeomType, HoverItem } from '../../components/map/interfaces/interfaces';
 import { FaList } from 'react-icons/fa6';
 import HoverInformation from './components/HoverInformation';
+import HeatmapLayer from './components/HeatMapLayer';
 
 // Register the required Chart.js components
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend);
+
+const calculateSequestration = (numberOfPlants: number, biomass: number, decarbonizationType: 'TREE_TROPICAL' | 'TREE_MANGROVE' | 'SHRUB'): number =>{
+  const sequestrationFactors = {
+    TREE_TROPICAL: 0.47,
+    TREE_MANGROVE: 0.44,
+    SHRUB: 0.5,
+  };
+  const CO2_SEQUESTRATION_FACTOR = 3.67;
+  const carbonFraction = sequestrationFactors[decarbonizationType];
+  const annualSequestration = numberOfPlants * biomass * carbonFraction * CO2_SEQUESTRATION_FACTOR;
+  return annualSequestration / 365; // Convert annual sequestration to daily rate
+}
 
 const DecarbViewAllMap = () => {
   const navigate = useNavigate();
@@ -42,8 +56,8 @@ const DecarbViewAllMap = () => {
   const [loading, setLoading] = useState(false);
   const [fetchedAreas, setFetchedAreas] = useState<DecarbonizationAreaResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [areaDetails, setAreaDetails] = useState<{ [key: string]: { totalSequestration: number; occurrenceCount: number } }>({});
-  const [hovered, setHovered] = useState<HoverItem | null>(null)
+  const [areaDetails, setAreaDetails] = useState<{ [key: string]: { totalSequestration: number; occurrenceCount: number, occurrences: OccurrenceResponse[] } }>({});
+  const [hovered, setHovered] = useState<HoverItem | null>(null);
 
   useEffect(() => {
     const fetchDecarbAreas = async () => {
@@ -62,14 +76,16 @@ const DecarbViewAllMap = () => {
                 id: area.id,
                 totalSequestration,
                 occurrenceCount: occurrences.data.length,
+                occurrences: occurrences.data
               };
             }),
           );
-          const detailsObject = details.reduce<{ [key: string]: { totalSequestration: number; occurrenceCount: number } }>(
+          const detailsObject = details.reduce<{ [key: string]: { totalSequestration: number; occurrenceCount: number, occurrences: OccurrenceResponse[] } }>(
             (acc, detail) => {
               acc[detail.id] = {
                 totalSequestration: detail.totalSequestration,
                 occurrenceCount: detail.occurrenceCount,
+                occurrences: detail.occurrences
               };
               return acc;
             },
@@ -87,6 +103,12 @@ const DecarbViewAllMap = () => {
     fetchDecarbAreas();
   }, [selectedPark]);
 
+  const occurrencesWithSeq = useMemo(() => {
+    return Object.values(areaDetails).flatMap((area) => area.occurrences).map((o) =>( { ...o, seq: calculateSequestration(o.numberOfPlants, o.biomass, o.decarbonizationType)}))
+  }, [areaDetails])
+
+  console.log(occurrencesWithSeq)
+
   const navigateToDecarbArea = (areaId: string) => {
     navigate(`/decarb/${areaId}`);
   };
@@ -103,19 +125,6 @@ const DecarbViewAllMap = () => {
   const handleTooltipClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
-
-  const donutChartData = {
-    labels: filteredAreas.map((area) => area.name),
-    datasets: [
-      {
-        data: filteredAreas.map((area) => areaDetails[area.id]?.totalSequestration || 0),
-        backgroundColor: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'],
-        hoverOffset: 4,
-      },
-    ],
-  };
-
-  const totalSequestration = donutChartData.datasets[0].data.reduce((a, b) => a + b, 0);
 
   const parseGeom = (geomString: string): GeomType => {
     if (typeof geomString === 'string' && geomString.startsWith('SRID=4326;')) {
@@ -176,6 +185,7 @@ const DecarbViewAllMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.6, opacity: 0 }} />
+        <HeatmapLayer occurrences={occurrencesWithSeq}/>
         {fetchedAreas &&
           fetchedAreas.map((a) => (
             <PolygonWithLabel

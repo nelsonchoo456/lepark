@@ -25,3 +25,7 @@ a {
 .ant-btn-link {
   @apply text-highlightGreen-400 hover:text-highlightGreen-600 !important;
 }
+
+.leaflet-map-pane canvas {
+  z-index: 400 !important;
+}
