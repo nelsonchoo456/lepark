@@ -141,7 +141,7 @@ const SensorsTab = ({ hub }: SensorsTabProps) => {
         <div className='flex'>
           <div className='flex-[1]'>
             <span className='text-secondary'>Hub: </span><strong>{hub.name}</strong><br/>
-            <span className='text-secondary'>Indentifier No: </span><strong>{hub.identifierNumber}</strong>
+            <span className='text-secondary'>Identifier No: </span><strong>{hub.identifierNumber}</strong>
           </div>
           <div className='flex items-center'>
             <Tooltip title="View Hub Details">
