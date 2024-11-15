@@ -334,7 +334,7 @@ const HubPredictiveIrrigationTab = ({ hub, triggerFetchZoneData }: HubPredictive
       <Divider orientation="left">Irrigation Recommendation</Divider>
       <Card styles={{ body: { padding: '1rem' } }} className="mb-4">
         {predictive && predictive.sensorData ? (
-          <div className="w-full flex gap-2">
+          <div className="w-full lg:flex gap-2">
             <div className="flex-[1]">
               <Statistic
                 title="Average Temperature"
@@ -350,6 +350,15 @@ const HubPredictiveIrrigationTab = ({ hub, triggerFetchZoneData }: HubPredictive
                 value={predictive.sensorData.humidity.toFixed(2)}
                 prefix={getSensorIcon(SensorTypeEnum.HUMIDITY)}
                 suffix={getSensorUnit(SensorTypeEnum.HUMIDITY)}
+              />
+              <span className="text-secondary italic">in past 1h</span>
+            </div>
+            <div className="flex-[1]">
+              <Statistic
+                title="Average Soil Moisture"
+                value={predictive.sensorData.soilMoisture.toFixed(2)}
+                prefix={getSensorIcon(SensorTypeEnum.SOIL_MOISTURE)}
+                suffix={getSensorUnit(SensorTypeEnum.SOIL_MOISTURE)}
               />
               <span className="text-secondary italic">in past 1h</span>
             </div>
