@@ -19,6 +19,7 @@ import dayjs from 'dayjs';
 import FacilityPictureMarker from './FacilityPictureMarker';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { PiStarFill } from 'react-icons/pi';
+import { calculateDistance } from './functions/functions';
 
 interface FacilityEventsPictureMarkerProps {
   lat: number;
@@ -36,6 +37,9 @@ interface FacilityEventsPictureMarkerProps {
 
   hovered?: HoverItem | null;
   setHovered?: (hovered: any) => void;
+
+  userLat?: number;
+  userLng?: number;
 }
 
 function FacilityEventsPictureMarker({
@@ -54,6 +58,8 @@ function FacilityEventsPictureMarker({
 
   hovered,
   setHovered,
+  userLat,
+  userLng,
 }: FacilityEventsPictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
   const navigate = useNavigate();
@@ -126,7 +132,16 @@ function FacilityEventsPictureMarker({
     setHovered &&
       setHovered({
         ...event,
-        title: <div className="flex justify-between items-center">{event.title}</div>,
+        title: 
+        <div className="flex justify-start items-center">
+          {event.title}
+          {userLat && userLng && (
+                          <>
+                            <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
+                            <div className="font-normal">{calculateDistance(userLat, userLng, lat, lng)} away</div>
+                          </>
+                        )}  
+        </div>,
         image: event.images ? event.images[0] : null,
         entityType: 'EVENT',
         children: (
@@ -187,7 +202,12 @@ function FacilityEventsPictureMarker({
             setHovered &&
             setHovered({
               ...facility,
-              title: facility.name,
+              title:  <div className="flex justify-start items-center">{facility.name}{userLat && userLng && (
+                <>
+                  <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
+                  <div className="font-normal">{calculateDistance(userLat, userLng, lat, lng)} away</div>
+                </>
+              )}  </div>,
               image: facility.images ? facility.images[0] : null,
               entityType: 'FACILITY',
               children: (

@@ -188,3 +188,14 @@ export const pointInsidePolygonGeom = (point: { lat: number, lng: number }, geom
     return false;
   }
 };
+
+export const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const point1 = turf.point([lng1, lat1]);
+  const point2 = turf.point([lng2, lat2]);
+  const distance= turf.distance(point1, point2, { units: 'kilometers' })
+  if (distance > 1) {
+    return distance.toFixed() + 'km';
+  }
+  const metres = distance * 1000
+  return metres.toFixed() + 'm' ;
+};

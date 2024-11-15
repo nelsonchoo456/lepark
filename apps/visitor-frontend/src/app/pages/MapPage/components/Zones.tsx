@@ -9,7 +9,7 @@ import {
 } from '@lepark/data-access';
 import { useEffect, useMemo, useState } from 'react';
 import PolygonWithLabel from '../../../components/map/PolygonWithLabel';
-import { Button, Dropdown, Empty, Select, Tooltip, Typography, Menu, Checkbox, Popover, Col, Space, CheckboxProps } from 'antd';
+import { Button, Dropdown, Empty, Select, Tooltip, Typography, Menu, Checkbox, Popover, Col, Space, CheckboxProps, Tag } from 'antd';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2';
 import { FaFilter, FaLandmark, FaStar, FaTent, FaTicket } from 'react-icons/fa6';
@@ -31,6 +31,8 @@ import { PiPlantFill, PiStar, PiStarFill } from 'react-icons/pi';
 import { image } from 'html2canvas/dist/types/css/types/image';
 import { IoLeafSharp } from 'react-icons/io5';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import dayjs from 'dayjs';
+import { calculateDistance } from '../../../components/map/functions/functions';
 
 interface OneZoneProps {
   zone: ZoneResponse;
@@ -89,7 +91,10 @@ interface MarkersGroupProps {
   setShowEvents?: (show: boolean) => void;
 
   zoomLevel?: number;
-  selectedFacilityTypes?: string[]
+  selectedFacilityTypes?: string[],
+
+  userLat?:number;
+  userLng?:number;
 }
 
 interface InformationProps {
@@ -97,6 +102,21 @@ interface InformationProps {
   setHovered: (hover: any) => void;
 }
 
+export const isOpen = (openingHours: any, closingHours: any[]) => {
+  const now = dayjs();
+  const currentDay = now.day(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+  const openingTime = dayjs(openingHours[currentDay]).format('HH:mm');
+  let closingTime = dayjs(closingHours[currentDay]).format('HH:mm');
+  if (closingTime === '00:00') {
+    closingTime = '24:00';
+  }
+
+  const currentTime = now.format('HH:mm');
+
+  // return now.isAfter(openingTime) && now.isBefore(closingTime);
+  return currentTime >= openingTime && currentTime <= closingTime;
+};
 
 // -- [ LAYER 1 ] --
 // Zones all
@@ -435,6 +455,8 @@ const MarkersHandlers = ({
         setShowEvents={setShowEvents}
         zoomLevel={zoomLevel}
         selectedFacilityTypes={selectedFacilityTypes}
+        userLat={lat}
+        userLng={lng}
       />
     </>
   );
@@ -453,8 +475,12 @@ const MarkersGroup = ({
   showEvents,
   setShowEvents,
   zoomLevel,
-  selectedFacilityTypes
+  selectedFacilityTypes,
+  userLat,
+  userLng
 }: MarkersGroupProps) => {
+  const now = dayjs();
+  const currentDay = now.day();
   const navigate = useNavigate();
   const map = useMap();
 
@@ -502,8 +528,14 @@ const MarkersGroup = ({
                   setHovered({
                     ...attraction,
                     title: (
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-start items-center">
                         {attraction.title}
+                        {userLat && userLng && (
+                          <>
+                            <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
+                            <div className="font-normal">{calculateDistance(userLat, userLng, attraction.lat, attraction.lng)} away</div>
+                          </>
+                        )}
                         {/* <ParkStatusTag>{attraction.status}</ParkStatusTag> */}
                       </div>
                     ),
@@ -513,6 +545,11 @@ const MarkersGroup = ({
                       <div className="h-full w-full flex flex-col justify-between">
                         <div>
                           <Typography.Paragraph ellipsis={{ rows: 2 }}>{attraction.description}</Typography.Paragraph>
+                        </div>
+                        <div className="-mt-2">
+                          <span className="text-secondary">Open Today: </span>
+                          <Tag bordered={false}>{dayjs(attraction.openingHours[currentDay]).format('hh:mm A')}</Tag> -{' '}
+                          <Tag bordered={false}>{dayjs(attraction.closingHours[currentDay]).format('hh:mm A')}</Tag>
                         </div>
                         <div className="flex justify-end">
                           <Tooltip title="View Attraction details">
@@ -558,6 +595,8 @@ const MarkersGroup = ({
                   showEvents={showEvents || false}
                   hovered={hovered}
                   setHovered={setHovered}
+                  userLat={userLat}
+                  userLng={userLng}
                 />
               </>
             ),
