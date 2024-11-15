@@ -208,8 +208,8 @@ model Attraction {
 
   attractionTicketListings     AttractionTicketListing[]
   attractionTicketTransactions AttractionTicketTransaction[]
-  cameraSensorId               String?                       @db.Uuid
-  cameraSensor                 Sensor?                       @relation(fields: [cameraSensorId], references: [id], onDelete: SetNull)
+  cameraSensorId                String?                @unique @db.Uuid
+  cameraSensor                  Sensor?                @relation(fields: [cameraSensorId], references: [id])
   parkId                       Int // relation to park
 
   @@index([parkId])
@@ -488,8 +488,8 @@ model Sensor {
   sensorReadings        SensorReading[]
   maintenanceTasks      MaintenanceTask[]
 
-  cameraAttractions Attraction[]
-  cameraFacilities  Facility[]   @relation("cameraFacilities")
+  cameraAttraction      Attraction?       
+  cameraFacility        Facility?         
 }
 
 model SensorReading {
@@ -592,8 +592,8 @@ model Facility {
   sensors          Sensor[]          @relation("storageFacility")
   maintenanceTasks MaintenanceTask[]
   bookings         Booking[]
-  cameraSensorId   String?           @db.Uuid
-  cameraSensor     Sensor?           @relation("cameraFacilities", fields: [cameraSensorId], references: [id], onDelete: SetNull)
+  cameraSensorId        String?           @unique @db.Uuid
+  cameraSensor          Sensor?           @relation(fields: [cameraSensorId], references: [id])
 
   parkId Int // relation to park
 
@@ -897,7 +897,5 @@ enum BookingStatusEnum {
   CANCELLED
   REJECTED
   APPROVED_PENDING_PAYMENT
-  UNPAID_CLOSED
   CONFIRMED
-  CONFIRMED_CLOSED
 }

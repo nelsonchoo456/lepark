@@ -475,9 +475,18 @@ export function App() {
                   >
                     <Route path=":facilityId/edit" element={<FacilityEdit />} />
                     <Route path=":facilityId/edit-location" element={<FacilityEditMap />} />
-                    <Route path="bookings">
-                      <Route path=":bookingId" element={<ViewBookingDetails />} />
-                      <Route index element={<BookingList />} />
+                    <Route
+                      element={
+                        <RoleProtectedRoute
+                          allowedRoles={[StaffType.SUPERADMIN, StaffType.MANAGER, StaffType.LANDSCAPE_ARCHITECT]}
+                          redirectTo="/"
+                        />
+                      }
+                    >
+                      <Route path="bookings">
+                        <Route path=":bookingId" element={<ViewBookingDetails />} />
+                        <Route index element={<BookingList />} />
+                      </Route>
                     </Route>
                     <Route path=":facilityId/assign-camera" element={<FacilityAssignCamera />} />
                   </Route>
@@ -588,7 +597,21 @@ export function App() {
                 </Route>
 
                 {/* IoT Routes */}
-                <Route path="/iot">
+                <Route
+                  path="/iot"
+                  element={
+                    <RoleProtectedRoute
+                      allowedRoles={[
+                        StaffType.SUPERADMIN,
+                        StaffType.MANAGER,
+                        StaffType.ARBORIST,
+                        StaffType.BOTANIST,
+                        StaffType.VENDOR_MANAGER,
+                      ]}
+                      redirectTo="/"
+                    />
+                  }
+                >
                   <Route path="zones" element={<ZoneIoTDashboard />} />
                   <Route path="zones/:zoneId" element={<ZoneIoTDetailsPage />} />
                   <Route path="zones/:zoneId/camera-streams" element={<ZoneCameraStreamsPage />} />

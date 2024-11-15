@@ -132,16 +132,7 @@ const MaintenanceTasksTable = ({ userRole, maintenanceTasks, ...tableProps }: Ma
       dataIndex: 'taskType',
       key: 'taskType',
       render: (text) => {
-        switch (text) {
-          case 'INSPECTION':
-            return (
-              <Tag color="green" bordered={false}>
-                {formatEnumLabelToRemoveUnderscores(text)}
-              </Tag>
-            );
-          default:
-            return <Tag>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
-        }
+        return <Tag>{formatEnumLabelToRemoveUnderscores(text)}</Tag>;
       },
       width: '1%',
     },
@@ -243,7 +234,22 @@ const MaintenanceTasksTable = ({ userRole, maintenanceTasks, ...tableProps }: Ma
             <Card className="w-full flex-[1] flex flex-col justify-center hidden md:hidden lg:block" styles={{ body: { padding: "0 1rem"}}}>
               <div className="font-semibold text-mustard-500 mb-4">Pending Tasks Breakdown:</div>
               <div className="h-36 md:w-full flex justify-center">
-                <Pie data={getChartData(getStatusData)} options={chartOptions} />
+                <Pie
+                  data={getChartData(getStatusData)}
+                  options={{
+                    ...chartOptions,
+                    plugins: {
+                      legend: {
+                        position: 'bottom',
+                        align: 'start',
+                        labels: {
+                          boxWidth: 20,
+                          boxHeight: 10,
+                        },
+                      },
+                    },
+                  }}
+                />
               </div>
             </Card>
           </>

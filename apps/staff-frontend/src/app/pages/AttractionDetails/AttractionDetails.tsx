@@ -86,6 +86,34 @@ const AttractionDetails = () => {
       label: 'Dashboard',
       children: attraction ? <DashboardTab attractionId={attraction.id} /> : <></>,
     },
+  ];
+
+  const crowdTabsItems = [
+    {
+      key: 'information',
+      label: 'Information',
+      children: attraction && park ? <InformationTab attraction={attraction} park={park} /> : <></>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: attraction && park ? <LocationTab attraction={attraction} park={park} user={user} /> : <></>,
+    },
+    {
+      key: 'tickets',
+      label: 'Ticket Listings',
+      children: attraction ? <TicketsTab attraction={attraction} onTicketListingCreated={triggerFetch} /> : <></>,
+    },
+    {
+      key: 'ticketSales',
+      label: 'Ticket Sales',
+      children: attraction ? <TicketSalesTab attraction={attraction} /> : <></>,
+    },
+    {
+      key: 'dashboard',
+      label: 'Dashboard',
+      children: attraction ? <DashboardTab attractionId={attraction.id} /> : <></>,
+    },
     {
       key: 'Crowd',
       label: 'Crowd',
@@ -163,7 +191,7 @@ const AttractionDetails = () => {
             setActiveTab(key);
             navigate(`/attraction/${id}?tab=${key}`, { replace: true });
           }}
-          items={tabsItems}
+          items={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) ? crowdTabsItems : tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />

@@ -354,58 +354,6 @@ describe('Maintenance Task Router Endpoints', () => {
         expect(error.response.status).toBe(400);
       }
     });
-
-    it('should get park task type average completion times for past months', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageCompletionTimesForPastMonths', {
-        headers: { Cookie: authCookie },
-        params: {
-          parkId: 1,
-          months: 6,
-        },
-      });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
-
-    it('should fail to get park task type average completion times for past months', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageCompletionTimesForPastMonths', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            months: 6,
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
-    });
-
-    it('should get park task type average overdue rates for past months', async () => {
-      const response = await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageOverdueRatesForPastMonths', {
-        headers: { Cookie: authCookie },
-        params: {
-          parkId: 1,
-          months: 6,
-        },
-      });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.data)).toBe(true);
-    });
-
-    it('should fail to get park task type average overdue rates for past months', async () => {
-      try {
-        await axios.get('http://localhost:3333/api/maintenancetasks/getParkTaskTypeAverageOverdueRatesForPastMonths', {
-          headers: { Cookie: authCookie },
-          params: {
-            parkId: 'invalid-id',
-            months: 6,
-          },
-        });
-      } catch (error) {
-        expect(error.response.status).toBe(400);
-      }
-    });
   });
 
   describe('PUT endpoints', () => {

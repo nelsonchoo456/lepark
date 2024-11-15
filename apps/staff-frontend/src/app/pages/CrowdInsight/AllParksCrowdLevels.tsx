@@ -107,17 +107,29 @@ const AllParksCrowdLevels: React.FC = () => {
       labels: filteredData.map((d) => dayjs(d.date).format('ddd DD/MM')),
       datasets: [
         {
+          index: 0,
           label: 'Actual',
           data: filteredData.map((d) => (d.crowdLevel !== null ? Math.round(d.crowdLevel) : null)),
           borderColor: 'rgb(75, 192, 192)',
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          fill: {
+            target: '+1', // Target the next dataset (Predicted) for filling
+            above: 'rgba(75, 192, 192, 0.2)', // Color when Actual is above Predicted
+            below: 'rgba(192, 75, 75, 0.2)', // Color when Actual is below Predicted
+          },
         },
         {
+          index: 1,
           label: 'Predicted',
           data: filteredData.map((d) => (d.predictedCrowdLevel !== null ? Math.round(d.predictedCrowdLevel) : null)),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.2)',
           borderDash: [5, 5],
+          fill: {
+            target: '-1', // Target the previous dataset (Actual) for filling
+            above: 'rgba(255, 99, 132, 0.2)', // Color when Predicted is above Actual
+            below: 'rgba(99, 132, 255, 0.2)', // Color when Predicted is below Actual
+          },
         },
       ],
     };

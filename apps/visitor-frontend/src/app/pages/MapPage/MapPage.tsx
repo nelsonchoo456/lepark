@@ -5,9 +5,6 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { MOBILE_SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-import { Button, Input, Select } from 'antd';
-import { FiFilter, FiSearch } from 'react-icons/fi';
-import { FaFilter } from 'react-icons/fa6';
 import withParkGuard from '../../park-context/withParkGuard';
 import UserLiveLocationMap from '../../components/map/userLocation/UserLiveLocation';
 import { usePark } from '../../park-context/ParkContext';
@@ -52,7 +49,7 @@ const MapPage = () => {
         />
         {selectedPark && <PolygonFitBounds geom={selectedPark.geom}/>}
         {selectedPark && <Zones park={selectedPark}/>}
-        {/* <UserLiveLocationMap/> */}
+        <UserLiveLocationMap/>
 
 
       </MapContainer>

@@ -80,6 +80,7 @@ const zonesData = [
       '2024-10-01T11:00:00.000Z',
       '2024-10-01T11:00:00.000Z',
     ],
+    images: ["https://grangettos.com/cdn/shop/articles/shutterstock_1715940037_4871d9df-b91a-495a-9bb1-577142e57d1b_1500x.jpg?v=1627419909"],
     geom: 'POLYGON((103.83960843086244 1.364782715649657, 103.83994102478029 1.3646218287569876, 103.84026288986207 1.3645467482033933, 103.84114265441896 1.3643107807339876, 103.840970993042 1.3637744909446994, 103.84098172187807 1.3633561848261084, 103.840970993042 1.3632167494370877, 103.8395655155182 1.363313281630344, 103.83894324302675 1.3635492491975707, 103.83839607238771 1.3638602973190153, 103.83881449699402 1.3650186830727666, 103.83960843086244 1.364782715649657))',
     paths: 'LINESTRING(103.854 1.292, 103.855 1.293, 103.856 1.292)',
     zoneStatus: 'OPEN',
@@ -88,6 +89,7 @@ const zonesData = [
   {
     // zoneId 2
     name: 'Swan Lake',
+    images: ['https://www.nparks.gov.sg/-/media/sbg/images/attractions/swan-lake-2016-12.jpg?h=589&w=884'],
     description:
       'A serene lake surrounded by lush greenery, home to a pair of beautiful swans. Popular among visitors for peaceful walks and photography.',
     openingHours: [
@@ -116,6 +118,7 @@ const zonesData = [
   {
     // zoneId 3
     name: 'Healing Garden',
+    images: ["https://media.timeout.com/images/105850932/image.jpg"],
     description:
       'A tranquil area dedicated to medicinal plants from Southeast Asia, designed to promote wellness and relaxation. The Healing Garden showcases over 400 species of plants.',
     openingHours: [
@@ -144,6 +147,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Treetop Forest',
+    images: ["https://onecms-res.cloudinary.com/image/upload/s--IXogtaSE--/f_auto,q_auto/c_fill,g_auto,h_338,w_600/v1/mediacorp/cna/image/2022/11/18/botanic_gardens_bridge.png?itok=qtnHanKo"],
     description: 'Treetop forest boasts some of the tallest tropical trees in Southeast Asia.',
     zoneStatus: 'OPEN',
     openingHours: [
@@ -169,6 +173,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Ginger Garden',
+    images: ["https://thegeestravel.com/wp-content/uploads/2022/05/Botanical-Gardens-In-Singapore.jpg"],
     description: 'A garden dedicated to the fascinating world of gingers, featuring over 250 species of gingers and other related plants.',
     zoneStatus: 'OPEN',
     openingHours: [
@@ -194,6 +199,7 @@ const zonesData = [
   {
     parkId: 2,
     name: 'Evolution Garden',
+    images: ["https://www.nparks.gov.sg/sbg/whats-happening/-/media/sbg/images/events/ravine-nog-gr002351-low-res.jpg"],
     description:
       'An educational garden that takes visitors on a journey through the evolution of plants, from prehistoric ferns to modern flowering plants.',
     zoneStatus: 'UNDER_CONSTRUCTION',
@@ -1656,23 +1662,23 @@ let maintenanceTasksData = [
     taskType: 'INSPECTION',
     taskUrgency: 'HIGH',
     taskStatus: 'IN_PROGRESS',
-    createdAt: new Date('2024-10-29'),
-    updatedAt: new Date('2024-10-31'),
-    dueDate: new Date('2024-10-31'),
+    createdAt: new Date(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)),
+    updatedAt: new Date(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)),
+    dueDate: new Date(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
     completedDate: null,
     images: ['https://example.com/image.jpg'],
     remarks: 'No additional remarks.',
     position: 1000,
   },
   {
-    title: 'Replace Light Bulbs in Visitor Center Facility',
-    description: 'Replace burnt-out light bulbs in the visitor center.',
+    title: 'Inspect Light Bulbs in Visitor Center Facility',
+    description: 'Could be burnt-out light bulbs in the visitor center.',
     taskType: 'REPAIR',
     taskUrgency: 'NORMAL',
     taskStatus: 'IN_PROGRESS',
-    createdAt: new Date('2024-10-09'),
-    updatedAt: new Date('2024-10-10'),
-    dueDate: new Date('2024-10-10'),
+    createdAt: new Date(new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)),
+    updatedAt: new Date(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)),
+    dueDate: new Date(new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)),
     completedDate: null,
     images: ['https://example.com/image.jpg'],
     remarks: 'No additional remarks.',
@@ -1693,14 +1699,14 @@ let maintenanceTasksData = [
     position: 3000,
   },
   {
-    title: 'Deep Clean Greenhouses Facility',
-    description: 'Perform deep cleaning of all greenhouses.',
-    taskType: 'CLEANING',
+    title: 'Inspect Greenhouses Facility',
+    description: 'Check for any damage or wear on the greenhouses.',
+    taskType: 'INSPECTION',
     taskUrgency: 'HIGH',
     taskStatus: 'IN_PROGRESS',
-    createdAt: new Date('2024-10-27'),
-    updatedAt: new Date('2024-10-28'),
-    dueDate: new Date('2024-10-30'),
+    createdAt: new Date(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
+    updatedAt: new Date(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)),
+    dueDate: new Date(new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)),
     completedDate: null,
     images: ['https://example.com/image.jpg'],
     remarks: 'No additional remarks.',
@@ -1712,9 +1718,9 @@ let maintenanceTasksData = [
     taskType: 'CALIBRATION',
     taskUrgency: 'NORMAL',
     taskStatus: 'IN_PROGRESS',
-    createdAt: new Date('2024-10-12'),
-    updatedAt: new Date('2024-10-13'),
-    dueDate: new Date('2024-10-17'),
+    createdAt: new Date(new Date(Date.now() - 12 * 24 * 60 * 60 * 1000)),
+    updatedAt: new Date(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)),
+    dueDate: new Date(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)),
     completedDate: null,
     images: ['https://example.com/image.jpg'],
     remarks: 'No additional remarks.',
@@ -1740,9 +1746,9 @@ let maintenanceTasksData = [
     taskType: 'INSPECTION',
     taskUrgency: 'IMMEDIATE',
     taskStatus: 'IN_PROGRESS',
-    createdAt: new Date('2024-10-28'),
-    updatedAt: new Date('2024-10-28'),
-    dueDate: new Date('2024-10-30'),
+    createdAt: new Date(new Date(Date.now() - 20 * 24 * 60 * 60 * 1000)),
+    updatedAt: new Date(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)),
+    dueDate: new Date(new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)),
     completedDate: null,
     images: ['https://example.com/image.jpg'],
     remarks: 'No additional remarks.',
@@ -1768,9 +1774,9 @@ let maintenanceTasksData = [
     taskType: 'FIRE_SAFETY',
     taskUrgency: 'HIGH',
     taskStatus: 'IN_PROGRESS',
-    createdAt: new Date('2024-10-10'),
-    updatedAt: new Date('2024-10-12'),
-    dueDate: new Date('2024-10-14'),
+    createdAt: new Date(new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)),
+    updatedAt: new Date(new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)),
+    dueDate: new Date(new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)),
     completedDate: null,
     images: ['https://example.com/image.jpg'],
     remarks: 'No additional remarks.',
@@ -3066,7 +3072,7 @@ const newHubs = [
 // Add new sensors
 const newSensors = [
   {
-    name: 'Soil Moisture VMax 1020',
+    name: 'Soil Moisture (North)',
     identifierNumber: 'SE-66666',
     serialNumber: 'STE9876543',
     sensorType: 'SOIL_MOISTURE',
@@ -3083,7 +3089,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Temperature Sensor VMax 1030',
+    name: 'Temperature (North)',
     identifierNumber: 'SE-77777',
     serialNumber: 'STE1234567',
     sensorType: 'TEMPERATURE',
@@ -3100,7 +3106,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Humidity Sensor WP-1010',
+    name: 'Humidity (North)',
     identifierNumber: 'SE-88888',
     serialNumber: 'STE7654321',
     sensorType: 'HUMIDITY',
@@ -3119,7 +3125,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Light Sensor MTY-102',
+    name: 'Light (North)',
     identifierNumber: 'SE-99999',
     serialNumber: 'STE3456789',
     sensorType: 'LIGHT',
@@ -3136,7 +3142,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Camera X10',
+    name: 'Camera (North)',
     identifierNumber: 'SE-9999X',
     serialNumber: 'STE123094',
     sensorType: 'CAMERA',
@@ -3153,7 +3159,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Temperature Sensor VMax 20',
+    name: 'Temperature (South)',
     identifierNumber: 'SE-10101',
     serialNumber: 'STE1234000',
     sensorType: 'TEMPERATURE',
@@ -3170,7 +3176,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Humidity Sensor XXX-99',
+    name: 'Humidity (South)',
     identifierNumber: 'SE-20202',
     serialNumber: 'STE9328472',
     sensorType: 'HUMIDITY',
@@ -3189,7 +3195,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Soil Moisture Lite 209',
+    name: 'Soil Moisture (South)',
     identifierNumber: 'SE-30303',
     serialNumber: 'STE987654323',
     sensorType: 'SOIL_MOISTURE',
@@ -3206,7 +3212,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Light Sensor MTY-102',
+    name: 'Light (South)',
     identifierNumber: 'SE-40404',
     serialNumber: 'STE345678942',
     sensorType: 'LIGHT',
@@ -3223,7 +3229,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Camera X10',
+    name: 'Camera (Palm Valley)',
     identifierNumber: 'SE-318CA',
     serialNumber: 'STE123095',
     sensorType: 'CAMERA',
@@ -3240,7 +3246,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Camera X10',
+    name: 'Camera (Healing Garden)',
     identifierNumber: 'SE-318CB',
     serialNumber: 'STE123096',
     sensorType: 'CAMERA',

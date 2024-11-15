@@ -14,45 +14,24 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import HubPredictiveIrrigationTab from './components/HubPredictiveIrrigationTab';
 import dayjs from 'dayjs';
 import { getSensorIcon } from './ZoneIoTDetailsPage';
+import { useRestrictZone } from '../../hooks/IoT/useRestrictZone';
+import { useZonePredictiveIrrigation } from '../../hooks/IoT/useZonePredictiveIrrigation';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
 const ZonePredictiveIrrigation: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
-  const [hubs, setHubs] = useState<HubResponse[]>([]);
-  const [predictives, setPredictives] = useState<(PredictiveIrrigation & { hubId: string; hubName: string })[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { zone, loading: zoneLoading } = useRestrictZone(zoneId);
+  const { 
+    hubs, 
+    predictives, 
+    loading: dataLoading, 
+    getSensorUnit,
+    refreshData: triggerFetchZoneData
+  } = useZonePredictiveIrrigation(zoneId || '');
 
-  useEffect(() => {
-    if (zoneId) {
-      fetchHubs(parseInt(zoneId));
-      fetchPredictives(parseInt(zoneId));
-    }
-  }, [zoneId]);
-
-  const fetchHubs = async (zoneId: number) => {
-    try {
-      const response = await getHubsByZoneId(zoneId);
-      setHubs(response.data.filter((h) => h.hubStatus === HubStatusEnum.ACTIVE));
-    } catch (error) {
-      console.error('Error fetching camera streams:', error);
-    }
-  };
-
-  const fetchPredictives = async (zoneId: number) => {
-    try {
-      setLoading(true);
-      console.log(zoneId);
-      const response = await getPredictionsForZone(zoneId);
-      console.log(response.data);
-      setPredictives(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching camera streams:', error);
-      setLoading(false);
-    }
-  };
+  const loading = zoneLoading || dataLoading;
 
   const breadcrumbItems = [
     {
@@ -79,21 +58,6 @@ const ZonePredictiveIrrigation: React.FC = () => {
       </ContentWrapperDark>
     );
   }
-
-  const getSensorUnit = (type: string) => {
-    switch (type) {
-      case 'TEMPERATURE':
-        return '°C';
-      case 'HUMIDITY':
-        return '%';
-      case 'LIGHT':
-        return 'Lux';
-      case 'SOIL_MOISTURE':
-        return '%';
-      default:
-        return '';
-    }
-  };
 
   return (
     <ContentWrapperDark>
@@ -192,12 +156,12 @@ const ZonePredictiveIrrigation: React.FC = () => {
                 ))}
               </>
             ) : (
-              <Empty description="No hubs trained for this zone" />
+              <Empty description="No Predictions for this Zone today" />
             )}
           </TabPane>
           {hubs.map((hub, index) => (
             <TabPane tab={hub.name} key={index.toString()}>
-              <HubPredictiveIrrigationTab hub={hub} />
+              <HubPredictiveIrrigationTab hub={hub} triggerFetchZoneData={triggerFetchZoneData}/>
             </TabPane>
           ))}
         </Tabs>

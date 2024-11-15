@@ -152,7 +152,19 @@ class BookingService {
     }
 
     const formattedData = dateFormatter(data);
-    return BookingDao.updateBooking(id, formattedData);
+    const updatedBooking = await BookingDao.updateBooking(id, formattedData);
+
+    // Fetch facility and park details
+    const facility = await FacilityDao.getFacilityById(updatedBooking.facilityId);
+    const park = facility ? await ParkDao.getParkById(facility.parkId) : null;
+
+    // Send email notification
+    const visitor = await VisitorDao.getVisitorById(booking.visitorId);
+    if (visitor) {
+      await EmailUtil.sendBookingUpdateEmail(visitor.email, updatedBooking, facility, park);
+    }
+
+    return updatedBooking;
   }
 
   public async sendBookingEmail(bookingId: string, recipientEmail: string): Promise<void> {

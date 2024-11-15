@@ -65,9 +65,7 @@ const FAQCreate: React.FC = () => {
 
   useEffect(() => {
     // Check if the user has permission to create FAQs
-    if (user?.role !== StaffType.SUPERADMIN &&
-        user?.role !== StaffType.PARK_RANGER &&
-        user?.role !== StaffType.MANAGER) {
+    if (user?.role !== StaffType.SUPERADMIN && user?.role !== StaffType.PARK_RANGER && user?.role !== StaffType.MANAGER) {
       if (!notificationShown.current) {
         notification.error({
           message: 'Access Denied',
@@ -87,7 +85,7 @@ const FAQCreate: React.FC = () => {
         question: values.question,
         answer: values.answer,
         status: values.status,
-        priority: values.priority,
+        priority: 0, // Set default priority value
       };
 
       if (user?.role === StaffType.SUPERADMIN) {
@@ -131,7 +129,7 @@ const FAQCreate: React.FC = () => {
     );
   }
 
-  const userPark = parks.find(park => park.id === user?.parkId);
+  const userPark = parks.find((park) => park.id === user?.parkId);
 
   return (
     <ContentWrapperDark>
@@ -150,7 +148,9 @@ const FAQCreate: React.FC = () => {
             {user?.role === StaffType.SUPERADMIN ? (
               <Form.Item name="parkId" label="Park" rules={[{ required: true, message: 'Please select a park!' }]}>
                 <Select placeholder="Select a park" onChange={handleParkChange}>
-                  <Option key={-1} value={-1}>All Parks</Option>
+                  <Option key={-1} value={-1}>
+                    All Parks
+                  </Option>
                   {parks.map((park) => (
                     <Option key={park.id} value={park.id}>
                       {park.name}
@@ -159,9 +159,7 @@ const FAQCreate: React.FC = () => {
                 </Select>
               </Form.Item>
             ) : (
-              <Form.Item label="Park">
-                {userPark ? userPark.name : 'No park assigned'}
-              </Form.Item>
+              <Form.Item label="Park">{userPark ? userPark.name : 'No park assigned'}</Form.Item>
             )}
             <Divider orientation="left">FAQ Details</Divider>
             <Form.Item name="category" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
@@ -173,10 +171,24 @@ const FAQCreate: React.FC = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="question" label="Question" rules={[{ required: true, message: 'Please enter a question' }]}>
+            <Form.Item
+              name="question"
+              label="Question"
+              rules={[
+                { required: true, message: 'Please enter a question' },
+                { min: 3, message: 'Question must be at least 3 characters long' },
+              ]}
+            >
               <Input placeholder="Enter question" />
             </Form.Item>
-            <Form.Item name="answer" label="Answer" rules={[{ required: true, message: 'Please enter an answer' }]}>
+            <Form.Item
+              name="answer"
+              label="Answer"
+              rules={[
+                { required: true, message: 'Please enter an answer' },
+                { min: 3, message: 'Answer must be at least 3 characters long' },
+              ]}
+            >
               <TextArea placeholder="Enter answer" autoSize={{ minRows: 3, maxRows: 5 }} />
             </Form.Item>
             <Form.Item name="status" label="Status" rules={[{ required: true, message: 'Please select a status' }]}>
@@ -188,17 +200,7 @@ const FAQCreate: React.FC = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item
-              name="priority"
-              label="Priority"
-              rules={[
-                { type: 'number', min: 1, message: 'Priority must be a number greater than or equal to 1' },
-                { required: true, message: 'Please enter a priority' }
-              ]}
-            >
-              <InputNumber min={1} />
-            </Form.Item>
-            <Form.Item label={" "} colon={false}>
+            <Form.Item label={' '} colon={false}>
               <Button type="primary" htmlType="submit" loading={isSubmitting} className="w-full">
                 Create FAQ
               </Button>

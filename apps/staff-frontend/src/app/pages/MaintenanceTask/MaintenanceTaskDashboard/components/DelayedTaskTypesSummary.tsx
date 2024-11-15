@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, Spin, Row, Col } from 'antd';
+import { Card, Typography, Spin, Row, Col, DatePicker } from 'antd';
 import { getParkMaintenanceTaskDelayedTaskTypesForPeriod, StaffResponse, DelayedTaskTypeData } from '@lepark/data-access';
 import { useAuth } from '@lepark/common-ui';
 import dayjs from 'dayjs';
-import { WarningOutlined } from '@ant-design/icons';
+import { WarningOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { Tooltip } from 'antd';
 
 const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const DelayedTaskTypesSummary: React.FC = () => {
   const { user } = useAuth<StaffResponse>();
@@ -34,10 +36,24 @@ const DelayedTaskTypesSummary: React.FC = () => {
     fetchDelayedTaskTypes();
   }, [user?.park?.id, startDate, endDate]);
 
+  const handleDateChange = (dates: any, dateStrings: [string, string]) => {
+    setStartDate(dayjs(dateStrings[0]).toISOString());
+    setEndDate(dayjs(dateStrings[1]).toISOString());
+  };
+
   const renderTitle = () => (
-    <Title level={4} className="mb-4">
-      Delayed Task Types for {dayjs(startDate).format('MMM D')} - {dayjs(endDate).format('MMM D, YYYY')}
-    </Title>
+    <div className="flex justify-between items-center mb-4">
+      <Title level={4} style={{ margin: 0 }}>
+        Delayed Task Types
+        <Tooltip title="Shows the top 3 most delayed task types for the selected period">
+          <InfoCircleOutlined style={{ fontSize: '16px', marginLeft: '8px', color: 'rgba(0, 0, 0, 0.45)' }} />
+        </Tooltip>
+      </Title>
+      <RangePicker
+        onChange={handleDateChange}
+        defaultValue={[dayjs().startOf('month'), dayjs().endOf('month')]}
+      />
+    </div>
   );
 
   const renderDelayedTaskType = (taskType: DelayedTaskTypeData, index: number) => (
@@ -53,7 +69,7 @@ const DelayedTaskTypesSummary: React.FC = () => {
             </Title>
             <Text strong>{formatEnumLabelToRemoveUnderscores(taskType.taskType)}</Text>
             <br />
-            <Text type="secondary">Avg. Completion: {taskType.averageCompletionTime.toFixed(2)} hours</Text>
+            <Text type="secondary">Avg. Completion: {taskType.averageCompletionTime.toFixed(2)} days</Text>
             <br />
             <Text type="secondary">Completed Tasks: {taskType.completedTaskCount}</Text>
             <br />

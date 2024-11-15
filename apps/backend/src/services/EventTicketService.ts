@@ -323,7 +323,7 @@ class EventTicketService {
     } else if (updatedTicket.status === EventTicketStatusEnum.USED) {
       throw new Error('Ticket has already been used and is no longer valid.');
     } else if (event.startDate > new Date()) {
-      throw new Error(`Ticket is not yet valid, it is only valid from ${dayjs(event.startDate).format('DD MMMM YYYY HH:mm')}.`);
+      throw new Error(`Ticket is not yet valid, it is only valid on ${dayjs(transaction.eventDate).format('DD MMMM YYYY')}.`);
     } else if (updatedTicket.status === EventTicketStatusEnum.VALID) {
       await EventTicketDao.updateEventTicketStatus(updatedTicket.id, EventTicketStatusEnum.USED);
       return true;

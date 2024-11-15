@@ -205,7 +205,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
         <Form form={form} layout="vertical">
           <div style={{ marginBottom: '16px' }}>
             {userRole === StaffType.SUPERADMIN && (
-              <Form.Item style={{ marginBottom: '4px' }}>Park: {initialValues?.submittingStaff?.park?.name}</Form.Item>
+              <Form.Item style={{ marginBottom: '4px' }}>Park: {initialValues?.facilityOfFaultyEntity.park.name}</Form.Item>
             )}
             {/* <Form.Item style={{ marginBottom: '4px' }}>Facility: {getFacilityNameForFaultyItem()}</Form.Item> */}
             <Form.Item style={{ marginBottom: '4px' }}>

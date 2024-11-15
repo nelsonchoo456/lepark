@@ -631,7 +631,9 @@ const ProfilePage = () => {
                 </SpeciesCard>
               ))
             ) : (
-              <p>No favorite species found.</p>
+              <div className="opacity-40 flex flex-col justify-center items-center text-center w-full min-h-[100px]">
+                <p>No favorite species found.</p>
+              </div>
             )}
           </div>
         </div>
@@ -654,7 +656,11 @@ const ProfilePage = () => {
         <div className="w-full h-64 overflow-y-auto py-2 scrollbar-hide">
           {feedbacks.length > 0 ? (
             feedbacks
-              .sort((a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime())
+              .sort((a, b) => {
+                if (a.feedbackStatus === 'PENDING' && b.feedbackStatus !== 'PENDING') return -1;
+                if (b.feedbackStatus === 'PENDING' && a.feedbackStatus !== 'PENDING') return 1;
+                return new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime();
+              })
               .map((feedback) => (
                 <FeedbackCard
                   key={feedback.id}

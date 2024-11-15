@@ -22,6 +22,7 @@ const { RangePicker } = DatePicker;
 
 interface HubPredictiveIrrigationTabProps {
   hub: HubResponse;
+  triggerFetchZoneData: () => void;
 }
 
 export const getWeatherForecast = (textForecast: string) => {
@@ -64,7 +65,7 @@ export const getWeatherForecast = (textForecast: string) => {
   );
 };
 
-const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) => {
+const HubPredictiveIrrigationTab = ({ hub, triggerFetchZoneData }: HubPredictiveIrrigationTabProps) => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(10, 'days'), dayjs()]);
   const [trainLoading, setTrainLoading] = useState(false);
   const [hasModel, setHasModel] = useState(false);
@@ -148,6 +149,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
       if (response.status === 200) {
         message.success("Successfully trained Hub. Fetching predictions now...");
         await fetchModel(hub);
+        triggerFetchZoneData();
       }
       setTrainLoading(false);
     } catch (error) {
@@ -183,6 +185,14 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
   };
 
   const getChartOptions = (label: string) => {
+    const filteredRainfallData = Object.keys(rainfallData || {}).reduce((result, date) => {
+      const currentDate = dayjs(date);
+      if (currentDate.isBetween(dateRange[0], dateRange[1], 'day', '[]') && rainfallData[date] === 1) {
+        result[date] = rainfallData[date];
+      }
+      return result;
+    }, {});
+
     return {
       responsive: true,
       plugins: {
@@ -206,6 +216,29 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
         },
         datalabels: {
           display: false, // Ensure data labels are not shown on the line
+        },
+        // annotation: {
+        //   annotations: rainfallData ? Object.keys(rainfallData).map((date) => {
+        //     if (rainfallData[date] === 1) { // Only if it rained on this date
+        //       return {
+        //         type: 'box',
+        //         xMin: dayjs(date).startOf('day').format('YYYY-MM-DD HH:mm'),
+        //         xMax: dayjs(date).startOf('day').add(1, 'day').format('YYYY-MM-DD HH:mm'),
+        //         backgroundColor: 'rgba(54, 162, 235, 0.1)', // Light blue shading
+        //         borderWidth: 0,
+        //       };
+        //     }
+        //     return null;
+        //   }).filter(Boolean) : [], // Filter out null annotations for non-rainy days
+        // },
+        annotation: {
+          annotations: Object.keys(filteredRainfallData).map((date) => ({
+            type: 'box',
+            xMin: dayjs(date).startOf('day').format('YYYY-MM-DD HH:mm'),
+            xMax: dayjs(date).startOf('day').add(1, 'day').format('YYYY-MM-DD HH:mm'),
+            backgroundColor: 'rgba(54, 162, 235, 0.1)', // Light blue shading
+            borderWidth: 0,
+          })),
         },
       },
       scales: {
@@ -266,9 +299,9 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
 
     if (rainfallData) {
       datasets.push({
-        label: 'Rainfall',
-        data: data.map((reading: { date: string }) => rainfallData[dayjs(reading.date).format('YYYY-MM-DD')] || 0),
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        label: 'Rainy Day Indicator',
+        data: [],
+        backgroundColor: 'rgba(54, 162, 235, 0.1)',
         type: 'bar',
         yAxisID: 'y1', // Secondary y-axis for rainfall data
       });
