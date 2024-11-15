@@ -445,7 +445,10 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
                 {record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
                   <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignTask(record.id, value)}>
                     {staffList
-                      .filter((staff) => staff.parkId === record.submittingStaff.parkId && staff.role === StaffType.VENDOR_MANAGER)
+                      .filter((staff) => {
+                        const taskParkId = record.submittingStaff.parkId || record.facilityOfFaultyEntity.park.id;
+                        return staff.parkId === taskParkId && staff.role === StaffType.VENDOR_MANAGER;
+                      })
                       .map((staff: StaffResponse) => (
                         <Select.Option key={staff.id} value={staff.id}>
                           {`${staff.firstName} ${staff.lastName}`}
