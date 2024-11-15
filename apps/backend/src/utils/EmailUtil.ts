@@ -646,6 +646,57 @@ class EmailUtility {
 
     await transporter.sendMail(mailOptions);
   }
+
+  private formatBookingStatus(status: string): string {
+    return (
+      status
+        .toLowerCase()
+        .split('_')
+        //.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    );
+  }
+
+  async sendBookingUpdateEmail(recipientEmail: string, booking: any, facility: any, park: any) {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'no.reply.lepark@gmail.com',
+        pass: 'ezcr eqfz dxtn vbtr',
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    const formattedStatus = this.formatBookingStatus(booking.bookingStatus);
+
+    let statusMessage = `Your booking has been ${formattedStatus}.`;
+    if (booking.bookingStatus === 'APPROVED_PENDING_PAYMENT') {
+      statusMessage = 'Your booking has been approved and is pending payment. Please access Lepark and make your payment within 3 days.';
+    }
+
+    const mailOptions = {
+      to: recipientEmail,
+      subject: 'Your Lepark Facility Booking Status Update',
+      html: `
+      <h1>Your booking has been updated!</h1>
+      <p>${statusMessage}</p>
+      <p>Booking details:</p>
+      <ul>
+        <li>Facility: ${facility?.name || 'N/A'}</li>
+        <li>Park: ${park?.name || 'N/A'}</li>
+        <li>Start Date: ${new Date(booking.dateStart).toLocaleDateString()}</li>
+        <li>End Date: ${new Date(booking.dateEnd).toLocaleDateString()}</li>
+        <li>Number of Pax: ${booking.pax}</li>
+      </ul>
+    `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  }
 }
 
 export default new EmailUtility();

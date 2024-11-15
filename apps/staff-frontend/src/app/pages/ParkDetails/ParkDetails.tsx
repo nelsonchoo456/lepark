@@ -103,12 +103,29 @@ const ParkDetails = () => {
       label: 'Map',
       children: park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
-    // {
-    //   key: 'zones',
-    //   label: 'Zones',
-    //   // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-    //   children: <Empty description={'Zones Coming Soon'}></Empty>,
-    // },
+    {
+      key: 'attractions',
+      label: 'Attractions',
+      children: <AttractionsTab parkId={park.id} />,
+    },
+    {
+      key: 'events',
+      label: 'Events',
+      children: <EventsTab parkId={park.id} />,
+    },
+  ];
+
+  const iotTabsItems = [
+    {
+      key: 'about',
+      label: 'Information',
+      children: <InformationTab park={park} />,
+    },
+    {
+      key: 'map',
+      label: 'Map',
+      children: park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
+    },
     {
       key: 'attractions',
       label: 'Attractions',
@@ -198,7 +215,7 @@ const ParkDetails = () => {
         <Tabs
           centered
           defaultActiveKey="about"
-          items={tabsItems}
+          items={(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) ? tabsItems : iotTabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />
