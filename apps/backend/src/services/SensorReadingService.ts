@@ -938,7 +938,7 @@ class SensorReadingService {
   public async getPastOneHourCrowdDataBySensorsForPark(parkId: number): Promise<HeatMapCrowdResponse[]> {
     try {
       const zones = await ZoneDao.getZonesByParkId(parkId);
-      let sensorAverages = [];
+      const sensorAverages = [];
       const oneHourAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
   
       for (const zone of zones) {
