@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePark } from '../../park-context/ParkContext';
 import { getFacilitiesByParkId, FacilityResponse, FacilityTypeEnum, FacilityStatusEnum } from '@lepark/data-access';
-import { Card, Tag, Input, TreeSelect, Spin } from 'antd';
+import { Card, Tag, Input, TreeSelect, Spin, Pagination } from 'antd';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
@@ -35,6 +35,8 @@ const FacilitiesPerPark: React.FC = () => {
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of items per page
 
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -121,6 +123,12 @@ const FacilitiesPerPark: React.FC = () => {
     });
   }, [facilities, searchQuery, selectedFilters, loading]);
 
+  const paginatedFacilities = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredFacilities.slice(startIndex, endIndex);
+  }, [filteredFacilities, currentPage, itemsPerPage]);
+
   const renderFacilityStatus = (status: FacilityStatusEnum) => {
     switch (status) {
       case FacilityStatusEnum.OPEN:
@@ -181,97 +189,100 @@ const FacilitiesPerPark: React.FC = () => {
       </div>
 
       {loading ? (
-      <div className="flex justify-center items-center flex-1">
-        <Spin size="large" />
-      </div>
-    ) : !filteredFacilities || filteredFacilities.length === 0 ? (
-      <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
-        <FiSearch className="text-4xl mb-2 mt-10" />
-        No Facilities found.
-      </div>
-    ) : (
-      <div
-        className="justify-center overflow-y-auto mx-4
-        md:mt-6 md:bg-white md:flex-1 md:mb-4 md:rounded-xl md:p-4"
-      >
-        {filteredFacilities.map((facility) => (
-          <div
-            key={facility.id}
-            onClick={() => navigateToFacility(facility.id)}
-            className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
-              bg-white rounded-xl mb-2
-              md:border-[1px]
-              hover:bg-green-600/10"
-          >
-            <div className="flex flex-row w-full">
-              {/* Mobile View (Simple) */}
-              <div className="md:hidden flex flex-col w-full">
-                <div className="flex items-center gap-3">
-                  {/* Circular Image */}
-                  <div className="w-[60px] h-[60px] flex-shrink-0 overflow-hidden rounded-full bg-slate-400/40">
-                    {facility.images && facility.images.length > 0 && (
-                      <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
-                    )}
+        <div className="flex justify-center items-center flex-1">
+          <Spin size="large" />
+        </div>
+      ) : !filteredFacilities || filteredFacilities.length === 0 ? (
+        <div className="opacity-40 flex flex-col justify-center items-center text-center w-full">
+          <FiSearch className="text-4xl mb-2 mt-10" />
+          No Facilities found.
+        </div>
+      ) : (
+        <div
+          className="justify-center overflow-y-auto mx-4 flex-1
+    md:mt-6 md:bg-white md:mb-4 md:rounded-xl md:p-4"
+        >
+          {paginatedFacilities.map((facility) => (
+            <div
+              key={facility.id}
+              onClick={() => navigateToFacility(facility.id)}
+              className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
+          bg-white rounded-xl mb-2
+          md:border-[1px]
+          hover:bg-green-600/10"
+            >
+              <div className="flex flex-row w-full">
+                {/* Mobile View (Simple) */}
+                <div className="md:hidden flex flex-col w-full">
+                  <div className="flex items-center gap-3">
+                    {/* Circular Image */}
+                    <div className="w-[60px] h-[60px] flex-shrink-0 overflow-hidden rounded-full bg-slate-400/40">
+                      {facility.images && facility.images.length > 0 && (
+                        <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    {/* Name, Type, Status */}
+                    <div className="flex flex-col">
+                      <div className="text-lg font-semibold text-green-700 leading-tight">{facility.name}</div>
+                      <div className="text-sm text-gray-500">Type: {formatEnumLabel(facility.facilityType)}</div>
+                      <div className="mt-1">{renderFacilityStatus(facility.facilityStatus)}</div>
+                    </div>
                   </div>
-                  {/* Name, Type, Status */}
-                  <div className="flex flex-col">
-                    <div className="text-lg font-semibold text-green-700 leading-tight">{facility.name}</div>
+                </div>
+
+                {/* Desktop View (Full) - Hidden on mobile */}
+                <div className="hidden md:flex flex-row w-full">
+                  {/* Column 1: Image, Name, Description */}
+                  <div className="flex flex-row flex-1">
+                    <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
+                      {facility.images && facility.images.length > 0 && (
+                        <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1 lg:pr-8">
+                      <div className="text-lg font-semibold text-green-700 leading-tight">{facility.name}</div>
+                      <Typography.Paragraph
+                        ellipsis={{
+                          rows: 2,
+                        }}
+                        className="text-sm text-gray-500"
+                      >
+                        {facility.description}
+                      </Typography.Paragraph>
+                    </div>
+                  </div>
+
+                  {/* Column 2: Status and Type */}
+                  <div className="w-[200px]">
+                    <div className="text-green-700/80">{renderFacilityStatus(facility.facilityStatus)}</div>
                     <div className="text-sm text-gray-500">Type: {formatEnumLabel(facility.facilityType)}</div>
-                    <div className="mt-1">{renderFacilityStatus(facility.facilityStatus)}</div>
                   </div>
-                </div>
-              </div>
 
-              {/* Desktop View (Full) - Hidden on mobile */}
-              <div className="hidden md:flex flex-row w-full">
-                {/* Column 1: Image, Name, Description */}
-                <div className="flex flex-row flex-1">
-                  <div className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40">
-                    {facility.images && facility.images.length > 0 && (
-                      <img src={facility.images[0]} alt={facility.name} className="w-full h-full object-cover" />
-                    )}
+                  {/* Column 3: Capacity and Fee */}
+                  <div className="hidden lg:block w-[200px]">
+                    <div className="text-sm text-gray-500">Capacity: {facility.capacity ? `${facility.capacity} pax` : 'N/A'}</div>
+                    <div className="text-sm text-gray-500">Fee: {facility.fee ? `$${facility.fee.toFixed(2)}` : 'Free'}</div>
                   </div>
-                  <div className="flex-1 lg:pr-8">
-                    <div className="text-lg font-semibold text-green-700 leading-tight">{facility.name}</div>
-                    <Typography.Paragraph
-                      ellipsis={{
-                        rows: 2,
-                      }}
-                      className="text-sm text-gray-500"
-                    >
-                      {facility.description}
-                    </Typography.Paragraph>
-                  </div>
-                </div>
 
-                {/* Column 2: Status and Type */}
-                <div className="w-[200px]">
-                  <div className="text-green-700/80">{renderFacilityStatus(facility.facilityStatus)}</div>
-                  <div className="text-sm text-gray-500">Type: {formatEnumLabel(facility.facilityType)}</div>
-                </div>
-
-                {/* Column 3: Capacity and Fee */}
-                <div className="hidden lg:block w-[200px]">
-                  <div className="text-sm text-gray-500">
-                    Capacity: {facility.capacity ? `${facility.capacity} pax` : 'N/A'}
+                  {/* Arrow icon */}
+                  <div className="flex flex-col justify-center hidden lg:flex">
+                    <MdArrowForwardIos className="text-highlightGreen-400" />
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Fee: {facility.fee ? `$${facility.fee.toFixed(2)}` : 'Free'}
-                  </div>
-                </div>
-
-                {/* Arrow icon */}
-                <div className="flex flex-col justify-center hidden lg:flex">
-                  <MdArrowForwardIos className='text-highlightGreen-400'/>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-);
+          ))}
+          <Pagination
+            current={currentPage}
+            pageSize={itemsPerPage}
+            total={filteredFacilities.length}
+            onChange={(page) => setCurrentPage(page)}
+            className="mt-4"
+          />
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default withParkGuard(FacilitiesPerPark);

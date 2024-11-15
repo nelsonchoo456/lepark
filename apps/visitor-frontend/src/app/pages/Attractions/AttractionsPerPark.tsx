@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePark } from '../../park-context/ParkContext';
 import { getAttractionsByParkId, AttractionResponse } from '@lepark/data-access';
-import { Card, Tag, Input, Select, Spin } from 'antd';
+import { Card, Tag, Input, Select, Spin, Pagination } from 'antd';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
@@ -17,6 +17,8 @@ const AttractionsPerPark: React.FC = () => {
   const [attractions, setAttractions] = useState<AttractionResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of items per page
 
   useEffect(() => {
     const fetchAttractions = async () => {
@@ -55,6 +57,12 @@ const AttractionsPerPark: React.FC = () => {
     });
   }, [attractions, searchQuery, selectedStatus, loading]);
 
+  const paginatedAttractions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAttractions.slice(startIndex, endIndex);
+  }, [filteredAttractions, currentPage, itemsPerPage]);
+
   const formatHoursForToday = (openingHours: Date[], closingHours: Date[]) => {
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const todayIndex = new Date().getDay(); // 0 is Sunday, 6 is Saturday
@@ -66,13 +74,12 @@ const AttractionsPerPark: React.FC = () => {
 
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
-      <ParkHeader cardClassName="h-48 md:h-[160px]">
+      <ParkHeader cardClassName="h-32 md:h-[160px]">
         <div className="md:text-center md:mx-auto">
           <p className="font-light">Attractions in</p>
           <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>
       </ParkHeader>
-
       <div
         className="p-2 items-center bg-green-50 mt-[-2.5rem]
         backdrop-blur bg-white/10 mx-4 rounded-2xl px-4
@@ -100,7 +107,6 @@ const AttractionsPerPark: React.FC = () => {
         </Select>
         {selectedStatus && <div className="h-[1px] w-full bg-black/5" />}
       </div>
-
       {loading ? (
         <div className="flex justify-center items-center flex-1">
           <Spin size="large" />
@@ -112,22 +118,22 @@ const AttractionsPerPark: React.FC = () => {
         </div>
       ) : (
         <div
-          className="justify-center overflow-y-auto mx-4
-          md:mt-6 md:bg-white md:flex-1 md:mb-4 md:rounded-xl md:p-4"
+          className="justify-center overflow-y-auto mx-4 flex-1
+    md:mt-6 md:bg-white md:mb-4 md:rounded-xl md:p-4"
         >
-          {filteredAttractions.map((attraction) => (
+          {paginatedAttractions.map((attraction) => (
             <div
               key={attraction.id}
               onClick={() => navigateToAttraction(attraction.id)}
               className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
-                bg-white rounded-xl mb-2
-                md:border-[1px]
-                hover:bg-green-600/10"
+          bg-white rounded-xl mb-2
+          md:border-[1px]
+          hover:bg-green-600/10"
             >
               <div className="flex flex-row w-full">
                 <div
                   className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
-                "
+          "
                 >
                   {attraction.images && attraction.images.length > 0 && (
                     <img src={attraction.images[0]} alt={attraction.title} className="w-full h-full object-cover" />
@@ -146,6 +152,13 @@ const AttractionsPerPark: React.FC = () => {
               </div>
             </div>
           ))}
+          <Pagination
+            current={currentPage}
+            pageSize={itemsPerPage}
+            total={filteredAttractions.length}
+            onChange={(page) => setCurrentPage(page)}
+            className="mt-4"
+          />
         </div>
       )}
     </div>
