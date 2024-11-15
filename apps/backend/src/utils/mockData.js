@@ -3072,7 +3072,7 @@ const newHubs = [
 // Add new sensors
 const newSensors = [
   {
-    name: 'Soil Moisture VMax 1020',
+    name: 'Soil Moisture (North)',
     identifierNumber: 'SE-66666',
     serialNumber: 'STE9876543',
     sensorType: 'SOIL_MOISTURE',
@@ -3089,7 +3089,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Temperature Sensor VMax 1030',
+    name: 'Temperature (North)',
     identifierNumber: 'SE-77777',
     serialNumber: 'STE1234567',
     sensorType: 'TEMPERATURE',
@@ -3106,7 +3106,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Humidity Sensor WP-1010',
+    name: 'Humidity (North)',
     identifierNumber: 'SE-88888',
     serialNumber: 'STE7654321',
     sensorType: 'HUMIDITY',
@@ -3125,7 +3125,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Light Sensor MTY-102',
+    name: 'Light (North)',
     identifierNumber: 'SE-99999',
     serialNumber: 'STE3456789',
     sensorType: 'LIGHT',
@@ -3142,7 +3142,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Camera X10',
+    name: 'Camera (North)',
     identifierNumber: 'SE-9999X',
     serialNumber: 'STE123094',
     sensorType: 'CAMERA',
@@ -3159,7 +3159,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Temperature Sensor VMax 20',
+    name: 'Temperature (South)',
     identifierNumber: 'SE-10101',
     serialNumber: 'STE1234000',
     sensorType: 'TEMPERATURE',
@@ -3176,7 +3176,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Humidity Sensor XXX-99',
+    name: 'Humidity (South)',
     identifierNumber: 'SE-20202',
     serialNumber: 'STE9328472',
     sensorType: 'HUMIDITY',
@@ -3195,7 +3195,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Soil Moisture Lite 209',
+    name: 'Soil Moisture (South)',
     identifierNumber: 'SE-30303',
     serialNumber: 'STE987654323',
     sensorType: 'SOIL_MOISTURE',
@@ -3212,7 +3212,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Light Sensor MTY-102',
+    name: 'Light (South)',
     identifierNumber: 'SE-40404',
     serialNumber: 'STE345678942',
     sensorType: 'LIGHT',
@@ -3229,7 +3229,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Camera X10',
+    name: 'Camera (Palm Valley)',
     identifierNumber: 'SE-318CA',
     serialNumber: 'STE123095',
     sensorType: 'CAMERA',
@@ -3246,7 +3246,7 @@ const newSensors = [
     facilityId: '',
   },
   {
-    name: 'Camera X10',
+    name: 'Camera (Healing Garden)',
     identifierNumber: 'SE-318CB',
     serialNumber: 'STE123096',
     sensorType: 'CAMERA',
