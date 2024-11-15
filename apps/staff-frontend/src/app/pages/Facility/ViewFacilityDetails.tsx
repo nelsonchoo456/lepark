@@ -115,6 +115,11 @@ const ViewFacilityDetails = () => {
       label: 'Bookings',
       children: <BookingTable facilityId={facility.id} />,
     });
+    crowdTabsItems.push({
+      key: 'bookings',
+      label: 'Bookings',
+      children: <BookingTable facilityId={facility.id} />,
+    });
   }
 
   return (
