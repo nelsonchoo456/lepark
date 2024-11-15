@@ -32,6 +32,7 @@ const {
   eventTransactionLocalData,
   eventTransactionStandardData,
   feedbacksData,
+  bookingsData,
 } = require('./mockData');
 const bcrypt = require('bcrypt');
 
@@ -381,6 +382,7 @@ async function seed() {
   const amphitheaterId = facilityList[3].id;
   const dragonPlaygroundId = facilityList[6].id;
   const flowerPlaygroundId = facilityList[0].id;
+  const campingAreaId = facilityList[4].id;
 
   const eventList = [];
   for (let i = 0; i < eventsData.length; i++) {
@@ -390,8 +392,10 @@ async function seed() {
       event.facilityId = amphitheaterId;
     } else if (i < 5) {
       event.facilityId = dragonPlaygroundId;
-    } else {
+    } else if (i < 6) {
       event.facilityId = flowerPlaygroundId;
+    } else {
+      event.facilityId = campingAreaId;
     }
 
     const createdEvent = await prisma.event.create({
@@ -1258,6 +1262,18 @@ async function seed() {
     feedbackList.push(createdFeedback);
   }
   console.log(`Total feedbacks seeded: ${feedbackList.length}\n`);
+
+  const elyId = visitorList[0].id;
+  const bookingList = [];
+  for (const booking of bookingsData) {
+    booking.visitorId = elyId;
+    booking.facilityId = campingAreaId;
+    const createdBooking = await prisma.booking.create({
+      data: booking,
+    });
+    bookingList.push(createdBooking);
+  }
+  console.log(`Total bookings seeded: ${bookingList.length}\n`);
 }
 
 async function createSeqHistories(decarbAreaId, baseSeqHistory, index) {
