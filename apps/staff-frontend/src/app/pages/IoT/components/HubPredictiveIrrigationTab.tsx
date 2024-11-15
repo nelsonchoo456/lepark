@@ -203,17 +203,17 @@ const HubPredictiveIrrigationTab = ({ hub, triggerFetchZoneData }: HubPredictive
         //   display: true,
         //   text: `${formatEnumLabelToRemoveUnderscores('hehe')} Readings`,
         // },
-        tooltip: {
-          callbacks: {
-            label: (context: any) => {
-              let label = context.dataset.label || '';
-              if (label) {
-                label += ': ';
-              }
-              return label;
-            },
-          },
-        },
+        // tooltip: {
+        //   callbacks: {
+        //     label: (context: any) => {
+        //       let label = context.dataset.label || '';
+        //       if (label) {
+        //         label += ': ';
+        //       }
+        //       return label;
+        //     },
+        //   },
+        // },
         datalabels: {
           display: false, // Ensure data labels are not shown on the line
         },
