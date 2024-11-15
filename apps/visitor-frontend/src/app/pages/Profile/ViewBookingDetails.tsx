@@ -136,7 +136,7 @@ const ViewBookingDetails: React.FC = () => {
           <div className="bg-gray-200 p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <Text strong>Booking Status</Text>
-              <Tag color={getStatusColor(booking.bookingStatus)}>{booking.bookingStatus}</Tag>
+              <Tag color={getStatusColor(booking.bookingStatus)}>{booking.bookingStatus.replace(/_/g, ' ')}</Tag>
             </div>
             {booking.bookingStatus === 'APPROVED_PENDING_PAYMENT' && (
               <Button type="primary" onClick={handlePayment} className="mt-2 w-full">
