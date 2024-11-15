@@ -35,6 +35,7 @@ const FacilityInformationTab = ({ facility }: { facility: FacilityResponse }) =>
     'rulesAndRegulations',
     'isBookable',
     'facilityType',
+    'cameraSensorId',
   ]; // Add keys you want to exclude
 
   const descriptionsItems = Object.entries(facility)

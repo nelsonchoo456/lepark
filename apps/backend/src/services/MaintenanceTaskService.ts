@@ -525,15 +525,14 @@ class MaintenanceTaskService {
     startDate: Date,
     endDate: Date,
   ): Promise<{ rank: number; taskType: MaintenanceTaskTypeEnum; averageCompletionTime: number; overdueTaskCount: number; completedTaskCount: number }[]> {
+    // Get all the metrics
     const averageCompletionTimes = await this.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
-
     const overdueTaskCounts = await Promise.all(
       Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
         const count = await MaintenanceTaskDao.getOverdueTaskCountByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
         return { taskType, count };
       })
     );
-
     const completedTaskCounts = await Promise.all(
       Object.values(MaintenanceTaskTypeEnum).map(async (taskType) => {
         const count = await MaintenanceTaskDao.getCompletedTaskCountByTaskTypeForPeriod(taskType, parkId, startDate, endDate);
@@ -541,33 +540,42 @@ class MaintenanceTaskService {
       })
     );
 
-    const maxCompletionTime = Math.max(...averageCompletionTimes.map((t) => t.averageCompletionTime));
-    const maxOverdueCount = Math.max(...overdueTaskCounts.map((t) => t.count));
-    const maxCompletedCount = Math.max(...completedTaskCounts.map((t) => t.count));
+    // Find maximum values for normalization
+    const maxCompletionTime = Math.max(...averageCompletionTimes.map(t => t.averageCompletionTime));
+    const maxCompletedCount = Math.max(...completedTaskCounts.map(t => t.count));
 
-    const delayedTasks = averageCompletionTimes
-      .map((completionTime) => {
-        const overdueCount = overdueTaskCounts.find((count) => count.taskType === completionTime.taskType)?.count || 0;
-        const completedCount = completedTaskCounts.find((count) => count.taskType === completionTime.taskType)?.count || 0;
+    const delayedTasks = averageCompletionTimes.map((completionTime) => {
+      const overdueCount = overdueTaskCounts.find((count) => count.taskType === completionTime.taskType)?.count || 0;
+      const completedCount = completedTaskCounts.find((count) => count.taskType === completionTime.taskType)?.count || 0;
 
-        // Avoid division by zero
-        const normalizedCompletionTime = maxCompletionTime > 0 ? completionTime.averageCompletionTime / maxCompletionTime : 0;
-        const normalizedOverdueCount = maxOverdueCount > 0 ? overdueCount / maxOverdueCount : 0;
-        const normalizedCompletedCount = maxCompletedCount > 0 ? completedCount / maxCompletedCount : 0;
+      // Calculate overdue rate (percentage of tasks that are overdue)
+      const overdueRate = completedCount > 0 ? (overdueCount / completedCount) : 0;
 
-        // Adjust the scoring formula to include completed tasks
-        const score = normalizedCompletionTime * 0.3 + normalizedOverdueCount * 0.4 - normalizedCompletedCount * 0.3;
+      // Normalize completion time and completed count (0 to 1 scale)
+      const normalizedCompletionTime = maxCompletionTime > 0 ? completionTime.averageCompletionTime / maxCompletionTime : 0;
+      const normalizedCompletedCount = maxCompletedCount > 0 ? completedCount / maxCompletedCount : 0;
 
-        return {
-          taskType: completionTime.taskType,
-          averageCompletionTime: completionTime.averageCompletionTime,
-          overdueTaskCount: overdueCount,
-          completedTaskCount: completedCount,
-          score: score,
-        };
-      })
-      .sort((a, b) => b.score - a.score);
+      // Calculate weighted score:
+      // - 50% weight on completion time
+      // - 30% weight on overdue rate
+      // - 20% weight on completed count (higher count = more significant)
+      const score = (
+        (normalizedCompletionTime * 0.5) +    // Completion time weight
+        (overdueRate * 0.3) +                 // Overdue rate weight
+        (normalizedCompletedCount * 0.2)      // Completed count weight
+      ) * 100; // Scale to 0-100 range
 
+      return {
+        taskType: completionTime.taskType,
+        averageCompletionTime: completionTime.averageCompletionTime,
+        overdueTaskCount: overdueCount,
+        completedTaskCount: completedCount,
+        score: score,
+      };
+    })
+    .sort((a, b) => b.score - a.score); // Sort by score in descending order
+
+    // Return top 3 most delayed task types
     return delayedTasks.slice(0, 3).map((task, index) => ({
       rank: index + 1,
       taskType: task.taskType,

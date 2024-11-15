@@ -26,6 +26,34 @@ class BookingService {
         throw new Error('Visitor not found');
       }
 
+      // Check for booking overlaps
+      const existingBookings = await BookingDao.getBookingsByFacilityId(data.facilityId);
+      const hasOverlap = existingBookings.some((booking) => {
+        // Skip cancelled, rejected, and unpaid closed bookings
+        if (['CANCELLED', 'REJECTED', 'UNPAID_CLOSED'].includes(booking.bookingStatus)) {
+          return false;
+        }
+
+        const newStart = new Date(data.dateStart);
+        const newEnd = new Date(data.dateEnd);
+        const existingStart = new Date(booking.dateStart);
+        const existingEnd = new Date(booking.dateEnd);
+
+        // Check for any overlap between the date ranges
+        return (
+          // New booking starts during existing booking
+          (newStart >= existingStart && newStart <= existingEnd) ||
+          // New booking ends during existing booking
+          (newEnd >= existingStart && newEnd <= existingEnd) ||
+          // New booking completely encompasses existing booking
+          (newStart <= existingStart && newEnd >= existingEnd)
+        );
+      });
+
+      if (hasOverlap) {
+        throw new Error('There are existing bookings within the selected date range');
+      }
+
       const formattedData = dateFormatter(data);
       BookingSchema.parse(formattedData);
 

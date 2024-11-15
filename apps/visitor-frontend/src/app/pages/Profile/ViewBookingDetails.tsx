@@ -8,12 +8,31 @@ import {
   ParkResponse,
   //   sendBookingEmail,
   viewVisitorDetails,
+  updateBookingStatus,
+  BookingStatusEnum,
 } from '@lepark/data-access';
 import { LogoText } from '@lepark/common-ui';
 import dayjs from 'dayjs';
 import { LinkOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
+
+const formatBookingStatus = (status: BookingStatusEnum): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'Pending';
+    case 'CANCELLED':
+      return 'Cancelled';
+    case 'REJECTED':
+      return 'Rejected';
+    case 'APPROVED_PENDING_PAYMENT':
+      return 'Approved (Pending Payment)';
+    case 'CONFIRMED':
+      return 'Confirmed';
+    default:
+      return status;
+  }
+};
 
 const ViewBookingDetails: React.FC = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -63,6 +82,8 @@ const ViewBookingDetails: React.FC = () => {
         return 'green';
       case 'PENDING':
         return 'gold';
+      case 'APPROVED_PENDING_PAYMENT':
+        return 'gold';
       case 'CANCELLED':
         return 'red';
       case 'REJECTED':
@@ -72,25 +93,25 @@ const ViewBookingDetails: React.FC = () => {
     }
   };
 
-  const handleRequestEmail = async () => {
-    if (booking && !emailSent) {
-      try {
-        const visitor = await viewVisitorDetails(booking.visitorId);
+  // const handleRequestEmail = async () => {
+  //   if (booking && !emailSent) {
+  //     try {
+  //       const visitor = await viewVisitorDetails(booking.visitorId);
 
-        const emailData = {
-          bookingId: booking.id,
-          recipientEmail: visitor.data.email,
-        };
+  //       const emailData = {
+  //         bookingId: booking.id,
+  //         recipientEmail: visitor.data.email,
+  //       };
 
-        // await sendBookingEmail(emailData);
-        message.success('Booking details have been sent to your email');
-        setEmailSent(true);
-      } catch (error) {
-        console.error('Error requesting email:', error);
-        message.error('Error sending email');
-      }
-    }
-  };
+  //       // await sendBookingEmail(emailData);
+  //       message.success('Booking details have been sent to your email');
+  //       setEmailSent(true);
+  //     } catch (error) {
+  //       console.error('Error requesting email:', error);
+  //       message.error('Error sending email');
+  //     }
+  //   }
+  // };
 
   const handlePayment = () => {
     if (booking) {
@@ -104,6 +125,22 @@ const ViewBookingDetails: React.FC = () => {
           totalPayable: booking.facility?.fee || 0,
         },
       });
+    }
+  };
+
+  const handleCancelBooking = async () => {
+    if (!booking) return;
+
+    try {
+      const response = await updateBookingStatus(bookingId || '', { status: BookingStatusEnum.CANCELLED });
+
+      // Update local state to reflect the change
+      setBooking(response.data);
+
+      message.success('Booking has been cancelled successfully');
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      message.error('Failed to cancel booking');
     }
   };
 
@@ -136,13 +173,8 @@ const ViewBookingDetails: React.FC = () => {
           <div className="bg-gray-200 p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <Text strong>Booking Status</Text>
-              <Tag color={getStatusColor(booking.bookingStatus)}>{booking.bookingStatus.replace(/_/g, ' ')}</Tag>
+              <Tag color={getStatusColor(booking.bookingStatus)}>{formatBookingStatus(booking.bookingStatus)}</Tag>
             </div>
-            {booking.bookingStatus === 'APPROVED_PENDING_PAYMENT' && (
-              <Button type="primary" onClick={handlePayment} className="mt-2 w-full">
-                Pay Now
-              </Button>
-            )}
             <div className="w-full h-px bg-gray-300 my-2"></div>
             <Text strong className="block mb-2">
               {dayjs(booking.dateStart).format('MMMM D, YYYY')} - {dayjs(booking.dateEnd).format('MMMM D, YYYY')}
@@ -168,7 +200,7 @@ const ViewBookingDetails: React.FC = () => {
             <Text type="secondary" className="block mb-2">
               Booking ID: {booking.id}
             </Text>
-            {!emailSent ? <Button onClick={handleRequestEmail}>Request Email Copy</Button> : <Button disabled>Email Sent</Button>}
+            {/* {!emailSent ? <Button onClick={handleRequestEmail}>Request Email Copy</Button> : <Button disabled>Email Sent</Button>} */}
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
             <Text className="block mb-2">Cancellation policy</Text>
@@ -180,6 +212,16 @@ const ViewBookingDetails: React.FC = () => {
             <Text className="block mb-2">Need help?</Text>
             <Text className="block">Contact customer support at admin@lepark.com</Text>
           </div>
+          {booking.bookingStatus === 'APPROVED_PENDING_PAYMENT' && (
+            <Button type="primary" onClick={handlePayment} className="mt-2 w-full">
+              Pay Now
+            </Button>
+          )}
+          {booking.bookingStatus === 'PENDING' && (
+            <Button danger onClick={handleCancelBooking} className="w-full" size="large">
+              Cancel Booking
+            </Button>
+          )}
         </Space>
       </Card>
     </>

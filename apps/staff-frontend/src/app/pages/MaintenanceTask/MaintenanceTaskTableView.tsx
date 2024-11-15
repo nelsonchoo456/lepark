@@ -421,9 +421,7 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
       title: 'Assigned Staff',
       key: 'assignedStaff',
       render: (_, record) => {
-        const assignedStaffName = record.assignedStaff
-          ? `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}`
-          : '';
+        const assignedStaffName = record.assignedStaff ? `${record.assignedStaff.firstName} ${record.assignedStaff.lastName}` : '';
 
         return (
           <Flex align="center" justify="space-between">
@@ -435,28 +433,19 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
                     Take Task
                   </Button>
                 )}
-                {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS &&
-                  record.assignedStaff?.id === user?.id && (
-                    <Button type="link" onClick={() => handleTaskAction(record, 'return')} size="small">
-                      Return Task
-                    </Button>
-                  )}
+                {record.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS && record.assignedStaff?.id === user?.id && (
+                  <Button type="link" onClick={() => handleTaskAction(record, 'return')} size="small">
+                    Return Task
+                  </Button>
+                )}
               </>
             )}
             {userRole === StaffType.SUPERADMIN && (
               <>
                 {record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
-                  <Select
-                    style={{ width: 200 }}
-                    placeholder="Assign staff"
-                    onChange={(value) => handleAssignTask(record.id, value)}
-                  >
+                  <Select style={{ width: 200 }} placeholder="Assign staff" onChange={(value) => handleAssignTask(record.id, value)}>
                     {staffList
-                      .filter(
-                        (staff) =>
-                          staff.parkId === record.submittingStaff.parkId &&
-                          staff.role === StaffType.VENDOR_MANAGER
-                      )
+                      .filter((staff) => staff.parkId === record.submittingStaff.parkId && staff.role === StaffType.VENDOR_MANAGER)
                       .map((staff: StaffResponse) => (
                         <Select.Option key={staff.id} value={staff.id}>
                           {`${staff.firstName} ${staff.lastName}`}
@@ -502,11 +491,14 @@ const MaintenanceTaskTableView: React.FC<MaintenanceTaskTableViewProps> = ({
           <Tooltip title="View Maintenance Task">
             <Button type="link" icon={<FiEye />} onClick={() => showViewModal(record)} />
           </Tooltip>
-          {!limitedToSubmittingTasksOnly && userRole !== StaffType.MANAGER && record.taskStatus === MaintenanceTaskStatusEnum.OPEN && (
-            <Tooltip title="Edit Maintenance Task">
-              <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
-            </Tooltip>
-          )}
+          {!limitedToSubmittingTasksOnly &&
+            userRole !== StaffType.MANAGER &&
+            record.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+            record.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED && (
+              <Tooltip title="Edit Maintenance Task">
+                <Button type="link" icon={<RiEdit2Line />} onClick={() => showEditModal(record)} />
+              </Tooltip>
+            )}
           {(userRole === StaffType.SUPERADMIN || userRole === StaffType.MANAGER || userRole === StaffType.VENDOR_MANAGER) && (
             <Tooltip title="Delete Maintenance Task">
               <Button danger type="link" icon={<MdDeleteOutline className="text-error" />} onClick={() => showDeleteModal(record)} />

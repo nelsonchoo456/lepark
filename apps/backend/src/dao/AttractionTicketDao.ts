@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 class AttractionTicketDao {
   public async createAttractionTicketTransaction(
     transactionData: Prisma.AttractionTicketTransactionCreateInput,
-    tickets: { listingId: string; quantity: number }[]
+    tickets: { listingId: string; quantity: number }[],
   ): Promise<AttractionTicketTransaction> {
     return prisma.$transaction(async (prismaClient) => {
       // Fetch all required listings in one query
@@ -42,9 +42,7 @@ class AttractionTicketDao {
     });
   }
 
-  public async getAttractionTicketTransactionById(
-    id: string
-  ): Promise<AttractionTicketTransaction | null> {
+  public async getAttractionTicketTransactionById(id: string): Promise<AttractionTicketTransaction | null> {
     return prisma.attractionTicketTransaction.findUnique({
       where: { id },
       include: {
@@ -57,33 +55,28 @@ class AttractionTicketDao {
     return prisma.attractionTicketTransaction.findMany();
   }
 
-  public async deleteAttractionTicketTransaction(
-    id: string
-  ): Promise<AttractionTicketTransaction> {
+  public async deleteAttractionTicketTransaction(id: string): Promise<AttractionTicketTransaction> {
     return prisma.attractionTicketTransaction.delete({ where: { id } });
   }
 
-  public async getAttractionTicketTransactionsByVisitorId(
-    visitorId: string
-  ): Promise<AttractionTicketTransaction[]> {
+  public async getAttractionTicketTransactionsByVisitorId(visitorId: string): Promise<AttractionTicketTransaction[]> {
     return prisma.attractionTicketTransaction.findMany({ where: { visitorId } });
   }
 
-  public async getAttractionTicketTransactionsByAttractionId(
-    attractionId: string
-  ): Promise<AttractionTicketTransaction[]> {
-    return prisma.attractionTicketTransaction.findMany({ where: { attractionId } });
+  public async getAttractionTicketTransactionsByAttractionId(attractionId: string): Promise<AttractionTicketTransaction[]> {
+    return prisma.attractionTicketTransaction.findMany({
+      where: { attractionId },
+      include: {
+        attractionTickets: true,
+      },
+    });
   }
 
-  public async createAttractionTicket(
-    data: Prisma.AttractionTicketCreateInput
-  ): Promise<AttractionTicket> {
+  public async createAttractionTicket(data: Prisma.AttractionTicketCreateInput): Promise<AttractionTicket> {
     return prisma.attractionTicket.create({ data });
   }
 
-  public async getAttractionTicketById(
-    id: string
-  ): Promise<AttractionTicket | null> {
+  public async getAttractionTicketById(id: string): Promise<AttractionTicket | null> {
     return prisma.attractionTicket.findUnique({ where: { id } });
   }
 
@@ -91,39 +84,28 @@ class AttractionTicketDao {
     return prisma.attractionTicket.findMany();
   }
 
-  public async deleteAttractionTicket(
-    id: string
-  ): Promise<AttractionTicket> {
+  public async deleteAttractionTicket(id: string): Promise<AttractionTicket> {
     return prisma.attractionTicket.delete({ where: { id } });
   }
 
-  public async getAttractionTicketsByTransactionId(
-    attractionTicketTransactionId: string
-  ): Promise<AttractionTicket[]> {
+  public async getAttractionTicketsByTransactionId(attractionTicketTransactionId: string): Promise<AttractionTicket[]> {
     return prisma.attractionTicket.findMany({ where: { attractionTicketTransactionId } });
   }
 
-  public async getAttractionTicketsByListingId(
-    attractionTicketListingId: string
-  ): Promise<AttractionTicket[]> {
+  public async getAttractionTicketsByListingId(attractionTicketListingId: string): Promise<AttractionTicket[]> {
     return prisma.attractionTicket.findMany({
       where: { attractionTicketListingId },
     });
   }
 
-  public async updateAttractionTicketStatus(
-    id: string, 
-    status: AttractionTicketStatusEnum
-  ): Promise<AttractionTicket> {
+  public async updateAttractionTicketStatus(id: string, status: AttractionTicketStatusEnum): Promise<AttractionTicket> {
     return prisma.attractionTicket.update({
       where: { id },
       data: { status },
     });
   }
 
-  public async getAttractionTicketsByAttractionId(
-    attractionId: string
-  ): Promise<AttractionTicket[]> {
+  public async getAttractionTicketsByAttractionId(attractionId: string): Promise<AttractionTicket[]> {
     return prisma.attractionTicket.findMany({
       where: {
         attractionTicketTransaction: {
