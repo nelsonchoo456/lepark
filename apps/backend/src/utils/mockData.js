@@ -3046,10 +3046,10 @@ const eventsData = [
       "Immerse yourself in the soothing sounds of live jazz as talented musicians bring the park to life with soulful melodies. Whether you're a jazz enthusiast or simply looking for a relaxing evening, this event offers a perfect blend of music and nature.",
     type: 'FESTIVAL',
     suitability: 'FAMILIES_AND_FRIENDS',
-    startDate: '2024-10-26T00:00:00.000Z',
-    endDate: '2024-10-28T12:00:00.000Z',
-    startTime: '2024-10-26T00:00:00.000Z',
-    endTime: '2024-10-28T12:00:00.000Z',
+    startDate: '2024-11-16T08:00:00.000Z',
+    endDate: '2024-11-18T13:00:00.000Z',
+    startTime: '2024-11-16T08:00:00.000Z',
+    endTime: '2024-11-18T13:00:00.000Z',
     maxCapacity: 300,
     ticketingPolicy:
       'E-tickets will be sent to the email address that ticket holders have provided at the time of purchase. Admission to the event is subject to the presentation of a valid ticket, which may be scanned or checked for authenticity at the entry point. Visitors must adhere to the terms & conditions, including but not limited to any age restrictions or prohibited items.',
@@ -3109,7 +3109,7 @@ const eventsData = [
     facilityId: '',
   },
   {
-    title: 'Camping with your family',
+    title: 'Camping with Your Family',
     description:
       'Camping with your family is a fun-filled event designed to entertain and engage children in a playful environment at our camping area. Join us for a great time!',
     type: 'COMPETITION',

@@ -101,10 +101,10 @@ CREATE TYPE "FeedbackCategoryEnum" AS ENUM ('FACILITIES', 'SERVICES', 'STAFF', '
 CREATE TYPE "FeedbackStatusEnum" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
 
 -- CreateEnum
-CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT');
+CREATE TYPE "DiscountTypeEnum" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT');
 
 -- CreateEnum
-CREATE TYPE "PromotionStatus" AS ENUM ('ENABLED', 'DISABLED');
+CREATE TYPE "PromotionStatusEnum" AS ENUM ('ENABLED', 'DISABLED');
 
 -- CreateEnum
 CREATE TYPE "FAQStatusEnum" AS ENUM ('ACTIVE', 'INACTIVE', 'DRAFT', 'ARCHIVED');
@@ -116,7 +116,7 @@ CREATE TYPE "FAQCategoryEnum" AS ENUM ('GENERAL', 'PARK_RULES', 'FACILITIES', 'E
 CREATE TYPE "AnnouncementStatusEnum" AS ENUM ('UPCOMING', 'ACTIVE', 'INACTIVE', 'EXPIRED');
 
 -- CreateEnum
-CREATE TYPE "BookingStatusEnum" AS ENUM ('PENDING', 'CANCELLED', 'REJECTED', 'APPROVED_PENDING_PAYMENT', 'UNPAID_CLOSED', 'CONFIRMED', 'CONFIRMED_CLOSED');
+CREATE TYPE "BookingStatusEnum" AS ENUM ('PENDING', 'CANCELLED', 'REJECTED', 'APPROVED_PENDING_PAYMENT', 'CONFIRMED');
 
 -- CreateTable
 CREATE TABLE "Staff" (
@@ -128,10 +128,10 @@ CREATE TABLE "Staff" (
     "contactNumber" TEXT NOT NULL,
     "role" "StaffRoleEnum" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
-    "parkId" INTEGER,
     "isFirstLogin" BOOLEAN NOT NULL,
     "resetTokenUsed" BOOLEAN NOT NULL DEFAULT false,
     "resetToken" TEXT,
+    "parkId" INTEGER,
 
     CONSTRAINT "Staff_pkey" PRIMARY KEY ("id")
 );
@@ -184,9 +184,9 @@ CREATE TABLE "Occurrence" (
     "description" TEXT,
     "occurrenceStatus" "OccurrenceStatusEnum" NOT NULL,
     "decarbonizationType" "DecarbonizationTypeEnum" NOT NULL,
+    "images" TEXT[],
     "speciesId" UUID NOT NULL,
     "zoneId" INTEGER NOT NULL,
-    "images" TEXT[],
 
     CONSTRAINT "Occurrence_pkey" PRIMARY KEY ("id")
 );
@@ -230,6 +230,7 @@ CREATE TABLE "Attraction" (
     "ticketingPolicy" TEXT NOT NULL,
     "lat" DOUBLE PRECISION,
     "lng" DOUBLE PRECISION,
+    "cameraSensorId" UUID,
     "parkId" INTEGER NOT NULL,
 
     CONSTRAINT "Attraction_pkey" PRIMARY KEY ("id")
@@ -364,10 +365,10 @@ CREATE TABLE "Hub" (
     "lat" DOUBLE PRECISION,
     "long" DOUBLE PRECISION,
     "remarks" TEXT,
-    "zoneId" INTEGER,
-    "facilityId" UUID,
     "lastDataUpdateDate" TIMESTAMP(3),
+    "facilityId" UUID,
     "rfModelId" UUID,
+    "zoneId" INTEGER,
 
     CONSTRAINT "Hub_pkey" PRIMARY KEY ("id")
 );
@@ -423,9 +424,9 @@ CREATE TABLE "HistoricalRainData" (
 -- CreateTable
 CREATE TABLE "RfModel" (
     "id" UUID NOT NULL,
-    "hubId" UUID NOT NULL,
     "modelData" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "hubId" UUID NOT NULL,
 
     CONSTRAINT "RfModel_pkey" PRIMARY KEY ("id")
 );
@@ -472,6 +473,7 @@ CREATE TABLE "Facility" (
     "size" DOUBLE PRECISION NOT NULL,
     "capacity" DOUBLE PRECISION NOT NULL,
     "fee" DOUBLE PRECISION NOT NULL,
+    "cameraSensorId" UUID,
     "parkId" INTEGER NOT NULL,
 
     CONSTRAINT "Facility_pkey" PRIMARY KEY ("id")
@@ -491,10 +493,10 @@ CREATE TABLE "PlantTask" (
     "completedDate" TIMESTAMP(3),
     "images" TEXT[],
     "remarks" TEXT,
+    "position" INTEGER NOT NULL,
     "occurrenceId" UUID NOT NULL,
     "assignedStaffId" UUID,
     "submittingStaffId" UUID NOT NULL,
-    "position" INTEGER NOT NULL,
 
     CONSTRAINT "PlantTask_pkey" PRIMARY KEY ("id")
 );
@@ -513,13 +515,13 @@ CREATE TABLE "MaintenanceTask" (
     "completedDate" TIMESTAMP(3),
     "images" TEXT[],
     "remarks" TEXT,
+    "position" INTEGER NOT NULL,
     "assignedStaffId" UUID,
     "submittingStaffId" UUID NOT NULL,
     "facilityId" UUID,
     "parkAssetId" UUID,
     "sensorId" UUID,
     "hubId" UUID,
-    "position" INTEGER NOT NULL,
 
     CONSTRAINT "MaintenanceTask_pkey" PRIMARY KEY ("id")
 );
@@ -556,10 +558,10 @@ CREATE TABLE "Feedback" (
     "images" TEXT[],
     "feedbackStatus" "FeedbackStatusEnum" NOT NULL,
     "remarks" TEXT,
-    "parkId" INTEGER NOT NULL,
     "needResponse" BOOLEAN NOT NULL,
-    "staffId" UUID,
+    "resolvedStaffId" UUID,
     "visitorId" UUID NOT NULL,
+    "parkId" INTEGER NOT NULL,
 
     CONSTRAINT "Feedback_pkey" PRIMARY KEY ("id")
 );
@@ -569,18 +571,18 @@ CREATE TABLE "Promotion" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "discountType" "DiscountType" NOT NULL,
+    "discountType" "DiscountTypeEnum" NOT NULL,
     "promoCode" TEXT,
     "isNParksWide" BOOLEAN NOT NULL,
-    "parkId" INTEGER,
     "images" TEXT[],
     "discountValue" DOUBLE PRECISION NOT NULL,
     "validFrom" TIMESTAMP(3) NOT NULL,
     "validUntil" TIMESTAMP(3) NOT NULL,
-    "status" "PromotionStatus" NOT NULL,
+    "status" "PromotionStatusEnum" NOT NULL,
     "terms" TEXT[],
     "maximumUsage" INTEGER,
     "minimumAmount" DOUBLE PRECISION,
+    "parkId" INTEGER,
 
     CONSTRAINT "Promotion_pkey" PRIMARY KEY ("id")
 );
@@ -592,8 +594,8 @@ CREATE TABLE "FAQ" (
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
     "status" "FAQStatusEnum" NOT NULL,
-    "parkId" INTEGER,
     "priority" INTEGER,
+    "parkId" INTEGER,
 
     CONSTRAINT "FAQ_pkey" PRIMARY KEY ("id")
 );
@@ -630,13 +632,13 @@ CREATE TABLE "Booking" (
 );
 
 -- CreateTable
-CREATE TABLE "_visitorFavoriteSpecies" (
+CREATE TABLE "_SpeciesToVisitor" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "_visitorPromotionsRedeemed" (
+CREATE TABLE "_PromotionToVisitor" (
     "A" UUID NOT NULL,
     "B" UUID NOT NULL
 );
@@ -649,6 +651,9 @@ CREATE UNIQUE INDEX "Species_speciesName_key" ON "Species"("speciesName");
 
 -- CreateIndex
 CREATE INDEX "Occurrence_zoneId_idx" ON "Occurrence"("zoneId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Attraction_cameraSensorId_key" ON "Attraction"("cameraSensorId");
 
 -- CreateIndex
 CREATE INDEX "Attraction_parkId_idx" ON "Attraction"("parkId");
@@ -684,22 +689,25 @@ CREATE UNIQUE INDEX "ParkAsset_identifierNumber_key" ON "ParkAsset"("identifierN
 CREATE UNIQUE INDEX "ParkAsset_serialNumber_key" ON "ParkAsset"("serialNumber");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Facility_cameraSensorId_key" ON "Facility"("cameraSensorId");
+
+-- CreateIndex
 CREATE INDEX "Facility_parkId_idx" ON "Facility"("parkId");
 
 -- CreateIndex
 CREATE INDEX "FAQ_parkId_idx" ON "FAQ"("parkId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_visitorFavoriteSpecies_AB_unique" ON "_visitorFavoriteSpecies"("A", "B");
+CREATE UNIQUE INDEX "_SpeciesToVisitor_AB_unique" ON "_SpeciesToVisitor"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_visitorFavoriteSpecies_B_index" ON "_visitorFavoriteSpecies"("B");
+CREATE INDEX "_SpeciesToVisitor_B_index" ON "_SpeciesToVisitor"("B");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_visitorPromotionsRedeemed_AB_unique" ON "_visitorPromotionsRedeemed"("A", "B");
+CREATE UNIQUE INDEX "_PromotionToVisitor_AB_unique" ON "_PromotionToVisitor"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_visitorPromotionsRedeemed_B_index" ON "_visitorPromotionsRedeemed"("B");
+CREATE INDEX "_PromotionToVisitor_B_index" ON "_PromotionToVisitor"("B");
 
 -- AddForeignKey
 ALTER TABLE "Occurrence" ADD CONSTRAINT "Occurrence_speciesId_fkey" FOREIGN KEY ("speciesId") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -711,7 +719,13 @@ ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_occurrenceId_fkey" FOREIGN
 ALTER TABLE "StatusLog" ADD CONSTRAINT "StatusLog_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Attraction" ADD CONSTRAINT "Attraction_cameraSensorId_fkey" FOREIGN KEY ("cameraSensorId") REFERENCES "Sensor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "AttractionTicketListing" ADD CONSTRAINT "AttractionTicketListing_attractionId_fkey" FOREIGN KEY ("attractionId") REFERENCES "Attraction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AttractionTicket" ADD CONSTRAINT "AttractionTicket_attractionTicketListingId_fkey" FOREIGN KEY ("attractionTicketListingId") REFERENCES "AttractionTicketListing"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AttractionTicket" ADD CONSTRAINT "AttractionTicket_attractionTicketTransactionId_fkey" FOREIGN KEY ("attractionTicketTransactionId") REFERENCES "AttractionTicketTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -720,13 +734,22 @@ ALTER TABLE "AttractionTicket" ADD CONSTRAINT "AttractionTicket_attractionTicket
 ALTER TABLE "AttractionTicketTransaction" ADD CONSTRAINT "AttractionTicketTransaction_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "AttractionTicketTransaction" ADD CONSTRAINT "AttractionTicketTransaction_attractionId_fkey" FOREIGN KEY ("attractionId") REFERENCES "Attraction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EventTicketListing" ADD CONSTRAINT "EventTicketListing_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "EventTicket" ADD CONSTRAINT "EventTicket_eventTicketListingId_fkey" FOREIGN KEY ("eventTicketListingId") REFERENCES "EventTicketListing"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "EventTicket" ADD CONSTRAINT "EventTicket_eventTicketTransactionId_fkey" FOREIGN KEY ("eventTicketTransactionId") REFERENCES "EventTicketTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EventTicketTransaction" ADD CONSTRAINT "EventTicketTransaction_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EventTicketTransaction" ADD CONSTRAINT "EventTicketTransaction_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -748,6 +771,9 @@ ALTER TABLE "RfModel" ADD CONSTRAINT "RfModel_hubId_fkey" FOREIGN KEY ("hubId") 
 
 -- AddForeignKey
 ALTER TABLE "ParkAsset" ADD CONSTRAINT "ParkAsset_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Facility" ADD CONSTRAINT "Facility_cameraSensorId_fkey" FOREIGN KEY ("cameraSensorId") REFERENCES "Sensor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PlantTask" ADD CONSTRAINT "PlantTask_occurrenceId_fkey" FOREIGN KEY ("occurrenceId") REFERENCES "Occurrence"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -780,7 +806,7 @@ ALTER TABLE "MaintenanceTask" ADD CONSTRAINT "MaintenanceTask_hubId_fkey" FOREIG
 ALTER TABLE "SequestrationHistory" ADD CONSTRAINT "SequestrationHistory_decarbonizationAreaId_fkey" FOREIGN KEY ("decarbonizationAreaId") REFERENCES "DecarbonizationArea"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_resolvedStaffId_fkey" FOREIGN KEY ("resolvedStaffId") REFERENCES "Staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Feedback" ADD CONSTRAINT "Feedback_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -792,13 +818,13 @@ ALTER TABLE "Booking" ADD CONSTRAINT "Booking_facilityId_fkey" FOREIGN KEY ("fac
 ALTER TABLE "Booking" ADD CONSTRAINT "Booking_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_visitorFavoriteSpecies" ADD CONSTRAINT "_visitorFavoriteSpecies_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_SpeciesToVisitor" ADD CONSTRAINT "_SpeciesToVisitor_A_fkey" FOREIGN KEY ("A") REFERENCES "Species"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_visitorFavoriteSpecies" ADD CONSTRAINT "_visitorFavoriteSpecies_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_SpeciesToVisitor" ADD CONSTRAINT "_SpeciesToVisitor_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_visitorPromotionsRedeemed" ADD CONSTRAINT "_visitorPromotionsRedeemed_A_fkey" FOREIGN KEY ("A") REFERENCES "Promotion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_PromotionToVisitor" ADD CONSTRAINT "_PromotionToVisitor_A_fkey" FOREIGN KEY ("A") REFERENCES "Promotion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_visitorPromotionsRedeemed" ADD CONSTRAINT "_visitorPromotionsRedeemed_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_PromotionToVisitor" ADD CONSTRAINT "_PromotionToVisitor_B_fkey" FOREIGN KEY ("B") REFERENCES "Visitor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
