@@ -22,6 +22,7 @@ const { RangePicker } = DatePicker;
 
 interface HubPredictiveIrrigationTabProps {
   hub: HubResponse;
+  triggerFetchZoneData: () => void;
 }
 
 export const getWeatherForecast = (textForecast: string) => {
@@ -64,7 +65,7 @@ export const getWeatherForecast = (textForecast: string) => {
   );
 };
 
-const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) => {
+const HubPredictiveIrrigationTab = ({ hub, triggerFetchZoneData }: HubPredictiveIrrigationTabProps) => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(10, 'days'), dayjs()]);
   const [trainLoading, setTrainLoading] = useState(false);
   const [hasModel, setHasModel] = useState(false);
@@ -148,6 +149,7 @@ const HubPredictiveIrrigationTab = ({ hub }: HubPredictiveIrrigationTabProps) =>
       if (response.status === 200) {
         message.success("Successfully trained Hub. Fetching predictions now...");
         await fetchModel(hub);
+        triggerFetchZoneData();
       }
       setTrainLoading(false);
     } catch (error) {

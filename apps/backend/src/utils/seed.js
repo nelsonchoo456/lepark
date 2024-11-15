@@ -899,8 +899,8 @@ async function seed() {
   console.log(`Seeding historical rainfall data. This may take a while...\n`);
   // -- [ PREDICTIVE IRRIGATION ] --
   // Function seeds historical rain data for n days
-  await seedHistoricalRainfallData(100);// 100 days
-  console.log(`Seeded historical rainfall data for 100 days.\n`);
+  await seedHistoricalRainfallData(110);// 110 days
+  console.log(`Seeded historical rainfall data for 110 days.\n`);
 
   // Generate and create sensor readings for all sensors
   for (const sensor of sensorList.filter((sensor) => sensor.sensorStatus === 'ACTIVE')) {
@@ -1359,7 +1359,7 @@ const generateMockReadings = (sensorType, rainfallData) => {
   const now = new Date();
   // const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
 
-  const hundredDaysAgo = new Date(now.getTime() - 2400 * 60 * 60 * 1000); // 100 days in milliseconds
+  const hundredDaysAgo = new Date(now.getTime() - 2640 * 60 * 60 * 1000); // 110 days in milliseconds
 
   // Generate readings every 15 minutes from now till 8 hours ago
   for (let time = now; time >= hundredDaysAgo; time = new Date(time.getTime() - 15 * 60 * 1000)) {
