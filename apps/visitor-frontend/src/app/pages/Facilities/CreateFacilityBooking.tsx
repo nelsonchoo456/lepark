@@ -11,6 +11,7 @@ import {
   BookingStatusEnum,
   getFacilityById,
   getBookingsByFacilityId,
+  getEventsByFacilityId,
 } from '@lepark/data-access';
 
 dayjs.extend(isBetween);
@@ -25,18 +26,29 @@ const CreateFacilityBooking = () => {
   const { user } = useAuth<VisitorResponse>();
   const [form] = Form.useForm();
   const [bookings, setBookings] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
     const loadFacilityData = async () => {
       if (facilityId) {
         try {
-          const [facilityData, bookingsData] = await Promise.all([getFacilityById(facilityId), getBookingsByFacilityId(facilityId)]);
+          const [facilityData, bookingsData, eventsData] = await Promise.all([
+            getFacilityById(facilityId),
+            getBookingsByFacilityId(facilityId),
+            getEventsByFacilityId(facilityId),
+          ]);
 
           setFacility(facilityData.data);
+
+          // Filter active bookings
           const activeBookings = bookingsData.data.filter(
             (booking) => !['CANCELLED', 'REJECTED', 'UNPAID_CLOSED'].includes(booking.bookingStatus),
           );
           setBookings(activeBookings);
+
+          // Filter active events (not cancelled or completed)
+          const activeEvents = eventsData.data.filter((event) => !['CANCELLED', 'COMPLETED'].includes(event.status));
+          setEvents(activeEvents);
         } catch (error) {
           console.error('Error loading facility data:', error);
         }
@@ -46,11 +58,21 @@ const CreateFacilityBooking = () => {
   }, [facilityId]);
 
   const isDateBooked = (date: dayjs.Dayjs) => {
-    return bookings.some((booking) => {
+    // Check facility bookings
+    const hasBooking = bookings.some((booking) => {
       const startDate = dayjs(booking.dateStart);
       const endDate = dayjs(booking.dateEnd);
       return date.isBetween(startDate, endDate, 'day', '[]');
     });
+
+    // Check events
+    const hasEvent = events.some((event) => {
+      const startDate = dayjs(event.startDate);
+      const endDate = dayjs(event.endDate);
+      return date.isBetween(startDate, endDate, 'day', '[]');
+    });
+
+    return hasBooking || hasEvent;
   };
 
   const handleStartDateChange = (date: dayjs.Dayjs | null) => {
@@ -159,6 +181,9 @@ const CreateFacilityBooking = () => {
                     if (endDate && value.isAfter(endDate)) {
                       return Promise.reject('Start date cannot be after end date');
                     }
+                    if (endDate && endDate.diff(value, 'days') > 3) {
+                      return Promise.reject('Maximum booking duration is 4 days');
+                    }
                     return Promise.resolve();
                   },
                 }),
@@ -168,7 +193,11 @@ const CreateFacilityBooking = () => {
                 className="w-full"
                 format="YYYY-MM-DD"
                 disabledDate={(current) => {
-                  return current < dayjs().startOf('day') || isDateBooked(current);
+                  const twoWeeksFromNow = dayjs().add(2, 'weeks').startOf('day');
+                  return (
+                    current < twoWeeksFromNow || // Disable dates less than 2 weeks from now
+                    isDateBooked(current)
+                  );
                 }}
                 onChange={handleStartDateChange}
               />
@@ -187,6 +216,9 @@ const CreateFacilityBooking = () => {
                     if (startDate && value.isBefore(startDate)) {
                       return Promise.reject('End date cannot be before start date');
                     }
+                    if (startDate && value.diff(startDate, 'days') > 3) {
+                      return Promise.reject('Maximum booking duration is 4 days');
+                    }
                     return Promise.resolve();
                   },
                 }),
@@ -197,7 +229,27 @@ const CreateFacilityBooking = () => {
                 format="YYYY-MM-DD"
                 disabledDate={(current) => {
                   const startDate = form.getFieldValue('dateStart');
-                  return current < dayjs().startOf('day') || (startDate && current < startDate) || isDateBooked(current);
+                  const maxEndDate = startDate ? startDate.add(3, 'days') : null;
+
+                  // Find the next booked date after the start date
+                  let nextBookedDate = null;
+                  if (startDate) {
+                    const futureBookings = bookings
+                      .filter((booking) => dayjs(booking.dateStart).isAfter(startDate))
+                      .sort((a, b) => dayjs(a.dateStart).diff(dayjs(b.dateStart)));
+
+                    if (futureBookings.length > 0) {
+                      nextBookedDate = dayjs(futureBookings[0].dateStart);
+                    }
+                  }
+
+                  return (
+                    current < dayjs().startOf('day') ||
+                    (startDate && current < startDate) ||
+                    (maxEndDate && current > maxEndDate) ||
+                    (nextBookedDate && current.isSameOrAfter(nextBookedDate)) ||
+                    isDateBooked(current)
+                  );
                 }}
                 onChange={handleEndDateChange}
               />

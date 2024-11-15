@@ -11,6 +11,8 @@ import {
   getEventById,
   getEventTicketListingsByEventId,
   PromotionResponse,
+  getEventTicketTransactionsByEventId,
+  EventTicketTransactionResponse,
 } from '@lepark/data-access';
 import SelectDateAndReview from './components/SelectDateAndReview';
 import OrderReview from './components/OrderReview';
@@ -37,19 +39,32 @@ const ViewEventTicketListings = () => {
   const [appliedPromotion, setAppliedPromotion] = useState<PromotionResponse | null>(null);
   const [subtotal, setSubtotal] = useState(0);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [soldTicketsByDate, setSoldTicketsByDate] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchTickets = async () => {
       if (eventId) {
         try {
-          const response = await getEventTicketListingsByEventId(eventId);
-          const activeListings = response.data.filter((listing) => listing.isActive);
-          setListings(activeListings);
+          const [ticketListingsResponse, eventResponse, transactionsResponse] = await Promise.all([
+            getEventTicketListingsByEventId(eventId),
+            getEventById(eventId),
+            getEventTicketTransactionsByEventId(eventId),
+          ]);
 
-          const eventResponse = await getEventById(eventId);
+          const activeListings = ticketListingsResponse.data.filter((listing) => listing.isActive);
+          setListings(activeListings);
           setEvent(eventResponse.data);
+
+          const ticketsByDate = transactionsResponse.data.reduce((acc, transaction) => {
+            const dateKey = dayjs(transaction.eventDate).format('YYYY-MM-DD');
+            acc[dateKey] = (acc[dateKey] || 0) + transaction.eventTickets.length;
+            return acc;
+          }, {} as Record<string, number>);
+
+          setSoldTicketsByDate(ticketsByDate);
+          console.log(ticketsByDate);
         } catch (error) {
-          console.error('Error fetching ticket data:', error);
+          console.error('Error fetching data:', error);
         } finally {
           setLoading(false);
         }
@@ -195,6 +210,8 @@ const ViewEventTicketListings = () => {
             eventName={event?.title || ''}
             eventStartDate={dayjs(event?.startDate)}
             eventEndDate={dayjs(event?.endDate)}
+            maxCapacity={event?.maxCapacity || 0}
+            soldTicketsByDate={soldTicketsByDate}
             ticketDetails={Object.entries(ticketCounts)
               .filter(([_, quantity]) => quantity > 0)
               .map(([id, quantity]) => {

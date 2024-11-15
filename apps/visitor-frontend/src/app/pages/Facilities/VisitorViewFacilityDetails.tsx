@@ -81,7 +81,7 @@ const VisitorViewFacilityDetails = () => {
             </table>
           </div>
           <div className="mt-4">
-            {facility?.isBookable && (
+            {facility?.isBookable && facility?.facilityStatus === 'OPEN' && (
               <Button type="primary" className="w-full" onClick={() => facilityId && navigateToBooking(facilityId)}>
                 Book Now
               </Button>

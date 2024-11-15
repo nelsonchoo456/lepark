@@ -65,7 +65,12 @@ class EventTicketDao {
   }
 
   public async getEventTicketTransactionsByEventId(eventId: string): Promise<EventTicketTransaction[]> {
-    return prisma.eventTicketTransaction.findMany({ where: { eventId } });
+    return prisma.eventTicketTransaction.findMany({
+      where: { eventId },
+      include: {
+        eventTickets: true,
+      },
+    });
   }
 
   // EventTicket
