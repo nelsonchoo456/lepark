@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, Card, Row, Col, Button, Checkbox, Spin } from 'antd';
+import { Typography, Card, Row, Col, Button, Checkbox, Spin, message } from 'antd';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { LogoText } from '@lepark/common-ui';
 import dayjs, { Dayjs } from 'dayjs';
@@ -40,6 +40,8 @@ const ViewEventTicketListings = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [termsChecked, setTermsChecked] = useState(false);
   const [soldTicketsByDate, setSoldTicketsByDate] = useState<Record<string, number>>({});
+
+  const totalTicketsSelected = Object.values(ticketCounts).reduce((sum, count) => sum + count, 0);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -81,9 +83,17 @@ const ViewEventTicketListings = () => {
   }, {} as Record<string, EventTicketListingResponse[]>);
 
   const handleTicketCountChange = (listingId: string, increment: number) => {
+    const newCount = Math.max(0, (ticketCounts[listingId] || 0) + increment);
+    const newTotalTickets = totalTicketsSelected - (ticketCounts[listingId] || 0) + newCount;
+
+    if (newTotalTickets > (event?.maxCapacity || 0)) {
+      message.error(`Cannot exceed maximum capacity of ${event?.maxCapacity} tickets`);
+      return;
+    }
+
     setTicketCounts((prev) => ({
       ...prev,
-      [listingId]: Math.max(0, (prev[listingId] || 0) + increment),
+      [listingId]: newCount,
     }));
   };
 
@@ -162,9 +172,13 @@ const ViewEventTicketListings = () => {
           </Text>
         </Col>
         <Col span={10} className="flex items-center justify-end">
-          <Button onClick={() => handleTicketCountChange(listing.id, -1)}>-</Button>
+          <Button onClick={() => handleTicketCountChange(listing.id, -1)} disabled={ticketCounts[listing.id] === 0}>
+            -
+          </Button>
           <Text className="mx-2 text-base">{ticketCounts[listing.id] || 0}</Text>
-          <Button onClick={() => handleTicketCountChange(listing.id, 1)}>+</Button>
+          <Button onClick={() => handleTicketCountChange(listing.id, 1)} disabled={totalTicketsSelected >= (event?.maxCapacity || 0)}>
+            +
+          </Button>
         </Col>
       </Row>
       <Row>
