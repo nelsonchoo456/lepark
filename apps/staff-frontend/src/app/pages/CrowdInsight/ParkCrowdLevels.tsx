@@ -470,14 +470,14 @@ const ParkCrowdLevels: React.FC = () => {
               (clonedElement as HTMLElement).style.padding = '0'; // Reset padding
 
               // Ensure the parent container is properly centered with consistent margins
-              const parentElement = clonedElement.parentElement;
-              if (parentElement) {
-                parentElement.style.display = 'flex';
-                parentElement.style.justifyContent = 'center';
-                parentElement.style.width = '100%';
-                parentElement.style.margin = '0'; // Reset margin
-                parentElement.style.padding = '0'; // Reset padding
-              }
+              // const parentElement = clonedElement.parentElement;
+              // if (parentElement) {
+              //   parentElement.style.display = 'flex';
+              //   parentElement.style.justifyContent = 'center';
+              //   parentElement.style.width = '100%';
+              //   parentElement.style.margin = '0'; // Reset margin
+              //   parentElement.style.padding = '0'; // Reset padding
+              // }
             }
           },
         });
@@ -517,8 +517,9 @@ const ParkCrowdLevels: React.FC = () => {
           ? {
               image: calendarImage,
               width: 590,
-              alignment: 'center' as Alignment,
-              margin: [40, 10, 0, 10] as [number, number, number, number], // Consistent margins
+              // alignment: 'center' as Alignment,
+              margin: [0, 10, 0, 10],
+              // margin: [40, 10, 0, 10] as [number, number, number, number], // Consistent margins
             }
           : [],
         {
