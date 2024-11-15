@@ -553,7 +553,7 @@ const MarkersGroup = ({
                         </div>
                         <div className="flex justify-end">
                           <Tooltip title="View Attraction details">
-                            <Button shape="circle" onClick={() => navigate(`/attraction/${attraction.id}`)}>
+                            <Button shape="circle" onClick={() => navigate(`/attractions/${attraction.id}`)}>
                               <MdArrowOutward />
                             </Button>
                           </Tooltip>

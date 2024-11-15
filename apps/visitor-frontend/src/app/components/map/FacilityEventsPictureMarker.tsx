@@ -63,11 +63,11 @@ function FacilityEventsPictureMarker({
 }: FacilityEventsPictureMarkerProps) {
   const markerRef = useRef<L.Marker>(null);
   const navigate = useNavigate();
-  const map = useMap(); 
+  const map = useMap();
 
   const zoom = (lat: number, lng: number) => {
-    map.setView([lat, lng], 18)
-  }
+    map.setView([lat, lng], 18);
+  };
 
   const eventMarkerGap = 16;
 
@@ -128,20 +128,21 @@ function FacilityEventsPictureMarker({
 
   const onEventCardClick = (event: EventResponse) => {
     setShowEvents && setShowEvents(true);
-    zoom(lat, lng)
+    zoom(lat, lng);
     setHovered &&
       setHovered({
         ...event,
-        title: 
-        <div className="flex justify-start items-center">
-          {event.title}
-          {userLat && userLng && (
-                          <>
-                            <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
-                            <div className="font-normal">{calculateDistance(userLat, userLng, lat, lng)} away</div>
-                          </>
-                        )}  
-        </div>,
+        title: (
+          <div className="flex justify-start items-center">
+            {event.title}
+            {userLat && userLng && (
+              <>
+                <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
+                <div className="font-normal">{calculateDistance(userLat, userLng, lat, lng)} away</div>
+              </>
+            )}
+          </div>
+        ),
         image: event.images ? event.images[0] : null,
         entityType: 'EVENT',
         children: (
@@ -166,7 +167,7 @@ function FacilityEventsPictureMarker({
               <AntdTooltip title="View Facility details" placement="topLeft">
                 <p
                   className="text-green-500 cursor-pointer font-semibold hover:text-green-900"
-                  onClick={() => navigate(`/facilities/${facility.id}`)}
+                  onClick={() => navigate(`/facility/${facility.id}`)}
                 >
                   @ {facility.name}
                 </p>
@@ -198,84 +199,89 @@ function FacilityEventsPictureMarker({
           facilityType={facility.facilityType}
           hovered={hovered}
           setHovered={() => {
-            zoom(lat, lng)
+            zoom(lat, lng);
             setHovered &&
-            setHovered({
-              ...facility,
-              title:  <div className="flex justify-start items-center">{facility.name}{userLat && userLng && (
-                <>
-                  <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
-                  <div className="font-normal">{calculateDistance(userLat, userLng, lat, lng)} away</div>
-                </>
-              )}  </div>,
-              image: facility.images ? facility.images[0] : null,
-              entityType: 'FACILITY',
-              children: (
-                <div className="h-full w-full flex flex-col justify-between">
-                  <div className="flex justify-between flex-wrap mb-2">
-                    <p className="">{formatEnumLabelToRemoveUnderscores(facility.facilityType)}</p>
-                    <Tag
-                      color={
-                        facility.facilityStatus === FacilityStatusEnum.OPEN
-                          ? 'green'
-                          : facility.facilityStatus === FacilityStatusEnum.CLOSED
-                          ? 'red'
-                          : 'yellow'
-                      }
-                      bordered={false}
-                    >
-                      {formatEnumLabelToRemoveUnderscores(facility.facilityStatus)}
-                    </Tag>
+              setHovered({
+                ...facility,
+                title: (
+                  <div className="flex justify-start items-center">
+                    {facility.name}
+                    {userLat && userLng && (
+                      <>
+                        <div className="h-[4px] w-[4px] mx-2 bg-black rounded-full" />
+                        <div className="font-normal">{calculateDistance(userLat, userLng, lat, lng)} away</div>
+                      </>
+                    )}{' '}
                   </div>
-
-                  {events && events.length > 0 && (
-                    <div className="">
-                      <div className="flex w-full items-center mb-2">
-                        <div className="font-semibold text-highlightGreen-400 mr-2">Upcoming Events</div>
-                        <div className="flex-[1] h-[1px] bg-highlightGreen-400/30" />
-                      </div>
-                      <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
-                        {events.map((event) => (
-                          <div
-                            className="bg-gray-50/40 h-full w-32 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-highlightGreen-400"
-                            onClick={() => onEventCardClick(event)}
-                          >
-                            <AntdTooltip title="View Event Details">
-                              <div>
-                                <div
-                                  style={{
-                                    backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                  }}
-                                  className="rounded-b-lg h-16 w-full shadow-md text-white flex-0 flex items-center justify-center bg-highlightGreen-200 opacity-50 overflow-hidden"
-                                >
-                                  {(!event.images || event.images.length === 0) && <PiStarFill className="opacity-75 text-lg" />}
-                                </div>
-                                <div className="font-semibold px-2 mt-1">{event.title}</div>
-                                <div className="text-xs px-2">
-                                  {dayjs(event?.startDate).format('D MMM') + ' - ' + dayjs(event?.endDate).format('D MMM')}
-                                </div>
-                              </div>
-                            </AntdTooltip>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex w-full items-center mb-2">
-                        <div className="flex-[1] h-[1px] bg-highlightGreen-400/30" />
-                      </div>
+                ),
+                image: facility.images ? facility.images[0] : null,
+                entityType: 'FACILITY',
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div className="flex justify-between flex-wrap mb-2">
+                      <p className="">{formatEnumLabelToRemoveUnderscores(facility.facilityType)}</p>
+                      <Tag
+                        color={
+                          facility.facilityStatus === FacilityStatusEnum.OPEN
+                            ? 'green'
+                            : facility.facilityStatus === FacilityStatusEnum.CLOSED
+                            ? 'red'
+                            : 'yellow'
+                        }
+                        bordered={false}
+                      >
+                        {formatEnumLabelToRemoveUnderscores(facility.facilityStatus)}
+                      </Tag>
                     </div>
-                  )}
-                  <div className="flex justify-end">
-                    <AntdTooltip title="View Facility details">
-                      <Button shape="circle" onClick={() => navigate(`/facilities/${facility.id}`)}>
-                        <MdArrowOutward />
-                      </Button>
-                    </AntdTooltip>
+
+                    {events && events.length > 0 && (
+                      <div className="">
+                        <div className="flex w-full items-center mb-2">
+                          <div className="font-semibold text-highlightGreen-400 mr-2">Upcoming Events</div>
+                          <div className="flex-[1] h-[1px] bg-highlightGreen-400/30" />
+                        </div>
+                        <div className="h-42 flex gap-2 pb-3 overflow-x-scroll flex-nowrap">
+                          {events.map((event) => (
+                            <div
+                              className="bg-gray-50/40 h-full w-32 rounded overflow-hidden flex-shrink-0 cursor-pointer shadow hover:text-highlightGreen-400"
+                              onClick={() => onEventCardClick(event)}
+                            >
+                              <AntdTooltip title="View Event Details">
+                                <div>
+                                  <div
+                                    style={{
+                                      backgroundImage: `url('${event.images && event.images.length > 0 ? event.images[0] : ''}')`,
+                                      backgroundSize: 'cover',
+                                      backgroundPosition: 'center',
+                                    }}
+                                    className="rounded-b-lg h-16 w-full shadow-md text-white flex-0 flex items-center justify-center bg-highlightGreen-200 opacity-50 overflow-hidden"
+                                  >
+                                    {(!event.images || event.images.length === 0) && <PiStarFill className="opacity-75 text-lg" />}
+                                  </div>
+                                  <div className="font-semibold px-2 mt-1">{event.title}</div>
+                                  <div className="text-xs px-2">
+                                    {dayjs(event?.startDate).format('D MMM') + ' - ' + dayjs(event?.endDate).format('D MMM')}
+                                  </div>
+                                </div>
+                              </AntdTooltip>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex w-full items-center mb-2">
+                          <div className="flex-[1] h-[1px] bg-highlightGreen-400/30" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex justify-end">
+                      <AntdTooltip title="View Facility details">
+                        <Button shape="circle" onClick={() => navigate(`/facility/${facility.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </AntdTooltip>
+                    </div>
                   </div>
-                </div>
-              ),
-            })
+                ),
+              });
           }}
         />
       )}
@@ -286,7 +292,7 @@ function FacilityEventsPictureMarker({
             position={[lat, lng]}
             icon={getCustomIcon(event, index)}
             eventHandlers={{
-              click: () => onEventCardClick(event)
+              click: () => onEventCardClick(event),
             }}
             riseOnHover
           >
