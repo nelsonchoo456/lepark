@@ -303,7 +303,18 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
               >
                 <Button onClick={() => setView('details')} icon={<MdClose />} shape="circle" type="primary" />
               </div>
-              <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />
+              {parks?.map((park) => (
+                <PolygonWithLabel
+                  key={park.id}
+                  entityId={park.id}
+                  geom={park.geom}
+                  polygonLabel={park.name}
+                  image={park.images && park.images.length > 0 ? park.images[0] : ''}
+                  color="transparent"
+                  fillOpacity={0.6}
+                />
+              ))}
+              {selectedPark && <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />}
               {zones?.map((zone) => (
                 <PolygonWithLabel
                   entityId={zone.id}
@@ -315,7 +326,7 @@ const OccurrenceTable: React.FC<OccurrenceTableProps> = ({ speciesId, excludeOcc
                   // handlePolygonClick={() => setHovered()}
                 />
               ))}
-              {occurrences.map((occurrence) => (
+              {filteredOccurrences.map((occurrence) => (
                 <PictureMarker
                   id={occurrence.id}
                   entityType="OCCURRENCE"
