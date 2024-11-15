@@ -29,7 +29,7 @@ const AnalyseActualCrowdLevels: React.FC = () => {
   const [restrictedParks, setRestrictedParks] = useState<ParkResponse[]>([]);
   const [timeGranularity, setTimeGranularity] = useState<TimeGranularity>('day');
   const { user } = useAuth<StaffResponse>();
-  const [numZones, setNumZones] = useState<number>(0);
+  // const [numZones, setNumZones] = useState<number>(0);
 
   // Use the custom hook for crowd data
   const { crowdData, isLoading, error } = useFetchCrowdData({
@@ -41,9 +41,9 @@ const AnalyseActualCrowdLevels: React.FC = () => {
     fetchParks();
   }, []);
 
-  useEffect(() => {
-    fetchNumZones();
-  }, [parkId]);
+  // useEffect(() => {
+  //   fetchNumZones();
+  // }, [parkId]);
 
   const fetchParks = async () => {
     try {
@@ -62,10 +62,10 @@ const AnalyseActualCrowdLevels: React.FC = () => {
     }
   };
 
-  const fetchNumZones = async () => {
-    const numZonesResponse = await getZonesByParkId(parkId);
-    setNumZones(numZonesResponse.data.length);
-  };
+  // const fetchNumZones = async () => {
+  //   const numZonesResponse = await getZonesByParkId(parkId);
+  //   setNumZones(numZonesResponse.data.length);
+  // };
 
   const dateRanges = React.useMemo(() => new Map<string, string>(), []);
 
@@ -121,22 +121,22 @@ const AnalyseActualCrowdLevels: React.FC = () => {
       return {
         date: key,
         totalCrowdLevel: Math.round(totalCrowdLevel),
-        averageCrowdLevel: Math.round(totalCrowdLevel / numZones), // divide by number of zones
+        // averageCrowdLevel: Math.round(totalCrowdLevel / numZones), // divide by number of zones
         dataPoints: values.length,
       };
     });
   }, [filteredCrowdData, timeGranularity, parks]);
 
-  const averageChartData = {
-    labels: aggregatedData.map((d) => d.date),
-    datasets: [
-      {
-        label: 'Average Crowd Level',
-        data: aggregatedData.map((d) => d.averageCrowdLevel),
-        borderColor: 'rgb(255, 159, 64)',
-      },
-    ],
-  };
+  // const averageChartData = {
+  //   labels: aggregatedData.map((d) => d.date),
+  //   datasets: [
+  //     {
+  //       label: 'Average Crowd Level',
+  //       data: aggregatedData.map((d) => d.averageCrowdLevel),
+  //       borderColor: 'rgb(255, 159, 64)',
+  //     },
+  //   ],
+  // };
 
   const totalChartData = {
     labels: aggregatedData.map((d) => d.date),
@@ -236,7 +236,7 @@ const AnalyseActualCrowdLevels: React.FC = () => {
               value={selectedDate}
               onChange={(dates) => {
                 // If dates is null (cleared), set back to default range
-                setSelectedDate(dates as [Dayjs, Dayjs] || defaultDateRange);
+                setSelectedDate((dates as [Dayjs, Dayjs]) || defaultDateRange);
               }}
               className="w-full"
               defaultValue={defaultDateRange}
@@ -285,7 +285,7 @@ const AnalyseActualCrowdLevels: React.FC = () => {
             <div className="mt-4">
               <Title level={5}>Analysis Statistics</Title>
               <Row gutter={16}>
-                <Col span={6}>
+                <Col span={8}>
                   <Card size="small">
                     <Statistic
                       title="Total Visitors"
@@ -293,14 +293,11 @@ const AnalyseActualCrowdLevels: React.FC = () => {
                     />
                   </Card>
                 </Col>
-                <Col span={6}>
+                {/* <Col span={6}>
                   <Card size="small">
                     <Statistic
                       title="Average Crowd Level"
-                      value={Math.round(
-                        aggregatedData.reduce((sum, d) => sum + d.averageCrowdLevel * d.dataPoints, 0) /
-                          aggregatedData.reduce((sum, d) => sum + d.dataPoints, 0),
-                      )}
+                      value={Math.round(aggregatedData.reduce((sum, d) => sum + d.averageCrowdLevel, 0) / aggregatedData.length)}
                     />
                   </Card>
                 </Col>
@@ -308,8 +305,16 @@ const AnalyseActualCrowdLevels: React.FC = () => {
                   <Card size="small">
                     <Statistic title="Peak Average" value={Math.max(...aggregatedData.map((d) => d.averageCrowdLevel))} />
                   </Card>
+                </Col> */}
+                <Col span={8}>
+                  <Card size="small">
+                    <Statistic
+                      title="Average Visitors"
+                      value={Math.round(aggregatedData.reduce((sum, d) => sum + d.totalCrowdLevel, 0) / aggregatedData.length)}
+                    />
+                  </Card>
                 </Col>
-                <Col span={6}>
+                <Col span={8}>
                   <Card size="small">
                     <Statistic title="Peak Total" value={Math.max(...aggregatedData.map((d) => d.totalCrowdLevel))} />
                   </Card>

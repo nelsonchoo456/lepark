@@ -4209,7 +4209,7 @@ const attractionTransactionLocalData = [
     ],
   },
   {
-    attractionDate: '2024-11-08T15:00:00Z',
+    attractionDate: '2024-12-08T15:00:00Z',
     purchaseDate: '2024-10-21T09:00:00Z',
     totalAmount: 10,
     visitorId: '',
