@@ -29,13 +29,13 @@ const PlaceZoneDetailsStep = ({ handleCurrStep, handleSubmit, form, hubId }: Pla
   const [macAddress, setMacAddress] = useState('');
 
   const formatMacAddress = (value: string) => {
-    const cleanValue = value.replace(/[^0-9]/g, '');
+    const cleanValue = value.replace(/[^0-9A-Fa-f]/g, '');
     const formattedValue = cleanValue.match(/.{1,2}/g)?.join('-') || '';
-    return formattedValue.slice(0, 17);
+    return formattedValue.toUpperCase().slice(0, 17);
   };
 
   const handleMacAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value.toUpperCase();
     const formattedValue = formatMacAddress(value);
     setMacAddress(formattedValue);
     form.setFieldsValue({ macAddress: formattedValue });
@@ -61,12 +61,17 @@ const PlaceZoneDetailsStep = ({ handleCurrStep, handleSubmit, form, hubId }: Pla
         rules={[
           { required: true },
           {
-            pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/,
-            message: 'Invalid MAC address format',
+            pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/i,
+            message: 'Invalid MAC address format. Use hexadecimal format (0-9, A-F)',
           },
         ]}
       >
-        <Input value={macAddress} onChange={handleMacAddressChange} placeholder={'XX-XX-XX-XX-XX-XX'} />
+        <Input 
+          value={macAddress} 
+          onChange={handleMacAddressChange} 
+          placeholder={'AA-BB-CC-DD-EE-FF'} 
+          style={{ textTransform: 'uppercase' }}
+        />
       </Form.Item>
 
       <Form.Item

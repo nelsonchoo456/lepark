@@ -6,6 +6,7 @@ import { fromZodError } from 'zod-validation-error';
 import aws from 'aws-sdk';
 import ParkDao from '../dao/ParkDao';
 import AttractionTicketDao from '../dao/AttractionTicketDao';
+import SensorDao from '../dao/SensorDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -94,7 +95,17 @@ class AttractionService {
       if (!existingAttraction) {
         throw new Error('Attraction not found');
       }
-
+      if (data.cameraSensorId) {
+        try {
+          const existingSensor = await SensorDao.getSensorById(data.cameraSensorId);
+          if (!existingSensor) {
+            throw new Error('Camera Sensor not found');
+          }
+        } catch (e) {
+          throw new Error('Camera Sensor not found');
+        }
+      }
+      
       const formattedData = dateFormatter(data);
       const mergedData = { ...existingAttraction, ...formattedData };
       AttractionSchema.parse(mergedData);
@@ -138,7 +149,6 @@ class AttractionService {
       //         throw new Error('New attraction coordinates are outside the park boundaries');
       //       }
       //     }
-
       return AttractionDao.updateAttractionDetails(id, formattedData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -160,7 +170,11 @@ class AttractionService {
     }
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `attraction/${fileName}`,
@@ -217,7 +231,10 @@ class AttractionService {
         throw new Error('Ticket listing not found');
       }
 
-      AttractionTicketListingSchema.parse(data);
+      // Merge existing data with updates before validation
+      const mergedData = { ...existingTicketListing, ...data };
+      AttractionTicketListingSchema.parse(mergedData);
+      
       return AttractionDao.updateAttractionTicketListingDetails(id, data);
     } catch (error) {
       if (error instanceof z.ZodError) {

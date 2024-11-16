@@ -14,11 +14,12 @@ import TicketsTab from './components/TicketsTab';
 import { useLocation } from 'react-router-dom';
 import DashboardTab from './components/DashboardTab';
 import TicketSalesTab from './components/TicketSalesTab';
+import CameraSensorTab from './components/CameraSensorTab';
 
 const AttractionDetails = () => {
   const { user } = useAuth<StaffResponse>();
   const { id } = useParams();
-  const { attraction, park, loading } = useRestrictAttractions(id);
+  const { attraction, park, loading, triggerFetch : triggerFetchAttraction } = useRestrictAttractions(id);
   const navigate = useNavigate();
   const notificationShown = useRef(false);
   const [, setRefreshToggle] = useState(false);
@@ -87,6 +88,39 @@ const AttractionDetails = () => {
     },
   ];
 
+  const crowdTabsItems = [
+    {
+      key: 'information',
+      label: 'Information',
+      children: attraction && park ? <InformationTab attraction={attraction} park={park} /> : <></>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: attraction && park ? <LocationTab attraction={attraction} park={park} user={user} /> : <></>,
+    },
+    {
+      key: 'tickets',
+      label: 'Ticket Listings',
+      children: attraction ? <TicketsTab attraction={attraction} onTicketListingCreated={triggerFetch} /> : <></>,
+    },
+    {
+      key: 'ticketSales',
+      label: 'Ticket Sales',
+      children: attraction ? <TicketSalesTab attraction={attraction} /> : <></>,
+    },
+    {
+      key: 'dashboard',
+      label: 'Dashboard',
+      children: attraction ? <DashboardTab attractionId={attraction.id} /> : <></>,
+    },
+    {
+      key: 'Crowd',
+      label: 'Crowd',
+      children: attraction ? <CameraSensorTab attraction={attraction} park={park} triggerFetchAttraction={triggerFetchAttraction}/> : <></>,
+    },
+  ];
+ 
   const breadcrumbItems = [
     {
       title: 'Attractions Management',
@@ -157,7 +191,7 @@ const AttractionDetails = () => {
             setActiveTab(key);
             navigate(`/attraction/${id}?tab=${key}`, { replace: true });
           }}
-          items={tabsItems}
+          items={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) ? crowdTabsItems : tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />

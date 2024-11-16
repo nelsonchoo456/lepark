@@ -44,8 +44,11 @@ router.get('/getSensorReadingsBySensorId/:sensorId', async (req, res) => {
 
 router.get('/getSensorReadingsBySensorIds', async (req, res) => {
   try {
-    const sensorIds = req.query.sensorIds as string[];
-    const readings = await SensorReadingService.getSensorReadingsBySensorIds(sensorIds);
+    const sensorIds = Array.isArray(req.query.sensorIds) 
+      ? req.query.sensorIds 
+      : [req.query.sensorIds];
+
+    const readings = await SensorReadingService.getSensorReadingsBySensorIds(sensorIds as string[]);
     res.status(200).json(readings);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -161,6 +164,20 @@ router.get('/getSensorReadingsByHubIdAndSensorTypeByDateRange/:hubId/:sensorType
     const readings = await SensorReadingService.getSensorReadingsByHubIdAndSensorTypeByDateRange(
       req.params.hubId,
       req.params.sensorType as SensorTypeEnum,
+      new Date(startDate as string),
+      new Date(endDate as string),
+    );
+    res.status(200).json(readings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange/:hubId', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const readings = await SensorReadingService.getHourlyAverageSensorReadingsForHubIdAndSensorTypeByDateRange(
+      req.params.hubId,
       new Date(startDate as string),
       new Date(endDate as string),
     );
@@ -301,6 +318,53 @@ router.get('/getUnhealthyOccurrences/:zoneId', async (req, res) => {
     const zoneId = parseInt(req.params.zoneId);
     const occurrences = await SensorReadingService.getUnhealthyOccurrences(zoneId);
     res.status(200).json(occurrences);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Crowd Prediction Routes
+
+router.get('/predictCrowdLevels/:parkId/:daysToPredict', async (req, res) => {
+  try {
+    const predictions = await SensorReadingService.predictCrowdLevels(parseInt(req.params.parkId), parseInt(req.params.daysToPredict));
+    res.status(200).json(predictions);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getAggregatedCrowdDataForPark/:parkId/:startDate/:endDate', async (req, res) => {
+  try {
+    const data = await SensorReadingService.getAggregatedCrowdDataForPark(parseInt(req.params.parkId), new Date(req.params.startDate), new Date(req.params.endDate));
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getAllSensorReadingsByParkIdAndSensorType/:parkId/:sensorType', async (req, res) => {
+  try {
+    const readings = await SensorReadingService.getAllSensorReadingsByParkIdAndSensorType(parseInt(req.params.parkId), req.params.sensorType as SensorTypeEnum);
+    res.status(200).json(readings);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getPredictedCrowdLevelsForPark/:parkId/:pastPredictedDays', async (req, res) => {
+  try {
+    const data = await SensorReadingService.getPredictedCrowdLevelsForPark(parseInt(req.params.parkId), parseInt(req.params.pastPredictedDays));
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/getPastOneHourCrowdDataBySensorsForPark/:parkId', async (req, res) => {
+  try {
+    const data = await SensorReadingService.getPastOneHourCrowdDataBySensorsForPark(parseInt(req.params.parkId));
+    res.status(200).json(data);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

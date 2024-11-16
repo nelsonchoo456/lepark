@@ -46,7 +46,7 @@ const LoginAnnouncements = () => {
         {/* <div className='z-10 w-full bg-white p-4 mb-4 rounded bg-opacity-80'>
           Image from Botanic Gardens
         </div> */}
-        <div className='z-10 w-full bg-white p-4 rounded bg-opacity-80'>
+        {/* <div className='z-10 w-full bg-white p-4 rounded bg-opacity-80'>
           <Divider className="mb-2">
             <LogoText>Announcements</LogoText>
           </Divider>
@@ -68,7 +68,7 @@ const LoginAnnouncements = () => {
               Information
             </Button>
           </div>
-        </div>
+        </div> */}
       </AnnouncementsCard>
     </AnnouncementsPanel>
   );

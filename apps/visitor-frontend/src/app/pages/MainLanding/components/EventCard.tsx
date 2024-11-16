@@ -3,45 +3,50 @@ import { Button, Card } from 'antd';
 
 interface EventCardProps {
   title: string;
-  url: string;
+  url?: string | null;
   extra?: React.ReactNode;
   width?: string;
   height?: string;
   children?: React.ReactNode;
+  gradient?: string;
+  cardOnClick?: () => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({
-  title,
-  url,
-  extra,
-  width = '10rem',
-  height = '13rem',
-  children,
-}) => {
+const EventCard: React.FC<EventCardProps> = ({ title, url, extra, width = '13rem', height = '15rem', gradient ="bg-gradient-to-t from-green-500 via-green-600/70 to-transparent", cardOnClick, children }) => {
   return (
-    <div style={{ padding: '0' }}>
       <Card
         size="small"
         style={{
           width: width,
-          height: height,
-          backgroundImage: `url('${url}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: 'white',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
-        styles={{ body: { padding: 0 }}}
+        styles={{ body: { padding: 0 } }}
+        className={`lg:w-auto lg:flex-[1] flex-none lg:min-h-[13.5rem]`}
+        onClick={() => cardOnClick && cardOnClick()}
+        hoverable
       >
-        <div className="absolute bottom-0 w-full h-full p-4 bg-gradient-to-t from-green-500/90 via-green-600/70 to-transparent text-white flex justify-end items-end ">
-        <div className="text-right">
-          <div className="mb-2 font-bold text-lg">{title}</div>
-          <div className="text-sm opacity-60">{children}</div>
+        <div
+          style={{
+            width: "full",
+            height: "9rem",
+            backgroundImage: `url('${url}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            color: 'white',
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <div className={`absolute w-full h-full px-4 ${gradient} text-white flex justify-end items-end `}>
+            <div className="text-right">
+              <div className="mb-2 font-bold text-lg">{title}</div>
+              
+            </div>
+          </div>
         </div>
-      </div>
-
+        <div className="text-sm p-2">{children}</div>
       </Card>
-    </div>
+    // </div>
   );
 };
 

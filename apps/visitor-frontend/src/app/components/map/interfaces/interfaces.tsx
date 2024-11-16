@@ -16,3 +16,12 @@ export interface GeoManLayers extends Layer {
 export interface GeomType {
   coordinates: number[][][]; // Adjust this to match the exact structure of your coordinates
 }
+
+export interface HoverItem {
+  id: string;
+  title: string | JSX.Element | JSX.Element[];
+  image?: string | null;
+  entityType: string;
+  children?: string | JSX.Element | JSX.Element[];
+  showImage?: boolean;
+}

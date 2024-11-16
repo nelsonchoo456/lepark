@@ -93,10 +93,23 @@ const ZoneDetails = () => {
       label: 'Map',
       children: zone ? <MapTab zone={zone} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
+  ];
+
+  const iotTabsItems = [
     {
-      key: 'IoT',
-      label: 'IoT',
-      children: hubs ? (
+      key: 'about',
+      label: 'Information',
+      children: <InformationTab zone={zone} />,
+    },
+    {
+      key: 'map',
+      label: 'Map',
+      children: zone ? <MapTab zone={zone} /> : <Empty description={'No Map data for this Park'}></Empty>,
+    },
+    {
+      key: 'iot',
+      label: 'Active IoT',
+      children: hubs && hubs.length > 0 ? (
         <IotTabs hubs={hubs}/>
       ) : (
         <Empty description="No Linked Hubs"></Empty>
@@ -176,7 +189,7 @@ const ZoneDetails = () => {
         <Tabs
           centered
           defaultActiveKey="about"
-          items={tabsItems}
+          items={(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) ? tabsItems : iotTabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />

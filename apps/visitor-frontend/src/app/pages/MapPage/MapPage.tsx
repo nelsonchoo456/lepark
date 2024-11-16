@@ -5,12 +5,14 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { MOBILE_SIDEBAR_WIDTH } from '@lepark/common-ui';
 import { SCREEN_LG } from '../../config/breakpoints';
-import { Button, Input, Select } from 'antd';
-import { FiFilter, FiSearch } from 'react-icons/fi';
-import { FaFilter } from 'react-icons/fa6';
 import withParkGuard from '../../park-context/withParkGuard';
+import UserLiveLocationMap from '../../components/map/userLocation/UserLiveLocation';
+import { usePark } from '../../park-context/ParkContext';
+import PolygonFitBounds from '../../components/map/PolygonFitBounds';
+import Zones from './components/Zones';
 
 const MapPage = () => {
+  const { selectedPark } = usePark();
   const [webMode, setWebMode] = useState<boolean>(
     window.innerWidth >= SCREEN_LG
   );
@@ -45,6 +47,11 @@ const MapPage = () => {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        {selectedPark && <PolygonFitBounds geom={selectedPark.geom}/>}
+        {selectedPark && <Zones park={selectedPark}/>}
+        <UserLiveLocationMap/>
+
+
       </MapContainer>
     </div>
   ) : (
@@ -56,7 +63,7 @@ const MapPage = () => {
       }}
     >
       {/* <Input className='absolute z-50'/> */}
-      <div
+      {/* <div
         style={{
           position: 'absolute',
           top: '1rem',
@@ -85,7 +92,7 @@ const MapPage = () => {
         <div className='flex justify-end mt-2'>
           <Button type='primary' icon={<FiFilter/>} size="large"/>
         </div>
-      </div>
+      </div> */}
       <MapContainer
         center={[1.287953, 103.851784]}
         zoom={11}
@@ -96,6 +103,9 @@ const MapPage = () => {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        {selectedPark && <PolygonFitBounds geom={selectedPark.geom}/>}
+        {selectedPark && <Zones park={selectedPark}/>}
+        <UserLiveLocationMap/>
       </MapContainer>
     </div>
   );

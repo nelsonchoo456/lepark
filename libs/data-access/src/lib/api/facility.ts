@@ -56,6 +56,23 @@ export async function getFacilityById(id: string): Promise<AxiosResponse<Facilit
   }
 }
 
+export async function updateFacilityCameraSensor(
+  id: string,
+  cameraSensorId?: string | null
+// ): Promise<AxiosResponse<FacilityResponse>> {
+): Promise<any> {
+  try {
+    const response: AxiosResponse<FacilityResponse> = await client.put(`${URL}/updateFacilityDetails/${id}`, { cameraSensorId });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data.error || error.message;
+    } else {
+      throw error;
+    }
+  }
+}
+
 export async function updateFacilityDetails(
   id: string,
   data: Partial<FacilityData>,

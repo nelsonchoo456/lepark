@@ -1,5 +1,5 @@
 import { OccurrenceResponse } from './occurrence';
-import { ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from './sharedenums';
+import { ConservationStatusEnum, LightTypeEnum, SoilTypeEnum } from './sharedEnums';
 // Define the Species interface
 export interface SpeciesResponse {
   id: string;

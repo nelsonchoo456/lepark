@@ -1,8 +1,8 @@
 import { FacilityResponse } from './facility';
 import { HubResponse } from './hub';
 import { ParkResponse } from './park';
-import { SensorReadingResponse } from './sensorreading';
-import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedenums';
+import { SensorReadingResponse } from './sensorReading';
+import { SensorStatusEnum, SensorTypeEnum, SensorUnitEnum } from './sharedEnums';
 
 export interface SensorData {
   name: string;
@@ -11,8 +11,8 @@ export interface SensorData {
   description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
@@ -33,8 +33,8 @@ export interface SensorResponse {
   description?: string;
   sensorStatus: SensorStatusEnum;
   acquisitionDate: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   sensorUnit: SensorUnitEnum;
   supplier: string;
   supplierContactNumber: string;
@@ -58,8 +58,8 @@ export interface SensorUpdateData {
   description?: string;
   sensorStatus?: SensorStatusEnum;
   acquisitionDate?: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   sensorUnit?: SensorUnitEnum;
   supplier?: string;
   supplierContactNumber?: string;
@@ -69,22 +69,4 @@ export interface SensorUpdateData {
   remarks?: string;
   hubId?: string;
   facilityId?: string;
-}
-
-export interface SensorMaintenanceHistoryResponse {
-  id: string;
-  maintenanceDate: string;
-  description: string;
-  sensorId: string;
-  name: string;
-}
-
-export interface SensorUsageMetricsResponse {
-  id: string;
-  uptime: number;
-  downtime: number;
-  dataVolume: number;
-  description: string;
-  sensorId: string;
-  name: string;
 }

@@ -46,48 +46,9 @@ class AttractionTicketService {
 
       const formattedData = dateFormatter(data);
       const { tickets, ...transactionData } = formattedData;
-      // AttractionTicketTransactionSchema.parse(formattedData);
 
-      // const transactionData = ensureAllFieldsPresent(formattedData);
-
-      // Additional business logic can be added here
-      // For example, checking if the attraction is open, if there are available tickets, etc.
-
-      const result = await prisma.$transaction(async (prismaClient) => {
-        // Fetch all required listings in one query
-        const listingIds = tickets.map((ticket) => ticket.listingId);
-        const listings = await prismaClient.attractionTicketListing.findMany({
-          where: { id: { in: listingIds } },
-        });
-
-        // Create a map for quick price lookup
-        const listingPriceMap = new Map(listings.map((listing) => [listing.id, listing.price]));
-
-        // Create the transaction
-        const createdTransaction = await prismaClient.attractionTicketTransaction.create({
-          data: {
-            ...transactionData,
-            attractionTickets: {
-              create: tickets.flatMap((ticket) => {
-                const price = listingPriceMap.get(ticket.listingId);
-                if (price === undefined) {
-                  throw new Error(`Price not found for listing ID: ${ticket.listingId}`);
-                }
-                return Array(ticket.quantity).fill({
-                  price: price,
-                  status: AttractionTicketStatusEnum.VALID,
-                  attractionTicketListingId: ticket.listingId,
-                });
-              }),
-            },
-          },
-          include: {
-            attractionTickets: true,
-          },
-        });
-
-        return createdTransaction;
-      });
+      // Create the transaction with tickets
+      const result = await AttractionTicketDao.createAttractionTicketTransaction(transactionData, tickets);
 
       return result;
     } catch (error) {

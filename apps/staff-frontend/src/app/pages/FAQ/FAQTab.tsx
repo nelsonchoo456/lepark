@@ -4,7 +4,18 @@ import { FiSearch } from 'react-icons/fi';
 import { RiEdit2Line, RiEyeLine } from 'react-icons/ri';
 import { MdDeleteOutline } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import { FAQResponse, deleteFAQ, FAQCategoryEnum, ParkResponse, FAQStatusEnum, updateFAQPriorities, StaffType, StaffResponse } from '@lepark/data-access';
+import {
+  FAQResponse,
+  deleteFAQ,
+  FAQCategoryEnum,
+  ParkResponse,
+  FAQStatusEnum,
+  updateFAQPriorities,
+  StaffType,
+  StaffResponse,
+  updateFAQ,
+  FAQUpdateData,
+} from '@lepark/data-access';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -24,10 +35,10 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
   const navigate = useNavigate();
   const { modal, message } = App.useApp();
   const [selectedStatuses, setSelectedStatuses] = useState<FAQStatusEnum[]>([]);
-  const [groupedFAQs, setGroupedFAQs] = useState<{ [key in FAQCategoryEnum]: FAQResponse[] }>({} as { [key in FAQCategoryEnum]: FAQResponse[] });
+  const [groupedFAQs, setGroupedFAQs] = useState<{ [key in FAQCategoryEnum]: FAQResponse[] }>(
+    {} as { [key in FAQCategoryEnum]: FAQResponse[] },
+  );
   const { user } = useAuth<StaffResponse>();
-
-
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -41,19 +52,18 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
 
   const filteredFAQs = useMemo(() => {
     return faqs.filter((faq) => {
-      const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(faq.status);
       const matchesPark = faq.parkId === null || user?.role === StaffType.SUPERADMIN || faq.parkId === user?.parkId;
       return matchesSearch && matchesStatus && matchesPark;
     });
   }, [faqs, searchQuery, selectedStatuses, user?.role, user?.parkId]);
 
-
   useEffect(() => {
     const grouped: { [key in FAQCategoryEnum]: FAQResponse[] } = {} as { [key in FAQCategoryEnum]: FAQResponse[] };
-    Object.values(FAQCategoryEnum).forEach(category => {
-      grouped[category] = filteredFAQs.filter(faq => faq.category === category);
+    Object.values(FAQCategoryEnum).forEach((category) => {
+      grouped[category] = filteredFAQs.filter((faq) => faq.category === category);
     });
     setGroupedFAQs(grouped);
   }, [filteredFAQs]);
@@ -81,7 +91,7 @@ const FAQTab: React.FC<FAQTabProps> = ({ faqs, triggerFetch, showParkColumn = fa
     OTHER: '#037d50',
   };
 
-const getParkName = (parkId: number | null) => {
+  const getParkName = (parkId: number | null) => {
     if (parkId === null) return 'All Parks';
     const park = parks?.find((p) => p.id === parkId);
     return park ? park.name : 'Unknown Park';
@@ -111,7 +121,6 @@ const getParkName = (parkId: number | null) => {
     }
   };
 
-
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
 
@@ -123,7 +132,29 @@ const getParkName = (parkId: number | null) => {
     const newGroupedFAQs = { ...groupedFAQs };
     const [movedFAQ] = newGroupedFAQs[sourceCategory].splice(source.index, 1);
 
-    movedFAQ.category = destCategory;
+    // Update the category if it has changed
+    if (sourceCategory !== destCategory) {
+      movedFAQ.category = destCategory;
+      try {
+        const updateData: FAQUpdateData = {
+          category: destCategory,
+          question: movedFAQ.question,
+          answer: movedFAQ.answer,
+          status: movedFAQ.status,
+        };  
+
+        // Only include parkId if it is not null
+        if (movedFAQ.parkId !== null && movedFAQ.parkId !== undefined) {
+          updateData.parkId = movedFAQ.parkId;
+        }
+
+        await updateFAQ(movedFAQ.id, updateData);
+      } catch (error) {
+        console.error('Error updating FAQ category:', error);
+        message.error('Failed to update FAQ category. Please try again.');
+        return;
+      }
+    }
 
     newGroupedFAQs[destCategory].splice(destination.index, 0, movedFAQ);
 
@@ -139,28 +170,27 @@ const getParkName = (parkId: number | null) => {
     setGroupedFAQs(newGroupedFAQs);
 
     try {
-      const updatedFAQs = [
-        ...newGroupedFAQs[sourceCategory],
-        ...newGroupedFAQs[destCategory],
-      ];
+      const updatedFAQs = [...newGroupedFAQs[sourceCategory], ...newGroupedFAQs[destCategory]];
 
-      await updateFAQPriorities(updatedFAQs.map(faq => ({
-        id: faq.id,
-        category: faq.category,
-        priority: faq.priority,
-        question: faq.question,
-        answer: faq.answer,
-        status: faq.status,
-        parkId: faq.parkId,
-      })));
+      await updateFAQPriorities(
+        updatedFAQs.map((faq) => ({
+          id: faq.id,
+          category: faq.category,
+          priority: faq.priority,
+          question: faq.question,
+          answer: faq.answer,
+          status: faq.status,
+          parkId: faq.parkId,
+        })),
+      );
 
-      message.success('FAQ order updated successfully');
+      message.success('FAQs updated successfully');
     } catch (error) {
-      console.error('Error updating FAQ priorities:', error);
-      message.error('Failed to update FAQ order. Please try again.');
+      console.error('Error updating FAQs:', error);
+      message.error('Failed to update FAQs. Please try again.');
     }
   };
-    const renderFAQCard = (faq: FAQResponse, index: number) => (
+  const renderFAQCard = (faq: FAQResponse, index: number) => (
     <Draggable key={faq.id} draggableId={faq.id} index={index}>
       {(provided, snapshot) => (
         <div
@@ -181,7 +211,9 @@ const getParkName = (parkId: number | null) => {
                 children: (
                   <>
                     <p>{faq.answer}</p>
-                    <p style={{ color: 'grey' }}><em>{getParkName(faq.parkId)}</em></p>
+                    <p style={{ color: 'grey' }}>
+                      <em>{getParkName(faq.parkId)}</em>
+                    </p>
 
                     {(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
                       <>
@@ -234,19 +266,26 @@ const getParkName = (parkId: number | null) => {
     return categories.slice(startIndex, startIndex + categoriesPerPage);
   }, [groupedFAQs, currentPage]);
 
-   return (
+  return (
     <>
-
       <Flex justify="space-between" align="center" style={{ marginBottom: '16px', marginTop: '16px' }}>
         <Input
           suffix={<FiSearch />}
           placeholder="Search FAQs..."
           onChange={handleSearch}
-          style={{ flexGrow: 1, marginRight: '16px' }}
+          style={{
+            flexGrow: 1,
+            marginRight:
+              user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER
+                ? '16px'
+                : '0',
+          }}
         />
-        <Button type="primary" onClick={() => navigate('/faq/create')}>
-          Create FAQ
-        </Button>
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && (
+          <Button type="primary" onClick={() => navigate('/faq/create')}>
+            Create FAQ
+          </Button>
+        )}
       </Flex>
       <Select
         mode="multiple"
@@ -273,8 +312,8 @@ const getParkName = (parkId: number | null) => {
                       styles={{
                         header: {
                           backgroundColor: categoryColors[category as FAQCategoryEnum],
-                          color: 'white'
-                        }
+                          color: 'white',
+                        },
                       }}
                     >
                       {categoryFaqs.map((faq, index) => renderFAQCard(faq, index))}
@@ -289,7 +328,7 @@ const getParkName = (parkId: number | null) => {
       </DragDropContext>
       <Pagination
         current={currentPage}
-        total={Object.keys(groupedFAQs).filter(category => groupedFAQs[category as FAQCategoryEnum].length > 0).length}
+        total={Object.keys(groupedFAQs).filter((category) => groupedFAQs[category as FAQCategoryEnum].length > 0).length}
         pageSize={categoriesPerPage}
         onChange={(page) => setCurrentPage(page)}
         style={{ marginTop: '16px', textAlign: 'center' }}
@@ -297,6 +336,5 @@ const getParkName = (parkId: number | null) => {
     </>
   );
 };
-
 
 export default FAQTab;

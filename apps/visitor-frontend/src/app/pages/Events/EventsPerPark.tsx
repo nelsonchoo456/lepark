@@ -2,22 +2,18 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePark } from '../../park-context/ParkContext';
 import { getEventsByParkId, EventResponse, EventTypeEnum, EventSuitabilityEnum, EventStatusEnum } from '@lepark/data-access';
-import { Card, Tag, Input, TreeSelect, Spin } from 'antd';
+import { Card, Tag, Input, TreeSelect, Spin, Typography, Flex, Pagination } from 'antd';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { FiSearch } from 'react-icons/fi';
 import { IoIosArrowDown } from 'react-icons/io';
 import dayjs from 'dayjs';
+import withParkGuard from '../../park-context/withParkGuard';
+import { MdArrowForwardIos } from 'react-icons/md';
+import { PiStarFill } from 'react-icons/pi';
 
 const { SHOW_PARENT } = TreeSelect;
 
 const formatEnumLabel = (label: string) => {
-  const specialCases = {
-    BBQ_PIT: 'BBQ Pit',
-    AED: 'AED',
-  };
-  if (specialCases[label]) {
-    return specialCases[label];
-  }
   return label
     .toLowerCase()
     .split('_')
@@ -32,6 +28,8 @@ const EventsPerPark: React.FC = () => {
   const [events, setEvents] = useState<EventResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of items per page
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -73,7 +71,6 @@ const EventsPerPark: React.FC = () => {
         children: [
           { title: 'Ongoing', value: 'status-ONGOING', key: 'status-ONGOING' },
           { title: 'Upcoming', value: 'status-UPCOMING', key: 'status-UPCOMING' },
-          { title: 'Completed', value: 'status-COMPLETED', key: 'status-COMPLETED' },
         ],
       },
       {
@@ -103,18 +100,26 @@ const EventsPerPark: React.FC = () => {
 
   const filteredEvents = useMemo(() => {
     if (loading) return [];
-    return events.filter((event) => {
-      const matchesSearchQuery = event.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilters = selectedFilters.every((filter) => {
-        const [category, value] = filter.split('-');
-        if (category === 'status') return event.status === value;
-        if (category === 'type') return event.type === value;
-        if (category === 'suitability') return event.suitability === value;
-        return true;
+    return events
+      .filter((event) => event.status !== EventStatusEnum.COMPLETED) // Filter out completed events
+      .filter((event) => {
+        const matchesSearchQuery = event.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFilters = selectedFilters.every((filter) => {
+          const [category, value] = filter.split('-');
+          if (category === 'status') return event.status === value;
+          if (category === 'type') return event.type === value;
+          if (category === 'suitability') return event.suitability === value;
+          return true;
+        });
+        return matchesSearchQuery && matchesFilters;
       });
-      return matchesSearchQuery && matchesFilters;
-    });
   }, [events, searchQuery, selectedFilters, loading]);
+
+  const paginatedEvents = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredEvents.slice(startIndex, endIndex);
+  }, [filteredEvents, currentPage, itemsPerPage]);
 
   const renderEventStatus = (status: EventStatusEnum) => {
     switch (status) {
@@ -130,12 +135,6 @@ const EventsPerPark: React.FC = () => {
             {formatEnumLabel(status)}
           </Tag>
         );
-      case EventStatusEnum.COMPLETED:
-        return (
-          <Tag color="gray" bordered={false}>
-            {formatEnumLabel(status)}
-          </Tag>
-        );
       default:
         return <Tag>{status}</Tag>;
     }
@@ -144,8 +143,11 @@ const EventsPerPark: React.FC = () => {
   return (
     <div className="h-screen bg-slate-100 flex flex-col">
       <ParkHeader cardClassName="h-24 md:h-[160px]">
-        <div className="md:text-center md:mx-auto">
-          <p className="font-light">Events in</p>
+        <div className="md:text-center mx-auto">
+          <Flex justify="center" gap={10} align="center">
+            <PiStarFill className="text-highlightGreen-400 text-lg" />
+            <p className="font-medium"> Events in</p>
+          </Flex>
           <p className="font-medium text-2xl -mt-1 md:text-3xl">{selectedPark?.name}</p>
         </div>
       </ParkHeader>
@@ -186,43 +188,65 @@ const EventsPerPark: React.FC = () => {
         </div>
       ) : (
         <div
-          className="justify-center overflow-y-auto mx-4
-          md:mt-6 md:bg-white md:flex-1 md:mb-4 md:rounded-xl md:p-4"
+          className="justify-center overflow-y-auto mx-4 flex-1
+    md:mt-6 md:bg-white md:mb-4 md:rounded-xl md:p-4"
         >
-          {filteredEvents.map((event) => (
+          {paginatedEvents.map((event) => (
             <div
               key={event.id}
               onClick={() => navigateToEvent(event.id)}
               className="w-full text-left inline-flex items-center py-2 px-4 cursor-pointer
-                bg-white rounded-xl mb-2
-                md:border-[1px]
-                hover:bg-green-600/10"
+          bg-white rounded-xl mb-2
+          md:border-[1px]
+          hover:bg-green-600/10"
             >
               <div className="flex flex-row w-full">
                 <div
                   className="w-[80px] h-[80px] flex-shrink-0 mr-2 overflow-hidden rounded-full bg-slate-400/40
-                "
+          "
                 >
                   {event.images && event.images.length > 0 && (
                     <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover" />
                   )}
                 </div>
-                <div className="h-full flex-1">
-                  <div className="text-lg font-semibold text-green-700">{event.title}</div>
-                  <div className="-mt-[2px] text-green-700/80">{renderEventStatus(event.status)}</div>
+                <div className="h-full flex-1 lg:pr-8">
+                  <div className="text-lg font-semibold text-green-700 leading-tight">{event.title}</div>
+                  <Typography.Paragraph
+                    ellipsis={{
+                      rows: 2,
+                    }}
+                    className="text-sm text-gray-500"
+                  >
+                    {event.description}
+                  </Typography.Paragraph>
+                </div>
+                <div className="h-full flex-1 hidden lg:block">
                   <div className="text-sm text-gray-500">Type: {formatEnumLabel(event.type)}</div>
                   <div className="text-sm text-gray-500">Suitability: {formatEnumLabel(event.suitability)}</div>
                 </div>
-                <div className="h-full flex-1 hidden lg:block">
-                  <div className="text-sm text-gray-500">{event.description}</div>
+                <div className="h-full lg:flex-1">
+                  <div className="-mt-[2px] text-green-700/80 translate-x-4 lg:translate-x-0">{renderEventStatus(event.status)}</div>
+                  <div className="text-sm text-gray-500 hidden lg:block">
+                    {dayjs(event.startDate).format('D MMM YY')} - {dayjs(event.startDate).format('D MMM YY')}
+                  </div>
+                </div>
+                <div className="flex flex-col justify-center hidden lg:flex">
+                  <MdArrowForwardIos className="text-highlightGreen-400" />
                 </div>
               </div>
             </div>
           ))}
+          <Pagination
+            current={currentPage}
+            pageSize={itemsPerPage}
+            total={filteredEvents.length}
+            onChange={(page) => setCurrentPage(page)}
+            className="mt-4"
+          />
         </div>
       )}
     </div>
   );
 };
 
-export default EventsPerPark;
+export default withParkGuard(EventsPerPark);

@@ -1,38 +1,41 @@
-import { PrismaClient, Prisma, Visitor } from '@prisma/client';
+import { PrismaClient, Prisma, Visitor, Species } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 class VisitorDao {
-  async createVisitor(data: Prisma.VisitorCreateInput): Promise<Visitor> {
+  public async createVisitor(
+    data: Prisma.VisitorCreateInput
+  ): Promise<Visitor> {
     return prisma.visitor.create({ data });
   }
 
-  async getVisitorByEmail(email: string): Promise<Visitor | null> {
+  public async getVisitorByEmail(
+    email: string
+  ): Promise<Visitor | null> {
     return prisma.visitor.findUnique({ where: { email } });
   }
 
-  async getAllVisitors(): Promise<Visitor[]> {
+  public async getAllVisitors(): Promise<Visitor[]> {
     return prisma.visitor.findMany();
   }
 
-  async getVisitorById(id: string): Promise<Visitor | null> {
+  public async getVisitorById(
+    id: string
+  ): Promise<Visitor | null> {
     return prisma.visitor.findUnique({ where: { id } });
   }
 
-  async updateVisitorDetails(id: string, data: Prisma.VisitorUpdateInput): Promise<Visitor> {
+  public async updateVisitorDetails(
+    id: string, 
+    data: Prisma.VisitorUpdateInput
+  ): Promise<Visitor> {
     return prisma.visitor.update({ where: { id }, data });
   }
 
-  // Commented out as duplicate with above method
-
-  // async updateVisitor(id: string, data: Prisma.VisitorUpdateInput): Promise<Visitor | null> {
-  //   return prisma.visitor.update({
-  //     where: { id },
-  //     data,
-  //   });
-  // }
-
-  async addFavoriteSpecies(visitorId: string, speciesId: string): Promise<Visitor> {
+  public async addFavoriteSpecies(
+    visitorId: string, 
+    speciesId: string
+  ): Promise<Visitor> {
     return prisma.visitor.update({
       where: { id: visitorId },
       data: {
@@ -46,7 +49,9 @@ class VisitorDao {
     });
   }
 
-  async getFavoriteSpecies(visitorId: string) {
+  public async getFavoriteSpecies(
+    visitorId: string
+  ): Promise<{ favoriteSpecies: Species[] } | null> {
     return prisma.visitor.findUnique({
       where: { id: visitorId },
       select: {
@@ -55,7 +60,10 @@ class VisitorDao {
     });
   }
 
-  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<Visitor> {
+  public async deleteSpeciesFromFavorites(
+    visitorId: string, 
+    speciesId: string
+  ): Promise<Visitor> {
     return prisma.visitor.update({
       where: { id: visitorId },
       data: {
@@ -69,7 +77,9 @@ class VisitorDao {
     });
   }
 
-  async deleteVisitor(id: string) {
+  public async deleteVisitor(
+    id: string
+  ): Promise<Visitor> {
     return prisma.visitor.delete({ where: { id } });
   }
 }

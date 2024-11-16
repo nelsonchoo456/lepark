@@ -12,7 +12,6 @@ import { useFetchOccurrences } from '../../../hooks/Occurrences/useFetchOccurren
 import { Input } from 'antd';
 import { FiSearch } from 'react-icons/fi';
 import { SCREEN_LG } from '../../../config/breakpoints';
-import { set } from 'zod';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 interface OccurrenceTableProps {

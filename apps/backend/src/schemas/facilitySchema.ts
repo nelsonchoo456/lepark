@@ -11,7 +11,6 @@ export const FacilitySchema = z.object({
   reservationPolicy: z.string().min(1, { message: 'Reservation policy is required' }),
   rulesAndRegulations: z.string().min(1, { message: 'Rules and regulations are required' }),
   images: z.array(z.string()).optional(),
-  lastMaintenanceDate: z.date(),
   openingHours: z.array(z.date()),
   closingHours: z.array(z.date()),
   facilityStatus: z.nativeEnum(FacilityStatusEnum),
@@ -21,6 +20,8 @@ export const FacilitySchema = z.object({
   capacity: z.number().int().nonnegative({ message: 'Capacity must be a non-negative number' }),
   fee: z.number().nonnegative({ message: 'Fee must be a non-negative number' }),
   parkId: z.number(),
+
+  cameraSensorId: z.string().uuid().nullable().optional(),
 });
 
 export type FacilitySchemaType = z.infer<typeof FacilitySchema>;

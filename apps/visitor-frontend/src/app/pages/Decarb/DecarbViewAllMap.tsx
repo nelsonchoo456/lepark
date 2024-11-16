@@ -1,5 +1,5 @@
 import { useAuth } from '@lepark/common-ui';
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
@@ -7,11 +7,12 @@ import {
   DecarbonizationAreaResponse,
   VisitorResponse,
   getOccurrencesWithinDecarbonizationArea,
+  OccurrenceResponse,
 } from '@lepark/data-access';
 import ParkHeader from '../MainLanding/components/ParkHeader';
 import { usePark } from '../../park-context/ParkContext';
 import withParkGuard from '../../park-context/withParkGuard';
-import { MdInfoOutline, MdMap } from 'react-icons/md';
+import { MdArrowOutward, MdInfoOutline, MdMap } from 'react-icons/md';
 import React from 'react';
 import {
   Chart as ChartJS,
@@ -28,10 +29,25 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../components/map/PolygonFitBounds';
 import { COLORS } from '../../config/colors';
 import PolygonWithLabel from '../../components/map/PolygonWithLabel';
-import { GeomType } from '../../components/map/interfaces/interfaces';
+import { GeomType, HoverItem } from '../../components/map/interfaces/interfaces';
+import { FaList } from 'react-icons/fa6';
+import HoverInformation from './components/HoverInformation';
+import HeatmapLayer from './components/HeatMapLayer';
 
 // Register the required Chart.js components
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend);
+
+const calculateSequestration = (numberOfPlants: number, biomass: number, decarbonizationType: 'TREE_TROPICAL' | 'TREE_MANGROVE' | 'SHRUB'): number =>{
+  const sequestrationFactors = {
+    TREE_TROPICAL: 0.47,
+    TREE_MANGROVE: 0.44,
+    SHRUB: 0.5,
+  };
+  const CO2_SEQUESTRATION_FACTOR = 3.67;
+  const carbonFraction = sequestrationFactors[decarbonizationType];
+  const annualSequestration = numberOfPlants * biomass * carbonFraction * CO2_SEQUESTRATION_FACTOR;
+  return annualSequestration / 365; // Convert annual sequestration to daily rate
+}
 
 const DecarbViewAllMap = () => {
   const navigate = useNavigate();
@@ -40,7 +56,8 @@ const DecarbViewAllMap = () => {
   const [loading, setLoading] = useState(false);
   const [fetchedAreas, setFetchedAreas] = useState<DecarbonizationAreaResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [areaDetails, setAreaDetails] = useState<{ [key: string]: { totalSequestration: number; occurrenceCount: number } }>({});
+  const [areaDetails, setAreaDetails] = useState<{ [key: string]: { totalSequestration: number; occurrenceCount: number, occurrences: OccurrenceResponse[] } }>({});
+  const [hovered, setHovered] = useState<HoverItem | null>(null);
 
   useEffect(() => {
     const fetchDecarbAreas = async () => {
@@ -59,14 +76,16 @@ const DecarbViewAllMap = () => {
                 id: area.id,
                 totalSequestration,
                 occurrenceCount: occurrences.data.length,
+                occurrences: occurrences.data
               };
             }),
           );
-          const detailsObject = details.reduce<{ [key: string]: { totalSequestration: number; occurrenceCount: number } }>(
+          const detailsObject = details.reduce<{ [key: string]: { totalSequestration: number; occurrenceCount: number, occurrences: OccurrenceResponse[] } }>(
             (acc, detail) => {
               acc[detail.id] = {
                 totalSequestration: detail.totalSequestration,
                 occurrenceCount: detail.occurrenceCount,
+                occurrences: detail.occurrences
               };
               return acc;
             },
@@ -83,6 +102,12 @@ const DecarbViewAllMap = () => {
     };
     fetchDecarbAreas();
   }, [selectedPark]);
+
+  const occurrencesWithSeq = useMemo(() => {
+    return Object.values(areaDetails).flatMap((area) => area.occurrences).map((o) =>( { ...o, seq: calculateSequestration(o.numberOfPlants, o.biomass, o.decarbonizationType)}))
+  }, [areaDetails])
+
+  console.log(occurrencesWithSeq)
 
   const navigateToDecarbArea = (areaId: string) => {
     navigate(`/decarb/${areaId}`);
@@ -101,19 +126,6 @@ const DecarbViewAllMap = () => {
     e.stopPropagation();
   };
 
-  const donutChartData = {
-    labels: filteredAreas.map((area) => area.name),
-    datasets: [
-      {
-        data: filteredAreas.map((area) => areaDetails[area.id]?.totalSequestration || 0),
-        backgroundColor: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'],
-        hoverOffset: 4,
-      },
-    ],
-  };
-
-  const totalSequestration = donutChartData.datasets[0].data.reduce((a, b) => a + b, 0);
-
   const parseGeom = (geomString: string): GeomType => {
     if (typeof geomString === 'string' && geomString.startsWith('SRID=4326;')) {
       const wktString = geomString.substring(10);
@@ -121,7 +133,7 @@ const DecarbViewAllMap = () => {
       if (!match) {
         console.error(`Invalid WKT format: ${wktString}`);
         return {
-          coordinates: []
+          coordinates: [],
         };
       }
       const coordinates = match[1].split(',').map((coord) => {
@@ -129,12 +141,12 @@ const DecarbViewAllMap = () => {
         return [lng, lat];
       });
       return {
-        coordinates: [coordinates]
+        coordinates: [coordinates],
       };
     }
 
     return {
-      coordinates: []
+      coordinates: [],
     };
   };
 
@@ -155,8 +167,16 @@ const DecarbViewAllMap = () => {
             </Tooltip>
           </div>
         </div>
-        <Tooltip title="Map View">
-          <Button icon={<MdMap />} className="text-lg" type="primary"></Button>
+        <Tooltip title="List View">
+          <Button
+            icon={<FaList />}
+            onClick={(e) => {
+              navigate('/decarb');
+              e.stopPropagation();
+            }}
+            className="text-md"
+            type="primary"
+          ></Button>
         </Tooltip>
       </ParkHeader>
       <MapContainer key="decarb-map-tab" center={[1.287953, 103.851784]} zoom={11} className="leaflet-mapview-container h-full w-full">
@@ -165,24 +185,90 @@ const DecarbViewAllMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <PolygonFitBounds geom={selectedPark?.geom} polygonFields={{ fillOpacity: 0.6, opacity: 0 }} />
+        <HeatmapLayer occurrences={occurrencesWithSeq}/>
         {fetchedAreas &&
-            fetchedAreas.map((a) => (
-              <PolygonWithLabel
-                key={a.id}
-                entityId={a.id}
-                geom={parseGeom(a.geom)}
-                polygonLabel={
-                  <div className="flex items-center gap-2">
-                    {a.name}
+          fetchedAreas.map((a) => (
+            <PolygonWithLabel
+              key={a.id}
+              entityId={a.id}
+              geom={parseGeom(a.geom)}
+              polygonLabel={<div className="flex items-center gap-2">{a.name}</div>}
+              color="transparent"
+              fillColor={COLORS.green[500]}
+              labelFields={{
+                color: 'white',
+                outline: COLORS.green[700],
+                textShadow: `-1px -1px 0 ${COLORS.green[600]}, 1px -1px 0 ${COLORS.green[600]}, -1px 1px 0 ${COLORS.green[600]}, 1px 1px 0 ${COLORS.green[600]}`,
+                textWrap: 'nowrap',
+              }}
+              handleMarkerClick={() => setHovered({
+                id: a.id,
+                title: a.name,
+                showImage: false,
+                entityType: "DECARB",
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div>
+                      <Typography.Paragraph ellipsis={{ rows: 3 }}>{a.description}</Typography.Paragraph>
+                    </div>
+                    <div className="text-sm text-green-600">
+                      <div className="md:inline-block">
+                        Total Sequestration: <strong>{areaDetails[a.id]?.totalSequestration.toFixed(2)} kg</strong>
+                      </div>
+                      <div className="md:inline-block">Occurrences: <strong>{areaDetails[a.id]?.occurrenceCount}</strong></div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Tooltip title="View Area details">
+                        <Button shape="circle" onClick={() => navigate(`/decarb/${a.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </Tooltip>
+                    </div>
                   </div>
-                }
-                color={COLORS.green[600]}
-                fillColor={'transparent'}
-                labelFields={{ color: "white", outline: COLORS.green[700], textShadow: `-1px -1px 0 ${COLORS.green[600]}, 1px -1px 0 ${COLORS.green[600]}, -1px 1px 0 ${COLORS.green[600]}, 1px 1px 0 ${COLORS.green[600]}`, textWrap: "nowrap" }}
-                handleMarkerClick={() => navigate(`/decarb/${a.id}`)}
-                handlePolygonClick={() => navigate(`/decarb/${a.id}`)}
-              />
-            ))}
+                )
+              })}
+              handlePolygonClick={() => setHovered({
+                id: a.id,
+                title: a.name,
+                showImage: false,
+                entityType: "DECARB",
+                children: (
+                  <div className="h-full w-full flex flex-col justify-between">
+                    <div>
+                      <Typography.Paragraph ellipsis={{ rows: 2 }}>{a.description}</Typography.Paragraph>
+                    </div>
+                    <div className="text-sm text-green-600">
+                      <div className="">
+                        Total Sequestration: <strong>{areaDetails[a.id]?.totalSequestration.toFixed(2)} kg</strong>
+                      </div>
+                      <div className="">Occurrences: <strong>{areaDetails[a.id]?.occurrenceCount}</strong></div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Tooltip title="View Area details">
+                        <Button shape="circle" onClick={() => navigate(`/decarb/${a.id}`)}>
+                          <MdArrowOutward />
+                        </Button>
+                      </Tooltip>
+                    </div>
+                  </div>
+                )
+              })}
+            />
+          ))}
+
+        {hovered && (
+          <HoverInformation
+            item={{
+              id: hovered.id,
+              title: hovered.title,
+              image: hovered.image,
+              showImage: hovered.showImage,
+              entityType: hovered.entityType,
+              children: hovered.children,
+            }}
+            setHovered={setHovered}
+          />
+        )}
       </MapContainer>
     </div>
   );

@@ -6,14 +6,16 @@ import { ParkResponseData } from '../schemas/parkSchema';
 const prisma = new PrismaClient();
 
 class ParkAssetDao {
-  async createParkAsset(data: Prisma.ParkAssetCreateInput): Promise<ParkAsset> {
+  public async createParkAsset(
+    data: Prisma.ParkAssetCreateInput
+  ): Promise<ParkAsset> {
     return prisma.parkAsset.create({ data });
   }
 
-  async getAllParkAssets(): Promise<(ParkAsset & { facility?: Facility; park?: ParkResponseData })[]> {
+  public async getAllParkAssets(): Promise<(ParkAsset & { facility?: Facility; park?: ParkResponseData })[]> {
     const parkAssets = await prisma.parkAsset.findMany({
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: true,
       },
     });
@@ -42,11 +44,13 @@ class ParkAssetDao {
     return parkAssetsWithDetails;
   }
 
-  async getParkAssetById(id: string): Promise<ParkAsset | null> {
+  public async getParkAssetById(
+    id: string
+  ): Promise<ParkAsset | null> {
     return prisma.parkAsset.findUnique({
       where: { id },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: {
           select: {
             id: true,
@@ -60,45 +64,23 @@ class ParkAssetDao {
     });
   }
 
-  async updateParkAsset(id: string, data: Prisma.ParkAssetUpdateInput): Promise<ParkAsset> {
+  public async updateParkAsset(
+    id: string, 
+    data: Prisma.ParkAssetUpdateInput
+  ): Promise<ParkAsset> {
     return prisma.parkAsset.update({
       where: { id },
       data,
     });
   }
 
-  async deleteParkAsset(id: string): Promise<void> {
+  public async deleteParkAsset(
+    id: string
+  ): Promise<void> {
     await prisma.parkAsset.delete({ where: { id } });
   }
 
-  /*async getParkAssetsByType(parkAssetType: ParkAssetTypeEnum): Promise<ParkAsset[]> {
-    return prisma.parkAsset.findMany({
-      where: { parkAssetType },
-      include: {
-        maintenanceHistory: true,
-      },
-    });
-  }
-
- async getParkAssetsByStatus(parkAssetStatus: Prisma.ParkAssetStatusEnum): Promise<ParkAsset[]> {
-    return prisma.parkAsset.findMany({
-      where: { parkAssetStatus },
-      include: {
-        maintenanceHistory: true,
-      },
-    });
-  }
-
-  async getParkAssetsByCondition(parkAssetCondition: Prisma.ParkAssetConditionEnum): Promise<ParkAsset[]> {
-    return prisma.parkAsset.findMany({
-      where: { parkAssetCondition },
-      include: {
-        maintenanceHistory: true,
-      },
-    });
-  }  */
-
-  async getParkAssetsNeedingMaintenance(): Promise<ParkAsset[]> {
+  public async getParkAssetsNeedingMaintenance(): Promise<ParkAsset[]> {
     const currentDate = new Date();
     return prisma.parkAsset.findMany({
       where: {
@@ -107,12 +89,14 @@ class ParkAssetDao {
         },
       },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
       },
     });
   }
 
-  async getAllParkAssetsByParkId(parkId: number): Promise<ParkAsset[]> {
+  public async getAllParkAssetsByParkId(
+    parkId: number
+  ): Promise<ParkAsset[]> {
     const parkAssets = await prisma.parkAsset.findMany({
       where: {
         facility: {
@@ -132,21 +116,25 @@ class ParkAssetDao {
     }));
   }
 
-  async getParkAssetByIdentifierNumber(identifierNumber: string): Promise<ParkAsset | null> {
+  public async getParkAssetByIdentifierNumber(
+    identifierNumber: string
+  ): Promise<ParkAsset | null> {
     return prisma.parkAsset.findUnique({
       where: { identifierNumber },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: true,
       },
     });
   }
 
-  async getParkAssetBySerialNumber(serialNumber: string): Promise<ParkAsset | null> {
+  public async getParkAssetBySerialNumber(
+    serialNumber: string
+  ): Promise<ParkAsset | null> {
     return prisma.parkAsset.findFirst({
       where: { serialNumber },
       include: {
-        maintenanceHistory: true,
+        maintenanceTasks: true,
         facility: {
           select: {
             id: true,
@@ -158,7 +146,10 @@ class ParkAssetDao {
     });
   }
 
-  public async isSerialNumberDuplicate(serialNumber: string | null, excludeParkAssetId?: string): Promise<boolean> {
+  public async isSerialNumberDuplicate(
+    serialNumber: string | null, 
+    excludeParkAssetId?: string
+  ): Promise<boolean> {
     if (!serialNumber) return false;
     const parkAsset = await prisma.parkAsset.findFirst({
       where: {

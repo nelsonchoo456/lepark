@@ -22,8 +22,8 @@ const FAQList: React.FC = () => {
   const faqTabItems = [
     ...(user?.role === StaffType.SUPERADMIN ? [{
       key: "all",
-      label: <LogoText>All FAQs</LogoText>,
-      children: <FAQTab faqs={faqs} triggerFetch={triggerFetch} showParkColumn parks={parks} />
+      label: <LogoText>NParks Wide</LogoText>,
+      children: <FAQTab faqs={faqs.filter(faq => faq.parkId === null)} triggerFetch={triggerFetch} showParkColumn parks={parks} />
     }] : []),
     ...parks.map((park) => ({
       key: park.id.toString(),
@@ -39,10 +39,14 @@ const FAQList: React.FC = () => {
   return (
     <ContentWrapperDark>
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
-      <TabsNoBottomMargin
-        items={faqTabItems}
-        type="card"
-      />
+      {user?.role === StaffType.SUPERADMIN ? (
+        <TabsNoBottomMargin
+          items={faqTabItems}
+          type="card"
+        />
+      ) : (
+        <FAQTab faqs={faqs.filter(faq => faq.parkId === user?.parkId)} triggerFetch={triggerFetch} parks={parks} />
+      )}
     </ContentWrapperDark>
   );
 };

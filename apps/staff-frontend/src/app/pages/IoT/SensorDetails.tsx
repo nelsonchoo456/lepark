@@ -24,7 +24,7 @@ const SensorDetails: React.FC<SensorDetailsProps> = ({ sensor }) => {
       dayjs().subtract(1, 'days'),
       dayjs(),
     ]);
-    const [displayMode, setDisplayMode] = useState<'individual' | 'hourly'>('individual');
+    const [displayMode, setDisplayMode] = useState<'individual' | 'hourly'>('hourly');
   
     useEffect(() => {
       const fetchLatestReading = async () => {
@@ -116,7 +116,7 @@ const SensorDetails: React.FC<SensorDetailsProps> = ({ sensor }) => {
               if (context.parsed.y !== null) {
                 label += displayMode === 'individual'
                   ? context.parsed.y.toFixed(2)
-                  : context.parsed.y;
+                  : context.parsed.y.toFixed(2);
               }
               return label;
             }
@@ -199,7 +199,7 @@ const SensorDetails: React.FC<SensorDetailsProps> = ({ sensor }) => {
                     value={dateRange}
                     onChange={handleDateRangeChange}
                   />
-                  <Select defaultValue="individual" style={{ width: 160 }} onChange={handleDisplayModeChange}>
+                  <Select defaultValue="hourly" style={{ width: 160 }} onChange={handleDisplayModeChange}>
                     <Option value="individual">Individual</Option>
                     <Option value="hourly">Hourly Average</Option>
                   </Select>

@@ -1,23 +1,23 @@
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { getFacilityById, FacilityResponse, StaffResponse, StaffType, FacilityStatusEnum, FacilityTypeEnum } from '@lepark/data-access';
+import { FacilityStatusEnum, StaffResponse, StaffType } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { Button, Card, Descriptions, Tabs, Tag } from 'antd';
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import PageHeader2 from '../../components/main/PageHeader2';
-import moment from 'moment';
+import BookingTable from './components/BookingTable';
 import InformationTab from './components/InformationTab';
 import LocationTab from './components/LocationTab';
 import FacilityCarousel from './components/FacilityCarousel';
 import { FaCalendarCheck, FaCalendarTimes, FaUsers, FaUmbrella, FaUserSlash, FaCloudRain } from 'react-icons/fa';
 import { RiEdit2Line } from 'react-icons/ri';
 import { useRestrictFacilities } from '../../hooks/Facilities/useRestrictFacilities';
-import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import CameraSensorTab from './components/CameraSensorTab';
 
 const ViewFacilityDetails = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  const { facility, park, loading } = useRestrictFacilities(facilityId);
+  const { facility, park, loading, triggerFetch } = useRestrictFacilities(facilityId);
 
   const breadcrumbItems = [
     {
@@ -47,11 +47,23 @@ const ViewFacilityDetails = () => {
       children: (() => {
         switch (facility?.facilityStatus) {
           case FacilityStatusEnum.OPEN:
-            return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return (
+              <Tag color="green" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}
+              </Tag>
+            );
           case FacilityStatusEnum.UNDER_MAINTENANCE:
-            return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return (
+              <Tag color="yellow" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}
+              </Tag>
+            );
           case FacilityStatusEnum.CLOSED:
-            return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}</Tag>;
+            return (
+              <Tag color="red" bordered={false}>
+                {formatEnumLabelToRemoveUnderscores(facility?.facilityStatus)}
+              </Tag>
+            );
           default:
             return <Tag>{facility?.facilityStatus}</Tag>;
         }
@@ -71,6 +83,44 @@ const ViewFacilityDetails = () => {
       children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
     },
   ];
+
+  const crowdTabsItems = [
+    {
+      key: 'information',
+      label: 'Information',
+      children: facility ? <InformationTab facility={facility} /> : <p>Loading facility data...</p>,
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      children: facility ? <LocationTab facility={facility} park={park} /> : <p>Loading facility data...</p>,
+    },
+    {
+      key: 'crowd',
+      label: 'Crowd',
+      children: facility ? (
+        <CameraSensorTab facility={facility} park={park} triggerFetchFacility={triggerFetch} />
+      ) : (
+        <p>Loading crowd data...</p>
+      ),
+    },
+  ];
+
+  if (
+    facility?.isBookable &&
+    (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT)
+  ) {
+    tabsItems.push({
+      key: 'bookings',
+      label: 'Bookings',
+      children: <BookingTable facilityId={facility.id} />,
+    });
+    crowdTabsItems.push({
+      key: 'bookings',
+      label: 'Bookings',
+      children: <BookingTable facilityId={facility.id} />,
+    });
+  }
 
   return (
     <ContentWrapperDark>
@@ -114,7 +164,7 @@ const ViewFacilityDetails = () => {
         <Tabs
           centered
           defaultActiveKey="information"
-          items={tabsItems}
+          items={(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.LANDSCAPE_ARCHITECT || user?.role === StaffType.PARK_RANGER || user?.role === StaffType.VENDOR_MANAGER) ? crowdTabsItems : tabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />

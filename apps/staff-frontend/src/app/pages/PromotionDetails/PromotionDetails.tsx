@@ -3,7 +3,7 @@ import { Descriptions, Card, Button, Input, Tag, message, Switch, Spin, Space, E
 import { RiEdit2Line, RiArrowLeftLine } from 'react-icons/ri';
 import { useEffect, useState } from 'react';
 import { PromotionResponse, StaffResponse, StaffType, updatePromotionDetails } from '@lepark/data-access';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import PageHeader2 from '../../components/main/PageHeader2';
 import { useRestrictPromotions } from '../../hooks/Promotions/useRestrictPromotions';
 import PromotionValueTag from '../Promotion/components/PromotionValueTag';
@@ -15,6 +15,7 @@ import { MdClose } from 'react-icons/md';
 const { TextArea } = Input;
 
 const PromotionDetails = () => {
+  const navigate = useNavigate();
   const { promotionId = '' } = useParams();
   const [searchParams] = useSearchParams();
   const { user } = useAuth<StaffResponse>();
@@ -24,7 +25,7 @@ const PromotionDetails = () => {
   const editableRbac = () => {
     return user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && !promotion?.isNParksWide);
   };
-  const [inEditMode, setInEditMode] = useState(isArchived ? false : editableRbac() && searchParams.get('editMode') === 'true');
+  const [inEditMode, setInEditMode] = useState(false);
   const [editedPromotion, setEditedPromotion] = useState<Partial<PromotionResponse>>();
 
   const [form] = Form.useForm();
@@ -35,9 +36,19 @@ const PromotionDetails = () => {
     }
 
     if (promotion) {
-      handleInputChange("status", promotion.status)
+      handleInputChange("status", promotion.status);
+      
+      const shouldBeInEditMode = !isArchived && 
+        searchParams.get('editMode') === 'true' && 
+        (user?.role === StaffType.SUPERADMIN || (user?.role === StaffType.MANAGER && !promotion?.isNParksWide));
+      
+      setInEditMode(shouldBeInEditMode);
+      
+      if (shouldBeInEditMode) {
+        setEditedPromotion(promotion);
+      }
     }
-  }, [promotion]);
+  }, [promotion, searchParams, user, isArchived]);
 
   const toggleEditMode = () => {
     if (isArchived) return;
@@ -72,15 +83,17 @@ const PromotionDetails = () => {
       if (values.promoCode) {
         values.promoCode = values.promoCode.trim();
       }
-      const terms = form.getFieldValue('terms')
+      const terms = form.getFieldValue('terms');
 
+      // Create a clean data object with only the updatable fields
       const finalData = {
-        ...values,
+        name: values.name,
+        description: values.description,
+        promoCode: values.promoCode,
+        status: values.status,
         images: currentImages,
+        terms: terms || [],
       };
-      if (terms) {
-        finalData.terms = terms;
-      }
 
       setPreviewImages([]);
 
@@ -89,8 +102,11 @@ const PromotionDetails = () => {
         await triggerFetch();
         message.success('Promotion details updated successfully!');
         setInEditMode(false);
+        // Clear the URL parameter
+        navigate(`/promotion/${promotion.id}`);
+      } else {
+        throw new Error('Failed to update promotion');
       }
-      // Exit edit mode
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.message || error.toString();
@@ -98,8 +114,13 @@ const PromotionDetails = () => {
         message.error('Please enter a unique Promo Code');
       } else if (errorMessage.length < 60) {
         message.error(errorMessage);
+      } else {
+        message.error('An error occurred while updating the promotion');
       }
-      setInEditMode(true);
+      // Only stay in edit mode if there's a validation error
+      if (errorMessage === 'Please enter a unique Promo Code') {
+        setInEditMode(true);
+      }
     }
   };
 

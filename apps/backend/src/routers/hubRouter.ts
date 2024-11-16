@@ -70,19 +70,6 @@ router.get('/getHubByIdentifierNumber/:identifierNumber', async (req, res) => {
   }
 });
 
-router.get('/getHubByRadioGroup/:radioGroup', async (req, res) => {
-  try {
-    const hub = await HubService.getHubByRadioGroup(parseInt(req.params.radioGroup));
-    if (hub) {
-      res.status(200).json(hub);
-    } else {
-      res.status(404).json({ error: 'Hub not found' });
-    }
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.get('/getHubDataTransmissionRate/:identifierNumber', async (req, res) => {
   try {
     const dataTransmissionRate = await HubService.getHubDataTransmissionRate(req.params.identifierNumber);

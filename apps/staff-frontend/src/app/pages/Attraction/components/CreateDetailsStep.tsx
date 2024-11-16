@@ -1,6 +1,6 @@
 import { ImageInput, useAuth } from '@lepark/common-ui';
 import { ZoneResponse, AttractionStatusEnum, ParkResponse, checkAttractionNameExists, StaffResponse, StaffType } from '@lepark/data-access';
-import { Button, Divider, Flex, Form, FormInstance, Input, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
+import { Button, Divider, Flex, Form, FormInstance, Input, InputNumber, message, Popconfirm, Select, TimePicker, Typography } from 'antd';
 import { useState, useEffect } from 'react';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 const { TextArea } = Input;
@@ -122,6 +122,10 @@ const CreateDetailsStep = ({
 
       <Form.Item name="status" label="Status" rules={[{ required: true }]}>
         <Select placeholder="Select Attraction Status" options={attractionStatusOptions} />
+      </Form.Item>
+
+      <Form.Item name="maxCapacity" label="Daily Max Capacity (pax)" rules={[{ required: true, message: 'Please input the daily max capacity!' }]}>
+        <InputNumber min={1} precision={0} step={1} />
       </Form.Item>
 
       <Form.Item name="ticketingPolicy" label="Ticketing Policy" rules={[{ required: true }]}>

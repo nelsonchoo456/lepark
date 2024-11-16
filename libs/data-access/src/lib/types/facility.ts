@@ -1,4 +1,4 @@
-import { FacilityTypeEnum, FacilityStatusEnum } from './sharedenums';
+import { FacilityTypeEnum, FacilityStatusEnum } from './sharedEnums';
 import { EventResponse } from './event';
 
 export interface FacilityData {
@@ -11,8 +11,6 @@ export interface FacilityData {
   reservationPolicy: string;
   rulesAndRegulations: string;
   images?: string[];
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   openingHours: string[];
   closingHours: string[];
   facilityStatus: FacilityStatusEnum;
@@ -22,26 +20,9 @@ export interface FacilityData {
   capacity: number;
   fee: number;
   parkId: number;
-}
 
-// export enum FacilityType {
-//   TOILET = "TOILET",
-//   PLAYGROUND  = "PLAYGROUND",
-//   INFORMATION = "INFORMATION",
-//   CARPARK = "CARPARK",
-//   ACCESSIBILITY = "ACCESSIBILITY",
-//   STAGE = "STAGE",
-//   WATER_FOUNTAIN = "WATER_FOUNTAIN",
-//   PICNIC_AREA = "PICNIC_AREA",
-//   BBQ_PIT = "BBQ_PIT",
-//   CAMPING_AREA = "CAMPING_AREA",
-//   AED = "AED",
-//   FIRST_AID = "FIRST_AID",
-//   AMPHITHEATER = "AMPHITHEATER",
-//   GAZEBO = "GAZEBO",
-//   STOREROOM = "STOREROOM",
-//   OTHERS = "OTHERS"
-// }
+  cameraSensorId?: string;
+}
 
 export interface FacilityResponse {
   id: string;
@@ -54,8 +35,6 @@ export interface FacilityResponse {
   reservationPolicy: string;
   rulesAndRegulations: string;
   images?: string[];
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   openingHours: string[];
   closingHours: string[];
   facilityStatus: FacilityStatusEnum;
@@ -67,6 +46,8 @@ export interface FacilityResponse {
   parkId: number;
   hubs?: string[]; // Array of hub IDs associated with this facility
   events?: string[]; // Array of event IDs associated with this facility
+
+  cameraSensorId?: string;
 }
 
 export interface FacilityWithEvents {
@@ -80,8 +61,6 @@ export interface FacilityWithEvents {
   reservationPolicy: string;
   rulesAndRegulations: string;
   images?: string[];
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   openingHours: string[];
   closingHours: string[];
   facilityStatus: FacilityStatusEnum;
@@ -93,4 +72,6 @@ export interface FacilityWithEvents {
   parkId: number;
   hubs?: string[]; // Array of hub IDs associated with this facility
   events: EventResponse[]; // Array of event IDs associated with this facility
+
+  cameraSensorId?: string;
 }

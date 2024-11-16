@@ -39,8 +39,8 @@ export const CustomMarkerInner = styled.div<CustomMarkerProps>`
   display: flex;
   align-items: center;
   justify-content: center;
-  // background-color: ${({$backgroundColor}) => $backgroundColor ? $backgroundColor : "#007bff"};
-  background-color: white;
+  background-color: ${({$backgroundColor}) => $backgroundColor ? $backgroundColor : "#007bff"};
+  // background-color: white;
   border-radius: 50%;
   z-index: 1;
 `;

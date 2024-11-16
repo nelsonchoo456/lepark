@@ -14,6 +14,7 @@ import {
   getActiveZonePlantSensorCount,
   getAverageDifferenceBetweenPeriodsBySensorType,
   getPlantSensorsByZoneId,
+  getSensorsByZoneId,
 } from '@lepark/data-access';
 import { useNavigate } from 'react-router-dom';
 import { useFetchZones } from '../../hooks/Zones/useFetchZones';
@@ -22,8 +23,15 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
 
 const { Text } = Typography;
+
+const ZoneIotStatistic = styled(Statistic)`
+  .ant-statistic-content {
+    font-size: 20px;
+  }
+`
 
 const ZoneIoTDashboard: React.FC = () => {
   const { zonesWithIoT, loading } = useFetchZones();
@@ -34,6 +42,7 @@ const ZoneIoTDashboard: React.FC = () => {
   const [zoneDifferences, setZoneDifferences] = useState<{ [key: number]: any }>({});
   const [activeSensorCounts, setActiveSensorCounts] = useState<{ [key: number]: number }>({});
   const [zoneTotalSensors, setZoneTotalSensors] = useState<{ [key: number]: number }>({});
+  const [zoneCameraCounts, setZoneCameraCounts] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     const fetchZoneMetrics = async () => {
@@ -41,6 +50,8 @@ const ZoneIoTDashboard: React.FC = () => {
       const differences: { [key: number]: any } = {};
       const activeCounts: { [key: number]: number } = {};
       const totalSensors: { [key: number]: number } = {};
+      const cameraCounts: { [key: number]: number } = {};
+
       for (const zone of zonesWithIoT) {
         try {
           const averageReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(zone.id, 4);
@@ -52,20 +63,24 @@ const ZoneIoTDashboard: React.FC = () => {
           const activeCount = await getActiveZonePlantSensorCount(zone.id);
           activeCounts[zone.id] = activeCount.data.count;
 
-          const totalSensorsCount = await getPlantSensorsByZoneId(zone.id);
-          totalSensors[zone.id] = totalSensorsCount.data.filter((sensor: SensorResponse) => sensor.sensorType !== SensorTypeEnum.CAMERA).length;
+          const totalSensorsCount = await getSensorsByZoneId(zone.id);
+          const sensors = totalSensorsCount.data;
+          totalSensors[zone.id] = sensors.filter((sensor: SensorResponse) => sensor.sensorType !== SensorTypeEnum.CAMERA).length;
+          cameraCounts[zone.id] = sensors.filter((sensor: SensorResponse) => sensor.sensorType === SensorTypeEnum.CAMERA).length;
         } catch (error) {
           console.error(`Error fetching data for zone ${zone.id}:`, error);
           metrics[zone.id] = {};
           differences[zone.id] = {};
           activeCounts[zone.id] = 0;
           totalSensors[zone.id] = 0;
+          cameraCounts[zone.id] = 0;
         }
       }
       setZoneMetrics(metrics);
       setZoneDifferences(differences);
       setActiveSensorCounts(activeCounts);
       setZoneTotalSensors(totalSensors);
+      setZoneCameraCounts(cameraCounts);
     };
 
     fetchZoneMetrics();
@@ -148,11 +163,12 @@ const ZoneIoTDashboard: React.FC = () => {
                     <Button type="link" icon={<FiEye />} onClick={() => navigateToZoneDetails(zone.id)} />
                   </Tooltip>
                 }
+                styles={{ body: { padding: "1rem"} }}
               >
                 <Flex vertical gap="small">
                 <Row gutter={16}>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Temperature"
                         value={metrics[SensorTypeEnum.TEMPERATURE]?.toFixed(2) || 0}
                         suffix={
@@ -164,7 +180,7 @@ const ZoneIoTDashboard: React.FC = () => {
                       />
                     </Col>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Humidity"
                         value={metrics[SensorTypeEnum.HUMIDITY]?.toFixed(2) || 0}
                         suffix={<>%{renderDifference(SensorTypeEnum.HUMIDITY, zone.id)}</>}
@@ -173,14 +189,14 @@ const ZoneIoTDashboard: React.FC = () => {
                   </Row>
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Soil Moisture"
                         value={metrics[SensorTypeEnum.SOIL_MOISTURE]?.toFixed(2) || 0}
                         suffix={<>%{renderDifference(SensorTypeEnum.SOIL_MOISTURE, zone.id)}</>}
                       />
                     </Col>
                     <Col span={12}>
-                      <Statistic
+                      <ZoneIotStatistic
                         title="Avg. Light"
                         value={metrics[SensorTypeEnum.LIGHT]?.toFixed(2) || 0}
                         suffix={
@@ -192,15 +208,26 @@ const ZoneIoTDashboard: React.FC = () => {
                       />
                     </Col>
                   </Row>
-                  <Statistic
-                    title={
-                      <Tooltip title="Active sensors are those that have sent data within the past hour">
-                        <span>Active Sensors</span>
-                      </Tooltip>
-                    }
-                    value={activeSensorCount}
-                    suffix={`/ ${zoneTotalSensors[zone.id]} sensors`}
-                  />
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <ZoneIotStatistic
+                        title={
+                          <Tooltip title="Active sensors are those that have sent data within the past hour">
+                            <span>Active Sensors</span>
+                          </Tooltip>
+                        }
+                        value={activeSensorCount}
+                        suffix={`/ ${zoneTotalSensors[zone.id]} sensors`}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <ZoneIotStatistic
+                        title="Cameras"
+                        value={zoneCameraCounts[zone.id] || 0}
+                        suffix={zoneCameraCounts[zone.id] > 1 ? "cameras" : "camera"}
+                      />
+                    </Col>
+                  </Row>
                   <Typography.Text type="secondary">Average readings for the past 4 hours</Typography.Text>
                 </Flex>
               </Card>

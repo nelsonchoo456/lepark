@@ -145,7 +145,11 @@ class ParkAssetService {
     }
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `parkasset/${fileName}`,
@@ -221,14 +225,11 @@ function ensureAllFieldsPresent(data: ParkAssetSchemaType): Prisma.ParkAssetCrea
 }
 
 const dateFormatter = (data: any) => {
-  const { acquisitionDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const { acquisitionDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
   if (acquisitionDate) {
     formattedData.acquisitionDate = new Date(acquisitionDate);
-  }
-  if (lastMaintenanceDate) {
-    formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
   }
   if (nextMaintenanceDate) {
     formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);

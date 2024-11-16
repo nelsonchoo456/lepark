@@ -1,38 +1,54 @@
 import { ContentWrapper, ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
-import { Anchor, Badge, Card, Col, Empty, List, Row, Statistic, Table, Typography } from 'antd';
+import { Anchor, Badge, Button, Card, Col, Empty, List, Row, Spin, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useMemo, useState } from 'react';
 import PageHeader2 from '../../../components/main/PageHeader2';
 import styled from 'styled-components';
+import { TeamOutlined } from '@ant-design/icons';
 import { useFetchAnnouncements } from '../../../hooks/Announcements/useFetchAnnouncements';
 import {
   AnnouncementResponse,
   getAllAssignedPlantTasks,
+  getAllParks,
   getAllPlantTasks,
   getAnnouncementsByParkId,
-  getNParksAnnouncements,
+  getMaintenanceTasksByParkId,
   getPlantTasksByParkId,
+  MaintenanceTaskResponse,
+  MaintenanceTaskStatusEnum,
+  ParkResponse,
   PlantTaskResponse,
   PlantTaskStatusEnum,
   StaffResponse,
   StaffType,
+  getAllAssignedMaintenanceTasks,
+  getAllMaintenanceTasks,
 } from '@lepark/data-access';
+import MaintenanceTasksTable from '../components/MaintenanceTasksTable';
 import { MdCheck, MdOutlineAnnouncement } from 'react-icons/md';
 import { FiInbox } from 'react-icons/fi';
 import PlantTasksTable from '../components/PlantTasksTable';
 import moment from 'moment';
 import AnnouncementsCard from '../components/AnnouncementsCard';
 import { useNavigate } from 'react-router-dom';
+import { useCrowdCounts } from '../../../hooks/CrowdInsights/useCrowdCounts';
+import { CrowdAlert, useCrowdAlerts } from '../../../hooks/CrowdInsights/useCrowdAlerts';
+import dayjs from 'dayjs';
+import { LiveVisitorCard } from '../components/LiveVisitorCard';
+import { WeeklyVisitorCard } from '../components/WeeklyVisitorCard';
+import { CrowdAlertsCard } from '../components/CrowdAlertsCard';
+import { FaTools } from 'react-icons/fa';
 
 export const flexColsStyles = 'flex flex-col md:flex-row md:justify-between gap-4';
 export const sectionStyles = 'pr-4';
 export const sectionHeaderIconStyles = 'text-lg h-7 w-7 rounded-full flex items-center justify-center mr-2';
 export const sectionHeader = 'flex cursor-pointer w-full hover:underline hover:text-green-400';
+
 export const renderSectionHeader = (title: string, onClick?: () => void) => {
   return (
     <div className="sticky top-0 pt-4 z-20 bg-gray-100">
-      <LogoText className={`text-lg font-semibold pb-2 pt-0 ${onClick && "cursor-pointer hover:opacity-80"}`} onClick={onClick && onClick}>
+      <LogoText className={`text-lg font-semibold pb-2 pt-0 ${onClick && 'cursor-pointer hover:opacity-80'}`} onClick={onClick && onClick}>
         <div className={`-z-10  px-2 rounded`}>{title}</div>
       </LogoText>
       <div className="w-full h-[1px] bg-gray-400/40 mb-4" />
@@ -43,27 +59,53 @@ export const renderSectionHeader = (title: string, onClick?: () => void) => {
 const ManagerMainLanding = () => {
   const { user } = useAuth<StaffResponse>();
   const navigate = useNavigate();
-  
+  const [parks, setParks] = useState<ParkResponse[]>([]);
+  const { total, parks: parkCrowds, loading } = useCrowdCounts(user?.parkId);
+  const [crowdAlerts, setCrowdAlerts] = useState<CrowdAlert[]>([]);
+
   // Data
   const [announcements, setAnnouncements] = useState<AnnouncementResponse[]>([]);
   const [plantTasks, setPlantTasks] = useState<PlantTaskResponse[]>([]);
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTaskResponse[]>([]);
+
 
   useEffect(() => {
     if (user?.parkId) {
       fetchAnnouncementsByParkId(user.parkId);
       fetchPlantTasks();
+      fetchMaintenanceTasks();
+      fetchParks();
+      fetchMaintenanceTasks();
     }
   }, [user]);
 
   const fetchAnnouncementsByParkId = async (parkId: number) => {
     try {
       const response = await getAnnouncementsByParkId(parkId);
-      setAnnouncements(response.data);
+      const filteredAnnouncements = response.data.filter((announcement) => announcement.status === 'ACTIVE');
+      setAnnouncements(filteredAnnouncements);
       // setError(null);
     } catch (err) {
       // setError('Failed to fetch announcements');
     }
   };
+
+  const fetchParks = async () => {
+    try {
+      const response = await getAllParks();
+      if (response.status === 200) {
+        setParks(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching parks:', error);
+    }
+  };
+
+  const { alerts, isLoading: alertsLoading } = useCrowdAlerts({
+    parkId: user?.parkId,
+    parks, // Use the full park data
+    days: 7,
+  });
 
   const fetchPlantTasks = async () => {
     try {
@@ -78,6 +120,20 @@ const ManagerMainLanding = () => {
       console.error('Error fetching plant tasks:', error);
     }
   };
+
+  const fetchMaintenanceTasks = async () => {
+  try {
+    let response;
+    if (user?.role === StaffType.SUPERADMIN) {
+      response = await getAllMaintenanceTasks();
+    } else if (user?.parkId) {
+      response = await getMaintenanceTasksByParkId(user.parkId);
+    }
+    setMaintenanceTasks(response?.data || []);
+  } catch (error) {
+    console.error('Error fetching maintenance tasks:', error);
+  }
+};
 
   const pendingTasksCount = useMemo(() => {
     return plantTasks
@@ -96,6 +152,25 @@ const ManagerMainLanding = () => {
         ).length
       : 0;
   }, [plantTasks]);
+
+  const pendingMaintenanceTasksCount = useMemo(() => {
+  return maintenanceTasks
+    ? maintenanceTasks.filter(
+        (task) => task.taskStatus === MaintenanceTaskStatusEnum.OPEN || task.taskStatus === MaintenanceTaskStatusEnum.IN_PROGRESS
+      ).length
+    : 0;
+}, [maintenanceTasks]);
+
+const overdueMaintenanceTasksCount = useMemo(() => {
+  return maintenanceTasks
+    ? maintenanceTasks.filter(
+        (task) =>
+          task.taskStatus !== MaintenanceTaskStatusEnum.COMPLETED &&
+          task.taskStatus !== MaintenanceTaskStatusEnum.CANCELLED &&
+          moment().startOf('day').isAfter(moment(task.dueDate).startOf('day'))
+      ).length
+    : 0;
+}, [maintenanceTasks]);
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -159,38 +234,50 @@ const ManagerMainLanding = () => {
                 </div>
                 <div className="h-full flex flex-col gap-2 pl-4 ml-3 border-l-[2px]">
                   {pendingTasksCount > 0 ? (
-                    <div className="text-mustard-400 font-semibold mr-2">
-                      {pendingTasksCount} Pending Tasks
-                    </div>
+                    <div className="text-mustard-400 font-semibold mr-2">{pendingTasksCount} Pending Tasks</div>
                   ) : (
                     <div className="text-mustard-400 gap-3 flex items-center">
-                      <MdCheck className='text-lg'/> No Pending Tasks
+                      <MdCheck className="text-lg" /> No Pending Tasks
                     </div>
                   )}
 
                   {overduePlantTasksCount > 0 ? (
-                    <div className="text-red-400 font-semibold mr-2">
-                      {overduePlantTasksCount} Overdue Tasks
-                    </div>
+                    <div className="text-red-400 font-semibold mr-2">{overduePlantTasksCount} Overdue Tasks</div>
                   ) : (
                     <div className="text-red-400 gap-3 flex items-center">
-                      <MdCheck className='text-lg'/> No Overdue Tasks
+                      <MdCheck className="text-lg" /> No Overdue Tasks
                     </div>
                   )}
                 </div>
               </Card>
-              <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
-                <div className={sectionHeader}>
-                  <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
-                    <FiInbox />
-                  </div>
-                  <LogoText className="text-lg mb-2">Maintenance Tasks</LogoText>
-                </div>
-                <div className="flex justify-center items-center h-full opacity-50">No data</div>
-              </Card>
+             <Card className="h-full" styles={{ body: { padding: '1rem' } }}>
+  <div className={sectionHeader} onClick={() => navigate('/maintenance-tasks')}>
+    <div className={`${sectionHeaderIconStyles} bg-sky-400 text-white`}>
+      <FaTools />
+    </div>
+    <LogoText className="text-lg mb-2">Maintenance Tasks</LogoText>
+  </div>
+  <div className="h-full flex flex-col gap-2 pl-4 ml-3 border-l-[2px]">
+    {pendingMaintenanceTasksCount > 0 ? (
+      <div className="text-mustard-400 font-semibold mr-2">{pendingMaintenanceTasksCount} Pending Tasks</div>
+    ) : (
+      <div className="text-mustard-400 gap-3 flex items-center">
+        <MdCheck className="text-lg" /> No Pending Tasks
+      </div>
+    )}
+
+    {overdueMaintenanceTasksCount > 0 ? (
+      <div className="text-red-400 font-semibold mr-2">{overdueMaintenanceTasksCount} Overdue Tasks</div>
+    ) : (
+      <div className="text-red-400 gap-3 flex items-center">
+        <MdCheck className="text-lg" /> No Overdue Tasks
+      </div>
+    )}
+  </div>
+</Card>
             </div>
 
-            <AnnouncementsCard announcements={announcements}/>
+            <AnnouncementsCard announcements={announcements} />
           </div>
         </div>
 
@@ -201,27 +288,20 @@ const ManagerMainLanding = () => {
         </div>
 
         <div id="part-3" className={sectionStyles}>
-          {renderSectionHeader('Maintenance Tasks')}
-          <Empty description="Maintenance Tasks coming soon..." className="md:py-8" />
-        </div>
+  {renderSectionHeader('Maintenance Tasks', () => navigate('/maintenance-tasks'))}
+  {user && <MaintenanceTasksTable userRole={user?.role as StaffType} maintenanceTasks={maintenanceTasks} className="w-full" />}
+</div>
 
         {/* -- [ Section: Visitors Resource ] -- */}
         <div id="part-4" className={sectionStyles}>
           {renderSectionHeader('Visitors')}
-          {/* Visitors */}
-          <div className={flexColsStyles}>
-            <Card className="w-full h-86 flex-[2]">
-              <ReactApexChart options={chartOptions} series={chartSeries} type="line" height={220} />
-            </Card>
-            <div className="flex flex-col flex-[1] gap-4">
-              <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Live Visitor Count</LogoText>
-                <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
-              </Card>
-              <Card className="w-full bg-green-100 flex-[1]" styles={{ body: { padding: '1rem' } }}>
-                <LogoText className="">Total Weekly Count</LogoText>
-                <div className="flex justify-center items-center h-full mt-2 opacity-50">No data</div>
-              </Card>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col flex-[2] gap-4">
+              <LiveVisitorCard loading={loading} parkData={parkCrowds[0]} />
+              <WeeklyVisitorCard loading={loading} parkData={parkCrowds[0]} />
+            </div>
+            <div className="flex-[1]">
+              <CrowdAlertsCard alerts={alerts} loading={alertsLoading} />
             </div>
           </div>
         </div>

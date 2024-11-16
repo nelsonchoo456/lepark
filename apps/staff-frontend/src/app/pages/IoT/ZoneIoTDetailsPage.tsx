@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ContentWrapperDark, useAuth } from '@lepark/common-ui';
-import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge } from 'antd';
-import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera } from 'react-icons/fi';
-import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Card, Tabs, Row, Col, Statistic, Tag, Typography, Spin, Empty, Space, List, Tooltip, Button, Select, Collapse, Badge, Flex } from 'antd';
+import { FiThermometer, FiDroplet, FiSun, FiWind, FiExternalLink, FiCamera, FiCloudRain } from 'react-icons/fi';
+import { ArrowDownOutlined, ArrowUpOutlined, WarningOutlined, MinusOutlined, ClockCircleOutlined, BulbOutlined } from '@ant-design/icons';
 import {
   StaffResponse,
   ZoneResponse,
@@ -19,6 +19,8 @@ import PageHeader2 from '../../components/main/PageHeader2';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title as ChartTitle, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import SensorDetails from './SensorDetails';
+import { useRestrictZone } from '../../hooks/IoT/useRestrictZone';
+import { useZoneIoTDetails } from '../../hooks/IoT/useZoneIoTDetails';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, ChartTooltip, Legend);
@@ -26,57 +28,34 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTit
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
+export const getSensorIcon = (sensorType: SensorTypeEnum) => {
+  switch (sensorType) {
+    case SensorTypeEnum.TEMPERATURE:
+      return <FiThermometer />;
+    case SensorTypeEnum.HUMIDITY:
+      return <FiDroplet />;
+    case SensorTypeEnum.LIGHT:
+      return <FiSun />;
+    case SensorTypeEnum.SOIL_MOISTURE:
+      return <FiWind />;
+    default:
+      return null;
+  }
+};
 
 const ZoneIoTDetailsPage: React.FC = () => {
   const { zoneId } = useParams<{ zoneId: string }>();
-  const [zone, setZone] = useState<ZoneResponse | null>(null);
-  const [sensors, setSensors] = useState<SensorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [averageReadings, setAverageReadings] = useState<{ [key: string]: number }>({});
-  const [trends, setTrends] = useState<{ [key: string]: any }>({});
-  const [unhealthyOccurrences, setUnhealthyOccurrences] = useState<any[]>([]);
+  const { zone, loading: zoneLoading } = useRestrictZone(zoneId);
+  const {
+    sensors,
+    averageReadings,
+    trends,
+    unhealthyOccurrences,
+    loading: detailsLoading,
+    filteredSensorTypes
+  } = useZoneIoTDetails(zoneId || '');
 
-  const filteredSensorTypes = [
-    SensorTypeEnum.SOIL_MOISTURE,
-    SensorTypeEnum.TEMPERATURE,
-    SensorTypeEnum.LIGHT,
-    SensorTypeEnum.HUMIDITY
-  ];
-
-  useEffect(() => {
-    const fetchZoneDetails = async () => {
-      try {
-        setLoading(true);
-        const zoneResponse = await getZoneById(Number(zoneId));
-        setZone(zoneResponse.data);
-
-        const sensorsResponse = await getSensorsByZoneId(Number(zoneId));
-        setSensors(sensorsResponse.data.filter((sensor) => sensor.sensorType !== SensorTypeEnum.CAMERA));
-
-        const avgReadings = await getAverageReadingsForZoneIdAcrossAllSensorTypesForHoursAgo(Number(zoneId), 4);
-        setAverageReadings(avgReadings.data);
-
-        const trendPromises = filteredSensorTypes.map(async (sensorType) => {
-          const trend = await getZoneTrendForSensorType(Number(zoneId), sensorType, 4);
-          return { [sensorType]: trend.data };
-        });
-        const trendResults = await Promise.all(trendPromises);
-        setTrends(Object.assign({}, ...trendResults));
-
-        // Fetch unhealthy occurrences
-        const unhealthyResponse = await getUnhealthyOccurrences(Number(zoneId));
-        setUnhealthyOccurrences(unhealthyResponse.data);
-        console.log('Unhealthy occurrences:', unhealthyResponse.data);
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching zone details:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchZoneDetails();
-  }, [zoneId]);
+  const loading = zoneLoading || detailsLoading;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -90,21 +69,6 @@ const ZoneIoTDetailsPage: React.FC = () => {
         return 'red';
       default:
         return 'default';
-    }
-  };
-
-  const getSensorIcon = (sensorType: SensorTypeEnum) => {
-    switch (sensorType) {
-      case SensorTypeEnum.TEMPERATURE:
-        return <FiThermometer />;
-      case SensorTypeEnum.HUMIDITY:
-        return <FiDroplet />;
-      case SensorTypeEnum.LIGHT:
-        return <FiSun />;
-      case SensorTypeEnum.SOIL_MOISTURE:
-        return <FiWind />;
-      default:
-        return null;
     }
   };
 
@@ -148,51 +112,82 @@ const ZoneIoTDetailsPage: React.FC = () => {
       return <MinusOutlined style={{ color: 'gray' }} />;
     };
 
+    const getTrendBadge = (direction: string, magnitude: string) => {
+      const getColor = () => {
+        if (direction === 'Increasing') {
+          return magnitude === 'Large' ? '#faad14' : '#52c41a';
+        }
+        if (direction === 'Decreasing') {
+          return magnitude === 'Large' ? '#ff4d4f' : '#1890ff';
+        }
+        return '#d9d9d9';
+      };
+
+      return (
+        <Badge
+          color={getColor()}
+          text={
+            <Text strong style={{ fontSize: '14px' }}>
+              {`${magnitude} ${direction}`}
+            </Text>
+          }
+        />
+      );
+    };
+
     return (
-      <Row gutter={[16, 16]} style={{ marginTop: '10px' }}>
-        <Col span={12}>
-          <Tooltip title="Direction and magnitude of change">
-            <Statistic
-              title="Trend"
-              value={trend.directionOfChange}
-              suffix={trend.magnitudeOfChange}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={12}>
-          <Tooltip title="Total change over the period">
-            <Statistic
-              title="Absolute Change"
-              value={trend.absoluteChange}
-              prefix={getArrow(trend.absoluteChange)}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={12}>
-          <Tooltip title="Change per hour">
-            <Statistic
-              title="Rate"
-              value={trend.rateOfChange}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={12}>
-          <Tooltip title="Number of readings analyzed">
-            <Statistic
-              title="Data Points"
-              value={trend.readingsCount}
-              valueStyle={{ fontSize: '14px' }}
-            />
-          </Tooltip>
-        </Col>
-        <Col span={24}>
-          <Text strong>Insight:</Text>
-          <Text> {trend.actionableInsight}</Text>
-        </Col>
-      </Row>
+      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        {/* Trend Badge */}
+        <div style={{ marginBottom: '8px' }}>
+          {getTrendBadge(trend.directionOfChange, trend.magnitudeOfChange)}
+        </div>
+
+        {/* Key Metrics */}
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Card size="small" bordered={false} style={{ background: '#f5f5f5' }}>
+              <Statistic
+                title={<Text type="secondary">Total Change</Text>}
+                value={trend.absoluteChange}
+                prefix={getArrow(trend.absoluteChange)}
+                valueStyle={{ fontSize: '14px' }}
+              />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card size="small" bordered={false} style={{ background: '#f5f5f5' }}>
+              <Statistic
+                title={<Text type="secondary">Change Rate</Text>}
+                value={trend.rateOfChange}
+                valueStyle={{ fontSize: '14px' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Card 
+          size="small" 
+          style={{ 
+            background: '#f0f5ff', 
+            border: '1px solid #adc6ff',
+            marginTop: '8px',
+            minHeight: '130px'
+          }}
+        >
+          <Space>
+            <BulbOutlined style={{ color: '#28B4E2' }} />
+            <Text style={{ fontSize: '13px' }}>{trend.actionableInsight}</Text>
+          </Space>
+        </Card>
+
+        {/* Data Quality Indicator */}
+        <Flex justify="flex-end" align="center" gap="small">
+          <ClockCircleOutlined style={{ fontSize: '12px', color: '#8c8c8c' }} />
+          <Text type="secondary" style={{ fontSize: '12px' }}>
+            Based on {trend.readingsCount} readings
+          </Text>
+        </Flex>
+      </Space>
     );
   };
 
@@ -217,27 +212,33 @@ const ZoneIoTDetailsPage: React.FC = () => {
       <PageHeader2 breadcrumbItems={breadcrumbItems} />
       <Card>
         <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} md={16}>
+          <Col xs={24} md={10}>
             <Space align="center" size={16}>
               <Title level={3} style={{ marginBottom: 0 }}>{zone.name}</Title>
               <Tag color={getStatusColor(zone.zoneStatus)} style={{ fontSize: '12px', padding: '2px 8px', marginLeft: '3px' }}>
                 {formatEnumLabelToRemoveUnderscores(zone.zoneStatus)}
               </Tag>
-              <Tooltip title="View Camera Streams">
-                <Link to={`/iot/zones/${zoneId}/camera-streams`}>
-                  <Button type="link" icon={<FiCamera />} />
-                </Link>
-              </Tooltip>
+                
             </Space>
           </Col>
-          <Col xs={24} md={8} style={{ textAlign: 'right' }}>
-            <Tooltip title="Data averaged over the last 4 hours">
-              <Text type="secondary">
-                <ClockCircleOutlined /> 4-Hour Average
-              </Text>
-            </Tooltip>
+          <Col xs={24} md={14} style={{ textAlign: 'right' }}>
+            <Space>
+              <Link to={`/iot/zones/${zoneId}/camera-streams`}>
+                <Button type="primary" icon={<FiCamera className='text-xl'/>} >View Camera Streams</Button>
+              </Link>
+              <Link to={`/iot/zones/${zoneId}/predictive-irrigation`}>
+                <Button type="primary" icon={<FiCloudRain className='text-xl'/>} >View Rainfall Forecast</Button>
+              </Link>
+            </Space>
           </Col>
         </Row>
+        <Flex justify='flex-end'>
+          <Tooltip title="Data averaged over the last 4 hours">
+            <Text type="secondary">
+              <ClockCircleOutlined /> 4-Hour Average
+            </Text>
+          </Tooltip>
+        </Flex>
         
         <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
           {Object.entries(averageReadings)
@@ -305,7 +306,39 @@ const ZoneIoTDetailsPage: React.FC = () => {
                   dataSource={item.issues}
                   renderItem={(issue: string) => (
                     <List.Item>
-                      <Text>{issue}</Text>
+                      <Row style={{ width: '100%' }} gutter={[16, 16]}>
+                        <Col span={24}>
+                          {/* Extract sensor type from issue string */}
+                          {(() => {
+                            const sensorType = issue.split(':')[0];
+                            const [currentValue, recommendedRange] = issue.split('(Recommended:').map(s => s.trim());
+                            
+                            return (
+                              <Card size="small" bordered={false} style={{ background: '#fff1f0' }}>
+                                <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                                  <Text strong>{sensorType}</Text>
+                                  <Row gutter={16} align="middle">
+                                    <Col span={12}>
+                                      <Statistic
+                                        title={<Text type="secondary">Current</Text>}
+                                        value={currentValue.split(':')[1].trim()}
+                                        valueStyle={{ color: '#cf1322', fontSize: '16px' }}
+                                      />
+                                    </Col>
+                                    <Col span={12}>
+                                      <Statistic
+                                        title={<Text type="secondary">Recommended</Text>}
+                                        value={recommendedRange.replace(')', '')}
+                                        valueStyle={{ color: '#389e0d', fontSize: '16px' }}
+                                      />
+                                    </Col>
+                                  </Row>
+                                </Space>
+                              </Card>
+                            );
+                          })()}
+                        </Col>
+                      </Row>
                     </List.Item>
                   )}
                 />

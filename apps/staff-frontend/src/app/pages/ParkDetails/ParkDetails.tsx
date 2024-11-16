@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ContentWrapperDark, LogoText, useAuth } from '@lepark/common-ui';
 import { Button, Card, Carousel, Descriptions, Empty, Space, Tabs, Typography, Alert } from 'antd';
-import { StaffResponse, StaffType } from '@lepark/data-access';
+import { getHubsByParkId, getSensorsByHubId, getSensorsByParkId, HubResponse, HubStatusEnum, SensorResponse, SensorStatusEnum, StaffResponse, StaffType } from '@lepark/data-access';
 import InformationTab from './components/InformationTab';
 import ParkStatusTag from './components/ParkStatusTag';
 import { RiEdit2Line } from 'react-icons/ri';
@@ -14,6 +14,7 @@ import { SCREEN_LG } from '../../config/breakpoints';
 import AttractionsTab from './components/AttractionsTab';
 import EventsTab from './components/EventsTab';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import ActiveIotTab from './components/ActiveIotTab';
 const { Text } = Typography;
 
 const ParkDetails = () => {
@@ -21,6 +22,15 @@ const ParkDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { park, loading } = useRestrictPark(id);
+  const [hubs, setHubs] = useState<(HubResponse & { sensors?: SensorResponse[] })[]>();
+  const [sensors, setSensors] = useState<SensorResponse[]>();
+
+  useEffect(() => {
+    if (park) {
+      fetchHubs(park.id)
+      fetchSensors(park.id)
+    }
+  }, [park])
 
   if (loading) {
     return <div>Loading...</div>;
@@ -28,6 +38,44 @@ const ParkDetails = () => {
 
   if (!park) {
     return null; // This will handle cases where the park is not found or user doesn't have access
+  }
+
+  const fetchHubs = async (parkId: number) => {
+    try {
+      const hubRes = await getHubsByParkId(parkId);
+      
+      
+      if (hubRes.status === 200) {
+        // setHubs(hubRes.data);
+        const hubsData = hubRes.data.filter((h) => h.hubStatus === HubStatusEnum.ACTIVE);
+        
+        hubsData.forEach(async (h) => {
+          try {
+            const sensorRes = await getSensorsByHubId(h.id);
+            if (sensorRes.status === 200) {
+              h.sensors = sensorRes.data
+            };
+          } catch (e) {
+            h.sensors = [];
+          }
+        })
+
+        setHubs(hubsData)
+      }
+    } catch (e) {
+      //
+    }
+  };
+
+  const fetchSensors = async (parkId: number) => {
+    try {
+      const sensorRes = await getSensorsByParkId(parkId);
+      if (sensorRes.status === 200) {
+        setSensors(sensorRes.data.filter((s) => s.sensorStatus === SensorStatusEnum.ACTIVE));
+      }
+    } catch (e) {
+      //
+    }
   }
 
   const descriptionsItems = [
@@ -55,12 +103,6 @@ const ParkDetails = () => {
       label: 'Map',
       children: park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
     },
-    // {
-    //   key: 'zones',
-    //   label: 'Zones',
-    //   // children: <ActivityLogs occurrenceId={occurrences[0].id} activityLogs={occurrences[0].activityLogs} />,
-    //   children: <Empty description={'Zones Coming Soon'}></Empty>,
-    // },
     {
       key: 'attractions',
       label: 'Attractions',
@@ -70,6 +112,34 @@ const ParkDetails = () => {
       key: 'events',
       label: 'Events',
       children: <EventsTab parkId={park.id} />,
+    },
+  ];
+
+  const iotTabsItems = [
+    {
+      key: 'about',
+      label: 'Information',
+      children: <InformationTab park={park} />,
+    },
+    {
+      key: 'map',
+      label: 'Map',
+      children: park ? <MapTab park={park} /> : <Empty description={'No Map data for this Park'}></Empty>,
+    },
+    {
+      key: 'attractions',
+      label: 'Attractions',
+      children: <AttractionsTab parkId={park.id} />,
+    },
+    {
+      key: 'events',
+      label: 'Events',
+      children: <EventsTab parkId={park.id} />,
+    },
+    {
+      key: 'iot',
+      label: 'Active IoT',
+      children: <ActiveIotTab hubs={hubs} sensors={sensors} />,
     },
   ];
 
@@ -145,7 +215,7 @@ const ParkDetails = () => {
         <Tabs
           centered
           defaultActiveKey="about"
-          items={tabsItems}
+          items={(user?.role === StaffType.PARK_RANGER || user?.role === StaffType.LANDSCAPE_ARCHITECT) ? tabsItems : iotTabsItems}
           renderTabBar={(props, DefaultTabBar) => <DefaultTabBar {...props} className="border-b-[1px] border-gray-400" />}
           className="mt-4"
         />

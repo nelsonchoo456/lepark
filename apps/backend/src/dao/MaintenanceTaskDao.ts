@@ -3,11 +3,13 @@ import { PrismaClient, Prisma, MaintenanceTask, Staff, MaintenanceTaskStatusEnum
 const prisma = new PrismaClient();
 
 class MaintenanceTaskDao {
-  async createMaintenanceTask(data: Prisma.MaintenanceTaskCreateInput): Promise<MaintenanceTask> {
+  public async createMaintenanceTask(
+    data: Prisma.MaintenanceTaskCreateInput
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.create({ data });
   }
 
-  async getAllMaintenanceTasks(): Promise<MaintenanceTask[]> {
+  public async getAllMaintenanceTasks(): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       include: {
         assignedStaff: true,
@@ -20,7 +22,9 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getMaintenanceTaskById(id: string): Promise<MaintenanceTask | null> {
+  public async getMaintenanceTaskById(
+    id: string
+  ): Promise<MaintenanceTask | null> {
     return prisma.maintenanceTask.findUnique({
       where: { id },
       include: {
@@ -34,44 +38,80 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getAllMaintenanceTasksByStaffId(staffId: string): Promise<MaintenanceTask[]> {
+  public async getAllMaintenanceTasksByStaffId(staffId: string): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: { assignedStaffId: staffId },
     });
   }
 
-  async updateMaintenanceTask(id: string, data: Prisma.MaintenanceTaskUpdateInput): Promise<MaintenanceTask> {
+  public async getTaskCountsByType(
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{ taskType: MaintenanceTaskTypeEnum; count: number }[]> {
+    const result = await prisma.maintenanceTask.groupBy({
+      by: ['taskType'],
+      where: { submittingStaff: { parkId: parkId }, createdAt: { gte: startDate, lte: endDate } },
+      _count: { id: true },
+    });
+
+    return result.map((item) => ({
+      taskType: item.taskType,
+      count: item._count.id,
+    }));
+  }
+
+  public async updateMaintenanceTask(
+    id: string, 
+    data: Prisma.MaintenanceTaskUpdateInput
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({ where: { id }, data });
   }
 
-  async deleteMaintenanceTask(id: string): Promise<void> {
+  public async deleteMaintenanceTask(
+    id: string
+  ): Promise<void> {
     await prisma.maintenanceTask.delete({ where: { id } });
   }
 
-  async deleteMaintenanceTasksByStatus(taskStatus: MaintenanceTaskStatusEnum): Promise<void> {
+  public async deleteMaintenanceTasksByStatus(
+    taskStatus: MaintenanceTaskStatusEnum
+  ): Promise<void> {
     await prisma.maintenanceTask.deleteMany({ where: { taskStatus } });
   }
 
-  async assignMaintenanceTask(id: string, assignedStaff: Staff, updatedAt: Date): Promise<MaintenanceTask> {
+  public async assignMaintenanceTask(
+    id: string, 
+    assignedStaff: Staff, 
+    updatedAt: Date
+  ): Promise<MaintenanceTask> {
     return prisma.maintenanceTask.update({
       where: { id },
-      data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: assignedStaff.id, updatedAt: updatedAt },
+      data: { 
+        taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, 
+        assignedStaffId: assignedStaff.id, 
+        updatedAt: updatedAt 
+      },
     });
   }
 
-  async unassignMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt } });
+  public async unassignMaintenanceTask(
+    id: string, 
+    updatedAt: Date
+  ): Promise<MaintenanceTask> {
+    return prisma.maintenanceTask.update({
+      where: { id },
+      data: { 
+        taskStatus: MaintenanceTaskStatusEnum.OPEN, 
+        assignedStaffId: null, 
+        updatedAt: updatedAt 
+      },
+    });
   }
 
-  async acceptMaintenanceTask(id: string, staffId: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.IN_PROGRESS, assignedStaffId: staffId, updatedAt: updatedAt } });
-  }
-
-  async unacceptMaintenanceTask(id: string, updatedAt: Date): Promise<MaintenanceTask> {
-    return prisma.maintenanceTask.update({ where: { id }, data: { taskStatus: MaintenanceTaskStatusEnum.OPEN, assignedStaffId: null, updatedAt: updatedAt } });
-  }
-
-  async getMaintenanceTasksByStatus(status: MaintenanceTaskStatusEnum): Promise<MaintenanceTask[]> {
+  public async getMaintenanceTasksByStatus(
+    status: MaintenanceTaskStatusEnum
+  ): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: { taskStatus: status },
       orderBy: { position: 'asc' },
@@ -86,7 +126,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
+  public async getMaintenanceTasksBySubmittingStaff(staffId: string): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: { submittingStaffId: staffId },
       include: {
@@ -100,7 +140,7 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getMaxPositionForStatus(status: MaintenanceTaskStatusEnum): Promise<number> {
+  public async getMaxPositionForStatus(status: MaintenanceTaskStatusEnum): Promise<number> {
     const result = await prisma.maintenanceTask.aggregate({
       where: { taskStatus: status },
       _max: { position: true },
@@ -108,7 +148,7 @@ class MaintenanceTaskDao {
     return result._max.position || 0;
   }
 
-  async updatePositions(tasks: { id: string; position: number }[]): Promise<void> {
+  public async updatePositions(tasks: { id: string; position: number }[]): Promise<void> {
     await prisma.$transaction(
       tasks.map((task) =>
         prisma.maintenanceTask.update({
@@ -119,7 +159,7 @@ class MaintenanceTaskDao {
     );
   }
 
-  async getMaintenanceTasksByParkId(parkId: number): Promise<MaintenanceTask[]> {
+  public async getMaintenanceTasksByParkId(parkId: number): Promise<MaintenanceTask[]> {
     return prisma.maintenanceTask.findMany({
       where: {
         OR: [
@@ -140,7 +180,12 @@ class MaintenanceTaskDao {
     });
   }
 
-  async getAverageTaskTypeCompletionTime(taskType: MaintenanceTaskTypeEnum, parkId: number, startDate: Date, endDate: Date): Promise<number> {
+  public async getAverageTaskTypeCompletionTime(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
     const tasks = await prisma.maintenanceTask.findMany({
       where: {
         submittingStaff: { parkId: parkId },
@@ -165,7 +210,29 @@ class MaintenanceTaskDao {
     return totalCompletionTime / tasks.length;
   }
 
-  async getOverdueRateByTaskTypeForPeriod(taskType: MaintenanceTaskTypeEnum, parkId: number, startDate: Date, endDate: Date): Promise<number> {
+  public async getCompletedMaintenanceTasksByEntityId(entityId: string, entityType: 'ParkAsset' | 'Sensor' | 'Hub'): Promise<MaintenanceTask[]> {
+    const whereClause: any = { taskStatus: MaintenanceTaskStatusEnum.COMPLETED };
+
+    if (entityType === 'ParkAsset') {
+      whereClause.parkAssetId = entityId;
+    } else if (entityType === 'Sensor') {
+      whereClause.sensorId = entityId;
+    } else if (entityType === 'Hub') {
+      whereClause.hubId = entityId;
+    }
+
+    return prisma.maintenanceTask.findMany({
+      where: whereClause,
+      orderBy: { completedDate: 'asc' },
+    });
+  }
+
+  public async getOverdueRateByTaskTypeForPeriod(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
     const overdueTasks = await prisma.maintenanceTask.count({
       where: {
         submittingStaff: { parkId: parkId },
@@ -191,7 +258,59 @@ class MaintenanceTaskDao {
       },
     });
 
-    return overdueTasks / totalTasks;
+    return (overdueTasks / totalTasks) * 100;
+  }
+
+  public async getOverdueTaskCountByTaskTypeForPeriod(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
+    return prisma.maintenanceTask.count({
+      where: {
+        submittingStaff: { parkId: parkId },
+        taskType: taskType,
+        OR: [
+          {
+            // Completed tasks that were completed after their due date
+            taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
+            completedDate: {
+              gt: prisma.maintenanceTask.fields.dueDate,
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          {
+            // Open or in-progress tasks that are past their due date
+            taskStatus: {
+              in: [MaintenanceTaskStatusEnum.OPEN, MaintenanceTaskStatusEnum.IN_PROGRESS]
+            },
+            dueDate: {
+              lt: new Date(), // Due date is in the past
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  public async getCompletedTaskCountByTaskTypeForPeriod(
+    taskType: MaintenanceTaskTypeEnum,
+    parkId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
+    return prisma.maintenanceTask.count({
+      where: {
+        submittingStaff: { parkId: parkId },
+        taskType: taskType,
+        taskStatus: MaintenanceTaskStatusEnum.COMPLETED,
+        completedDate: { gte: startDate, lte: endDate },
+      },
+    });
   }
 }
 

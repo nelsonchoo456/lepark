@@ -217,7 +217,7 @@ const SensorsTab = ({ hub, zone, sensors, fetchSensors }: SensorsTabProps) => {
       render: (_: React.ReactNode, record: SensorResponse) => (
         <Flex justify="center" gap={8}>
           <Tooltip title="View Details">
-            <Button type="link" icon={<FiEye />} onClick={() => navigate(`${record.id}`)} />
+            <Button type="link" icon={<FiEye />} onClick={() => navigate(`/sensor/${record.id}`)} />
           </Tooltip>
           {canActivateEdit &&
             <Tooltip title="Delink Sensor">

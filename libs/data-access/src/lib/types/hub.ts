@@ -1,7 +1,7 @@
 import { FacilityResponse } from './facility';
 import { ParkResponse } from './park';
 import { ZoneResponse } from './zone';
-import { HubStatusEnum } from './sharedenums';
+import { HubStatusEnum } from './sharedEnums';
 import { SensorResponse } from './sensor';
 
 export interface HubData {
@@ -10,8 +10,8 @@ export interface HubData {
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   dataTransmissionInterval?: number;
   supplier: string;
   supplierContactNumber: string;
@@ -36,8 +36,8 @@ export interface HubResponse {
   description?: string;
   hubStatus: HubStatusEnum;
   acquisitionDate: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   dataTransmissionInterval?: number;
   supplier: string;
   supplierContactNumber: string;
@@ -55,7 +55,7 @@ export interface HubResponse {
   facility: FacilityResponse;
   zone?: ZoneResponse;
   lastDataUpdateDate?: string;
-  sensors?: SensorResponse[]; //added by mics for map
+  sensors?: SensorResponse[];
 }
 
 export interface HubUpdateData {
@@ -64,8 +64,8 @@ export interface HubUpdateData {
   description?: string;
   hubStatus?: HubStatusEnum;
   acquisitionDate?: string;
-  lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  nextMaintenanceDates?: string[];
   dataTransmissionInterval?: number;
   supplier?: string;
   supplierContactNumber?: string;

@@ -31,9 +31,12 @@ import promotionRouter from './routers/promotionRouter';
 import os from 'os';
 import sensorReadingRouter from './routers/sensorReadingRouter';
 import faqRouter from './routers/faqRouter';
+import feedbackRouter from './routers/feedbackRouter';
 import AnnouncementRouter from './routers/announcementRouter';
 import eventTicketRouter from './routers/eventTicketRouter';
 import maintenanceTaskRouter from './routers/maintenanceTaskRouter';
+import predictiveIrrigationRouter from './routers/predictiveIrrigationRouter';
+import bookingRouter from './routers/bookingRouter';
 
 dotenv.config();
 const app = express();
@@ -93,9 +96,12 @@ app.use('/api/attractionTickets', attractionTicketRouter);
 app.use('/api/promotions', promotionRouter);
 app.use('/api/sensorreadings', sensorReadingRouter);
 app.use('/api/faq', faqRouter);
+app.use('/api/feedback', feedbackRouter);
 app.use('/api/announcements', AnnouncementRouter);
 app.use('/api/eventTickets', eventTicketRouter);
 app.use('/api/maintenancetasks', maintenanceTaskRouter);
+app.use('/api/predictiveirrigation', predictiveIrrigationRouter);
+app.use('/api/bookings', bookingRouter);
 
 const port = process.env.PORT || 3333;
 const networkInterfaces = os.networkInterfaces();

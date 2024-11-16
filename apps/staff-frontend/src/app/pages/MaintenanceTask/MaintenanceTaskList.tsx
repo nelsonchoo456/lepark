@@ -13,17 +13,8 @@ import {
   assignMaintenanceTask,
   getAllStaffsByParkId,
   getAllStaffs,
-  getAllAssignedMaintenanceTasks,
   unassignMaintenanceTask,
   MaintenanceTaskStatusEnum,
-  getParkAverageTaskCompletionTime,
-  getParkTaskLoadPercentage,
-  CompletionRateData,
-  OverdueRateMaintenanceTaskData,
-  AverageCompletionTimeData,
-  TaskLoadPercentageData,
-  getStaffPerformanceRanking,
-  StaffPerformanceRankingData,
   getMaintenanceTasksBySubmittingStaff,
 } from '@lepark/data-access';
 import PageHeader2 from '../../components/main/PageHeader2';
@@ -34,6 +25,11 @@ import { Tabs } from 'antd';
 import { MdArrowBack } from 'react-icons/md';
 import MaintenanceTaskBoardView from './MaintenanceTaskBoardView';
 import MaintenanceTaskTableView from './MaintenanceTaskTableView';
+import MaintenanceTaskDashboard from './MaintenanceTaskDashboard/MaintenanceTaskDashboard';
+import StaffWorkloadTable from './MaintenanceTaskDashboard/components/StaffWorkloadTable';
+import CompletionTimeChart from './MaintenanceTaskDashboard/components/CompletionTimeChart';
+import OverdueRateChart from './MaintenanceTaskDashboard/components/OverdueRateChart';
+import DelayedTaskTypesSummary from './MaintenanceTaskDashboard/components/DelayedTaskTypesSummary';
 
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
@@ -68,8 +64,6 @@ const MaintenanceTaskList: React.FC = () => {
     return [{ value: null, label: 'All Parks' }, ...uniqueParks.map((parkName) => ({ value: parkName, label: parkName }))];
   }, [staffList]);
 
-  const [staffPerformanceRanking, setStaffPerformanceRanking] = useState<StaffPerformanceRankingData | null>(null);
-
   const isTableOnlyView = useMemo(() => {
     return (
       user?.role === StaffType.SUPERADMIN ||
@@ -83,9 +77,6 @@ const MaintenanceTaskList: React.FC = () => {
 
   useEffect(() => {
     fetchMaintenanceTasks();
-    if (user?.role === StaffType.MANAGER) {
-      fetchStaffPerformanceRanking();
-    }
   }, [user]);
 
   const fetchMaintenanceTasks = async () => {
@@ -128,7 +119,7 @@ const MaintenanceTaskList: React.FC = () => {
         staffResponse = await getAllStaffsByParkId(user.parkId);
       }
 
-      const filteredStaff = staffResponse?.data.filter((staff) => staff.role === StaffType.ARBORIST || staff.role === StaffType.BOTANIST);
+      const filteredStaff = staffResponse?.data.filter((staff) => staff.role === StaffType.VENDOR_MANAGER);
       setStaffList(filteredStaff || []);
     } catch (error) {
       console.error('Error fetching maintenance tasks:', error);
@@ -189,133 +180,106 @@ const MaintenanceTaskList: React.FC = () => {
     },
   ];
 
-  const fetchStaffPerformanceRanking = async () => {
-    try {
-      const startOfMonth = moment().startOf('month').toDate();
-      const endOfMonth = moment().endOf('month').toDate();
-      const response = await getStaffPerformanceRanking(user?.parkId || null, startOfMonth, endOfMonth);
-      setStaffPerformanceRanking(response.data);
-    } catch (error) {
-      console.error('Error fetching staff performance ranking:', error);
-      messageApi.error('Failed to fetch staff performance ranking');
-    }
+  const renderDashboardOverview = () => {
+    return (
+      <>
+        {renderStatisticsOverview(true)}
+        <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
+          <Tabs
+            defaultActiveKey="1"
+            items={[
+              {
+                key: '1',
+                label: 'Pending Tasks Breakdown',
+                children: (
+                  <MaintenanceTaskDashboard
+                    maintenanceTasks={maintenanceTasks}
+                    isSuperAdmin={isSuperAdmin}
+                    selectedParkId={selectedParkId}
+                    onParkChange={(parkId) => setSelectedParkId(parkId)}
+                    parkOptions={parkOptions as { value: string | null; label: string }[]}
+                  />
+                ),
+              },
+              {
+                key: '2',
+                label: 'Shared Workload',
+                children: (
+                  <StaffWorkloadTable
+                    staffList={staffList}
+                    maintenanceTasks={maintenanceTasks}
+                    isSuperAdmin={isSuperAdmin}
+                    selectedParkId={selectedParkId}
+                    onParkChange={(parkId) => setSelectedParkId(parkId)}
+                    parkOptions={parkOptions as { value: string | null; label: string }[]}
+                  />
+                ),
+              },
+              ...((!isSuperAdmin) ? [{
+                key: '3',
+                label: 'Vendor Performance Analytics',
+                children: (
+                  <>
+                    <DelayedTaskTypesSummary />
+                    <Row gutter={[16, 16]}>
+                      <Col span={12}>
+                        <CompletionTimeChart />
+                      </Col>
+                      <Col span={12}>
+                        <OverdueRateChart />
+                      </Col>
+                    </Row>
+                  </>
+                ),
+              }] : []),
+            ]}
+          />
+        </Card>
+      </>
+    );
   };
-
-  //   const renderDashboardOverview = () => {
-  //     return (
-  //       <>
-  //         {renderStatisticsOverview(true)}
-  //         <Card styles={{ body: { padding: 0 } }} className="px-4 pb-4 pt-2 mb-4">
-  //           <Tabs
-  //             defaultActiveKey="1"
-  //             items={[
-  //               {
-  //                 key: '1',
-  //                 label: 'Pending Tasks Breakdown',
-  //                 children: (
-  //                   <MaintenanceTaskDashboard
-  //                     maintenanceTasks={maintenanceTasks}
-  //                     isSuperAdmin={isSuperAdmin}
-  //                     selectedParkId={selectedParkId}
-  //                     onParkChange={(parkId) => setSelectedParkId(parkId)}
-  //                     parkOptions={parkOptions as { value: string | null; label: string }[]}
-  //                   />
-  //                 ),
-  //               },
-  //               {
-  //                 key: '2',
-  //                 label: 'Staff Workload',
-  //                 children: (
-  //                   <>
-  //                     <StaffWorkloadTable
-  //                       staffList={staffList}
-  //                       maintenanceTasks={maintenanceTasks}
-  //                       isSuperAdmin={isSuperAdmin}
-  //                       selectedParkId={selectedParkId}
-  //                       onParkChange={(parkId) => setSelectedParkId(parkId)}
-  //                       parkOptions={parkOptions as { value: string | null; label: string }[]}
-  //                     />
-  //                     <TaskLoadPercentageChart />
-  //                   </>
-  //                 ),
-  //               },
-  //               !isSuperAdmin
-  //                 ? {
-  //                     key: '3',
-  //                     label: 'Staff Performance Analytics',
-  //                     children: (
-  //                       <>
-  //                         {staffPerformanceRanking && (
-  //                           <StaffPerformanceRanking
-  //                             bestPerformer={staffPerformanceRanking.bestPerformer}
-  //                             secondBestPerformer={staffPerformanceRanking.secondBestPerformer}
-  //                             thirdBestPerformer={staffPerformanceRanking.thirdBestPerformer}
-  //                             message={staffPerformanceRanking.message}
-  //                           />
-  //                         )}
-  //                         <Row gutter={[16, 16]}>
-  //                           <Col span={12}>
-  //                             <CompletionRateChart />
-  //                           </Col>
-  //                           <Col span={12}>
-  //                           <StaffCompletionRatesLineChart />
-
-  //                           </Col>
-  //                         </Row>
-  //                         <Row gutter={[16, 16]} className="mt-4">
-  //                           <Col span={12}>
-  //                             <AverageCompletionTimeChart />
-  //                           </Col>
-  //                           <Col span={12}>
-  //                             <StaffAverageCompletionTimeLineChart />
-  //                           </Col>
-  //                         </Row>
-  //                         <Row gutter={[16, 16]} className="mt-4">
-  //                           <Col span={12}>
-  //                             <TaskCompletedChart />
-  //                           </Col>
-  //                           <Col span={12}>
-  //                             <StaffTasksCompletedLineChart />
-  //                           </Col>
-  //                         </Row>
-  //                         <Row gutter={[16, 16]} className="mt-4">
-  //                           <Col span={12}>
-  //                           <OverdueRateChart />
-  //                           </Col>
-  //                           <Col span={12}>
-  //                             <StaffOverdueRatesLineChart />
-  //                           </Col>
-  //                         </Row>
-  //                       </>
-  //                     ),
-  //                   }
-  //                 : null,
-  //             ].filter(Boolean)}
-  //           />
-  //         </Card>
-  //       </>
-  //     );
-  //   };
 
   const handleTakeTask = async (maintenanceTaskId: string, staffId: string) => {
     try {
       await assignMaintenanceTask(maintenanceTaskId, staffId);
-      messageApi.success('Staff assigned successfully');
+      messageApi.success('You have taken the task successfully');
       fetchMaintenanceTasks();
     } catch (error) {
-      console.error('Error assigning staff:', error);
-      messageApi.error('Failed to assign staff');
+      console.error('Error taking task:', error);
+      messageApi.error('Failed to take task');
     }
   };
 
   const handleReturnTask = async (maintenanceTaskId: string, staffId: string) => {
     try {
       await unassignMaintenanceTask(maintenanceTaskId, staffId);
-      message.success('Staff unassigned successfully');
+      messageApi.success('You have returned the task successfully');
       fetchMaintenanceTasks();
     } catch (error) {
-      console.error('Failed to unassign staff:', error);
-      message.error('Failed to unassign staff');
+      console.error('Failed to return task:', error);
+      messageApi.error('Failed to return task');
+    }
+  };
+
+  const handleAssignTask = async (maintenanceTaskId: string, staffId: string) => {
+    try {
+      await assignMaintenanceTask(maintenanceTaskId, staffId);
+      messageApi.success('You have assigned the task successfully');
+      fetchMaintenanceTasks();
+    } catch (error) {
+      console.error('Failed to assign task:', error);
+      messageApi.error('Failed to assign task');
+    }
+  };
+
+  const handleUnassignTask = async (maintenanceTaskId: string, unassignerStaffId: string) => {
+    try {
+      await unassignMaintenanceTask(maintenanceTaskId, unassignerStaffId);
+      messageApi.success('You have unassigned the task successfully');
+      fetchMaintenanceTasks();
+    } catch (error) {
+      console.error('Failed to unassign task:', error);
+      messageApi.error('Failed to unassign task');
     }
   };
 
@@ -369,13 +333,16 @@ const MaintenanceTaskList: React.FC = () => {
                       <Statistic title="Overdue Tasks" value={overdueTasks} suffix={`of ${outstandingTasks}`} />
                     </Col>
                   </Flex>
-                  {!inDashboards && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && (
-                    <div className="flex items-center">
-                      <Button type="link" onClick={() => setInDashboards(true)}>
-                        View more
-                      </Button>
-                    </div>
-                  )}
+                  {!inDashboards &&
+                    (user?.role === StaffType.SUPERADMIN ||
+                      user?.role === StaffType.MANAGER ||
+                      user?.role === StaffType.VENDOR_MANAGER) && (
+                      <div className="flex items-center">
+                        <Button type="link" onClick={() => setInDashboards(true)}>
+                          View more
+                        </Button>
+                      </div>
+                    )}
                 </Flex>
               ),
             },
@@ -395,6 +362,8 @@ const MaintenanceTaskList: React.FC = () => {
         userRole={user?.role || ''}
         handleTakeTask={handleTakeTask}
         handleReturnTask={handleReturnTask}
+        handleAssignTask={handleAssignTask}
+        handleUnassignTask={handleUnassignTask}
         navigateToDetails={navigateToDetails}
         navigate={navigate}
         showDeleteModal={showDeleteModal}
@@ -451,15 +420,16 @@ const MaintenanceTaskList: React.FC = () => {
     fetchMaintenanceTasks();
   };
 
-  //   if (inDashboards) {
-  //     return (
-  //       <ContentWrapperDark>
-  //         {contextHolder}
-  //         <PageHeader2 breadcrumbItems={breadcrumbItems} />
-  //         {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER) && renderDashboardOverview()}
-  //       </ContentWrapperDark>
-  //     );
-  //   }
+  if (inDashboards) {
+    return (
+      <ContentWrapperDark>
+        {contextHolder}
+        <PageHeader2 breadcrumbItems={breadcrumbItems} />
+        {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.VENDOR_MANAGER) &&
+          renderDashboardOverview()}
+      </ContentWrapperDark>
+    );
+  }
 
   return (
     <ContentWrapperDark>

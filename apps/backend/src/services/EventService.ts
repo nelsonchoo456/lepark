@@ -7,6 +7,7 @@ import aws from 'aws-sdk';
 import FacilityDao from '../dao/FacilityDao';
 import ZoneDao from '../dao/ZoneDao';
 import ParkDao from '../dao/ParkDao';
+import EventTicketDao from '../dao/EventTicketDao';
 
 const s3 = new aws.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -26,27 +27,27 @@ class EventService {
         throw new Error('Facility not found');
       }
 
-        // Check if end date is not before start date
-    if (formattedData.endDate <= formattedData.startDate) {
-      throw new Error('End date must be after start date');
-    }
+      // Check if end date is not before start date
+      if (formattedData.endDate <= formattedData.startDate) {
+        throw new Error('End date must be after start date');
+      }
 
       // Check if event is in the past
-    if (formattedData.startDate < new Date()) {
-      throw new Error('Cannot create events in the past');
-    }
+      if (formattedData.startDate < new Date()) {
+        throw new Error('Cannot create events in the past');
+      }
 
-        // Check for overlapping events in the same facility
-        const hasOverlap = await checkEventOverlap(formattedData.facilityId, formattedData.startDate, formattedData.endDate);
-        if (hasOverlap) {
-          throw new Error('There is already an event scheduled at this facility during the specified dates');
-        }
+      // Check for overlapping events in the same facility
+      const hasOverlap = await checkEventOverlap(formattedData.facilityId, formattedData.startDate, formattedData.endDate);
+      if (hasOverlap) {
+        throw new Error('There is already an event scheduled at this facility during the specified dates');
+      }
 
-    //  // Check facility availability
-    //  const isAvailable = await this.checkFacilityAvailability(formattedData.facilityId, formattedData.startDate, formattedData.endDate);
-    //  if (!isAvailable) {
-    //    throw new Error('Facility is not available during the specified time slot');
-    //  }
+      //  // Check facility availability
+      //  const isAvailable = await this.checkFacilityAvailability(formattedData.facilityId, formattedData.startDate, formattedData.endDate);
+      //  if (!isAvailable) {
+      //    throw new Error('Facility is not available during the specified time slot');
+      //  }
 
       return EventDao.createEvent(formattedData);
     } catch (error) {
@@ -78,7 +79,7 @@ class EventService {
     if (!facility) {
       throw new Error('Facility not found');
     }
-    
+
     const events = await EventDao.getEventsByFacilityId(facilityId);
     return Promise.all(events.map(updateEventStatus));
   }
@@ -123,17 +124,17 @@ class EventService {
         }
       }
 
-        // If dates are being updated, recheck availability
-        if (data.startDate || data.endDate) {
-          const startDate = data.startDate ? new Date(data.startDate) : existingEvent.startDate;
-          const endDate = data.endDate ? new Date(data.endDate) : existingEvent.endDate;
-  
-          // Recheck for overlapping events
-          const hasOverlap = await checkEventOverlap(mergedData.facilityId, startDate, endDate, id);
-          if (hasOverlap) {
-            throw new Error('There is already an event scheduled at this facility during the specified time');
-          }
+      // If dates are being updated, recheck availability
+      if (data.startDate || data.endDate) {
+        const startDate = data.startDate ? new Date(data.startDate) : existingEvent.startDate;
+        const endDate = data.endDate ? new Date(data.endDate) : existingEvent.endDate;
+
+        // Recheck for overlapping events
+        const hasOverlap = await checkEventOverlap(mergedData.facilityId, startDate, endDate, id);
+        if (hasOverlap) {
+          throw new Error('There is already an event scheduled at this facility during the specified time');
         }
+      }
 
       return EventDao.updateEventDetails(id, formattedData);
     } catch (error) {
@@ -146,6 +147,17 @@ class EventService {
   }
 
   public async deleteEvent(id: string): Promise<void> {
+    // Check if event has any transactions
+    const event = await EventDao.getEventById(id);
+    if (!event) {
+      throw new Error('Event not found');
+    }
+
+    const transactions = await EventTicketDao.getEventTicketTransactionsByEventId(id);
+    if (transactions.length > 0) {
+      throw new Error('Event has existing visitor transactions and cannot be deleted');
+    }
+
     await EventDao.deleteEvent(id);
   }
 
@@ -169,15 +181,15 @@ class EventService {
       throw error;
     }
   }
-  
+
   public async getAllEventTicketListings(): Promise<EventTicketListing[]> {
     return EventDao.getAllEventTicketListings();
   }
-  
+
   public async getEventTicketListingsByEventId(eventId: string): Promise<EventTicketListing[]> {
     return EventDao.getEventTicketListingsByEventId(eventId);
   }
-  
+
   public async getEventTicketListingById(id: string): Promise<EventTicketListing> {
     const listing = await EventDao.getEventTicketListingById(id);
     if (!listing) {
@@ -185,14 +197,14 @@ class EventService {
     }
     return listing;
   }
-  
+
   public async updateEventTicketListingDetails(id: string, data: Partial<EventTicketListingSchemaType>): Promise<EventTicketListing> {
     try {
       const existingListing = await EventDao.getEventTicketListingById(id);
       if (!existingListing) {
         throw new Error('Event ticket listing not found');
       }
-  
+
       EventTicketListingSchema.parse({ ...existingListing, ...data });
       return EventDao.updateEventTicketListingDetails(id, data);
     } catch (error) {
@@ -203,12 +215,12 @@ class EventService {
       throw error;
     }
   }
-  
+
   public async deleteEventTicketListing(id: string): Promise<void> {
     await EventDao.deleteEventTicketListing(id);
   }
 
-  public async uploadImageToS3(fileBuffer, fileName, mimeType) {
+  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `event/${fileName}`,
@@ -228,10 +240,10 @@ class EventService {
 
 const checkEventOverlap = async (facilityId: string, startDate: Date, endDate: Date, eventId?: string): Promise<boolean> => {
   const overlappingEvents = await EventDao.getEventsByFacilityId(facilityId);
-  return overlappingEvents.some(event => {
+  return overlappingEvents.some((event) => {
     const eventStartDate = new Date(event.startDate);
     const eventEndDate = new Date(event.endDate);
-    return (startDate < eventEndDate && endDate > eventStartDate) && event.id !== eventId;
+    return startDate < eventEndDate && endDate > eventStartDate && event.id !== eventId;
   });
 };
 
@@ -243,7 +255,7 @@ const updateEventStatus = async (event: Event): Promise<Event> => {
   const now = new Date();
   const startDateTime = new Date(event.startDate);
   const endDateTime = new Date(event.endDate);
-  
+
   let newStatus = event.status;
 
   if (now < startDateTime) {

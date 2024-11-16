@@ -1,7 +1,7 @@
 import aws from 'aws-sdk';
 import { HubSchemaType, HubSchema } from '../schemas/hubSchema';
 import HubDao from '../dao/HubDao';
-import { Prisma, Hub, Facility, Sensor } from '@prisma/client';
+import { Prisma, Hub, Facility, Sensor, HubStatusEnum } from '@prisma/client';
 import { z } from 'zod';
 import FacilityDao from '../dao/FacilityDao';
 import ParkDao from '../dao/ParkDao';
@@ -21,14 +21,11 @@ const s3 = new aws.S3({
 });
 
 const dateFormatter = (data: any) => {
-  const { acquisitionDate, lastMaintenanceDate, nextMaintenanceDate, ...rest } = data;
+  const { acquisitionDate, nextMaintenanceDate, ...rest } = data;
   const formattedData = { ...rest };
 
   if (acquisitionDate) {
     formattedData.acquisitionDate = new Date(acquisitionDate);
-  }
-  if (lastMaintenanceDate) {
-    formattedData.lastMaintenanceDate = new Date(lastMaintenanceDate);
   }
   if (nextMaintenanceDate) {
     formattedData.nextMaintenanceDate = new Date(nextMaintenanceDate);
@@ -94,8 +91,11 @@ class HubService {
     return HubDao.getAllHubs();
   }
 
-  public async getHubsFiltered(hubStatus: string, parkId: number): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
-    return HubDao.getHubsFiltered(hubStatus, parkId);
+  public async getHubsFiltered(
+    hubStatus: string, 
+    parkId: number
+  ): Promise<(Hub & { facility?: Facility; park?: ParkResponseData; zone?: ZoneResponseData })[]> {
+    return HubDao.getHubsFiltered(hubStatus as HubStatusEnum, parkId);
   }
 
   public async getHubsByZoneId(zoneId: number): Promise<Hub[]> {
@@ -400,7 +400,11 @@ class HubService {
     return HubDao.getAllActiveSensorsByHubId(hubId);
   }
 
-  public async uploadImageToS3(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+  public async uploadImageToS3(
+    fileBuffer: Buffer, 
+    fileName: string, 
+    mimeType: string
+  ): Promise<string> {
     const params = {
       Bucket: 'lepark',
       Key: `hub/${fileName}`,
@@ -429,7 +433,11 @@ class HubService {
     return Math.floor(Math.random() * 255); // 0 - 254, 255 is not available as it is used for Micro:bits with unconfigured radio groups
   }
 
-  public async validatePayload(hubId: string, jsonPayload: string, sha256: string): Promise<boolean> {
+  public async validatePayload(
+    hubId: string, 
+    jsonPayload: string, 
+    sha256: string
+  ): Promise<boolean> {
     const hub = await HubDao.getHubById(hubId);
     if (!hub || !hub.hubSecret) {
       throw new Error('Hub not found or hub secret not set');
@@ -438,7 +446,9 @@ class HubService {
     return sha256 === calculatedHash;
   }
 
-  private calculateHash(data: string): string {
+  private calculateHash(
+    data: string
+  ): string {
     return crypto.createHash('sha256').update(data).digest('hex');
   }
 
@@ -462,7 +472,9 @@ class HubService {
   }
 
   // Add this new method to convert soil moisture readings
-  private convertSoilMoistureToPercentage(reading: number): number {
+  private convertSoilMoistureToPercentage(
+    reading: number
+  ): number {
     // Assuming the input range is 0-500 and we want to convert it to 0-100
     const percentage = (reading / 500) * 100;
     return Math.min(Math.max(percentage, 0), 100); // Ensure the result is between 0 and 100

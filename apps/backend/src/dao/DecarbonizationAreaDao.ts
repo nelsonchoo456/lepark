@@ -3,55 +3,67 @@ import { PrismaClient, Prisma, DecarbonizationArea, Occurrence } from '@prisma/c
 const prisma = new PrismaClient();
 
 class DecarbonizationAreaDao {
-  async createDecarbonizationArea(data: Prisma.DecarbonizationAreaCreateInput): Promise<DecarbonizationArea> {
-    return await prisma.decarbonizationArea.create({
+  public async createDecarbonizationArea(
+    data: Prisma.DecarbonizationAreaCreateInput
+  ): Promise<DecarbonizationArea> {
+    return prisma.decarbonizationArea.create({
       data,
     });
   }
 
-  async getDecarbonizationAreaById(id: string): Promise<DecarbonizationArea | null> {
-    return await prisma.decarbonizationArea.findUnique({
+  public async getDecarbonizationAreaById(
+    id: string
+  ): Promise<DecarbonizationArea | null> {
+    return prisma.decarbonizationArea.findUnique({
       where: { id },
     });
   }
 
-  async updateDecarbonizationArea(id: string, data: Prisma.DecarbonizationAreaUpdateInput): Promise<DecarbonizationArea> {
-    return await prisma.decarbonizationArea.update({
+  public async updateDecarbonizationArea(
+    id: string, 
+    data: Prisma.DecarbonizationAreaUpdateInput
+  ): Promise<DecarbonizationArea> {
+    return prisma.decarbonizationArea.update({
       where: { id },
       data,
     });
   }
 
-  async deleteDecarbonizationArea(id: string): Promise<void> {
+  public async deleteDecarbonizationArea(
+    id: string
+  ): Promise<void> {
     await prisma.decarbonizationArea.delete({
       where: { id },
     });
   }
 
-  async getAllDecarbonizationAreas(): Promise<DecarbonizationArea[]> {
-    return await prisma.decarbonizationArea.findMany();
+  public async getAllDecarbonizationAreas(): Promise<DecarbonizationArea[]> {
+    return prisma.decarbonizationArea.findMany();
   }
 
-  async getDecarbonizationAreasByParkId(parkId: number): Promise<DecarbonizationArea[]> {
-    return await prisma.decarbonizationArea.findMany({
+  public async getDecarbonizationAreasByParkId(
+    parkId: number
+  ): Promise<DecarbonizationArea[]> {
+    return prisma.decarbonizationArea.findMany({
       where: { parkId },
     });
   }
 
-  async getOccurrencesWithinDecarbonizationArea(areaId: string): Promise<Occurrence[]> {
+  public async getOccurrencesWithinDecarbonizationArea(
+    areaId: string
+  ): Promise<Occurrence[]> {
     const area = await this.getDecarbonizationAreaById(areaId);
     if (!area) {
       throw new Error('Decarbonization area not found');
     }
 
-    const occurrences = await prisma.$queryRaw<Occurrence[]>`
+    return prisma.$queryRaw<Occurrence[]>`
       SELECT * FROM "Occurrence"
       WHERE ST_Contains(
         ST_GeomFromText(${area.geom}),
         ST_SetSRID(ST_MakePoint("lng", "lat"), 4326)
       )
     `;
-    return occurrences;
   }
 }
 

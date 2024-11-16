@@ -297,7 +297,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ attractionId }) => {
                 </div>
               )}
               <GraphContainer
-                title="Expected Visits Over Time"
+                title="Visits Over Time"
                 data={attractionTimeSeriesChartData}
                 type="line"
                 options={{

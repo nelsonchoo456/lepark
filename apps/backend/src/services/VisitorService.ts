@@ -1,4 +1,4 @@
-import { Prisma, Visitor } from '@prisma/client';
+import { Prisma, Species, Visitor } from '@prisma/client';
 import { z } from 'zod';
 import VisitorDao from '../dao/VisitorDao';
 import bcrypt from 'bcrypt';
@@ -21,7 +21,7 @@ import SpeciesDao from '../dao/SpeciesDao';
 import { fromZodError } from 'zod-validation-error';
 
 class VisitorService {
-  public async register(data: VisitorSchemaType): Promise<Visitor> {
+  public async register(data: VisitorSchemaType): Promise<{ visitor: Visitor; verificationToken: string }> {
     try {
       // Validate input data using Zod
       VisitorSchema.parse(data);
@@ -46,7 +46,8 @@ class VisitorService {
       const verificationLink = `http://localhost:4201/verify-user?token=${token}`;
       EmailUtil.sendVerificationEmail(data.email, verificationLink);
 
-      return VisitorDao.createVisitor(visitorData);
+      const visitor = await VisitorDao.createVisitor(visitorData);
+      return { visitor, verificationToken: token };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -109,7 +110,7 @@ class VisitorService {
     }
   }
 
-  public async login(data: LoginSchemaType) {
+  public async login(data: LoginSchemaType): Promise<{ token: string; user: Omit<Visitor, 'password'> }> {
     try {
       LoginSchema.parse(data);
 
@@ -131,9 +132,9 @@ class VisitorService {
         expiresIn: '4h',
       });
 
-      const { password, ...user } = visitor;
+      const { password, ...userWithoutPassword } = visitor;
 
-      return { token, user };
+      return { token, user: userWithoutPassword };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors.map((e) => `${e.message}`);
@@ -151,7 +152,7 @@ class VisitorService {
     );
   }
 
-  async requestPasswordReset(data: VisitorPasswordResetRequestSchemaType) {
+  async requestPasswordReset(data: VisitorPasswordResetRequestSchemaType): Promise<{ message: string; resetToken?: string }> {
     try {
       VisitorPasswordResetRequestSchema.parse(data);
 
@@ -170,6 +171,12 @@ class VisitorService {
       // Send email with the reset link containing the token
       const resetLink = `http://localhost:4201/visitor-reset-password?token=${resetToken}`;
       EmailUtil.sendPasswordResetEmail(data.email, resetLink);
+
+      // Return the token only in non-production environments
+      if (process.env.NODE_ENV !== 'production') {
+        return { message: 'Password reset email sent successfully', resetToken };
+      }
+      return { message: 'Password reset email sent successfully' };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = fromZodError(error);
@@ -179,7 +186,7 @@ class VisitorService {
     }
   }
 
-  async resetPassword(data: VisitorPasswordResetSchemaType) {
+  async resetPassword(data: VisitorPasswordResetSchemaType): Promise<{ message: string }> {
     try {
       VisitorPasswordResetSchema.parse(data);
 
@@ -235,7 +242,7 @@ class VisitorService {
     }
   }
 
-  async addFavoriteSpecies(visitorId: string, speciesId: string) {
+  public async addFavoriteSpecies(visitorId: string, speciesId: string): Promise<Visitor> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -250,7 +257,7 @@ class VisitorService {
     return VisitorDao.addFavoriteSpecies(visitorId, speciesId);
   }
 
-  async getFavoriteSpecies(visitorId: string) {
+  public async getFavoriteSpecies(visitorId: string): Promise<Species[]> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -261,7 +268,7 @@ class VisitorService {
     return favoriteSpecies?.favoriteSpecies || [];
   }
 
-  async deleteSpeciesFromFavorites(visitorId: string, speciesId: string) {
+  public async deleteSpeciesFromFavorites(visitorId: string, speciesId: string): Promise<Visitor> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -271,7 +278,7 @@ class VisitorService {
     return VisitorDao.deleteSpeciesFromFavorites(visitorId, speciesId);
   }
 
-  async isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
+  public async isSpeciesInFavorites(visitorId: string, speciesId: string): Promise<boolean> {
     const visitor = await VisitorDao.getVisitorById(visitorId);
 
     if (!visitor) {
@@ -282,7 +289,7 @@ class VisitorService {
     return favoriteSpecies?.favoriteSpecies.some((species) => species.id === speciesId) || false;
   }
 
-  public async verifyUser(data: VerifyUserSchemaType) {
+  public async verifyUser(data: VerifyUserSchemaType): Promise<{ message: string }> {
     try {
       VerifyUserSchema.parse(data);
 
@@ -322,7 +329,7 @@ class VisitorService {
     }
   }
 
-  async resendVerificationEmail(token: string) {
+  public async resendVerificationEmail(token: string): Promise<{ message: string }> {
     try {
       let decodedToken;
       try {
@@ -383,7 +390,7 @@ class VisitorService {
     }
   }
 
-  async sendVerificationEmailWithEmail(email: string, id: string) {
+  public async sendVerificationEmailWithEmail(email: string, id: string): Promise<{ message: string }> {
     try {
       const visitor = await VisitorDao.getVisitorById(id);
       if (!visitor) {
@@ -407,28 +414,24 @@ class VisitorService {
     }
   }
 
-  async delete(data) {
-    try {
-      const visitor = await VisitorDao.getVisitorById(data.id);
+  public async delete(data: { id: string; password: string }): Promise<{ message: string }> {
+    const visitor = await VisitorDao.getVisitorById(data.id);
 
-      if (!visitor) {
-        // Use a generic error message to not reveal if the email exists
-        throw new Error('Invalid credentials');
-      }
-
-      // Use bcrypt to compare the input password with the stored hash
-      const isPasswordValid = await bcrypt.compare(data.password, visitor.password);
-
-      if (!isPasswordValid) {
-        throw new Error('Password is incorrect');
-      }
-
-      await VisitorDao.deleteVisitor(data.id);
-
-      return { message: 'Visitor deleted successfully' };
-    } catch (error) {
-      throw error;
+    if (!visitor) {
+      // Use a generic error message to not reveal if the email exists
+      throw new Error('Invalid credentials');
     }
+
+    // Use bcrypt to compare the input password with the stored hash
+    const isPasswordValid = await bcrypt.compare(data.password, visitor.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Password is incorrect');
+    }
+
+    await VisitorDao.deleteVisitor(data.id);
+
+    return { message: 'Visitor deleted successfully' };
   }
 }
 

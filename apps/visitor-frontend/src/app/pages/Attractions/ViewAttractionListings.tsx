@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Card, Row, Col, Button, Checkbox, Spin } from 'antd';
+import { Typography, Card, Row, Col, Button, Checkbox, Spin, Steps, message } from 'antd';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { LogoText } from '@lepark/common-ui';
 import dayjs, { Dayjs } from 'dayjs';
@@ -11,6 +11,7 @@ import {
   getAttractionById,
   getAttractionTicketListingsByAttractionId,
   PromotionResponse,
+  getAttractionTicketTransactionsByAttractionId,
 } from '@lepark/data-access';
 import SelectDateAndReview from './Components/SelectDateAndReview';
 import OrderReview from './Components/OrderReview';
@@ -38,20 +39,34 @@ const ViewAttractionTicketListings = () => {
   const [appliedPromotion, setAppliedPromotion] = useState<PromotionResponse | null>(null);
   const [subtotal, setSubtotal] = useState(0);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [soldTicketsByDate, setSoldTicketsByDate] = useState<Record<string, number>>({});
+
+  const totalTicketsSelected = Object.values(ticketCounts).reduce((sum, count) => sum + count, 0);
 
   useEffect(() => {
     const fetchTickets = async () => {
       if (attractionId) {
         try {
-          const response = await getAttractionTicketListingsByAttractionId(attractionId);
-          // Filter active listings
-          const activeListings = response.data.filter((listing) => listing.isActive);
-          setListings(activeListings);
+          const [ticketListingsResponse, attractionResponse, transactionsResponse] = await Promise.all([
+            getAttractionTicketListingsByAttractionId(attractionId),
+            getAttractionById(attractionId),
+            getAttractionTicketTransactionsByAttractionId(attractionId),
+          ]);
 
-          const attractionResponse = await getAttractionById(attractionId);
+          const activeListings = ticketListingsResponse.data.filter((listing) => listing.isActive);
+          setListings(activeListings);
           setAttraction(attractionResponse.data);
+
+          // Calculate sold tickets by date
+          const ticketsByDate = transactionsResponse.data.reduce((acc, transaction) => {
+            const dateKey = dayjs(transaction.attractionDate).format('YYYY-MM-DD');
+            acc[dateKey] = (acc[dateKey] || 0) + transaction.attractionTickets.length;
+            return acc;
+          }, {} as Record<string, number>);
+
+          setSoldTicketsByDate(ticketsByDate);
         } catch (error) {
-          console.error('Error fetching ticket data:', error);
+          console.error('Error fetching data:', error);
         } finally {
           setLoading(false);
         }
@@ -68,9 +83,17 @@ const ViewAttractionTicketListings = () => {
   }, {} as Record<string, AttractionTicketListingResponse[]>);
 
   const handleTicketCountChange = (listingId: string, increment: number) => {
+    const newCount = Math.max(0, (ticketCounts[listingId] || 0) + increment);
+    const newTotalTickets = totalTicketsSelected - (ticketCounts[listingId] || 0) + newCount;
+
+    if (newTotalTickets > (attraction?.maxCapacity || 0)) {
+      message.error(`Cannot exceed maximum capacity of ${attraction?.maxCapacity} tickets`);
+      return;
+    }
+
     setTicketCounts((prev) => ({
       ...prev,
-      [listingId]: Math.max(0, (prev[listingId] || 0) + increment),
+      [listingId]: newCount,
     }));
   };
 
@@ -149,9 +172,13 @@ const ViewAttractionTicketListings = () => {
           </Text>
         </Col>
         <Col span={10} className="flex items-center justify-end">
-          <Button onClick={() => handleTicketCountChange(listing.id, -1)}>-</Button>
+          <Button onClick={() => handleTicketCountChange(listing.id, -1)} disabled={ticketCounts[listing.id] === 0}>
+            -
+          </Button>
           <Text className="mx-2 text-base">{ticketCounts[listing.id] || 0}</Text>
-          <Button onClick={() => handleTicketCountChange(listing.id, 1)}>+</Button>
+          <Button onClick={() => handleTicketCountChange(listing.id, 1)} disabled={totalTicketsSelected >= (attraction?.maxCapacity || 0)}>
+            +
+          </Button>
         </Col>
       </Row>
       <Row>
@@ -195,6 +222,8 @@ const ViewAttractionTicketListings = () => {
         return (
           <SelectDateAndReview
             attractionName={attraction?.title || ''}
+            maxCapacity={attraction?.maxCapacity || 0}
+            soldTicketsByDate={soldTicketsByDate}
             ticketDetails={Object.entries(ticketCounts)
               .filter(([_, quantity]) => quantity > 0)
               .map(([id, quantity]) => {
@@ -250,7 +279,26 @@ const ViewAttractionTicketListings = () => {
     <div className="md:p-4 md:h-screen md:overflow-hidden">
       <div className="w-full gap-4 md:flex md:h-full md:overflow-hidden">
         <div className="flex-1 flex-col flex md:h-full md:overflow-x-auto">
-          <div className="sticky top-0 bg-white z-10 p-4">
+          <div className="sticky top-0 bg-white z-10 px-4 py-2">
+            <div className="flex gap-2 pb-2 items-center w-full">
+              <div className={`rounded-full h-8 w-8 flex items-center justify-center text-white font-bold bg-green-500`}>1</div>
+              <div className="h-[1px] flex-[1] bg-gray-300" />
+              <div
+                className={`rounded-full h-8 w-8 flex items-center justify-center text-white font-bold ${
+                  step === 'select-date' || step === 'order-review' ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+              >
+                2
+              </div>
+              <div className="h-[1px] flex-[1] bg-gray-300" />
+              <div
+                className={`rounded-full h-8 w-8 flex items-center justify-center text-white font-bold ${
+                  step === 'order-review' ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+              >
+                3
+              </div>
+            </div>
             <LogoText className="text-2xl font-semibold">
               {step === 'select-tickets' ? 'Select Listing' : step === 'select-date' ? 'Select Date' : 'Order Review'}
             </LogoText>

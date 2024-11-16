@@ -47,7 +47,6 @@ const PromotionViewAll = () => {
       try {
         if (selectedPark?.id) {
           const parkPromotionsResponse = await getPromotionsByParkId(selectedPark.id.toString(), false, true);
-          console.log(parkPromotionsResponse.data);
           const filteredParkPromotions = filterValidPromotions(parkPromotionsResponse.data.filter(
             promotion => promotion.parkId !== null
           ));
@@ -115,7 +114,13 @@ const PromotionViewAll = () => {
         }}
         onClick={() => navigate(`/promotions/${promotion.id}`)}
         cover={
-          <div className="h-32 bg-gray-200 flex items-center justify-center overflow-hidden">
+          <div className="h-32 bg-gray-200 flex items-center justify-center overflow-hidden relative">
+            <div className="absolute text-xl text-gray-500 text-white font-bold bg-highlightGreen-500 pl-4 pr-6 py-1 mt-2 drop-shadow-lg"
+             style={{
+              clipPath: 'polygon(0 0, 100% 0, 90% 50%, 100% 100%, 0 100%)'
+          
+            }}
+            >{renderDiscountValue()}</div>
             {promotion.images && promotion.images.length > 0 ? (
               <img
                 src={promotion.images[0]}
@@ -132,10 +137,10 @@ const PromotionViewAll = () => {
           title={promotion.name}
           description={
             <>
-              <div className="m-0 p-0">{truncateText(promotion.description ?? '', 30)}</div>
+              <div className="-mt-2 p-0">{truncateText(promotion.description ?? '', 30)}</div>
               <div className="mt-1">
-                <Tag color="green">{promotion.promoCode}</Tag>
-                <span className="text-sm text-gray-500 ml-1">{renderDiscountValue()}</span>
+                <span>Promocode:</span>
+                <Tag color="green" bordered={false}>{promotion.promoCode}</Tag>
               </div>
             </>
           }

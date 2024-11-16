@@ -1,5 +1,5 @@
 import express from 'express';
-import MaintenanceTaskService from '../services/MaintenanceTaskService'
+import MaintenanceTaskService from '../services/MaintenanceTaskService';
 import { MaintenanceTaskSchemaType } from '../schemas/maintenanceTaskSchema';
 import { authenticateJWTStaff } from '../middleware/authenticateJWT';
 import multer from 'multer';
@@ -137,38 +137,6 @@ router.put('/unassignMaintenanceTask/:id', authenticateJWTStaff, async (req, res
   }
 });
 
-router.post('/completeMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.completeMaintenanceTask(maintenanceTaskId, staffId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/acceptMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.acceptMaintenanceTask(maintenanceTaskId, staffId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.post('/unacceptMaintenanceTask/:id', authenticateJWTStaff, async (req, res) => {
-  try {
-    const maintenanceTaskId = req.params.id;
-    const updatedMaintenanceTask = await MaintenanceTaskService.unacceptMaintenanceTask(maintenanceTaskId);
-    res.status(200).json(updatedMaintenanceTask);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.put('/updateMaintenanceTaskStatus/:id', authenticateJWTStaff, async (req, res) => {
   try {
     const maintenanceTaskId = req.params.id;
@@ -196,7 +164,11 @@ router.get('/getParkMaintenanceTaskAverageCompletionTimeForPeriod', authenticate
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const averageCompletionTime = await MaintenanceTaskService.getParkMaintenanceTaskAverageCompletionTimeForPeriod(parkId, startDate, endDate);
+    const averageCompletionTime = await MaintenanceTaskService.getParkMaintenanceTaskAverageCompletionTimeForPeriod(
+      parkId,
+      startDate,
+      endDate,
+    );
     res.status(200).json(averageCompletionTime);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -215,68 +187,16 @@ router.get('/getParkMaintenanceTaskOverdueRateForPeriod', authenticateJWTStaff, 
   }
 });
 
-router.get('/getParkMaintenanceTaskCriticalTaskTypesForPeriod', authenticateJWTStaff, async (req, res) => {
+router.get('/getParkMaintenanceTaskDelayedTaskTypesForPeriod', authenticateJWTStaff, async (req, res) => {
   try {
     const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
     const startDate = new Date(req.query.startDate as string);
     const endDate = new Date(req.query.endDate as string);
-    const criticalTaskTypes = await MaintenanceTaskService.getCriticalTaskTypesIdentification(parkId, startDate, endDate);
-    res.status(200).json(criticalTaskTypes);
+    const delayedTaskTypes = await MaintenanceTaskService.getDelayedTaskTypesIdentification(parkId, startDate, endDate);
+    res.status(200).json(delayedTaskTypes);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
-
-router.get('/getParkMaintenanceTaskTaskTypeEfficiencyRanking', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const startDate = new Date(req.query.startDate as string);
-    const endDate = new Date(req.query.endDate as string);
-    const ranking = await MaintenanceTaskService.getTaskTypeEfficiencyRanking(parkId, startDate, endDate);
-    res.status(200).json(ranking);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getParkMaintenanceTaskTrendAnalysis', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const startDate = new Date(req.query.startDate as string);
-    const endDate = new Date(req.query.endDate as string);
-    const previousStartDate = new Date(req.query.previousStartDate as string);
-    const previousEndDate = new Date(req.query.previousEndDate as string);
-    const trendAnalysis = await MaintenanceTaskService.getTrendAnalysis(parkId, startDate, endDate, previousStartDate, previousEndDate);
-    res.status(200).json(trendAnalysis);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getParkMaintenanceTaskOverdueRateAnalysis', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const startDate = new Date(req.query.startDate as string);
-    const endDate = new Date(req.query.endDate as string);
-    const overdueRateAnalysis = await MaintenanceTaskService.getOverdueRateAnalysis(parkId, startDate, endDate);
-    res.status(200).json(overdueRateAnalysis);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-router.get('/getParkMaintenanceTaskTaskTypeComparisonAnalysis', authenticateJWTStaff, async (req, res) => {
-  try {
-    const parkId = req.query.parkId ? parseInt(req.query.parkId as string, 10) : null;
-    const startDate = new Date(req.query.startDate as string);
-    const endDate = new Date(req.query.endDate as string);
-    const comparisonAnalysis = await MaintenanceTaskService.getTaskTypeComparisonAnalysis(parkId, startDate, endDate);
-    res.status(200).json(comparisonAnalysis);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Add other routes similar to the plantTaskRouter, such as getParkTaskLoadPercentage, getStaffPerformanceRanking, etc.
 
 export default router;

@@ -30,11 +30,6 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
     { key: 'description', label: 'Description', children: hub.description || '-' },
     { key: 'hubStatus', label: 'Hub Status', children: getStatusTag(hub.hubStatus) },
     { key: 'acquisitionDate', label: 'Acquisition Date', children: moment(hub.acquisitionDate).format('MMMM D, YYYY') },
-    hub.lastMaintenanceDate && {
-      key: 'lastMaintenanceDate',
-      label: 'Last Maintenance Date',
-      children: hub.lastMaintenanceDate ? moment(hub.lastMaintenanceDate).format('MMMM D, YYYY') : '-',
-    },
     hub.nextMaintenanceDate && {
       key: 'nextMaintenanceDate',
       label: 'Next Maintenance Date',
@@ -44,6 +39,11 @@ const InformationTab: React.FC<InformationTabProps> = ({ hub }) => {
       key: 'dataTransmissionInterval',
       label: 'Data Transmission Interval',
       children: hub.dataTransmissionInterval ? `Every ${hub.dataTransmissionInterval} polls` : '-',
+    },
+    hub.lastDataUpdateDate && {
+      key: 'lastDataUpdateDate',
+      label: 'Last Data Update Date',
+      children: hub.lastDataUpdateDate ? moment(hub.lastDataUpdateDate).format('MMMM D, YYYY') : '-',
     },
     hub.ipAddress && { key: 'ipAddress', label: 'IP Address', children: hub.ipAddress },
     hub.macAddress && { key: 'macAddress', label: 'MAC Address', children: hub.macAddress },

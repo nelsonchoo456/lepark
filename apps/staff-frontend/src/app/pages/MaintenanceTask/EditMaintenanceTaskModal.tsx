@@ -97,7 +97,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
 
   const navigateToEntity = () => {
     if (initialValues?.parkAsset) {
-      window.open(`/park-assets/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
+      window.open(`/parkasset/${initialValues.parkAsset.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.sensor) {
       window.open(`/sensor/${initialValues.sensor.id}`, '_blank', 'noopener,noreferrer');
     } else if (initialValues?.hub) {
@@ -167,7 +167,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
     } else if (initialValues?.parkAsset?.id) {
       url = `/parkasset/${initialValues.parkAsset.id}/edit`;
     } else if (initialValues?.sensor?.id) {
-      url = `/sensors/${initialValues.sensor.id}/edit`;
+      url = `/sensor/${initialValues.sensor.id}/edit`;
     } else if (initialValues?.hub?.id) {
       url = `/hubs/${initialValues.hub.id}/edit`;
     }
@@ -205,7 +205,7 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
         <Form form={form} layout="vertical">
           <div style={{ marginBottom: '16px' }}>
             {userRole === StaffType.SUPERADMIN && (
-              <Form.Item style={{ marginBottom: '4px' }}>Park: {initialValues?.submittingStaff?.park?.name}</Form.Item>
+              <Form.Item style={{ marginBottom: '4px' }}>Park: {initialValues?.facilityOfFaultyEntity.park.name}</Form.Item>
             )}
             {/* <Form.Item style={{ marginBottom: '4px' }}>Facility: {getFacilityNameForFaultyItem()}</Form.Item> */}
             <Form.Item style={{ marginBottom: '4px' }}>
@@ -245,15 +245,17 @@ const EditMaintenanceTaskModal: React.FC<EditMaintenanceTaskModalProps> = ({
               ))}
             </Select>
           </Form.Item>
-          <Form.Item name="taskStatus" label="Task Status" rules={[{ required: true, message: 'Please select the task status' }]}>
-            <Select>
+          {(userRole === StaffType.VENDOR_MANAGER) && (
+            <Form.Item name="taskStatus" label="Task Status" rules={[{ required: true, message: 'Please select the task status' }]}>
+                <Select>
               {Object.values(MaintenanceTaskStatusEnum).map((status) => (
                 <Select.Option key={status} value={status}>
                   {formatEnumLabelToRemoveUnderscores(status)}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            )}
           {userRole === StaffType.SUPERADMIN ||
             (userRole === StaffType.MANAGER && (
               <Form.Item name="dueDate" label="Due Date" rules={[{ required: true, message: 'Please select the due date' }]}>

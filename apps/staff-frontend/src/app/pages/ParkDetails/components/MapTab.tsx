@@ -17,7 +17,7 @@ import {
   DecarbonizationAreaResponse,
   getOccurrencesWithinDecarbonizationArea,
 } from '@lepark/data-access';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, Pane, TileLayer } from 'react-leaflet';
 import PolygonFitBounds from '../../../components/map/PolygonFitBounds';
 import { Button, Card, Checkbox, Space, Tooltip, Typography } from 'antd';
 import { TbEdit, TbTicket, TbTree } from 'react-icons/tb';
@@ -35,6 +35,7 @@ import ParkStatusTag from './ParkStatusTag';
 import { SCREEN_LG } from '../../../config/breakpoints';
 import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 import { parseGeom } from '../../DecarbonizationAreaDetails/components/MapTab';
+import HeatmapLayer from '../../../components/map/HeatMapLayer';
 
 interface MapTabProps {
   park: ParkResponse;
@@ -56,12 +57,11 @@ const MapTab = ({ park }: MapTabProps) => {
   const [showEvents, setShowEvents] = useState<boolean>(false);
   const [showFacilities, setShowFacilities] = useState<boolean>(false);
   const [showDecarb, setShowDecarb] = useState<boolean>(false);
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
 
   const [hovered, setHovered] = useState<HoverItem | null>(null); // Shared hover state
-  
-  const [webMode, setWebMode] = useState<boolean>(
-    window.innerWidth >= SCREEN_LG
-  );
+
+  const [webMode, setWebMode] = useState<boolean>(window.innerWidth >= SCREEN_LG);
 
   useEffect(() => {
     const handleResize = () => {
@@ -145,7 +145,7 @@ const MapTab = ({ park }: MapTabProps) => {
             const eventsRes = await getEventsByFacilityId(facility.id);
 
             if (eventsRes.status === 200) {
-              facilityWithEvents.events = eventsRes.data; // Append events to the facility
+              facilityWithEvents.events = eventsRes.data.sort((a, b) => b.startDate - a.startDate); // Append events to the facility
             }
             return facilityWithEvents;
           } catch (error) {
@@ -173,7 +173,6 @@ const MapTab = ({ park }: MapTabProps) => {
           }
         }),
       );
-      console.log(decarbWithOccurrences)
       setDecarbAreas(decarbWithOccurrences);
     }
   };
@@ -227,6 +226,20 @@ const MapTab = ({ park }: MapTabProps) => {
           </Checkbox>
         </Space>
       </Card>
+      {(user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) &&
+        <Card styles={{ body: { padding: 0 } }} className="px-4 py-2 mb-4">
+          <Space size={16} className="flex-wrap">
+            <div className="font-semibold">Crowd Level Display:</div>
+            <Checkbox
+              onChange={(e) => setShowHeatmap(e.target.checked)}
+              checked={showHeatmap}
+              className="border-gray-200 border-[1px] px-4 py-1 rounded-full"
+            >
+              Heatmap Layer
+            </Checkbox>
+          </Space>
+        </Card>
+      }
       <div
         style={{
           height: `${webMode ? '80vh' : '80vh'}`,
@@ -240,61 +253,71 @@ const MapTab = ({ park }: MapTabProps) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <PolygonFitBounds geom={park?.geom} polygonFields={{ fillOpacity: 0.4, opacity: 0 }} />
-          {showDecarb &&
-            decarbAreas &&
-            decarbAreas.map((decarb) => (
-              <PolygonWithLabel
-                key={decarb.id}
-                entityId={decarb.id}
-                geom={parseGeom(decarb.geom)}
-                polygonLabel={<div className="flex items-center gap-2 text-highlightGreen-600">{decarb.name}</div>}
-                color={`transparent`}
-                fillColor={COLORS.highlightGreen[200]}
-                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
-                handlePolygonClick={() =>
-                  setHovered({
-                    id: decarb.id,
-                    image: park && park.images && park.images.length > 0 ? park.images[0] : null,
-                    title: (
-                      <div className="flex justify-between items-center w-full">
-                        <div>{decarb.name}</div>
-                        <Tooltip title="View Details">
-                          <Button icon={<MdArrowOutward />} shape="circle" type="primary" onClick={() => navigate(`/decarbonization-area/${decarb.id}`)}/>
-                        </Tooltip>
-                      </div>
-                    ),
-                    entityType: 'DECARBONIZATION',
-                    children: decarb.occurrences ? (
-                      <div className="text-green-600">
-                        Number of Occurrences: <strong>{decarb.occurrences.length}</strong>
-                      </div>
-                    ) : (
-                      <div className="text-green-600 opacity-50 italic">No occurrences</div>
-                    ),
-                  })
-                }
-              />
-            ))}
+          <Pane name="polygonPane" style={{ zIndex: 400 }}>
+            {showDecarb &&
+              decarbAreas &&
+              decarbAreas.map((decarb) => (
+                <PolygonWithLabel
+                  key={decarb.id}
+                  entityId={decarb.id}
+                  geom={parseGeom(decarb.geom)}
+                  polygonLabel={<div className="flex items-center gap-2 text-highlightGreen-600">{decarb.name}</div>}
+                  color={COLORS.highlightGreen[400]}
+                  fillColor={COLORS.highlightGreen[400]}
+                  dashArray="5, 10"
+                  fillOpacity={0.3}
+                  labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+                  handlePolygonClick={() =>
+                    setHovered({
+                      id: decarb.id,
+                      image: park && park.images && park.images.length > 0 ? park.images[0] : null,
+                      title: (
+                        <div className="flex justify-between items-center w-full">
+                          <div>{decarb.name}</div>
+                          <Tooltip title="View Details">
+                            <Button
+                              icon={<MdArrowOutward />}
+                              shape="circle"
+                              type="primary"
+                              onClick={() => navigate(`/decarbonization-area/${decarb.id}`)}
+                            />
+                          </Tooltip>
+                        </div>
+                      ),
+                      entityType: 'DECARBONIZATION',
+                      children: decarb.occurrences ? (
+                        <div className="text-green-600">
+                          Number of Occurrences: <strong>{decarb.occurrences.length}</strong>
+                        </div>
+                      ) : (
+                        <div className="text-green-600 opacity-50 italic">No occurrences</div>
+                      ),
+                    })
+                  }
+                />
+              ))}
 
-          {showZones &&
-            zones &&
-            zones.map((zone) => (
-              <PolygonWithLabel
-                key={zone.id}
-                entityId={zone.id}
-                geom={zone.geom}
-                polygonLabel={
-                  <div className="flex items-center gap-2">
-                    <TbTree className="text-xl" />
-                    {zone.name}
-                  </div>
-                }
-                // color={COLORS.green[600]}
-                color={`transparent`}
-                fillColor={COLORS.green[200]}
-                labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
-              />
-            ))}
+            {showZones &&
+              zones &&
+              zones.map((zone) => (
+                <PolygonWithLabel
+                  key={zone.id}
+                  entityId={zone.id}
+                  geom={zone.geom}
+                  polygonLabel={
+                    <div className="flex items-center gap-2">
+                      <TbTree className="text-xl" />
+                      {zone.name}
+                    </div>
+                  }
+                  // color={COLORS.green[600]}
+                  fillOpacity={0.5}
+                  color={`transparent`}
+                  fillColor={COLORS.green[400]}
+                  labelFields={{ color: COLORS.green[800], textShadow: 'none' }}
+                />
+              ))}
+          </Pane>
 
           {showOccurrences &&
             occurrences &&
@@ -411,6 +434,12 @@ const MapTab = ({ park }: MapTabProps) => {
                   />
                 ),
             )}
+
+          {(showHeatmap && (user?.role === StaffType.SUPERADMIN || user?.role === StaffType.MANAGER || user?.role === StaffType.PARK_RANGER) && park) && (
+            <Pane name="heatmapPane" style={{ zIndex: 900 }}>
+              <HeatmapLayer park={park} />
+            </Pane>
+          )} 
         </MapContainer>
 
         {hovered && (

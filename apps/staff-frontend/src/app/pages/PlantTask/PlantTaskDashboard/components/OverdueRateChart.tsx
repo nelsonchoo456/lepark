@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Card, DatePicker, Tooltip } from 'antd';
-import { OverdueRateMaintenanceTaskData, StaffResponse, getParkPlantTaskOverdueRates } from '@lepark/data-access';
+import { OverdueRateData, StaffResponse, getParkPlantTaskOverdueRates } from '@lepark/data-access';
 import dayjs from 'dayjs';
 import { useAuth } from '@lepark/common-ui';
 import { InfoCircleOutlined } from '@ant-design/icons'; // Optional, using an icon
@@ -9,7 +9,7 @@ import { InfoCircleOutlined } from '@ant-design/icons'; // Optional, using an ic
 const { RangePicker } = DatePicker;
 
 const OverdueRateChart = () => {
-  const [data, setData] = useState<OverdueRateMaintenanceTaskData[]>([]);
+  const [data, setData] = useState<OverdueRateData[]>([]);
   const [startDate, setStartDate] = useState<string>(dayjs().startOf('month').toISOString());
   const [endDate, setEndDate] = useState<string>(dayjs().endOf('month').toISOString());
   const { user } = useAuth<StaffResponse>();

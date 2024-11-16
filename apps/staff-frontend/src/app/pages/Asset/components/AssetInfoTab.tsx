@@ -1,10 +1,10 @@
-import { Descriptions, Spin, Tag } from 'antd';
+import { useAuth } from '@lepark/common-ui';
 import { ParkAssetResponse, ParkAssetStatusEnum, StaffResponse, StaffType } from '@lepark/data-access';
+import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
+import { Descriptions, Spin, Tag } from 'antd';
+import { DescriptionsItemType } from 'antd/es/descriptions';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@lepark/common-ui';
-import { DescriptionsItemType } from 'antd/es/descriptions';
-import { formatEnumLabelToRemoveUnderscores } from '@lepark/data-utility';
 
 const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const [loading, setLoading] = useState(false);
@@ -17,13 +17,29 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   const getStatusTag = (status: string) => {
     switch (status) {
       case ParkAssetStatusEnum.AVAILABLE:
-        return <Tag color="green" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="green" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case ParkAssetStatusEnum.IN_USE:
-        return <Tag color="blue" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="blue" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case ParkAssetStatusEnum.UNDER_MAINTENANCE:
-        return <Tag color="yellow" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="yellow" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       case ParkAssetStatusEnum.DECOMMISSIONED:
-        return <Tag color="red" bordered={false}>{formatEnumLabelToRemoveUnderscores(status)}</Tag>;
+        return (
+          <Tag color="red" bordered={false}>
+            {formatEnumLabelToRemoveUnderscores(status)}
+          </Tag>
+        );
       default:
         return <Tag>{status}</Tag>;
     }
@@ -45,16 +61,6 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
   ];
 
   const conditionalItems = [
-    // asset.lastMaintenanceDate && {
-    //   key: 'lastMaintenanceDate',
-    //   label: 'Last Maintenance Date',
-    //   children: moment(asset.lastMaintenanceDate).format('MMMM D, YYYY'),
-    // },
-    // asset.nextMaintenanceDate && {
-    //   key: 'nextMaintenanceDate',
-    //   label: 'Next Maintenance Date',
-    //   children: moment(asset.nextMaintenanceDate).format('MMMM D, YYYY'),
-    // },
     user?.role === StaffType.SUPERADMIN && {
       key: 'park',
       label: 'Park',
@@ -64,23 +70,18 @@ const AssetInformationTab = ({ asset }: { asset: ParkAssetResponse }) => {
       key: 'facility',
       label: 'Facility',
       children: asset.facility.name,
-    }
+    },
   ].filter(Boolean);
 
   const descriptionsItems = [...descriptionItems, ...conditionalItems];
-
+  
   if (loading) {
     return <Spin />;
   }
 
   return (
     <div>
-      <Descriptions
-        items={(descriptionsItems) as DescriptionsItemType[]}
-        bordered
-        column={1}
-        size="middle"
-      />
+      <Descriptions items={descriptionsItems as DescriptionsItemType[]} bordered column={1} size="middle" />
     </div>
   );
 };
