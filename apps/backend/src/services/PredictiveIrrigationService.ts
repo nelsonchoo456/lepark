@@ -75,6 +75,7 @@ class PredictiveIrrigationService {
   
       // Generate training data using the service method
       const historicalRainfallData = await this.getClosestRainDataPerDate(hub.lat, hub.long, new Date(new Date().setDate(new Date().getDate() - 100)), new Date(new Date().setDate(new Date().getDate() - 1)));
+      console.log(historicalRainfallData)
       const trainingData = await this.generateTrainingData(historicalSensorData);
   
       // Train the Random Forest model
@@ -410,9 +411,23 @@ class PredictiveIrrigationService {
     ]);
     // const y = trainingData.map((data) => data.water);
     const y: any = Object.values(rainfallData);
-    // console.log("trainingData", X.length)
-    // console.log("rainfallData", y.length)
-   
+    
+    console.log("Before adjustment:");
+    console.log("X length:", X.length);
+    console.log("y length:", y.length);
+
+    // Ensure X and y have the same length
+    while (X.length > y.length) {
+      X.pop(); // Remove the last element from X
+    }
+    while (y.length > X.length) {
+      y.pop(); // Remove the last element from y
+    }
+
+    console.log("After adjustment:");
+    console.log("X length:", X.length);
+    console.log("y length:", y.length);
+
     const model = new RandomForestRegressor({
       nEstimators: 100,
       treeOptions: { maxDepth: 10 },
