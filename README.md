@@ -8,22 +8,22 @@
 
 <!-- ## Finish your remote caching setup
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/0fAwxHqk1g) -
+[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/0fAwxHqk1g) - -->
 
 ![1731693988663](image/README/1731693988663.png)
 
 ## Advanced Features
 
-* Rainfall Forecast Module for Daily Irrigation Recommendation
-* Predictive Crowd Insights
-* IoT-Enabled Crowd Levels with Heatmap Visualisations
-* Decarbonization Tracking and Visualisations
-* Customisable Maps
-  * Park, Zone Boundaries Designing
-* IoT Monitoring
-* Venue Booking System
-* Attractions and Events Booking System
-* Parks Taxonomy Information
+- Rainfall Forecast Module for Daily Irrigation Recommendation
+- Predictive Crowd Insights
+- IoT-Enabled Crowd Levels with Heatmap Visualisations
+- Decarbonization Tracking and Visualisations
+- Customisable Maps
+  - Park, Zone Boundaries Designing
+- IoT Monitoring
+- Venue Booking System
+- Attractions and Events Booking System
+- Parks Taxonomy Information
 
 ## System Overview
 
@@ -45,6 +45,7 @@ Together, these systems provide a comprehensive solution for NParks, supporting 
 
    - For downloading PostgreSQL, follow the instructions for your operating system from the [PostgreSQL Download page](https://www.postgresql.org/download/).
    - For downloading PostGIS, follow the instructions for your operating system from the [PostGIS Getting Started page](https://postgis.net/documentation/getting_started/) at the "Installing PostGIS" section.
+
 2. **Create a PostgreSQL database locally:**
 3. **Create a `.env` file in the root folder that contains:**
 
@@ -56,34 +57,41 @@ Together, these systems provide a comprehensive solution for NParks, supporting 
 
    - Replace `[username]`, `[password]`, and `[databaseName]` with your PostgreSQL credentials.
    - Replace `[yourAWSAccessKey]` and `[yourAWSSecretAccessKey]` with your AWS Credentials for your S3 bucket.
+
 4. **In the root folder, run:**
 
    ```
    npm install
    ```
+
 5. **In the root folder, run:**
 
    ```bash
    npx prisma migrate dev
    ```
+
 6. **Preload accounts, parks, zones, species and occurrences by running**
 
    ```bash
    node apps/backend/src/utils/seed.js
    ```
+
 7. **To start the system, run:**
 
    ```bash
    nx run-many --target=serve --parallel=100
    ```
+
 8. **To access the different systems:**
 
    - Staff: [http://localhost:4200/](http://localhost:4200/)
    - Visitor: [http://localhost:4201/](http://localhost:4201/)
+
 9. **Login to Staff system using Superadmin:**
 
    - Email: superadmin@lepark.com
    - Password: password
+
 10. **Note:**
 
     - If you want to test Reset Password, you have to use a real email account when signing up.
