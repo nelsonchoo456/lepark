@@ -53,10 +53,14 @@ Together, these systems provide a comprehensive solution for NParks, supporting 
    DATABASE_URL="postgresql://[username]:[password]@localhost:5432/[databaseName]"
    AWS_ACCESS_KEY_ID="[yourAWSAccessKey]"
    AWS_SECRET_ACCESS_KEY="[yourAWSSecretAccessKey]"
+   STRIPE_PUBLISHABLE_KEY="[yourStripePublishableKey]"
+   STRIPE_SECRET_KEY="[yourStripeSecretKey]"
    ```
 
    - Replace `[username]`, `[password]`, and `[databaseName]` with your PostgreSQL credentials.
    - Replace `[yourAWSAccessKey]` and `[yourAWSSecretAccessKey]` with your AWS Credentials for your S3 bucket.
+   - Replace `[yourStripePublishableKey]` and `[yourStripeSecretKey]` with your Stripe Credentials.
+
 
 4. **In the root folder, run:**
 
