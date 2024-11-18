@@ -977,17 +977,6 @@ const staffData = [
     isFirstLogin: false,
     parkId: 2,
   },
-  {
-    firstName: 'Aaron',
-    lastName: 'Foo',
-    email: 'aaronfyr@outlook.com',
-    password: 'password',
-    contactNumber: '892345235',
-    role: 'MANAGER',
-    isActive: true,
-    isFirstLogin: false,
-    parkId: 2,
-  },
 ];
 
 const activityLogsData = [
@@ -4326,22 +4315,7 @@ const announcementsData = [
 ];
 
 const visitorsData = [
-  {
-    firstName: 'Ely',
-    lastName: 'Ong',
-    email: 'elysiaong22@gmail.com',
-    password: 'password',
-    contactNumber: '82882747',
-    isVerified: true,
-  },
-  {
-    firstName: 'Aaron',
-    lastName: 'Foo',
-    email: 'aaronfyr@outlook.com',
-    password: 'password',
-    contactNumber: '91234567',
-    isVerified: true,
-  },
+  // Please create an account if you would like to access the visitor app.
 ];
 
 const attractionTransactionLocalData = [

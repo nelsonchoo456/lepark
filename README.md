@@ -21,13 +21,14 @@
 - Customisable Maps
   - Park, Zone Boundaries Designing
 - IoT Monitoring
+- Staff Tasks Management (Plant and Maintenance)
 - Venue Booking System
 - Attractions and Events Booking System
 - Parks Taxonomy Information
 
 ## System Overview
 
-Lepark is a robust enterprise management system developed to enhance the operational efficiency of park staff and improve the visitor experience. It comprises two web-based platforms tailored to meet the needs of park staff and park visitors, all supported by a shared backend to unify operations and engagement.
+Lepark is a robust enterprise management system developed to enhance the operational efficiency of park staff and improve the visitor experience at National Parks Board (NParks). It comprises two web-based platforms tailored to meet the needs of park staff and park visitors, all supported by a shared backend to unify operations and engagement.
 
 ### Lepark Park Staff System
 
@@ -99,6 +100,30 @@ Together, these systems provide a comprehensive solution for NParks, supporting 
 10. **Note:**
 
     - If you want to test Reset Password, you have to use a real email account when signing up.
+
+## Testing Instructions
+
+### Prerequisites
+1. Ensure you have seeded the database first:
+```bash
+node apps/backend/src/utils/seed.js
+```
+
+2. Start the application:
+```bash
+nx run-many --target=serve --parallel=100
+```
+
+### Running Tests
+To run all backend tests:
+```bash
+nx e2e backend-e2e --skip-nx-cache --runInBand --verbose
+```
+
+To run a specific test file:
+```bash
+nx e2e backend-e2e --testFile=<filename>.spec.ts --skip-nx-cache --runInBand --verbose
+```
 
 ## Gallery
 
